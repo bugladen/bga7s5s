@@ -36,8 +36,10 @@ var jstpl_home=`
 <div id="\${id}" class="home-container home-\${faction}">
     <div class="home-panel">
         <div class="crew-cap">\${crewcap}</div>
+        <div class="home-discard"></div>
         <div class="panache">\${panache}</div>
-        <div id="\${id}-locker"></div>
+        <div class="home-locker"></div>
+        <div></div>
         <div class="seal seal-\${faction}"></div>
     </div>
     <div id="\${id}-home-anchor" class="home-endcap"></div>
@@ -73,6 +75,7 @@ var jstpl_card_leader=`
         </svg>
     </div>
     <div id="day-indicator">1</div>
+    <div id="city-discard"></div>
     <div id="city-ur-tower">
         <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
             <rect width="30" height="30" class="city-tower" />

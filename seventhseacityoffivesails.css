@@ -48,8 +48,8 @@ body {
 
 #day-indicator {
     position: absolute;
-    left: 110px;
-    top: -20px;
+    left: 80px;
+    top: -15px;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * .25) calc(var(--png-board-resource-height) * .25);
     background-color: saddlebrown;
@@ -58,10 +58,27 @@ body {
     height: 25px;
     line-height: 25px;
     font-family: "Pirata One", system-ui;
-    border: 4px solid saddlebrown;
     text-align: center;
     color: yellow;
     font-size: 20pt;
+    border: 3px solid saddlebrown;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+#city-discard {
+    position: absolute;
+    left: 130px;
+    top: -15px;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * .50) calc(var(--png-board-resource-height) * .50);
+    background-color: saddlebrown;
+    background-position: -208px 0px;
+    width: 36px;
+    height: 24px;
+    border: 3px solid saddlebrown;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
 #city-ul-tower {
@@ -220,6 +237,26 @@ body {
     font-family: "Pirata One", system-ui;
     font-size: 16pt;
     color:white;
+}
+
+.home-discard {
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * .50) calc(var(--png-board-resource-height) * .50);
+    background-position: -208px 0px;
+    width: 36px;
+    height: 24px;
+    float: left;
+    margin-left: 5px;
+}
+
+.home-locker {
+    background-image: url('img/boardResources.png');
+    background-position: -389px 0px;
+    background-size: var(--png-board-resource-width) var(--png-board-resource-height);
+    float: right;
+    height: 23px;
+    width: 25px;
+    margin-right: 5px;
 }
 
 .panache {
