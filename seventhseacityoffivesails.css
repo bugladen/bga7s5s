@@ -1,0 +1,376 @@
+/**
+ *------
+ * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
+ * SeventhSeaCityOfFiveSails implementation : © Edward Mittelstedt bugbucket@comcast.net
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ *
+ * seventhseacityoffivesails.css
+ *
+ * SeventhSeaCityOfFiveSails stylesheet
+ *
+ */
+
+/* Note: you must not use any @import directive */
+
+:root {
+    --jpg-board-resource-width: 78px;
+    --jpg-board-resource-height: 78px;
+    --png-board-resource-width: 805px;
+    --png-board-resource-height: 257px;
+}
+
+body {
+    background-color: #3987c9;
+    /* background-image: url(https://www.manytextures.com/download/30/texture/jpg/1024/rough-sea-1024x1024.jpg); */
+}
+
+@font-face {
+    font-family: 'Pirata One';
+    src:  url('img/PirataOne-Regular.ttf') format('truetype');
+}
+
+.pirata-one-regular {
+    font-family: "Pirata One", system-ui;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+#city {
+    position: relative;
+    padding: 15px 10px 15px 10px;
+    background-color: saddlebrown;
+    display: inline-block;
+    margin: 20px;
+}
+
+#day-indicator {
+    position: absolute;
+    left: 110px;
+    top: -20px;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * .25) calc(var(--png-board-resource-height) * .25);
+    background-color: saddlebrown;
+    background-position: -23px -39px;
+    width: 35px;
+    height: 25px;
+    line-height: 25px;
+    font-family: "Pirata One", system-ui;
+    border: 4px solid saddlebrown;
+    text-align: center;
+    color: yellow;
+    font-size: 20pt;
+}
+
+#city-ul-tower {
+    position: absolute;
+    left: -15px;
+    top: -15px;
+}
+
+#city-ur-tower {
+    position: absolute;
+    right: -15px;
+    top: -15px;
+}
+
+#city-ll-tower {
+    position: absolute;
+    left: -15px;
+    bottom: -15px;
+}
+
+#city-lr-tower {
+    position: absolute;
+    right: -15px;
+    bottom: -15px;
+}
+
+.city-tower {
+    fill: black;
+    stroke-width: 10;
+    stroke: saddlebrown;
+}
+
+#city-oles-inn {
+    border-radius: 10px;
+    background-color: #2B2C23;
+    margin-bottom: 5px;
+}
+
+#city-docks {
+    border-radius: 10px;
+    background-color: #7C9A87;
+    margin-bottom: 5px;
+}
+
+#city-forum {
+    border-radius: 10px;
+    background-color: #DA985E;
+}
+
+#city-bazaar {
+    border-radius: 10px;
+    background-color: #596676;
+    margin-top: 5px;
+}
+
+#city-governors-garden {
+    border-radius: 10px;
+    background-color: #859370;
+    margin-top: 5px;
+}
+
+.city-reknown {
+    background-image: url('img/boardResources.jpg');
+    background-size: calc(var(--jpg-board-resource-width) * .5) calc(var(--jpg-board-resource-height) * .5);
+    background-position: 0px 0px;
+    width: 39px;
+    height: 39px;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+    text-align:center;
+    line-height: 39px;
+    margin-left: 5px;
+    margin-right: 2px;
+    font-family: "Pirata One", system-ui;
+    font-size:24pt;
+}
+
+.city-image {
+    background-image: var(--city-image);
+    background-size: 272px 200px;
+    background-position: -52px -45px;
+    width: 150px;
+    height: 110px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+#dock-endcap {
+    background-image: url('img/boardResources.png');
+    background-position: -15px 0px;
+    background-size: calc(var(--png-board-resource-width) * .75) calc(var(--png-board-resource-height) * .75);
+    height: 51px;
+    width: 51px;
+}
+
+#forum-endcap {
+    background-image: url('img/boardResources.png');
+    background-position: -50px 0px;
+    background-size: calc(var(--png-board-resource-width) * .5) calc(var(--png-board-resource-height) * .5);
+    height: 42px;
+    width: 42px;
+}
+
+#bazaar-endcap {
+    background-image: url('img/boardResources.png');
+    background-position: -151px 0px;
+    background-size: calc(var(--png-board-resource-width) * .75) calc(var(--png-board-resource-height) * .75);
+    height: 51px;
+    width: 51px;
+}
+
+.city-endcap {
+    display: inline-block;
+    width:15px;
+    vertical-align: middle;
+}
+
+.home-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: top;
+    border-radius: 10px;
+}
+
+.home-panel {
+    display: inline-block;
+}
+
+.home-endcap {
+    display: inline-block;
+    background-image: url('img/boardResources.png');
+    background-position: -177px 0px;
+    background-size: calc(var(--png-board-resource-width) * .5) calc(var(--png-board-resource-height) * 0.5);
+    height: 18px;
+    width: 18px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    margin: 5px;
+}
+
+.crew-cap-image {
+    background-image: url('img/boardResources.png');
+    background-position: -286px 0px;
+    background-size: var(--png-board-resource-width) var(--png-board-resource-height);
+    float:left;
+    height: 25px;
+    width: 25px;
+    margin-left: 5px;
+    margin-top: 5px
+}
+
+#crew-cap {
+    text-align:center;
+    float: left;
+    vertical-align: middle;
+    line-height: 25px;
+    margin-left: 5px;
+    font-size: 25px;
+    font-family: "Pirata One", system-ui;
+    margin-top: 5px;
+}
+
+.panache-image {
+    background-image: url('img/boardResources.png');
+    background-position: -313px 0px;
+    background-size: var(--png-board-resource-width) var(--png-board-resource-height);
+    float: right;
+    height: 25px;
+    width: 40px;
+    margin-right: 5px;
+    margin-top: 5px;
+}
+
+#panache {
+    text-align:center;
+    float: right;
+    vertical-align: middle;
+    line-height: 25px;
+    margin-right: 5px;
+    font-size: 25px;
+    font-family: "Pirata One", system-ui;
+    margin-top: 5px;
+}
+ 
+.home-castille { background-color: #E58712; }
+
+.seal {
+    display: inline-block;
+    background-size: var(--png-board-resource-width) var(--png-board-resource-height);
+    height: 73px;
+    width: 155px;
+    vertical-align: bottom;
+    line-height: 73px;
+}
+
+.seal-castille {
+    background-image: url('img/boardResources.png');
+    background-position: 0px -85px;
+}
+
+.card {
+    display: inline-block;
+    margin-left:20px;
+    margin-right:5px;
+}
+
+.card-leader {
+    background-image: var(--card_image);
+    background-size: 205px 280px;
+    background-position: -52px -36px;
+    width: 110px;
+    height: 110px;
+    border-radius: 10px;
+}
+
+.character-resolve {
+    position: absolute;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * 0.3) calc(var(--png-board-resource-height) * 0.3);
+    background-position: 0px -46px;
+    width: 30px;
+    height:30px;
+    margin-left: -15px;
+    font-family: "Pirata One", system-ui;
+    font-size: 14pt;
+    line-height: 30px;
+    text-align: center;
+    color: white
+}
+
+.character-stat {
+    width: 40px;
+    height: 20px;
+    line-height: 20px;
+    margin-left: -20px;
+}
+
+.character-combat {
+    position: absolute;
+    border: 1px solid black;
+    background-color: #E4CCAC;
+    bottom: 56px;
+}
+
+.character-combat-image {
+    display: inline-block;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * 0.6993) calc(var(--png-board-resource-height) * 0.6942);
+    background-position: -545px -2px;
+    width: 15px;
+    height: 19px;
+    margin-top:2px;
+    margin-left:5px;
+}
+
+.character-combat-value {
+    display: inline-block;
+    font-family: "Pirata One", system-ui;
+    font-size: 14pt;
+    vertical-align: top;
+    margin-left: 5px;
+}
+
+.character-finesse {
+    position: absolute;
+    border: 1px solid black;
+    background-color: #E4CCAC;
+    bottom: 32px;
+}
+
+.character-finesse-image {
+    display: inline-block;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * 0.6993) calc(var(--png-board-resource-height) * 0.6942);
+    background-position: -541px -43px;
+    width: 19px;
+    height: 19px;
+}
+
+.character-finesse-value {
+    display: inline-block;
+    font-family: "Pirata One", system-ui;
+    font-size: 14pt;
+    vertical-align: top;
+    margin-left: 5px;
+}
+
+.character-influence {
+    position: absolute;
+    border: 1px solid black;
+    background-color: #E4CCAC;
+    bottom: 8px;
+}
+
+.character-influence-image {
+    display: inline-block;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * 0.6993) calc(var(--png-board-resource-height) * .6942);
+    background-position: -540px -82px;
+    width: 21px;
+    height: 19px;
+}
+
+.character-influence-value {
+    display: inline-block;
+    font-family: "Pirata One", system-ui;
+    font-size: 14pt;
+    vertical-align: top;
+    margin-left: 5px;
+}
