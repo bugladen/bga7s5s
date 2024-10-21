@@ -231,7 +231,7 @@ body {
     float: right;
     height: 25px;
     width: 40px;
-    margin-right: 5px;
+    margin-right: -2px;
     margin-top: 5px;
     text-align:center;
     font-size: 16pt;
@@ -285,10 +285,10 @@ body {
 }
 
 .character-stat {
-    width: 40px;
+    width: 36px;
     height: 20px;
     line-height: 20px;
-    margin-left: -20px;
+    margin-left: -15px;
 }
 
 .character-combat {
@@ -305,8 +305,6 @@ body {
     background-position: -545px -2px;
     width: 15px;
     height: 19px;
-    margin-top:2px;
-    margin-left:5px;
 }
 
 .character-combat-value {
@@ -331,6 +329,7 @@ body {
     background-position: -541px -43px;
     width: 19px;
     height: 19px;
+    margin-left: -3px;
 }
 
 .character-finesse-value {
@@ -355,6 +354,7 @@ body {
     background-position: -540px -82px;
     width: 21px;
     height: 19px;
+    margin-left: -3px;
 }
 
 .character-influence-value {
