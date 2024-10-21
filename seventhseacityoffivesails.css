@@ -150,6 +150,12 @@ body {
     vertical-align: middle;
 }
 
+.city-endcap {
+    display: inline-block;
+    width:15px;
+    vertical-align: middle;
+}
+
 #dock-endcap {
     background-image: url('img/boardResources.png');
     background-position: -15px 0px;
@@ -172,12 +178,6 @@ body {
     background-size: calc(var(--png-board-resource-width) * .75) calc(var(--png-board-resource-height) * .75);
     height: 51px;
     width: 51px;
-}
-
-.city-endcap {
-    display: inline-block;
-    width:15px;
-    vertical-align: middle;
 }
 
 .home-castille { background-color: #E58712; }
@@ -214,11 +214,9 @@ body {
     height: 27px;
     width: 27px;
     margin-left: 10px;
-    margin-top: 5px;
-
     text-align: center;
     vertical-align: middle;
-    line-height: 25px;
+    line-height: 27px;
     font-family: "Pirata One", system-ui;
     font-size: 16pt;
     color:white;
@@ -232,7 +230,6 @@ body {
     height: 25px;
     width: 40px;
     margin-right: -2px;
-    margin-top: 5px;
     text-align:center;
     font-size: 16pt;
     font-family: "Pirata One", system-ui;
