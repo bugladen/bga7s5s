@@ -35,10 +35,8 @@
 var jstpl_home=`
 <div id="\${id}" class="home-container home-\${faction}">
     <div class="home-panel">
-        <div class="crew-cap-image"></div>
-        <div class="panache-image"></div>
-        <div id="crew-cap">\${crewcap}</div>
-        <div id="panache">\${panache}</div>
+        <div class="crew-cap">\${crewcap}</div>
+        <div class="panache">\${panache}</div>
         <div id="\${id}-locker"></div>
         <div class="seal seal-\${faction}"></div>
     </div>
