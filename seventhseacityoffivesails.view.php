@@ -45,6 +45,6 @@ class view_seventhseacityoffivesails_seventhseacityoffivesails extends game_view
      */
   	public function build_page($viewArgs)
   	{
-        //
+        $this->tpl['DAY'] = $this->game->getGameStateValue("day");
   	}
 }

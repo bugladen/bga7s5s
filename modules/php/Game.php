@@ -22,6 +22,7 @@ require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
 class Game extends \Table
 {
+    private $cards;
     /**
      * Your global variables labels:
      *
@@ -37,10 +38,7 @@ class Game extends \Table
         parent::__construct();
 
         $this->initGameStateLabels([
-            "my_first_global_variable" => 10,
-            "my_second_global_variable" => 11,
-            "my_first_game_variant" => 100,
-            "my_second_game_variant" => 101,
+            "day" => 10,
         ]);
     }
 
@@ -252,8 +250,7 @@ class Game extends \Table
 
         // Init global values with their initial values.
 
-        // Dummy content.
-        $this->setGameStateInitialValue("my_first_global_variable", 0);
+        $this->setGameStateInitialValue("day", 1);
 
         // Init game statistics.
         //
