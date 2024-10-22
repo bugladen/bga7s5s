@@ -91,16 +91,19 @@ var jstpl_card_leader=`
         <div id="dock-image" class="city-image" style="--city-image:url(img/cards/7s5s/003.jpg)"></div>
         <div id="dock-endcap" class="city-endcap"></div>
     </div>
+    <div></div>
     <div id="city-forum">
         <div id="forum-reknown" class="city-reknown">0</div>
         <div id="forum-image" class="city-image" style="--city-image:url(img/cards/7s5s/001.jpg)"></div>
         <div id="forum-endcap" class="city-endcap"></div>
     </div>
+    <div></div>
     <div id="city-bazaar">
         <div id="bazaar-reknown" class="city-reknown">0</div>
         <div id="bazaar-image" class="city-image" style="--city-image:url(img/cards/7s5s/002.jpg)"></div>
         <div id="bazaar-endcap" class="city-endcap"></div>
     </div>
+    <div></div>
     <div id="city-governors-garden">
         <div id="governors-garden-reknown" class="city-reknown">0</div>
         <div id="governors-garden-image" class="city-image" style="--city-image:url(img/cards/7s5s/005.jpg)"></div>

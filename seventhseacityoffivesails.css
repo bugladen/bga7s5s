@@ -112,29 +112,39 @@ body {
 }
 
 #city-oles-inn {
+    position: relative;
+    display: inline-flex;
     border-radius: 10px;
     background-color: #2B2C23;
     margin-bottom: 5px;
 }
 
 #city-docks {
+    position: relative;
+    display: inline-flex;
     border-radius: 10px;
     background-color: #7C9A87;
     margin-bottom: 5px;
 }
 
 #city-forum {
+    position: relative;
+    display: inline-flex;
     border-radius: 10px;
     background-color: #DA985E;
 }
 
 #city-bazaar {
+    position: relative;
+    display: inline-flex;
     border-radius: 10px;
     background-color: #596676;
     margin-top: 5px;
 }
 
 #city-governors-garden {
+    position: relative;
+    display: inline-flex;
     border-radius: 10px;
     background-color: #859370;
     margin-top: 5px;
