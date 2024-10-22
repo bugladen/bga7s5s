@@ -86,6 +86,7 @@ var jstpl_card_leader=`
         <div id="oles-inn-image" class="city-image"style="--city-image:url(img/cards/7s5s/004.jpg)"></div>
         <div id="oles-inn-endcap" class="city-endcap"></div>
     </div>
+    <div></div>
     <div id="city-docks">
         <div id="dock-reknown" class="city-reknown">0</div>
         <div id="dock-image" class="city-image" style="--city-image:url(img/cards/7s5s/003.jpg)"></div>
