@@ -160,9 +160,9 @@ body {
     display: inline-block;
     vertical-align: middle;
     text-align:center;
-    line-height: 39px;
     margin-left: 5px;
-    margin-right: 2px;
+    margin-right: 5px;
+    margin-top:35px;
     font-family: "Pirata One", system-ui;
     font-size:24pt;
 }
@@ -189,6 +189,8 @@ body {
     background-size: calc(var(--png-board-resource-width) * .75) calc(var(--png-board-resource-height) * .75);
     height: 51px;
     width: 51px;
+
+    margin-top: 30px;
 }
 
 #forum-endcap {
@@ -196,7 +198,12 @@ body {
     background-position: -50px 0px;
     background-size: calc(var(--png-board-resource-width) * .5) calc(var(--png-board-resource-height) * .5);
     height: 42px;
-    width: 42px;
+    margin-top: 33px;
+
+    /* must equal with of widest endcap image */
+    width: 44px;
+    margin-left:3px;
+    margin-right: 4px;
 }
 
 #bazaar-endcap {
@@ -205,6 +212,7 @@ body {
     background-size: calc(var(--png-board-resource-width) * .75) calc(var(--png-board-resource-height) * .75);
     height: 51px;
     width: 51px;
+    margin-top: 30px;
 }
 
 .home-castille { background-color: #E58712; }
