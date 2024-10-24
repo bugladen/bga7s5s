@@ -1,6 +1,7 @@
 <?php
 
-require_once("../Leader.php");
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\core;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 
 class SolineElGate extends Leader
 {

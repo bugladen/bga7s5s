@@ -1,5 +1,7 @@
 <?php
 
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
+
 abstract class FactionDeckCard extends Card
 {
     public int $WealthCost;

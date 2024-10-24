@@ -2,11 +2,14 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-class Risk extends FactionDeckCard
+abstract class CityDeckCard extends Card
 {
+    public int $CityCardNumber;
+
     public function __construct()
     {
         parent::__construct();
 
+        $this->CityCardNumber = 0;
     }
 }

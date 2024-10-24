@@ -1,15 +1,17 @@
 <?php
 
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
+
 abstract class Scheme extends Card
 {
-    public int $Initiative;
-    public int $Panache;
+    public int $InitiativeModifier;
+    public int $PanacheModifier;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->Initiative = 0;
-        $this->Panache = 0;
+        $this->InitiativeModifier = 0;
+        $this->PanacheModifier = 0;
     }
 }

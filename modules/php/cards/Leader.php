@@ -1,6 +1,9 @@
 <?php
 
-abstract class Leader extends Character{
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
+
+abstract class Leader extends Character
+{
 
     public int $CrewCap;
     public int $Panache;
