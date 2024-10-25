@@ -58,9 +58,9 @@ function (dojo, declare) {
             }            
             
             // Setting up player boards
-            for( var player_id in gamedatas.players )
+            for( const player_id in gamedatas.players )
             {
-                var player = gamedatas.players[player_id];
+                const player = gamedatas.players[player_id];
                 console.log('player', player);
                         
                 // Home
@@ -69,6 +69,7 @@ function (dojo, declare) {
                     faction: 'castille',
                     crewcap: 6,
                     panache: 3,
+                    player_color: player.color,
                 }), 'home_anchor', "before" );
 
                 var homeId = 'home-' + player_id;
@@ -78,8 +79,16 @@ function (dojo, declare) {
                 dojo.place( this.format_block( 'jstpl_card_leader', {
                     id: "test-leader",
                     faction: "castille",
-                    image: 'img/cards/7s5s/089.jpg'
+                    image: 'img/cards/7s5s/089.jpg',
+                    player_color: player.color,
                 }), player_id + '-home-anchor', "before" );
+
+
+                // dojo.place( this.format_block( 'jstpl_card_leader', {
+                //     id: "test-leader",
+                //     faction: "castille",
+                //     image: 'img/cards/7s5s/089.jpg'
+                // }), 'forum-endcap', "before" );
             }
             
             // TODO: Set up your game interface here, according to "gamedatas"

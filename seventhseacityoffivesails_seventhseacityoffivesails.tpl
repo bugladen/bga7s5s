@@ -41,6 +41,7 @@ var jstpl_home=`
         <div class="home-locker"></div>
         <div></div>
         <div class="seal seal-\${faction}"></div>
+        <div class="home-player-color" style="--player-color:#\${player_color}"></div>
     </div>
     <div id="\${id}-home-anchor" class="home-endcap"></div>
 </div>
@@ -62,6 +63,7 @@ var jstpl_card_leader=`
         <div class="character-influence-value">9</div>
         <div class="character-influence-image"></div>
     </div>
+    <div class="character-player-color" style="--player-color:#\${player_color}"></div>
 </div>
 `;
 

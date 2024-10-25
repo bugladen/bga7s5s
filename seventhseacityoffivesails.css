@@ -241,6 +241,17 @@ body {
     margin: 5px;
 }
 
+.home-player-color {
+    position: relative;
+    display: inline-block;
+    background-color: var(--player-color);
+    border-radius: 50%;
+    height: 10px;
+    width: 10px;
+    top: 3px;
+    border: 2px solid black;
+}
+
 .crew-cap {
     background-image: url('img/boardResources.png');
     background-position: -317px 0px;
@@ -415,4 +426,16 @@ body {
     font-size: 14pt;
     vertical-align: top;
     margin-left: 5px;
+}
+
+.character-player-color {
+    position: relative;
+    display: inline-block;
+    background-color: var(--player-color);
+    border-radius: 50%;
+    height: 12px;
+    width: 12px;
+    left: 90px;
+    top: 90px;
+    border: 2px solid black;
 }
