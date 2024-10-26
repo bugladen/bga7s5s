@@ -81,6 +81,7 @@ function (dojo, declare) {
                     faction: "castille",
                     image: 'img/cards/7s5s/089.jpg',
                     player_color: player.color,
+                    wounds: 0,
                 }), player_id + '-home-anchor', "before" );
 
 

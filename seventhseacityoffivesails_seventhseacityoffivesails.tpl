@@ -51,7 +51,8 @@ var jstpl_home=`
 var jstpl_card_leader=`
 <div id="\${id}">
 <div class="card card-leader home-\${faction}" style="--card_image:url('\${image}')">
-    <div class="character-resolve">7</div>
+    <div class="character-resolve">8</div>
+    <div id="\${id}-wounds" class="character-wounds">\${wounds}</div>
     <div class="character-stat character-combat">
         <div class="character-combat-value">9</div>
         <div class="character-combat-image"></div>
