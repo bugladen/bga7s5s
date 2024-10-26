@@ -16,7 +16,7 @@
 /* Note: you must not use any @import directive */
 
 :root {
-    --jpg-board-resource-width: 78px;
+    --jpg-board-resource-width: 134px;
     --jpg-board-resource-height: 78px;
     --png-board-resource-width: 805px;
     --png-board-resource-height: 257px;
@@ -301,6 +301,18 @@ body {
     font-family: "Pirata One", system-ui;
     line-height: 25px;
     color:white;
+}
+
+.first-player {
+    position: relative;
+    background-image: url('img/boardResources.jpg');
+    background-size: calc(var(--jpg-board-resource-width) * .75) calc(var(--jpg-board-resource-height) * .75);
+    background-position: -58px 0px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    top: 70px;
+    left: 5px
 }
 
 .seal {

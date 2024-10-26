@@ -40,6 +40,7 @@ var jstpl_home=`
         <div class="panache">\${panache}</div>
         <div class="home-locker"></div>
         <div></div>
+        <div id="\${id}first-player"></div>
         <div class="seal seal-\${faction}"></div>
         <div class="home-player-color" style="--player-color:#\${player_color}"></div>
     </div>

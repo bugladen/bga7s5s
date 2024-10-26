@@ -1,0 +1,1 @@
+magick reknown.jpg compass.jpg +append boardResources.jpg
