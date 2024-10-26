@@ -63,7 +63,7 @@ var jstpl_card_leader=`
         <div class="character-influence-value">9</div>
         <div class="character-influence-image"></div>
     </div>
-    <div class="character-player-color" style="--player-color:#\${player_color}"></div>
+    <div id="\${id}-character-player-color" style="--player-color:#\${player_color}"></div>
 </div>
 `;
 
