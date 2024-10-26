@@ -16,7 +16,7 @@
  */
 
 define([
-    "dojo","dojo/_base/declare",
+    "dojo","dojo/_base/declare", "dojo/dom-class",
     "ebg/core/gamegui",
     "ebg/counter"
 ],
@@ -75,21 +75,8 @@ function (dojo, declare) {
                 var homeId = 'home-' + player_id;
                 var player_board = $(homeId);
 
-                // Leader
-                dojo.place( this.format_block( 'jstpl_card_leader', {
-                    id: "test-leader",
-                    faction: "castille",
-                    image: 'img/cards/7s5s/089.jpg',
-                    player_color: player.color,
-                    wounds: 0,
-                }), player_id + '-home-anchor', "before" );
-
-
-                // dojo.place( this.format_block( 'jstpl_card_leader', {
-                //     id: "test-leader",
-                //     faction: "castille",
-                //     image: 'img/cards/7s5s/089.jpg'
-                // }), 'forum-endcap', "before" );
+                // // Leader
+                this.createCard(player, player_id + '-home-anchor', null);
             }
             
             // TODO: Set up your game interface here, according to "gamedatas"
@@ -185,13 +172,20 @@ function (dojo, declare) {
         ///////////////////////////////////////////////////
         //// Utility methods
         
-        /*
-        
-            Here, you can defines some utility methods that you can use everywhere in your javascript
-            script.
-        
-        */
+        createCard: function( player, location, card )
+        {
+            // Leader
+            dojo.place( this.format_block( 'jstpl_card_leader', {
+                id: "test-leader",
+                faction: "castille",
+                image: 'img/cards/7s5s/089.jpg',
+                player_color: player.color,
+                wounds: 0,
+            }), location, "before" );
 
+            //No wounds at this time so hide the wounds class
+            dojo.removeClass('test-leader-wounds', 'character-wounds');
+        },  
 
         ///////////////////////////////////////////////////
         //// Player's action
