@@ -6,7 +6,8 @@ abstract class Card
 {
     public string $Name;
     public string $Image;
-    public string $Expansion;
+    public string $ExpansionName;
+    public int $ExpansionNumber;
     public int $CardNumber;
     public string $Faction;
     public $Traits = [];
@@ -15,7 +16,8 @@ abstract class Card
     {
         $this->Name = "";
         $this->Image = "";
-        $this->Expansion = "";
+        $this->ExpansionName = "";
+        $this->ExpansionNumber = 0;
         $this->CardNumber = 0;
         $this->Faction = "";
     }

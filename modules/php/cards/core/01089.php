@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\core;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 
-class SolineElGate extends Leader
+class _01089 extends Leader
 {
     public function __construct()
     {
@@ -11,11 +11,12 @@ class SolineElGate extends Leader
 
         $this->Name = "Soline El Gato";
         $this->Image = "img/cards/core/089.jpg";
-        $this->Expansion = "Core";
+        $this->ExpansionName = "Core";
+        $this->ExpansionNumber = 1;
         $this->CardNumber = 89;
 
         $this->Faction = "Castillo";
-        $this->Titles[] = "Prince of Theives";
+        $this->Title = "Prince of Thieves";
         $this->Resolve = 7;
         $this->Combat = 3;
         $this->Finesse = 2;
