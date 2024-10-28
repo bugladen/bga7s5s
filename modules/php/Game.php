@@ -17,7 +17,7 @@
 declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
-
+ 
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
 class Game extends \Table
@@ -39,9 +39,13 @@ class Game extends \Table
 
         $this->initGameStateLabels([
             "day" => 10,
+            "nextCardId" => 11,
         ]);
-    }
 
+        $this->cards = $this->getNew( "module.common.deck" );
+        $this->cards->init( "card" );    
+    }
+       
     /**
      * Player action, example content.
      *
@@ -56,26 +60,26 @@ class Game extends \Table
         $player_id = (int)$this->getActivePlayerId();
 
         // check input values
-        $args = $this->argPlayerTurn();
-        $playableCardsIds = $args['playableCardsIds'];
-        if (!in_array($card_id, $playableCardsIds)) {
-            throw new \BgaUserException('Invalid card choice');
-        }
+        // $args = $this->argPlayerTurn();
+        // $playableCardsIds = $args['playableCardsIds'];
+        // if (!in_array($card_id, $playableCardsIds)) {
+        //     throw new \BgaUserException('Invalid card choice');
+        // }
 
         // Add your game logic to play a card here.
-        $card_name = $this->card_types[$card_id]['card_name'];
+        // $card_name = $this->card_types[$card_id]['card_name'];
 
         // Notify all players about the card played.
-        $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
-            "player_id" => $player_id,
-            "player_name" => $this->getActivePlayerName(),
-            "card_name" => $card_name,
-            "card_id" => $card_id,
-            "i18n" => ['card_name'],
-        ]);
+        // $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
+        //     "player_id" => $player_id,
+        //     "player_name" => $this->getActivePlayerName(),
+        //     "card_name" => $card_name,
+        //     "card_id" => $card_id,
+        //     "i18n" => ['card_name'],
+        // ]);
 
         // at the end of the action, move to the next state
-        $this->gamestate->nextState("playCard");
+        // $this->gamestate->nextState("playCard");
     }
 
     public function actPass(): void
@@ -101,12 +105,18 @@ class Game extends \Table
      * @return array
      * @see ./states.inc.php
      */
-    public function argPlayerTurn(): array
+    public function argAvailableDecks(): array
     {
-        // Get some values from the current game situation from the database.
-
+        $return = [];
+        $starter_decks = json_decode($this->starter_decks);        
+        $decks = array_map(function($deck) { 
+            return [ 
+                "id" => $deck->id,
+                "name" => $deck->name
+            ]; 
+        }, $starter_decks->decks);
         return [
-            "playableCardsIds" => [1, 2],
+            "availableDecks" => $decks
         ];
     }
 
@@ -251,6 +261,15 @@ class Game extends \Table
         // Init global values with their initial values.
 
         $this->setGameStateInitialValue("day", 1);
+        $this->setGameStateInitialValue("nextCardId", 1);
+
+        //$converter = new JsonCardConverter();
+        //$leader = new _01089();
+        $set = "core";
+        $card = "01089";
+        $className = "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$card";
+        $leader = new $className();
+        $this->dump("************************ leader", $leader);
 
         // Init game statistics.
         //
@@ -305,5 +324,16 @@ class Game extends \Table
         }
 
         throw new \feException("Zombie mode not supported at this game state: \"{$state_name}\".");
+    }
+
+    protected function nextCardId(): int
+    {
+        $id = $this->getGameStateValue('nextCardId');
+        $this->setGameStateValue('nextCardId', $id + 1);
+        return $id;
+    }
+    
+    public function stMultiPlayerInit() {
+        $this->gamestate->setAllPlayersMultiactive();
     }
 }

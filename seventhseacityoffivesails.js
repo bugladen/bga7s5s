@@ -64,19 +64,10 @@ function (dojo, declare) {
                 console.log('player', player);
                         
                 // Home
-                dojo.place( this.format_block( 'jstpl_home', {
-                    id: player_id,
-                    faction: 'castille',
-                    crewcap: 6,
-                    panache: 3,
-                    player_color: player.color,
-                }), 'home_anchor', "before" );
+                // this.createHome(player, player.leader);
 
-                var homeId = 'home-' + player_id;
-                var player_board = $(homeId);
-
-                // // Leader
-                this.createCard(player, player_id + '-home-anchor', null);
+                // Leader
+                // this.createCard(player, player_id + '-home-anchor', null);
             }
             
             // TODO: Set up your game interface here, according to "gamedatas"
@@ -101,6 +92,9 @@ function (dojo, declare) {
             
             switch( stateName )
             {
+
+                case 'pickDecks':
+                    break;
             
             /* Example:
             
@@ -149,21 +143,16 @@ function (dojo, declare) {
         //        
         onUpdateActionButtons: function( stateName, args )
         {
-            console.log( 'onUpdateActionButtons: '+stateName, args );
+            console.log( 'onUpdateActionButtons: '+ stateName, args );
                       
             if( this.isCurrentPlayerActive() )
             {            
                 switch( stateName )
                 {
-                 case 'playerTurn':    
-                    const playableCardsIds = args.playableCardsIds; // returned by the argPlayerTurn
-
-                    // Add test action buttons in the action status bar, simulating a card click:
-                    playableCardsIds.forEach(
-                        cardId => this.addActionButton(`actPlayCard${cardId}-btn`, _('Play card with id ${card_id}').replace('${card_id}', cardId), () => this.onCardClick(cardId))
+                 case 'pickDecks':    
+                    args.availableDecks.forEach(
+                        (deck) => { this.addActionButton(`actPlayCard${deck.id}-btn`, _(deck.name), () => this.onCardClick(deck.id)) }
                     ); 
-
-                    this.addActionButton('actPass-btn', _('Pass'), () => this.bgaPerformAction("actPass"), null, null, 'gray'); 
                     break;
                 }
             }
@@ -171,6 +160,18 @@ function (dojo, declare) {
 
         ///////////////////////////////////////////////////
         //// Utility methods
+
+        createHome: function( player, leader )
+        {
+            // Home
+            dojo.place( this.format_block( 'jstpl_home', {
+                id: player.id,
+                faction: leader.faction,
+                crewcap: leader.crewcap,
+                panache: leader.panache,
+                player_color: player.color,
+            }), 'home_anchor', "before" );            
+        },
         
         createCard: function( player, location, card )
         {
