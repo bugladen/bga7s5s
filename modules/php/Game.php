@@ -39,7 +39,8 @@ class Game extends \Table
 
         $this->initGameStateLabels([
             "day" => 10,
-            "nextCardId" => 11,
+            "turnPhase" => 11,
+            "nextCardId" => 12,
         ]);
 
         $this->cards = $this->getNew( "module.common.deck" );
@@ -207,6 +208,8 @@ class Game extends \Table
             "SELECT player_id, player_score score FROM player"
         );
 
+        $result["phase"] = $this->getGameStateValue("turnPhase");
+
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
         return $result;
@@ -261,6 +264,7 @@ class Game extends \Table
         // Init global values with their initial values.
 
         $this->setGameStateInitialValue("day", 1);
+        $this->setGameStateInitialValue("turnPhase", 0);
         $this->setGameStateInitialValue("nextCardId", 1);
 
         //$converter = new JsonCardConverter();

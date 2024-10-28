@@ -46,6 +46,21 @@ body {
     margin: 20px;
 }
 
+#city-discard {
+    position: absolute;
+    left: 30px;
+    top: -15px;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * .50) calc(var(--png-board-resource-height) * .50);
+    background-color: saddlebrown;
+    background-position: -208px 0px;
+    width: 36px;
+    height: 24px;
+    border: 3px solid saddlebrown;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
 #day-indicator {
     position: absolute;
     left: 80px;
@@ -66,19 +81,21 @@ body {
     border-top-right-radius: 10px;
 }
 
-#city-discard {
+#city-day-phase {
     position: absolute;
     left: 130px;
     top: -15px;
-    background-image: url('img/boardResources.png');
-    background-size: calc(var(--png-board-resource-width) * .50) calc(var(--png-board-resource-height) * .50);
+    line-height: 25px;
+    font-family: "Pirata One", system-ui;
+    text-align: center;
+    color: white;
+    font-size: 18pt;
     background-color: saddlebrown;
-    background-position: -208px 0px;
-    width: 36px;
-    height: 24px;
     border: 3px solid saddlebrown;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
+    padding-left:5px;
+    padding-right: 5px;
 }
 
 #city-ul-tower {

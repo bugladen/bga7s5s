@@ -78,8 +78,10 @@ var jstpl_card_leader=`
             <rect width="30" height="30" class="city-tower" />
         </svg>
     </div>
-    <div id="day-indicator">{DAY}</div>
     <div id="city-discard"></div>
+    <div id="day-indicator">{DAY}</div>
+    <div id="city-day-phase">{TURN_PHASE}</div>
+
     <div id="city-ur-tower">
         <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
             <rect width="30" height="30" class="city-tower" />

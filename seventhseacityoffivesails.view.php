@@ -46,5 +46,15 @@ class view_seventhseacityoffivesails_seventhseacityoffivesails extends game_view
   	public function build_page($viewArgs)
   	{
         $this->tpl['DAY'] = $this->game->getGameStateValue("day");
+
+        switch ($this->game->getGameStateValue("turnPhase"))
+        {
+            case 0: $this->tpl['TURN_PHASE'] = ""; break;
+            case 1: $this->tpl['TURN_PHASE'] = $this->_("Dawn"); break;
+            case 2: $this->tpl['TURN_PHASE'] = $this->_("Planning"); break;
+            case 3: $this->tpl['TURN_PHASE'] = $this->_("High Drama"); break;
+            case 4: $this->tpl['TURN_PHASE'] = $this->_("Plunder"); break;
+            case 5: $this->tpl['TURN_PHASE'] = $this->_("Dusk"); break;
+        }
   	}
 }

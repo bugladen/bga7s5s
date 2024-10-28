@@ -47,6 +47,7 @@ function (dojo, declare) {
         setup: function( gamedatas )
         {
             console.log( "Starting game setup" );
+            console.log( "gamedatas", gamedatas );
 
             // Remove city sections that are not used
             const playerCount = Object.keys(gamedatas.players).length;
@@ -55,13 +56,17 @@ function (dojo, declare) {
             }
             if (playerCount < 3) {
                 dojo.destroy('city-oles-inn');
-            }            
+            }
+
+            //If the game phase is 0 we are in pre-game setup, hide the game phase indicator            
+            if (gamedatas.phase == 0) {
+                dojo.style('city-day-phase', 'display', 'none');
+            }
             
             // Setting up player boards
             for( const player_id in gamedatas.players )
             {
                 const player = gamedatas.players[player_id];
-                console.log('player', player);
                         
                 // Home
                 // this.createHome(player, player.leader);
@@ -151,7 +156,7 @@ function (dojo, declare) {
                 {
                  case 'pickDecks':    
                     args.availableDecks.forEach(
-                        (deck) => { this.addActionButton(`actPlayCard${deck.id}-btn`, _(deck.name), () => this.onCardClick(deck.id)) }
+                        (deck) => { this.addActionButton(`actPlayCard${deck.id}-btn`, _(deck.name), () => this.onDeckSelected(deck.id)) }
                     ); 
                     break;
                 }
@@ -204,6 +209,18 @@ function (dojo, declare) {
         
         // Example:
         
+        onDeckSelected: function( deck_id )
+        {
+            console.log( 'onDeckSelected', deck_id );
+
+            this.bgaPerformAction("actPickDeck", { 
+                deck_id,
+            }).then(() =>  {                
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });        
+        },    
+
         onCardClick: function( card_id )
         {
             console.log( 'onCardClick', card_id );
