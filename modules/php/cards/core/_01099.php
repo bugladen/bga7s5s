@@ -9,7 +9,7 @@ class _01099 extends Scheme
     public function __construct()
     {
         $this->Name = "Shifting Blame";
-        $this->Image = "img/cards/core/099.jpg";
+        $this->Image = "img/cards/7s5s/099.jpg";
         $this->ExpansionName = "Core";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 99;

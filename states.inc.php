@@ -75,31 +75,39 @@ $machinestates = [
             // these actions are called from the front with bgaPerformAction, and matched to the function on the game.php file
             "actPickDeck", 
         ],
-        "transitions" => ["pickDeck" => 3]
+        "transitions" => ["deckPicked" => 5]
     ],
 
-    // 2 => [
-    //     "name" => "playerTurn",
-    //     "description" => clienttranslate('${actplayer} must play a card or pass'),
-    //     "descriptionmyturn" => clienttranslate('${you} must play a card or pass'),
-    //     "type" => "activeplayer",
-    //     "args" => "argPlayerTurn",
-    //     "possibleactions" => [
-    //         // these actions are called from the front with bgaPerformAction, and matched to the function on the game.php file
-    //         "actPlayCard", 
-    //         "actPass",
-    //     ],
-    //     "transitions" => ["playCard" => 3, "pass" => 3]
-    // ],
+    5 => [
+        "name" => "buildTable",
+        "description" => "",
+        "type" => "game",
+        "action" => "stBuildTable",
+        "transitions" => ["" => 10]
+    ],
 
-    // 3 => [
-    //     "name" => "nextPlayer",
-    //     "description" => '',
-    //     "type" => "game",
-    //     "action" => "stNextPlayer",
-    //     "updateGameProgression" => true,
-    //     "transitions" => ["endGame" => 99, "nextPlayer" => 2]
-    // ],
+    10 => [
+        "name" => "playerTurn",
+        "description" => clienttranslate('${actplayer} must perform an action or pass'),
+        "descriptionmyturn" => clienttranslate('${you} must perform an action or pass'),
+        "type" => "activeplayer",
+        "args" => "argPlayerTurn",
+        "possibleactions" => [
+            // these actions are called from the front with bgaPerformAction, and matched to the function on the game.php file
+            "actPlayCard", 
+            "actPass",
+        ],
+        "transitions" => ["playCard" => 10, "pass" => 20]
+    ],
+
+    20 => [
+        "name" => "nextPlayer",
+        "description" => '',
+        "type" => "game",
+        "action" => "stNextPlayer",
+        "updateGameProgression" => true,
+        "transitions" => ["endGame" => 99, "nextPlayer" => 10]
+    ],
 
     // Final state.
     // Please do not modify (and do not overload action/args methods).

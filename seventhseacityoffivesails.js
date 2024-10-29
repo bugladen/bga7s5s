@@ -58,6 +58,12 @@ function (dojo, declare) {
                 dojo.destroy('city-oles-inn');
             }
 
+            // Set up the city tooltips
+            this.addTooltip( 'city-discard', _('City Discard Pile'), _('Click to view') );
+            this.addTooltip( 'day-indicator', _('Current Day'), '' );
+            this.addTooltip( 'city-day-phase', _('Current Phase of the Day'), '' );
+            this.addTooltipToClass('city-reknown', _('Current reknown on this city section'), '' );
+
             //If the game phase is 0 we are in pre-game setup, hide the game phase indicator            
             if (gamedatas.phase == 0) {
                 dojo.style('city-day-phase', 'display', 'none');
@@ -156,7 +162,7 @@ function (dojo, declare) {
                 {
                  case 'pickDecks':    
                     args.availableDecks.forEach(
-                        (deck) => { this.addActionButton(`actPlayCard${deck.id}-btn`, _(deck.name), () => this.onDeckSelected(deck.id)) }
+                        (deck) => { this.addActionButton(`actPickDeck${deck.id}-btn`, _(deck.name), () => this.onStarterDeckSelected(deck.id)) }
                     ); 
                     break;
                 }
@@ -166,31 +172,37 @@ function (dojo, declare) {
         ///////////////////////////////////////////////////
         //// Utility methods
 
-        createHome: function( player, leader )
+        createHome: function( playerId, playerColor, leader )
         {
             // Home
             dojo.place( this.format_block( 'jstpl_home', {
-                id: player.id,
-                faction: leader.faction,
-                crewcap: leader.crewcap,
-                panache: leader.panache,
-                player_color: player.color,
+                id: playerId,
+                faction: leader.faction.toLowerCase(),
+                crewcap: leader.modifiedCrewCap,
+                panache: leader.modifiedPanache,
+                player_color: playerColor,
             }), 'home_anchor', "before" );            
         },
         
-        createCard: function( player, location, card )
+        createCharacterCard: function( id, color, character, location )
         {
             // Leader
-            dojo.place( this.format_block( 'jstpl_card_leader', {
-                id: "test-leader",
-                faction: "castille",
-                image: 'img/cards/7s5s/089.jpg',
-                player_color: player.color,
-                wounds: 0,
+            dojo.place( this.format_block( 'jstpl_card_character', {
+                id: id,
+                faction: character.faction.toLowerCase(),
+                image: character.image,
+                // image: 'img/cards/7s5s/089.jpg',
+                player_color: color,
+                resolve: character.resolve,
+                combat: character.combat,
+                finesse: character.finesse,
+                influence: character.influence,
+                wounds: character.wounds,
             }), location, "before" );
 
-            //No wounds at this time so hide the wounds class
-            dojo.removeClass('test-leader-wounds', 'character-wounds');
+            if (character.wounds == 0) {
+                dojo.removeClass(`${id}-wounds`, 'character-wounds');
+            }
         },  
 
         ///////////////////////////////////////////////////
@@ -209,12 +221,13 @@ function (dojo, declare) {
         
         // Example:
         
-        onDeckSelected: function( deck_id )
+        onStarterDeckSelected: function( deck_id )
         {
             console.log( 'onDeckSelected', deck_id );
 
             this.bgaPerformAction("actPickDeck", { 
-                deck_id,
+                'deck_type':'starter',
+                'deck_id':deck_id,
             }).then(() =>  {                
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)
@@ -251,10 +264,15 @@ function (dojo, declare) {
             console.log( 'notifications subscriptions setup' );
             
             // TODO: here, associate your game notifications with local methods
-            
-            // Example 1: standard notification handling
-            dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-            
+            const notifs = [
+                ['playLeader', 3000],
+            ];
+    
+            notifs.forEach((notif) => {
+                dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
+                this.notifqueue.setSynchronous(notif[0], notif[1]);
+            });
+
             // Example 2: standard notification handling + tell the user interface to wait
             //            during 3 seconds after calling the method in order to let the players
             //            see what is happening in the game.
@@ -274,5 +292,26 @@ function (dojo, declare) {
             
             // TODO: play the card in the user interface.
         },    
-   });             
+
+        notif_playLeader: function( notif )
+        {
+            console.log( 'notif_playLeader' );
+            console.log( notif );
+
+            const args = notif.args;
+
+            this.createHome(
+                args.player_id, 
+                args.player_color, 
+                args.leader
+            );
+
+            this.createCharacterCard(
+                `${args.player_id}-leader`,
+                args.player_color, 
+                args.leader, 
+                `${args.player_id}-home-anchor`,
+            );
+        },
+    });      
 });

@@ -10,12 +10,12 @@ class _01089 extends Leader
         parent::__construct();
 
         $this->Name = "Soline El Gato";
-        $this->Image = "img/cards/core/089.jpg";
+        $this->Image = "img/cards/7s5s/089.jpg";
         $this->ExpansionName = "Core";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 89;
 
-        $this->Faction = "Castillo";
+        $this->Faction = "Castille";
         $this->Title = "Prince of Thieves";
         $this->Resolve = 7;
         $this->Combat = 3;
@@ -23,6 +23,14 @@ class _01089 extends Leader
         $this->Influence = 2;
         $this->CrewCap = 6;
         $this->Panache = 6;
+
+        $this->ModifiedResolve = $this->Resolve;
+        $this->ModifiedCombat = $this->Combat;
+        $this->ModifiedFinesse = $this->Finesse;
+        $this->ModifiedInfluence = $this->Influence;
+        
+        $this->ModifiedCrewCap = $this->CrewCap;
+        $this->ModifiedPanache = $this->Panache;
 
         $this->Traits = [
             "Leader",

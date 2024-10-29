@@ -17,12 +17,16 @@
 declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
- 
+
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
+
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
 class Game extends \Table
 {
     private $cards;
+
     /**
      * Your global variables labels:
      *
@@ -55,6 +59,17 @@ class Game extends \Table
      *
      * @throws BgaUserException
      */
+
+    public function actPickDeck(string $deck_type, string $deck_id): void
+    {
+        $playerId = $this->getCurrentPlayerId();
+
+        $sql = "UPDATE player SET deck_source = '$deck_type', deck_id = '$deck_id'  WHERE player_id='$playerId'";
+        $this->DbQuery($sql);
+
+        $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked'); // deactivate player; if none left, transition to 'deckPicked' state
+    }
+
     public function actPlayCard(int $card_id): void
     {
         // Retrieve the active player ID.
@@ -116,8 +131,19 @@ class Game extends \Table
                 "name" => $deck->name
             ]; 
         }, $starter_decks->decks);
+
+        return ["availableDecks" => $decks];
+    }
+
+    public function argPlayerTurn(): array
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        // $cards = $this->cards->getCardsInLocation('hand', $player_id);
+        // $playableCardsIds = array_map(function($card) { return $card['id']; }, $cards);
+        $playableCardsIds = [];
+
         return [
-            "availableDecks" => $decks
+            "playableCardsIds" => $playableCardsIds,
         ];
     }
 
@@ -136,25 +162,6 @@ class Game extends \Table
         // TODO: compute and return the game progression
 
         return 0;
-    }
-
-    /**
-     * Game state action, example content.
-     *
-     * The action method of state `nextPlayer` is called everytime the current game state is set to `nextPlayer`.
-     */
-    public function stNextPlayer(): void {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        // Give some extra time to the active player when he completed an action
-        $this->giveExtraTime($player_id);
-        
-        $this->activeNextPlayer();
-
-        // Go to another gamestate
-        // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
-        $this->gamestate->nextState("nextPlayer");
     }
 
     /**
@@ -268,12 +275,6 @@ class Game extends \Table
         $this->setGameStateInitialValue("nextCardId", 1);
 
         //$converter = new JsonCardConverter();
-        //$leader = new _01089();
-        $set = "core";
-        $card = "01089";
-        $className = "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$card";
-        $leader = new $className();
-        $this->dump("************************ leader", $leader);
 
         // Init game statistics.
         //
@@ -337,7 +338,121 @@ class Game extends \Table
         return $id;
     }
     
+    public function stBuildTable() {
+
+        //Load the city deck JSON
+        $city_decks = json_decode($this->city_decks);
+        //Pull the deck with id of 7s5s
+        $city = current(array_filter($city_decks->decks, 
+            function($deck) {
+                return $deck->id === '7s5s';
+            }
+        ));
+        $cards = [];
+        foreach ($city->cards as $card) {
+            $cards[] = ['type' => $card, 'type_arg' => 0, 'nbr' => 1];
+        }
+        $this->cards->createCards($cards, 'city deck');
+
+        // Load the selected decks
+        $starter_decks = json_decode($this->starter_decks);
+        $players = $this->loadPlayersBasicInfos();
+        foreach ( $players as $playerId => $player ) {
+
+            // Get the source and deck_id of the deck from the DB for the  player
+            $result = $this->getObjectFromDB("SELECT deck_source, deck_id FROM player WHERE player_id = '$playerId'");
+            $source = $result['deck_source'];
+            $deck_id = $result['deck_id'];
+
+            if ($source === 'starter') {
+                $deck = current(array_filter($starter_decks->decks, 
+                    function($deck) use ($deck_id) {
+                        return $deck->id === $deck_id;
+                    }
+                ));
+            }
+            
+            //Now that we have a deck, add the cards in the deck to the db
+
+            // Leader
+            $cards = [];
+            $cards[] = ['type' => $deck->leader, 'type_arg' => $playerId, 'nbr' => 1];
+            $this->cards->createCards($cards, 'leader', $playerId);
+
+            //Instantiate the leader card
+            $card = $this->instantiateCard($deck->leader);
+            if ($card instanceof Leader) {
+                $leader = $card;
+            }
+
+            //Notify players about the leader
+            $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} plays ${leader_name} as their leader.'), [
+                "player_id" => $playerId,
+                "player_color" => $player['player_color'],
+                "player_name" => $player['player_name'],
+                "leader_name" => "<span style='font-weight:bold'>{$leader->Name}</span>",
+                "leader" => $leader->getPropertyArray(),
+            ]);
+
+            // Create player's Approach deck
+            $approachDeck = $deck->approach_deck;
+            $cards = [];
+            foreach ($approachDeck as $card) {
+                $cards[] = ['type' => $card, 'type_arg' => $playerId, 'nbr' => 1];
+            }
+            $this->cards->createCards($cards, 'approach', $playerId);
+
+            // Create player's Faction deck
+            $factionDeck = $deck->faction_deck;
+            $cards = [];
+            foreach ($factionDeck as $card) {
+                $cards[] = ['type' => $card->id, 'type_arg' => $playerId, 'nbr' => $card->count];
+            }
+            $this->cards->createCards($cards, 'faction', $playerId);
+        }
+
+        $this->gamestate->nextState("");
+    }
+
     public function stMultiPlayerInit() {
         $this->gamestate->setAllPlayersMultiactive();
+    }
+
+    /**
+     * Game state action, example content.
+     *
+     * The action method of state `nextPlayer` is called everytime the current game state is set to `nextPlayer`.
+     */
+    public function stNextPlayer(): void {
+        // Retrieve the active player ID.
+        $player_id = (int)$this->getActivePlayerId();
+
+        // Give some extra time to the active player when he completed an action
+        $this->giveExtraTime($player_id);
+        
+        $this->activeNextPlayer();
+
+        // Go to another gamestate
+        // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
+        $this->gamestate->nextState("nextPlayer");
+    }
+
+    protected function instantiateCard($cardId) : Card {
+
+        //Pull the first to characters of the card id to get the set
+        $set = substr($cardId, 0, 2);
+
+        switch ($set) {
+            case '01':
+                $set = "core";
+                break;
+            default:
+                $set = "core";
+        }
+
+        $className = "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$cardId";
+        $card = new $className();
+
+        return $card;
     }
 }

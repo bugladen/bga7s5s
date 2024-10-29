@@ -352,7 +352,7 @@ body {
     margin-right:5px;
 }
 
-.card-leader {
+.card-character {
     background-image: var(--card_image);
     background-size: 205px 280px;
     background-position: -52px -36px;

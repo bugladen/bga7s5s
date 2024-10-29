@@ -9,7 +9,7 @@ class _01148 extends Scheme
     public function __construct()
     {
         $this->Name = "Marooned";
-        $this->Image = "img/cards/core/148.jpg";
+        $this->Image = "img/cards/7s5s/148.jpg";
         $this->ExpansionName = "Core";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 148;

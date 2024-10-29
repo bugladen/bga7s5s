@@ -48,21 +48,21 @@ var jstpl_home=`
 </div>
 `;
 
-var jstpl_card_leader=`
+var jstpl_card_character=`
 <div id="\${id}">
-<div class="card card-leader home-\${faction}" style="--card_image:url('\${image}')">
-    <div class="character-resolve">8</div>
+<div class="card card-character home-\${faction}" style="--card_image:url('\${image}')">
+    <div class="character-resolve">\${resolve}</div>
     <div id="\${id}-wounds" class="character-wounds">\${wounds}</div>
     <div class="character-stat character-combat">
-        <div class="character-combat-value">9</div>
+        <div class="character-combat-value">\${combat}</div>
         <div class="character-combat-image"></div>
     </div>
     <div class="character-stat character-finesse">
-        <div class="character-finesse-value">9</div>
+        <div class="character-finesse-value">\${finesse}</div>
         <div class="character-finesse-image"></div>
     </div>
     <div class="character-stat character-influence">
-        <div class="character-influence-value">9</div>
+        <div class="character-influence-value">\${influence}</div>
         <div class="character-influence-image"></div>
     </div>
     <div id="\${id}-character-player-color" style="--player-color:#\${player_color}"></div>

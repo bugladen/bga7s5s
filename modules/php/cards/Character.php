@@ -29,4 +29,24 @@ abstract class Character extends Card
         $this->Influence = 0;
         $this->ModifiedInfluence = 0;
     }
+
+    public function getPropertyArray(): array
+    {
+        $properties = parent::getPropertyArray();
+
+        //Add character specific properties
+        $properties['title'] = $this->Title;
+        $properties['resolve'] = $this->Resolve;
+        $properties['modifiedResolve'] = $this->ModifiedResolve;
+        $properties['wounds'] = $this->Wounds;
+        $properties['combat'] = $this->Combat;
+        $properties['modifiedCombat'] = $this->ModifiedCombat;
+        $properties['finesse'] = $this->Finesse;
+        $properties['modifiedFinesse'] = $this->ModifiedFinesse;
+        $properties['influence'] = $this->Influence;
+        $properties['modifiedInfluence'] = $this->ModifiedInfluence;
+
+        return $properties;
+    }
+
 }

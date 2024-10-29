@@ -23,4 +23,15 @@ abstract class Card
         $this->CardNumber = 0;
         $this->Faction = "";
     }
+
+    public function getPropertyArray()
+    {
+        $properties = [
+            'name' => $this->Name,
+            'image' => $this->Image,
+            'faction' => $this->Faction,
+        ];
+
+        return $properties;
+    }
 }

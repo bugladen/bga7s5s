@@ -9,7 +9,7 @@ class _01091 extends Character
     public function __construct()
     {
         $this->Name = "'Madre' Dolores";
-        $this->Image = "img/cards/core/091.jpg";
+        $this->Image = "img/cards/7s5s/091.jpg";
         $this->ExpansionName = "Core";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 91;
@@ -18,8 +18,13 @@ class _01091 extends Character
         $this->Title = "Cat Lady of Castille";
         $this->Resolve = 4;
         $this->Combat = 1;
-        $this->Finesse = 2;        
+        $this->Finesse = 2;       
         $this->Influence = 3;
+
+        $this->ModifiedResolve = $this->Resolve;
+        $this->ModifiedCombat = $this->Combat;
+        $this->ModifiedFinesse = $this->Finesse;
+        $this->ModifiedInfluence = $this->Influence;
 
         $this->Traits = [
             "Academic",
