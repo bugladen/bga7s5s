@@ -1,6 +1,7 @@
 <?php
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
+
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 
 class _01089 extends Leader
@@ -11,7 +12,7 @@ class _01089 extends Leader
 
         $this->Name = "Soline El Gato";
         $this->Image = "img/cards/7s5s/089.jpg";
-        $this->ExpansionName = "_7s5s";
+        $this->ExpansionName = "_7";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 89;
 

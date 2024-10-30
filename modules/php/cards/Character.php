@@ -48,5 +48,4 @@ abstract class Character extends Card
 
         return $properties;
     }
-
 }
