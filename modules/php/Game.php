@@ -44,7 +44,6 @@ class Game extends \Table
         $this->initGameStateLabels([
             "day" => 10,
             "turnPhase" => 11,
-            "nextCardId" => 12,
         ]);
 
         $this->cards = $this->getNew( "module.common.deck" );
@@ -272,7 +271,6 @@ class Game extends \Table
 
         $this->setGameStateInitialValue("day", 1);
         $this->setGameStateInitialValue("turnPhase", 0);
-        $this->setGameStateInitialValue("nextCardId", 1);
 
         //$converter = new JsonCardConverter();
 
@@ -331,18 +329,14 @@ class Game extends \Table
         throw new \feException("Zombie mode not supported at this game state: \"{$state_name}\".");
     }
 
-    protected function nextCardId(): int
-    {
-        $id = $this->getGameStateValue('nextCardId');
-        $this->setGameStateValue('nextCardId', $id + 1);
-        return $id;
-    }
-    
     public function stBuildTable() {
 
-        //Load the city deck JSON
+        // *** Create the city deck ***
+
+        // Load the city deck JSON
         $city_decks = json_decode($this->city_decks);
-        //Pull the deck with id of 7s5s
+        // Pull the deck with id of 7s5s
+        // TODO: Deck loaded should be based on option
         $city = current(array_filter($city_decks->decks, 
             function($deck) {
                 return $deck->id === '7s5s';
@@ -354,7 +348,7 @@ class Game extends \Table
         }
         $this->cards->createCards($cards, 'city deck');
 
-        // Load the selected decks
+        // Load the decks selected by the players
         $starter_decks = json_decode($this->starter_decks);
         $players = $this->loadPlayersBasicInfos();
         foreach ( $players as $playerId => $player ) {
@@ -375,26 +369,32 @@ class Game extends \Table
             //Now that we have a deck, add the cards in the deck to the db
 
             // Leader
-            $cards = [];
-            $cards[] = ['type' => $deck->leader, 'type_arg' => $playerId, 'nbr' => 1];
-            $this->cards->createCards($cards, 'leader', $playerId);
+            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$deck->leader}', $playerId, 'leader', $playerId)";
+            $this->DbQuery($sql);
+            $id = $this->DbGetLastId();
 
-            //Instantiate the leader card
+            //Instantiate the leader card and assign it the id from the db
             $card = $this->instantiateCard($deck->leader);
             if ($card instanceof Leader) {
                 $leader = $card;
             }
+            $leader->Id = $id;
+
+            $serialized = serialize($leader);
+            $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $id";
+            $this->DbQuery($sql);
 
             //Notify players about the leader
-            $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} plays ${leader_name} as their leader.'), [
+            $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} will play ${player_faction} and ${leader_name} as their leader.'), [
+                "player_name" => $player['player_name'],
+                "player_faction" => "<span style='font-weight:bold'>{$leader->Faction}</span>",
+                "leader_name" => "<span style='font-weight:bold'>{$leader->Name}</span>",
                 "player_id" => $playerId,
                 "player_color" => $player['player_color'],
-                "player_name" => $player['player_name'],
-                "leader_name" => "<span style='font-weight:bold'>{$leader->Name}</span>",
                 "leader" => $leader->getPropertyArray(),
             ]);
 
-            // Create player's Approach deck
+            // *** Create the approach deck ***
             $approachDeck = $deck->approach_deck;
             $cards = [];
             foreach ($approachDeck as $card) {

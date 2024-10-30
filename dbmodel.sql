@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `card` (
   `card_type_arg` int(11) NOT NULL,
   `card_location` varchar(16) NOT NULL,
   `card_location_arg` int(11) NOT NULL,
-  `card_json` text NULL,
+  `card_serialized` text NULL,
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
