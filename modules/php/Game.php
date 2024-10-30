@@ -463,11 +463,25 @@ class Game extends \Table
         $this->setGameStateValue("turnPhase", $turnPhase);
 
         //Notify players that it is morning
-        $this->notifyAllPlayers("dawn", clienttranslate('It is dawn, the start of Day #${day} in the city of Theah.'), [
+        $this->notifyAllPlayers("dawn", clienttranslate('It is <span style="font-weight:bold">DAWN</span>, the start of Day #${day} in the city of Theah.'), [
             "day" => $day,
         ]);
 
+        //TODO: Clean any unclaimed city cards from the previous day
+
         $this->gamestate->nextState("");
+    }
+
+    public function stPlanningPhase() {
+        //Set the phase to planning
+        $turnPhase = Self::PLANNING;
+        $this->setGameStateValue("turnPhase", $turnPhase);
+
+        //Notify players that it is planning phase
+        $this->notifyAllPlayers("planningPhase", clienttranslate('<span style="font-weight:bold">PLANNING PHASE</span>.'), [
+        ]);
+        
+        $this->gamestate->setAllPlayersMultiactive();
     }
 
     public function stMultiPlayerInit() {

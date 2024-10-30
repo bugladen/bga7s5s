@@ -112,9 +112,9 @@ $machinestates = [
         "descriptionmyturn" => clienttranslate('${you} must choose a Schema and Character to muster for the day.'),
         "type" => "multipleactiveplayer",
         "args" => "argPlanningPhase",
-        "action" => "stMultiPlayerInit",
+        "action" => "stPlanningPhase",
         "possibleactions" => [
-            "actPlan", 
+            "actPlanDay", 
         ],
         "transitions" => ["dayPlanned" => STATE_HIGH_DRAMA_PHASE]
     ],

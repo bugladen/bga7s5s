@@ -282,20 +282,15 @@ function (dojo, declare) {
             // TODO: here, associate your game notifications with local methods
             const notifs = [
                 ['playLeader', 2500],
-                ['dawn', 1500],
+                ['dawn', 1000],
+                ['playCityCard', 1500],
+                ['planningPhase', 100],
             ];
     
             notifs.forEach((notif) => {
                 dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
                 this.notifqueue.setSynchronous(notif[0], notif[1]);
             });
-
-            // Example 2: standard notification handling + tell the user interface to wait
-            //            during 3 seconds after calling the method in order to let the players
-            //            see what is happening in the game.
-            // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-            // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
-            // 
         },  
         
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -345,6 +340,21 @@ function (dojo, declare) {
 
             $('city-day-phase').innerHTML = 'Dawn';
             dojo.style('city-day-phase', 'display', 'block');
-        }
+        },
+
+        notif_playCityCard: function( notif )
+        {
+            console.log( 'notif_playCityCard' );
+            console.log( notif );
+        },
+
+        notif_planningPhase: function( notif )
+        {
+            console.log( 'notif_planningPhase' );
+            console.log( notif );
+
+            const args = notif.args;
+            $('city-day-phase').innerHTML = 'Planning';
+        },
     });      
 });
