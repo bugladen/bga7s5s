@@ -25,6 +25,15 @@ require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
 class Game extends \Table
 {
+    // Phases of the day
+    const SETUP_PHASE = 0;
+    const DAWN = 1;
+    const PLANNING = 2;
+    const HIGH_DRAMA = 3;
+    const PLUNDER = 4;
+    const DUSK = 5;
+
+
     private $cards;
 
     /**
@@ -134,6 +143,11 @@ class Game extends \Table
         return ["availableDecks" => $decks];
     }
 
+    public function argPlanningPhase(): array
+    {
+        return [];
+    }
+
     public function argPlayerTurn(): array
     {
         $player_id = (int)$this->getActivePlayerId();
@@ -206,15 +220,27 @@ class Game extends \Table
         $result = [];
 
         // WARNING: We must only return information visible by the current player.
-        $current_player_id = (int) $this->getCurrentPlayerId();
+        $current_player_id = $this->getActivePlayerId();
 
-        // Get information about players.
-        // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
-        $result["players"] = $this->getCollectionFromDb(
-            "SELECT player_id, player_score score FROM player"
-        );
+        $players = $this->getCollectionFromDb("
+            SELECT player_id, player_score score, leader_card_id, c.card_serialized 
+            FROM player p
+            INNER JOIN card c on c.card_id = p.leader_card_id;
+            ");
+        
+        //We need to unserialize the leader card for each player to send the property data
+        foreach ($players as $player_id => $player) {
+            $card = unserialize($player['card_serialized']);
+            $player['leader'] = $card->getPropertyArray();
+            unset($player['card_serialized']);
 
-        $result["phase"] = $this->getGameStateValue("turnPhase");
+            //Set updated player data back into the array
+            $players[$player_id] = $player;
+        }
+
+        $result["players"] = $players;
+        $result["day"] = $this->getGameStateValue("day");
+        $result["turnPhase"] = (int) $this->getGameStateValue("turnPhase");
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
 
@@ -269,8 +295,8 @@ class Game extends \Table
 
         // Init global values with their initial values.
 
-        $this->setGameStateInitialValue("day", 1);
-        $this->setGameStateInitialValue("turnPhase", 0);
+        $this->setGameStateInitialValue("day", 0);
+        $this->setGameStateInitialValue("turnPhase", Self::SETUP_PHASE);
 
         //$converter = new JsonCardConverter();
 
@@ -335,18 +361,27 @@ class Game extends \Table
 
         // Load the city deck JSON
         $city_decks = json_decode($this->city_decks);
-        // Pull the deck with id of 7s5s
-        // TODO: Deck loaded should be based on option
+
+        // TODO: City deck loaded should be based on option
+        // Pull the city deck with id of '7s5s'
         $city = current(array_filter($city_decks->decks, 
             function($deck) {
                 return $deck->id === '7s5s';
             }
         ));
-        $cards = [];
+        // Inject into card db
         foreach ($city->cards as $card) {
-            $cards[] = ['type' => $card, 'type_arg' => 0, 'nbr' => 1];
+            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$card}', 0, 'city deck', 0)";
+            $this->DbQuery($sql);
+
+            //Store the card Id in the object, and serialize the card object to the db
+            $id = $this->DbGetLastId();
+            $card = $this->instantiateCard($card);
+            $card->Id = $id;
+            $serialized =  addslashes(serialize($card));
+            $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $id";
+            $this->DbQuery($sql);
         }
-        $this->cards->createCards($cards, 'city deck');
 
         // Load the decks selected by the players
         $starter_decks = json_decode($this->starter_decks);
@@ -380,8 +415,12 @@ class Game extends \Table
             }
             $leader->Id = $id;
 
-            $serialized = serialize($leader);
+            $serialized =  addslashes(serialize($card));
             $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $id";
+            $this->DbQuery($sql);
+
+            //Set the id of the leader card in the player record
+            $sql = "UPDATE player SET leader_card_id = $id WHERE player_id = $playerId";
             $this->DbQuery($sql);
 
             //Notify players about the leader
@@ -410,6 +449,23 @@ class Game extends \Table
             }
             $this->cards->createCards($cards, 'faction', $playerId);
         }
+
+        $this->gamestate->nextState("");
+    }
+
+    public function stMorningPhase() {
+        // Increment the day
+        $day = $this->getGameStateValue("day") + 1;
+        $this->setGameStateValue("day", $day);
+
+        //Set the phase to morning
+        $turnPhase = Self::DAWN;
+        $this->setGameStateValue("turnPhase", $turnPhase);
+
+        //Notify players that it is morning
+        $this->notifyAllPlayers("dawn", clienttranslate('It is dawn, the start of Day #${day} in the city of Theah.'), [
+            "day" => $day,
+        ]);
 
         $this->gamestate->nextState("");
     }

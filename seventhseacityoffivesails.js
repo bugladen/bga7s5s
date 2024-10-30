@@ -64,10 +64,24 @@ function (dojo, declare) {
             this.addTooltip( 'city-day-phase', _('Current Phase of the Day'), '' );
             this.addTooltipToClass('city-reknown', _('Current reknown on this city section'), '' );
 
-            //If the game phase is 0 we are in pre-game setup, hide the game phase indicator            
-            if (gamedatas.phase == 0) {
-                dojo.style('city-day-phase', 'display', 'none');
+            //Update the day
+            if (gamedatas.day > 0) {
+                $('day-indicator').innerHTML = gamedatas.day;
+                dojo.style('day-indicator', 'display', 'block');
             }
+
+                //Update the game phase indicator            
+            if (gamedatas.turnPhase > 0) {
+                switch (gamedatas.turnPhase) {
+                    case 1: $('city-day-phase').innerHTML = 'Dawn'; break;
+                    case 2: $('city-day-phase').innerHTML = 'Planning'; break;
+                    case 3: $('city-day-phase').innerHTML = 'High Drama'; break;
+                    case 4: $('city-day-phase').innerHTML = 'Plunder'; break;
+                    case 5: $('city-day-phase').innerHTML = 'Dusk'; break;
+                }
+                
+                dojo.style('city-day-phase', 'display', 'block');
+            }            
             
             // Setting up player boards
             for( const playerId in gamedatas.players )
@@ -75,7 +89,7 @@ function (dojo, declare) {
                 const player = gamedatas.players[playerId];
 
                 //Display only if we are out of pre-game setup
-                if (gamedatas.phase > 0) {
+                if (gamedatas.turnPhase > 0) {
                     // Home
                     this.createHome(playerId, player.color, player.leader);
 
@@ -267,7 +281,8 @@ function (dojo, declare) {
             
             // TODO: here, associate your game notifications with local methods
             const notifs = [
-                ['playLeader', 3000],
+                ['playLeader', 2500],
+                ['dawn', 1500],
             ];
     
             notifs.forEach((notif) => {
@@ -314,6 +329,22 @@ function (dojo, declare) {
                 args.leader, 
                 `${args.player_id}-home-anchor`,
             );
+
+            $('pagemaintitletext').innerHTML = `${args.player_name} has selected <span style="font-weight:bold">${args.leader.name}</span> as their leader`;
         },
+
+        notif_dawn: function( notif )
+        {
+            console.log( 'notif_dawn' );
+            console.log( notif );
+
+            const args = notif.args;
+
+            $('day-indicator').innerHTML = args.day;
+            dojo.style('day-indicator', 'display', 'block');
+
+            $('city-day-phase').innerHTML = 'Dawn';
+            dojo.style('city-day-phase', 'display', 'block');
+        }
     });      
 });

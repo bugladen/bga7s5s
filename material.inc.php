@@ -17,9 +17,9 @@
  * This file is loaded in your game logic class constructor, ie these variables
  * are available everywhere in your game logic code.
  *
- */
+*/
 
- $this->city_decks = <<<JSON
+$this->city_decks = <<<JSON
  {
     "decks": [
         {
@@ -59,7 +59,7 @@
         }
     ]
  }
- JSON;
+JSON;
 
 
 $this->starter_decks = <<<JSON

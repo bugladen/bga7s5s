@@ -79,8 +79,8 @@ var jstpl_card_character=`
         </svg>
     </div>
     <div id="city-discard"></div>
-    <div id="day-indicator">{DAY}</div>
-    <div id="city-day-phase">{TURN_PHASE}</div>
+    <div id="day-indicator"></div>
+    <div id="city-day-phase"></div>
 
     <div id="city-ur-tower">
         <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
