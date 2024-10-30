@@ -8,6 +8,8 @@ class _01093 extends Character
 {
     public function __construct()
     {
+        parent::__construct();
+
         $this->Name = "Maya De La Rioja";
         $this->Image = "img/cards/7s5s/093.jpg";
         $this->ExpansionName = "_7s5s";

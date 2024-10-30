@@ -8,6 +8,8 @@ class _01098 extends Scheme
 {
     public function __construct()
     {
+        parent::__construct();
+
         $this->Name = "The Cat's Embargo";
         $this->Image = "img/cards/7s5s/098.jpg";
         $this->ExpansionName = "_7s5s";
