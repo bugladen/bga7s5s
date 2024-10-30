@@ -4,7 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 
-class _7s5s_01181 extends CityAttachment
+class _01181 extends CityAttachment
 {
     public function __construct()
     {

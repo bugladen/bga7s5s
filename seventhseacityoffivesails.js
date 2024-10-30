@@ -70,15 +70,18 @@ function (dojo, declare) {
             }
             
             // Setting up player boards
-            for( const player_id in gamedatas.players )
+            for( const playerId in gamedatas.players )
             {
-                const player = gamedatas.players[player_id];
-                        
-                // Home
-                // this.createHome(player, player.leader);
+                const player = gamedatas.players[playerId];
 
-                // Leader
-                // this.createCard(player, player_id + '-home-anchor', null);
+                //Display only if we are out of pre-game setup
+                if (gamedatas.phase > 0) {
+                    // Home
+                    this.createHome(playerId, player.color, player.leader);
+
+                    // Leader
+                    this.createCharacterCard(playerId, player.color, player.leader, playerId + '-home-anchor');
+                }
             }
             
             // TODO: Set up your game interface here, according to "gamedatas"
@@ -191,7 +194,6 @@ function (dojo, declare) {
                 id: id,
                 faction: character.faction.toLowerCase(),
                 image: character.image,
-                // image: 'img/cards/7s5s/089.jpg',
                 player_color: color,
                 resolve: character.resolve,
                 combat: character.combat,

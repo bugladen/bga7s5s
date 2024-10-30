@@ -20,5 +20,7 @@ CREATE TABLE IF NOT EXISTS `card` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- Player fields for selected deck
-ALTER TABLE `player` ADD `deck_source` varchar(20) NULL;
-ALTER TABLE `player` ADD `deck_id` varchar(20) NULL;
+ALTER TABLE `player` 
+  ADD `deck_source` varchar(20) NULL,
+  ADD `deck_id` varchar(20) NULL,
+  ADD `leader_card_id` smallint NULL;
