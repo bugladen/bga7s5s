@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\core;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\co_7s5sre;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 
@@ -10,7 +10,7 @@ class _01098 extends Scheme
     {
         $this->Name = "The Cat's Embargo";
         $this->Image = "img/cards/7s5s/098.jpg";
-        $this->ExpansionName = "Core";
+        $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 98;
 

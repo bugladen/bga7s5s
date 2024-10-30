@@ -1,25 +1,25 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\core;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 
-class _01092 extends Character
+class _01091 extends Character
 {
     public function __construct()
     {
-        $this->Name = "Makepeace Botwighte";
-        $this->Image = "img/cards/7s5s/092.jpg";
-        $this->ExpansionName = "Core";
+        $this->Name = "'Madre' Dolores";
+        $this->Image = "img/cards/7s5s/091.jpg";
+        $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
-        $this->CardNumber = 92;
+        $this->CardNumber = 91;
 
         $this->Faction = "Castille";
-        $this->Title = "Gracious Cheat";
+        $this->Title = "Cat Lady of Castille";
         $this->Resolve = 4;
-        $this->Combat = 2;
-        $this->Finesse = 2;
-        $this->Influence = 2;
+        $this->Combat = 1;
+        $this->Finesse = 2;       
+        $this->Influence = 3;
 
         $this->ModifiedResolve = $this->Resolve;
         $this->ModifiedCombat = $this->Combat;
@@ -27,9 +27,8 @@ class _01092 extends Character
         $this->ModifiedInfluence = $this->Influence;
 
         $this->Traits = [
-            "Diplomat",
-            "Scoundrel",
-            "Avalon",
+            "Academic",
+            "Castille",
         ];
     }
 }
