@@ -444,10 +444,10 @@ class Game extends \Table
 
         switch ($set) {
             case '01':
-                $set = "core";
+                $set = "_7s5s";
                 break;
             default:
-                $set = "core";
+                $set = "_7s5s";
         }
 
         $className = "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$cardId";
