@@ -487,3 +487,8 @@ body {
     top: 90px;
     border: 2px solid black;
 }
+
+.basic-tooltip {
+    font-family: "Pirata One", system-ui;
+    font-size: 14pt;
+}

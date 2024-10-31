@@ -25,17 +25,15 @@ function (dojo, declare) {
     return declare("bgagame.seventhseacityoffivesails", ebg.core.gamegui, {
         constructor: function(){
 
+            console.log('seventhseacityoffivesails constructor');
+
             this.wholeCardWidth = 72;
             this.wholeCardHeight = 98;
             this.cardImageWidth = 495;
             this.cardImageHeight = 675;
 
-            console.log('seventhseacityoffivesails constructor');
-              
-            // Here, you can init the global variables of your user interface
-            // Example:
-            // this.myGlobalValue = 0;
-
+            //Global array containing cached properties of all the cards this page has had access to
+            this.cardProperties = {};
         },
         
         /*
@@ -66,10 +64,16 @@ function (dojo, declare) {
             }
 
             // Set up the city tooltips
-            this.addTooltip( 'city-discard', _('City Discard Pile'), _('Click to view') );
-            this.addTooltip( 'day-indicator', _('Current Day'), '' );
-            this.addTooltip( 'city-day-phase', _('Current Phase of the Day'), '' );
-            this.addTooltipToClass('city-reknown', _('Current reknown on this city section'), '' );
+            this.addTooltipHtml( 'city-oles-inn', `<img src="${g_gamethemeurl}img/cards/7s5s/004.jpg" />`, 500);
+            this.addTooltipHtml( 'city-docks', `<img src="${g_gamethemeurl}img/cards/7s5s/003.jpg" />`, 500);
+            this.addTooltipHtml( 'city-forum', `<img src="${g_gamethemeurl}img/cards/7s5s/001.jpg" />`, 500);
+            this.addTooltipHtml( 'city-bazaar', `<img src="${g_gamethemeurl}img/cards/7s5s/002.jpg" />`, 500);
+            this.addTooltipHtml( 'city-governors-garden', `<img src="${g_gamethemeurl}img/cards/7s5s/005.jpg" />`, 500);
+
+            this.addTooltipHtml( 'city-discard', `<div class='basic-tooltip'>${_('City Discard Pile')}</div>` );
+            this.addTooltipHtml( 'day-indicator', `<div class='basic-tooltip'>${_('The Current Day')}</div>` );
+            this.addTooltipHtml( 'city-day-phase', `<div class='basic-tooltip'>${_('The Current Phase of the Day')}</div>` );
+            this.addTooltipHtmlToClass('city-reknown', `<div class='basic-tooltip'>${_('Current Reknown on this City Location')}</div>` );
 
             //Update the day
             if (gamedatas.day > 0) {
@@ -101,7 +105,7 @@ function (dojo, declare) {
                     this.createHome(playerId, player.color, player.leader);
 
                     // Leader
-                    this.createCharacterCard(playerId, player.color, player.leader, playerId + '-home-anchor');
+                    this.createCharacterCard(`${playerId}-leader`, player.color, player.leader, playerId + '-home-anchor');
                 }
             }
             
@@ -110,7 +114,7 @@ function (dojo, declare) {
             this.approachDeck.create( this, $('approachDeck'), this.wholeCardWidth, this.wholeCardHeight ); 
             this.approachDeck.image_items_per_row = 0;
             this.approachDeck.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
-            // this.approachDeck.setOverlap( 50, 0 )
+            this.approachDeck.onItemCreate = dojo.hitch( this, 'setupNewApproachCard' ); 
 
             // For each card in the approach deck, create a stock item
             gamedatas.approachDeck.forEach((card) => {
@@ -214,14 +218,22 @@ function (dojo, declare) {
                 crewcap: leader.modifiedCrewCap,
                 panache: leader.modifiedPanache,
                 player_color: playerColor,
-            }), 'home_anchor', "before" );            
+            }), 'home_anchor', "before" );
+
+            this.addTooltipHtml( `${playerId}-crewcap`, `<div class='basic-tooltip'>${_('Current Crew Capacity')}</div>` );
+            this.addTooltipHtml( `${playerId}-discard`, `<div class='basic-tooltip'>${_('Faction Deck Discard Pile')}</div>` );
+            this.addTooltipHtml( `${playerId}-locker`, `<div class='basic-tooltip'>${_('Player Locker Pile')}</div>` );
+            this.addTooltipHtml( `${playerId}-panache`, `<div class='basic-tooltip'>${_('Current Panache')}</div>` );
         },
         
-        createCharacterCard: function( id, color, character, location )
+        createCharacterCard: function( divId, color, character, location )
         {
+            //Add to the card properties cache
+            this.cardProperties[character.id] = character;
+
             // Leader
             dojo.place( this.format_block( 'jstpl_card_character', {
-                id: id,
+                id: divId,
                 faction: character.faction.toLowerCase(),
                 image: character.image,
                 player_color: color,
@@ -233,8 +245,10 @@ function (dojo, declare) {
             }), location, "before" );
 
             if (character.wounds == 0) {
-                dojo.removeClass(`${id}-wounds`, 'character-wounds');
+                dojo.removeClass(`${divId}-wounds`, 'character-wounds');
             }
+
+            this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, 500);
         },  
 
         ///////////////////////////////////////////////////
@@ -386,6 +400,8 @@ function (dojo, declare) {
         // Utlity functions
         addCardToApproachDeck: function( card )
         {
+            this.cardProperties[card.id] = card;
+
             //Different weight depending on the type. Scheme cards go first
             const weight = card.type === "Scheme" ? 1 : 2;
 
@@ -394,6 +410,13 @@ function (dojo, declare) {
 
             // Type and id are the same for the approach deck stock object
             this.approachDeck.addToStockWithId(card.id, card.id);
+        },
+
+        setupNewApproachCard: function( cardDiv, cardTypeId, cardId )
+        {
+            const card = this.cardProperties[cardTypeId];
+            this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, 500);
         }
+
     });      
 });
