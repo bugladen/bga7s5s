@@ -131,7 +131,6 @@ class Game extends \Table
      */
     public function argAvailableDecks(): array
     {
-        $return = [];
         $starter_decks = json_decode($this->starter_decks);        
         $decks = array_map(function($deck) { 
             return [ 
@@ -217,10 +216,8 @@ class Game extends \Table
      */
     protected function getAllDatas()
     {
-        $result = [];
-
         // WARNING: We must only return information visible by the current player.
-        $current_player_id = $this->getActivePlayerId();
+        $currentPlayerId = $this->getActivePlayerId();
 
         $players = $this->getCollectionFromDb("
             SELECT player_id, player_score score, leader_card_id, c.card_serialized 
@@ -228,7 +225,7 @@ class Game extends \Table
             INNER JOIN card c on c.card_id = p.leader_card_id;
             ");
         
-        //We need to unserialize the leader card for each player to send the property data
+        // Add the leader card into the player array
         foreach ($players as $player_id => $player) {
             $card = unserialize($player['card_serialized']);
             $player['leader'] = $card->getPropertyArray();
@@ -239,6 +236,23 @@ class Game extends \Table
         }
 
         $result["players"] = $players;
+
+        // Get the approach deck for the current player
+        // Get the approach cards for the each player
+        $sql = "
+        SELECT card_id, card_location_arg, card_serialized 
+        FROM card 
+        WHERE card_location = 'approach'
+        AND card_location_arg = $currentPlayerId";
+        $approachCards = $this->getCollectionFromDb($sql);
+
+        $approach = [];
+        foreach ($approachCards as $cardId => $card) {
+            $card = unserialize($card['card_serialized']);
+            $approach[] = $card->getPropertyArray();
+        }
+        $result["approachDeck"] = $approach;
+
         $result["day"] = $this->getGameStateValue("day");
         $result["turnPhase"] = (int) $this->getGameStateValue("turnPhase");
 
@@ -423,7 +437,7 @@ class Game extends \Table
             $sql = "UPDATE player SET leader_card_id = $id WHERE player_id = $playerId";
             $this->DbQuery($sql);
 
-            //Notify players about the leader
+            //Notify players about the leaders
             $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} will play ${player_faction} and ${leader_name} as their leader.'), [
                 "player_name" => $player['player_name'],
                 "player_faction" => "<span style='font-weight:bold'>{$leader->Faction}</span>",
@@ -433,13 +447,27 @@ class Game extends \Table
                 "leader" => $leader->getPropertyArray(),
             ]);
 
-            // *** Create the approach deck ***
+            // *** Create the approach deck and send each card to the player ***
             $approachDeck = $deck->approach_deck;
             $cards = [];
             foreach ($approachDeck as $card) {
-                $cards[] = ['type' => $card, 'type_arg' => $playerId, 'nbr' => 1];
-            }
-            $this->cards->createCards($cards, 'approach', $playerId);
+                $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$card}', $playerId, 'approach', $playerId)";
+                $this->DbQuery($sql);
+
+                //Create an instance of the card, set the ID, and save it back into the db
+                $id = $this->DbGetLastId();
+                $card = $this->instantiateCard($card);
+                $card->Id = $id;
+                $serialized =  addslashes(serialize($card));
+                $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $id";
+                $this->DbQuery($sql);
+
+                $this->notifyPlayer($playerId, "approachCard", clienttranslate('Approach Deck: ${card_name}'), [
+                    "card_name" => $card->Name,
+                    "player_id" => $playerId,
+                    "card" => $card->getPropertyArray(),
+                ]);
+                }
 
             // Create player's Faction deck
             $factionDeck = $deck->faction_deck;

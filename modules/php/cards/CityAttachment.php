@@ -23,4 +23,21 @@ abstract class CityAttachment extends CityDeckCard
         $this->InfluenceModifier = 0;
     }
 
+    public function getPropertyArray(): array
+    {
+        $properties = parent::getPropertyArray();
+
+        //Add city attachment specific properties
+        $properties['wealthCost'] = $this->WealthCost;
+
+        $properties['resolveModifier'] = $this->ResolveModifier;
+        $properties['combatModifier'] = $this->CombatModifier;
+        $properties['finesseModifier'] = $this->FinesseModifier;
+        $properties['influenceModifier'] = $this->InfluenceModifier;
+
+        $properties['type'] = 'Attachment';
+
+        return $properties;
+    }
+
 }

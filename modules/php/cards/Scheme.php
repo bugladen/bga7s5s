@@ -15,4 +15,17 @@ abstract class Scheme extends Card
         $this->Initiative = 0;
         $this->PanacheModifier = 0;
     }
+
+    public function getPropertyArray()
+    {
+        $properties = parent::getPropertyArray();
+
+        //Add scheme specific properties
+        $properties['initiative'] = $this->Initiative;
+        $properties['panacheModifier'] = $this->PanacheModifier;
+
+        $properties['type'] = 'Scheme';
+
+        return $properties;
+    }
 }

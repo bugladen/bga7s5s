@@ -19,4 +19,19 @@ abstract class FactionDeckCard extends Card
         $this->Thrust = 0;
     }
 
+    public function getPropertyArray(): array
+    {
+        $properties = parent::getPropertyArray();
+
+        //Add faction deck card specific properties
+        $properties['wealthCost'] = $this->WealthCost;
+        $properties['riposte'] = $this->Riposte;
+        $properties['parry'] = $this->Parry;
+        $properties['thrust'] = $this->Thrust;
+
+        $properties['deckOrigin'] = 'Faction';
+
+        return $properties;
+    }
+
 }

@@ -20,6 +20,7 @@
  * particular, you can set here the values of variables elements defined in seventhseacityoffivesails_seventhseacityoffivesails.tpl (elements
  * like {MY_VARIABLE_ELEMENT}), and insert HTML block elements (also defined in your HTML template file)
  *
+ * $this->tpl['PLAYER_NAME'] = $this->game->getActivePlayerName();
  * Note: if the HTML of your game interface is always the same, you don't have to place anything here.
  *
  */

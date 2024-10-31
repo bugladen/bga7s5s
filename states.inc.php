@@ -100,7 +100,7 @@ $machinestates = [
 
     STATE_DAWN => [
         "name" => "dawn",
-        "description" => "Preparing the City for Dawn...",
+        "description" => "Preparing the City for the next full Day...",
         "type" => "game",
         "action" => "stMorningPhase",
         "transitions" => ["" => STATE_PLANNING_PHASE]            
@@ -108,8 +108,8 @@ $machinestates = [
 
     STATE_PLANNING_PHASE => [
         "name" => "planningPhase",
-        "description" => clienttranslate('Your opponent must choose a Schema and Character to muster for the day.'),
-        "descriptionmyturn" => clienttranslate('${you} must choose a Schema and Character to muster for the day.'),
+        "description" => clienttranslate('Your opponent must choose a Scheme and Character to muster for the day.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose a Scheme and Character to muster for the day.'),
         "type" => "multipleactiveplayer",
         "args" => "argPlanningPhase",
         "action" => "stPlanningPhase",

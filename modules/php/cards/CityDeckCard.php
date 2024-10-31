@@ -12,4 +12,16 @@ abstract class CityDeckCard extends Card
 
         $this->CityCardNumber = 0;
     }
+
+    public function getPropertyArray(): array
+    {
+        $properties = parent::getPropertyArray();
+
+        //Add city deck card specific properties
+        $properties['cityCardNumber'] = $this->CityCardNumber;
+
+        $properties['deckOrigin'] = 'City';
+
+        return $properties;
+    }
 }

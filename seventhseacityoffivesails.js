@@ -18,11 +18,18 @@
 define([
     "dojo","dojo/_base/declare", "dojo/dom-class",
     "ebg/core/gamegui",
-    "ebg/counter"
+    "ebg/counter",
+    "ebg/stock"
 ],
 function (dojo, declare) {
     return declare("bgagame.seventhseacityoffivesails", ebg.core.gamegui, {
         constructor: function(){
+
+            this.wholeCardWidth = 72;
+            this.wholeCardHeight = 98;
+            this.cardImageWidth = 495;
+            this.cardImageHeight = 675;
+
             console.log('seventhseacityoffivesails constructor');
               
             // Here, you can init the global variables of your user interface
@@ -98,8 +105,17 @@ function (dojo, declare) {
                 }
             }
             
-            // TODO: Set up your game interface here, according to "gamedatas"
+            // Create Approach deck
+            this.approachDeck = new ebg.stock();
+            this.approachDeck.create( this, $('approachDeck'), this.wholeCardWidth, this.wholeCardHeight ); 
+            this.approachDeck.image_items_per_row = 0;
+            this.approachDeck.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
+            // this.approachDeck.setOverlap( 50, 0 )
 
+            // For each card in the approach deck, create a stock item
+            gamedatas.approachDeck.forEach((card) => {
+                this.addCardToApproachDeck(card);
+            });
  
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -282,6 +298,7 @@ function (dojo, declare) {
             // TODO: here, associate your game notifications with local methods
             const notifs = [
                 ['playLeader', 2500],
+                ['approachCard', 500],
                 ['dawn', 1000],
                 ['playCityCard', 1500],
                 ['planningPhase', 100],
@@ -328,6 +345,14 @@ function (dojo, declare) {
             $('pagemaintitletext').innerHTML = `${args.player_name} has selected <span style="font-weight:bold">${args.leader.name}</span> as their leader`;
         },
 
+        notif_approachCard: function( notif )
+        {
+            console.log( 'notif_approachCard' );
+            console.log( notif );
+
+            this.addCardToApproachDeck(notif.args.card);
+    },
+
         notif_dawn: function( notif )
         {
             console.log( 'notif_dawn' );
@@ -356,5 +381,19 @@ function (dojo, declare) {
             const args = notif.args;
             $('city-day-phase').innerHTML = 'Planning';
         },
+
+
+        // Utlity functions
+        addCardToApproachDeck: function( card )
+        {
+            //Different weight depending on the type. Scheme cards go first
+            const weight = card.type === "Scheme" ? 1 : 2;
+
+            //Each card is a different image, so would be considered a different type for the stock object
+            this.approachDeck.addItemType(card.id, weight, g_gamethemeurl + card.image, 0);
+
+            // Type and id are the same for the approach deck stock object
+            this.approachDeck.addToStockWithId(card.id, card.id);
+        }
     });      
 });

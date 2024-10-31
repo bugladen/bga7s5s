@@ -27,10 +27,13 @@ abstract class Card
     public function getPropertyArray()
     {
         $properties = [
+            'id' => $this->Id,
             'name' => $this->Name,
             'image' => $this->Image,
             'faction' => $this->Faction,
         ];
+
+        $properties['type'] = 'Card';
 
         return $properties;
     }

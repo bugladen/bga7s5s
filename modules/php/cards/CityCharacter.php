@@ -54,6 +54,9 @@ abstract class CityCharacter extends CityDeckCard
         $properties['wealthCost'] = $this->WealthCost;
         $properties['negotiable'] = $this->Negotiable;
 
+        $properties['type'] = 'Character';
+
+
         return $properties;
     }
 }

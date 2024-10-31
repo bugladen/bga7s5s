@@ -46,6 +46,9 @@ abstract class Character extends Card
         $properties['influence'] = $this->Influence;
         $properties['modifiedInfluence'] = $this->ModifiedInfluence;
 
+        $properties['type'] = 'Character';
+
+
         return $properties;
     }
 }

@@ -2,14 +2,19 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-abstract class CityEvent extends Card
+abstract class CityEvent extends CityDeckCard
 {
-    public int $CityCardNumber;
-
     public function __construct()
     {
         parent::__construct();
+    }
 
-        $this->CityCardNumber = 0;
+    public function getPropertyArray(): array
+    {
+        $properties = parent::getPropertyArray();
+
+        $properties['type'] = 'Event';
+
+        return $properties;
     }
 }

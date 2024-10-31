@@ -131,4 +131,10 @@ var jstpl_card_character=`
 
 <div id="home_anchor"></div>
 
+<div class="whiteblock">
+    <div><b>Your Approach Deck</b></div>
+    <div id="approachDeck">
+    </div>
+</div>
+
 {OVERALL_GAME_FOOTER}

@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-abstract class Event extends CityDeckCard
+abstract class Event extends Card
 {
     public function __construct()
     {
@@ -13,6 +13,10 @@ abstract class Event extends CityDeckCard
     {
         $properties = parent::getPropertyArray();
 
+        $properties['type'] = 'Event';
+
         return $properties;
     }
+
+
 }

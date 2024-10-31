@@ -9,4 +9,13 @@ class Risk extends FactionDeckCard
         parent::__construct();
 
     }
+
+    public function getPropertyArray(): array
+    {
+        $properties = parent::getPropertyArray();
+
+        $properties['type'] = 'Risk';
+
+        return $properties;
+    }
 }
