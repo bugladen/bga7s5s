@@ -64,11 +64,11 @@ function (dojo, declare) {
             }
 
             // Set up the city tooltips
-            this.addTooltipHtml( 'city-oles-inn', `<img src="${g_gamethemeurl}img/cards/7s5s/004.jpg" />`, 500);
-            this.addTooltipHtml( 'city-docks', `<img src="${g_gamethemeurl}img/cards/7s5s/003.jpg" />`, 500);
-            this.addTooltipHtml( 'city-forum', `<img src="${g_gamethemeurl}img/cards/7s5s/001.jpg" />`, 500);
-            this.addTooltipHtml( 'city-bazaar', `<img src="${g_gamethemeurl}img/cards/7s5s/002.jpg" />`, 500);
-            this.addTooltipHtml( 'city-governors-garden', `<img src="${g_gamethemeurl}img/cards/7s5s/005.jpg" />`, 500);
+            this.addTooltipHtml( 'city-oles-inn', `<img style="max-width:75%" src="${g_gamethemeurl}img/cards/7s5s/004.jpg" />`, 500);
+            this.addTooltipHtml( 'city-docks', `<img style="max-width:75%" src="${g_gamethemeurl}img/cards/7s5s/003.jpg" />`);
+            this.addTooltipHtml( 'city-forum', `<img style="max-width:75%" src="${g_gamethemeurl}img/cards/7s5s/001.jpg" />`, 500);
+            this.addTooltipHtml( 'city-bazaar', `<img style="max-width:75%" src="${g_gamethemeurl}img/cards/7s5s/002.jpg" />`, 500);
+            this.addTooltipHtml( 'city-governors-garden', `<img style="max-width:75%" src="${g_gamethemeurl}img/cards/7s5s/005.jpg" />`, 500);
 
             this.addTooltipHtml( 'city-discard', `<div class='basic-tooltip'>${_('City Discard Pile')}</div>` );
             this.addTooltipHtml( 'day-indicator', `<div class='basic-tooltip'>${_('The Current Day')}</div>` );
