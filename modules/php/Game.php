@@ -234,17 +234,30 @@ class Game extends \Table
             //Set updated player data back into the array
             $players[$player_id] = $player;
         }
-
         $result["players"] = $players;
 
+        // Get the cards at the all the home locations
+        $homeCardsResult = $this->getObjectListFromDB("
+            SELECT card_location_arg as playerId, card_serialized 
+            FROM card 
+            WHERE card_location = 'home'
+            ");
+        $homeCards = [];
+        foreach ($homeCardsResult as $homeCard) {
+            $card = unserialize($homeCard['card_serialized']);
+            $homeCard['card'] = $card->getPropertyArray();
+            unset($homeCard['card_serialized']);
+
+            $homeCards[] = $homeCard;
+        }
+        $result["homeCards"] = $homeCards;
+
         // Get the approach deck for the current player
-        // Get the approach cards for the each player
-        $sql = "
+        $approachCards = $this->getCollectionFromDb("
         SELECT card_id, card_location_arg, card_serialized 
         FROM card 
         WHERE card_location = 'approach'
-        AND card_location_arg = $currentPlayerId";
-        $approachCards = $this->getCollectionFromDb($sql);
+        AND card_location_arg = $currentPlayerId");
 
         $approach = [];
         foreach ($approachCards as $cardId => $card) {
@@ -418,7 +431,7 @@ class Game extends \Table
             //Now that we have a deck, add the cards in the deck to the db
 
             // Leader
-            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$deck->leader}', $playerId, 'leader', $playerId)";
+            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$deck->leader}', $playerId, 'home', $playerId)";
             $this->DbQuery($sql);
             $id = $this->DbGetLastId();
 

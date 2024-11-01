@@ -64,11 +64,11 @@ function (dojo, declare) {
             }
 
             // Set up the city tooltips
-            this.addTooltipHtml( 'city-oles-inn', `<img style="max-width:75%" src="${g_gamethemeurl}img/cards/7s5s/004.jpg" />`, 500);
-            this.addTooltipHtml( 'city-docks', `<img style="max-width:75%" src="${g_gamethemeurl}img/cards/7s5s/003.jpg" />`);
-            this.addTooltipHtml( 'city-forum', `<img style="max-width:75%" src="${g_gamethemeurl}img/cards/7s5s/001.jpg" />`, 500);
-            this.addTooltipHtml( 'city-bazaar', `<img style="max-width:75%" src="${g_gamethemeurl}img/cards/7s5s/002.jpg" />`, 500);
-            this.addTooltipHtml( 'city-governors-garden', `<img style="max-width:75%" src="${g_gamethemeurl}img/cards/7s5s/005.jpg" />`, 500);
+            this.addTooltipHtml( 'city-oles-inn', `<div class='basic-tooltip'>${_("Ole's Inn")}</div>` );
+            this.addTooltipHtml( 'city-docks', `<div class='basic-tooltip'>${_('The Docks')}</div>` );
+            this.addTooltipHtml( 'city-forum', `<div class='basic-tooltip'>${_('The Forums')}</div>` );
+            this.addTooltipHtml( 'city-bazaar', `<div class='basic-tooltip'>${_('The Grand Bazaar')}</div>` );
+            this.addTooltipHtml( 'city-governors-garden', `<div class='basic-tooltip'>${_("Governor's Garden")}</div>` );
 
             this.addTooltipHtml( 'city-discard', `<div class='basic-tooltip'>${_('City Discard Pile')}</div>` );
             this.addTooltipHtml( 'day-indicator', `<div class='basic-tooltip'>${_('The Current Day')}</div>` );
@@ -94,7 +94,7 @@ function (dojo, declare) {
                 dojo.style('city-day-phase', 'display', 'block');
             }            
             
-            // Setting up player boards
+            // Setting up player home boards
             for( const playerId in gamedatas.players )
             {
                 const player = gamedatas.players[playerId];
@@ -103,10 +103,16 @@ function (dojo, declare) {
                 if (gamedatas.turnPhase > 0) {
                     // Home
                     this.createHome(playerId, player.color, player.leader);
-
-                    // Leader
-                    this.createCharacterCard(`${playerId}-leader`, player.color, player.leader, playerId + '-home-anchor');
                 }
+            }
+
+            // Set up cards in home locations
+            for( const index in gamedatas.homeCards )
+            {
+                const cardArray = gamedatas.homeCards[index];
+                const playerInfo = this.gamedatas.players[cardArray.playerId];
+                const cardId = `${cardArray.playerId}-${cardArray.card.id}`;
+                this.createCharacterCard(cardId, playerInfo.color, cardArray.card, cardArray.playerId + '-home-anchor');
             }
             
             // Create Approach deck
@@ -233,9 +239,24 @@ function (dojo, declare) {
             this.addTooltipHtml( `${playerId}-locker`, `<div class='basic-tooltip'>${_('Player Locker Pile')}</div>` );
             this.addTooltipHtml( `${playerId}-panache`, `<div class='basic-tooltip'>${_('Current Panache')}</div>` );
         },
+
+        getCardPropertiesByDivId: function( divId )
+        {
+            for( const cardId in this.cardProperties )
+            {
+                if (this.cardProperties[cardId]?.divId === divId) {
+                    return this.cardProperties[cardId];
+                }
+            }
+
+            return null;
+        },
         
         createCharacterCard: function( divId, color, character, location )
         {
+            //Set the divId of the card
+            character.divId = divId;
+
             //Add to the card properties cache
             this.cardProperties[character.id] = character;
 
