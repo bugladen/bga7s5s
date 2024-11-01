@@ -340,9 +340,10 @@ function (dojo, declare) {
             
             // TODO: here, associate your game notifications with local methods
             const notifs = [
-                ['playLeader', 2500],
+                ['playLeader', 1500],
                 ['approachCard', 500],
                 ['dawn', 1000],
+                ['cityCardAddedToLocation', 500],
                 ['playCityCard', 1500],
                 ['planningPhase', 100],
             ];
@@ -408,6 +409,12 @@ function (dojo, declare) {
 
             $('city-day-phase').innerHTML = 'Dawn';
             dojo.style('city-day-phase', 'display', 'block');
+        },
+
+        notif_cityCardAddedToLocation: function( notif )
+        {
+            console.log( 'notif_playCityCard' );
+            console.log( notif );
         },
 
         notif_playCityCard: function( notif )

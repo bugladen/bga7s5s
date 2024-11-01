@@ -13,6 +13,8 @@ abstract class Card
     public string $Faction;
     public $Traits = [];
 
+    public string $Location;
+
     public function __construct()
     {
         $this->Id = 0;
@@ -22,6 +24,8 @@ abstract class Card
         $this->ExpansionNumber = 0;
         $this->CardNumber = 0;
         $this->Faction = "";
+
+        $this->Location = "";
     }
 
     public function getPropertyArray()
@@ -31,6 +35,7 @@ abstract class Card
             'name' => $this->Name,
             'image' => $this->Image,
             'faction' => $this->Faction,
+            'location' => $this->Location,
         ];
 
         $properties['type'] = 'Card';

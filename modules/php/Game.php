@@ -33,6 +33,14 @@ class Game extends \Table
     const PLUNDER = 4;
     const DUSK = 5;
 
+    //Card locations
+    const LOCATION_CITY_DECK = 'City Deck';
+    const LOCATION_CITY_DOCKS = 'City Docks';
+    const LOCATION_CITY_FORUM = 'City Forum';
+    const LOCATION_CITY_BAZAAR = 'The Grand Bazaar';
+    const LOCATION_CITY_OLES_INN = "Ole's Inn";
+    const LOCATION_CITY_GOVERNORS_GARDEN = "Governor's Garden";
+    const LOCATION_PLAYER_HOME = 'Player Home';
 
     private $cards;
 
@@ -219,49 +227,46 @@ class Game extends \Table
         // WARNING: We must only return information visible by the current player.
         $currentPlayerId = $this->getActivePlayerId();
 
-        $players = $this->getCollectionFromDb("
-            SELECT player_id, player_score score, leader_card_id, c.card_serialized 
-            FROM player p
-            INNER JOIN card c on c.card_id = p.leader_card_id;
-            ");
+        $players = $this->getCollectionFromDb("SELECT player_id, player_score score, leader_card_id FROM player");
         
         // Add the leader card into the player array
         foreach ($players as $player_id => $player) {
-            $card = unserialize($player['card_serialized']);
-            $player['leader'] = $card->getPropertyArray();
-            unset($player['card_serialized']);
+            if ($player['leader_card_id'] != null)
+            {
+                $card = $this->getCardObjectFromDb($player['leader_card_id']);
+                $player['leader'] = $card->getPropertyArray();
 
-            //Set updated player data back into the array
-            $players[$player_id] = $player;
+                //Set updated player data back into the array
+                $players[$player_id] = $player;
+            }
         }
         $result["players"] = $players;
 
         // Get the cards at the all the home locations
+        $location = self::LOCATION_PLAYER_HOME;
         $homeCardsResult = $this->getObjectListFromDB("
-            SELECT card_location_arg as playerId, card_serialized 
+            SELECT card_id as id, card_location_arg as playerId
             FROM card 
-            WHERE card_location = 'home'
+            WHERE card_location = '{$location}'
             ");
         $homeCards = [];
         foreach ($homeCardsResult as $homeCard) {
-            $card = unserialize($homeCard['card_serialized']);
+            $card = $this->getCardObjectFromDb($homeCard['id']);
             $homeCard['card'] = $card->getPropertyArray();
-            unset($homeCard['card_serialized']);
-
             $homeCards[] = $homeCard;
         }
         $result["homeCards"] = $homeCards;
 
         // Get the approach deck for the current player
         $approachCards = $this->getCollectionFromDb("
-        SELECT card_id, card_location_arg, card_serialized 
+        SELECT card_id, card_location_arg
         FROM card 
         WHERE card_location = 'approach'
         AND card_location_arg = $currentPlayerId");
 
         $approach = [];
         foreach ($approachCards as $cardId => $card) {
-            $card = unserialize($card['card_serialized']);
+            $card = $this->getCardObjectFromDb($cardId);
             $approach[] = $card->getPropertyArray();
         }
         $result["approachDeck"] = $approach;
@@ -398,17 +403,17 @@ class Game extends \Table
         ));
         // Inject into card db
         foreach ($city->cards as $card) {
-            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$card}', 0, 'city deck', 0)";
+            $location = self::LOCATION_CITY_DECK;
+            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$card}', 0, '{$location}', 0)";
             $this->DbQuery($sql);
 
             //Store the card Id in the object, and serialize the card object to the db
             $id = $this->DbGetLastId();
             $card = $this->instantiateCard($card);
             $card->Id = $id;
-            $serialized =  addslashes(serialize($card));
-            $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $id";
-            $this->DbQuery($sql);
+            $this->updateCardObjectInDb($card);
         }
+        $this->cards->shuffle(self::LOCATION_CITY_DECK);
 
         // Load the decks selected by the players
         $starter_decks = json_decode($this->starter_decks);
@@ -431,7 +436,8 @@ class Game extends \Table
             //Now that we have a deck, add the cards in the deck to the db
 
             // Leader
-            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$deck->leader}', $playerId, 'home', $playerId)";
+            $location = self::LOCATION_PLAYER_HOME;
+            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$deck->leader}', $playerId, '{$location}', $playerId)";
             $this->DbQuery($sql);
             $id = $this->DbGetLastId();
 
@@ -441,10 +447,8 @@ class Game extends \Table
                 $leader = $card;
             }
             $leader->Id = $id;
-
-            $serialized =  addslashes(serialize($card));
-            $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $id";
-            $this->DbQuery($sql);
+            $leader->Location = $location;
+            $this->updateCardObjectInDb($leader);
 
             //Set the id of the leader card in the player record
             $sql = "UPDATE player SET leader_card_id = $id WHERE player_id = $playerId";
@@ -471,9 +475,7 @@ class Game extends \Table
                 $id = $this->DbGetLastId();
                 $card = $this->instantiateCard($card);
                 $card->Id = $id;
-                $serialized =  addslashes(serialize($card));
-                $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $id";
-                $this->DbQuery($sql);
+                $this->updateCardObjectInDb($card);
 
                 $this->notifyPlayer($playerId, "approachCard", clienttranslate('Approach Deck: ${card_name}'), [
                     "card_name" => $card->Name,
@@ -508,7 +510,29 @@ class Game extends \Table
             "day" => $day,
         ]);
 
-        //TODO: Clean any unclaimed city cards from the previous day
+        $city_locations = [self::LOCATION_CITY_DOCKS, self::LOCATION_CITY_FORUM, self::LOCATION_CITY_BAZAAR];
+        if ($this->getPlayersNumber() > 2)
+            array_unshift($city_locations, self::LOCATION_CITY_OLES_INN);
+        if ($this->getPlayersNumber() > 3) 
+            $city_locations[] = self::LOCATION_CITY_GOVERNORS_GARDEN;
+
+        foreach ($city_locations as $location) {
+            //Add a city card to each location
+            $cityCard = $this->cards->getCardOnTop(self::LOCATION_CITY_DECK);
+            $this->cards->moveCard($cityCard['id'], $location);
+
+            $card = $this->getCardObjectFromDb($cityCard['id']);
+
+            //Update the location on the card object
+            $card->Location = $location;            
+            $this->updateCardObjectInDb($card);
+
+            $this->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_name} added to ${location} from the city deck'), [
+                "card_name" => $card->Name,
+                "location" => $location,
+                "card" => $card->getPropertyArray()
+            ]);
+        }
 
         $this->gamestate->nextState("");
     }
@@ -565,5 +589,17 @@ class Game extends \Table
         $card = new $className();
 
         return $card;
+    }
+
+    protected function getCardObjectFromDb($cardId) : Card {
+        $data = $this->getObjectFromDB("SELECT card_serialized FROM card WHERE card_id = $cardId");
+        $card = unserialize($data['card_serialized']);
+        return $card;
+    }
+
+    protected function updateCardObjectInDb($card) {
+        $serialized = addslashes(serialize($card));
+        $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $card->Id";
+        $this->DbQuery($sql);
     }
 }
