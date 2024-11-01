@@ -108,8 +108,8 @@ $machinestates = [
 
     STATE_PLANNING_PHASE => [
         "name" => "planningPhase",
-        "description" => clienttranslate('Your opponent must choose a Scheme and Character to muster for the day.'),
-        "descriptionmyturn" => clienttranslate('${you} must choose a Scheme and Character to muster for the day.'),
+        "description" => clienttranslate('Your opponent must choose their Scheme Character to muster for the day.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose ONE Scheme and ONE Character from your Approach Deck to muster for the day.'),
         "type" => "multipleactiveplayer",
         "args" => "argPlanningPhase",
         "action" => "stPlanningPhase",

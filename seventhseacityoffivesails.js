@@ -115,6 +115,9 @@ function (dojo, declare) {
             this.approachDeck.image_items_per_row = 0;
             this.approachDeck.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
             this.approachDeck.onItemCreate = dojo.hitch( this, 'setupNewApproachCard' ); 
+            this.approachDeck.setSelectionAppearance( 'class' )
+            dojo.connect( this.approachDeck, 'onChangeSelection', this, 'onApproachCardSelected' );
+
 
             // For each card in the approach deck, create a stock item
             gamedatas.approachDeck.forEach((card) => {
@@ -143,7 +146,7 @@ function (dojo, declare) {
 
                 case 'pickDecks':
                     break;
-            
+
             /* Example:
             
             case 'myGameState':
@@ -201,6 +204,11 @@ function (dojo, declare) {
                     args.availableDecks.forEach(
                         (deck) => { this.addActionButton(`actPickDeck${deck.id}-btn`, _(deck.name), () => this.onStarterDeckSelected(deck.id)) }
                     ); 
+                    break;
+
+                case 'planningPhase':
+                    this.addActionButton(`actEndPlanningPhase`, _('Confirm Approach Cards'), () => this.bgaPerformAction("actEndPlanningPhase"));
+                    document.getElementById('actEndPlanningPhase').classList.add('disabled');
                     break;
                 }
             }
@@ -416,7 +424,32 @@ function (dojo, declare) {
         {
             const card = this.cardProperties[cardTypeId];
             this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, 500);
-        }
+        },
 
+        onApproachCardSelected: function( control_name, item_id )
+        {
+            var items = this.approachDeck.getSelectedItems();
+            // Grab the type of card from the properties cache and make sure we are only selecting 1 of each type
+            const types = {};
+            items.forEach((item) => {
+                const type = this.cardProperties[item.type].type;
+                if (types[type]) {
+                    this.approachDeck.unselectItem(item_id);
+                } else {              
+                    types[type] = true;
+                }
+            });
+
+            var items = this.approachDeck.getSelectedItems();
+
+            // Enable the confirm button if we have 2 cards selected
+            if (items.length === 2) {
+                document.getElementById('actEndPlanningPhase').classList.remove('disabled');
+            } else {
+                document.getElementById('actEndPlanningPhase').classList.add('disabled');
+            }
+
+
+        },
     });      
 });

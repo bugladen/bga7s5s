@@ -492,3 +492,8 @@ body {
     font-family: "Pirata One", system-ui;
     font-size: 14pt;
 }
+
+.stockitem_selected {
+	border: 4px solid orange !important;
+    transform: translateX(-3px) translateY(-2px);
+}
