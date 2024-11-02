@@ -257,6 +257,81 @@ class Game extends \Table
         }
         $result["homeCards"] = $homeCards;
 
+        // Get all the cards at Ole's Inn
+        $location = addslashes(self::LOCATION_CITY_OLES_INN);
+        $oleCardsResult = $this->getObjectListFromDB("
+            SELECT card_id as id, card_location_arg as playerId
+            FROM card 
+            WHERE card_location = '{$location}'
+            ");
+        $oleCards = [];
+        foreach ($oleCardsResult as $oleCard) {
+            $card = $this->getCardObjectFromDb($oleCard['id']);
+            $oleCard['card'] = $card->getPropertyArray();
+            $oleCards[] = $oleCard;
+        }
+        $result["oleCards"] = $oleCards;
+
+        // Get all the cards at the City Docks
+        $location = self::LOCATION_CITY_DOCKS;
+        $dockCardsResult = $this->getObjectListFromDB("
+            SELECT card_id as id, card_location_arg as playerId
+            FROM card 
+            WHERE card_location = '{$location}'
+            ");
+        $dockCards = [];
+        foreach ($dockCardsResult as $dockCard) {
+            $card = $this->getCardObjectFromDb($dockCard['id']);
+            $dockCard['card'] = $card->getPropertyArray();
+            $dockCards[] = $dockCard;
+        }
+        $result["dockCards"] = $dockCards;
+
+        // Get all the cards at the City Forum
+        $location = self::LOCATION_CITY_FORUM;
+        $forumCardsResult = $this->getObjectListFromDB("
+            SELECT card_id as id, card_location_arg as playerId
+            FROM card 
+            WHERE card_location = '{$location}'
+            ");
+        $forumCards = [];
+        foreach ($forumCardsResult as $forumCard) {
+            $card = $this->getCardObjectFromDb($forumCard['id']);
+            $forumCard['card'] = $card->getPropertyArray();
+            $forumCards[] = $forumCard;
+        }
+        $result["forumCards"] = $forumCards;
+
+        // Get all the cards at the Grand Bazaar
+        $location = self::LOCATION_CITY_BAZAAR;
+        $bazaarCardsResult = $this->getObjectListFromDB("
+            SELECT card_id as id, card_location_arg as playerId
+            FROM card 
+            WHERE card_location = '{$location}'
+            ");
+        $bazaarCards = [];
+        foreach ($bazaarCardsResult as $bazaarCard) {
+            $card = $this->getCardObjectFromDb($bazaarCard['id']);
+            $bazaarCard['card'] = $card->getPropertyArray();
+            $bazaarCards[] = $bazaarCard;
+        }
+        $result["bazaarCards"] = $bazaarCards;        
+
+        // Get all the cards at the Governor's Garden
+        $location = addslashes(self::LOCATION_CITY_GOVERNORS_GARDEN);
+        $gardenCardsResult = $this->getObjectListFromDB("
+            SELECT card_id as id, card_location_arg as playerId
+            FROM card 
+            WHERE card_location = '{$location}'
+            ");
+        $gardenCards = [];
+        foreach ($gardenCardsResult as $gardenCard) {
+            $card = $this->getCardObjectFromDb($gardenCard['id']);
+            $gardenCard['card'] = $card->getPropertyArray();
+            $gardenCards[] = $gardenCard;
+        }
+        $result["gardenCards"] = $gardenCards;       
+
         // Get the approach deck for the current player
         $approachCards = $this->getCollectionFromDb("
         SELECT card_id, card_location_arg

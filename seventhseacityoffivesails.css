@@ -352,9 +352,7 @@ body {
     display: inline-block;
     margin-left:20px;
     margin-right:5px;
-}
 
-.card-character {
     background-image: var(--card_image);
     background-size: 205px 280px;
     background-position: -52px -36px;
@@ -476,7 +474,7 @@ body {
     margin-left: 5px;
 }
 
-.character-player-color {
+.card-player-color {
     position: relative;
     display: inline-block;
     background-color: var(--player-color);
@@ -484,7 +482,7 @@ body {
     height: 12px;
     width: 12px;
     left: 90px;
-    top: 90px;
+    top: 70px;
     border: 2px solid black;
 }
 

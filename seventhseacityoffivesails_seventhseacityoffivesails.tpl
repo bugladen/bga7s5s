@@ -48,9 +48,9 @@ var jstpl_home=`
 </div>
 `;
 
-var jstpl_card_character=`
+var jstpl_character=`
 <div id="\${id}">
-<div class="card card-character home-\${faction}" style="--card_image:url('\${image}')">
+<div class="card home-\${faction}" style="--card_image:url('\${image}')">
     <div class="character-resolve">\${resolve}</div>
     <div id="\${id}-wounds" class="character-wounds">\${wounds}</div>
     <div class="character-stat character-combat">
@@ -65,7 +65,35 @@ var jstpl_card_character=`
         <div class="character-influence-value">\${influence}</div>
         <div class="character-influence-image"></div>
     </div>
-    <div id="\${id}-character-player-color" style="--player-color:#\${player_color}"></div>
+    <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="card-player-color"></div>
+</div>
+`;
+
+var jstpl_card_attachment=`
+<div id="\${id}">
+<div class="card home-\${faction}" style="--card_image:url('\${image}')">
+    <div class="character-resolve">\${resolve}</div>
+    <div class="character-wounds">\${cost}</div>
+    <div class="character-stat character-combat">
+        <div class="character-combat-value">\${combat}</div>
+        <div class="character-combat-image"></div>
+    </div>
+    <div class="character-stat character-finesse">
+        <div class="character-finesse-value">\${finesse}</div>
+        <div class="character-finesse-image"></div>
+    </div>
+    <div class="character-stat character-influence">
+        <div class="character-influence-value">\${influence}</div>
+        <div class="character-influence-image"></div>
+    </div>
+    <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="card-player-color"></div>
+</div>
+`;
+
+var jstpl_card_event=`
+<div id="\${id}">
+<div class="card home-\${faction}" style="--card_image:url('\${image}')">
+    <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="card-player-color"></div>
 </div>
 `;
 

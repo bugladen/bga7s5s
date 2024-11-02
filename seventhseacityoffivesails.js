@@ -32,6 +32,14 @@ function (dojo, declare) {
             this.cardImageWidth = 495;
             this.cardImageHeight = 675;
 
+            const LOCATION_CITY_DECK = 'City Deck';
+            const LOCATION_CITY_DOCKS = 'City Docks';
+            const LOCATION_CITY_FORUM = 'City Forum';
+            const LOCATION_CITY_BAZAAR = 'The Grand Bazaar';
+            const LOCATION_CITY_OLES_INN = "Ole's Inn";
+            const LOCATION_CITY_GOVERNORS_GARDEN = "Governor's Garden";
+            const LOCATION_PLAYER_HOME = 'Player Home';
+        
             //Global array containing cached properties of all the cards this page has had access to
             this.cardProperties = {};
         },
@@ -109,13 +117,45 @@ function (dojo, declare) {
             // Set up cards in home locations
             for( const index in gamedatas.homeCards )
             {
-                const cardArray = gamedatas.homeCards[index];
-                const playerInfo = this.gamedatas.players[cardArray.playerId];
-                const cardId = `${cardArray.playerId}-${cardArray.card.id}`;
-                this.createCharacterCard(cardId, playerInfo.color, cardArray.card, cardArray.playerId + '-home-anchor');
+                const card = gamedatas.homeCards[index];
+                const playerInfo = this.gamedatas.players[card.playerId];
+                const cardId = `${card.playerId}-${card.card.id}`;
+                this.createCharacterCard(cardId, playerInfo.color, card.card, card.playerId + '-home-anchor');
             }
-            
-            // Create Approach deck
+
+            // Set up cards in oles inn
+            for( const index in gamedatas.oleCards )
+            {
+                const card = gamedatas.oleCards[index];
+                const cardId = `olesinn-${card.card.id}`;
+                this.createCard(cardId, card.card, 'oles-inn-endcap');
+            }
+
+            // Set up cards in the docks
+            for( const index in gamedatas.dockCards )
+            {
+                const card = gamedatas.dockCards[index];
+                const cardId = `docks-${card.card.id}`;
+                this.createCard(cardId, card.card, 'dock-endcap');
+            }
+
+            // Set up cards in the forum
+            for( const index in gamedatas.forumCards )
+            {
+                const card = gamedatas.forumCards[index];
+                const cardId = `forums-${card.card.id}`;
+                this.createCard(cardId, card.card, 'forum-endcap');
+            }
+                
+            // Set up cards in the bazaar
+            for( const index in gamedatas.bazaarCards )
+                {
+                    const card = gamedatas.bazaarCards[index];
+                    const cardId = `bazaar-${card.card.id}`;
+                    this.createCard(cardId, card.card, 'bazaar-endcap');
+                }
+
+                // Create Approach deck
             this.approachDeck = new ebg.stock();
             this.approachDeck.create( this, $('approachDeck'), this.wholeCardWidth, this.wholeCardHeight ); 
             this.approachDeck.image_items_per_row = 0;
@@ -135,6 +175,38 @@ function (dojo, declare) {
 
             console.log( "Ending game setup" );
         },
+
+        createCard: function( cardId, card, targetDiv )
+        {
+            if (card.type === 'Character')
+            {
+                if (card.playerId != null) {
+                    const playerInfo = this.gamedatas.players[card.playerId];
+                    this.createCharacterCard(cardId, playerInfo.color, card, targetDiv);
+                }
+                else {
+                    this.createCharacterCard(cardId, '', card, targetDiv);
+                    dojo.removeClass(`${cardId}-player-color`, 'card-player-color');
+                }
+            }
+            else if (card.type === 'Event')
+            {
+                this.createEventCard(cardId, playerInfo.color, card, targetDiv);
+            }
+            else if (card.type === 'Attachment') {
+                if (card.playerId != null) {
+                    const playerInfo = this.gamedatas.players[card.playerId];
+                    this.createAttachmentCard(cardId, playerInfo.color, card, targetDiv);
+                }
+                else {
+                    this.createAttachmentCard(cardId, '', card, targetDiv);
+                    dojo.removeClass(`${cardId}-player-color`, 'card-player-color');
+                }
+            }
+
+
+        },
+
        
 
         ///////////////////////////////////////////////////
@@ -260,8 +332,7 @@ function (dojo, declare) {
             //Add to the card properties cache
             this.cardProperties[character.id] = character;
 
-            // Leader
-            dojo.place( this.format_block( 'jstpl_card_character', {
+            dojo.place( this.format_block( 'jstpl_character', {
                 id: divId,
                 faction: character.faction.toLowerCase(),
                 image: character.image,
@@ -279,6 +350,62 @@ function (dojo, declare) {
 
             this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, 500);
         },  
+
+        createEventCard: function( divId, color, event, location )
+        {
+            //Set the divId of the card
+            event.divId = divId;
+
+            //Add to the card properties cache
+            this.cardProperties[event.id] = event;
+
+            // Leader
+            dojo.place( this.format_block( 'jstpl_card_event', {
+                id: divId,
+                faction: event.faction.toLowerCase(),
+                image: event.image,
+                player_color: color,
+            }), location, "before" );
+
+            this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + event.image}" />`, 500);
+        },  
+
+        createAttachmentCard: function( divId, color, attachment, location )
+        {
+            //Set the divId of the card
+            attachment.divId = divId;
+
+            //Add to the card properties cache
+            this.cardProperties[attachment.id] = attachment;
+
+            console.log('attachment', attachment);
+
+            // Leader
+            dojo.place( this.format_block( 'jstpl_card_attachment', {
+                id: divId,
+                faction: attachment.faction.toLowerCase(),
+                image: attachment.image,
+                player_color: color,
+                resolve: this.formatModifer(attachment.resolveModifier),
+                combat: this.formatModifer(attachment.combatModifier),
+                finesse: this.formatModifer(attachment.finesseModifier),
+                influence: this.formatModifer(attachment.influenceModifier),
+                cost: attachment.wealthCost,
+            }), location, "before" );
+
+            this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + attachment.image}" />`, 500);
+        },
+
+        formatModifer: function( modifier )
+        {
+            if (modifier > 0) {
+                return `+${modifier}`;
+            } else if (modifier < 0) {
+                return modifier;
+            } else {
+                return '-';
+            }
+        },
 
         ///////////////////////////////////////////////////
         //// Player's action
