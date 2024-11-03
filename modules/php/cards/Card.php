@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 abstract class Card
 {
     public int $Id; 
+    public int $OwnerId;
     public string $Name;
     public string $Image;
     public string $ExpansionName;
@@ -18,6 +19,7 @@ abstract class Card
     public function __construct()
     {
         $this->Id = 0;
+        $this->OwnerId = 0;
         $this->Name = "";
         $this->Image = "";
         $this->ExpansionName = "";
@@ -32,6 +34,7 @@ abstract class Card
     {
         $properties = [
             'id' => $this->Id,
+            'ownerId' => $this->OwnerId,
             'name' => $this->Name,
             'image' => $this->Image,
             'faction' => $this->Faction,

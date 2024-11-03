@@ -518,6 +518,7 @@ class Game extends \Table
 
             //Instantiate the leader card and assign it the id from the db
             $card = $this->instantiateCard($deck->leader);
+            $card->OwnerId = $playerId;
             if ($card instanceof Leader) {
                 $leader = $card;
             }

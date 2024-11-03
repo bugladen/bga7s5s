@@ -534,23 +534,17 @@ body {
     margin-left: 2px;
 }
 
-.card-player-color {
+.character-player-color {
     position: relative;
     background-color: var(--player-color);
     border-radius: 50%;
     height: 12px;
     width: 12px;
     left: 90px;
-    top: 70px;
+    top: 60px;
     border: 2px solid black;
 }
-.character-player-color {
-    top: 60px;
- }
- .attachment-player-color {
-    top: 60px;
- }
-
+ 
 .basic-tooltip {
     font-family: "Pirata One", system-ui;
     font-size: 14pt;

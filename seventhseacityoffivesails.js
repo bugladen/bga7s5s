@@ -133,42 +133,42 @@ function (dojo, declare) {
             // Set up cards in home locations
             for( const index in gamedatas.homeCards )
             {
-                const card = gamedatas.homeCards[index];
-                const playerInfo = this.gamedatas.players[card.playerId];
-                const cardId = `${card.playerId}-${card.card.id}`;
-                this.createCharacterCard(cardId, playerInfo.color, card.card, card.playerId + '-home-anchor');
+                const card = gamedatas.homeCards[index].card;
+                const playerInfo = this.gamedatas.players[card.ownerId];
+                const divId = `${card.ownerId}-${card.id}`;
+                this.createCharacterCard(divId, playerInfo.color, card, card.ownerId + '-home-anchor');
             }
 
             // Set up cards in oles inn
             for( const index in gamedatas.oleCards )
             {
-                const card = gamedatas.oleCards[index];
-                const cardId = `olesinn-${card.card.id}`;
-                this.createCard(cardId, card.card, 'oles-inn-endcap');
+                const card = gamedatas.oleCards[index].card;
+                const cardId = `olesinn-${card.id}`;
+                this.createCard(cardId, card, 'oles-inn-endcap');
             }
 
             // Set up cards in the docks
             for( const index in gamedatas.dockCards )
             {
-                const card = gamedatas.dockCards[index];
-                const cardId = `docks-${card.card.id}`;
-                this.createCard(cardId, card.card, 'dock-endcap');
+                const card = gamedatas.dockCards[index].card;
+                const cardId = `docks-${card.id}`;
+                this.createCard(cardId, card, 'dock-endcap');
             }
 
             // Set up cards in the forum
             for( const index in gamedatas.forumCards )
             {
-                const card = gamedatas.forumCards[index];
-                const cardId = `forums-${card.card.id}`;
-                this.createCard(cardId, card.card, 'forum-endcap');
+                const card = gamedatas.forumCards[index].card;
+                const cardId = `forums-${card.id}`;
+                this.createCard(cardId, card, 'forum-endcap');
             }
                 
             // Set up cards in the bazaar
             for( const index in gamedatas.bazaarCards )
                 {
-                    const card = gamedatas.bazaarCards[index];
-                    const cardId = `bazaar-${card.card.id}`;
-                    this.createCard(cardId, card.card, 'bazaar-endcap');
+                    const card = gamedatas.bazaarCards[index].card;
+                    const cardId = `bazaar-${card.id}`;
+                    this.createCard(cardId, card, 'bazaar-endcap');
                 }
 
                 // Create Approach deck
@@ -176,7 +176,7 @@ function (dojo, declare) {
             this.approachDeck.create( this, $('approachDeck'), this.wholeCardWidth, this.wholeCardHeight ); 
             this.approachDeck.image_items_per_row = 0;
             this.approachDeck.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
-            this.approachDeck.onItemCreate = dojo.hitch( this, 'setupNewApproachCard' ); 
+            this.approachDeck.onItemCreate = dojo.hitch( this, 'setupNewStockApproachCard' ); 
             this.approachDeck.setSelectionAppearance( 'class' )
             dojo.connect( this.approachDeck, 'onChangeSelection', this, 'onApproachCardSelected' );
 
@@ -192,31 +192,31 @@ function (dojo, declare) {
             console.log( "Ending game setup" );
         },
 
-        createCard: function( cardId, card, targetDiv )
+        createCard: function( divId, card, targetDiv )
         {
-            if (card.type === 'Character')
+            if (card.type === 'Character' || card.type === 'Leader')
             {
-                if (card.playerId != null) {
-                    const playerInfo = this.gamedatas.players[card.playerId];
-                    this.createCharacterCard(cardId, playerInfo.color, card, targetDiv);
+                if (card.ownerId !== 0) {
+                    const playerInfo = this.gamedatas.players[card.ownerId];
+                    this.createCharacterCard(divId, playerInfo.color, card, targetDiv);
+                    dojo.style( `${divId}-wealth-cost`, 'display', 'none' );
                 }
                 else {
-                    this.createCharacterCard(cardId, '', card, targetDiv);
-                    dojo.removeClass(`${cardId}-player-color`, 'card-player-color');
+                    this.createCharacterCard(divId, '', card, targetDiv);
+                    dojo.removeClass(`${divId}-player-color`, 'character-player-color');
                 }
             }
             else if (card.type === 'Event')
             {
-                this.createEventCard(cardId, card, targetDiv);
+                this.createEventCard(divId, card, targetDiv);
             }
             else if (card.type === 'Attachment') {
-                if (card.playerId != null) {
-                    const playerInfo = this.gamedatas.players[card.playerId];
-                    this.createAttachmentCard(cardId, playerInfo.color, card, targetDiv);
+                if (card.ownerId !== 0) {
+                    const playerInfo = this.gamedatas.players[card.ownerId];
+                    this.createAttachmentCard(divId, playerInfo.color, card, targetDiv);
                 }
                 else {
-                    this.createAttachmentCard(cardId, '', card, targetDiv);
-                    dojo.removeClass(`${cardId}-player-color`, 'card-player-color');
+                    this.createAttachmentCard(divId, '', card, targetDiv);
                 }
             }
 
@@ -366,6 +366,13 @@ function (dojo, declare) {
                 wounds: character.wounds,
                 cost: wealthCost,
             }), location, "before" );
+
+            if (!character.wealthCost) {
+                dojo.style( `${divId}-wealth-cost`, 'display', 'none' );
+            }
+            if (character.wounds === 0) {
+                dojo.style( `${divId}-wounds`, 'display', 'none' );
+            }
 
             this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, 500);
         },  
@@ -523,12 +530,14 @@ function (dojo, declare) {
                 args.leader
             );
 
-            this.createCharacterCard(
-                `${args.player_id}-leader`,
-                args.player_color, 
-                args.leader, 
-                `${args.player_id}-home-anchor`,
-            );
+            // this.createCharacterCard(
+            //     `${args.player_id}-leader`,
+            //     args.player_color, 
+            //     args.leader, 
+            //     `${args.player_id}-home-anchor`,
+            // );
+
+            this.createCard(`${args.player_id}-${args.leader.id}`, args.leader, `${args.player_id}-home-anchor`);
 
             // Update the player panel
             $(`${args.player_id}-score-crewcap`).innerHTML = args.leader.crewCap;
@@ -629,7 +638,7 @@ function (dojo, declare) {
             this.approachDeck.addToStockWithId(card.id, card.id);
         },
 
-        setupNewApproachCard: function( cardDiv, cardTypeId, cardId )
+        setupNewStockApproachCard: function( cardDiv, cardTypeId, cardId )
         {
             const card = this.cardProperties[cardTypeId];
             this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, 500);

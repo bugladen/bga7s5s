@@ -76,7 +76,7 @@ var jstpl_character=`
             <div class="card-influence-value">\${influence}</div>
             <div class="card-influence-image"></div>
         </div>
-        <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="card-player-color character-player-color"></div>
+        <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="character-player-color"></div>
     </div>
 </div>
 `;
@@ -98,7 +98,6 @@ var jstpl_card_attachment=`
             <div class="card-influence-value attachment-influence-value">\${influence}</div>
             <div class="card-influence-image"></div>
         </div>
-        <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="card-player-color attachment-player-color"></div>
     </div>
 </div>
 `;
