@@ -51,7 +51,7 @@ var jstpl_home=`
         <div class="seal seal-\${faction}"></div>
         <div>
         <div class="home-player-color" style="--player-color:#\${player_color}"></div>
-        <div id="\${id}-first-player" class="first-player"></div>
+        <div id="\${id}-first-player"></div>
         </div>
     </div>
     <div id="\${id}-home-anchor" class="home-endcap"></div>
@@ -62,7 +62,6 @@ var jstpl_character=`
 <div id="\${id}">
     <div class="card home-\${faction}" style="--card_image:url('\${image}')">
         <div class="card-resolve">\${resolve}</div>
-        <div id="\${id}-wounds" class="character-wounds">\${wounds}</div>
         <div id="\${id}-wealth-cost" class="card-wealth-cost city-character-wealth-cost">\${cost}</div>
         <div class="card-stat-box card-combat-box">
             <div class="card-combat-value">\${combat}</div>

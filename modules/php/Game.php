@@ -551,6 +551,7 @@ class Game extends \Table
                 $id = $this->DbGetLastId();
                 $card = $this->instantiateCard($card);
                 $card->Id = $id;
+                $card->OwnerId = $playerId;
                 $this->updateCardObjectInDb($card);
 
                 $cards[] = $card->getPropertyArray();

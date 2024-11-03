@@ -402,23 +402,6 @@ body {
     color: white
 }
 
-.character-wounds {
-    position: relative;
-    background-image: url('img/boardResources.png');
-    background-size: calc(var(--png-board-resource-width) * 0.2) calc(var(--png-board-resource-height) * 0.2);
-    background-position: 0px -31px;
-    top: 3px;
-    left: 3px;
-    width: 20px;
-    height:21px;
-    font-family: "Pirata One", system-ui;
-    font-size: 10pt;
-    line-height: 21px;
-    text-align: center;
-    color: yellow;
-    margin-top: 10px;
-}
-
 .card-wealth-cost {
     position: relative;
     left: 65px;
@@ -541,7 +524,7 @@ body {
     height: 12px;
     width: 12px;
     left: 90px;
-    top: 60px;
+    top: 90px;
     border: 2px solid black;
 }
  

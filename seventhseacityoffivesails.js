@@ -125,6 +125,7 @@ function (dojo, declare) {
                 if (gamedatas.turnPhase > 0) {
                     // Home
                     this.createHome(playerId, player.color, player.leader);
+                    dojo.addClass( `overall_player_board_${playerId}`, `home-${player.leader.faction.toLowerCase()}` );
                 }
             }
 
@@ -363,15 +364,11 @@ function (dojo, declare) {
                 combat: combat,
                 finesse: finesse,
                 influence: influence,
-                wounds: character.wounds,
                 cost: wealthCost,
             }), location, "before" );
 
             if (!character.wealthCost) {
                 dojo.style( `${divId}-wealth-cost`, 'display', 'none' );
-            }
-            if (character.wounds === 0) {
-                dojo.style( `${divId}-wounds`, 'display', 'none' );
             }
 
             this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, 500);
@@ -540,6 +537,7 @@ function (dojo, declare) {
             this.createCard(`${args.player_id}-${args.leader.id}`, args.leader, `${args.player_id}-home-anchor`);
 
             // Update the player panel
+            dojo.addClass( `overall_player_board_${args.player_id}`, `home-${args.leader.faction.toLowerCase()}` );
             $(`${args.player_id}-score-crewcap`).innerHTML = args.leader.crewCap;
             $(`${args.player_id}-score-panache`).innerHTML = args.leader.panache;
 
