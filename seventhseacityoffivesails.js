@@ -22,7 +22,7 @@ define([
     "ebg/stock"
 ],
 function (dojo, declare) {
-    
+
     const LOCATION_CITY_DECK = 'City Deck';
     const LOCATION_CITY_DOCKS = 'City Docks';
     const LOCATION_CITY_FORUM = 'City Forum';
@@ -525,8 +525,10 @@ function (dojo, declare) {
             console.log( 'notif_approachCard' );
             console.log( notif );
 
-            this.addCardToApproachDeck(notif.args.card);
-    },
+            notif.args.cards.forEach((card) => {
+                this.addCardToApproachDeck(card);
+            });            
+        },
 
         notif_dawn: function( notif )
         {

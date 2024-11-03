@@ -552,12 +552,14 @@ class Game extends \Table
                 $card->Id = $id;
                 $this->updateCardObjectInDb($card);
 
-                $this->notifyPlayer($playerId, "approachCard", clienttranslate('Approach Deck: ${card_name}'), [
-                    "card_name" => $card->Name,
-                    "player_id" => $playerId,
-                    "card" => $card->getPropertyArray(),
-                ]);
-                }
+                $cards[] = $card->getPropertyArray();
+            }
+
+            $cardList = implode(", ", array_map(function($card) { return $card['name']; }, $cards));
+            $this->notifyPlayer($playerId, "approachCard", clienttranslate('You received your Approach Deck containing: ${card_list}'), [
+                "card_list" => $cardList,
+                "cards" => $cards
+            ]);
 
             // Create player's Faction deck
             $factionDeck = $deck->faction_deck;
