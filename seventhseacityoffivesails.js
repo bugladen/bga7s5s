@@ -22,15 +22,6 @@ define([
     "ebg/stock"
 ],
 function (dojo, declare) {
-
-    const LOCATION_CITY_DECK = 'City Deck';
-    const LOCATION_CITY_DOCKS = 'City Docks';
-    const LOCATION_CITY_FORUM = 'City Forum';
-    const LOCATION_CITY_BAZAAR = 'The Grand Bazaar';
-    const LOCATION_CITY_OLES_INN = "Ole's Inn";
-    const LOCATION_CITY_GOVERNORS_GARDEN = "Governor's Garden";
-    const LOCATION_PLAYER_HOME = 'Player Home';
-
     return declare("bgagame.seventhseacityoffivesails", ebg.core.gamegui, {
         constructor: function(){
 
@@ -41,6 +32,14 @@ function (dojo, declare) {
             this.cardImageWidth = 495;
             this.cardImageHeight = 675;
         
+            this.LOCATION_CITY_DECK = 'City Deck';
+            this.LOCATION_CITY_DOCKS = 'City Docks';
+            this.LOCATION_CITY_FORUM = 'City Forum';
+            this.LOCATION_CITY_BAZAAR = 'The Grand Bazaar';
+            this.LOCATION_CITY_OLES_INN = "Ole's Inn";
+            this.LOCATION_CITY_GOVERNORS_GARDEN = "Governor's Garden";
+            this.LOCATION_PLAYER_HOME = 'Player Home';
+
             //Global array containing cached properties of all the cards this page has had access to
             this.cardProperties = {};
         },
@@ -555,23 +554,23 @@ function (dojo, declare) {
             let cardId = null;
             let location = '';
             switch (args.location) {
-                case LOCATION_CITY_OLES_INN:
+                case this.LOCATION_CITY_OLES_INN:
                     cardId = `oles-inn-${card.id}`;
                     location = 'oles-inn-endcap';
                     break;
-                case LOCATION_CITY_DOCKS:
+                case this.LOCATION_CITY_DOCKS:
                     cardId = `docks-${card.id}`;
                     location = 'dock-endcap';
                     break;
-                case LOCATION_CITY_FORUM:
+                case this.LOCATION_CITY_FORUM:
                     cardId = `forum-${card.id}`;
                     location = 'forum-endcap';
                     break;
-                case LOCATION_CITY_BAZAAR:
+                case this.LOCATION_CITY_BAZAAR:
                     cardId = `bazaar-${card.id}`;
                     location = 'bazaar-endcap';
                     break;
-                case LOCATION_CITY_GOVERNORS_GARDEN:
+                case this.LOCATION_CITY_GOVERNORS_GARDEN:
                     cardId = `governors-garden-${card.id}`;
                     location = 'governors-garden-endcap';
                     break;
