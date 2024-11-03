@@ -349,14 +349,12 @@ function (dojo, declare) {
             this.cardProperties[character.id] = character;
 
             const wealthCost = character.wealthCost ? character.wealthCost : '';
-            const template = character.wealthCost ? 'jstpl_city_character' : 'jstpl_character';
-            const wounds = character.wounds > 0 ? character.wounds : '-';
             const resolve = character.resolve > 0 ? character.resolve : '-';
             const combat = character.combat > 0 ? character.combat : '-';
             const finesse = character.finesse > 0 ? character.finesse : '-';
             const influence = character.influence > 0 ? character.influence : '-';
 
-            dojo.place( this.format_block( template, {
+            dojo.place( this.format_block( 'jstpl_character', {
                 id: divId,
                 faction: character.faction.toLowerCase(),
                 image: character.image,
@@ -365,7 +363,7 @@ function (dojo, declare) {
                 combat: combat,
                 finesse: finesse,
                 influence: influence,
-                wounds: wounds,
+                wounds: character.wounds,
                 cost: wealthCost,
             }), location, "before" );
 

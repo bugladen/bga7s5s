@@ -536,7 +536,6 @@ body {
 
 .card-player-color {
     position: relative;
-    display: inline-block;
     background-color: var(--player-color);
     border-radius: 50%;
     height: 12px;
@@ -547,9 +546,6 @@ body {
 }
 .character-player-color {
     top: 60px;
- }
- .city-character-player-color {
-    top: 30px;
  }
  .attachment-player-color {
     top: 60px;
