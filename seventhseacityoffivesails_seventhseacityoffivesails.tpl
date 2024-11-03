@@ -51,42 +51,64 @@ var jstpl_home=`
 var jstpl_character=`
 <div id="\${id}">
 <div class="card home-\${faction}" style="--card_image:url('\${image}')">
-    <div class="character-resolve">\${resolve}</div>
+    <div class="card-resolve">\${resolve}</div>
     <div id="\${id}-wounds" class="character-wounds">\${wounds}</div>
-    <div class="character-stat character-combat">
-        <div class="character-combat-value">\${combat}</div>
-        <div class="character-combat-image"></div>
+    <div class="card-stat-box card-combat-box">
+        <div class="card-combat-value">\${combat}</div>
+        <div class="card-combat-image"></div>
     </div>
-    <div class="character-stat character-finesse">
-        <div class="character-finesse-value">\${finesse}</div>
-        <div class="character-finesse-image"></div>
+    <div class="card-stat-box card-finesse-box">
+        <div class="finesse-value card-finesse-value">\${finesse}</div>
+        <div class="card-finesse-image"></div>
     </div>
-    <div class="character-stat character-influence">
-        <div class="character-influence-value">\${influence}</div>
-        <div class="character-influence-image"></div>
+    <div class="card-stat-box card-influence">
+        <div class="card-influence-value">\${influence}</div>
+        <div class="card-influence-image"></div>
     </div>
-    <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="card-player-color"></div>
+    <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="card-player-color character-player-color"></div>
+</div>
+`;
+
+var jstpl_city_character=`
+<div id="\${id}">
+<div class="card home-\${faction}" style="--card_image:url('\${image}')">
+    <div class="card-resolve">\${resolve}</div>
+    <div id="\${id}-wounds" class="character-wounds">\${wounds}</div>
+    <div id="\${id}-wealth-cost" class="card-wealth-cost city-character-wealth-cost">\${cost}</div>
+    <div class="card-stat-box card-combat-box">
+        <div class="card-combat-value">\${combat}</div>
+        <div class="card-combat-image"></div>
+    </div>
+    <div class="card-stat-box card-finesse-box">
+        <div class="finesse-value card-finesse-value">\${finesse}</div>
+        <div class="card-finesse-image"></div>
+    </div>
+    <div class="card-stat-box card-influence">
+        <div class="card-influence-value">\${influence}</div>
+        <div class="card-influence-image"></div>
+    </div>
+    <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="card-player-color city-character-player-color"></div>
 </div>
 `;
 
 var jstpl_card_attachment=`
 <div id="\${id}">
 <div class="card home-\${faction}" style="--card_image:url('\${image}')">
-    <div class="character-resolve">\${resolve}</div>
-    <div class="character-wounds">\${cost}</div>
-    <div class="character-stat character-combat">
-        <div class="character-combat-value">\${combat}</div>
-        <div class="character-combat-image"></div>
+    <div class="card-resolve">\${resolve}</div>
+    <div id="\${id}-wealth-cost" class="card-wealth-cost">\${cost}</div>
+    <div class="card-stat-box card-combat-box">
+        <div class="card-combat-value attachment-combat-value">\${combat}</div>
+        <div class="card-combat-image"></div>
     </div>
-    <div class="character-stat character-finesse">
-        <div class="character-finesse-value">\${finesse}</div>
-        <div class="character-finesse-image"></div>
+    <div class="card-stat-box card-finesse-box">
+        <div class="card-finesse-value attachment-finesse-value">\${finesse}</div>
+        <div class="card-finesse-image"></div>
     </div>
-    <div class="character-stat character-influence">
-        <div class="character-influence-value">\${influence}</div>
-        <div class="character-influence-image"></div>
+    <div class="card-stat-box card-influence">
+        <div class="card-influence-value attachment-influence-value">\${influence}</div>
+        <div class="card-influence-image"></div>
     </div>
-    <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="card-player-color"></div>
+    <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="card-player-color attachment-player-color"></div>
 </div>
 `;
 

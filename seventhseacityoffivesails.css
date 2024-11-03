@@ -219,7 +219,7 @@ body {
     height: 42px;
     margin-top: 33px;
 
-    /* must equal with of widest endcap image */
+    /* must equal width of widest endcap image */
     width: 44px;
     margin-left:3px;
     margin-right: 4px;
@@ -361,7 +361,7 @@ body {
     border-radius: 10px;
 }
 
-.character-resolve {
+.card-resolve {
     position: absolute;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.3) calc(var(--png-board-resource-height) * 0.3);
@@ -378,37 +378,58 @@ body {
 
 .character-wounds {
     position: relative;
-    display: inline-block;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.2) calc(var(--png-board-resource-height) * 0.2);
     background-position: 0px -31px;
-    left: 4px;
-    top: 12px;
+    top: 3px;
+    left: 3px;
     width: 20px;
     height:21px;
     font-family: "Pirata One", system-ui;
-    font-size: 8pt;
+    font-size: 10pt;
     line-height: 21px;
     text-align: center;
     color: yellow;
+    margin-top: 10px;
 }
 
-.character-stat {
-    width: 36px;
+.card-wealth-cost {
+    position: relative;
+    left: 65px;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * 0.3) calc(var(--png-board-resource-height) * 0.3);
+    background-position: -69px -47px;
+    width: 30px;
+    height:30px;
+    margin-left: 15px;
+    font-family: "Pirata One", system-ui;
+    font-size: 14pt;
+    line-height: 30px;
+    text-align: center;
+    color: white;
+}
+.city-character-wealth-cost {
+    left: 65px;
+    top: -30px;
+}
+
+.card-stat-box {
+    width: 38px;
     height: 20px;
     line-height: 20px;
     margin-left: -15px;
 }
 
-.character-combat {
+.card-combat-box {
     position: absolute;
     border: 1px solid black;
     background-color: #E4CCAC;
     bottom: 56px;
 }
 
-.character-combat-image {
-    display: inline-block;
+.card-combat-image {
+    float: right;
+    margin-right: 3px;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.6993) calc(var(--png-board-resource-height) * 0.6942);
     background-position: -545px -2px;
@@ -416,62 +437,75 @@ body {
     height: 19px;
 }
 
-.character-combat-value {
-    display: inline-block;
+.card-combat-value {
+    float: left;
+    margin-left: 3px;
     font-family: "Pirata One", system-ui;
     font-size: 14pt;
     vertical-align: top;
-    margin-left: 5px;
+    width:10px;
+}
+.attachment-combat-value {
+    font-size:12pt;
+    margin-left: 2px;
 }
 
-.character-finesse {
+.card-finesse-box {
     position: absolute;
     border: 1px solid black;
     background-color: #E4CCAC;
     bottom: 32px;
 }
 
-.character-finesse-image {
-    display: inline-block;
+.card-finesse-image {
+    float: right;
+    margin-right: 2px;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.6993) calc(var(--png-board-resource-height) * 0.6942);
     background-position: -541px -43px;
     width: 19px;
     height: 19px;
-    margin-left: -3px;
 }
 
-.character-finesse-value {
-    display: inline-block;
+.card-finesse-value {
+    float: left;
+    margin-left: 3px;
     font-family: "Pirata One", system-ui;
     font-size: 14pt;
     vertical-align: top;
-    margin-left: 5px;
+}
+.attachment-finesse-value {
+    font-size:12pt;
+    margin-left: 2px;
 }
 
-.character-influence {
+.card-influence {
     position: absolute;
     border: 1px solid black;
     background-color: #E4CCAC;
     bottom: 8px;
 }
 
-.character-influence-image {
-    display: inline-block;
+.card-influence-image {
+    float:right;
+    margin-right: 1px;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.6993) calc(var(--png-board-resource-height) * .6942);
     background-position: -540px -82px;
     width: 21px;
     height: 19px;
-    margin-left: -3px;
 }
 
-.character-influence-value {
-    display: inline-block;
+.card-influence-value {
+    float: left;
+    margin-left: 3px;
     font-family: "Pirata One", system-ui;
     font-size: 14pt;
     vertical-align: top;
-    margin-left: 5px;
+}
+.attachment-influence-value {
+    font-size: 12pt;
+    margin-left: 2px;
 }
 
 .card-player-color {
@@ -485,6 +519,15 @@ body {
     top: 70px;
     border: 2px solid black;
 }
+.character-player-color {
+    top: 60px;
+ }
+ .city-character-player-color {
+    top: 30px;
+ }
+ .attachment-player-color {
+    top: 60px;
+ }
 
 .basic-tooltip {
     font-family: "Pirata One", system-ui;

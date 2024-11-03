@@ -332,7 +332,11 @@ function (dojo, declare) {
             //Add to the card properties cache
             this.cardProperties[character.id] = character;
 
-            dojo.place( this.format_block( 'jstpl_character', {
+            const wealthCost = character.wealthCost ? character.wealthCost : '';
+            const template = character.wealthCost ? 'jstpl_city_character' : 'jstpl_character';
+            const wounds = character.wounds > 0 ? character.wounds : '-';
+
+            dojo.place( this.format_block( template, {
                 id: divId,
                 faction: character.faction.toLowerCase(),
                 image: character.image,
@@ -341,12 +345,9 @@ function (dojo, declare) {
                 combat: character.combat,
                 finesse: character.finesse,
                 influence: character.influence,
-                wounds: character.wounds,
+                wounds: wounds,
+                cost: wealthCost,
             }), location, "before" );
-
-            if (character.wounds == 0) {
-                dojo.removeClass(`${divId}-wounds`, 'character-wounds');
-            }
 
             this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, 500);
         },  
