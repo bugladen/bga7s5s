@@ -22,6 +22,15 @@ define([
     "ebg/stock"
 ],
 function (dojo, declare) {
+    
+    const LOCATION_CITY_DECK = 'City Deck';
+    const LOCATION_CITY_DOCKS = 'City Docks';
+    const LOCATION_CITY_FORUM = 'City Forum';
+    const LOCATION_CITY_BAZAAR = 'The Grand Bazaar';
+    const LOCATION_CITY_OLES_INN = "Ole's Inn";
+    const LOCATION_CITY_GOVERNORS_GARDEN = "Governor's Garden";
+    const LOCATION_PLAYER_HOME = 'Player Home';
+
     return declare("bgagame.seventhseacityoffivesails", ebg.core.gamegui, {
         constructor: function(){
 
@@ -31,14 +40,6 @@ function (dojo, declare) {
             this.wholeCardHeight = 98;
             this.cardImageWidth = 495;
             this.cardImageHeight = 675;
-
-            const LOCATION_CITY_DECK = 'City Deck';
-            const LOCATION_CITY_DOCKS = 'City Docks';
-            const LOCATION_CITY_FORUM = 'City Forum';
-            const LOCATION_CITY_BAZAAR = 'The Grand Bazaar';
-            const LOCATION_CITY_OLES_INN = "Ole's Inn";
-            const LOCATION_CITY_GOVERNORS_GARDEN = "Governor's Garden";
-            const LOCATION_PLAYER_HOME = 'Player Home';
         
             //Global array containing cached properties of all the cards this page has had access to
             this.cardProperties = {};
@@ -191,7 +192,7 @@ function (dojo, declare) {
             }
             else if (card.type === 'Event')
             {
-                this.createEventCard(cardId, playerInfo.color, card, targetDiv);
+                this.createEventCard(cardId, card, targetDiv);
             }
             else if (card.type === 'Attachment') {
                 if (card.playerId != null) {
@@ -335,16 +336,20 @@ function (dojo, declare) {
             const wealthCost = character.wealthCost ? character.wealthCost : '';
             const template = character.wealthCost ? 'jstpl_city_character' : 'jstpl_character';
             const wounds = character.wounds > 0 ? character.wounds : '-';
+            const resolve = character.resolve > 0 ? character.resolve : '-';
+            const combat = character.combat > 0 ? character.combat : '-';
+            const finesse = character.finesse > 0 ? character.finesse : '-';
+            const influence = character.influence > 0 ? character.influence : '-';
 
             dojo.place( this.format_block( template, {
                 id: divId,
                 faction: character.faction.toLowerCase(),
                 image: character.image,
                 player_color: color,
-                resolve: character.resolve,
-                combat: character.combat,
-                finesse: character.finesse,
-                influence: character.influence,
+                resolve: resolve,
+                combat: combat,
+                finesse: finesse,
+                influence: influence,
                 wounds: wounds,
                 cost: wealthCost,
             }), location, "before" );
@@ -352,7 +357,7 @@ function (dojo, declare) {
             this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, 500);
         },  
 
-        createEventCard: function( divId, color, event, location )
+        createEventCard: function( divId, event, location )
         {
             //Set the divId of the card
             event.divId = divId;
@@ -363,9 +368,7 @@ function (dojo, declare) {
             // Leader
             dojo.place( this.format_block( 'jstpl_card_event', {
                 id: divId,
-                faction: event.faction.toLowerCase(),
                 image: event.image,
-                player_color: color,
             }), location, "before" );
 
             this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + event.image}" />`, 500);
@@ -541,8 +544,39 @@ function (dojo, declare) {
 
         notif_cityCardAddedToLocation: function( notif )
         {
-            console.log( 'notif_playCityCard' );
+            console.log( 'notif_cityCardAddedToLocation' );
             console.log( notif );
+
+            const args = notif.args;
+
+            const card = args.card;
+            let cardId = null;
+            let location = '';
+            switch (args.location) {
+                case LOCATION_CITY_OLES_INN:
+                    cardId = `oles-inn-${card.id}`;
+                    location = 'oles-inn-endcap';
+                    break;
+                case LOCATION_CITY_DOCKS:
+                    cardId = `docks-${card.id}`;
+                    location = 'dock-endcap';
+                    break;
+                case LOCATION_CITY_FORUM:
+                    cardId = `forum-${card.id}`;
+                    location = 'forum-endcap';
+                    break;
+                case LOCATION_CITY_BAZAAR:
+                    cardId = `bazaar-${card.id}`;
+                    location = 'bazaar-endcap';
+                    break;
+                case LOCATION_CITY_GOVERNORS_GARDEN:
+                    cardId = `governors-garden-${card.id}`;
+                    location = 'governors-garden-endcap';
+                    break;
+            }
+
+            this.createCard(cardId, card, location);
+
         },
 
         notif_playCityCard: function( notif )
