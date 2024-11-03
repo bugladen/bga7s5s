@@ -260,31 +260,24 @@ body {
     margin: 5px;
 }
 
-.home-player-color {
-    position: relative;
-    display: inline-block;
-    background-color: var(--player-color);
-    border-radius: 50%;
-    height: 12px;
-    width: 12px;
-    top: 5px;
-    border: 2px solid black;
-}
-
 .crew-cap {
     background-image: url('img/boardResources.png');
     background-position: -317px 0px;
     background-size: calc(var(--png-board-resource-width) * 1.1) calc(var(--png-board-resource-height) * 1.1);
-    float: left;
     height: 27px;
     width: 27px;
-    margin-left: 10px;
     text-align: center;
-    vertical-align: middle;
     line-height: 27px;
     font-family: "Pirata One", system-ui;
     font-size: 16pt;
     color:white;
+}
+.score-crew-cap {
+    display: inline-block;
+}
+.home-crew-cap {
+    margin-left: 10px;
+    float: left;
 }
 
 .home-discard {
@@ -311,27 +304,48 @@ body {
     background-image: url('img/boardResources.png');
     background-position: -313px 0px;
     background-size: var(--png-board-resource-width) var(--png-board-resource-height);
-    float: right;
     height: 25px;
     width: 40px;
-    margin-right: -2px;
     text-align:center;
     font-size: 16pt;
     font-family: "Pirata One", system-ui;
     line-height: 25px;
     color:white;
 }
+.score-panache {
+    display: inline-block;
+}
+.home-panache {
+    margin-right: -2px;
+    float: right;
+}
 
 .first-player {
-    position: relative;
+    position: absolute;
     background-image: url('img/boardResources.jpg');
     background-size: calc(var(--jpg-board-resource-width) * .75) calc(var(--jpg-board-resource-height) * .75);
     background-position: -58px 0px;
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    top: 70px;
-    left: 5px
+    top: 65px;
+    left: 55px;
+}
+
+.score-reknown {
+    display: inline-block;
+    background-image: url('img/boardResources.jpg');
+    background-size: calc(var(--jpg-board-resource-width) * .35) calc(var(--jpg-board-resource-height) * .35);
+    background-position: -0px 0px;
+    width: 27px;
+    height: 27px;
+    border: 1px solid black;
+    border-radius: 50%;
+
+    text-align:center;
+    font-size: 16pt;
+    font-family: "Pirata One", system-ui;
+    line-height: 27px;
 }
 
 .seal {
@@ -346,6 +360,18 @@ body {
 .seal-castille {
     background-image: url('img/boardResources.png');
     background-position: 0px -85px;
+}
+
+.home-player-color {
+    position: absolute;
+    display: inline-block;
+    background-color: var(--player-color);
+    border-radius: 50%;
+    height: 12px;
+    width: 12px;
+    left: 5px;
+    top: 44px;
+    border: 2px solid black;
 }
 
 .card {

@@ -107,12 +107,28 @@ function (dojo, declare) {
             {
                 const player = gamedatas.players[playerId];
 
+                dojo.style( `player_score_${playerId}`, 'display', 'none' );
+                dojo.style( `icon_point_${playerId}`, 'display', 'none' );
+
+                // Override the score with the reknown
+                this.getPlayerPanelElement(playerId).innerHTML = this.format_block( 'jstpl_player_board', {
+                    id: playerId,
+                    reknown: player.score,
+                    crewcap: player.leader?.modifiedCrewCap ?? '-',
+                    panache: player.leader?.modifiedPanache ?? '-',
+                });
+                this.addTooltipHtml( `${playerId}-score-reknown`, `<div class='basic-tooltip'>${_('Current Reknown')}</div>` );
+                this.addTooltipHtml( `${playerId}-score-crewcap`, `<div class='basic-tooltip'>${_('Current Crew Cap')}</div>` );
+                this.addTooltipHtml( `${playerId}-score-panache`, `<div class='basic-tooltip'>${_('Current Leader Panache')}</div>` );
+
                 //Display only if we are out of pre-game setup
                 if (gamedatas.turnPhase > 0) {
                     // Home
                     this.createHome(playerId, player.color, player.leader);
                 }
             }
+
+            this.addTooltipHtmlToClass('first-player', `<div class='basic-tooltip'>${_('First Player')}</div>` );
 
             // Set up cards in home locations
             for( const index in gamedatas.homeCards )
@@ -286,7 +302,7 @@ function (dojo, declare) {
 
                 case 'planningPhase':
                     this.addActionButton(`actEndPlanningPhase`, _('Confirm Approach Cards'), () => this.bgaPerformAction("actEndPlanningPhase"));
-                    document.getElementById('actEndPlanningPhase').classList.add('disabled');
+                    dojo.addClass('actEndPlanningPhase', 'disabled');
                     break;
                 }
             }
@@ -309,7 +325,7 @@ function (dojo, declare) {
             this.addTooltipHtml( `${playerId}-crewcap`, `<div class='basic-tooltip'>${_('Current Crew Capacity')}</div>` );
             this.addTooltipHtml( `${playerId}-discard`, `<div class='basic-tooltip'>${_('Faction Deck Discard Pile')}</div>` );
             this.addTooltipHtml( `${playerId}-locker`, `<div class='basic-tooltip'>${_('Player Locker Pile')}</div>` );
-            this.addTooltipHtml( `${playerId}-panache`, `<div class='basic-tooltip'>${_('Current Panache')}</div>` );
+            this.addTooltipHtml( `${playerId}-panache`, `<div class='basic-tooltip'>${_('Current Leader Panache')}</div>` );
         },
 
         getCardPropertiesByDivId: function( divId )
@@ -516,6 +532,10 @@ function (dojo, declare) {
                 `${args.player_id}-home-anchor`,
             );
 
+            // Update the player panel
+            $(`${args.player_id}-score-crewcap`).innerHTML = args.leader.crewCap;
+            $(`${args.player_id}-score-panache`).innerHTML = args.leader.panache;
+
             $('pagemaintitletext').innerHTML = `${args.player_name} has selected <span style="font-weight:bold">${args.leader.name}</span> as their leader`;
         },
 
@@ -635,9 +655,9 @@ function (dojo, declare) {
 
             // Enable the confirm button if we have 2 cards selected
             if (items.length === 2) {
-                document.getElementById('actEndPlanningPhase').classList.remove('disabled');
+                dojo.removeClass('actEndPlanningPhase', 'disabled');
             } else {
-                document.getElementById('actEndPlanningPhase').classList.add('disabled');
+                dojo.addClass('actEndPlanningPhase', 'disabled');
             }
 
 

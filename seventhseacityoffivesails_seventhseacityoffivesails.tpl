@@ -32,17 +32,27 @@
 
 <script type="text/javascript">
 
+var jstpl_player_board = `
+<div class="cp_board">
+    <div id="\${id}-score-reknown" class="score-reknown">\${reknown}</div>
+    <div id="\${id}-score-crewcap" class="crew-cap score-crew-cap">\${crewcap}</div>
+    <div id="\${id}-score-panache" class="panache score-panache">\${panache}</div>
+</div>
+`;
+
 var jstpl_home=`
 <div id="\${id}" class="home-container home-\${faction}">
     <div class="home-panel">
-        <div id="\${id}-crewcap" class="crew-cap">\${crewcap}</div>
+        <div id="\${id}-crewcap" class="crew-cap home-crew-cap">\${crewcap}</div>
         <div id="\${id}-discard" class="home-discard"></div>
-        <div id="\${id}-panache" class="panache">\${panache}</div>
+        <div id="\${id}-panache" class="panache home-panache">\${panache}</div>
         <div id="\${id}-locker" class="home-locker"></div>
         <div></div>
-        <div id="\${id}first-player"></div>
         <div class="seal seal-\${faction}"></div>
+        <div>
         <div class="home-player-color" style="--player-color:#\${player_color}"></div>
+        <div id="\${id}-first-player" class="first-player"></div>
+        </div>
     </div>
     <div id="\${id}-home-anchor" class="home-endcap"></div>
 </div>
