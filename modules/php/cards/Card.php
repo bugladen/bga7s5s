@@ -6,6 +6,7 @@ abstract class Card
 {
     public int $Id; 
     public int $OwnerId;
+    public int $ControllerId;
     public string $Name;
     public string $Image;
     public string $ExpansionName;
@@ -20,6 +21,7 @@ abstract class Card
     {
         $this->Id = 0;
         $this->OwnerId = 0;
+        $this->ControllerId = 0;
         $this->Name = "";
         $this->Image = "";
         $this->ExpansionName = "";
@@ -35,6 +37,7 @@ abstract class Card
         $properties = [
             'id' => $this->Id,
             'ownerId' => $this->OwnerId,
+            'controllerId' => $this->ControllerId,
             'name' => $this->Name,
             'image' => $this->Image,
             'faction' => $this->Faction,

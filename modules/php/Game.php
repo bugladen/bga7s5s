@@ -519,6 +519,7 @@ class Game extends \Table
             //Instantiate the leader card and assign it the id from the db
             $card = $this->instantiateCard($deck->leader);
             $card->OwnerId = $playerId;
+            $card->ControllerId = $playerId;
             if ($card instanceof Leader) {
                 $leader = $card;
             }
@@ -552,6 +553,7 @@ class Game extends \Table
                 $card = $this->instantiateCard($card);
                 $card->Id = $id;
                 $card->OwnerId = $playerId;
+                $card->ControllerId = $playerId;
                 $this->updateCardObjectInDb($card);
 
                 $cards[] = $card->getPropertyArray();

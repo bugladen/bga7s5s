@@ -135,9 +135,9 @@ function (dojo, declare) {
             for( const index in gamedatas.homeCards )
             {
                 const card = gamedatas.homeCards[index].card;
-                const playerInfo = this.gamedatas.players[card.ownerId];
-                const divId = `${card.ownerId}-${card.id}`;
-                this.createCharacterCard(divId, playerInfo.color, card, card.ownerId + '-home-anchor');
+                const playerInfo = this.gamedatas.players[card.controllerId];
+                const divId = `${card.controllerId}-${card.id}`;
+                this.createCharacterCard(divId, playerInfo.color, card, card.controllerId + '-home-anchor');
             }
 
             // Set up cards in oles inn
@@ -197,8 +197,8 @@ function (dojo, declare) {
         {
             if (card.type === 'Character' || card.type === 'Leader')
             {
-                if (card.ownerId !== 0) {
-                    const playerInfo = this.gamedatas.players[card.ownerId];
+                if (card.controllerId !== 0) {
+                    const playerInfo = this.gamedatas.players[card.controllerId];
                     this.createCharacterCard(divId, playerInfo.color, card, targetDiv);
                     dojo.style( `${divId}-wealth-cost`, 'display', 'none' );
                 }
@@ -212,8 +212,8 @@ function (dojo, declare) {
                 this.createEventCard(divId, card, targetDiv);
             }
             else if (card.type === 'Attachment') {
-                if (card.ownerId !== 0) {
-                    const playerInfo = this.gamedatas.players[card.ownerId];
+                if (card.controllerId !== 0) {
+                    const playerInfo = this.gamedatas.players[card.controllerId];
                     this.createAttachmentCard(divId, playerInfo.color, card, targetDiv);
                 }
                 else {
