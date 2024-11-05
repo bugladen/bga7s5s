@@ -89,7 +89,7 @@ function (dojo, declare) {
                 dojo.style('day-indicator', 'display', 'block');
             }
 
-                //Update the game phase indicator            
+            //Update the game phase indicator            
             if (gamedatas.turnPhase > 0) {
                 switch (gamedatas.turnPhase) {
                     case 1: $('city-day-phase').innerHTML = 'Dawn'; break;
@@ -108,7 +108,7 @@ function (dojo, declare) {
                 const player = gamedatas.players[playerId];
 
                 dojo.style( `player_score_${playerId}`, 'display', 'none' );
-                dojo.style( `icon_point_${playerId}`, 'display', 'none' );
+                //dojo.style( `icon_point_${playerId}`, 'display', 'none' );
 
                 // Override the score with the reknown
                 this.getPlayerPanelElement(playerId).innerHTML = this.format_block( 'jstpl_player_board', {
@@ -302,7 +302,7 @@ function (dojo, declare) {
                     break;
 
                 case 'planningPhase':
-                    this.addActionButton(`actEndPlanningPhase`, _('Confirm Approach Cards'), () => this.bgaPerformAction("actEndPlanningPhase"));
+                    this.addActionButton(`actEndPlanningPhase`, _('Confirm Approach Cards'), () => this.onPlanningCardsSelected());
                     dojo.addClass('actEndPlanningPhase', 'disabled');
                     break;
                 }
@@ -666,6 +666,13 @@ function (dojo, declare) {
             }
 
 
+        },
+
+        onPlanningCardsSelected: function()
+        {
+            var items = this.approachDeck.getSelectedItems();
+            console.log('items', items);
+            //this.bgaPerformAction("actEndPlanningPhase");
         },
     });      
 });
