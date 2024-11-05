@@ -13,6 +13,7 @@ abstract class Card
     public int $ExpansionNumber;
     public int $CardNumber;
     public string $Faction;
+    public bool $Engaged;
     public $Traits = [];
 
     public string $Location;
@@ -28,8 +29,10 @@ abstract class Card
         $this->ExpansionNumber = 0;
         $this->CardNumber = 0;
         $this->Faction = "";
+        $this->Engaged = false;
 
         $this->Location = "";
+
     }
 
     public function getPropertyArray()
@@ -42,6 +45,7 @@ abstract class Card
             'image' => $this->Image,
             'faction' => $this->Faction,
             'location' => $this->Location,
+            'engaged' => $this->Engaged,
         ];
 
         $properties['type'] = 'Card';
