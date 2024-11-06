@@ -94,7 +94,7 @@ $machinestates = [
         "name" => "buildTable",
         "description" => "Creating the City...",
         "type" => "game",
-        "action" => "stBuildTable",
+        "action" => "stBuildDecks",
         "transitions" => ["" => STATE_DAWN]
     ],
 
@@ -111,7 +111,7 @@ $machinestates = [
         "description" => clienttranslate('Your opponent must choose their Scheme Character to muster for the day.'),
         "descriptionmyturn" => clienttranslate('${you} must choose ONE Scheme and ONE Character from your Approach Deck to muster for the day.'),
         "type" => "multipleactiveplayer",
-        "args" => "argPlanningPhase",
+        "args" => "argsEmpty",
         "action" => "stPlanningPhase",
         "possibleactions" => [
             "actPlanDay", 

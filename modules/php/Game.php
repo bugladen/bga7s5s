@@ -19,30 +19,35 @@ declare(strict_types=1);
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
 class Game extends \Table
 {
     // Phases of the day
-    const SETUP_PHASE = 0;
-    const DAWN = 1;
-    const PLANNING = 2;
-    const HIGH_DRAMA = 3;
-    const PLUNDER = 4;
-    const DUSK = 5;
+    final const SETUP_PHASE = 0;
+    final const DAWN = 1;
+    final const PLANNING = 2;
+    final const HIGH_DRAMA = 3;
+    final const PLUNDER = 4;
+    final const DUSK = 5;
 
     //Card locations
-    const LOCATION_CITY_DECK = 'City Deck';
-    const LOCATION_CITY_DOCKS = 'City Docks';
-    const LOCATION_CITY_FORUM = 'City Forum';
-    const LOCATION_CITY_BAZAAR = 'The Grand Bazaar';
-    const LOCATION_CITY_OLES_INN = "Ole's Inn";
-    const LOCATION_CITY_GOVERNORS_GARDEN = "Governor's Garden";
-    const LOCATION_PLAYER_HOME = 'Player Home';
+    final const LOCATION_CITY_DECK = 'City Deck';
+    final const LOCATION_CITY_DOCKS = 'City Docks';
+    final const LOCATION_CITY_FORUM = 'City Forum';
+    final const LOCATION_CITY_BAZAAR = 'The Grand Bazaar';
+    final const LOCATION_CITY_OLES_INN = "Ole's Inn";
+    final const LOCATION_CITY_GOVERNORS_GARDEN = "Governor's Garden";
+    final const LOCATION_PLAYER_HOME = 'Player Home';
 
-    private $cards;
+    use DeckTrait;
+    use StatesTrait;
+    use ActionsTrait;
+    use ArgumentsTrait;
+
+    private \Deck $cards;
+    private Theah $theah;
 
     /**
      * Your global variables labels:
@@ -65,6 +70,8 @@ class Game extends \Table
 
         $this->cards = $this->getNew( "module.common.deck" );
         $this->cards->init( "card" );    
+
+        $this->theah = new Theah($this);
     }
        
     /**
@@ -75,97 +82,6 @@ class Game extends \Table
      *
      * @throws BgaUserException
      */
-
-    public function actPickDeck(string $deck_type, string $deck_id): void
-    {
-        $playerId = $this->getCurrentPlayerId();
-
-        $sql = "UPDATE player SET deck_source = '$deck_type', deck_id = '$deck_id'  WHERE player_id='$playerId'";
-        $this->DbQuery($sql);
-
-        $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked'); // deactivate player; if none left, transition to 'deckPicked' state
-    }
-
-    public function actPlayCard(int $card_id): void
-    {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        // check input values
-        // $args = $this->argPlayerTurn();
-        // $playableCardsIds = $args['playableCardsIds'];
-        // if (!in_array($card_id, $playableCardsIds)) {
-        //     throw new \BgaUserException('Invalid card choice');
-        // }
-
-        // Add your game logic to play a card here.
-        // $card_name = $this->card_types[$card_id]['card_name'];
-
-        // Notify all players about the card played.
-        // $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
-        //     "player_id" => $player_id,
-        //     "player_name" => $this->getActivePlayerName(),
-        //     "card_name" => $card_name,
-        //     "card_id" => $card_id,
-        //     "i18n" => ['card_name'],
-        // ]);
-
-        // at the end of the action, move to the next state
-        // $this->gamestate->nextState("playCard");
-    }
-
-    public function actPass(): void
-    {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        // Notify all players about the choice to pass.
-        $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} passes'), [
-            "player_id" => $player_id,
-            "player_name" => $this->getActivePlayerName(),
-        ]);
-
-        // at the end of the action, move to the next state
-        $this->gamestate->nextState("pass");
-    }
-
-    /**
-     * Game state arguments, example content.
-     *
-     * This method returns some additional information that is very specific to the `playerTurn` game state.
-     *
-     * @return array
-     * @see ./states.inc.php
-     */
-    public function argAvailableDecks(): array
-    {
-        $starter_decks = json_decode($this->starter_decks);        
-        $decks = array_map(function($deck) { 
-            return [ 
-                "id" => $deck->id,
-                "name" => $deck->name
-            ]; 
-        }, $starter_decks->decks);
-
-        return ["availableDecks" => $decks];
-    }
-
-    public function argPlanningPhase(): array
-    {
-        return [];
-    }
-
-    public function argPlayerTurn(): array
-    {
-        $player_id = (int)$this->getActivePlayerId();
-        // $cards = $this->cards->getCardsInLocation('hand', $player_id);
-        // $playableCardsIds = array_map(function($card) { return $card['id']; }, $cards);
-        $playableCardsIds = [];
-
-        return [
-            "playableCardsIds" => $playableCardsIds,
-        ];
-    }
 
     /**
      * Compute and return the current game progression.
@@ -460,197 +376,6 @@ class Game extends \Table
         }
 
         throw new \feException("Zombie mode not supported at this game state: \"{$state_name}\".");
-    }
-
-    public function stBuildTable() {
-
-        // *** Create the city deck ***
-
-        // Load the city deck JSON
-        $city_decks = json_decode($this->city_decks);
-
-        // TODO: City deck loaded should be based on option
-        // Pull the city deck with id of '7s5s'
-        $city = current(array_filter($city_decks->decks, 
-            function($deck) {
-                return $deck->id === '7s5s';
-            }
-        ));
-        // Inject into card db
-        foreach ($city->cards as $card) {
-            $location = self::LOCATION_CITY_DECK;
-            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$card}', 0, '{$location}', 0)";
-            $this->DbQuery($sql);
-
-            //Store the card Id in the object, and serialize the card object to the db
-            $id = $this->DbGetLastId();
-            $card = $this->instantiateCard($card);
-            $card->Id = $id;
-            $this->updateCardObjectInDb($card);
-        }
-        $this->cards->shuffle(self::LOCATION_CITY_DECK);
-
-        // Load the decks selected by the players
-        $starter_decks = json_decode($this->starter_decks);
-        $players = $this->loadPlayersBasicInfos();
-        foreach ( $players as $playerId => $player ) {
-
-            // Get the source and deck_id of the deck from the DB for the  player
-            $result = $this->getObjectFromDB("SELECT deck_source, deck_id FROM player WHERE player_id = '$playerId'");
-            $source = $result['deck_source'];
-            $deck_id = $result['deck_id'];
-
-            if ($source === 'starter') {
-                $deck = current(array_filter($starter_decks->decks, 
-                    function($deck) use ($deck_id) {
-                        return $deck->id === $deck_id;
-                    }
-                ));
-            }
-            
-            //Now that we have a deck, add the cards in the deck to the db
-
-            // Leader
-            $location = self::LOCATION_PLAYER_HOME;
-            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$deck->leader}', $playerId, '{$location}', $playerId)";
-            $this->DbQuery($sql);
-            $id = $this->DbGetLastId();
-
-            //Instantiate the leader card and assign it the id from the db
-            $card = $this->instantiateCard($deck->leader);
-            $card->OwnerId = $playerId;
-            $card->ControllerId = $playerId;
-            if ($card instanceof Leader) {
-                $leader = $card;
-            }
-            $leader->Id = $id;
-            $leader->Location = $location;
-            $this->updateCardObjectInDb($leader);
-
-            //Set the id of the leader card in the player record
-            $sql = "UPDATE player SET leader_card_id = $id WHERE player_id = $playerId";
-            $this->DbQuery($sql);
-
-            //Notify players about the leaders
-            $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} will play ${player_faction} and ${leader_name} as their leader.'), [
-                "player_name" => $player['player_name'],
-                "player_faction" => "<span style='font-weight:bold'>{$leader->Faction}</span>",
-                "leader_name" => "<span style='font-weight:bold'>{$leader->Name}</span>",
-                "player_id" => $playerId,
-                "player_color" => $player['player_color'],
-                "leader" => $leader->getPropertyArray(),
-            ]);
-
-            // *** Create the approach deck and send each card to the player ***
-            $approachDeck = $deck->approach_deck;
-            $cards = [];
-            foreach ($approachDeck as $card) {
-                $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$card}', $playerId, 'approach', $playerId)";
-                $this->DbQuery($sql);
-
-                //Create an instance of the card, set the ID, and save it back into the db
-                $id = $this->DbGetLastId();
-                $card = $this->instantiateCard($card);
-                $card->Id = $id;
-                $card->OwnerId = $playerId;
-                $card->ControllerId = $playerId;
-                $this->updateCardObjectInDb($card);
-
-                $cards[] = $card->getPropertyArray();
-            }
-
-            $cardList = implode(", ", array_map(function($card) { return $card['name']; }, $cards));
-            $this->notifyPlayer($playerId, "approachCard", clienttranslate('You received your Approach Deck containing: ${card_list}'), [
-                "card_list" => $cardList,
-                "cards" => $cards
-            ]);
-
-            // Create player's Faction deck
-            $factionDeck = $deck->faction_deck;
-            $cards = [];
-            foreach ($factionDeck as $card) {
-                $cards[] = ['type' => $card->id, 'type_arg' => $playerId, 'nbr' => $card->count];
-            }
-            $this->cards->createCards($cards, 'faction', $playerId);
-        }
-
-        $this->gamestate->nextState("");
-    }
-
-    public function stMorningPhase() {
-        // Increment the day
-        $day = $this->getGameStateValue("day") + 1;
-        $this->setGameStateValue("day", $day);
-
-        //Set the phase to morning
-        $turnPhase = Self::DAWN;
-        $this->setGameStateValue("turnPhase", $turnPhase);
-
-        //Notify players that it is morning
-        $this->notifyAllPlayers("dawn", clienttranslate('It is <span style="font-weight:bold">DAWN</span>, the start of Day #${day} in the city of Theah.'), [
-            "day" => $day,
-        ]);
-
-        $city_locations = [self::LOCATION_CITY_DOCKS, self::LOCATION_CITY_FORUM, self::LOCATION_CITY_BAZAAR];
-        if ($this->getPlayersNumber() > 2)
-            array_unshift($city_locations, self::LOCATION_CITY_OLES_INN);
-        if ($this->getPlayersNumber() > 3) 
-            $city_locations[] = self::LOCATION_CITY_GOVERNORS_GARDEN;
-
-        foreach ($city_locations as $location) {
-            //Add a city card to each location
-            $cityCard = $this->cards->getCardOnTop(self::LOCATION_CITY_DECK);
-            $this->cards->moveCard($cityCard['id'], $location);
-
-            $card = $this->getCardObjectFromDb($cityCard['id']);
-
-            //Update the location on the card object
-            $card->Location = $location;            
-            $this->updateCardObjectInDb($card);
-
-            $this->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_name} added to ${location} from the city deck'), [
-                "card_name" => $card->Name,
-                "location" => $location,
-                "card" => $card->getPropertyArray()
-            ]);
-        }
-
-        $this->gamestate->nextState("");
-    }
-
-    public function stPlanningPhase() {
-        //Set the phase to planning
-        $turnPhase = Self::PLANNING;
-        $this->setGameStateValue("turnPhase", $turnPhase);
-
-        //Notify players that it is planning phase
-        $this->notifyAllPlayers("planningPhase", clienttranslate('<span style="font-weight:bold">PLANNING PHASE</span>.'), [
-        ]);
-        
-        $this->gamestate->setAllPlayersMultiactive();
-    }
-
-    public function stMultiPlayerInit() {
-        $this->gamestate->setAllPlayersMultiactive();
-    }
-
-    /**
-     * Game state action, example content.
-     *
-     * The action method of state `nextPlayer` is called everytime the current game state is set to `nextPlayer`.
-     */
-    public function stNextPlayer(): void {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        // Give some extra time to the active player when he completed an action
-        $this->giveExtraTime($player_id);
-        
-        $this->activeNextPlayer();
-
-        // Go to another gamestate
-        // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
-        $this->gamestate->nextState("nextPlayer");
     }
 
     protected function instantiateCard($cardId) : Card {
