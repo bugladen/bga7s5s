@@ -91,8 +91,9 @@ trait DeckTrait
             // *** Create the approach deck and send each card to the player ***
             $approachDeck = $deck->approach_deck;
             $cards = [];
+            $location = GAME::LOCATION_APPROACH;
             foreach ($approachDeck as $card) {
-                $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$card}', $playerId, 'approach', $playerId)";
+                $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$card}', $playerId, '$location', $playerId)";
                 $this->DbQuery($sql);
 
                 //Create an instance of the card, set the ID, and save it back into the db
@@ -101,6 +102,7 @@ trait DeckTrait
                 $card->Id = $id;
                 $card->OwnerId = $playerId;
                 $card->ControllerId = $playerId;
+                $card->Location = $location;
                 $this->updateCardObjectInDb($card);
 
                 $cards[] = $card->getPropertyArray();

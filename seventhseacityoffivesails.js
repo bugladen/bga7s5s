@@ -134,7 +134,7 @@ function (dojo, declare) {
             // Set up cards in home locations
             for( const index in gamedatas.homeCards )
             {
-                const card = gamedatas.homeCards[index].card;
+                const card = gamedatas.homeCards[index];
                 const playerInfo = this.gamedatas.players[card.controllerId];
                 const divId = `${card.controllerId}-${card.id}`;
                 this.createCharacterCard(divId, playerInfo.color, card, card.controllerId + '-home-anchor');
@@ -143,7 +143,7 @@ function (dojo, declare) {
             // Set up cards in oles inn
             for( const index in gamedatas.oleCards )
             {
-                const card = gamedatas.oleCards[index].card;
+                const card = gamedatas.oleCards[index];
                 const cardId = `olesinn-${card.id}`;
                 this.createCard(cardId, card, 'oles-inn-endcap');
             }
@@ -151,7 +151,7 @@ function (dojo, declare) {
             // Set up cards in the docks
             for( const index in gamedatas.dockCards )
             {
-                const card = gamedatas.dockCards[index].card;
+                const card = gamedatas.dockCards[index];
                 const cardId = `docks-${card.id}`;
                 this.createCard(cardId, card, 'dock-endcap');
             }
@@ -159,20 +159,20 @@ function (dojo, declare) {
             // Set up cards in the forum
             for( const index in gamedatas.forumCards )
             {
-                const card = gamedatas.forumCards[index].card;
+                const card = gamedatas.forumCards[index];
                 const cardId = `forums-${card.id}`;
                 this.createCard(cardId, card, 'forum-endcap');
             }
                 
             // Set up cards in the bazaar
             for( const index in gamedatas.bazaarCards )
-                {
-                    const card = gamedatas.bazaarCards[index].card;
-                    const cardId = `bazaar-${card.id}`;
-                    this.createCard(cardId, card, 'bazaar-endcap');
-                }
+            {
+                const card = gamedatas.bazaarCards[index];
+                const cardId = `bazaar-${card.id}`;
+                this.createCard(cardId, card, 'bazaar-endcap');
+            }
 
-                // Create Approach deck
+            // Create Approach deck
             this.approachDeck = new ebg.stock();
             this.approachDeck.create( this, $('approachDeck'), this.wholeCardWidth, this.wholeCardHeight ); 
             this.approachDeck.image_items_per_row = 0;
@@ -671,8 +671,10 @@ function (dojo, declare) {
         onPlanningCardsSelected: function()
         {
             var items = this.approachDeck.getSelectedItems();
-            console.log('items', items);
-            //this.bgaPerformAction("actEndPlanningPhase");
+            const cards = items.map((item) => {
+                return item.id;
+            });
+            this.bgaPerformAction("actPlanningCardsSelected", { cards: cards });
         },
     });      
 });
