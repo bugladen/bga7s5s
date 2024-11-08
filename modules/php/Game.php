@@ -142,6 +142,8 @@ class Game extends \Table
      */
     protected function getAllDatas()
     {
+        $this->theah->buildCity();
+
         // WARNING: We must only return information visible by the current player.
         $currentPlayerId = $this->getActivePlayerId();
 
@@ -151,7 +153,7 @@ class Game extends \Table
         foreach ($players as $player_id => $player) {
             if ($player['leader_card_id'] != null)
             {
-                $card = $this->getCardObjectFromDb($player['leader_card_id']);
+                $card = $this->theah->getCardById($player['leader_card_id']);
                 $player['leader'] = $card->getPropertyArray();
 
                 //Set updated player data back into the array
@@ -159,8 +161,6 @@ class Game extends \Table
             }
         }
         $result["players"] = $players;
-
-        $this->theah->buildCity();
 
         $result["homeCards"] = $this->theah->getCardsAtLocation(self::LOCATION_PLAYER_HOME);
         $result["oleCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_OLES_INN);

@@ -16,7 +16,7 @@ class DB extends \APP_DbObject
     public function getCardObjectsAtLocation(string $location, $playerId = null): array
     {
         $sql = "
-            SELECT card_location_arg as playerId, card_serialized as json
+            SELECT card_id as id, card_location_arg as playerId, card_serialized as json
             FROM card 
             WHERE card_location = '$location'
             ";
@@ -24,17 +24,17 @@ class DB extends \APP_DbObject
             $sql .= " AND playerId = $playerId";
         }
         /** @disregard P1012 */
-        $data = $this->getObjectListFromDB();
+        $data = $this->getObjectListFromDB($sql);
 
         $cards = [];
         foreach ($data as $result) {
-            $cards[] = unserialize($result['json']);
+            $cards[(int)$result['id']] = unserialize($result['json']);
         }
 
         return $cards;
     }
 
-    private function getCardObjectFromDb($cardId) : Card {
+    public function getCardObjectFromDb($cardId) : Card {
         /** @disregard P1012 */
         $data = $this->getObjectFromDB("SELECT card_serialized FROM card WHERE card_id = $cardId");
         $card = unserialize($data['card_serialized']);
