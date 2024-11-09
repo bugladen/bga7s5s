@@ -168,7 +168,8 @@ class Game extends \Table
         $result["forumCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_FORUM);
         $result["bazaarCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_BAZAAR);
         $result["gardenCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_GOVERNORS_GARDEN);
-        $result["approachDeck"] = $this->theah->getCardsAtLocation(self::LOCATION_APPROACH, $currentPlayerId);
+        
+        $result["approachDeck"] = $this->theah->getApproachCards($currentPlayerId);
 
         $result["day"] = $this->getGameStateValue("day");
         $result["turnPhase"] = (int) $this->getGameStateValue("turnPhase");
@@ -286,7 +287,7 @@ class Game extends \Table
 
     protected function instantiateCard($cardId) : Card {
 
-        //Pull the first to characters of the card id to get the set
+        //Pull the first two characters of the card id to get the set
         $set = substr($cardId, 0, 2);
 
         switch ($set) {

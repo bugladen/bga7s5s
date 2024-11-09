@@ -9,12 +9,14 @@ class Theah
 {
     private Game $game;
     private array $cards;
+    private array $approachCards;
     private DB $db;
 
     public function __construct($game)
     {
         $this->game = $game;
         $this->cards = [];
+        $this->approachCards = [];
         $this->db = new DB();
     }
 
@@ -27,7 +29,20 @@ class Theah
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_FORUM);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_BAZAAR);
         $this->cards += $this->db->getCardObjectsAtLocation(addslashes(Game::LOCATION_CITY_GOVERNORS_GARDEN));
-        $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_APPROACH);
+
+        $this->approachCards = $this->db->getCardObjectsAtLocation(Game::LOCATION_APPROACH);
+    }
+
+    public function getApproachCards($playerId)
+    {
+        $cards = [];
+        foreach ($this->approachCards as $card) {
+            if ($card->ControllerId != $playerId) {
+                continue;
+            }
+            $cards[] = $card->getPropertyArray();
+        }
+        return $cards;
     }
 
     public function getCardsAtLocation($location, $playerId = null)
