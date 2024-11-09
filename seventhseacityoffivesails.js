@@ -453,9 +453,31 @@ function (dojo, declare) {
                 'deck_id':deck_id,
             }).then(() =>  {                
                 // What to do after the server call if it succeeded
-                // (most of the time, nothing, as the game will react to notifs / change of state instead)
             });        
         },    
+
+        onPlanningCardsSelected: function()
+        {
+            var scheme = 0;
+            var character = 0;
+
+            var items = this.approachDeck.getSelectedItems();
+            items.forEach((item) => {
+                this.playerHand.removeFromStockById(item.id);
+                if (this.cardProperties[item.type].type === 'Scheme') {
+                    scheme = item.id;
+                } else {
+                    character = item.id;
+                }
+            });
+
+            this.bgaPerformAction("actDayPlanned", { 
+                    'scheme' : scheme, 
+                    'character' : character
+                }).then(() =>  {                
+                    // What to do after the server call if it succeeded
+                });        
+            },
 
         onCardClick: function( card_id )
         {
@@ -494,6 +516,7 @@ function (dojo, declare) {
                 ['cityCardAddedToLocation', 500],
                 ['playCityCard', 1500],
                 ['planningPhase', 100],
+                ['highDramaPhase', 100],
             ];
     
             notifs.forEach((notif) => {
@@ -526,13 +549,6 @@ function (dojo, declare) {
                 args.player_color, 
                 args.leader
             );
-
-            // this.createCharacterCard(
-            //     `${args.player_id}-leader`,
-            //     args.player_color, 
-            //     args.leader, 
-            //     `${args.player_id}-home-anchor`,
-            // );
 
             this.createCard(`${args.player_id}-${args.leader.id}`, args.leader, `${args.player_id}-home-anchor`);
 
@@ -620,6 +636,14 @@ function (dojo, declare) {
             $('city-day-phase').innerHTML = 'Planning';
         },
 
+        notif_highDramaPhase: function( notif )
+        {
+            console.log( 'notif_highDramaPhase' );
+            console.log( notif );
+
+            const args = notif.args;
+            $('city-day-phase').innerHTML = 'High Drama';
+        },
 
         // Utlity functions
         addCardToApproachDeck: function( card )

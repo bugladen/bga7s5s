@@ -4,6 +4,10 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 trait StatesTrait
 {
+    public function stMultiPlayerInit() {
+        $this->gamestate->setAllPlayersMultiactive();
+    }
+
     public function stBuildDecks() {
         $this->buildDecks();
         $this->gamestate->nextState("");
@@ -71,8 +75,17 @@ trait StatesTrait
         $this->gamestate->setAllPlayersMultiactive();
     }
 
-    public function stMultiPlayerInit() {
-        $this->gamestate->setAllPlayersMultiactive();
+    public function stHighDramaPhase() {
+        //Set the phase to high drama
+        /** @disregard P1012 */
+        $turnPhase = self::HIGH_DRAMA;
+        $this->setGameStateValue("turnPhase", $turnPhase);
+
+        //Notify players that it is high drama phase
+        $this->notifyAllPlayers("highDramaPhase", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), [
+        ]);
+
+        $this->gamestate->nextState("");
     }
 
     /**

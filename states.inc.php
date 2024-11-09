@@ -114,9 +114,17 @@ $machinestates = [
         "args" => "argsEmpty",
         "action" => "stPlanningPhase",
         "possibleactions" => [
-            "actPlanDay", 
+            "actDayPlanned", 
         ],
         "transitions" => ["dayPlanned" => STATE_HIGH_DRAMA_PHASE]
+    ],
+
+    STATE_HIGH_DRAMA_PHASE => [
+        "name" => "highDramaPhase",
+        "description" => "High Drama Phase",
+        "type" => "game",
+        "action" => "stHighDramaPhase",
+        "transitions" => ["" => STATE_PLAYER_TURN]
     ],
 
     STATE_PLAYER_TURN => [

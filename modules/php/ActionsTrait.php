@@ -14,6 +14,15 @@ trait ActionsTrait
         $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked'); // deactivate player; if none left, transition to 'deckPicked' state
     }
 
+    public function actDayPlanned(int $scheme, int $character): void
+    {
+        $playerId = $this->getCurrentPlayerId();
+        $sql = "UPDATE player SET selected_scheme_id = '$scheme', selected_character_id = '$character'  WHERE player_id='$playerId'";
+        $this->DbQuery($sql);
+
+        $this->gamestate->setPlayerNonMultiactive($playerId, 'dayPlanned'); // deactivate player; if none left, transition to 'deckPicked' state
+    }
+
     public function actPlayCard(int $card_id): void
     {
         // Retrieve the active player ID.

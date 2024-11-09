@@ -23,4 +23,7 @@ CREATE TABLE IF NOT EXISTS `card` (
 ALTER TABLE `player` 
   ADD `deck_source` varchar(20) NULL,
   ADD `deck_id` varchar(20) NULL,
-  ADD `leader_card_id` smallint NULL;
+  ADD `leader_card_id` smallint NULL,
+  ADD `selected_scheme_id` smallint NULL,
+  ADD `selected_character_id` smallint NULL;
+
