@@ -11,7 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 
 class Theah
 {
-    private Game $game;
+    public Game $game;
     private array $cards;
     private array $approachCards;
     private array $events;
@@ -71,6 +71,15 @@ class Theah
     {
         if (array_key_exists($cardId, $this->cards)) {
             return $this->cards[$cardId];
+        }
+
+        return null;
+    }
+
+    public function getApproachCardById($cardId) : Card
+    {
+        if (array_key_exists($cardId, $this->approachCards)) {
+            return $this->approachCards[$cardId];
         }
 
         return null;

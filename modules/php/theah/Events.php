@@ -10,4 +10,5 @@ class Events
     const HIGH_DRAMA = 'EventPhaseHighDrama';
     const CITY_CARD_ADDED_TO_LOCATION = 'EventCityCardAddedToLocation';
     const SCHEME_CARD_PLAYED = 'EventSchemeCardPlayed';
+    const APPROACH_CHARACTER_PLAYED = 'EventApproachCharacterPlayed';
 }

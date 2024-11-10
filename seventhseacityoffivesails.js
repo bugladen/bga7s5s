@@ -377,20 +377,16 @@ function (dojo, declare) {
             this.cardProperties[character.id] = character;
 
             const wealthCost = character.wealthCost ? character.wealthCost : '';
-            const resolve = character.resolve > 0 ? character.resolve : '-';
-            const combat = character.combat > 0 ? character.combat : '-';
-            const finesse = character.finesse > 0 ? character.finesse : '-';
-            const influence = character.influence > 0 ? character.influence : '-';
 
             dojo.place( this.format_block( 'jstpl_character', {
                 id: divId,
                 faction: character.faction.toLowerCase(),
                 image: character.image,
                 player_color: color,
-                resolve: resolve,
-                combat: combat,
-                finesse: finesse,
-                influence: influence,
+                resolve: character.resolve,
+                combat: character.combat,
+                finesse: character.finesse,
+                influence: character.influence,
                 cost: wealthCost,
             }), location, "before" );
 
@@ -451,10 +447,10 @@ function (dojo, declare) {
                 faction: attachment.faction.toLowerCase(),
                 image: attachment.image,
                 player_color: color,
-                resolve: this.formatModifer(attachment.resolveModifier),
-                combat: this.formatModifer(attachment.combatModifier),
-                finesse: this.formatModifer(attachment.finesseModifier),
-                influence: this.formatModifer(attachment.influenceModifier),
+                resolve: this.attachmentFormatModifer(attachment.resolveModifier),
+                combat: this.attachmentFormatModifer(attachment.combatModifier),
+                finesse: this.attachmentFormatModifer(attachment.finesseModifier),
+                influence: this.attachmentFormatModifer(attachment.influenceModifier),
                 cost: attachment.wealthCost,
             }), location, "before" );
 
@@ -465,6 +461,17 @@ function (dojo, declare) {
         {
             if (modifier > 0) {
                 return `+${modifier}`;
+            } else {
+                return modifier;
+            }
+        },
+
+        attachmentFormatModifer: function( modifier )
+        {
+            if (modifier > 0) {
+                return `+${modifier}`;
+            } else if (modifier === 0) {
+                return '-';
             } else {
                 return modifier;
             }
@@ -561,6 +568,7 @@ function (dojo, declare) {
                 ['highDramaPhase', 100],
                 ['playApproachScheme', 2000],
                 ['playApproachCharacter', 2000],
+                ['panacheModified', 500],
             ];
     
             notifs.forEach((notif) => {
@@ -626,6 +634,16 @@ function (dojo, declare) {
             this.createCard(`${args.player_id}-${args.character.id}`, args.character, `${args.player_id}-home-anchor`);
 
             $('pagemaintitletext').innerHTML = `${args.player_name} has selected <span style="font-weight:bold">${args.character.name}</span> as their Approach Character today`;
+        },
+
+        notif_panacheModified: function( notif )
+        {
+            console.log( 'notif_panacheModified' );
+            console.log( notif );
+
+            const args = notif.args;
+            $(`${args.playerId}-score-panache`).innerHTML = args.panache;
+            $(`${args.playerId}-panache`).innerHTML = args.panache;
         },
 
         notif_approachCardsReceived: function( notif )

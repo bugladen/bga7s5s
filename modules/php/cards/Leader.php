@@ -23,11 +23,22 @@ abstract class Leader extends Character
 
     public function handleEvent($event)
     {
+        parent::handleEvent($event);
+        
         if ($event instanceof EventSchemeCardPlayed) {
-            $this->ModifiedPanache += $event->scheme->PanacheModifier;
-        }
+            if ($event->playerId == $this->ControllerId) {
+                $this->ModifiedPanache += $event->scheme->PanacheModifier;
+                $this->IsUpdated = true;
 
-        return $event;
+                $event->theah->game->notifyAllPlayers("panacheModified", clienttranslate('${leader_name} - Panache modified to ${panache} by ${scheme_name}'), [
+                    "leader_name" => $this->Name,
+                    "panache" => $this->ModifiedPanache,
+                    "scheme_name" => $event->scheme->Name,
+                    "playerId" => $this->ControllerId,
+                    "leader" => $this->getPropertyArray(),
+                ]);
+            }
+        }
     }
 
     public function getPropertyArray(): array

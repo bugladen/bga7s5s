@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 abstract class Event
 {
-    protected Theah $theah;
+    public Theah $theah;
     protected array $newEvents;
 
     public function __construct(Theah $theah)

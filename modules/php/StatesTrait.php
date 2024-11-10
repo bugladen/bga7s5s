@@ -2,10 +2,11 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardPlayed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 
 trait StatesTrait
 {
@@ -31,7 +32,7 @@ trait StatesTrait
             $newDay = $event;
             $newDay->dayNumber = $day;
         }
-        $this->theah->queueEvent($newDay);
+        $this->theah->queueEvent($event);
         $this->theah->runQueuedEvents();
 
         //Set the phase to morning
@@ -79,11 +80,11 @@ trait StatesTrait
             $this->updateCardObjectInDb($card);
 
             //Create the event
-            $e = $this->theah->createEvent(Events::CITY_CARD_ADDED_TO_LOCATION);
+            $event = $this->theah->createEvent(Events::CITY_CARD_ADDED_TO_LOCATION);
             if ($event instanceof EventCityCardAddedToLocation) {
-                $event = $e;
-                $event->card = $card;
-                $event->location = $location;
+                $locationEvent = $event;
+                $locationEvent->card = $card;
+                $locationEvent->location = $location;
             }
             $this->theah->queueEvent($event);
             $this->theah->runQueuedEvents();
@@ -131,33 +132,18 @@ trait StatesTrait
         $this->theah->queueEvent($event);
         $this->theah->runQueuedEvents();
 
-        //Notify players that it is high drama phase
-        $this->notifyAllPlayers("highDramaPhase", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), [
-        ]);
-
         $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
         $players = $this->getCollectionFromDb($sql);
         foreach ( $players as $playerId => $player ) {
             //Move the selected scheme from the approach deck to the player home
             $this->cards->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
 
-            //Move event
+            //Move scheme to player home in the db
             $scheme = $this->getCardObjectFromDb($player['schemeId']);
             $scheme->Location = Game::LOCATION_PLAYER_HOME;
             $this->updateCardObjectInDb($scheme);
 
-            // Update the leader with the modified panache
-            $event = $this->theah->createEvent(Events::SCHEME_CARD_PLAYED);
-            if ($event instanceof EventSchemeCardPlayed) {
-                $schemePlayed = $event;
-                $schemePlayed->playerId = $playerId;
-                $schemePlayed->scheme = $scheme;
-            }
-            $this->theah->queueEvent($schemePlayed);
-            $this->theah->runQueuedEvents();
-
-            // Get the leader card
-
+            // Notify players that the player will play the selected scheme
             $this->notifyAllPlayers("playApproachScheme", clienttranslate('${player_name} will play ${scheme_name} as their Approach Scheme.'), [
                 "player_name" => $player['player_name'],
                 "scheme_name" => "<span style='font-weight:bold'>{$scheme->Name}</span>",
@@ -166,12 +152,23 @@ trait StatesTrait
                 "scheme" => $scheme->getPropertyArray(),
             ]);
 
-            //Move the selected character from the approach deck to the player home
+            // Update the leader with the modified panache
+            $event = $this->theah->createEvent(Events::SCHEME_CARD_PLAYED);
+            if ($event instanceof EventSchemeCardPlayed) {
+                $schemeEvent = $event;
+                $schemeEvent->playerId = $playerId;
+                $schemeEvent->scheme = $scheme;
+            }
+            $this->theah->queueEvent($event);
+            $this->theah->runQueuedEvents();
+
+            //Update the character's location in the DB
             $this->cards->moveCard($player['characterId'], Game::LOCATION_PLAYER_HOME, $playerId);
             $character = $this->getCardObjectFromDb($player['characterId']);
             $character->Location = Game::LOCATION_PLAYER_HOME;
             $this->updateCardObjectInDb($character);
 
+            // Notify players that the player will play the selected character
             $this->notifyAllPlayers("playApproachCharacter", clienttranslate('${player_name} will play ${character_name} as their Approach Character.'), [
                 "player_name" => $player['player_name'],
                 "character_name" => "<span style='font-weight:bold'>{$character->Name}</span>",
@@ -179,9 +176,22 @@ trait StatesTrait
                 "player_color" => $player['player_color'],
                 "character" => $character->getPropertyArray(),
             ]);
+
+            // Run events that the character has been played to a location
+            $event = $this->theah->createEvent(Events::APPROACH_CHARACTER_PLAYED);
+            if ($event instanceof EventApproachCharacterPlayed) {
+                $approach = $event;
+                $approach->character = $character;
+            }
+            $this->theah->queueEvent($event);
+            $this->theah->runQueuedEvents();
         }
 
         //TODO: Compare the initiative of the schemes and determine the first player        
+
+        //Notify players that it is high drama phase
+        $this->notifyAllPlayers("highDramaPhase", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), [
+        ]);
 
         $this->gamestate->nextState("");
     }
