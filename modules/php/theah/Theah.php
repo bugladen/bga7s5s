@@ -10,6 +10,7 @@ class Theah
     private Game $game;
     private array $cards;
     private array $approachCards;
+    private array $events;
     private DB $db;
 
     public function __construct($game)
@@ -17,6 +18,7 @@ class Theah
         $this->game = $game;
         $this->cards = [];
         $this->approachCards = [];
+        $this->events = [];
         $this->db = new DB();
     }
 
@@ -59,7 +61,7 @@ class Theah
         return $cards;
     }
 
-    public function getCardById($cardId)
+    public function getCardById($cardId) : Card
     {
         // make sure cardId is an integer
         $cardId = (int)$cardId;
@@ -72,4 +74,52 @@ class Theah
         return null;
     }
 
+    public function createEvent(string $eventName) : Event
+    {
+        $className = "\Bga\Games\SeventhSeaCityOfFiveSails\\theah\\events\\$eventName";
+        $event = new $className($this);
+        return $event;
+    }
+
+    public function queueEvent(Event $event)
+    {
+        $this->events[] = $event;
+    }
+
+    private function runEvents(array $events)
+    {
+        $newEvents = [];
+        //For each event
+        foreach ($events as $event) 
+        {
+            //Run the event for all cards in play
+            foreach ($this->cards as $card) 
+            {
+                $event = $card->handleEvent($event);
+
+                // Merge the new events with the existing new events
+                $newEvents += $event->getNewEvents();
+            }
+        }
+
+        if (count($newEvents) > 0) {
+            $this->runEvents($newEvents);
+        }
+    }
+
+    public function runQueuedEvents()
+    {
+        $this->runEvents($this->events);
+
+        // If any cards were updated, update them in the database
+        foreach ($this->cards as $card) {
+            if ($card->IsUpdated) {
+                $card->IsUpdated = false;
+                $this->db->updateCardObject($card);
+            }
+        }
+
+        //Clear the events array
+        $this->events = [];
+    }
 }

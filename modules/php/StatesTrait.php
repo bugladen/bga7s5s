@@ -2,6 +2,11 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+
 trait StatesTrait
 {
     public function stMultiPlayerInit() {
@@ -18,23 +23,44 @@ trait StatesTrait
         $day = $this->getGameStateValue("day") + 1;
         $this->setGameStateValue("day", $day);
 
+        $this->theah->buildCity();
+
+        //New day Theah event
+        $event = $this->theah->createEvent(Events::NEW_DAY);
+        if ($event instanceof EventNewDay) {
+            $newDay = $event;
+            $newDay->dayNumber = $day;
+        }
+        $this->theah->queueEvent($newDay);
+        $this->theah->runQueuedEvents();
+
         //Set the phase to morning
         /** @disregard P1012 */
         $turnPhase = self::DAWN;
         $this->setGameStateValue("turnPhase", $turnPhase);
+
+        //Create the morning event
+        $event = $this->theah->createEvent(Events::MORNING);
+        $this->theah->queueEvent($event);
+        $this->theah->runQueuedEvents();
 
         //Notify players that it is morning
         $this->notifyAllPlayers("dawn", clienttranslate('It is <span style="font-weight:bold">DAWN</span>, the start of Day #${day} in the city of Theah.'), [
             "day" => $day,
         ]);
 
+        //Create the core city locations
         /** @disregard P1012 */
         $city_locations = [self::LOCATION_CITY_DOCKS, self::LOCATION_CITY_FORUM, self::LOCATION_CITY_BAZAAR];
+
+        // Add Ole's Inn if there are more than 2 players
         if ($this->getPlayersNumber() > 2)
         {
             /** @disregard P1012 */
             array_unshift($city_locations, self::LOCATION_CITY_OLES_INN);
         }
+
+        // Add the Governor's Garden if there are more than 3 players
         if ($this->getPlayersNumber() > 3) {
             /** @disregard P1012 */
             $city_locations[] = self::LOCATION_CITY_GOVERNORS_GARDEN;
@@ -52,6 +78,16 @@ trait StatesTrait
             $card->Location = $location;            
             $this->updateCardObjectInDb($card);
 
+            //Create the event
+            $e = $this->theah->createEvent(Events::CITY_CARD_ADDED_TO_LOCATION);
+            if ($event instanceof EventCityCardAddedToLocation) {
+                $event = $e;
+                $event->card = $card;
+                $event->location = $location;
+            }
+            $this->theah->queueEvent($event);
+            $this->theah->runQueuedEvents();
+
             $this->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_name} added to ${location} from the city deck'), [
                 "card_name" => $card->Name,
                 "location" => $location,
@@ -68,6 +104,13 @@ trait StatesTrait
         $turnPhase = self::PLANNING;
         $this->setGameStateValue("turnPhase", $turnPhase);
 
+        $this->theah->buildCity();
+
+        //Create the Planning phase event
+        $event = $this->theah->createEvent(Events::PLANNING_PHASE);
+        $this->theah->queueEvent($event);
+        $this->theah->runQueuedEvents();
+
         //Notify players that it is planning phase
         $this->notifyAllPlayers("planningPhase", clienttranslate('<span style="font-weight:bold">PLANNING PHASE</span>.'), [
         ]);
@@ -81,9 +124,64 @@ trait StatesTrait
         $turnPhase = self::HIGH_DRAMA;
         $this->setGameStateValue("turnPhase", $turnPhase);
 
+        $this->theah->buildCity();
+
+        //Create the Planning phase event
+        $event = $this->theah->createEvent(Events::PLANNING_PHASE);
+        $this->theah->queueEvent($event);
+        $this->theah->runQueuedEvents();
+
         //Notify players that it is high drama phase
         $this->notifyAllPlayers("highDramaPhase", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), [
         ]);
+
+        $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
+        $players = $this->getCollectionFromDb($sql);
+        foreach ( $players as $playerId => $player ) {
+            //Move the selected scheme from the approach deck to the player home
+            $this->cards->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
+
+            //Move event
+            $scheme = $this->getCardObjectFromDb($player['schemeId']);
+            $scheme->Location = Game::LOCATION_PLAYER_HOME;
+            $this->updateCardObjectInDb($scheme);
+
+            // Update the leader with the modified panache
+            $event = $this->theah->createEvent(Events::SCHEME_CARD_PLAYED);
+            if ($event instanceof EventSchemeCardPlayed) {
+                $schemePlayed = $event;
+                $schemePlayed->playerId = $playerId;
+                $schemePlayed->scheme = $scheme;
+            }
+            $this->theah->queueEvent($schemePlayed);
+            $this->theah->runQueuedEvents();
+
+            // Get the leader card
+
+            $this->notifyAllPlayers("playApproachScheme", clienttranslate('${player_name} will play ${scheme_name} as their Approach Scheme.'), [
+                "player_name" => $player['player_name'],
+                "scheme_name" => "<span style='font-weight:bold'>{$scheme->Name}</span>",
+                "player_id" => $playerId,
+                "player_color" => $player['player_color'],
+                "scheme" => $scheme->getPropertyArray(),
+            ]);
+
+            //Move the selected character from the approach deck to the player home
+            $this->cards->moveCard($player['characterId'], Game::LOCATION_PLAYER_HOME, $playerId);
+            $character = $this->getCardObjectFromDb($player['characterId']);
+            $character->Location = Game::LOCATION_PLAYER_HOME;
+            $this->updateCardObjectInDb($character);
+
+            $this->notifyAllPlayers("playApproachCharacter", clienttranslate('${player_name} will play ${character_name} as their Approach Character.'), [
+                "player_name" => $player['player_name'],
+                "character_name" => "<span style='font-weight:bold'>{$character->Name}</span>",
+                "player_id" => $playerId,
+                "player_color" => $player['player_color'],
+                "character" => $character->getPropertyArray(),
+            ]);
+        }
+
+        //TODO: Compare the initiative of the schemes and determine the first player        
 
         $this->gamestate->nextState("");
     }

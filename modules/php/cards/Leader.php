@@ -2,6 +2,8 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardPlayed;
+
 abstract class Leader extends Character
 {
 
@@ -17,6 +19,15 @@ abstract class Leader extends Character
         $this->ModifiedCrewCap = 0;
         $this->Panache = 0;
         $this->ModifiedPanache = 0;
+    }
+
+    public function handleEvent($event)
+    {
+        if ($event instanceof EventSchemeCardPlayed) {
+            $this->ModifiedPanache += $event->scheme->PanacheModifier;
+        }
+
+        return $event;
     }
 
     public function getPropertyArray(): array

@@ -295,16 +295,19 @@ function (dojo, declare) {
             {            
                 switch( stateName )
                 {
-                 case 'pickDecks':    
-                    args.availableDecks.forEach(
-                        (deck) => { this.addActionButton(`actPickDeck${deck.id}-btn`, _(deck.name), () => this.onStarterDeckSelected(deck.id)) }
-                    ); 
-                    break;
+                    case 'pickDecks':    
+                        args.availableDecks.forEach(
+                            (deck) => { this.addActionButton(`actPickDeck${deck.id}-btn`, _(deck.name), () => this.onStarterDeckSelected(deck.id)) }
+                        ); 
+                        break;
 
-                case 'planningPhase':
-                    this.addActionButton(`actEndPlanningPhase`, _('Confirm Approach Cards'), () => this.onPlanningCardsSelected());
-                    dojo.addClass('actEndPlanningPhase', 'disabled');
-                    break;
+                    case 'planningPhase':
+                        this.addActionButton(`actEndPlanningPhase`, _('Confirm Approach Cards'), () => this.onPlanningCardsSelected());
+                        dojo.addClass('actEndPlanningPhase', 'disabled');
+                        break;
+
+                    case 'playerTurn':
+                        break;
                 }
             }
         },        
@@ -463,7 +466,7 @@ function (dojo, declare) {
 
             var items = this.approachDeck.getSelectedItems();
             items.forEach((item) => {
-                this.playerHand.removeFromStockById(item.id);
+                this.approachDeck.removeFromStockById(item.id);
                 if (this.cardProperties[item.type].type === 'Scheme') {
                     scheme = item.id;
                 } else {
@@ -517,6 +520,8 @@ function (dojo, declare) {
                 ['playCityCard', 1500],
                 ['planningPhase', 100],
                 ['highDramaPhase', 100],
+                ['playApproachScheme', 1500],
+                ['playApproachCharacter', 1500],
             ];
     
             notifs.forEach((notif) => {
@@ -558,6 +563,30 @@ function (dojo, declare) {
             $(`${args.player_id}-score-panache`).innerHTML = args.leader.panache;
 
             $('pagemaintitletext').innerHTML = `${args.player_name} has selected <span style="font-weight:bold">${args.leader.name}</span> as their leader`;
+        },
+
+        notif_playApproachScheme: function( notif )
+        {
+            console.log( 'notif_playApproachScheme' );
+            console.log( notif );
+
+            const args = notif.args;
+
+            this.createCard(`${args.player_id}-${args.scheme.id}`, args.scheme, `${args.player_id}-home-anchor`);
+
+            // Update the leader with the modified panache
+            // Update the player panel with the modified panache
+
+            dojo.addClass( `overall_player_board_${args.player_id}`, `home-${args.leader.faction.toLowerCase()}` );
+            $(`${args.player_id}-score-crewcap`).innerHTML = args.leader.crewCap;
+            $(`${args.player_id}-score-panache`).innerHTML = args.leader.panache;
+
+            $('pagemaintitletext').innerHTML = `${args.player_name} has selected <span style="font-weight:bold">${args.leader.name}</span> as their leader`;
+        },
+
+        notif_playApproachCharacter: function (notif) {
+            console.log( 'notif_playApproachCharacter' );
+            console.log( notif );
         },
 
         notif_approachCard: function( notif )
@@ -690,15 +719,6 @@ function (dojo, declare) {
             }
 
 
-        },
-
-        onPlanningCardsSelected: function()
-        {
-            var items = this.approachDeck.getSelectedItems();
-            const cards = items.map((item) => {
-                return item.id;
-            });
-            this.bgaPerformAction("actPlanningCardsSelected", { cards: cards });
         },
     });      
 });

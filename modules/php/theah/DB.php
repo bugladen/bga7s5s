@@ -34,10 +34,17 @@ class DB extends \APP_DbObject
         return $cards;
     }
 
-    public function getCardObjectFromDb($cardId) : Card {
+    public function getCardObject($cardId) : Card {
         /** @disregard P1012 */
         $data = $this->getObjectFromDB("SELECT card_serialized FROM card WHERE card_id = $cardId");
         $card = unserialize($data['card_serialized']);
         return $card;
+    }
+
+    public function updateCardObject($card) {
+        $serialized = addslashes(serialize($card));
+        $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $card->Id";
+        /** @disregard P1012 */
+        $this->DbQuery($sql);
     }
 }

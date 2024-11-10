@@ -17,6 +17,7 @@ abstract class Card
     public $Traits = [];
 
     public string $Location;
+    public bool $IsUpdated;
 
     public function __construct()
     {
@@ -32,7 +33,12 @@ abstract class Card
         $this->Engaged = false;
 
         $this->Location = "";
+        $this->IsUpdated = false;
+    }
 
+    public function handleEvent($event)
+    {
+        return $event;
     }
 
     public function getPropertyArray()
