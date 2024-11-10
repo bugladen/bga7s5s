@@ -21,7 +21,7 @@ class _01194 extends CityCharacter
         $this->Resolve = 4;
         $this->Combat = 2;
         $this->Finesse = 2;
-        $this->Influence = 0;
+        $this->Influence = -1;
 
         $this->ModifiedResolve = $this->Resolve;
         $this->ModifiedCombat = $this->Combat;

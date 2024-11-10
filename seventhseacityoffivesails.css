@@ -414,7 +414,7 @@ body {
     font-size: 14pt;
     line-height: 30px;
     text-align: center;
-    color: white
+    color: #EE4B38;
 }
 
 .card-wealth-cost {
@@ -430,7 +430,7 @@ body {
     font-size: 14pt;
     line-height: 30px;
     text-align: center;
-    color: white;
+    color: silver;
 }
 .city-character-wealth-cost {
     left: 65px;

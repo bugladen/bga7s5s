@@ -377,6 +377,7 @@ function (dojo, declare) {
             this.cardProperties[character.id] = character;
 
             const wealthCost = character.wealthCost ? character.wealthCost : '';
+            const influence = character.influence >= 0 ? character.influence  : '-';
 
             dojo.place( this.format_block( 'jstpl_character', {
                 id: divId,
@@ -386,7 +387,7 @@ function (dojo, declare) {
                 resolve: character.resolve,
                 combat: character.combat,
                 finesse: character.finesse,
-                influence: character.influence,
+                influence: influence,
                 cost: wealthCost,
             }), location, "before" );
 
