@@ -4,7 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 
-abstract class Event extends Card
+abstract class Event extends CityDeckCard
 {
     private array $playersThatUsedMeToday;
     
@@ -22,7 +22,7 @@ abstract class Event extends Card
         }
     }
 
-    public function getPropertyArray()
+    public function getPropertyArray() : array
     {
         $properties = parent::getPropertyArray();
 

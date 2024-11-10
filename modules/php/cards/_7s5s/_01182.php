@@ -11,10 +11,10 @@ class _01182 extends CityCharacter
         parent::__construct();
 
         $this->Name = "Eko Sorridi";
-        $this->Image = "img/cards/7s5s/181.jpg";
+        $this->Image = "img/cards/7s5s/182.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
-        $this->CardNumber = 181;
+        $this->CardNumber = 182;
 
         $this->Title = 'Short-Tempered Gambler';
 

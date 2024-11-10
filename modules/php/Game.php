@@ -309,10 +309,4 @@ class Game extends \Table
         $card = unserialize($data['card_serialized']);
         return $card;
     }
-
-    protected function updateCardObjectInDb($card) {
-        $serialized = addslashes(serialize($card));
-        $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $card->Id";
-        $this->DbQuery($sql);
-    }
 }

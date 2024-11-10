@@ -75,25 +75,15 @@ trait StatesTrait
 
             $card = $this->getCardObjectFromDb($cityCard['id']);
 
-            //Update the location on the card object
-            $card->Location = $location;            
-            $this->updateCardObjectInDb($card);
-
             //Create the event
             $event = $this->theah->createEvent(Events::CITY_CARD_ADDED_TO_LOCATION);
             if ($event instanceof EventCityCardAddedToLocation) {
-                $locationEvent = $event;
-                $locationEvent->card = $card;
-                $locationEvent->location = $location;
+                $cityEvent = $event;
+                $cityEvent->card = $card;
+                $cityEvent->location = $location;
             }
             $this->theah->queueEvent($event);
             $this->theah->runQueuedEvents();
-
-            $this->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_name} added to ${location} from the city deck'), [
-                "card_name" => $card->Name,
-                "location" => $location,
-                "card" => $card->getPropertyArray()
-            ]);
         }
 
         $this->gamestate->nextState("");
@@ -135,53 +125,34 @@ trait StatesTrait
         $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
         $players = $this->getCollectionFromDb($sql);
         foreach ( $players as $playerId => $player ) {
-            //Move the selected scheme from the approach deck to the player home
+
+            //Update the scheme's location in the DB
             $this->cards->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
 
-            //Move scheme to player home in the db
-            $scheme = $this->getCardObjectFromDb($player['schemeId']);
-            $scheme->Location = Game::LOCATION_PLAYER_HOME;
-            $this->updateCardObjectInDb($scheme);
-
-            // Notify players that the player will play the selected scheme
-            $this->notifyAllPlayers("playApproachScheme", clienttranslate('${player_name} will play ${scheme_name} as their Approach Scheme.'), [
-                "player_name" => $player['player_name'],
-                "scheme_name" => "<span style='font-weight:bold'>{$scheme->Name}</span>",
-                "player_id" => $playerId,
-                "player_color" => $player['player_color'],
-                "scheme" => $scheme->getPropertyArray(),
-            ]);
-
-            // Update the leader with the modified panache
             $event = $this->theah->createEvent(Events::SCHEME_CARD_PLAYED);
+            $scheme = $this->theah->getApproachCardById($player['schemeId']);
             if ($event instanceof EventSchemeCardPlayed) {
-                $schemeEvent = $event;
-                $schemeEvent->playerId = $playerId;
-                $schemeEvent->scheme = $scheme;
+                $approach = $event;
+                $approach->playerId = $playerId;
+                $approach->scheme = $scheme;
+                $approach->location = Game::LOCATION_PLAYER_HOME;
+                $approach->playerName = $player['player_name'];
             }
             $this->theah->queueEvent($event);
             $this->theah->runQueuedEvents();
 
             //Update the character's location in the DB
             $this->cards->moveCard($player['characterId'], Game::LOCATION_PLAYER_HOME, $playerId);
-            $character = $this->getCardObjectFromDb($player['characterId']);
-            $character->Location = Game::LOCATION_PLAYER_HOME;
-            $this->updateCardObjectInDb($character);
-
-            // Notify players that the player will play the selected character
-            $this->notifyAllPlayers("playApproachCharacter", clienttranslate('${player_name} will play ${character_name} as their Approach Character.'), [
-                "player_name" => $player['player_name'],
-                "character_name" => "<span style='font-weight:bold'>{$character->Name}</span>",
-                "player_id" => $playerId,
-                "player_color" => $player['player_color'],
-                "character" => $character->getPropertyArray(),
-            ]);
 
             // Run events that the character has been played to a location
+            $character = $this->theah->getApproachCardById($player['characterId']);
             $event = $this->theah->createEvent(Events::APPROACH_CHARACTER_PLAYED);
             if ($event instanceof EventApproachCharacterPlayed) {
                 $approach = $event;
+                $approach->playerId = $playerId;
                 $approach->character = $character;
+                $approach->location = Game::LOCATION_PLAYER_HOME;
+                $approach->playerName = $player['player_name'];
             }
             $this->theah->queueEvent($event);
             $this->theah->runQueuedEvents();
