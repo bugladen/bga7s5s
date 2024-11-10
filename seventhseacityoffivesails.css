@@ -242,6 +242,7 @@ body {
     align-items: center;
     vertical-align: top;
     border-radius: 10px;
+    margin-left: 5px;
 }
 
 .home-panel {
@@ -320,6 +321,17 @@ body {
     float: right;
 }
 
+.scheme {
+    position: absolute;
+    background-image: var(--card_image);
+    background-size: 148px 202px;
+    background-position: 0px -102px;
+    width: 148px;
+    height: 75px;
+    border-radius: 5px;
+    top: 35px;
+}
+
 .first-player {
     position: absolute;
     background-image: url('img/boardResources.jpg');
@@ -328,8 +340,10 @@ body {
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    top: 65px;
-    left: 55px;
+    top: 30px;
+    left: 53px;
+    z-index:10;
+    border: 2px solid black;
 }
 
 .score-reknown {
@@ -372,11 +386,12 @@ body {
     left: 5px;
     top: 44px;
     border: 2px solid black;
+    z-index: 10;
 }
 
 .card {
     display: inline-block;
-    margin-left:20px;
+    margin-left:15px;
     margin-right:5px;
 
     background-image: var(--card_image);
@@ -425,12 +440,12 @@ body {
     width: 38px;
     height: 20px;
     line-height: 20px;
-    margin-left: -15px;
+    margin-left: -10px;
+    border: 1px solid black;
 }
 
 .card-combat-box {
     position: absolute;
-    border: 1px solid black;
     background-color: #E4CCAC;
     bottom: 56px;
 }
@@ -460,7 +475,6 @@ body {
 
 .card-finesse-box {
     position: absolute;
-    border: 1px solid black;
     background-color: #E4CCAC;
     bottom: 32px;
 }
@@ -515,6 +529,59 @@ body {
     font-size: 12pt;
     margin-left: 2px;
 }
+
+.scheme-initiative-box {
+    position: absolute;
+    background-color: #E4CCAC;
+    bottom: 25px;
+}
+.scheme-initiative-image {
+    float: right;
+    margin-right: 1px;
+    margin-top:3px;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * 0.15) calc(var(--png-board-resource-height) * 0.15);
+    background-position: -14px -24px;
+    width: 20px;
+    height: 15px;
+}
+.scheme-initiative-value {
+    float: left;
+    margin-left: 3px;
+    font-family: "Pirata One", system-ui;
+    font-size: 14pt;
+    vertical-align: top;
+    width:10px;
+    font-size: 12pt;
+    margin-left: 2px;
+}
+
+.scheme-panache-box {
+    position: absolute;
+    background-color: #E4CCAC;
+    bottom: 1px;
+}
+.scheme-panache-image {
+    float: right;
+    margin-right: 1px;
+    margin-top:3px;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * 0.5) calc(var(--png-board-resource-height) * 0.5);
+    background-position: -156px 0px;
+    height: 12px;
+    width: 20px;
+}
+.scheme-panache-value {
+    float: left;
+    margin-left: 3px;
+    font-family: "Pirata One", system-ui;
+    font-size: 14pt;
+    vertical-align: top;
+    width:10px;
+    font-size: 12pt;
+    margin-left: 2px;
+}
+
 
 .character-player-color {
     position: relative;

@@ -72,11 +72,11 @@ function (dojo, declare) {
             }
 
             // Set up the city tooltips
-            this.addTooltipHtml( 'city-oles-inn', `<div class='basic-tooltip'>${_("Ole's Inn")}</div>` );
-            this.addTooltipHtml( 'city-docks', `<div class='basic-tooltip'>${_('The Docks')}</div>` );
-            this.addTooltipHtml( 'city-forum', `<div class='basic-tooltip'>${_('The Forums')}</div>` );
-            this.addTooltipHtml( 'city-bazaar', `<div class='basic-tooltip'>${_('The Grand Bazaar')}</div>` );
-            this.addTooltipHtml( 'city-governors-garden', `<div class='basic-tooltip'>${_("Governor's Garden")}</div>` );
+            this.addTooltipHtml( 'oles-inn-image', `<div class='basic-tooltip'>${_("Ole's Inn")}</div>` );
+            this.addTooltipHtml( 'dock-image', `<div class='basic-tooltip'>${_('The Docks')}</div>` );
+            this.addTooltipHtml( 'forum-image', `<div class='basic-tooltip'>${_('The Forums')}</div>` );
+            this.addTooltipHtml( 'bazaar-image', `<div class='basic-tooltip'>${_('The Grand Bazaar')}</div>` );
+            this.addTooltipHtml( 'governors-garden-image', `<div class='basic-tooltip'>${_("Governor's Garden")}</div>` );
 
             this.addTooltipHtml( 'city-discard', `<div class='basic-tooltip'>${_('City Discard Pile')}</div>` );
             this.addTooltipHtml( 'day-indicator', `<div class='basic-tooltip'>${_('The Current Day')}</div>` );
@@ -114,8 +114,8 @@ function (dojo, declare) {
                 this.getPlayerPanelElement(playerId).innerHTML = this.format_block( 'jstpl_player_board', {
                     id: playerId,
                     reknown: player.score,
-                    crewcap: player.leader?.modifiedCrewCap ?? '-',
-                    panache: player.leader?.modifiedPanache ?? '-',
+                    crewcap: player.leader?.modifiedCrewCap ?? '',
+                    panache: player.leader?.modifiedPanache ?? '',
                 });
                 this.addTooltipHtml( `${playerId}-score-reknown`, `<div class='basic-tooltip'>${_('Current Reknown')}</div>` );
                 this.addTooltipHtml( `${playerId}-score-crewcap`, `<div class='basic-tooltip'>${_('Current Crew Cap')}</div>` );
@@ -127,18 +127,41 @@ function (dojo, declare) {
                     this.createHome(playerId, player.color, player.leader);
                     dojo.addClass( `overall_player_board_${playerId}`, `home-${player.leader.faction.toLowerCase()}` );
                 }
+
+                const playerInfo = this.gamedatas.players[playerId];
+
+                //Pull the home cards out of the gamedatas that are for this player.  homecards are an array that is indexed
+                let homeCards = gamedatas.homeCards.filter((card) => card.controllerId === parseInt(playerId));
+
+                //Display the scheme first
+                const scheme = homeCards.find((card) => card.type === 'Scheme');
+                if (scheme)
+                {
+                    homeCards = homeCards.filter((card) => card.type !== 'Scheme');
+                    const divId = `${playerId}-${scheme.id}`;
+                    this.createSchemeCard(divId, scheme, playerId + '-scheme-anchor');
+                }
+
+                //Display the leader next
+                const leader = homeCards.find((card) => card.type === 'Leader');
+                if (leader)
+                {
+                    homeCards = homeCards.filter((card) => card.type !== 'Leader');
+                    const divId = `${playerId}-${leader.id}`;
+                    this.createCharacterCard(divId, playerInfo.color, leader, playerId + '-home-anchor');
+                }
+            
+                for( const index in homeCards )
+                {
+                    const card = homeCards[index];
+                    const divId = `${playerId}-${card.id}`;
+                    this.createCharacterCard(divId, playerInfo.color, card, playerId + '-home-anchor');
+                }
+        
             }
 
             this.addTooltipHtmlToClass('first-player', `<div class='basic-tooltip'>${_('First Player')}</div>` );
 
-            // Set up cards in home locations
-            for( const index in gamedatas.homeCards )
-            {
-                const card = gamedatas.homeCards[index];
-                const playerInfo = this.gamedatas.players[card.controllerId];
-                const divId = `${card.controllerId}-${card.id}`;
-                this.createCharacterCard(divId, playerInfo.color, card, card.controllerId + '-home-anchor');
-            }
 
             // Set up cards in oles inn
             for( const index in gamedatas.oleCards )
@@ -220,8 +243,9 @@ function (dojo, declare) {
                     this.createAttachmentCard(divId, '', card, targetDiv);
                 }
             }
-
-
+            else if (card.type === 'Scheme') {
+                this.createSchemeCard(divId, card, targetDiv);
+            }
         },
 
        
@@ -374,7 +398,7 @@ function (dojo, declare) {
                 dojo.style( `${divId}-wealth-cost`, 'display', 'none' );
             }
 
-            this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, 500);
+            this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, 100);
         },  
 
         createEventCard: function( divId, event, location )
@@ -385,13 +409,31 @@ function (dojo, declare) {
             //Add to the card properties cache
             this.cardProperties[event.id] = event;
 
-            // Leader
             dojo.place( this.format_block( 'jstpl_card_event', {
                 id: divId,
                 image: event.image,
             }), location, "before" );
 
-            this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + event.image}" />`, 500);
+            this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + event.image}" />`, 100);
+        },  
+
+        createSchemeCard: function( divId, scheme, location )
+        {
+            console.log('scheme', scheme);
+            //Set the divId of the card
+            scheme.divId = divId;
+
+            //Add to the card properties cache
+            this.cardProperties[scheme.id] = scheme;
+
+            dojo.place( this.format_block( 'jstpl_card_scheme', {
+                id: divId,
+                image: scheme.image,
+                initiative: scheme.initiative,
+                panache: this.formatModifer(scheme.panacheModifier),
+            }), location, "after" );
+
+            this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + scheme.image}" />`, 100);
         },  
 
         createAttachmentCard: function( divId, color, attachment, location )
@@ -404,7 +446,6 @@ function (dojo, declare) {
 
             console.log('attachment', attachment);
 
-            // Leader
             dojo.place( this.format_block( 'jstpl_card_attachment', {
                 id: divId,
                 faction: attachment.faction.toLowerCase(),
@@ -417,17 +458,15 @@ function (dojo, declare) {
                 cost: attachment.wealthCost,
             }), location, "before" );
 
-            this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + attachment.image}" />`, 500);
+            this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + attachment.image}" />`, 100);
         },
 
         formatModifer: function( modifier )
         {
             if (modifier > 0) {
                 return `+${modifier}`;
-            } else if (modifier < 0) {
-                return modifier;
             } else {
-                return '-';
+                return modifier;
             }
         },
 
@@ -514,14 +553,14 @@ function (dojo, declare) {
             // TODO: here, associate your game notifications with local methods
             const notifs = [
                 ['playLeader', 1500],
-                ['approachCard', 500],
+                ['approachCardsReceived', 500],
                 ['dawn', 1000],
                 ['cityCardAddedToLocation', 500],
                 ['playCityCard', 1500],
                 ['planningPhase', 100],
                 ['highDramaPhase', 100],
-                ['playApproachScheme', 1500],
-                ['playApproachCharacter', 1500],
+                ['playApproachScheme', 2000],
+                ['playApproachCharacter', 2000],
             ];
     
             notifs.forEach((notif) => {
@@ -572,26 +611,26 @@ function (dojo, declare) {
 
             const args = notif.args;
 
-            this.createCard(`${args.player_id}-${args.scheme.id}`, args.scheme, `${args.player_id}-home-anchor`);
+            this.createCard(`${args.player_id}-${args.scheme.id}`, args.scheme, `${args.player_id}-scheme-anchor`);
 
-            // Update the leader with the modified panache
-            // Update the player panel with the modified panache
-
-            dojo.addClass( `overall_player_board_${args.player_id}`, `home-${args.leader.faction.toLowerCase()}` );
-            $(`${args.player_id}-score-crewcap`).innerHTML = args.leader.crewCap;
-            $(`${args.player_id}-score-panache`).innerHTML = args.leader.panache;
-
-            $('pagemaintitletext').innerHTML = `${args.player_name} has selected <span style="font-weight:bold">${args.leader.name}</span> as their leader`;
+            $('pagemaintitletext').innerHTML = `${args.player_name} has selected <span style="font-weight:bold">${args.scheme.name}</span> as their Scheme today`;
         },
 
         notif_playApproachCharacter: function (notif) {
             console.log( 'notif_playApproachCharacter' );
             console.log( notif );
+
+
+            const args = notif.args;
+
+            this.createCard(`${args.player_id}-${args.character.id}`, args.character, `${args.player_id}-home-anchor`);
+
+            $('pagemaintitletext').innerHTML = `${args.player_name} has selected <span style="font-weight:bold">${args.character.name}</span> as their Approach Character today`;
         },
 
-        notif_approachCard: function( notif )
+        notif_approachCardsReceived: function( notif )
         {
-            console.log( 'notif_approachCard' );
+            console.log( 'notif_approachCardsReceived' );
             console.log( notif );
 
             notif.args.cards.forEach((card) => {
@@ -692,7 +731,7 @@ function (dojo, declare) {
         setupNewStockApproachCard: function( cardDiv, cardTypeId, cardId )
         {
             const card = this.cardProperties[cardTypeId];
-            this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, 500);
+            this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, 100);
         },
 
         onApproachCardSelected: function( control_name, item_id )

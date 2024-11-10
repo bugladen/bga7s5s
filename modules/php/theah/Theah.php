@@ -69,10 +69,6 @@ class Theah
 
     public function getCardById($cardId) : Card
     {
-        // make sure cardId is an integer
-        $cardId = (int)$cardId;
-
-        // print all the keys in the $cards array
         if (array_key_exists($cardId, $this->cards)) {
             return $this->cards[$cardId];
         }

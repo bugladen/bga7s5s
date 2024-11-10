@@ -109,10 +109,11 @@ trait DeckTrait
             }
 
             $cardList = implode(", ", array_map(function($card) { return $card['name']; }, $cards));
-            $this->notifyPlayer($playerId, "approachCard", clienttranslate('You received your Approach Deck containing: ${card_list}'), [
-                "card_list" => $cardList,
-                "cards" => $cards
-            ]);
+            $this->notifyPlayer($playerId, "approachCardsReceived", 
+                clienttranslate('You received your Approach Deck containing: ${card_list}'), [
+                    "card_list" => $cardList,
+                    "cards" => $cards
+                ]);
 
             // Create player's Faction deck
             $factionDeck = $deck->faction_deck;

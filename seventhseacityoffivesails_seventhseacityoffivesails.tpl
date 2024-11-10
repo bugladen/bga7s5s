@@ -51,6 +51,7 @@ var jstpl_home=`
         <div class="seal seal-\${faction}"></div>
         <div>
         <div class="home-player-color" style="--player-color:#\${player_color}"></div>
+        <div id="\${id}-scheme-anchor"></div>
         <div id="\${id}-first-player"></div>
         </div>
     </div>
@@ -104,6 +105,20 @@ var jstpl_card_attachment=`
 var jstpl_card_event=`
 <div id="\${id}">
     <div class="card" style="--card_image:url('\${image}')">
+    </div>
+</div>
+`;
+
+var jstpl_card_scheme=`
+<div id="\${id}">
+    <div class="scheme" style="--card_image:url('\${image}')"></div>
+    <div class="card-stat-box scheme-initiative-box">
+        <div class="scheme-initiative-value">\${initiative}</div>
+        <div class="scheme-initiative-image"></div>
+    </div>
+    <div class="card-stat-box scheme-panache-box">
+        <div class="scheme-panache-value">\${panache}</div>
+        <div class="scheme-panache-image"></div>
     </div>
 </div>
 `;
