@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityDeckCard;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 class EventCityCardAddedToLocation extends Event
 {

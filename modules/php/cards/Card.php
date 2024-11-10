@@ -38,7 +38,7 @@ abstract class Card
 
     public function handleEvent($event)
     {
-        return $event;
+        // Do nothing by default
     }
 
     public function getPropertyArray()

@@ -2,8 +2,12 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\DB;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 
 class Theah
 {
@@ -12,6 +16,8 @@ class Theah
     private array $approachCards;
     private array $events;
     private DB $db;
+
+    use EventHandler;
 
     public function __construct($game)
     {
@@ -92,10 +98,13 @@ class Theah
         //For each event
         foreach ($events as $event) 
         {
+            //Run the event for Theah
+            $this->handleEvent($event);
+
             //Run the event for all cards in play
             foreach ($this->cards as $card) 
             {
-                $event = $card->handleEvent($event);
+                $card->handleEvent($event);
 
                 // Merge the new events with the existing new events
                 $newEvents += $event->getNewEvents();

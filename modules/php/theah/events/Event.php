@@ -1,8 +1,9 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class Event
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+abstract class Event
 {
     protected Theah $theah;
     protected array $newEvents;
