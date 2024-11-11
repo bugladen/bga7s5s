@@ -99,6 +99,36 @@ $this->starter_decks = <<<JSON
                 { "id": "01171", "count": 1 },
                 { "id": "01176", "count": 1 }
             ]
+        },
+        {
+            "id": "SDMontaigne",
+            "name": "Montaigne Starter",
+            "faction": "Montaigne",
+            "leader": "01062",
+            "approach_deck": [ "01071", "01072", "01146", "01147", "01149", "01063", "01067a", "01067b", "01068", "01069" ],
+            "faction_deck": [
+                { "id": "01073", "count": 2 },
+                { "id": "01074", "count": 2 },
+                { "id": "01075", "count": 1 },
+                { "id": "01076", "count": 2 },
+                { "id": "01077", "count": 2 },
+                { "id": "01078", "count": 2 },
+                { "id": "01079", "count": 2 },
+                { "id": "01080", "count": 2 },
+                { "id": "01081", "count": 2 },
+                { "id": "01082", "count": 2 },
+                { "id": "01083", "count": 2 },
+                { "id": "01084", "count": 2 },
+                { "id": "01085", "count": 1 },
+                { "id": "01086", "count": 2 },
+                { "id": "01087", "count": 2 },
+                { "id": "01088", "count": 2 },
+                { "id": "01153", "count": 2 },
+                { "id": "01159", "count": 2 },
+                { "id": "01165", "count": 2 },
+                { "id": "01169", "count": 2 },
+                { "id": "01176", "count": 2 },
+            ]
         }
     ]
 }
