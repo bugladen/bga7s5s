@@ -185,7 +185,7 @@ var jstpl_card_scheme=`
 
 <div id="home_anchor"></div>
 
-<div class="whiteblock">
+<div class="whiteblock hand">
     <div><b>Your Approach Deck</b></div>
     <div id="approachDeck">
     </div>

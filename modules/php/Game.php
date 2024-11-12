@@ -145,7 +145,7 @@ class Game extends \Table
         $this->theah->buildCity();
 
         // WARNING: We must only return information visible by the current player.
-        $currentPlayerId = $this->getActivePlayerId();
+        $currentPlayerId = $this->getCurrentPlayerId();
 
         $players = $this->getCollectionFromDb("SELECT player_id, player_score score, leader_card_id FROM player");
         

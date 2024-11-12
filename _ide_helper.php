@@ -1463,6 +1463,13 @@ namespace {
         protected function getNew(string $objectName): mixed {
             return null;
         }
+    
+        /**
+         * Apply an SQL upgrade of the tables.
+         * Use DBPREFIX_<table_name> for all tables in the $sql parameter.
+         */
+        function applyDbUpgradeToAllDB(string $sql): void {
+        }
     }
 
     /** An integer. */

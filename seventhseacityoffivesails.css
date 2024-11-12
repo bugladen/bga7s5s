@@ -40,9 +40,10 @@ body {
 
 #city {
     position: relative;
-    padding: 15px 10px 15px 10px;
+    float: left;
+    padding: 15px;
     background-color: saddlebrown;
-    display: inline-block;
+    border: 1px solid black;
     margin: 20px;
 }
 
@@ -104,24 +105,28 @@ body {
     position: absolute;
     left: -15px;
     top: -15px;
+    border: 1px solid black;
 }
 
 #city-ur-tower {
     position: absolute;
     right: -15px;
     top: -15px;
+    border: 1px solid black;
 }
 
 #city-ll-tower {
     position: absolute;
     left: -15px;
     bottom: -15px;
+    border: 1px solid black;
 }
 
 #city-lr-tower {
     position: absolute;
     right: -15px;
     bottom: -15px;
+    border: 1px solid black;
 }
 
 .city-tower {
@@ -235,6 +240,8 @@ body {
 }
 
 .home-castille { background-color: #E58712; }
+.home-montaigne { background-color: #B5BF5D; }
+
 
 .home-container {
     position: relative;
@@ -242,7 +249,9 @@ body {
     align-items: center;
     vertical-align: top;
     border-radius: 10px;
-    margin-left: 5px;
+    margin-right: 15px;
+    margin-top: 5px;
+    border: 1px solid black;
 }
 
 .home-panel {
@@ -374,6 +383,10 @@ body {
 .seal-castille {
     background-image: url('img/boardResources.png');
     background-position: 0px -85px;
+}
+.seal-montaigne {
+    background-image: url('img/boardResources.png');
+    background-position: -310px -84px;
 }
 
 .home-player-color {
@@ -597,6 +610,10 @@ body {
 .basic-tooltip {
     font-family: "Pirata One", system-ui;
     font-size: 14pt;
+}
+
+.hand {
+    clear:left;
 }
 
 .stockitem_selected {
