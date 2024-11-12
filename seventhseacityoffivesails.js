@@ -100,8 +100,8 @@ function (dojo, declare) {
                 }
                 
                 dojo.style('city-day-phase', 'display', 'block');
-            }            
-            
+            }
+
             // Setting up player home boards
             for( const playerId in gamedatas.players )
             {
@@ -151,6 +151,7 @@ function (dojo, declare) {
                     this.createCharacterCard(divId, playerInfo.color, leader, playerId + '-home-anchor');
                 }
             
+                //Display the rest of the cards
                 for( const index in homeCards )
                 {
                     const card = homeCards[index];
@@ -341,14 +342,16 @@ function (dojo, declare) {
 
         createHome: function( playerId, playerColor, leader )
         {
-            // Home
+            // Place the viewing player's home board closest to the city
             dojo.place( this.format_block( 'jstpl_home', {
                 id: playerId,
                 faction: leader.faction.toLowerCase(),
                 crewcap: leader.modifiedCrewCap,
                 panache: leader.modifiedPanache,
                 player_color: playerColor,
-            }), 'home_anchor', "before" );
+            }), 
+            playerId == this.player_id ? 'city' : 'home_anchor', 
+            playerId == this.player_id ? 'after' : 'before' );
 
             this.addTooltipHtml( `${playerId}-crewcap`, `<div class='basic-tooltip'>${_('Current Crew Capacity')}</div>` );
             this.addTooltipHtml( `${playerId}-discard`, `<div class='basic-tooltip'>${_('Faction Deck Discard Pile')}</div>` );
