@@ -43,10 +43,14 @@ class Game extends \Table
     final const LOCATION_PLAYER_HOME = 'Player Home';
     final const LOCATION_APPROACH = 'Approach';
 
+    //Global variable names
+    final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
+
     use DeckTrait;
     use StatesTrait;
     use ActionsTrait;
     use ArgumentsTrait;
+    use DebugTrait;
 
     private \Deck $cards;
     private Theah $theah;

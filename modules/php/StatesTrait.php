@@ -63,10 +63,23 @@ trait StatesTrait
             $city_locations[] = Game::LOCATION_CITY_GOVERNORS_GARDEN;
         }
 
+        //Add a city card to each location
         foreach ($city_locations as $location) {
-            //Add a city card to each location
-            /** @disregard P1012 */
-            $cityCard = $this->cards->getCardOnTop(self::LOCATION_CITY_DECK);
+
+            //First see if there is a debug value to include a specific city card
+            if ($this->globals->has(Game::DEBUG_INCLUDE_CITY_CARD)) {
+                //Get the class name
+                $debugCityCard = $this->globals->get(Game::DEBUG_INCLUDE_CITY_CARD);
+                //Grab an array by type
+                $cityCard = $this->cards->getCardsOfType($debugCityCard);
+                //Get the first card in the array
+                $cityCard = array_shift($cityCard);
+                //Remove the debug value
+                $this->globals->delete(Game::DEBUG_INCLUDE_CITY_CARD);
+            } else {
+                $cityCard = $this->cards->getCardOnTop(Game::LOCATION_CITY_DECK);
+            }
+
             $this->cards->moveCard($cityCard['id'], $location);
 
             $card = $this->getCardObjectFromDb($cityCard['id']);
