@@ -20,6 +20,11 @@ trait ActionsTrait
         $sql = "UPDATE player SET selected_scheme_id = '$scheme', selected_character_id = '$character'  WHERE player_id='$playerId'";
         $this->DbQuery($sql);
 
+        //Move the cards to a purgatory state while waiting for the other players to finish their day planning.
+        //This is necessary to prevent the card from being shown back in the player's approach deck if they F5.
+        $this->cards->moveCard($scheme, Game::LOCATION_PURGATORY);
+        $this->cards->moveCard($character, Game::LOCATION_PURGATORY);
+
         $this->gamestate->setPlayerNonMultiactive($playerId, 'dayPlanned'); // deactivate player; if none left, transition to 'deckPicked' state
     }
 

@@ -6,14 +6,13 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\DB;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 
 class Theah
 {
     public Game $game;
     private array $cards;
     private array $approachCards;
+    private array $purgatoryCards;
     private array $events;
     private DB $db;
 
@@ -24,6 +23,7 @@ class Theah
         $this->game = $game;
         $this->cards = [];
         $this->approachCards = [];
+        $this->purgatoryCards = [];
         $this->db = new DB();
     }
 
@@ -38,6 +38,7 @@ class Theah
         $this->cards += $this->db->getCardObjectsAtLocation(addslashes(Game::LOCATION_CITY_GOVERNORS_GARDEN));
 
         $this->approachCards = $this->db->getCardObjectsAtLocation(Game::LOCATION_APPROACH);
+        $this->purgatoryCards = $this->db->getCardObjectsAtLocation(Game::LOCATION_PURGATORY);
     }
 
     public function getApproachCards($playerId)
@@ -79,6 +80,15 @@ class Theah
     {
         if (array_key_exists($cardId, $this->approachCards)) {
             return $this->approachCards[$cardId];
+        }
+
+        return null;
+    }
+
+    public function getPurgatoryCardById($cardId) : Card
+    {
+        if (array_key_exists($cardId, $this->purgatoryCards)) {
+            return $this->purgatoryCards[$cardId];
         }
 
         return null;

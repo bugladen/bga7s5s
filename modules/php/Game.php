@@ -42,6 +42,7 @@ class Game extends \Table
     final const LOCATION_CITY_GOVERNORS_GARDEN = "Governor's Garden";
     final const LOCATION_PLAYER_HOME = 'Player Home';
     final const LOCATION_APPROACH = 'Approach';
+    final const LOCATION_PURGATORY = 'Purgatory';
 
     //Global variable names
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";

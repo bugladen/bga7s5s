@@ -137,7 +137,7 @@ trait StatesTrait
             $this->cards->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
 
             $event = $this->theah->createEvent(Events::SCHEME_CARD_PLAYED);
-            $scheme = $this->theah->getApproachCardById($player['schemeId']);
+            $scheme = $this->theah->getPurgatoryCardById($player['schemeId']);
             if ($event instanceof EventSchemeCardPlayed) {
                 $approach = $event;
                 $approach->playerId = $playerId;
@@ -152,7 +152,7 @@ trait StatesTrait
             $this->cards->moveCard($player['characterId'], Game::LOCATION_PLAYER_HOME, $playerId);
 
             // Run events that the character has been played to a location
-            $character = $this->theah->getApproachCardById($player['characterId']);
+            $character = $this->theah->getPurgatoryCardById($player['characterId']);
             $event = $this->theah->createEvent(Events::APPROACH_CHARACTER_PLAYED);
             if ($event instanceof EventApproachCharacterPlayed) {
                 $approach = $event;
