@@ -1,4 +1,7 @@
 <?php
+
+namespace Bga\Games\SeventhSeaCityOfFiveSails;
+
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
@@ -49,34 +52,21 @@
 
 //    !! It is not a good idea to modify this file when a game is running !!
 
-// define contants for state ids
-if (!defined('STATE_END_GAME')) { // ensure this block is only invoked once, since it is included multiple times
-    define("STATE_PICK_DECKS", 2);
-    define("STATE_BUILD_TABLE", 5);
-    define("STATE_DAWN", 10);
-    define("STATE_PLANNING_PHASE", 20);
-    define("STATE_HIGH_DRAMA_PHASE", 30);
-    define("STATE_PLAYER_TURN", 40);
-    define("STATE_NEXT_PLAYER", 50);
-    define("STATE_END_GAME", 99);
- }
-
-
 $machinestates = [
 
     // The initial state. Please do not modify.
 
-    1 => array(
+    States::GAME_SETUP => array(
         "name" => "gameSetup",
         "description" => "",
         "type" => "manager",
         "action" => "stGameSetup",
-        "transitions" => ["" => STATE_PICK_DECKS]
+        "transitions" => ["" => States::PICK_DECKS]
     ),
 
     // Note: ID=2 => your first state
 
-    STATE_PICK_DECKS => [
+    States::PICK_DECKS => [
         "name" => "pickDecks",
         "description" => clienttranslate('Your opponent must pick a deck to play with.'),
         "descriptionmyturn" => clienttranslate('${you} must pick your deck to play with:'),
@@ -87,26 +77,26 @@ $machinestates = [
             // these actions are called from the front with bgaPerformAction, and matched to the function on the game.php file
             "actPickDeck", 
         ],
-        "transitions" => ["deckPicked" => STATE_BUILD_TABLE]
+        "transitions" => ["deckPicked" => States::BUILD_TABLE]
     ],
 
-    STATE_BUILD_TABLE => [
+    States::BUILD_TABLE => [
         "name" => "buildTable",
         "description" => "Creating the City...",
         "type" => "game",
         "action" => "stBuildDecks",
-        "transitions" => ["" => STATE_DAWN]
+        "transitions" => ["" => States::DAWN_NEW_DAY]
     ],
 
-    STATE_DAWN => [
-        "name" => "dawn",
+    States::DAWN_NEW_DAY => [
+        "name" => "dawnNewDay",
         "description" => "Preparing the City for the next full Day...",
         "type" => "game",
-        "action" => "stMorningPhase",
-        "transitions" => ["" => STATE_PLANNING_PHASE]            
+        "action" => "stDawnNewDay",
+        "transitions" => ["" => States::PLANNING_PHASE]            
     ],
 
-    STATE_PLANNING_PHASE => [
+    States::PLANNING_PHASE => [
         "name" => "planningPhase",
         "description" => clienttranslate('Your opponent must choose their Scheme Character to muster for the day.'),
         "descriptionmyturn" => clienttranslate('${you} must choose ONE Scheme and ONE Character from your Approach Deck to muster for the day.'),
@@ -116,18 +106,18 @@ $machinestates = [
         "possibleactions" => [
             "actDayPlanned", 
         ],
-        "transitions" => ["dayPlanned" => STATE_HIGH_DRAMA_PHASE]
+        "transitions" => ["dayPlanned" => States::HIGH_DRAMA_PHASE]
     ],
 
-    STATE_HIGH_DRAMA_PHASE => [
+    States::HIGH_DRAMA_PHASE => [
         "name" => "highDramaPhase",
         "description" => "High Drama Phase",
         "type" => "game",
         "action" => "stHighDramaPhase",
-        "transitions" => ["" => STATE_PLAYER_TURN]
+        "transitions" => ["" => States::PLAYER_TURN]
     ],
 
-    STATE_PLAYER_TURN => [
+    States::PLAYER_TURN => [
         "name" => "playerTurn",
         "description" => clienttranslate('${actplayer} must perform an action or pass'),
         "descriptionmyturn" => clienttranslate('${you} must perform an action or pass'),
@@ -138,23 +128,23 @@ $machinestates = [
             "actPass",
         ],
         "transitions" => [
-            "playCard" => STATE_NEXT_PLAYER, 
-            "pass" => STATE_NEXT_PLAYER
+            "playCard" => States::NEXT_PLAYER, 
+            "pass" => States::NEXT_PLAYER
         ]
     ],
 
-    STATE_NEXT_PLAYER => [
+    States::NEXT_PLAYER => [
         "name" => "nextPlayer",
         "description" => '',
         "type" => "game",
         "action" => "stNextPlayer",
         "updateGameProgression" => true,
-        "transitions" => ["endGame" => STATE_END_GAME, "nextPlayer" => STATE_PLAYER_TURN]
+        "transitions" => ["endGame" => States::END_GAME, "nextPlayer" => States::PLAYER_TURN]
     ],
 
     // Final state.
     // Please do not modify (and do not overload action/args methods).
-    STATE_END_GAME => [
+    States::END_GAME => [
         "name" => "gameEnd",
         "description" => clienttranslate("End of game"),
         "type" => "manager",
