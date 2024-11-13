@@ -22,8 +22,7 @@ trait DeckTrait
         ));
         // Inject into card db
         foreach ($city->cards as $card) {
-            /** @disregard P1012 */
-            $location = self::LOCATION_CITY_DECK;
+            $location = Game::LOCATION_CITY_DECK;
             $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$card}', 0, '{$location}', 0)";
             $this->DbQuery($sql);
 
@@ -33,8 +32,7 @@ trait DeckTrait
             $card->Id = $id;
             $this->updateCardObjectInDb($card);
         }
-        /** @disregard P1012 */
-        $this->cards->shuffle(self::LOCATION_CITY_DECK);
+        $this->cards->shuffle(Game::LOCATION_CITY_DECK);
 
         // Load the decks selected by the players
         $starter_decks = json_decode($this->starter_decks);
@@ -57,8 +55,7 @@ trait DeckTrait
             //Now that we have a deck, add the cards in the deck to the db
 
             // Leader
-            /** @disregard P1012 */
-            $location = self::LOCATION_PLAYER_HOME;
+            $location = Game::LOCATION_PLAYER_HOME;
             $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$deck->leader}', $playerId, '{$location}', $playerId)";
             $this->DbQuery($sql);
             $id = $this->DbGetLastId();

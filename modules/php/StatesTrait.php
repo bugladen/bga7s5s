@@ -36,8 +36,7 @@ trait StatesTrait
         $this->theah->runQueuedEvents();
 
         //Set the phase to morning
-        /** @disregard P1012 */
-        $turnPhase = self::DAWN;
+        $turnPhase = Game::DAWN;
         $this->setGameStateValue("turnPhase", $turnPhase);
 
         //Create the morning event
@@ -51,20 +50,17 @@ trait StatesTrait
         ]);
 
         //Create the core city locations
-        /** @disregard P1012 */
-        $city_locations = [self::LOCATION_CITY_DOCKS, self::LOCATION_CITY_FORUM, self::LOCATION_CITY_BAZAAR];
+        $city_locations = [Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_FORUM, Game::LOCATION_CITY_BAZAAR];
 
         // Add Ole's Inn if there are more than 2 players
         if ($this->getPlayersNumber() > 2)
         {
-            /** @disregard P1012 */
-            array_unshift($city_locations, self::LOCATION_CITY_OLES_INN);
+            array_unshift($city_locations, Game::LOCATION_CITY_OLES_INN);
         }
 
         // Add the Governor's Garden if there are more than 3 players
         if ($this->getPlayersNumber() > 3) {
-            /** @disregard P1012 */
-            $city_locations[] = self::LOCATION_CITY_GOVERNORS_GARDEN;
+            $city_locations[] = Game::LOCATION_CITY_GOVERNORS_GARDEN;
         }
 
         foreach ($city_locations as $location) {
@@ -91,8 +87,7 @@ trait StatesTrait
 
     public function stPlanningPhase() {
         //Set the phase to planning
-        /** @disregard P1012 */
-        $turnPhase = self::PLANNING;
+        $turnPhase = Game::PLANNING;
         $this->setGameStateValue("turnPhase", $turnPhase);
 
         $this->theah->buildCity();
@@ -111,8 +106,7 @@ trait StatesTrait
 
     public function stHighDramaPhase() {
         //Set the phase to high drama
-        /** @disregard P1012 */
-        $turnPhase = self::HIGH_DRAMA;
+        $turnPhase = Game::HIGH_DRAMA;
         $this->setGameStateValue("turnPhase", $turnPhase);
 
         $this->theah->buildCity();
