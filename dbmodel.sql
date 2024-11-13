@@ -19,6 +19,12 @@ CREATE TABLE IF NOT EXISTS `card` (
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+CREATE TABLE IF NOT EXISTS `events` (
+  `event_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `event_serialized` text NULL,
+  PRIMARY KEY (`event_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
 -- Player fields for selected deck
 ALTER TABLE `player` 
   ADD `deck_source` varchar(20) NULL,

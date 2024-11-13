@@ -10,9 +10,9 @@ class EventCityCardAddedToLocation extends Event
     public CityDeckCard $card;
     public string $location;
 
-    public function __construct($theah)
+    public function __construct()
     {
-        parent::__construct($theah);
+        parent::__construct();
     }
 
 }

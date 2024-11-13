@@ -17,6 +17,8 @@ abstract class Event extends CityDeckCard
 
     public function handleEvent($event)
     {
+        parent::handleEvent($event);
+        
         if ($event instanceof EventNewDay) {
             $this->playersThatUsedMeToday = [];
         }

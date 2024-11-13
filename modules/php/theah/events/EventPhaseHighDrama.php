@@ -2,13 +2,12 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 class EventPhaseHighDrama extends Event
 {
-    public function __construct(Theah $theah)
+    public function __construct()
     {
-        parent::__construct($theah);
+        parent::__construct();
     }
 }

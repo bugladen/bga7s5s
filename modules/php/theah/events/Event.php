@@ -6,22 +6,16 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 abstract class Event
 {
     public Theah $theah;
-    protected array $newEvents;
+    public string $transition;
 
-    public function __construct(Theah $theah)
+    public function __construct()
     {
-        $this->theah = $theah;
-        $this->newEvents = [];
+        $this->transition ="";
     }
 
-    public function addNewEvent($event)
+    public function queueEvent(Event $event)
     {
-        $this->newEvents[] = $event;
+        $this->theah->queueEvent($event);
     }
 
-    public function getNewEvents()
-    {
-        return $this->newEvents;
-    }
-    
 }

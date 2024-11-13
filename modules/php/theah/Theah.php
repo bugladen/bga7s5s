@@ -24,7 +24,6 @@ class Theah
         $this->game = $game;
         $this->cards = [];
         $this->approachCards = [];
-        $this->events = [];
         $this->db = new DB();
     }
 
@@ -88,52 +87,49 @@ class Theah
     public function createEvent(string $eventName) : Event
     {
         $className = "\Bga\Games\SeventhSeaCityOfFiveSails\\theah\\events\\$eventName";
-        $event = new $className($this);
+        $event = new $className();
         return $event;
     }
 
     public function queueEvent(Event $event)
     {
-        $this->events[] = $event;
+        $this->db->queueEvent($event);
     }
 
-    private function runEvents(array $events)
+    public function runQueuedEvents()
     {
-        $newEvents = [];
-        //For each event
-        foreach ($events as $event) 
-        {
-            //Run the event for Theah
+        while (true) {
+           
+            // Get the next event from the database
+            $event = $this->db->getNextEvent();
+
+            // Break if there are no more events
+            if (!$event) break;
+
+            $this->game->debug("*******event". get_class($event));
+
+            // Run the event for Theah
+            $event->theah = $this;
             $this->handleEvent($event);
 
             //Run the event for all cards in play
             foreach ($this->cards as $card) 
             {
                 $card->handleEvent($event);
+            }
 
-                // Merge the new events with the existing new events
-                $newEvents += $event->getNewEvents();
+            // If any cards were updated, update them in the database
+            foreach ($this->cards as $card) {
+                if ($card->IsUpdated) {
+                    $card->IsUpdated = false;
+                    $this->db->updateCardObject($card);
+                }
+            }
+
+            if ( ! empty($event->transition)) {
+                $this->game->gamestate->nextState($event->transition);
+                break;
             }
         }
-
-        if (count($newEvents) > 0) {
-            $this->runEvents($newEvents);
-        }
-    }
-
-    public function runQueuedEvents()
-    {
-        $this->runEvents($this->events);
-
-        // If any cards were updated, update them in the database
-        foreach ($this->cards as $card) {
-            if ($card->IsUpdated) {
-                $card->IsUpdated = false;
-                $this->db->updateCardObject($card);
-            }
-        }
-
-        //Clear the events array
-        $this->events = [];
     }
 }

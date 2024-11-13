@@ -12,9 +12,9 @@ class EventApproachCharacterPlayed extends Event
     public int $playerId;
     public string $playerName;
 
-    public function __construct($theah)
+    public function __construct()
     {
-        parent::__construct($theah);
+        parent::__construct();
     }
 
 }

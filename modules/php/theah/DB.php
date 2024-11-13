@@ -3,10 +3,37 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 /** @disregard P1012 */
 class DB extends \APP_DbObject
 {
+    public function queueEvent(Event $event)
+    {
+        $serialized = addslashes(serialize($event));
+        $sql = "INSERT INTO events (event_serialized) values ('{$serialized}')";
+        /** @disregard P1012 */
+        $this->DbQuery($sql);
+    }
+
+    public function getNextEvent()
+    {
+        $sql = "SELECT event_id as id, event_serialized as json FROM events LIMIT 1";
+        /** @disregard P1012 */
+        $data = $this->getObjectFromDB($sql);
+
+        if (!$data) {
+            return null;
+        }
+        
+        $sql = "DELETE FROM events WHERE event_id = {$data['id']}";
+        /** @disregard P1012 */
+        $this->DbQuery($sql);
+
+        $event = unserialize($data['json']);
+        return $event;
+    }
+
     public function getObjectList(string $sql, bool $bUniqueValue = false): array
     {
         /** @disregard P1012 */

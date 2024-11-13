@@ -19,12 +19,17 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
-    public function stMorningPhase() {
+    public function stDawnNewDay() {
         // Increment the day
         $day = $this->getGameStateValue("day") + 1;
         $this->setGameStateValue("day", $day);
 
         $this->theah->buildCity();
+
+        //Notify players that it is morning
+        $this->notifyAllPlayers("dawn", clienttranslate('It is <span style="font-weight:bold">DAWN</span>, the start of Day #${day} in the city of Theah.'), [
+            "day" => $day,
+        ]);
 
         //New day Theah event
         $event = $this->theah->createEvent(Events::NEW_DAY);
@@ -43,11 +48,6 @@ trait StatesTrait
         $event = $this->theah->createEvent(Events::MORNING);
         $this->theah->queueEvent($event);
         $this->theah->runQueuedEvents();
-
-        //Notify players that it is morning
-        $this->notifyAllPlayers("dawn", clienttranslate('It is <span style="font-weight:bold">DAWN</span>, the start of Day #${day} in the city of Theah.'), [
-            "day" => $day,
-        ]);
 
         //Create the core city locations
         $city_locations = [Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_FORUM, Game::LOCATION_CITY_BAZAAR];
