@@ -2,9 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityEventCard;
 
-class _01177 extends Event
+class _01177 extends CityEventCard
 {
     public function __construct()
     {
