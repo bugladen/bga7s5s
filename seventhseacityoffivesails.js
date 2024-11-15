@@ -564,15 +564,15 @@ function (dojo, declare) {
             // TODO: here, associate your game notifications with local methods
             const notifs = [
                 ['playLeader', 1500],
-                ['approachCardsReceived', 500],
+                ['approachCardsReceived', 1000],
                 ['dawn', 1000],
                 ['cityCardAddedToLocation', 500],
                 ['playCityCard', 1500],
-                ['planningPhase', 100],
-                ['highDramaPhase', 100],
+                ['planningPhase', 1000],
+                ['highDramaPhase', 1000],
                 ['playApproachScheme', 2000],
                 ['playApproachCharacter', 2000],
-                ['panacheModified', 500],
+                ['panacheModified', 1000],
             ];
     
             notifs.forEach((notif) => {

@@ -10,15 +10,16 @@ class DB extends \APP_DbObject
 {
     public function queueEvent(Event $event)
     {
+        $priority = $event->priority;
         $serialized = addslashes(serialize($event));
-        $sql = "INSERT INTO events (event_serialized) values ('{$serialized}')";
+        $sql = "INSERT INTO events (event_priority, event_serialized) values ($priority, '{$serialized}')";
         /** @disregard P1012 */
         $this->DbQuery($sql);
     }
 
     public function getNextEvent()
     {
-        $sql = "SELECT event_id as id, event_serialized as json FROM events LIMIT 1";
+        $sql = "SELECT event_id as id, event_serialized as json FROM events ORDER BY event_priority LIMIT 1";
         /** @disregard P1012 */
         $data = $this->getObjectFromDB($sql);
 

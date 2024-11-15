@@ -54,8 +54,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 $machinestates = [
 
-    // The initial state. Please do not modify.
-
     States::GAME_SETUP => array(
         "name" => "gameSetup",
         "description" => "",
@@ -63,8 +61,6 @@ $machinestates = [
         "action" => "stGameSetup",
         "transitions" => ["" => States::PICK_DECKS]
     ),
-
-    // Note: ID=2 => your first state
 
     States::PICK_DECKS => [
         "name" => "pickDecks",
@@ -74,7 +70,6 @@ $machinestates = [
         "args" => "argAvailableDecks",
         "action" => "stMultiPlayerInit",
         "possibleactions" => [
-            // these actions are called from the front with bgaPerformAction, and matched to the function on the game.php file
             "actPickDeck", 
         ],
         "transitions" => ["deckPicked" => States::BUILD_TABLE]
@@ -93,7 +88,37 @@ $machinestates = [
         "description" => "Preparing the City for the next full Day...",
         "type" => "game",
         "action" => "stDawnNewDay",
-        "transitions" => ["" => States::PLANNING_PHASE]            
+        "transitions" => [
+            "endOfEvents" => States::DAWN_BEGINNING
+        ]
+    ],
+
+    States::DAWN_BEGINNING => [
+        "name" => "dawnBeginning",
+        "description" => "The Dawn of a New Day...",
+        "type" => "game",
+        "action" => "stDawnBeginning",
+        "transitions" => [
+            "endOfEvents" => States::DAWN_CITY_CARDS
+        ]
+    ],
+
+    States::DAWN_CITY_CARDS => [
+        "name" => "dawnCityCards",
+        "description" => "Adding City Cards to the City Locations...",
+        "type" => "game",
+        "action" => "stDawnCityCards",
+        "transitions" => [
+            "endOfEvents" => States::PLANNING_PHASE_BEGINNING
+        ]
+    ],
+
+    States::PLANNING_PHASE_BEGINNING => [
+        "name" => "planningPhaseBeginning",
+        "description" => "Beginning the Planning Phase...",
+        "type" => "game",
+        "action" => "stPlanningPhaseBeginning",
+        "transitions" => ["endOfEvents" => States::PLANNING_PHASE]
     ],
 
     States::PLANNING_PHASE => [
@@ -106,7 +131,23 @@ $machinestates = [
         "possibleactions" => [
             "actDayPlanned", 
         ],
-        "transitions" => ["dayPlanned" => States::HIGH_DRAMA_PHASE]
+        "transitions" => ["dayPlanned" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED]
+    ],
+
+    States::PLANNING_PHASE_APPROACH_CARDS_PLAYED => [
+        "name" => "planningPhaseApproachCardsPlayed",
+        "description" => "Approach Cards Played",
+        "type" => "game",
+        "action" => "stPlanningPhaseApproachCardsPlayed",
+        "transitions" => ["endOfEvents" => States::HIGH_DRAMA_PHASE]
+    ],
+
+    States::HIGH_DRAMA_BEGINNING => [
+        "name" => "highDramaBeginning",
+        "description" => "High Drama Beginning",
+        "type" => "game",
+        "action" => "stHighDramaBeginning",
+        "transitions" => ["endOfEvents" => States::HIGH_DRAMA_PHASE]
     ],
 
     States::HIGH_DRAMA_PHASE => [

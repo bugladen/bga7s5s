@@ -26,7 +26,7 @@ trait StatesTrait
 
         $this->theah->buildCity();
 
-        //Notify players that it is morning
+        //Notify players that it is Dawn, New Day
         $this->notifyAllPlayers("dawn", clienttranslate('It is <span style="font-weight:bold">DAWN</span>, the start of Day #${day} in the city of Theah.'), [
             "day" => $day,
         ]);
@@ -38,17 +38,21 @@ trait StatesTrait
             $newDay->dayNumber = $day;
         }
         $this->theah->queueEvent($event);
-        $this->theah->runQueuedEvents();
+        $this->theah->runEvents();
+    }
 
+    public function stDawnBeginning() {
         //Set the phase to morning
         $turnPhase = Game::DAWN;
         $this->setGameStateValue("turnPhase", $turnPhase);
 
         //Create the morning event
-        $event = $this->theah->createEvent(Events::MORNING);
+        $event = $this->theah->createEvent(Events::DAWN_BEGINNING);
         $this->theah->queueEvent($event);
-        $this->theah->runQueuedEvents();
+        $this->theah->runEvents();
+    }
 
+    public function stDawnCityCards() {
         //Create the core city locations
         $city_locations = [Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_FORUM, Game::LOCATION_CITY_BAZAAR];
 
@@ -70,10 +74,13 @@ trait StatesTrait
             if ($this->globals->has(Game::DEBUG_INCLUDE_CITY_CARD)) {
                 //Get the class name
                 $debugCityCard = $this->globals->get(Game::DEBUG_INCLUDE_CITY_CARD);
+
                 //Grab an array by type
                 $cityCard = $this->cards->getCardsOfType($debugCityCard);
+
                 //Get the first card in the array
                 $cityCard = array_shift($cityCard);
+                
                 //Remove the debug value
                 $this->globals->delete(Game::DEBUG_INCLUDE_CITY_CARD);
             } else {
@@ -92,42 +99,36 @@ trait StatesTrait
                 $cityEvent->location = $location;
             }
             $this->theah->queueEvent($event);
-            $this->theah->runQueuedEvents();
         }
 
-        $this->gamestate->nextState("");
+        $this->theah->runEvents();
     }
 
-    public function stPlanningPhase() {
+    public function stPlanningPhaseBeginning()
+    {
         //Set the phase to planning
         $turnPhase = Game::PLANNING;
         $this->setGameStateValue("turnPhase", $turnPhase);
 
         $this->theah->buildCity();
 
-        //Create the Planning phase event
-        $event = $this->theah->createEvent(Events::PLANNING_PHASE);
-        $this->theah->queueEvent($event);
-        $this->theah->runQueuedEvents();
-
         //Notify players that it is planning phase
         $this->notifyAllPlayers("planningPhase", clienttranslate('<span style="font-weight:bold">PLANNING PHASE</span>.'), [
         ]);
-        
-        $this->gamestate->setAllPlayersMultiactive();
-    }
-
-    public function stHighDramaPhase() {
-        //Set the phase to high drama
-        $turnPhase = Game::HIGH_DRAMA;
-        $this->setGameStateValue("turnPhase", $turnPhase);
-
-        $this->theah->buildCity();
 
         //Create the Planning phase event
         $event = $this->theah->createEvent(Events::PLANNING_PHASE);
         $this->theah->queueEvent($event);
-        $this->theah->runQueuedEvents();
+        $this->theah->runEvents();
+    }
+
+    public function stPlanningPhase() {
+        $this->gamestate->setAllPlayersMultiactive();
+    }
+
+    public function stPlanningPhaseApproachCardsPlayed()
+    {
+        $this->theah->buildCity();
 
         $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
         $players = $this->getCollectionFromDb($sql);
@@ -146,7 +147,6 @@ trait StatesTrait
                 $approach->playerName = $player['player_name'];
             }
             $this->theah->queueEvent($event);
-            $this->theah->runQueuedEvents();
 
             //Update the character's location in the DB
             $this->cards->moveCard($player['characterId'], Game::LOCATION_PLAYER_HOME, $playerId);
@@ -162,11 +162,23 @@ trait StatesTrait
                 $approach->playerName = $player['player_name'];
             }
             $this->theah->queueEvent($event);
-            $this->theah->runQueuedEvents();
         }
-
         //TODO: Compare the initiative of the schemes and determine the first player        
+        $this->theah->runEvents();
+    }
 
+    public function stHighDramaBeginning() {
+        //Set the phase to high drama
+        $turnPhase = Game::HIGH_DRAMA;
+        $this->setGameStateValue("turnPhase", $turnPhase);
+
+        //Create the Planning phase event
+        $event = $this->theah->createEvent(Events::HIGH_DRAMA);
+        $this->theah->queueEvent($event);
+        $this->theah->runEvents();
+    }
+
+    public function stHighDramaPhase() {
         //Notify players that it is high drama phase
         $this->notifyAllPlayers("highDramaPhase", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), [
         ]);

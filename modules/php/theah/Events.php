@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 class Events
 {
     const NEW_DAY = 'EventNewDay';
-    const MORNING = 'EventPhaseMorning';
+    const DAWN_BEGINNING = 'EventPhaseDawnBeginning';
     const PLANNING_PHASE = 'EventPhasePlanning';
     const HIGH_DRAMA = 'EventPhaseHighDrama';
     const CITY_CARD_ADDED_TO_LOCATION = 'EventCityCardAddedToLocation';

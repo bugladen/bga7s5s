@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS `card` (
 
 CREATE TABLE IF NOT EXISTS `events` (
   `event_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `event_priority` tinyint NOT NULL,
   `event_serialized` text NULL,
   PRIMARY KEY (`event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;

@@ -7,10 +7,12 @@ abstract class Event
 {
     public Theah $theah;
     public string $transition;
+    public int $priority;
 
     public function __construct()
     {
         $this->transition ="";
+        $this->priority = 5;
     }
 
     public function queueEvent(Event $event)

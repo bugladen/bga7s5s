@@ -106,7 +106,7 @@ class Theah
         $this->db->queueEvent($event);
     }
 
-    public function runQueuedEvents()
+    public function runEvents()
     {
         while (true) {
            
@@ -141,5 +141,7 @@ class Theah
                 break;
             }
         }
+
+        $this->game->gamestate->nextState('endOfEvents');
     }
 }
