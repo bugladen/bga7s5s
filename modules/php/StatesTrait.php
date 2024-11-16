@@ -34,8 +34,7 @@ trait StatesTrait
         //New day Theah event
         $event = $this->theah->createEvent(Events::NEW_DAY);
         if ($event instanceof EventNewDay) {
-            $newDay = $event;
-            $newDay->dayNumber = $day;
+            $event->dayNumber = $day;
         }
         $this->theah->queueEvent($event);
         $this->theah->runEvents();
@@ -94,9 +93,8 @@ trait StatesTrait
             //Create the event
             $event = $this->theah->createEvent(Events::CITY_CARD_ADDED_TO_LOCATION);
             if ($event instanceof EventCityCardAddedToLocation) {
-                $cityEvent = $event;
-                $cityEvent->card = $card;
-                $cityEvent->location = $location;
+                $event->card = $card;
+                $event->location = $location;
             }
             $this->theah->queueEvent($event);
         }
@@ -140,11 +138,10 @@ trait StatesTrait
             $event = $this->theah->createEvent(Events::SCHEME_CARD_PLAYED);
             $scheme = $this->theah->getPurgatoryCardById($player['schemeId']);
             if ($event instanceof EventSchemeCardPlayed) {
-                $approach = $event;
-                $approach->playerId = $playerId;
-                $approach->scheme = $scheme;
-                $approach->location = Game::LOCATION_PLAYER_HOME;
-                $approach->playerName = $player['player_name'];
+                $event->playerId = $playerId;
+                $event->scheme = $scheme;
+                $event->location = Game::LOCATION_PLAYER_HOME;
+                $event->playerName = $player['player_name'];
             }
             $this->theah->queueEvent($event);
 
@@ -155,11 +152,9 @@ trait StatesTrait
             $character = $this->theah->getPurgatoryCardById($player['characterId']);
             $event = $this->theah->createEvent(Events::APPROACH_CHARACTER_PLAYED);
             if ($event instanceof EventApproachCharacterPlayed) {
-                $approach = $event;
-                $approach->playerId = $playerId;
-                $approach->character = $character;
-                $approach->location = Game::LOCATION_PLAYER_HOME;
-                $approach->playerName = $player['player_name'];
+                $event->playerId = $playerId;
+                $event->character = $character;
+                $event->location = Game::LOCATION_PLAYER_HOME;
             }
             $this->theah->queueEvent($event);
         }

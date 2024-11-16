@@ -65,25 +65,24 @@ trait DeckTrait
             $card->OwnerId = $playerId;
             $card->ControllerId = $playerId;
             if ($card instanceof Leader) {
-                $leader = $card;
+                $card->Id = $id;
+                $card->Location = $location;
+                $this->updateCardObjectInDb($card);
+
+                //Set the id of the leader card in the player record
+                $sql = "UPDATE player SET leader_card_id = $id WHERE player_id = $playerId";
+                $this->DbQuery($sql);
+
+                //Notify players about the leaders
+                $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} will play ${player_faction} and ${leader_name} as their leader.'), [
+                    "player_name" => $player['player_name'],
+                    "player_faction" => "<span style='font-weight:bold'>{$card->Faction}</span>",
+                    "leader_name" => "<span style='font-weight:bold'>{$card->Name}</span>",
+                    "player_id" => $playerId,
+                    "player_color" => $player['player_color'],
+                    "leader" => $card->getPropertyArray(),
+                ]);
             }
-            $leader->Id = $id;
-            $leader->Location = $location;
-            $this->updateCardObjectInDb($leader);
-
-            //Set the id of the leader card in the player record
-            $sql = "UPDATE player SET leader_card_id = $id WHERE player_id = $playerId";
-            $this->DbQuery($sql);
-
-            //Notify players about the leaders
-            $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} will play ${player_faction} and ${leader_name} as their leader.'), [
-                "player_name" => $player['player_name'],
-                "player_faction" => "<span style='font-weight:bold'>{$leader->Faction}</span>",
-                "leader_name" => "<span style='font-weight:bold'>{$leader->Name}</span>",
-                "player_id" => $playerId,
-                "player_color" => $player['player_color'],
-                "leader" => $leader->getPropertyArray(),
-            ]);
 
             // *** Create the approach deck and send each card to the player ***
             $approachDeck = $deck->approach_deck;
