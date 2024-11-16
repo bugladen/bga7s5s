@@ -75,10 +75,10 @@ trait EventHandler
                     $this->db->setPlayerReknown($playerId, $reknown);
 
                         // Notify players that the player has lost reknown
-                        $this->game->notifyAllPlayers("playerLosesReknown", clienttranslate('${player_name} loses ${amount} reknown.'), [
+                        $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} loses ${amount} reknown.'), [
                             "playerId" => $event->playerId,
                             "player_name" => $this->game->getPlayerNameById($playerId),
-                            "amount" => $event->amount,
+                            "amount" => $reknown,
                         ]);
                 }
 

@@ -59,4 +59,20 @@ class _01179 extends CityEventCard
             }
         }
     }
+
+    public function handleEvent($event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventReknownAddedToCard && $event->cardId == $this->Id) {
+            $this->Reknown += $event->amount;
+            $this->IsUpdated = true;
+
+            $event->theah->game->notifyAllPlayers("reknownUpdatedOnCard", clienttranslate('${cardName} - ${amount} Reknown placed on it.'), [
+                "cardId" => $this->Id,
+                "cardName" => $this->Name,
+                "amount" => $this->Reknown,
+            ]);
+        }
+    }
 }

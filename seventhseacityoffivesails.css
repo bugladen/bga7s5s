@@ -135,43 +135,51 @@ body {
     stroke: saddlebrown;
 }
 
-#city-oles-inn {
+.city-location {
     position: relative;
     display: inline-flex;
     border-radius: 10px;
+    height:110px;
+}
+
+#city-oles-inn {
     background-color: #2B2C23;
     margin-bottom: 5px;
 }
 
 #city-docks {
-    position: relative;
-    display: inline-flex;
-    border-radius: 10px;
     background-color: #7C9A87;
     margin-bottom: 5px;
 }
 
 #city-forum {
-    position: relative;
-    display: inline-flex;
-    border-radius: 10px;
     background-color: #DA985E;
 }
 
 #city-bazaar {
-    position: relative;
-    display: inline-flex;
-    border-radius: 10px;
     background-color: #596676;
     margin-top: 5px;
 }
 
 #city-governors-garden {
-    position: relative;
-    display: inline-flex;
-    border-radius: 10px;
     background-color: #859370;
     margin-top: 5px;
+}
+
+.reknown-chip {
+    position: relative;
+    left:50px;
+    bottom:75px;
+    background-image: url('img/boardResources.jpg');
+    background-size: calc(var(--jpg-board-resource-width) * .5) calc(var(--jpg-board-resource-height) * .5);
+    background-position: 0px 0px;
+    width: 39px;
+    height: 39px;
+    line-height: 39px;
+    border-radius: 50%;
+    font-family: "Pirata One", system-ui;
+    font-size:24pt;
+    text-align:center;
 }
 
 .city-reknown {

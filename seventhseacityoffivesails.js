@@ -415,6 +415,14 @@ function (dojo, declare) {
             }), location, "before" );
 
             this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + event.image}" />`, 100);
+
+            if (event.reknown > 0) {
+                divId = `${divId}-reknown`;
+                dojo.place( this.format_block( 'jstpl_reknown_chip', {
+                    id: divId,
+                    amount: event.reknown,
+                }),  event.divId, 'last');
+                }
         },  
 
         createSchemeCard: function( divId, scheme, location )
@@ -573,7 +581,8 @@ function (dojo, declare) {
                 ['playApproachScheme', 2000],
                 ['playApproachCharacter', 2000],
                 ['panacheModified', 1000],
-                ['playerLosesReknown', 500]
+                ['playerReknownUpdated', 500],
+                ['reknownUpdatedOnCard', 500],
             ];
     
             notifs.forEach((notif) => {
@@ -718,17 +727,34 @@ function (dojo, declare) {
             console.log( notif );
         },
 
-        notif_playerLosesReknown: function( notif )
+        notif_playerReknownUpdated: function( notif )
         {
-            console.log( 'notif_playerLosesReknown' );
+            console.log( 'notif_playerReknownUpdated' );
+            console.log( notif );
+
+            const args = notif.args;
+            $(`${args.playerId}-score-reknown`).innerHTML = args.amount;
+        },
+
+        notif_reknownUpdatedOnCard: function( notif )
+        {
+            console.log( 'notif_reknownUpdatedOnCard' );
             console.log( notif );
 
             const args = notif.args;
 
-            const currentReknown = parseInt($(`${args.playerId}-score-reknown`).innerHTML);
-            $(`${args.playerId}-score-reknown`).innerHTML = currentReknown - args.amount;
-        },
+            const card = this.cardProperties[args.cardId];
+            const divId = `${card.divId}-reknown`;
+            ////Delete the old element if exists
+            if ($(divId)) {                
+                dojo.destroy(divId);
+            } 
 
+            dojo.place( this.format_block( 'jstpl_reknown_chip', {
+                id: divId,
+                amount: args.amount,
+            }),  card.divId, 'last');
+        },
 
         notif_planningPhase: function( notif )
         {

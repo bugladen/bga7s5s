@@ -18,6 +18,7 @@ abstract class Card
 
     public string $Location;
     public bool $IsUpdated;
+    public int $Reknown;
 
     public function __construct()
     {
@@ -34,6 +35,7 @@ abstract class Card
 
         $this->Location = "";
         $this->IsUpdated = false;
+        $this->Reknown = 0;
     }
 
     public function handleEvent($event)
@@ -57,6 +59,7 @@ abstract class Card
             'faction' => $this->Faction,
             'location' => $this->Location,
             'engaged' => $this->Engaged,
+            'reknown' => $this->Reknown,
         ];
 
         $properties['type'] = 'Card';
