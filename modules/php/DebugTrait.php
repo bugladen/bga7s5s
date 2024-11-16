@@ -11,4 +11,9 @@ trait DebugTrait
             $this->globals->set(Game::DEBUG_INCLUDE_CITY_CARD, $className);
         }
     }
+
+    public function dbgSetPlayerReknown($playerId, $score)
+    {
+        $this->DBQuery("UPDATE player SET player_score = $score WHERE player_id = $playerId");
+    }
 }

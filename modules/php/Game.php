@@ -314,4 +314,25 @@ class Game extends \Table
         $card = unserialize($data['card_serialized']);
         return $card;
     }
+
+    function getPlayerReknown($player_id) {
+        return $this->getUniqueValueFromDB("SELECT player_score FROM player WHERE player_id='$player_id'");
+    }
+
+    function setPlayerReknown($playerId, $reknown) {
+        $this->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
+    }
+
+    function dbSetAuxScore($player_id, $score) {
+        $this->DbQuery("UPDATE player SET player_score_aux=$score WHERE player_id='$player_id'");
+    }
+
+    function incrementReknown($player_id, $inc) {
+        $count = $this->getPlayerReknown($player_id);
+        if ($inc != 0) {
+            $count += $inc;
+            $this->setPlayerReknown($player_id, $count);
+        }
+        return $count;
+    }
 }

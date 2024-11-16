@@ -1,19 +1,18 @@
 <?php
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
-
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 
-class EventApproachCharacterPlayed extends Event
+class EventPlayerLosesReknown extends Event
 {
-    public Character $character;
-    public string $location;
     public int $playerId;
+    public int $amount;
 
     public function __construct()
     {
         parent::__construct();
-    }
 
+        $this->playerId = 0;
+        $this->amount = 0;
+    }
 }

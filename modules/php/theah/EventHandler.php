@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardPlayed;
 
 trait EventHandler
@@ -25,6 +26,8 @@ trait EventHandler
                     "card" => $event->card->getPropertyArray()
                 ]);
 
+                $event->card->immediateEffect($this);
+
                 break;
 
             case $event instanceof EventSchemeCardPlayed:
@@ -42,6 +45,8 @@ trait EventHandler
                     "scheme" => $event->scheme->getPropertyArray(),
                 ]);
 
+                $event->scheme->immediateEffect($this);
+
                 break;
 
             case $event instanceof EventApproachCharacterPlayed:
@@ -54,10 +59,28 @@ trait EventHandler
                 // Notify players that the player will play the selected character
                 $this->game->notifyAllPlayers("playApproachCharacter", clienttranslate('${player_name} will play ${character_name} as their Approach Character.'), [
                     "player_id" => $event->playerId,
-                    "player_name" => $event->playerName,
+                    "player_name" => $this->game->getPlayerNameById($event->playerId),
                     "character_name" => "<span style='font-weight:bold'>{$event->character->Name}</span>",
                     "character" => $event->character->getPropertyArray(),
                 ]);
+
+                break;
+
+            case $event instanceof EventPlayerLosesReknown:
+
+                $playerId = $event->playerId;
+                $reknown = $this->db->getPlayerReknown($playerId);
+                if ($reknown > 0) {
+                    $reknown -= $event->amount;
+                    $this->db->setPlayerReknown($playerId, $reknown);
+
+                        // Notify players that the player has lost reknown
+                        $this->game->notifyAllPlayers("playerLosesReknown", clienttranslate('${player_name} loses ${amount} reknown.'), [
+                            "playerId" => $event->playerId,
+                            "player_name" => $this->game->getPlayerNameById($playerId),
+                            "amount" => $event->amount,
+                        ]);
+                }
 
                 break;
         }

@@ -75,4 +75,24 @@ class DB extends \APP_DbObject
         /** @disregard P1012 */
         $this->DbQuery($sql);
     }
+
+    public function getPlayerReknown($playerId) {
+        $sql = "SELECT player_score FROM player WHERE player_id = $playerId";
+        /** @disregard P1012 */
+        return $this->getUniqueValueFromDB($sql);
+    }
+
+    function setPlayerReknown($playerId, $reknown) {
+        /** @disregard P1012 */
+        $this->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
+    }
+
+    function incrementReknown($player_id, $inc) {
+        $count = $this->getPlayerReknown($player_id);
+        if ($inc != 0) {
+            $count += $inc;
+            $this->setPlayerReknown($player_id, $count);
+        }
+        return $count;
+    }
 }

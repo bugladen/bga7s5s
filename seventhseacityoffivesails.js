@@ -573,6 +573,7 @@ function (dojo, declare) {
                 ['playApproachScheme', 2000],
                 ['playApproachCharacter', 2000],
                 ['panacheModified', 1000],
+                ['playerLosesReknown', 500]
             ];
     
             notifs.forEach((notif) => {
@@ -716,6 +717,18 @@ function (dojo, declare) {
             console.log( 'notif_playCityCard' );
             console.log( notif );
         },
+
+        notif_playerLosesReknown: function( notif )
+        {
+            console.log( 'notif_playerLosesReknown' );
+            console.log( notif );
+
+            const args = notif.args;
+
+            const currentReknown = parseInt($(`${args.playerId}-score-reknown`).innerHTML);
+            $(`${args.playerId}-score-reknown`).innerHTML = currentReknown - args.amount;
+        },
+
 
         notif_planningPhase: function( notif )
         {
