@@ -238,8 +238,11 @@ body {
     margin-top: 30px;
 }
 
-.home-castille { background-color: #E58712; }
+.home-castille { background-color: #F46D2A; }
+.home-eisen { background-color: #8B9C9E; }
 .home-montaigne { background-color: #B5BF5D; }
+.home-usurra { background-color: #ACF075; }
+.home-vodacce { background-color: #E7AE4D; }
 
 
 .home-container {
@@ -370,8 +373,9 @@ body {
     line-height: 27px;
 }
 
-.seal {
+.seal-home {
     display: inline-block;
+    background-image: url('img/boardResources.png');
     background-size: var(--png-board-resource-width) var(--png-board-resource-height);
     height: 73px;
     width: 140px;
@@ -379,13 +383,44 @@ body {
     line-height: 73px;
 }
 
-.seal-castille {
-    background-image: url('img/boardResources.png');
+.seal-castille-home {
     background-position: 0px -85px;
 }
-.seal-montaigne {
-    background-image: url('img/boardResources.png');
+.seal-eisen-home {
+    background-position: -155px -84px;
+}
+.seal-montaigne-home {
     background-position: -310px -84px;
+}
+.seal-usurra-home {
+    background-position: -465px -84px;
+}
+.seal-vodacce-home {
+    background-position: -620px -84px;
+}
+
+.seal-score {
+    vertical-align: bottom;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * 0.4) calc(var(--png-board-resource-height) * 0.4);
+    height: 28px;
+    width: 56px;
+    float: right;
+}
+.seal-castille-score {
+    background-position: -2px -34px;
+}
+.seal-eisen-score {
+    background-position: -64px -34px;
+}
+.seal-montaigne-score {
+    background-position: -126px -34px;
+}
+.seal-usurra-score {
+    background-position: -188px -34px;
+}
+.seal-vodacce-score {
+    background-position: -250px -34px;
 }
 
 .home-player-color {

@@ -116,6 +116,7 @@ function (dojo, declare) {
                     reknown: player.score,
                     crewcap: player.leader?.modifiedCrewCap ?? '',
                     panache: player.leader?.modifiedPanache ?? '',
+                    faction: player.leader?.faction.toLowerCase() ?? '',
                 });
                 this.addTooltipHtml( `${playerId}-score-reknown`, `<div class='basic-tooltip'>${_('Current Reknown')}</div>` );
                 this.addTooltipHtml( `${playerId}-score-crewcap`, `<div class='basic-tooltip'>${_('Current Crew Cap')}</div>` );
@@ -126,6 +127,7 @@ function (dojo, declare) {
                     // Home
                     this.createHome(playerId, player.color, player.leader);
                     dojo.addClass( `overall_player_board_${playerId}`, `home-${player.leader.faction.toLowerCase()}` );
+                    dojo.addClass( `${playerId}-score-seal`, `seal-score seal-${player.leader.faction.toLowerCase()}-score` );
                 }
 
                 const playerInfo = this.gamedatas.players[playerId];
@@ -620,6 +622,7 @@ function (dojo, declare) {
 
             // Update the player panel
             dojo.addClass( `overall_player_board_${args.player_id}`, `home-${args.leader.faction.toLowerCase()}` );
+            dojo.addClass( `${args.player_id}-score-seal`, `seal-score seal-${args.leader.faction.toLowerCase()}-score` );
             $(`${args.player_id}-score-crewcap`).innerHTML = args.leader.crewCap;
             $(`${args.player_id}-score-panache`).innerHTML = args.leader.panache;
 

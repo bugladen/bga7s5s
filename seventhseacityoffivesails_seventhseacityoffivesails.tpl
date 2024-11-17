@@ -37,6 +37,7 @@ var jstpl_player_board = `
     <div id="\${id}-score-reknown" class="score-reknown">\${reknown}</div>
     <div id="\${id}-score-crewcap" class="crew-cap score-crew-cap">\${crewcap}</div>
     <div id="\${id}-score-panache" class="panache score-panache">\${panache}</div>
+    <div id="\${id}-score-seal"></div>
 </div>
 `;
 
@@ -48,7 +49,7 @@ var jstpl_home=`
         <div id="\${id}-panache" class="panache home-panache">\${panache}</div>
         <div id="\${id}-locker" class="home-locker"></div>
         <div></div>
-        <div class="seal seal-\${faction}"></div>
+        <div class="seal-home seal-\${faction}-home"></div>
         <div>
         <div class="home-player-color" style="--player-color:#\${player_color}"></div>
         <div id="\${id}-scheme-anchor"></div>
