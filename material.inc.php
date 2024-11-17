@@ -101,6 +101,15 @@ $this->starter_decks = <<<JSON
             ]
         },
         {
+            "id": "SDEisen",
+            "name": "Eisen Starter",
+            "faction": "Eisen",
+            "leader": "01035",
+            "approach_deck": [ "01044", "01045", "01146", "01147", "01150", "01043", "01036", "01038", "01039", "01042" ],
+            "faction_deck": [
+            ]
+        },
+        {
             "id": "SDMontaigne",
             "name": "Montaigne Starter",
             "faction": "Montaigne",
@@ -128,6 +137,24 @@ $this->starter_decks = <<<JSON
                 { "id": "01165", "count": 2 },
                 { "id": "01169", "count": 2 },
                 { "id": "01176", "count": 2 }
+            ]
+        },
+        {
+            "id": "SDUsurra",
+            "name": "Usurra Starter",
+            "faction": "Eisen",
+            "leader": "01116",
+            "approach_deck": [ "01125", "01126", "01144", "01150", "01145", "01123", "01124", "01118", "01122", "01120" ],
+            "faction_deck": [
+            ]
+        },
+        {
+            "id": "SDVodacce",
+            "name": "Vodacce Starter",
+            "faction": "Vodacce",
+            "leader": "01006",
+            "approach_deck": [ "01015", "01016", "01148", "01143", "01152", "01011", "01012", "01013", "01008", "01009" ],
+            "faction_deck": [
             ]
         }
     ]
