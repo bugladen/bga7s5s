@@ -109,6 +109,16 @@ $machinestates = [
         "type" => "game",
         "action" => "stDawnCityCards",
         "transitions" => [
+            "endOfEvents" => States::DAWN_ENDING
+        ]
+    ],
+
+    States::DAWN_ENDING => [
+        "name" => "dawnEnding",
+        "description" => "Ending the Dawn Phase...",
+        "type" => "game",
+        "action" => "stDawnEnding",
+        "transitions" => [
             "endOfEvents" => States::PLANNING_PHASE_BEGINNING
         ]
     ],

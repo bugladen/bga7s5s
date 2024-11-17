@@ -40,7 +40,7 @@ class _01179 extends CityEventCard
             if ($reknown > 0) {
 
                 //Player loses 1 reknown
-                $event = $theah->createEvent(Events::PLAYER_LOSES_REKNOWN);
+                $event = $theah->createEvent(Events::PlayerLosesReknown);
                 if ($event instanceof EventPlayerLosesReknown) {
                     $event->priority = Event::LOW_PRIORITY;
                     $event->playerId = $playerId;
@@ -49,7 +49,7 @@ class _01179 extends CityEventCard
                 $theah->queueEvent($event);
 
                 // Add it to this card
-                $event = $theah->createEvent(Events::REKNOWN_ADDED_TO_CARD);
+                $event = $theah->createEvent(Events::ReknownAddedToCard);
                 if ($event instanceof EventReknownAddedToCard) {
                     $event->priority = Event::LOW_PRIORITY;
                     $event->cardId = $this->Id;
@@ -68,7 +68,7 @@ class _01179 extends CityEventCard
             $this->Reknown += $event->amount;
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("reknownUpdatedOnCard", clienttranslate('${cardName} - ${amount} Reknown placed on it.'), [
+            $event->theah->game->notifyAllPlayers("reknownUpdatedOnCard", clienttranslate('${cardName} has ${amount} Reknown placed on it from effect.'), [
                 "cardId" => $this->Id,
                 "cardName" => $this->Name,
                 "amount" => $this->Reknown,

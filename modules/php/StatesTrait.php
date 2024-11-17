@@ -27,12 +27,12 @@ trait StatesTrait
         $this->theah->buildCity();
 
         //Notify players that it is Dawn, New Day
-        $this->notifyAllPlayers("dawn", clienttranslate('It is <span style="font-weight:bold">DAWN</span>, the start of Day #${day} in the city of Theah.'), [
+        $this->notifyAllPlayers("newDay", clienttranslate('It is the start of <span style="font-weight:bold">DAY #${day}</span> in the city of Theah.'), [
             "day" => $day,
         ]);
 
         //New day Theah event
-        $event = $this->theah->createEvent(Events::NEW_DAY);
+        $event = $this->theah->createEvent(Events::NewDay);
         if ($event instanceof EventNewDay) {
             $event->dayNumber = $day;
         }
@@ -45,8 +45,11 @@ trait StatesTrait
         $turnPhase = Game::DAWN;
         $this->setGameStateValue("turnPhase", $turnPhase);
 
-        //Create the morning event
-        $event = $this->theah->createEvent(Events::DAWN_BEGINNING);
+        //Notify players that it is dawn beginning
+        $this->notifyAllPlayers("dawnBeginning", clienttranslate('<span style="font-weight:bold">DAWN BEGINNING PHASE</span>.'), []);
+
+        //Create the event
+        $event = $this->theah->createEvent(Events::PhaseDawnBeginning);
         $this->theah->queueEvent($event);
         $this->theah->runEvents();
     }
@@ -91,7 +94,7 @@ trait StatesTrait
             $card = $this->getCardObjectFromDb($cityCard['id']);
 
             //Create the event
-            $event = $this->theah->createEvent(Events::CITY_CARD_ADDED_TO_LOCATION);
+            $event = $this->theah->createEvent(Events::CityCardAddedToLocation);
             if ($event instanceof EventCityCardAddedToLocation) {
                 $event->card = $card;
                 $event->location = $location;
@@ -99,6 +102,16 @@ trait StatesTrait
             $this->theah->queueEvent($event);
         }
 
+        $this->theah->runEvents();
+    }
+
+    public function stDawnEnding() {
+        //Notify players that it is dawn beginning
+        $this->notifyAllPlayers("dawnBeginning", clienttranslate('<span style="font-weight:bold">DAWN ENDING PHASE</span>.'), []);
+
+        //Create the event
+        $event = $this->theah->createEvent(Events::PhaseDawnEnding);
+        $this->theah->queueEvent($event);
         $this->theah->runEvents();
     }
 
@@ -111,11 +124,10 @@ trait StatesTrait
         $this->theah->buildCity();
 
         //Notify players that it is planning phase
-        $this->notifyAllPlayers("planningPhase", clienttranslate('<span style="font-weight:bold">PLANNING PHASE</span>.'), [
-        ]);
+        $this->notifyAllPlayers("planningPhase", clienttranslate('<span style="font-weight:bold">PLANNING PHASE</span>.'), []);
 
         //Create the Planning phase event
-        $event = $this->theah->createEvent(Events::PLANNING_PHASE);
+        $event = $this->theah->createEvent(Events::PhasePlanningBeginning);
         $this->theah->queueEvent($event);
         $this->theah->runEvents();
     }
@@ -135,7 +147,7 @@ trait StatesTrait
             //Update the scheme's location in the DB
             $this->cards->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
 
-            $event = $this->theah->createEvent(Events::SCHEME_CARD_PLAYED);
+            $event = $this->theah->createEvent(Events::SchemeCardPlayed);
             $scheme = $this->theah->getPurgatoryCardById($player['schemeId']);
             if ($event instanceof EventSchemeCardPlayed) {
                 $event->playerId = $playerId;
@@ -150,7 +162,7 @@ trait StatesTrait
 
             // Run events that the character has been played to a location
             $character = $this->theah->getPurgatoryCardById($player['characterId']);
-            $event = $this->theah->createEvent(Events::APPROACH_CHARACTER_PLAYED);
+            $event = $this->theah->createEvent(Events::ApproachCharacterPlayed);
             if ($event instanceof EventApproachCharacterPlayed) {
                 $event->playerId = $playerId;
                 $event->character = $character;
@@ -168,16 +180,14 @@ trait StatesTrait
         $this->setGameStateValue("turnPhase", $turnPhase);
 
         //Create the Planning phase event
-        $event = $this->theah->createEvent(Events::HIGH_DRAMA);
+        $event = $this->theah->createEvent(Events::PhaseHighDrama);
         $this->theah->queueEvent($event);
         $this->theah->runEvents();
     }
 
     public function stHighDramaPhase() {
         //Notify players that it is high drama phase
-        $this->notifyAllPlayers("highDramaPhase", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), [
-        ]);
-
+        $this->notifyAllPlayers("highDramaPhase", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), []);
         $this->gamestate->nextState("");
     }
 

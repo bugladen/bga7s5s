@@ -573,9 +573,9 @@ function (dojo, declare) {
             const notifs = [
                 ['playLeader', 1500],
                 ['approachCardsReceived', 1000],
-                ['dawn', 1000],
+                ['newDay', 1000],
+                ['dawnBeginning', 1000],
                 ['cityCardAddedToLocation', 500],
-                ['playCityCard', 1500],
                 ['planningPhase', 1000],
                 ['highDramaPhase', 1000],
                 ['playApproachScheme', 2000],
@@ -670,15 +670,21 @@ function (dojo, declare) {
             });            
         },
 
-        notif_dawn: function( notif )
+        notif_newDay: function( notif )
         {
-            console.log( 'notif_dawn' );
+            console.log( 'notif_newDay' );
             console.log( notif );
 
             const args = notif.args;
 
             $('day-indicator').innerHTML = args.day;
             dojo.style('day-indicator', 'display', 'block');
+        },
+
+        notif_dawnBeginning: function( notif )
+        {
+            console.log( 'notif_dawnBeginning' );
+            console.log( notif );
 
             $('city-day-phase').innerHTML = 'Dawn';
             dojo.style('city-day-phase', 'display', 'block');
@@ -719,12 +725,6 @@ function (dojo, declare) {
 
             this.createCard(cardId, card, location);
 
-        },
-
-        notif_playCityCard: function( notif )
-        {
-            console.log( 'notif_playCityCard' );
-            console.log( notif );
         },
 
         notif_playerReknownUpdated: function( notif )
