@@ -124,7 +124,7 @@ var jstpl_card_scheme=`
 `;
 
 var jstpl_reknown_chip = `
-<div id="\${id}" class="reknown-chip">\${amount}</div>
+<div id="\${id}" class="reknown-chip card-reknown-chip">\${amount}</div>
 `;
 
 </script>  
@@ -146,31 +146,31 @@ var jstpl_reknown_chip = `
         </svg>
     </div>
     <div id="city-oles-inn" class="city-location">
-        <div id="oles-inn-reknown" class="city-reknown">0</div>
+        <div id="oles-inn-reknown" class="reknown-chip city-reknown-chip">0</div>
         <div id="oles-inn-image" class="city-image"style="--city-image:url(img/cards/7s5s/004.jpg)"></div>
         <div id="oles-inn-endcap" class="city-endcap"></div>
     </div>
     <div></div>
     <div id="city-docks" class="city-location">
-        <div id="dock-reknown" class="city-reknown">0</div>
+        <div id="dock-reknown" class="reknown-chip city-reknown-chip">0</div>
         <div id="dock-image" class="city-image" style="--city-image:url(img/cards/7s5s/003.jpg)"></div>
         <div id="dock-endcap" class="city-endcap"></div>
     </div>
     <div></div>
     <div id="city-forum" class="city-location">
-        <div id="forum-reknown" class="city-reknown">0</div>
+        <div id="forum-reknown" class="reknown-chip city-reknown-chip">0</div>
         <div id="forum-image" class="city-image" style="--city-image:url(img/cards/7s5s/001.jpg)"></div>
         <div id="forum-endcap" class="city-endcap"></div>
     </div>
     <div></div>
     <div id="city-bazaar" class="city-location">
-        <div id="bazaar-reknown" class="city-reknown">0</div>
+        <div id="bazaar-reknown" class="reknown-chip city-reknown-chip">0</div>
         <div id="bazaar-image" class="city-image" style="--city-image:url(img/cards/7s5s/002.jpg)"></div>
         <div id="bazaar-endcap" class="city-endcap"></div>
     </div>
     <div></div>
     <div id="city-governors-garden" class="city-location">
-        <div id="governors-garden-reknown" class="city-reknown">0</div>
+        <div id="governors-garden-reknown" class="reknown-chip city-reknown-chip">0</div>
         <div id="governors-garden-image" class="city-image" style="--city-image:url(img/cards/7s5s/005.jpg)"></div>
         <div id="governors-garden-endcap" class="city-endcap"></div>
     </div>

@@ -81,7 +81,7 @@ function (dojo, declare) {
             this.addTooltipHtml( 'city-discard', `<div class='basic-tooltip'>${_('City Discard Pile')}</div>` );
             this.addTooltipHtml( 'day-indicator', `<div class='basic-tooltip'>${_('The Current Day')}</div>` );
             this.addTooltipHtml( 'city-day-phase', `<div class='basic-tooltip'>${_('The Current Phase of the Day')}</div>` );
-            this.addTooltipHtmlToClass('city-reknown', `<div class='basic-tooltip'>${_('Current Reknown on this City Location')}</div>` );
+            this.addTooltipHtmlToClass('city-reknown-chip', `<div class='basic-tooltip'>${_('Current Reknown on this City Location')}</div>` );
 
             //Update the day
             if (gamedatas.day > 0) {

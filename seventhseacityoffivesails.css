@@ -167,9 +167,6 @@ body {
 }
 
 .reknown-chip {
-    position: relative;
-    left:50px;
-    bottom:75px;
     background-image: url('img/boardResources.jpg');
     background-size: calc(var(--jpg-board-resource-width) * .5) calc(var(--jpg-board-resource-height) * .5);
     background-position: 0px 0px;
@@ -181,22 +178,15 @@ body {
     font-size:24pt;
     text-align:center;
 }
-
-.city-reknown {
-    background-image: url('img/boardResources.jpg');
-    background-size: calc(var(--jpg-board-resource-width) * .5) calc(var(--jpg-board-resource-height) * .5);
-    background-position: 0px 0px;
-    width: 39px;
-    height: 39px;
-    border-radius: 50%;
-    display: inline-block;
-    vertical-align: middle;
-    text-align:center;
-    margin-left: 5px;
-    margin-right: 5px;
-    margin-top:35px;
-    font-family: "Pirata One", system-ui;
-    font-size:24pt;
+.card-reknown-chip {
+    position: relative;
+    left:50px;
+    bottom:75px;
+}
+.city-reknown-chip {
+    position:absolute;    
+    left: 5px;
+    top: 5px;
 }
 
 .city-image {
@@ -207,6 +197,7 @@ body {
     height: 110px;
     display: inline-block;
     vertical-align: middle;
+    border-radius: 10px;
 }
 
 .city-endcap {
