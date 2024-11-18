@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
@@ -143,40 +144,7 @@ trait StatesTrait
         $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
         $players = $this->getCollectionFromDb($sql);
 
-        // Determine the number of "When Revealed" effects that will be triggered
-        $whenRevealedEffectsCount = 0;
-        $whenRevealedEffectsCard = null;
-        $firstPlayerDetermined = false;
-        foreach ( $players as $playerId => $player ) {
-            $character = $this->theah->getPurgatoryCardById($player['characterId']);
-            if ($character->hasWhenRevealedEffect()) {
-                $whenRevealedEffectsCount++;
-                $whenRevealedEffectsCard = $character;
-            }
-            $scheme = $this->theah->getPurgatoryCardById($player['schemeId']);
-            if ($scheme->hasWhenRevealedEffect()) {
-                $whenRevealedEffectsCount++;
-                $whenRevealedEffectsCard = $scheme;
-            }
-        }
-        if ($whenRevealedEffectsCount == 1) {
-            // Perform the necessary actions for the "When Revealed" effect
-        }
-        else if ($whenRevealedEffectsCount > 1) {
-            // Go into a state where the First Player must choose which "When Revealed" effect to trigger
-
-            // 1. Determine initiative for the First Player
-            // 2. Go into a state where the First Player must choose which "When Revealed" effect to trigger
-        }
-
-        //Determine the First Player if not done above
-        if (! $firstPlayerDetermined) {
-            $this->determineFirstPlayer($players);
-        }
-
-        // Muster the characters
-        $this->notifyAllPlayers("muster", clienttranslate('All Player MUSTER their chosen characters'), []);
-
+        //Reveal the cards
         foreach ( $players as $playerId => $player ) {
 
             //Update the character's location in the DB
@@ -191,28 +159,13 @@ trait StatesTrait
                 $event->location = Game::LOCATION_PLAYER_HOME;
             }
             $this->theah->queueEvent($event);
-        }
-        $this->theah->runEvents();
-
-    }
-
-    public function stPlanningPhaseMuster() {
-        //Determine if any players are over their crew cap limit
-
-        $this->gamestate->nextState("endOfEvents");
-    }
-
-    public function stPlanningPhaseSchemes() {
-        $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
-        $players = $this->getCollectionFromDb($sql);
-
-        foreach ( $players as $playerId => $player ) {
 
             //Update the scheme's location in the DB
             $this->cards->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
 
-            $event = $this->theah->createEvent(Events::SchemeCardPlayed);
+            // Run events that the scheme has been played to a location
             $scheme = $this->theah->getPurgatoryCardById($player['schemeId']);
+            $event = $this->theah->createEvent(Events::SchemeCardPlayed);
             if ($event instanceof EventSchemeCardPlayed) {
                 $event->playerId = $playerId;
                 $event->scheme = $scheme;
@@ -221,6 +174,76 @@ trait StatesTrait
             }
             $this->theah->queueEvent($event);
         }
+
+        $this->theah->runEvents();
+    }
+
+    public function stPlanningPhaseDetermineFirstPlayer() {
+
+        //Get the old first player
+
+        $this->determineFirstPlayer();
+
+        // Send and event with new first player
+
+        $this->theah->runEvents();
+    }
+
+    public function stPlanningPhaseResolveWhenRevealedCards() {
+
+        $this->theah->buildCity();
+
+        $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
+        $players = $this->getCollectionFromDb($sql);
+
+        $whenRevealedEffectsCount = 0;
+        foreach ( $players as $playerId => $player ) {
+            $whenRevealedEffectsCard = null;
+
+            $character = $this->theah->getCardById($player['characterId']);
+            $scheme = $this->theah->getCardById($player['schemeId']);
+
+            // Determine the number of "When Revealed" effects that will be triggered
+            if ($character->hasWhenRevealedEffect()) {
+                $whenRevealedEffectsCount++;
+                $whenRevealedEffectsCard = $character;
+            }
+            if ($scheme->hasWhenRevealedEffect()) {
+                $whenRevealedEffectsCount++;
+                $whenRevealedEffectsCard = $scheme;
+            }
+            if ($whenRevealedEffectsCount == 1) {
+                // Perform the necessary actions for the "When Revealed" effect
+            }
+            else if ($whenRevealedEffectsCount > 1) {
+                // Go into a state where the First Player must choose which "When Revealed" effect to trigger
+    
+                // 1. Determine initiative for the First Player
+                // 2. Go into a state where the First Player must choose which "When Revealed" effect to trigger
+            }
+        }
+
+        $this->notifyAllPlayers("resolveWhenRevealedCards", clienttranslate("Resolving any WHEN REVEALED effects on cards."), []);
+
+        $this->theah->runEvents();
+    }
+
+    public function stPlanningPhaseMuster() {
+        // Muster the characters
+        $this->notifyAllPlayers("muster", clienttranslate('All Players MUSTER their chosen Characters'), []);
+
+        //Determine if any players are over their crew cap limit
+
+        $this->theah->runEvents();
+    }
+
+    public function stPlanningPhaseResolveSchemes() {
+        $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
+        $players = $this->getCollectionFromDb($sql);
+
+        // Muster the characters
+        $this->notifyAllPlayers("muster", clienttranslate('All Players RESOLVE their chosen Schemes'), []);
+
         $this->theah->runEvents();
     }
 
@@ -258,5 +281,81 @@ trait StatesTrait
         // Go to another gamestate
         // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
         $this->gamestate->nextState("nextPlayer");
+    }
+
+    protected function determineFirstPlayer() {
+        $sql = "SELECT player_id, player_name, selected_scheme_id as schemeId FROM player";
+        $players = $this->getCollectionFromDb($sql);
+
+        $highInitiative = 0;
+        $highPlayerId = 0;
+        $tiedInitiative = false;
+        $currentFirstPlayerExists = $this->globals->has("firstPlayer");
+        foreach ( $players as $playerId => $player ) {
+            $scheme = $this->theah->getPurgatoryCardById($player['schemeId']);
+            if ($scheme instanceof Scheme)
+            {
+                if ($scheme->Initiative == $highInitiative) {
+                    $tiedInitiative = true;
+                }
+                else if ($scheme->Initiative > $highInitiative) {
+                    $highInitiative = $scheme->Initiative;
+                    $highPlayerId = $playerId;
+                }    
+            }
+        }
+
+        // If we have a clear winner, set the first player and move on.
+        if (! $tiedInitiative) {
+            $this->globals->set("firstPlayer", $highPlayerId);
+            $this->gamestate->changeActivePlayer($highPlayerId);
+
+            // Notify all players of the first player.
+            $this->notifyAllPlayers("firstPlayer", clienttranslate('${player_name} has the highest initiative of ${initiative} and will be set as First Player.'), [
+                'player_name' => $players[$highPlayerId]['player_name'],
+                'initiative' => $highInitiative,
+                'playerId' => $highPlayerId
+            ]);
+
+            return;
+        }
+
+        // If we have a tie for initiative. If first player exists, then simply move to the next player.
+        if ($currentFirstPlayerExists) {
+            //Get the current first player
+            $firstPlayerId = $this->globals->get("firstPlayer");
+
+            //Find out who the next player is in order
+            $table = $this->getNextPlayerTable();
+            $nextPlayerId = $table[$firstPlayerId];
+
+            $this->globals->set("firstPlayer", $nextPlayerId);
+            $this->gamestate->changeActivePlayer($nextPlayerId);
+
+            // Notify all players of the first player.
+            $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as First Player.'), [
+                'player_name' => $players[$nextPlayerId]['player_name'],
+                'initiative' => $highInitiative,
+                'playerId' => $nextPlayerId
+            ]);
+
+            return;
+        }
+
+        // If we have a tie for initiative and no first player exists, then we determine first player by random method.
+        // Extract all the player id keys from the $players array and shuffle them.
+        $size = count($players);
+        $rand = random_int(0, $size - 1);
+        $slice = array_slice($players, $rand, 1, true);
+        $firstPlayerId = key($slice);
+        $this->gamestate->changeActivePlayer($firstPlayerId);
+        $this->globals->set("firstPlayer", $firstPlayerId);
+
+        // Notify all players of the first player.
+        $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, and no previous First Player, ${player_name} has been chosen randomly as the First Player.'), [
+            'player_name' => $players[$firstPlayerId]['player_name'],
+            'initiative' => $highInitiative,
+            'playerId' => $firstPlayerId
+        ]);
     }
 }

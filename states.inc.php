@@ -149,6 +149,22 @@ $machinestates = [
         "description" => "Approach Cards Played",
         "type" => "game",
         "action" => "stPlanningPhaseApproachCardsPlayed",
+        "transitions" => ["endOfEvents" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER]
+    ],
+
+    States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER => [
+        "name" => "planningPhaseDetermineFirstPlayer",
+        "description" => "Determining the First Player",
+        "type" => "game",
+        "action" => "stPlanningPhaseDetermineFirstPlayer",
+        "transitions" => ["endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS]
+    ],
+
+    States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS => [
+        "name" => "planningPhaseResolveWhenRevealedCards",
+        "description" => "Resolving When Revealed Cards",
+        "type" => "game",
+        "action" => "stPlanningPhaseResolveWhenRevealedCards",
         "transitions" => ["endOfEvents" => States::PLANNING_PHASE_MUSTER]
     ],
 
@@ -165,7 +181,7 @@ $machinestates = [
         "name" => "planningPhaseSchemes",
         "description" => "Schemes Played",
         "type" => "game",
-        "action" => "stPlanningPhaseSchemes",
+        "action" => "stPlanningPhaseResolveSchemes",
         "transitions" => ["endOfEvents" => States::HIGH_DRAMA_BEGINNING]
     ],
 
