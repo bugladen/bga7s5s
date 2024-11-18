@@ -149,7 +149,24 @@ $machinestates = [
         "description" => "Approach Cards Played",
         "type" => "game",
         "action" => "stPlanningPhaseApproachCardsPlayed",
-        "transitions" => ["endOfEvents" => States::HIGH_DRAMA_PHASE]
+        "transitions" => ["endOfEvents" => States::PLANNING_PHASE_MUSTER]
+    ],
+
+    States::PLANNING_PHASE_MUSTER 
+    => [
+        "name" => "planningPhaseMuster",
+        "description" => clienttranslate('Characters Mustered.'),
+        "type" => "game",
+        "action" => "stplanningPhaseMuster",
+        "transitions" => ["endOfEvents" => States::PLANNING_PHASE_SCHEMES]
+    ],
+
+    States::PLANNING_PHASE_SCHEMES => [
+        "name" => "planningPhaseSchemes",
+        "description" => "Schemes Played",
+        "type" => "game",
+        "action" => "stPlanningPhaseSchemes",
+        "transitions" => ["endOfEvents" => States::HIGH_DRAMA_BEGINNING]
     ],
 
     States::HIGH_DRAMA_BEGINNING => [

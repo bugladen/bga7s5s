@@ -142,20 +142,42 @@ trait StatesTrait
 
         $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
         $players = $this->getCollectionFromDb($sql);
+
+        // Determine the number of "When Revealed" effects that will be triggered
+        $whenRevealedEffectsCount = 0;
+        $whenRevealedEffectsCard = null;
+        $firstPlayerDetermined = false;
         foreach ( $players as $playerId => $player ) {
-
-            //Update the scheme's location in the DB
-            $this->cards->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
-
-            $event = $this->theah->createEvent(Events::SchemeCardPlayed);
-            $scheme = $this->theah->getPurgatoryCardById($player['schemeId']);
-            if ($event instanceof EventSchemeCardPlayed) {
-                $event->playerId = $playerId;
-                $event->scheme = $scheme;
-                $event->location = Game::LOCATION_PLAYER_HOME;
-                $event->playerName = $player['player_name'];
+            $character = $this->theah->getPurgatoryCardById($player['characterId']);
+            if ($character->hasWhenRevealedEffect()) {
+                $whenRevealedEffectsCount++;
+                $whenRevealedEffectsCard = $character;
             }
-            $this->theah->queueEvent($event);
+            $scheme = $this->theah->getPurgatoryCardById($player['schemeId']);
+            if ($scheme->hasWhenRevealedEffect()) {
+                $whenRevealedEffectsCount++;
+                $whenRevealedEffectsCard = $scheme;
+            }
+        }
+        if ($whenRevealedEffectsCount == 1) {
+            // Perform the necessary actions for the "When Revealed" effect
+        }
+        else if ($whenRevealedEffectsCount > 1) {
+            // Go into a state where the First Player must choose which "When Revealed" effect to trigger
+
+            // 1. Determine initiative for the First Player
+            // 2. Go into a state where the First Player must choose which "When Revealed" effect to trigger
+        }
+
+        //Determine the First Player if not done above
+        if (! $firstPlayerDetermined) {
+            $this->determineFirstPlayer($players);
+        }
+
+        // Muster the characters
+        $this->notifyAllPlayers("muster", clienttranslate('All Player MUSTER their chosen characters'), []);
+
+        foreach ( $players as $playerId => $player ) {
 
             //Update the character's location in the DB
             $this->cards->moveCard($player['characterId'], Game::LOCATION_PLAYER_HOME, $playerId);
@@ -170,7 +192,35 @@ trait StatesTrait
             }
             $this->theah->queueEvent($event);
         }
-        //TODO: Compare the initiative of the schemes and determine the first player        
+        $this->theah->runEvents();
+
+    }
+
+    public function stPlanningPhaseMuster() {
+        //Determine if any players are over their crew cap limit
+
+        $this->gamestate->nextState("endOfEvents");
+    }
+
+    public function stPlanningPhaseSchemes() {
+        $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
+        $players = $this->getCollectionFromDb($sql);
+
+        foreach ( $players as $playerId => $player ) {
+
+            //Update the scheme's location in the DB
+            $this->cards->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
+
+            $event = $this->theah->createEvent(Events::SchemeCardPlayed);
+            $scheme = $this->theah->getPurgatoryCardById($player['schemeId']);
+            if ($event instanceof EventSchemeCardPlayed) {
+                $event->playerId = $playerId;
+                $event->scheme = $scheme;
+                $event->location = Game::LOCATION_PLAYER_HOME;
+                $event->playerName = $player['player_name'];
+            }
+            $this->theah->queueEvent($event);
+        }
         $this->theah->runEvents();
     }
 

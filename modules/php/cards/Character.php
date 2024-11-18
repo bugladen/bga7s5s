@@ -30,6 +30,11 @@ abstract class Character extends Card
         $this->ModifiedInfluence = 0;
     }
 
+    public function hasWhenRevealedEffect() : bool
+    {
+        return false;
+    }
+
     public function getPropertyArray(): array
     {
         $properties = parent::getPropertyArray();

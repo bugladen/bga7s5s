@@ -37,8 +37,8 @@ trait EventHandler
                 $event->scheme->Location = $event->location;
                 $event->scheme->IsUpdated = true;
 
-                // Notify players that the player will play the selected scheme
-                $this->game->notifyAllPlayers("playApproachScheme", clienttranslate('${player_name} will play ${scheme_name} as their Approach Scheme.'), [
+                // Notify players of selected scheme
+                $this->game->notifyAllPlayers("playApproachScheme", clienttranslate('${player_name} plays ${scheme_name} as their Approach Scheme.'), [
                     "player_name" => $event->playerName,
                     "scheme_name" => "<span style='font-weight:bold'>{$event->scheme->Name}</span>",
                     "player_id" => $event->playerId,
@@ -56,8 +56,8 @@ trait EventHandler
                 $event->character->Location = $event->location;
                 $event->character->IsUpdated = true;
 
-                // Notify players that the player will play the selected character
-                $this->game->notifyAllPlayers("playApproachCharacter", clienttranslate('${player_name} will play ${character_name} as their Approach Character.'), [
+                // Notify players of selected character
+                $this->game->notifyAllPlayers("playApproachCharacter", clienttranslate('${player_name} plays ${character_name} as their Approach Character.'), [
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
                     "character_name" => "<span style='font-weight:bold'>{$event->character->Name}</span>",

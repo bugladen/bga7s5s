@@ -74,7 +74,7 @@ trait DeckTrait
                 $this->DbQuery($sql);
 
                 //Notify players about the leaders
-                $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} will play ${player_faction} and ${leader_name} as their leader.'), [
+                $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} plays ${player_faction} and ${leader_name} as their leader.'), [
                     "player_name" => $player['player_name'],
                     "player_faction" => "<span style='font-weight:bold'>{$card->Faction}</span>",
                     "leader_name" => "<span style='font-weight:bold'>{$card->Name}</span>",

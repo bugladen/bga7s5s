@@ -343,7 +343,7 @@ body {
     top: 35px;
 }
 
-.first-player {
+.first-player-home {
     position: absolute;
     background-image: url('img/boardResources.jpg');
     background-size: calc(var(--jpg-board-resource-width) * .75) calc(var(--jpg-board-resource-height) * .75);
@@ -354,7 +354,22 @@ body {
     top: 30px;
     left: 53px;
     z-index:10;
-    border: 2px solid black;
+    border: 2px solid yellow;
+}
+.first-player-score {
+    display: inline-block;
+    background-image: url('img/boardResources.jpg');
+    background-size: calc(var(--jpg-board-resource-width) * .5) calc(var(--jpg-board-resource-height) * .5);
+    background-position: -39px 0px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    line-height: 28px;
+    vertical-align: bottom;
+    border: 1px solid yellow;
+}
+.first-player-hidden {
+    display: none;
 }
 
 .score-reknown {

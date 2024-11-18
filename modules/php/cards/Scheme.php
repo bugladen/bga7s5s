@@ -16,6 +16,11 @@ abstract class Scheme extends Card
         $this->PanacheModifier = 0;
     }
 
+    public function hasWhenRevealedEffect() : bool
+    {
+        return false;
+    }
+
     public function getPropertyArray()
     {
         $properties = parent::getPropertyArray();

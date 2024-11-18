@@ -163,8 +163,16 @@ function (dojo, declare) {
         
             }
 
-            this.addTooltipHtmlToClass('first-player', `<div class='basic-tooltip'>${_('First Player')}</div>` );
+            // Display the first player marker if there is one
+            if (gamedatas.firstPlayer) {
+                dojo.addClass(`${gamedatas.firstPlayer}-first-player`, 'first-player-home');
 
+                dojo.removeClass(`${gamedatas.firstPlayer}-score-seal-first-player`, 'first-player-hidden');
+                dojo.addClass(`${gamedatas.firstPlayer}-score-seal-first-player`, 'first-player-score');
+
+                this.addTooltipHtmlToClass('first-player-home', `<div class='basic-tooltip'>${_('First Player')}</div>` );
+                this.addTooltipHtmlToClass('first-player-score', `<div class='basic-tooltip'>${_('First Player')}</div>` );
+            }
 
             // Set up cards in oles inn
             for( const index in gamedatas.oleCards )
@@ -554,6 +562,52 @@ function (dojo, declare) {
             });        
         },    
 
+        // Utlity functions
+        addCardToApproachDeck: function( card )
+        {
+            this.cardProperties[card.id] = card;
+
+            //Different weight depending on the type. Scheme cards go first
+            const weight = card.type === "Scheme" ? 1 : 2;
+
+            //Each card is a different image, so would be considered a different type for the stock object
+            this.approachDeck.addItemType(card.id, weight, g_gamethemeurl + card.image, 0);
+
+            // Type and id are the same for the approach deck stock object
+            this.approachDeck.addToStockWithId(card.id, card.id);
+        },
+
+        setupNewStockApproachCard: function( cardDiv, cardTypeId, cardId )
+        {
+            const card = this.cardProperties[cardTypeId];
+            this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, 100);
+        },
+
+        onApproachCardSelected: function( control_name, item_id )
+        {
+            var items = this.approachDeck.getSelectedItems();
+            // Grab the type of card from the properties cache and make sure we are only selecting 1 of each type
+            const types = {};
+            items.forEach((item) => {
+                const type = this.cardProperties[item.type].type;
+                if (types[type]) {
+                    this.approachDeck.unselectItem(item_id);
+                } else {              
+                    types[type] = true;
+                }
+            });
+
+            var items = this.approachDeck.getSelectedItems();
+
+            // Enable the confirm button if we have 2 cards selected
+            if (items.length === 2) {
+                dojo.removeClass('actEndPlanningPhase', 'disabled');
+            } else {
+                dojo.addClass('actEndPlanningPhase', 'disabled');
+            }
+
+
+        },
         
         ///////////////////////////////////////////////////
         //// Reaction to cometD notifications
@@ -579,12 +633,13 @@ function (dojo, declare) {
                 ['dawnBeginning', 1000],
                 ['cityCardAddedToLocation', 500],
                 ['planningPhase', 1000],
-                ['highDramaPhase', 1000],
                 ['playApproachScheme', 2000],
                 ['playApproachCharacter', 2000],
+                ['firstPlayer', 1500],
                 ['panacheModified', 1000],
                 ['playerReknownUpdated', 500],
                 ['reknownUpdatedOnCard', 500],
+                ['highDramaPhase', 1000],
             ];
     
             notifs.forEach((notif) => {
@@ -768,6 +823,24 @@ function (dojo, declare) {
             $('city-day-phase').innerHTML = 'Planning';
         },
 
+        notif_firstPlayer: function( notif )
+        {
+            console.log( 'notif_firstPlayer' );
+            console.log( notif );
+
+            //Remove any existing first player classes
+            dojo.query('.first-player-home').removeClass('first-player-home');
+            dojo.query('.first-player-score').removeClass('first-player-score');
+
+            //Add the new classes
+            const args = notif.args;
+            dojo.addClass(`${args.playerId}-first-player`, 'first-player-home');
+            dojo.removeClass(`${args.playerId}-score-seal-first-player`, 'first-player-hidden');
+            dojo.addClass(`${args.playerId}-score-seal-first-player`, 'first-player-score');
+
+            $('pagemaintitletext').innerHTML = `${args.player_name} is now the First Player`;
+        },
+
         notif_highDramaPhase: function( notif )
         {
             console.log( 'notif_highDramaPhase' );
@@ -775,53 +848,6 @@ function (dojo, declare) {
 
             const args = notif.args;
             $('city-day-phase').innerHTML = 'High Drama';
-        },
-
-        // Utlity functions
-        addCardToApproachDeck: function( card )
-        {
-            this.cardProperties[card.id] = card;
-
-            //Different weight depending on the type. Scheme cards go first
-            const weight = card.type === "Scheme" ? 1 : 2;
-
-            //Each card is a different image, so would be considered a different type for the stock object
-            this.approachDeck.addItemType(card.id, weight, g_gamethemeurl + card.image, 0);
-
-            // Type and id are the same for the approach deck stock object
-            this.approachDeck.addToStockWithId(card.id, card.id);
-        },
-
-        setupNewStockApproachCard: function( cardDiv, cardTypeId, cardId )
-        {
-            const card = this.cardProperties[cardTypeId];
-            this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, 100);
-        },
-
-        onApproachCardSelected: function( control_name, item_id )
-        {
-            var items = this.approachDeck.getSelectedItems();
-            // Grab the type of card from the properties cache and make sure we are only selecting 1 of each type
-            const types = {};
-            items.forEach((item) => {
-                const type = this.cardProperties[item.type].type;
-                if (types[type]) {
-                    this.approachDeck.unselectItem(item_id);
-                } else {              
-                    types[type] = true;
-                }
-            });
-
-            var items = this.approachDeck.getSelectedItems();
-
-            // Enable the confirm button if we have 2 cards selected
-            if (items.length === 2) {
-                dojo.removeClass('actEndPlanningPhase', 'disabled');
-            } else {
-                dojo.addClass('actEndPlanningPhase', 'disabled');
-            }
-
-
         },
     });      
 });

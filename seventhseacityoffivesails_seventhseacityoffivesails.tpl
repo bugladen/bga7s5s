@@ -37,6 +37,7 @@ var jstpl_player_board = `
     <div id="\${id}-score-reknown" class="score-reknown">\${reknown}</div>
     <div id="\${id}-score-crewcap" class="crew-cap score-crew-cap">\${crewcap}</div>
     <div id="\${id}-score-panache" class="panache score-panache">\${panache}</div>
+    <div id="\${id}-score-seal-first-player" class="first-player-hidden"></div>
     <div id="\${id}-score-seal"></div>
 </div>
 `;
