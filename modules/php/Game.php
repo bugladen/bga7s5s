@@ -299,6 +299,7 @@ class Game extends \Table
             $nextPlayerId = $table[$firstPlayerId];
 
             $this->globals->set("firstPlayer", $nextPlayerId);
+            $this->gamestate->changeActivePlayer($nextPlayerId);
 
             // Notify all players of the first player.
             $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as First Player.'), [
@@ -320,7 +321,7 @@ class Game extends \Table
         $this->globals->set("firstPlayer", $firstPlayerId);
 
         // Notify all players of the first player.
-        $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as First Player.'), [
+        $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, and no previous First Player, ${player_name} has been chosen randomly as the First Player.'), [
             'player_name' => $players[$firstPlayerId]['player_name'],
             'initiative' => $highInitiative,
             'playerId' => $firstPlayerId
