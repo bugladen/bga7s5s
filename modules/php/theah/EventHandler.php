@@ -14,7 +14,7 @@ trait EventHandler
         switch (true) {
             case $event instanceof EventCityCardAddedToLocation:
                 // Add the card to the world
-                $this->cards[] = $event->card;
+                $this->cards[$event->card->Id] = $event->card;
 
                 $event->card->Location = $event->location;
                 $event->card->IsUpdated = true;
@@ -32,7 +32,7 @@ trait EventHandler
 
             case $event instanceof EventSchemeCardPlayed:
                 unset($this->approachCards[$event->scheme->Id]);
-                $this->cards[] = $event->scheme;
+                $this->cards[$event->scheme->Id] = $event->scheme;
 
                 $event->scheme->Location = $event->location;
                 $event->scheme->IsUpdated = true;
@@ -45,13 +45,11 @@ trait EventHandler
                     "scheme" => $event->scheme->getPropertyArray(),
                 ]);
 
-                $event->scheme->immediateEffect($this);
-
                 break;
 
             case $event instanceof EventApproachCharacterPlayed:
                 unset($this->approachCards[$event->character->Id]);
-                $this->cards[] = $event->character;                
+                $this->cards[$event->character->Id] = $event->character;
 
                 $event->character->Location = $event->location;
                 $event->character->IsUpdated = true;
@@ -74,13 +72,13 @@ trait EventHandler
                     $reknown -= $event->amount;
                     $this->db->setPlayerReknown($playerId, $reknown);
 
-                        // Notify players that the player has lost reknown
-                        $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} loses ${amount} reknown.'), [
-                            "playerId" => $event->playerId,
-                            "player_name" => $this->game->getPlayerNameById($playerId),
-                            "amount" => $reknown,
-                        ]);
-                }
+                    // Notify players that the player has lost reknown
+                    $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} loses ${amount} reknown.'), [
+                        "playerId" => $event->playerId,
+                        "player_name" => $this->game->getPlayerNameById($playerId),
+                        "amount" => $reknown,
+                    ]);
+                }   
 
                 break;
         }

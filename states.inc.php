@@ -174,16 +174,30 @@ $machinestates = [
         "description" => clienttranslate('Characters Mustered.'),
         "type" => "game",
         "action" => "stplanningPhaseMuster",
-        "transitions" => ["endOfEvents" => States::PLANNING_PHASE_SCHEMES]
+        "transitions" => ["endOfEvents" => States::PLANNING_PHASE_RESOLVE_SCHEMES]
     ],
 
-    States::PLANNING_PHASE_SCHEMES => [
-        "name" => "planningPhaseSchemes",
-        "description" => "Schemes Played",
+    States::PLANNING_PHASE_RESOLVE_SCHEMES => [
+        "name" => "planningPhaseResolveSchemes",
+        "description" => "Resolve Schemes",
         "type" => "game",
         "action" => "stPlanningPhaseResolveSchemes",
-        "transitions" => ["endOfEvents" => States::HIGH_DRAMA_BEGINNING]
+        "transitions" => [
+            "pickTwoLocations" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS,
+            "endOfEvents" => States::HIGH_DRAMA_BEGINNING
+        ]
     ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS => [
+            "name" => "planningPhaseResolveSchemesPickTwoLocations",
+            "description" => clienttranslate('${actplayer} must choose two locations to place Reknown onto.'),
+            "descriptionmyturn" => clienttranslate('${you} must choose two locations to place Reknown onto.'),
+            "type" => "activeplayer",
+            "args" => "argPlanningPhaseResolveSchemesPickTwoLocations",
+            "possibleactions" => [
+                "actTwoLocationsChosen", 
+            ],
+            "transitions" => ["playCard" => States::PLANNING_PHASE_RESOLVE_SCHEMES]
+        ],
 
     States::HIGH_DRAMA_BEGINNING => [
         "name" => "highDramaBeginning",

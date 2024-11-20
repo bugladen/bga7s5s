@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
 trait StatesTrait
 {
@@ -180,12 +181,85 @@ trait StatesTrait
 
     public function stPlanningPhaseDetermineFirstPlayer() {
 
-        //Get the old first player
+        $this->theah->buildCity();
+        $sql = "SELECT player_id, player_name, selected_scheme_id as schemeId FROM player";
+        $players = $this->getCollectionFromDb($sql);
 
-        $this->determineFirstPlayer();
+        $highInitiative = 0;
+        $highPlayerId = 0;
+        $tiedInitiative = false;
+        $currentFirstPlayerExists = $this->globals->has("firstPlayer");
 
-        // Send and event with new first player
+        //Grab the schemes by each player and determine the highest initiative
+        foreach ( $players as $playerId => $player ) {
+            $scheme = $this->theah->getCardById($player['schemeId']);
+            if ($scheme instanceof Scheme)
+            {
+                if ($scheme->Initiative == $highInitiative) {
+                    $tiedInitiative = true;
+                }
+                else if ($scheme->Initiative > $highInitiative) {
+                    $highInitiative = $scheme->Initiative;
+                    $highPlayerId = $playerId;
+                }    
+            }
+        }
 
+        // If we have a clear winner with no ties, set the first player and move on.
+        if (! $tiedInitiative || count($players) == 1) {
+            $this->globals->set("firstPlayer", $highPlayerId);
+            $this->gamestate->changeActivePlayer($highPlayerId);
+
+            // Notify all players of the first player.
+            $this->notifyAllPlayers("firstPlayer", clienttranslate('${player_name} has the highest initiative of ${initiative} and will be set as First Player.'), [
+                'player_name' => $players[$highPlayerId]['player_name'],
+                'initiative' => $highInitiative,
+                'playerId' => $highPlayerId
+            ]);
+
+            $this->theah->runEvents();
+            return;
+        }
+
+        // If we have a tie for initiative. If first player exists, then simply move to the next player.
+        if ($currentFirstPlayerExists) {
+            //Get the current first player
+            $firstPlayerId = $this->globals->get("firstPlayer");
+
+            //Find out who the next player is in order
+            $table = $this->getNextPlayerTable();
+            $nextPlayerId = $table[$firstPlayerId];
+
+            $this->globals->set("firstPlayer", $nextPlayerId);
+            $this->gamestate->changeActivePlayer($nextPlayerId);
+
+            // Notify all players of the first player.
+            $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as First Player.'), [
+                'player_name' => $players[$nextPlayerId]['player_name'],
+                'initiative' => $highInitiative,
+                'playerId' => $nextPlayerId
+            ]);
+
+            $this->theah->runEvents();
+            return;
+        }
+
+        // If we have a tie for initiative and no first player exists, then we determine first player by random method.
+        // Extract all the player id keys from the $players array and shuffle them.
+        $size = count($players);
+        $rand = random_int(0, $size - 1);
+        $slice = array_slice($players, $rand, 1, true);
+        $firstPlayerId = key($slice);
+        $this->gamestate->changeActivePlayer($firstPlayerId);
+        $this->globals->set("firstPlayer", $firstPlayerId);
+
+        // Notify all players of the first player.
+        $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, and no previous First Player, ${player_name} has been chosen randomly as the First Player.'), [
+            'player_name' => $players[$firstPlayerId]['player_name'],
+            'initiative' => $highInitiative,
+            'playerId' => $firstPlayerId
+        ]);
+ 
         $this->theah->runEvents();
     }
 
@@ -238,11 +312,26 @@ trait StatesTrait
     }
 
     public function stPlanningPhaseResolveSchemes() {
-        $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
-        $players = $this->getCollectionFromDb($sql);
 
-        // Muster the characters
-        $this->notifyAllPlayers("muster", clienttranslate('All Players RESOLVE their chosen Schemes'), []);
+        // Resolve schemes
+        $this->notifyAllPlayers("resolveSchemes", clienttranslate('All Players RESOLVE their chosen Schemes'), []);
+
+        // Resolve the schemes in order of first player
+        $order = $this->getNextPlayerTable();        
+        foreach ( $order as $playerId ) {
+            $sql = "SELECT selected_scheme_id as schemeId FROM player WHERE player_id = $playerId";
+            $schemeId = $this->getUniqueValueFromDB($sql);
+            $scheme = $this->theah->getCardById($schemeId);
+
+            // Run events that the scheme has been played to a location
+            $event = $this->theah->createEvent(Events::ResolveScheme);
+            if ($event instanceof EventResolveScheme) {
+                $event->playerId = $playerId;
+                $event->playerName = $this->getPlayerNameById($playerId);
+                $event->scheme = $scheme;
+            }
+            $this->theah->queueEvent($event);
+        }
 
         $this->theah->runEvents();
     }
@@ -281,81 +370,5 @@ trait StatesTrait
         // Go to another gamestate
         // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
         $this->gamestate->nextState("nextPlayer");
-    }
-
-    protected function determineFirstPlayer() {
-        $sql = "SELECT player_id, player_name, selected_scheme_id as schemeId FROM player";
-        $players = $this->getCollectionFromDb($sql);
-
-        $highInitiative = 0;
-        $highPlayerId = 0;
-        $tiedInitiative = false;
-        $currentFirstPlayerExists = $this->globals->has("firstPlayer");
-        foreach ( $players as $playerId => $player ) {
-            $scheme = $this->theah->getPurgatoryCardById($player['schemeId']);
-            if ($scheme instanceof Scheme)
-            {
-                if ($scheme->Initiative == $highInitiative) {
-                    $tiedInitiative = true;
-                }
-                else if ($scheme->Initiative > $highInitiative) {
-                    $highInitiative = $scheme->Initiative;
-                    $highPlayerId = $playerId;
-                }    
-            }
-        }
-
-        // If we have a clear winner, set the first player and move on.
-        if (! $tiedInitiative) {
-            $this->globals->set("firstPlayer", $highPlayerId);
-            $this->gamestate->changeActivePlayer($highPlayerId);
-
-            // Notify all players of the first player.
-            $this->notifyAllPlayers("firstPlayer", clienttranslate('${player_name} has the highest initiative of ${initiative} and will be set as First Player.'), [
-                'player_name' => $players[$highPlayerId]['player_name'],
-                'initiative' => $highInitiative,
-                'playerId' => $highPlayerId
-            ]);
-
-            return;
-        }
-
-        // If we have a tie for initiative. If first player exists, then simply move to the next player.
-        if ($currentFirstPlayerExists) {
-            //Get the current first player
-            $firstPlayerId = $this->globals->get("firstPlayer");
-
-            //Find out who the next player is in order
-            $table = $this->getNextPlayerTable();
-            $nextPlayerId = $table[$firstPlayerId];
-
-            $this->globals->set("firstPlayer", $nextPlayerId);
-            $this->gamestate->changeActivePlayer($nextPlayerId);
-
-            // Notify all players of the first player.
-            $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as First Player.'), [
-                'player_name' => $players[$nextPlayerId]['player_name'],
-                'initiative' => $highInitiative,
-                'playerId' => $nextPlayerId
-            ]);
-
-            return;
-        }
-
-        // If we have a tie for initiative and no first player exists, then we determine first player by random method.
-        // Extract all the player id keys from the $players array and shuffle them.
-        $size = count($players);
-        $rand = random_int(0, $size - 1);
-        $slice = array_slice($players, $rand, 1, true);
-        $firstPlayerId = key($slice);
-        $this->gamestate->changeActivePlayer($firstPlayerId);
-        $this->globals->set("firstPlayer", $firstPlayerId);
-
-        // Notify all players of the first player.
-        $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, and no previous First Player, ${player_name} has been chosen randomly as the First Player.'), [
-            'player_name' => $players[$firstPlayerId]['player_name'],
-            'initiative' => $highInitiative,
-            'playerId' => $firstPlayerId
-        ]);
     }
 }

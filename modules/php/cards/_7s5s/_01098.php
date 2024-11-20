@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
 class _01098 extends Scheme
 {
@@ -24,5 +25,23 @@ class _01098 extends Scheme
             "Logistics", 
             "Sabotage",
         ];
+    }
+
+    public function handleEvent($event)
+    {
+        parent::handleEvent($event);
+
+        //Transition to the state where player can choose two locations.
+        //These two locations will each get one Reknown.
+        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
+            $event->theah->game->gamestate->changeActivePlayer($event->playerId);
+            $event->transition = 'pickTwoLocations';
+
+            $event->theah->game->notifyAllPlayers("schemeResolves", clienttranslate('${scheme_name} now resolves. ${player_name} must choose two locations to place reknown onto.'), [
+                "scheme_name" => $event->scheme->Name,
+                "player_name" => $event->playerName,
+            ]);
+
+    }
     }
 }

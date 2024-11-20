@@ -67,7 +67,7 @@ class Theah
         return $cards;
     }
 
-    public function getCardById($cardId) : Card
+    public function getCardById($cardId) : ?Card
     {
         if (array_key_exists($cardId, $this->cards)) {
             return $this->cards[$cardId];
@@ -76,7 +76,7 @@ class Theah
         return null;
     }
 
-    public function getApproachCardById($cardId) : Card
+    public function getApproachCardById($cardId) : ?Card
     {
         if (array_key_exists($cardId, $this->approachCards)) {
             return $this->approachCards[$cardId];
@@ -85,7 +85,7 @@ class Theah
         return null;
     }
 
-    public function getPurgatoryCardById($cardId) : Card
+    public function getPurgatoryCardById($cardId) : ?Card
     {
         if (array_key_exists($cardId, $this->purgatoryCards)) {
             return $this->purgatoryCards[$cardId];
@@ -116,8 +116,6 @@ class Theah
             // Break if there are no more events
             if (!$event) break;
 
-            $this->game->debug("*******event". get_class($event));
-
             // Run the event for Theah
             $event->theah = $this;
             $this->handleEvent($event);
@@ -138,7 +136,7 @@ class Theah
 
             if ( ! empty($event->transition)) {
                 $this->game->gamestate->nextState($event->transition);
-                break;
+                return;
             }
         }
 

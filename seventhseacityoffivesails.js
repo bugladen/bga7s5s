@@ -214,6 +214,11 @@ function (dojo, declare) {
             this.approachDeck.onItemCreate = dojo.hitch( this, 'setupNewStockApproachCard' ); 
             this.approachDeck.setSelectionAppearance( 'class' )
             dojo.connect( this.approachDeck, 'onChangeSelection', this, 'onApproachCardSelected' );
+            //Disable the approach deck if we are not in the planning phase
+            if (gamedatas.gamestate.name != 'planningPhase') {
+                this.approachDeck.setSelectionMode(0);
+            }
+
 
 
             // For each card in the approach deck, create a stock item
@@ -274,22 +279,11 @@ function (dojo, declare) {
             switch( stateName )
             {
 
-                case 'pickDecks':
+                case 'planningPhase':
+                    //Enable the approach deck
+                    this.approachDeck.setSelectionMode(2);
                     break;
 
-            /* Example:
-            
-            case 'myGameState':
-            
-                // Show some HTML block at this game state
-                dojo.style( 'my_html_block_id', 'display', 'block' );
-                
-                break;
-           */
-           
-           
-            case 'dummmy':
-                break;
             }
         },
 
@@ -303,19 +297,10 @@ function (dojo, declare) {
             switch( stateName )
             {
             
-            /* Example:
-            
-            case 'myGameState':
-            
-                // Hide the HTML block we are displaying only during this game state
-                dojo.style( 'my_html_block_id', 'display', 'none' );
-                
-                break;
-           */
-           
-           
-            case 'dummmy':
-                break;
+                case 'planningPhase':
+                    //Disable the approach deck
+                    this.approachDeck.setSelectionMode(0);
+                    break;
             }               
         }, 
 

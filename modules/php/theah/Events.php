@@ -13,7 +13,9 @@ class Events
 
     const ApproachCharacterPlayed = 'EventApproachCharacterPlayed';
     const SchemeCardPlayed = 'EventSchemeCardPlayed';
+    const ResolveScheme = 'EventResolveScheme';
 
+    const AddReknownToTwoDifferentLocations = 'EventAddReknownToTwoDifferentLocations';
     const PlayerLosesReknown = 'EventPlayerLosesReknown';
     const ReknownAddedToCard = 'EventReknownAddedToCard';
 }

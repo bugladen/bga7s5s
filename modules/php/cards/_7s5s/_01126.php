@@ -10,7 +10,7 @@ class _01126 extends Scheme
     {
         parent::__construct();
 
-        $this->Name = "Leshiya of the Woods";
+        $this->Name = "Leshiye of the Woods";
         $this->Image = "img/cards/7s5s/126.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

@@ -37,6 +37,11 @@ trait ArgumentsTrait
         return [];
     }
 
+    public function argPlanningPhaseResolveSchemesPickTwoLocations(): array
+    {
+        return [];
+    }
+
     public function argPlayerTurn(): array
     {
         $player_id = (int)$this->getActivePlayerId();
