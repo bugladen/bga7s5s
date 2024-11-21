@@ -901,9 +901,11 @@ function (dojo, declare) {
             console.log( notif );
 
             const args = notif.args;
-            //Find the element with the attribute data-location that matches arg.location
-            const element = dojo.query(`[data-location="${args.location}"]`)[0];
-            element.innerHTML = args.amount;
+            //Find the image element with the attribute data-location that matches arg.location
+            const imageElement = dojo.query(`[data-location="${args.location}"]`)[0];
+            //Find the element with the class city-reknown-chip that is a child of the element's parent
+            const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+            reknownElement.innerHTML = args.amount;
         },
 
         notif_firstPlayer: function( notif )
