@@ -192,4 +192,15 @@ class Theah
 
         $this->game->gamestate->nextState('endOfEvents');
     }
+
+    function getCharacterCountByPlayerId($playerId)
+    {
+        $count = 0;
+        foreach ($this->cards as $card) {
+            if ($card->ControllerId == $playerId) {
+                $count++;
+            }
+        }
+        return $count;
+    }
 }

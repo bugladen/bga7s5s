@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 
 abstract class Leader extends Character
 {
@@ -25,7 +25,7 @@ abstract class Leader extends Character
     {
         parent::handleEvent($event);
         
-        if ($event instanceof EventSchemeCardPlayed) {
+        if ($event instanceof EventSchemeCardRevealed) {
             if ($event->scheme->PanacheModifier != 0 && $event->playerId == $this->ControllerId) {
                 $this->ModifiedPanache += $event->scheme->PanacheModifier;
                 $this->IsUpdated = true;

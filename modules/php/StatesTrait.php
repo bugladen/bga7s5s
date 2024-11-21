@@ -2,11 +2,12 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
@@ -171,8 +172,8 @@ trait StatesTrait
 
             // Run events that the scheme has been played to a location
             $scheme = $this->theah->getPurgatoryCardById($player['schemeId']);
-            $event = $this->theah->createEvent(Events::SchemeCardPlayed);
-            if ($event instanceof EventSchemeCardPlayed) {
+            $event = $this->theah->createEvent(Events::SchemeCardRevealed);
+            if ($event instanceof EventSchemeCardRevealed) {
                 $event->playerId = $playerId;
                 $event->scheme = $scheme;
                 $event->location = Game::LOCATION_PLAYER_HOME;
@@ -311,7 +312,28 @@ trait StatesTrait
         // Muster the characters
         $this->notifyAllPlayers("muster", clienttranslate('All Players MUSTER their chosen Characters'), []);
 
-        //TODO: Determine if any players are over their crew cap limit
+        $this->theah->buildCity();
+        $sql = "SELECT player_id, player_name, leader_card_id as leaderId FROM player";
+        $players = $this->getCollectionFromDb($sql);
+        foreach ( $players as $playerId => $player ) {
+            $leader = $this->theah->getCardById($player['leaderId']);
+            if ($leader instanceof Leader)
+                $crewCap = $leader->CrewCap;
+
+            $characterCount = $this->theah->getCharacterCountByPlayerId($playerId);
+            if ($characterCount > $crewCap) {
+                //TODO: Go into a state to allow the player to remove characters
+                $this->notifyAllPlayers("overCrewCapLimit", clienttranslate('${player_name} is over their Crew Cap limit of ${crewcap}'), [
+                    'player_name' => $player['player_name'],
+                    'crewcap' => $crewCap
+                ]);
+            } else {
+                $this->notifyAllPlayers("underCrewCapLimit", clienttranslate('<span style=${player_name} is under their Crew Cap limit of ${crewcap}'), [
+                    'player_name' => $player['player_name'],
+                    'crewcap' => $crewCap
+                ]);
+            }
+        }
 
         $this->gamestate->nextState("");
     }
@@ -337,6 +359,17 @@ trait StatesTrait
             }
             $this->theah->queueEvent($event);
         }
+
+        $this->gamestate->nextState("");
+    }
+
+    public function stPlanningPhaseEnd() {
+        //Notify players that it is planning phase end
+        $this->notifyAllPlayers("planningPhaseEnd", clienttranslate('<span style="font-weight:bold">PLANNING PHASE END</span>.'), []);
+
+        //Create the Planning phase event
+        $event = $this->theah->createEvent(Events::PhasePlanningEnd);
+        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("");
     }

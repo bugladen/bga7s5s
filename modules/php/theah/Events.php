@@ -9,10 +9,11 @@ class Events
     const CityCardAddedToLocation = 'EventCityCardAddedToLocation';
     const PhaseDawnEnding = 'EventPhaseDawnEnding';
     const PhasePlanningBeginning = 'EventPhasePlanningBeginning';
+    const PhasePlanningEnd = 'EventPhasePlanningEnd';
     const PhaseHighDrama = 'EventPhaseHighDrama';
 
     const ApproachCharacterPlayed = 'EventApproachCharacterPlayed';
-    const SchemeCardPlayed = 'EventSchemeCardPlayed';
+    const SchemeCardRevealed = 'EventSchemeCardRevealed';
     const ResolveScheme = 'EventResolveScheme';
 
     const AddReknownToTwoDifferentLocations = 'EventAddReknownToTwoDifferentLocations';

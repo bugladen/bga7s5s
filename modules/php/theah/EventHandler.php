@@ -6,7 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocatio
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 
 trait EventHandler
 {
@@ -31,7 +31,7 @@ trait EventHandler
 
                 break;
 
-            case $event instanceof EventSchemeCardPlayed:
+            case $event instanceof EventSchemeCardRevealed:
                 unset($this->approachCards[$event->scheme->Id]);
                 $this->cards[$event->scheme->Id] = $event->scheme;
 

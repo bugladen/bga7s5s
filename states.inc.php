@@ -227,7 +227,7 @@ $machinestates = [
     ],
         States::PLANNING_PHASE_MUSTER_EVENTS => [
             "name" => "planningPhaseMusterEvents",
-            "description" => clienttranslate("Resolving Events for Mustered Characters"),
+            "description" => '',
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => ["endOfEvents" => States::PLANNING_PHASE_RESOLVE_SCHEMES]
@@ -247,7 +247,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "pickTwoLocations" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS,
-                "endOfEvents" => States::HIGH_DRAMA_BEGINNING
+                "endOfEvents" => States::PLANNING_PHASE_END
             ]
         ],
         States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS => [
@@ -260,6 +260,21 @@ $machinestates = [
                 "actCityLocationsForReknownSelected", 
             ],
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+        ],
+
+    States::PLANNING_PHASE_END => [
+        "name" => "planningPhaseEnd",
+        "description" => clienttranslate("End of the Planning Phase..."),
+        "type" => "game",
+        "action" => "stPlanningPhaseEnd",
+        "transitions" => ["" => States::PLANNING_PHASE_END_EVENTS]
+    ],
+        States::PLANNING_PHASE_END_EVENTS => [
+            "name" => "planningPhaseEndEvents",
+            "description" => clienttranslate("Resolving Events for the End of the Planning Phase..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => ["endOfEvents" => States::HIGH_DRAMA_BEGINNING]
         ],
 
     States::HIGH_DRAMA_BEGINNING => [
