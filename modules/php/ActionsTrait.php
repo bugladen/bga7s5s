@@ -38,8 +38,7 @@ trait ActionsTrait
 
         $locations = json_decode($locations, true);
         foreach ($locations as $location) {
-            $locationFullName = $this->mapCityLocationElementToName($location);
-            $locationReknownName = $this->getReknownLocationName($locationFullName);
+            $locationReknownName = $this->getReknownLocationName($location);
 
             //Update the reknown for the location in the database
             $reknown = $this->globals->get($locationReknownName) + 1;
@@ -48,7 +47,6 @@ trait ActionsTrait
             $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
             if ($event instanceof EventReknownAddedToLocation) {
                 $event->location = $location;
-                $event->locationFullName = $locationFullName;
                 $event->amount = 1;
                 $event->priority = Event::HIGH_PRIORITY;
             }

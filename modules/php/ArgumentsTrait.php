@@ -13,7 +13,7 @@ trait ArgumentsTrait
      * @see ./states.inc.php
      */
 
-    public function argsEmpty(): array
+    public function argEmpty(): array
     {
         return [];
     }    
@@ -30,16 +30,6 @@ trait ArgumentsTrait
         }, $starter_decks->decks);
 
         return ["availableDecks" => $decks];
-    }
-
-    public function argPlanningPhase(): array
-    {
-        return [];
-    }
-
-    public function argPlanningPhaseResolveSchemesPickTwoLocations(): array
-    {
-        return [];
     }
 
     public function argPlayerTurn(): array

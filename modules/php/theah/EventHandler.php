@@ -83,12 +83,11 @@ trait EventHandler
                 break;
 
             case $event instanceof EventReknownAddedToLocation:
-                $this->cityLocations[$event->locationFullName]->Reknown += $event->amount;
+                $this->cityLocations[$event->location]->Reknown += $event->amount;
 
                 // Notify players that the player has lost reknown
-                $this->game->notifyAllPlayers("reknownAddedToLocation", clienttranslate('${amount} reknown added to ${locationFullName}.'), [
+                $this->game->notifyAllPlayers("reknownAddedToLocation", clienttranslate('${amount} reknown added to ${location}.'), [
                     "location" => $event->location,
-                    "locationFullName" => $event->locationFullName,
                     "amount" => $event->amount,
                 ]);
         }

@@ -181,35 +181,37 @@ function (dojo, declare) {
                 this.addTooltipHtmlToClass('first-player-score', `<div class='basic-tooltip'>${_('First Player')}</div>` );
             }
 
-            // Set up cards in oles inn
+            // Set up Ole's inn
             for( const index in gamedatas.oleCards )
             {
                 const card = gamedatas.oleCards[index];
                 const cardId = `olesinn-${card.id}`;
                 this.createCard(cardId, card, 'oles-inn-endcap');
             }
-            if (gamedatas.locationReknown[this.LOCATION_CITY_OLES_INN] != null)
+            if (gamedatas.locationReknown[this.LOCATION_CITY_OLES_INN] != null) {
                 $('oles-inn-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_OLES_INN];
+                $('oles-inn-image').setAttribute('data-location', this.LOCATION_CITY_OLES_INN);            
+            }
 
-            // Set up cards in the docks
+            // Set up The Docks
             for( const index in gamedatas.dockCards )
             {
                 const card = gamedatas.dockCards[index];
                 const cardId = `docks-${card.id}`;
                 this.createCard(cardId, card, 'dock-endcap');
             }
-            if (gamedatas.locationReknown[this.LOCATION_CITY_DOCKS] != null)
-                $('dock-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_DOCKS];
+            $('dock-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_DOCKS];
+            $('dock-image').setAttribute('data-location', this.LOCATION_CITY_DOCKS);
 
-            // Set up cards in the forum
+            // Set up The Forum
             for( const index in gamedatas.forumCards )
             {
                 const card = gamedatas.forumCards[index];
                 const cardId = `forums-${card.id}`;
                 this.createCard(cardId, card, 'forum-endcap');
             }
-            if (gamedatas.locationReknown[this.LOCATION_CITY_FORUM] != null)
-                $('forum-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_FORUM];
+            $('forum-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_FORUM];
+            $('forum-image').setAttribute('data-location', this.LOCATION_CITY_FORUM);
                 
             // Set up cards in the bazaar
             for( const index in gamedatas.bazaarCards )
@@ -218,8 +220,8 @@ function (dojo, declare) {
                 const cardId = `bazaar-${card.id}`;
                 this.createCard(cardId, card, 'bazaar-endcap');
             }
-            if (gamedatas.locationReknown[this.LOCATION_CITY_BAZAAR] != null)
-                $('bazaar-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_BAZAAR];
+            $('bazaar-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_BAZAAR];
+            $('bazaar-image').setAttribute('data-location', this.LOCATION_CITY_BAZAAR);
 
             // Set up cards in the governors garden
             for( const index in gamedatas.gardenCards )
@@ -228,9 +230,10 @@ function (dojo, declare) {
                 const cardId = `garden-${card.id}`;
                 this.createCard(cardId, card, 'garden-endcap');
             }
-            if (gamedatas.locationReknown[this.LOCATION_CITY_GOVERNORS_GARDEN] != null)
+            if (gamedatas.locationReknown[this.LOCATION_CITY_GOVERNORS_GARDEN] != null) {
                 $('garden-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_GOVERNORS_GARDEN];
-
+                $('garden-image').setAttribute('data-location', this.LOCATION_CITY_GOVERNORS_GARDEN);
+            }
 
             // Create Approach deck
             this.approachDeck = new ebg.stock();
@@ -581,9 +584,9 @@ function (dojo, declare) {
         },    
 
         onCityLocationsSelected: function() {
-            //For each selected location, filter '-image' out of the string
-            //We were using that to identify the location via javascript and don't need it for the server call
-            const locations = this.selectedCityLocations.map((loc) => loc.replace('-image', ''));
+
+            //For each element in selectedCityLocations, create an array from map the element's data-location attribute 
+            const locations = this.selectedCityLocations.map((loc) => $(loc).getAttribute('data-location'));
             console.log(locations);
 
             this.bgaPerformAction("actCityLocationsForReknownSelected", { 
@@ -898,7 +901,9 @@ function (dojo, declare) {
             console.log( notif );
 
             const args = notif.args;
-            $(`${args.location}-reknown`).innerHTML = args.amount;
+            //Find the element with the attribute data-location that matches arg.location
+            const element = dojo.query(`[data-location="${args.location}"]`)[0];
+            element.innerHTML = args.amount;
         },
 
         notif_firstPlayer: function( notif )

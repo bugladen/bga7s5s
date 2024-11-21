@@ -164,7 +164,7 @@ $machinestates = [
         "description" => clienttranslate('Your opponent must choose their Scheme Character to muster for the day.'),
         "descriptionmyturn" => clienttranslate('${you} must choose ONE Scheme and ONE Character from your Approach Deck to muster for the day.'),
         "type" => "multipleactiveplayer",
-        "args" => "argsEmpty",
+        "args" => "argEmpty",
         "action" => "stPlanningPhase",
         "possibleactions" => [
             "actDayPlanned", 
@@ -255,7 +255,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} must choose two city locations to place Reknown onto.'),
             "descriptionmyturn" => clienttranslate('${you} must choose two city locations to place Reknown onto.'),
             "type" => "activeplayer",
-            "args" => "argPlanningPhaseResolveSchemesPickTwoLocations",
+            "args" => "argEmpty",
             "possibleactions" => [
                 "actCityLocationsForReknownSelected", 
             ],

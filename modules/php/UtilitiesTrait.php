@@ -52,23 +52,6 @@ trait UtilitiesTrait
         return $count;
     }
 
-    function mapCityLocationElementToName($element) {
-        switch ($element) {
-            case "dock":
-                return Game::LOCATION_CITY_DOCKS;
-            case "forum":
-                return Game::LOCATION_CITY_FORUM;
-            case "bazaar":
-                return Game::LOCATION_CITY_BAZAAR;
-            case "garden":
-                return Game::LOCATION_CITY_GOVERNORS_GARDEN;
-            case "oles-inn":
-                return Game::LOCATION_CITY_OLES_INN;
-            default:
-                return "";
-        }
-    }
-
     function getReknownLocationName($location) {
         return "Reknown_" . $location;
     }

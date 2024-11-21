@@ -7,7 +7,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 class EventReknownAddedToLocation extends Event
 {
     public string $location;
-    public string $locationFullName;
     public int $amount;
 
     public function __construct()
