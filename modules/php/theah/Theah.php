@@ -13,7 +13,8 @@ class Theah
     private array $cards;
     private array $approachCards;
     private array $purgatoryCards;
-    private array $events;
+    private array $cityLocations;
+    private bool $isLoaded;
     private DB $db;
 
     use EventHandler;
@@ -22,14 +23,22 @@ class Theah
     {
         $this->game = $game;
         $this->cards = [];
+        $this->cityLocations = [];
         $this->approachCards = [];
         $this->purgatoryCards = [];
+        $this->isLoaded = false;
         $this->db = new DB();
     }
 
 
     public function buildCity()
     {
+        if ($this->isLoaded) {
+            return;
+        }
+
+        $this->buildCityLocations();
+
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_PLAYER_HOME);
         $this->cards += $this->db->getCardObjectsAtLocation(addslashes(Game::LOCATION_CITY_OLES_INN));
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_DOCKS);
@@ -39,6 +48,38 @@ class Theah
 
         $this->approachCards = $this->db->getCardObjectsAtLocation(Game::LOCATION_APPROACH);
         $this->purgatoryCards = $this->db->getCardObjectsAtLocation(Game::LOCATION_PURGATORY);
+
+        $this->isLoaded = true;
+    }
+
+    private function buildCityLocations()
+    {
+        $players = $this->game->loadPlayersBasicInfos();
+        $game = $this->game;
+
+        $location = new CityLocation(Game::LOCATION_CITY_DOCKS);
+        $location->Reknown = $game->globals->get($game->getReknownLocationName(Game::LOCATION_CITY_DOCKS));
+        $this->cityLocations[Game::LOCATION_CITY_DOCKS] = $location;
+
+        $location = new CityLocation(Game::LOCATION_CITY_FORUM);
+        $location->Reknown = $game->globals->get($game->getReknownLocationName(Game::LOCATION_CITY_FORUM));
+        $this->cityLocations[Game::LOCATION_CITY_FORUM] = $location;
+
+        $location = new CityLocation(Game::LOCATION_CITY_BAZAAR);
+        $location->Reknown = $game->globals->get($game->getReknownLocationName(Game::LOCATION_CITY_BAZAAR));
+        $this->cityLocations[Game::LOCATION_CITY_BAZAAR] = $location;
+
+        if (count($players) > 2) {
+            $location = new CityLocation(Game::LOCATION_CITY_OLES_INN);
+            $location->Reknown = $game->globals->get($game->getReknownLocationName(Game::LOCATION_CITY_OLES_INN));
+            $this->cityLocations[Game::LOCATION_CITY_OLES_INN] = $location;
+        }
+
+        if (count($players) > 3) {
+            $location = new CityLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
+            $location->Reknown = $game->globals->get($game->getReknownLocationName(Game::LOCATION_CITY_GOVERNORS_GARDEN));
+            $this->cityLocations[Game::LOCATION_CITY_GOVERNORS_GARDEN] = $location;
+        }
     }
 
     public function getApproachCards($playerId)
@@ -92,6 +133,15 @@ class Theah
         }
 
         return null;
+    }
+
+    public function getCityLocationReknown()
+    {
+        $reknown = [];
+        foreach ($this->cityLocations as $location) {
+            $reknown[$location->Name] = $location->Reknown;
+        }
+        return $reknown;
     }
 
     public function createEvent(string $eventName) : Event

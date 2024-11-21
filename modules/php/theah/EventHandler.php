@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardPlayed;
 
 trait EventHandler
@@ -65,7 +66,6 @@ trait EventHandler
                 break;
 
             case $event instanceof EventPlayerLosesReknown:
-
                 $playerId = $event->playerId;
                 $reknown = $this->db->getPlayerReknown($playerId);
                 if ($reknown > 0) {
@@ -81,6 +81,16 @@ trait EventHandler
                 }   
 
                 break;
+
+            case $event instanceof EventReknownAddedToLocation:
+                $this->cityLocations[$event->locationFullName]->Reknown += $event->amount;
+
+                // Notify players that the player has lost reknown
+                $this->game->notifyAllPlayers("reknownAddedToLocation", clienttranslate('${amount} reknown added to ${locationFullName}.'), [
+                    "location" => $event->location,
+                    "locationFullName" => $event->locationFullName,
+                    "amount" => $event->amount,
+                ]);
         }
     }
 }

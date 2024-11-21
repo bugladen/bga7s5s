@@ -18,4 +18,5 @@ class Events
     const AddReknownToTwoDifferentLocations = 'EventAddReknownToTwoDifferentLocations';
     const PlayerLosesReknown = 'EventPlayerLosesReknown';
     const ReknownAddedToCard = 'EventReknownAddedToCard';
+    const ReknownAddedToLocation = 'EventReknownAddedToLocation';
 }

@@ -2,6 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+
 trait ActionsTrait
 {
     public function actPickDeck(string $deck_type, string $deck_id): void
@@ -26,6 +30,33 @@ trait ActionsTrait
         $this->cards->moveCard($character, Game::LOCATION_PURGATORY);
 
         $this->gamestate->setPlayerNonMultiactive($playerId, 'dayPlanned'); // deactivate player; if none left, transition to 'deckPicked' state
+    }
+
+    public function actCityLocationsForReknownSelected(string $locations)
+    {
+        $this->theah->buildCity();
+
+        $locations = json_decode($locations, true);
+        foreach ($locations as $location) {
+            $locationFullName = $this->mapCityLocationElementToName($location);
+            $locationReknownName = $this->getReknownLocationName($locationFullName);
+
+            //Update the reknown for the location in the database
+            $reknown = $this->globals->get($locationReknownName) + 1;
+            $this->globals->set($locationReknownName, $reknown);
+
+            $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
+            if ($event instanceof EventReknownAddedToLocation) {
+                $event->location = $location;
+                $event->locationFullName = $locationFullName;
+                $event->amount = 1;
+                $event->priority = Event::HIGH_PRIORITY;
+            }
+            $this->theah->queueEvent($event);
+        }
+
+        // Go back and finish running the Scheme events
+        $this->gamestate->nextState("");
     }
 
     public function actPlayCard(int $card_id): void

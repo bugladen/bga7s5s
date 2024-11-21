@@ -37,8 +37,8 @@ class _01098 extends Scheme
             $event->theah->game->gamestate->changeActivePlayer($event->playerId);
             $event->transition = 'pickTwoLocations';
 
-            $event->theah->game->notifyAllPlayers("schemeResolves", clienttranslate('${scheme_name} now resolves. ${player_name} must choose two locations to place reknown onto.'), [
-                "scheme_name" => $event->scheme->Name,
+            $event->theah->game->notifyAllPlayers("schemeResolves", clienttranslate('${scheme_name} now resolves. ${player_name} must choose two city locations to place reknown onto.'), [
+                "scheme_name" => "<span style='font-weight:bold'>{$event->scheme->Name}</span>",
                 "player_name" => $event->playerName,
             ]);
 

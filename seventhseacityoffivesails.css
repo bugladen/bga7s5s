@@ -661,11 +661,21 @@ body {
     font-size: 14pt;
 }
 
+/* To make sure that the hands are below the city */
 .hand {
     clear:left;
 }
 
+.selectable {
+    box-shadow: 0 0 2px 2px yellow;
+}
+
+.selected {
+    box-shadow: 0 0 2px 2px lime;
+}
+
+/* Leave as-is for stock component */
 .stockitem_selected {
-	border: 4px solid orange !important;
+	border: 3px solid lime !important;
     transform: translateX(-3px) translateY(-2px);
 }

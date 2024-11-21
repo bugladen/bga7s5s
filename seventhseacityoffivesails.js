@@ -42,6 +42,13 @@ function (dojo, declare) {
 
             //Global array containing cached properties of all the cards this page has had access to
             this.cardProperties = {};
+
+            //City location selection
+            this.numberOfCityLocationsSelectable = 0;
+            this.selectedCityLocations = [];
+
+            //Connect handlers for the city locations
+            this.connects = [];
         },
         
         /*
@@ -76,7 +83,7 @@ function (dojo, declare) {
             this.addTooltipHtml( 'dock-image', `<div class='basic-tooltip'>${_('The Docks')}</div>` );
             this.addTooltipHtml( 'forum-image', `<div class='basic-tooltip'>${_('The Forums')}</div>` );
             this.addTooltipHtml( 'bazaar-image', `<div class='basic-tooltip'>${_('The Grand Bazaar')}</div>` );
-            this.addTooltipHtml( 'governors-garden-image', `<div class='basic-tooltip'>${_("Governor's Garden")}</div>` );
+            this.addTooltipHtml( 'garden-image', `<div class='basic-tooltip'>${_("Governor's Garden")}</div>` );
 
             this.addTooltipHtml( 'city-discard', `<div class='basic-tooltip'>${_('City Discard Pile')}</div>` );
             this.addTooltipHtml( 'day-indicator', `<div class='basic-tooltip'>${_('The Current Day')}</div>` );
@@ -181,6 +188,8 @@ function (dojo, declare) {
                 const cardId = `olesinn-${card.id}`;
                 this.createCard(cardId, card, 'oles-inn-endcap');
             }
+            if (gamedatas.locationReknown[this.LOCATION_CITY_OLES_INN] != null)
+                $('oles-inn-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_OLES_INN];
 
             // Set up cards in the docks
             for( const index in gamedatas.dockCards )
@@ -189,6 +198,8 @@ function (dojo, declare) {
                 const cardId = `docks-${card.id}`;
                 this.createCard(cardId, card, 'dock-endcap');
             }
+            if (gamedatas.locationReknown[this.LOCATION_CITY_DOCKS] != null)
+                $('dock-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_DOCKS];
 
             // Set up cards in the forum
             for( const index in gamedatas.forumCards )
@@ -197,6 +208,8 @@ function (dojo, declare) {
                 const cardId = `forums-${card.id}`;
                 this.createCard(cardId, card, 'forum-endcap');
             }
+            if (gamedatas.locationReknown[this.LOCATION_CITY_FORUM] != null)
+                $('forum-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_FORUM];
                 
             // Set up cards in the bazaar
             for( const index in gamedatas.bazaarCards )
@@ -205,6 +218,19 @@ function (dojo, declare) {
                 const cardId = `bazaar-${card.id}`;
                 this.createCard(cardId, card, 'bazaar-endcap');
             }
+            if (gamedatas.locationReknown[this.LOCATION_CITY_BAZAAR] != null)
+                $('bazaar-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_BAZAAR];
+
+            // Set up cards in the governors garden
+            for( const index in gamedatas.gardenCards )
+            {
+                const card = gamedatas.gardenCards[index];
+                const cardId = `garden-${card.id}`;
+                this.createCard(cardId, card, 'garden-endcap');
+            }
+            if (gamedatas.locationReknown[this.LOCATION_CITY_GOVERNORS_GARDEN] != null)
+                $('garden-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_GOVERNORS_GARDEN];
+
 
             // Create Approach deck
             this.approachDeck = new ebg.stock();
@@ -214,18 +240,12 @@ function (dojo, declare) {
             this.approachDeck.onItemCreate = dojo.hitch( this, 'setupNewStockApproachCard' ); 
             this.approachDeck.setSelectionAppearance( 'class' )
             dojo.connect( this.approachDeck, 'onChangeSelection', this, 'onApproachCardSelected' );
-            //Disable the approach deck if we are not in the planning phase
-            if (gamedatas.gamestate.name != 'planningPhase') {
-                this.approachDeck.setSelectionMode(0);
-            }
-
-
-
             // For each card in the approach deck, create a stock item
             gamedatas.approachDeck.forEach((card) => {
                 this.addCardToApproachDeck(card);
             });
- 
+            this.approachDeck.setSelectionMode(0);
+
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
 
@@ -278,12 +298,35 @@ function (dojo, declare) {
             
             switch( stateName )
             {
-
+                case 'dawnBeginning':
+                    $('city-day-phase').innerHTML = 'Dawn';
+                    dojo.style('city-day-phase', 'display', 'block');
+                    break;
+        
                 case 'planningPhase':
+                    $('city-day-phase').innerHTML = 'Planning';
                     //Enable the approach deck
                     this.approachDeck.setSelectionMode(2);
                     break;
 
+                case 'planningPhaseResolveSchemesPickTwoLocations':
+                    if (this.isCurrentPlayerActive()) {
+                        const locations = this.getListofAvailableCityLocationImages();
+                        locations.forEach((location) => {
+                            dojo.addClass(location, 'selectable');
+                            dojo.style(location, 'cursor', 'pointer');
+    
+                            this.numberOfCityLocationsSelectable = 2;
+                            const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                            this.connects.push(handle);
+                        });
+                    }
+                    break;
+
+                case 'highDramaPhase':
+                    $('city-day-phase').innerHTML = 'High Drama';
+                    break;
+    
             }
         },
 
@@ -296,12 +339,23 @@ function (dojo, declare) {
             
             switch( stateName )
             {
-            
                 case 'planningPhase':
-                    //Disable the approach deck
                     this.approachDeck.setSelectionMode(0);
                     break;
-            }               
+                case 'planningPhaseResolveSchemesPickTwoLocations':
+                    const locations = this.getListofAvailableCityLocationImages();
+                    locations.forEach((location) => {
+                        dojo.removeClass(location, 'selectable');
+                        dojo.removeClass(location, 'selected');
+                        dojo.style(location, 'cursor', 'default');
+                    });
+                    break;    
+            }
+
+            //Disconnect any connect handlers that were created
+            this.connects.forEach((handle) => {
+                dojo.disconnect(handle);
+            });
         }, 
 
         // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -324,6 +378,11 @@ function (dojo, declare) {
                     case 'planningPhase':
                         this.addActionButton(`actEndPlanningPhase`, _('Confirm Approach Cards'), () => this.onPlanningCardsSelected());
                         dojo.addClass('actEndPlanningPhase', 'disabled');
+                        break;
+
+                    case 'planningPhaseResolveSchemesPickTwoLocations':
+                        this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
+                        dojo.addClass('actCityLocationsSelected', 'disabled');
                         break;
 
                     case 'playerTurn':
@@ -422,7 +481,6 @@ function (dojo, declare) {
 
         createSchemeCard: function( divId, scheme, location )
         {
-            console.log('scheme', scheme);
             //Set the divId of the card
             scheme.divId = divId;
 
@@ -446,8 +504,6 @@ function (dojo, declare) {
 
             //Add to the card properties cache
             this.cardProperties[attachment.id] = attachment;
-
-            console.log('attachment', attachment);
 
             dojo.place( this.format_block( 'jstpl_card_attachment', {
                 id: divId,
@@ -484,6 +540,20 @@ function (dojo, declare) {
             }
         },
 
+        getListofAvailableCityLocationImages: function()
+        {
+            const playerCount = Object.keys(this.gamedatas.players).length;
+            let locations = ['dock-image', 'forum-image', 'bazaar-image'];
+            if (playerCount > 2) {
+                locations.push('oles-inn-image');
+            }
+            if (playerCount > 3) {
+                locations.push('garden-image');
+            }
+
+            return locations;
+        },
+
         ///////////////////////////////////////////////////
         //// Player's action
         
@@ -502,8 +572,6 @@ function (dojo, declare) {
         
         onStarterDeckSelected: function( deck_id )
         {
-            console.log( 'onDeckSelected', deck_id );
-
             this.bgaPerformAction("actPickDeck", { 
                 'deck_type':'starter',
                 'deck_id':deck_id,
@@ -511,6 +579,19 @@ function (dojo, declare) {
                 // What to do after the server call if it succeeded
             });        
         },    
+
+        onCityLocationsSelected: function() {
+            //For each selected location, filter '-image' out of the string
+            //We were using that to identify the location via javascript and don't need it for the server call
+            const locations = this.selectedCityLocations.map((loc) => loc.replace('-image', ''));
+            console.log(locations);
+
+            this.bgaPerformAction("actCityLocationsForReknownSelected", { 
+                'locations': JSON.stringify(locations),
+            }).then(() =>  {                
+                // What to do after the server call if it succeeded
+            });
+        },
 
         onPlanningCardsSelected: function()
         {
@@ -533,7 +614,32 @@ function (dojo, declare) {
                 }).then(() =>  {                
                     // What to do after the server call if it succeeded
                 });        
-            },
+        },
+
+        onCityLocationClicked: function( event )
+        {
+            const location = event.target.id;
+            //Check to see if we are selecting or deselecting
+            if (dojo.hasClass(location, 'selected')) 
+            {
+                dojo.removeClass(location, 'selected');
+                this.selectedCityLocations = this.selectedCityLocations.filter((loc) => loc !== location);
+            } 
+            else 
+            {
+                if (this.selectedCityLocations.length < this.numberOfCityLocationsSelectable) {
+                    dojo.addClass(location, 'selected');
+                    this.selectedCityLocations.push(location);
+                }
+            }
+
+            //Enable the confirm button if we have the right number of locations selected
+            if (this.selectedCityLocations.length === this.numberOfCityLocationsSelectable) {
+                dojo.removeClass('actCityLocationsSelected', 'disabled');
+            } else {
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            }
+        },
 
         onCardClick: function( card_id )
         {
@@ -590,8 +696,6 @@ function (dojo, declare) {
             } else {
                 dojo.addClass('actEndPlanningPhase', 'disabled');
             }
-
-
         },
         
         ///////////////////////////////////////////////////
@@ -615,16 +719,14 @@ function (dojo, declare) {
                 ['playLeader', 1500],
                 ['approachCardsReceived', 1000],
                 ['newDay', 1000],
-                ['dawnBeginning', 1000],
                 ['cityCardAddedToLocation', 500],
-                ['planningPhase', 1000],
                 ['playApproachScheme', 2000],
                 ['playApproachCharacter', 2000],
                 ['firstPlayer', 1500],
                 ['panacheModified', 1000],
                 ['playerReknownUpdated', 500],
                 ['reknownUpdatedOnCard', 500],
-                ['highDramaPhase', 1000],
+                ['reknownAddedToLocation', 500],
             ];
     
             notifs.forEach((notif) => {
@@ -724,15 +826,6 @@ function (dojo, declare) {
             dojo.style('day-indicator', 'display', 'block');
         },
 
-        notif_dawnBeginning: function( notif )
-        {
-            console.log( 'notif_dawnBeginning' );
-            console.log( notif );
-
-            $('city-day-phase').innerHTML = 'Dawn';
-            dojo.style('city-day-phase', 'display', 'block');
-        },
-
         notif_cityCardAddedToLocation: function( notif )
         {
             console.log( 'notif_cityCardAddedToLocation' );
@@ -761,8 +854,8 @@ function (dojo, declare) {
                     location = 'bazaar-endcap';
                     break;
                 case this.LOCATION_CITY_GOVERNORS_GARDEN:
-                    cardId = `governors-garden-${card.id}`;
-                    location = 'governors-garden-endcap';
+                    cardId = `garden-${card.id}`;
+                    location = 'garden-endcap';
                     break;
             }
 
@@ -799,13 +892,13 @@ function (dojo, declare) {
             }),  card.divId, 'last');
         },
 
-        notif_planningPhase: function( notif )
+        notif_reknownAddedToLocation: function( notif )
         {
-            console.log( 'notif_planningPhase' );
+            console.log( 'notif_reknownAddedToLocation' );
             console.log( notif );
 
             const args = notif.args;
-            $('city-day-phase').innerHTML = 'Planning';
+            $(`${args.location}-reknown`).innerHTML = args.amount;
         },
 
         notif_firstPlayer: function( notif )
@@ -824,15 +917,6 @@ function (dojo, declare) {
             dojo.addClass(`${args.playerId}-score-seal-first-player`, 'first-player-score');
 
             $('pagemaintitletext').innerHTML = `${args.player_name} is now the First Player`;
-        },
-
-        notif_highDramaPhase: function( notif )
-        {
-            console.log( 'notif_highDramaPhase' );
-            console.log( notif );
-
-            const args = notif.args;
-            $('city-day-phase').innerHTML = 'High Drama';
         },
     });      
 });

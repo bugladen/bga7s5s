@@ -179,24 +179,33 @@ $machinestates = [
 
     States::PLANNING_PHASE_RESOLVE_SCHEMES => [
         "name" => "planningPhaseResolveSchemes",
-        "description" => "Resolve Schemes",
+        "description" => "Resolving events created by played Schemes",
         "type" => "game",
         "action" => "stPlanningPhaseResolveSchemes",
+        "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+    ],
+
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS => [
+        "name" => "planningPhaseResolveSchemesEvents",
+        "description" => "Resolve Schemes Events",
+        "type" => "game",
+        "action" => "stPlanningPhaseResolveSchemesEvents",
         "transitions" => [
             "pickTwoLocations" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS,
             "endOfEvents" => States::HIGH_DRAMA_BEGINNING
         ]
     ],
+
         States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS => [
             "name" => "planningPhaseResolveSchemesPickTwoLocations",
-            "description" => clienttranslate('${actplayer} must choose two locations to place Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('${you} must choose two locations to place Reknown onto.'),
+            "description" => clienttranslate('${actplayer} must choose two city locations to place Reknown onto.'),
+            "descriptionmyturn" => clienttranslate('${you} must choose two city locations to place Reknown onto.'),
             "type" => "activeplayer",
             "args" => "argPlanningPhaseResolveSchemesPickTwoLocations",
             "possibleactions" => [
-                "actTwoLocationsChosen", 
+                "actCityLocationsForReknownSelected", 
             ],
-            "transitions" => ["playCard" => States::PLANNING_PHASE_RESOLVE_SCHEMES]
+            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
 
     States::HIGH_DRAMA_BEGINNING => [

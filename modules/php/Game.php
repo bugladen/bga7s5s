@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
@@ -52,6 +51,7 @@ class Game extends \Table
     use ActionsTrait;
     use ArgumentsTrait;
     use DebugTrait;
+    use UtilitiesTrait;
 
     private \Deck $cards;
     private Theah $theah;
@@ -167,15 +167,6 @@ class Game extends \Table
         }
         $result["players"] = $players;
 
-        $result["homeCards"] = $this->theah->getCardsAtLocation(self::LOCATION_PLAYER_HOME);
-        $result["oleCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_OLES_INN);
-        $result["dockCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_DOCKS);
-        $result["forumCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_FORUM);
-        $result["bazaarCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_BAZAAR);
-        $result["gardenCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_GOVERNORS_GARDEN);
-        
-        $result["approachDeck"] = $this->theah->getApproachCards($currentPlayerId);
-
         $result["day"] = $this->getGameStateValue("day");
         $result["turnPhase"] = (int) $this->getGameStateValue("turnPhase");
 
@@ -183,8 +174,14 @@ class Game extends \Table
             $result["firstPlayer"] = $this->globals->get("firstPlayer");
         }
 
-
-        // TODO: Gather all information about current game situation (visible by player $current_player_id).
+        $result["homeCards"] = $this->theah->getCardsAtLocation(self::LOCATION_PLAYER_HOME);
+        $result["oleCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_OLES_INN);
+        $result["dockCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_DOCKS);
+        $result["forumCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_FORUM);
+        $result["bazaarCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_BAZAAR);
+        $result["gardenCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_GOVERNORS_GARDEN);
+        $result["approachDeck"] = $this->theah->getApproachCards($currentPlayerId);
+        $result["locationReknown"] = $this->theah->getCityLocationReknown();
 
         return $result;
     }
@@ -211,7 +208,6 @@ class Game extends \Table
         $default_colors = $gameinfos['player_colors'];
 
         foreach ($players as $player_id => $player) {
-            // Now you can access both $player_id and $player array
             $query_values[] = vsprintf("('%s', '%s', '%s', '%s', '%s')", [
                 $player_id,
                 array_shift($default_colors),
@@ -239,6 +235,18 @@ class Game extends \Table
 
         $this->setGameStateInitialValue("day", 0);
         $this->setGameStateInitialValue("turnPhase", Self::SETUP_PHASE);
+
+        //Setup the reknown for the city locations
+        $playerCount = count($players);
+        $this->globals->set($this->getReknownLocationName(Game::LOCATION_CITY_DOCKS), 0);
+        $this->globals->set($this->getReknownLocationName(Game::LOCATION_CITY_FORUM), 0);
+        $this->globals->set($this->getReknownLocationName(Game::LOCATION_CITY_BAZAAR), 0);
+        if ($playerCount > 2) {
+            $this->globals->set($this->getReknownLocationName(Game::LOCATION_CITY_OLES_INN), 0);
+        }
+        if ($playerCount > 3) {
+            $this->globals->set($this->getReknownLocationName(Game::LOCATION_CITY_GOVERNORS_GARDEN), 0);
+        }
 
         // Init game statistics.
         //
@@ -293,51 +301,5 @@ class Game extends \Table
         }
 
         throw new \feException("Zombie mode not supported at this game state: \"{$state_name}\".");
-    }
-
-    protected function instantiateCard($cardId) : Card {
-
-        //Pull the first two characters of the card id to get the set
-        $set = substr($cardId, 0, 2);
-
-        switch ($set) {
-            case '01':
-                $set = "_7s5s";
-                break;
-            default:
-                $set = "_7s5s";
-        }
-
-        $className = "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$cardId";
-        $card = new $className();
-
-        return $card;
-    }
-
-    public function getCardObjectFromDb($cardId) : Card {
-        $data = $this->getObjectFromDB("SELECT card_serialized FROM card WHERE card_id = $cardId");
-        $card = unserialize($data['card_serialized']);
-        return $card;
-    }
-
-    function getPlayerReknown($player_id) {
-        return $this->getUniqueValueFromDB("SELECT player_score FROM player WHERE player_id='$player_id'");
-    }
-
-    function setPlayerReknown($playerId, $reknown) {
-        $this->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
-    }
-
-    function dbSetAuxScore($player_id, $score) {
-        $this->DbQuery("UPDATE player SET player_score_aux=$score WHERE player_id='$player_id'");
-    }
-
-    function incrementReknown($player_id, $inc) {
-        $count = $this->getPlayerReknown($player_id);
-        if ($inc != 0) {
-            $count += $inc;
-            $this->setPlayerReknown($player_id, $count);
-        }
-        return $count;
     }
 }

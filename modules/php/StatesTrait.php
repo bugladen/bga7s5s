@@ -314,7 +314,7 @@ trait StatesTrait
     public function stPlanningPhaseResolveSchemes() {
 
         // Resolve schemes
-        $this->notifyAllPlayers("resolveSchemes", clienttranslate('All Players RESOLVE their chosen Schemes'), []);
+        $this->notifyAllPlayers("resolveSchemes", clienttranslate('All Players RESOLVE their chosen Schemes in player order starting with the FIRST PLAYER'), []);
 
         // Resolve the schemes in order of first player
         $order = $this->getNextPlayerTable();        
@@ -333,6 +333,10 @@ trait StatesTrait
             $this->theah->queueEvent($event);
         }
 
+        $this->gamestate->nextState("");
+    }
+
+    public function stPlanningPhaseResolveSchemesEvents() {
         $this->theah->runEvents();
     }
 
