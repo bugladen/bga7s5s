@@ -17,6 +17,7 @@ trait StatesTrait
     }
 
     public function stRunEvents() {
+        $this->theah->buildCity();
         $this->theah->runEvents();
     }
 
@@ -320,11 +321,11 @@ trait StatesTrait
         // Resolve schemes
         $this->notifyAllPlayers("resolveSchemes", clienttranslate('All Players RESOLVE their chosen Schemes in player order starting with the FIRST PLAYER'), []);
 
-        // Resolve the schemes in order of first player
-        $order = $this->getNextPlayerTable();        
-        foreach ( $order as $playerId ) {
-            $sql = "SELECT selected_scheme_id as schemeId FROM player WHERE player_id = $playerId";
-            $schemeId = $this->getUniqueValueFromDB($sql);
+        // Resolve the schemes in player order
+        $sql = "SELECT player_id, selected_scheme_id as schemeId FROM player ORDER by player_no";
+        $list = $this->getCollectionFromDB($sql);
+        foreach ( $list as $playerId => $player ) {
+            $schemeId = $player['schemeId'];
             $scheme = $this->theah->getCardById($schemeId);
 
             // Run events that the scheme has been played to a location
