@@ -16,6 +16,10 @@ trait StatesTrait
         $this->gamestate->setAllPlayersMultiactive();
     }
 
+    public function stRunEvents() {
+        $this->theah->runEvents();
+    }
+
     public function stBuildDecks() {
         $this->buildDecks();
         $this->gamestate->nextState("");
@@ -39,7 +43,7 @@ trait StatesTrait
             $event->dayNumber = $day;
         }
         $this->theah->queueEvent($event);
-        $this->theah->runEvents();
+        $this->gamestate->nextState("");
     }
 
     public function stDawnBeginning() {
@@ -53,7 +57,7 @@ trait StatesTrait
         //Create the event
         $event = $this->theah->createEvent(Events::PhaseDawnBeginning);
         $this->theah->queueEvent($event);
-        $this->theah->runEvents();
+        $this->gamestate->nextState("");
     }
 
     public function stDawnCityCards() {
@@ -104,7 +108,7 @@ trait StatesTrait
             $this->theah->queueEvent($event);
         }
 
-        $this->theah->runEvents();
+        $this->gamestate->nextState("");
     }
 
     public function stDawnEnding() {
@@ -114,7 +118,7 @@ trait StatesTrait
         //Create the event
         $event = $this->theah->createEvent(Events::PhaseDawnEnding);
         $this->theah->queueEvent($event);
-        $this->theah->runEvents();
+        $this->gamestate->nextState("");
     }
 
     public function stPlanningPhaseBeginning()
@@ -131,7 +135,7 @@ trait StatesTrait
         //Create the Planning phase event
         $event = $this->theah->createEvent(Events::PhasePlanningBeginning);
         $this->theah->queueEvent($event);
-        $this->theah->runEvents();
+        $this->gamestate->nextState("");
     }
 
     public function stPlanningPhase() {
@@ -176,7 +180,7 @@ trait StatesTrait
             $this->theah->queueEvent($event);
         }
 
-        $this->theah->runEvents();
+        $this->gamestate->nextState("");
     }
 
     public function stPlanningPhaseDetermineFirstPlayer() {
@@ -217,7 +221,7 @@ trait StatesTrait
                 'playerId' => $highPlayerId
             ]);
 
-            $this->theah->runEvents();
+            $this->gamestate->nextState("");
             return;
         }
 
@@ -240,7 +244,7 @@ trait StatesTrait
                 'playerId' => $nextPlayerId
             ]);
 
-            $this->theah->runEvents();
+            $this->gamestate->nextState("");
             return;
         }
 
@@ -260,7 +264,7 @@ trait StatesTrait
             'playerId' => $firstPlayerId
         ]);
  
-        $this->theah->runEvents();
+        $this->gamestate->nextState("");
     }
 
     public function stPlanningPhaseResolveWhenRevealedCards() {
@@ -299,16 +303,16 @@ trait StatesTrait
 
         $this->notifyAllPlayers("resolveWhenRevealedCards", clienttranslate("Resolving any WHEN REVEALED effects on cards."), []);
 
-        $this->theah->runEvents();
+        $this->gamestate->nextState("");
     }
 
     public function stPlanningPhaseMuster() {
         // Muster the characters
         $this->notifyAllPlayers("muster", clienttranslate('All Players MUSTER their chosen Characters'), []);
 
-        //Determine if any players are over their crew cap limit
+        //TODO: Determine if any players are over their crew cap limit
 
-        $this->theah->runEvents();
+        $this->gamestate->nextState("");
     }
 
     public function stPlanningPhaseResolveSchemes() {
@@ -336,10 +340,6 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
-    public function stPlanningPhaseResolveSchemesEvents() {
-        $this->theah->runEvents();
-    }
-
     public function stHighDramaBeginning() {
         //Set the phase to high drama
         $turnPhase = Game::HIGH_DRAMA;
@@ -348,7 +348,8 @@ trait StatesTrait
         //Create the Planning phase event
         $event = $this->theah->createEvent(Events::PhaseHighDrama);
         $this->theah->queueEvent($event);
-        $this->theah->runEvents();
+        
+        $this->gamestate->nextState("");
     }
 
     public function stHighDramaPhase() {

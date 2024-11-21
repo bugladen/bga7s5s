@@ -77,7 +77,7 @@ $machinestates = [
 
     States::BUILD_TABLE => [
         "name" => "buildTable",
-        "description" => "Creating the City...",
+        "description" => clienttranslate("Creating the City..."),
         "type" => "game",
         "action" => "stBuildDecks",
         "transitions" => ["" => States::DAWN_NEW_DAY]
@@ -85,51 +85,79 @@ $machinestates = [
 
     States::DAWN_NEW_DAY => [
         "name" => "dawnNewDay",
-        "description" => "Preparing the City for the next full Day...",
+        "description" => clienttranslate("Preparing the City for the next full Day..."),
         "type" => "game",
         "action" => "stDawnNewDay",
-        "transitions" => [
-            "endOfEvents" => States::DAWN_BEGINNING
-        ]
+        "transitions" => ["" => States::DAWN_NEW_DAY_EVENTS]
     ],
+        States::DAWN_NEW_DAY_EVENTS => [
+            "name" => "dawnNewDayEvents",
+            "description" => clienttranslate("Resolving Events for the New Day..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => ["endOfEvents" => States::DAWN_BEGINNING]
+        ],
 
     States::DAWN_BEGINNING => [
         "name" => "dawnBeginning",
-        "description" => "The Dawn of a New Day...",
+        "description" => clienttranslate("The Beginning of Dawn..."),
         "type" => "game",
         "action" => "stDawnBeginning",
-        "transitions" => [
-            "endOfEvents" => States::DAWN_CITY_CARDS
-        ]
+        "transitions" => ["" => States::DAWN_BEGINNING_EVENTS]
     ],
+        States::DAWN_BEGINNING_EVENTS => [
+            "name" => "dawnBeginningEvents",
+            "description" => clienttranslate("Resolving Events for the Beginning of the Dawn..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => ["endOfEvents" => States::DAWN_CITY_CARDS]
+        ],
 
     States::DAWN_CITY_CARDS => [
         "name" => "dawnCityCards",
-        "description" => "Adding City Cards to the City Locations...",
+        "description" => clienttranslate("Adding City Cards to the City Locations..."),
         "type" => "game",
         "action" => "stDawnCityCards",
-        "transitions" => [
-            "endOfEvents" => States::DAWN_ENDING
-        ]
+        "transitions" => ["" => States::DAWN_CITY_CARDS_EVENTS]
     ],
+        States::DAWN_CITY_CARDS_EVENTS => [
+            "name" => "dawnCityCardsEvents",
+            "description" => clienttranslate("Resolving Events for the City Cards..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "endOfEvents" => States::DAWN_ENDING]
+        ],
 
     States::DAWN_ENDING => [
         "name" => "dawnEnding",
-        "description" => "Ending the Dawn Phase...",
+        "description" => clienttranslate("Ending the Dawn Phase..."),
         "type" => "game",
         "action" => "stDawnEnding",
-        "transitions" => [
-            "endOfEvents" => States::PLANNING_PHASE_BEGINNING
-        ]
+        "transitions" => ["" => States::DAWN_ENDING_EVENTS]
     ],
+        States::DAWN_ENDING_EVENTS => [
+            "name" => "dawnEndingEvents",
+            "description" => clienttranslate("Resolving Events for the End of the Dawn..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => ["endOfEvents" => States::PLANNING_PHASE_BEGINNING]
+        ],
 
     States::PLANNING_PHASE_BEGINNING => [
         "name" => "planningPhaseBeginning",
-        "description" => "Beginning the Planning Phase...",
+        "description" => clienttranslate("Beginning the Planning Phase..."),
         "type" => "game",
         "action" => "stPlanningPhaseBeginning",
-        "transitions" => ["endOfEvents" => States::PLANNING_PHASE]
+        "transitions" => ["" => States::PLANNING_PHASE_BEGINNING_EVENTS]
     ],
+        States::PLANNING_PHASE_BEGINNING_EVENTS => [
+            "name" => "planningPhaseBeginningEvents",
+            "description" => clienttranslate("Resolving Events for the Beginning of the Planning Phase..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => ["endOfEvents" => States::PLANNING_PHASE]
+        ],
 
     States::PLANNING_PHASE => [
         "name" => "planningPhase",
@@ -146,27 +174,48 @@ $machinestates = [
 
     States::PLANNING_PHASE_APPROACH_CARDS_PLAYED => [
         "name" => "planningPhaseApproachCardsPlayed",
-        "description" => "Approach Cards Played",
+        "description" => clienttranslate("Approach Cards Played"),
         "type" => "game",
         "action" => "stPlanningPhaseApproachCardsPlayed",
-        "transitions" => ["endOfEvents" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER]
+        "transitions" => ["" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS]
     ],
+        States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS => [
+            "name" => "planningPhaseApproachCardsPlayedEvents",
+            "description" => clienttranslate("Resolving Events for Approach Cards Played..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => ["endOfEvents" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER]
+        ],
 
     States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER => [
         "name" => "planningPhaseDetermineFirstPlayer",
-        "description" => "Determining the First Player",
+        "description" => clienttranslate("Determining the First Player"),
         "type" => "game",
         "action" => "stPlanningPhaseDetermineFirstPlayer",
-        "transitions" => ["endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS]
+        "transitions" => ["" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_EVENTS]
     ],
+        States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_EVENTS => [
+            "name" => "planningPhaseDetermineFirstPlayerEvents",
+            "description" => clienttranslate("Resolving Events for Determining the First Player..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => ["endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS]
+        ],
 
     States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS => [
         "name" => "planningPhaseResolveWhenRevealedCards",
-        "description" => "Resolving When Revealed Cards",
+        "description" => clienttranslate("Resolving When Revealed Cards"),
         "type" => "game",
         "action" => "stPlanningPhaseResolveWhenRevealedCards",
-        "transitions" => ["endOfEvents" => States::PLANNING_PHASE_MUSTER]
+        "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS]
     ],
+        States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS => [
+            "name" => "planningPhaseResolveWhenRevealedCardsEvents",
+            "description" => clienttranslate("Resolving Events for When Revealed Cards..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => ["endOfEvents" => States::PLANNING_PHASE_MUSTER]
+        ],
 
     States::PLANNING_PHASE_MUSTER 
     => [
@@ -174,28 +223,33 @@ $machinestates = [
         "description" => clienttranslate('Characters Mustered.'),
         "type" => "game",
         "action" => "stplanningPhaseMuster",
-        "transitions" => ["endOfEvents" => States::PLANNING_PHASE_RESOLVE_SCHEMES]
+        "transitions" => ["" => States::PLANNING_PHASE_MUSTER_EVENTS]
     ],
+        States::PLANNING_PHASE_MUSTER_EVENTS => [
+            "name" => "planningPhaseMusterEvents",
+            "description" => clienttranslate("Resolving Events for Mustered Characters"),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => ["endOfEvents" => States::PLANNING_PHASE_RESOLVE_SCHEMES]
+        ],
 
     States::PLANNING_PHASE_RESOLVE_SCHEMES => [
         "name" => "planningPhaseResolveSchemes",
-        "description" => "Resolving events created by played Schemes",
+        "description" => '',
         "type" => "game",
         "action" => "stPlanningPhaseResolveSchemes",
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
-
-    States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS => [
-        "name" => "planningPhaseResolveSchemesEvents",
-        "description" => "Resolve Schemes Events",
-        "type" => "game",
-        "action" => "stPlanningPhaseResolveSchemesEvents",
-        "transitions" => [
-            "pickTwoLocations" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS,
-            "endOfEvents" => States::HIGH_DRAMA_BEGINNING
-        ]
-    ],
-
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS => [
+            "name" => "planningPhaseResolveSchemesEvents",
+            "description" => clienttranslate("Resolving events for the Played Schemes..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "pickTwoLocations" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS,
+                "endOfEvents" => States::HIGH_DRAMA_BEGINNING
+            ]
+        ],
         States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS => [
             "name" => "planningPhaseResolveSchemesPickTwoLocations",
             "description" => clienttranslate('${actplayer} must choose two city locations to place Reknown onto.'),
@@ -210,15 +264,22 @@ $machinestates = [
 
     States::HIGH_DRAMA_BEGINNING => [
         "name" => "highDramaBeginning",
-        "description" => "High Drama Beginning",
+        "description" => clienttranslate("Beginning of High Drama..."),
         "type" => "game",
         "action" => "stHighDramaBeginning",
-        "transitions" => ["endOfEvents" => States::HIGH_DRAMA_PHASE]
+        "transitions" => ["" => States::HIGH_DRAMA_BEGINNING_EVENTS]
     ],
+        States::HIGH_DRAMA_BEGINNING_EVENTS => [
+            "name" => "highDramaBeginningEvents",
+            "description" => clienttranslate("Resolving Events for the Beginning of High Drama..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => ["endOfEvents" => States::HIGH_DRAMA_PHASE]
+        ],
 
     States::HIGH_DRAMA_PHASE => [
         "name" => "highDramaPhase",
-        "description" => "High Drama Phase",
+        "description" => clienttranslate("High Drama Phase"),
         "type" => "game",
         "action" => "stHighDramaPhase",
         "transitions" => ["" => States::PLAYER_TURN]
