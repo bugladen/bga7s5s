@@ -12,12 +12,10 @@ abstract class Event
     const HIGHEST_PRIORITY = 1;
 
     public Theah $theah;
-    public string $transition;
     public int $priority;
 
     public function __construct()
     {
-        $this->transition ="";
         $this->priority = Event::LOWEST_PRIORITY;
     }
 

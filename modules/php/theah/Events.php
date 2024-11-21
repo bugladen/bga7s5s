@@ -20,4 +20,6 @@ class Events
     const PlayerLosesReknown = 'EventPlayerLosesReknown';
     const ReknownAddedToCard = 'EventReknownAddedToCard';
     const ReknownAddedToLocation = 'EventReknownAddedToLocation';
+
+    const Transition = 'EventTransition';
 }

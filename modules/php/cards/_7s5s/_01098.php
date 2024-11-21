@@ -3,7 +3,9 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class _01098 extends Scheme
 {
@@ -37,14 +39,17 @@ class _01098 extends Scheme
             //Change the active player to the player who played the scheme.
             $event->theah->game->gamestate->changeActivePlayer($event->playerId);
 
-            //Transition to the state where player can choose two locations.
-            $event->transition = 'pickTwoLocations';
-
             $event->theah->game->notifyAllPlayers("schemeResolves", clienttranslate('${scheme_name} now resolves. ${player_name} must choose two city locations to place reknown onto.'), [
                 "scheme_name" => "<span style='font-weight:bold'>{$event->scheme->Name}</span>",
                 "player_name" => $event->playerName,
             ]);
 
-    }
+            //Transition to the state where player can choose two locations.
+            $transition = $event->theah->createEvent(Events::Transition);
+            if ($transition instanceof EventTransition) {
+                $transition->transition = 'pickTwoLocations';
+            }
+            $event->theah->queueEvent($transition);
+        }
     }
 }

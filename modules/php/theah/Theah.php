@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\DB;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Theah
 {
@@ -184,7 +185,7 @@ class Theah
                 }
             }
 
-            if ( ! empty($event->transition)) {
+            if ($event instanceof EventTransition) {                
                 $this->game->gamestate->nextState($event->transition);
                 return;
             }
