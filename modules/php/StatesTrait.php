@@ -363,6 +363,44 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
+    public function stPlanningPhaseDraw() {
+        // Draw cards
+        $this->notifyAllPlayers("drawCards", clienttranslate('All Players DRAW cards.'), []);
+
+        $this->theah->buildCity();
+        $players = $this->loadPlayersBasicInfos();
+        foreach ( $players as $playerId => $player ) {
+            //Get the player's leader
+            $leader = $this->theah->getLeaderByPlayerId($playerId);
+            //Get the modified panache value for the leader
+            if ($leader instanceof Leader) {
+                $panache = $leader->ModifiedPanache;
+            }
+
+            $cards = [];
+            $location = $this->getPlayerFactionDeckName($playerId);
+            for ($i = 0; $i < $panache; $i++) {
+                $cardInfo = $this->cards->pickCard($location, $playerId);
+                $card = $this->getCardObjectFromDb($cardInfo['id']);
+                $card->ControllerId = $playerId;
+                $card->OwnerId = $playerId;
+                $this->updateCardObjectInDb($card);
+
+                $cards[] = $card->getPropertyArray();
+            }
+
+            $cardList = implode(", ", array_map(function($card) { return $card['name']; }, $cards));
+            $this->notifyPlayer($playerId, "factionCardDraw", 
+                clienttranslate('Your panache value is: ${panache}.  As your draw you received: ${card_list}'), [
+                    "panache" => $panache,
+                    "card_list" => $cardList,
+                    "cards" => $cards
+                ]);
+    }
+
+        $this->gamestate->nextState("");
+    }
+
     public function stPlanningPhaseEnd() {
         //Notify players that it is planning phase end
         $this->notifyAllPlayers("planningPhaseEnd", clienttranslate('<span style="font-weight:bold">PLANNING PHASE END</span>.'), []);

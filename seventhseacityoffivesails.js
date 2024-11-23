@@ -245,9 +245,23 @@ function (dojo, declare) {
             dojo.connect( this.approachDeck, 'onChangeSelection', this, 'onApproachCardSelected' );
             // For each card in the approach deck, create a stock item
             gamedatas.approachDeck.forEach((card) => {
-                this.addCardToApproachDeck(card);
+                this.addCardToDeck(this.approachDeck, card);
             });
             this.approachDeck.setSelectionMode(0);
+
+            // Create the faction hand
+            this.factionHand = new ebg.stock();
+            this.factionHand.create( this, $('factionHand'), this.wholeCardWidth, this.wholeCardHeight ); 
+            this.factionHand.image_items_per_row = 0;
+            this.factionHand.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
+            this.factionHand.onItemCreate = dojo.hitch( this, 'setupNewStockApproachCard' ); 
+            this.factionHand.setSelectionAppearance( 'class' )
+            dojo.connect( this.factionHand, 'onChangeSelection', this, 'onFactionCardSelected' );
+            // For each card in the approach deck, create a stock item
+            gamedatas.factionCards.forEach((card) => {
+                this.addCardToDeck(this.factionHand, card);
+            });
+            this.factionHand.setSelectionMode(0);
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -657,18 +671,19 @@ function (dojo, declare) {
         },    
 
         // Utlity functions
-        addCardToApproachDeck: function( card )
+
+        addCardToDeck: function( deck, card )
         {
             this.cardProperties[card.id] = card;
 
             //Different weight depending on the type. Scheme cards go first
-            const weight = card.type === "Scheme" ? 1 : 2;
+            const weight = card.type === "Scheme" || card.type === 'Attachment'? 1 : 2;
 
             //Each card is a different image, so would be considered a different type for the stock object
-            this.approachDeck.addItemType(card.id, weight, g_gamethemeurl + card.image, 0);
+            deck.addItemType(card.id, weight, g_gamethemeurl + card.image, 0);
 
             // Type and id are the same for the approach deck stock object
-            this.approachDeck.addToStockWithId(card.id, card.id);
+            deck.addToStockWithId(card.id, card.id);
         },
 
         setupNewStockApproachCard: function( cardDiv, cardTypeId, cardId )
@@ -700,6 +715,12 @@ function (dojo, declare) {
                 dojo.addClass('actEndPlanningPhase', 'disabled');
             }
         },
+
+        onFactionCardSelected: function( control_name, item_id )
+        {
+            var items = this.factionHand.getSelectedItems();
+        },
+
         
         ///////////////////////////////////////////////////
         //// Reaction to cometD notifications
@@ -730,6 +751,7 @@ function (dojo, declare) {
                 ['playerReknownUpdated', 500],
                 ['reknownUpdatedOnCard', 500],
                 ['reknownAddedToLocation', 500],
+                ['factionCardDraw', 1000],
             ];
     
             notifs.forEach((notif) => {
@@ -814,7 +836,17 @@ function (dojo, declare) {
             console.log( notif );
 
             notif.args.cards.forEach((card) => {
-                this.addCardToApproachDeck(card);
+                this.addCardToDeck(this.approachDeck, card);
+            });            
+        },
+
+        notif_factionCardDraw: function( notif )
+        {
+            console.log( 'notif_factionCardDraw' );
+            console.log( notif );
+
+            notif.args.cards.forEach((card) => {
+                this.addCardToDeck(this.factionHand, card);
             });            
         },
 

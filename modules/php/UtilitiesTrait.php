@@ -56,4 +56,8 @@ trait UtilitiesTrait
         return "Reknown_" . $location;
     }
 
+    function getPlayerFactionDeckName($playerId) {
+        return "Faction-$playerId";
+    }
+
 }

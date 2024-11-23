@@ -197,4 +197,10 @@ var jstpl_reknown_chip = `
     </div>
 </div>
 
+<div class="whiteblock hand">
+    <div><b>Your Faction Hand</b></div>
+    <div id="factionHand">
+    </div>
+</div>
+
 {OVERALL_GAME_FOOTER}

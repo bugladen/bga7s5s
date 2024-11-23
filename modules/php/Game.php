@@ -41,6 +41,7 @@ class Game extends \Table
     final const LOCATION_CITY_GOVERNORS_GARDEN = "Governor's Garden";
     final const LOCATION_PLAYER_HOME = 'Player Home';
     final const LOCATION_APPROACH = 'Approach';
+    final const LOCATION_HAND = 'hand';
     final const LOCATION_PURGATORY = 'Purgatory';
 
     //Global variable names
@@ -181,6 +182,7 @@ class Game extends \Table
         $result["bazaarCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_BAZAAR);
         $result["gardenCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_GOVERNORS_GARDEN);
         $result["approachDeck"] = $this->theah->getApproachCards($currentPlayerId);
+        $result["factionCards"] = $this->theah->getFactionCards($currentPlayerId);
         $result["locationReknown"] = $this->theah->getCityLocationReknown();
 
         return $result;

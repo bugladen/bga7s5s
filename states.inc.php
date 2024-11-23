@@ -247,7 +247,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "pickTwoLocations" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS,
-                "endOfEvents" => States::PLANNING_PHASE_END
+                "endOfEvents" => States::PLANNING_PHASE_DRAW
             ]
         ],
         States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS => [
@@ -261,6 +261,13 @@ $machinestates = [
             ],
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
+    States::PLANNING_PHASE_DRAW => [
+        "name" => "planningPhaseDraw",
+        "description" => '',
+        "type" => "game",
+        "action" => "stPlanningPhaseDraw",
+        "transitions" => ["" => States::PLANNING_PHASE_END]
+    ],
 
     States::PLANNING_PHASE_END => [
         "name" => "planningPhaseEnd",
