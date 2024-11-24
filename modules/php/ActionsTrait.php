@@ -38,12 +38,6 @@ trait ActionsTrait
 
         $locations = json_decode($locations, true);
         foreach ($locations as $location) {
-            $locationReknownName = $this->getReknownLocationName($location);
-
-            //Update the reknown for the location in the database
-            $reknown = $this->globals->get($locationReknownName) + 1;
-            $this->globals->set($locationReknownName, $reknown);
-
             $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
             if ($event instanceof EventReknownAddedToLocation) {
                 $event->location = $location;

@@ -679,3 +679,7 @@ body {
 	border: 3px solid lime !important;
     transform: translateX(-3px) translateY(-2px);
 }
+
+.spectatorMode #approachDeck-container #factionHand-container {
+    display: none;
+}

@@ -26,7 +26,7 @@ class _01100 extends FactionAttachment
         $this->Thrust = 2;
 
         $this->Traits = [
-            'Tricket',
+            'Trinket',
             'Unique',
         ];
     }

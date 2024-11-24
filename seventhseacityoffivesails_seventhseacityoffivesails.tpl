@@ -191,13 +191,13 @@ var jstpl_reknown_chip = `
 
 <div id="home_anchor"></div>
 
-<div class="whiteblock hand">
+<div id="approachDeck-container" class="whiteblock hand">
     <div><b>Your Approach Deck</b></div>
     <div id="approachDeck">
     </div>
 </div>
 
-<div class="whiteblock hand">
+<div id="factionHand-container" class="whiteblock hand">
     <div><b>Your Faction Hand</b></div>
     <div id="factionHand">
     </div>
