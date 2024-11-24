@@ -60,4 +60,8 @@ trait UtilitiesTrait
         return "Faction-$playerId";
     }
 
+    function getGameDeckObject() {
+        return $this->cards;
+    }
+
 }

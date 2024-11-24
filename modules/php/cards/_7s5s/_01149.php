@@ -3,6 +3,12 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 class _01149 extends Scheme
 {
@@ -23,5 +29,53 @@ class _01149 extends Scheme
             "Logistics", 
             "Market",
         ];
+    }
+
+    public function handleEvent($event)
+    {
+        parent::handleEvent($event);
+
+        //When this scheme resolves, add 1 reknown to the City Docks and the Bazaar, then add a card to the City Docks
+        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
+
+            $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
+            if ($reknown instanceof EventReknownAddedToLocation) {
+                $reknown->location = Game::LOCATION_CITY_DOCKS;
+                $reknown->amount = 1;
+                $reknown->priority = Event::HIGH_PRIORITY;
+                $reknown->source = $this->Name;
+            }
+            $event->theah->queueEvent($reknown);
+
+            $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
+            if ($reknown instanceof EventReknownAddedToLocation) {
+                $reknown->location = Game::LOCATION_CITY_BAZAAR;
+                $reknown->amount = 1;
+                $reknown->priority = Event::HIGH_PRIORITY;
+                $reknown->source = $this->Name;
+            }
+            $event->theah->queueEvent($reknown);
+
+            $game = $event->theah->game;
+            $deck = $game->getGameDeckObject();
+            
+            $cityCard = $deck->getCardOnTop(Game::LOCATION_CITY_DECK);
+            $deck->moveCard($cityCard['id'], Game::LOCATION_CITY_DOCKS);
+            $card = $game->getCardObjectFromDb($cityCard['id']);
+
+            //Notify players that it is dawn beginning
+            $game->notifyAllPlayers("01149AddCityCard", clienttranslate('${card_name} will add a City card to the Docks'), [
+                "card_name" => $this->Name,
+            ]);
+
+            //Create the event
+            $newCard = $event->theah->createEvent(Events::CityCardAddedToLocation);
+            if ($newCard instanceof EventCityCardAddedToLocation) {
+                $newCard->card = $card;
+                $newCard->location = Game::LOCATION_CITY_DOCKS;
+                $newCard->priority = Event::HIGH_PRIORITY;
+            }
+            $event->theah->queueEvent($newCard);
+        }
     }
 }
