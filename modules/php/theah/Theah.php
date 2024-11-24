@@ -202,6 +202,9 @@ class Theah
             }
 
             if ($event instanceof EventTransition) {                
+                if($event->getPlayerId()) {
+                    $this->game->gamestate->changeActivePlayer($event->getPlayerId());
+                }
                 $this->game->gamestate->nextState($event->transition);
                 return;
             }

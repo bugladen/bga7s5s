@@ -36,18 +36,16 @@ class _01098 extends Scheme
         //These two locations will each get one Reknown.
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            //Change the active player to the player who played the scheme.
-            $event->theah->game->gamestate->changeActivePlayer($event->playerId);
-
             $event->theah->game->notifyAllPlayers("schemeResolves", clienttranslate('${scheme_name} now resolves. ${player_name} must choose two city locations to place reknown onto.'), [
-                "scheme_name" => "<span style='font-weight:bold'>{$event->scheme->Name}</span>",
+                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $event->playerName,
             ]);
 
             //Transition to the state where player can choose two locations.
             $transition = $event->theah->createEvent(Events::Transition);
             if ($transition instanceof EventTransition) {
-                $transition->transition = 'pickTwoLocations';
+                $transition->playerId = $event->playerId;
+                $transition->transition = 'pickTwoLocationsForReknown';
             }
             $event->theah->queueEvent($transition);
         }

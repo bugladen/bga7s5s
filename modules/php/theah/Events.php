@@ -16,7 +16,6 @@ class Events
     const SchemeCardRevealed = 'EventSchemeCardRevealed';
     const ResolveScheme = 'EventResolveScheme';
 
-    const AddReknownToTwoDifferentLocations = 'EventAddReknownToTwoDifferentLocations';
     const PlayerLosesReknown = 'EventPlayerLosesReknown';
     const ReknownAddedToCard = 'EventReknownAddedToCard';
     const ReknownAddedToLocation = 'EventReknownAddedToLocation';
