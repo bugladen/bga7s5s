@@ -326,6 +326,25 @@ function (dojo, declare) {
                     this.approachDeck.setSelectionMode(2);
                     break;
 
+                case 'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone':
+                    if (this.isCurrentPlayerActive()) {
+                        const locations = this.getListofAvailableCityLocationImages();
+                        locations.forEach((location) => {
+                            const imageElement = $(location);
+                            const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+                            const reknown = parseInt(reknownElement.innerHTML);
+                            if (reknown > 0) return;
+                
+                            dojo.addClass(location, 'selectable');
+                            dojo.style(location, 'cursor', 'pointer');
+    
+                            this.numberOfCityLocationsSelectable = 1;
+                            const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                            this.connects.push(handle);
+                        });
+                    }
+                    break;
+
                 case 'planningPhaseResolveSchemes_PickOneLocationForReknown':
                     if (this.isCurrentPlayerActive()) {
                         const locations = this.getListofAvailableCityLocationImages();
@@ -394,6 +413,7 @@ function (dojo, declare) {
                 case 'planningPhase':
                     this.approachDeck.setSelectionMode(0);
                     break;
+                case 'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone':
                 case 'planningPhaseResolveSchemes_PickOneLocationForReknown':
                 case 'planningPhaseResolveSchemes_PickTwoLocationsForReknown':
                 case 'planningPhaseResolveSchemes_01150':
@@ -444,6 +464,7 @@ function (dojo, declare) {
                         dojo.addClass('actCityLocationsSelected', 'disabled');
                         break;
 
+                    case 'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone':
                     case 'planningPhaseResolveSchemes_01150':
                         this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                         this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
@@ -648,6 +669,7 @@ function (dojo, declare) {
         onCityLocationsSelected: function() {
             let act = '';
             switch (this.gamedatas.gamestate.name) {
+                case 'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone':
                 case 'planningPhaseResolveSchemes_PickOneLocationForReknown':
                 case 'planningPhaseResolveSchemes_PickTwoLocationsForReknown':
                     act = 'actCityLocationsForReknownSelected';
