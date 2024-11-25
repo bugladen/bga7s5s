@@ -2,7 +2,13 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class _01150 extends Scheme
 {
@@ -20,8 +26,45 @@ class _01150 extends Scheme
         $this->PanacheModifier = 1;
 
         $this->Traits = [
-            "Fued", 
+            "Feud", 
             "Provocation",
         ];
+    }
+
+    public function handleEvent($event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
+
+            $game = $event->theah->game;
+
+            $game->notifyAllPlayers("schemeResolves", clienttranslate('${scheme_name} now resolves. A Reknown will be added to the The Forum.  Opponents MAY then choose a city location. One Reknown will move from chosen location to The Forum.'), [
+                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+            ]);
+
+            $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
+            if ($reknown instanceof EventReknownAddedToLocation) {
+                $reknown->location = Game::LOCATION_CITY_FORUM;
+                $reknown->amount = 1;
+                $reknown->priority = Event::HIGH_PRIORITY;
+                $reknown->source = $this->Name;
+            }
+            $event->theah->queueEvent($reknown);
+
+            $players = $game->loadPlayersBasicInfos();
+
+            //For each opponent, create an event
+            foreach ($players as $playerId => $player) {
+                if ($player['player_id'] == $this->OwnerId) continue;
+
+                $transition = $event->theah->createEvent(Events::Transition);
+                if ($transition instanceof EventTransition) {
+                    $transition->playerId = $playerId;
+                    $transition->transition = '01150';
+                }
+                $event->theah->queueEvent($transition);
+            }
+        }
     }
 }

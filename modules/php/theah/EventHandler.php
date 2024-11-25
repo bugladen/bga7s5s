@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocatio
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 
 trait EventHandler
@@ -92,11 +93,31 @@ trait EventHandler
                 $this->cityLocations[$event->location]->Reknown += $event->amount;
 
                 // Notify players that the player has lost reknown
-                $this->game->notifyAllPlayers("reknownAddedToLocation", clienttranslate('${amount} reknown added to ${location} ${source}.'), [
+                $this->game->notifyAllPlayers("reknownAddedToLocation", clienttranslate('${amount} reknown ADDED to ${location} ${source}.'), [
                     "location" => $event->location,
                     "amount" => $event->amount,
                     "source" => empty($event->source) ? "" : "from {$event->source}",
                 ]);
+
+                break;
+
+            case $event instanceof EventReknownRemovedFromLocation:
+
+                //Update the reknown for the location in the database
+                $locationReknownName = $this->game->getReknownLocationName($event->location);
+                $reknown = $this->game->globals->get($locationReknownName) - $event->amount;
+                $this->game->globals->set($locationReknownName, $reknown);
+
+                $this->cityLocations[$event->location]->Reknown -= $event->amount;
+
+                // Notify players that the player has lost reknown
+                $this->game->notifyAllPlayers("reknownRemovedFromLocation", clienttranslate('${amount} reknown REMOVED from ${location} ${source}.'), [
+                    "location" => $event->location,
+                    "amount" => $event->amount,
+                    "source" => empty($event->source) ? "" : "from {$event->source}",
+                ]);
+
+                break;
         }
     }
 }

@@ -326,7 +326,7 @@ function (dojo, declare) {
                     this.approachDeck.setSelectionMode(2);
                     break;
 
-                case 'planningPhaseResolveSchemesPickTwoLocations':
+                case 'planningPhaseResolveSchemesPickTwoLocationsForReknown':
                     if (this.isCurrentPlayerActive()) {
                         const locations = this.getListofAvailableCityLocationImages();
                         locations.forEach((location) => {
@@ -334,6 +334,27 @@ function (dojo, declare) {
                             dojo.style(location, 'cursor', 'pointer');
     
                             this.numberOfCityLocationsSelectable = 2;
+                            const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                            this.connects.push(handle);
+                        });
+                    }
+                    break;
+
+                case 'planningPhaseResolveSchemes_01150':
+                    if (this.isCurrentPlayerActive()) {
+                        const locations = this.getListofAvailableCityLocationImages();
+                        locations.forEach((location) => {
+                            if (location == 'forum-image') return;
+
+                            const imageElement = $(location);
+                            const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+                            const reknown = parseInt(reknownElement.innerHTML);
+                            if (reknown === 0) return;
+                
+                            dojo.addClass(location, 'selectable');
+                            dojo.style(location, 'cursor', 'pointer');
+    
+                            this.numberOfCityLocationsSelectable = 1;
                             const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
                             this.connects.push(handle);
                         });
@@ -359,7 +380,8 @@ function (dojo, declare) {
                 case 'planningPhase':
                     this.approachDeck.setSelectionMode(0);
                     break;
-                case 'planningPhaseResolveSchemesPickTwoLocations':
+                case 'planningPhaseResolveSchemesPickTwoLocationsForReknown':
+                case 'planningPhaseResolveSchemes_01150':
                     const locations = this.getListofAvailableCityLocationImages();
                     locations.forEach((location) => {
                         dojo.removeClass(location, 'selectable');
@@ -397,8 +419,14 @@ function (dojo, declare) {
                         dojo.addClass('actEndPlanningPhase', 'disabled');
                         break;
 
-                    case 'planningPhaseResolveSchemesPickTwoLocations':
+                    case 'planningPhaseResolveSchemesPickTwoLocationsForReknown':
                         this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
+                        dojo.addClass('actCityLocationsSelected', 'disabled');
+                        break;
+
+                    case 'planningPhaseResolveSchemes_01150':
+                        this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                        this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
                         dojo.addClass('actCityLocationsSelected', 'disabled');
                         break;
 
@@ -598,12 +626,19 @@ function (dojo, declare) {
         },    
 
         onCityLocationsSelected: function() {
+            let act = '';
+            switch (this.gamedatas.gamestate.name) {
+                case 'planningPhaseResolveSchemesPickTwoLocationsForReknown':
+                    act = 'actCityLocationsForReknownSelected';
+                    break;
 
-            //For each element in selectedCityLocations, create an array from map the element's data-location attribute 
+                case 'planningPhaseResolveSchemes_01150':
+                    act = 'actPlanningPhase_01150';
+                    break;
+            }
+
             const locations = this.selectedCityLocations.map((loc) => $(loc).getAttribute('data-location'));
-            console.log(locations);
-
-            this.bgaPerformAction("actCityLocationsForReknownSelected", { 
+            this.bgaPerformAction(act, { 
                 'locations': JSON.stringify(locations),
             }).then(() =>  {                
                 // What to do after the server call if it succeeded
@@ -631,6 +666,14 @@ function (dojo, declare) {
                 }).then(() =>  {                
                     // What to do after the server call if it succeeded
                 });        
+        },
+
+        onPass: function()
+        {
+            this.bgaPerformAction("actPass", { 
+            }).then(() =>  {                
+                // What to do after the server call if it succeeded
+            });
         },
 
         onCityLocationClicked: function( event )
@@ -751,6 +794,7 @@ function (dojo, declare) {
                 ['playerReknownUpdated', 500],
                 ['reknownUpdatedOnCard', 500],
                 ['reknownAddedToLocation', 500],
+                ['reknownRemovedFromLocation', 500],
                 ['factionCardDraw', 1000],
             ];
     
@@ -937,7 +981,22 @@ function (dojo, declare) {
             const imageElement = dojo.query(`[data-location="${args.location}"]`)[0];
             //Find the element with the class city-reknown-chip that is a child of the element's parent
             const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
-            reknownElement.innerHTML = args.amount;
+            const reknown = parseInt(reknownElement.innerHTML) + args.amount;
+            reknownElement.innerHTML = reknown;
+        },
+
+        notif_reknownRemovedFromLocation: function( notif )
+        {
+            console.log( 'notif_reknownRemovedFromLocation' );
+            console.log( notif );
+
+            const args = notif.args;
+            //Find the image element with the attribute data-location that matches arg.location
+            const imageElement = dojo.query(`[data-location="${args.location}"]`)[0];
+            //Find the element with the class city-reknown-chip that is a child of the element's parent
+            const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+            const reknown = parseInt(reknownElement.innerHTML) - args.amount;
+            reknownElement.innerHTML = reknown;
         },
 
         notif_firstPlayer: function( notif )

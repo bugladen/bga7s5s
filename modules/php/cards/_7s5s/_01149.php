@@ -35,10 +35,9 @@ class _01149 extends Scheme
     {
         parent::handleEvent($event);
 
-        //When this scheme resolves, add 1 reknown to the City Docks and the Bazaar, then add a card to the City Docks
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notifyAllPlayers("schemeResolves", clienttranslate('${scheme_name} now resolves.  Reknown will be added to The City Docks and The Bazaar.  A new City Card will be added to the City Docks.'), [
+            $event->theah->game->notifyAllPlayers("schemeResolves", clienttranslate('${scheme_name} now resolves.  Reknown will be added to The Docks and The Bazaar.  A new City Card will be added to The Docks.'), [
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
             ]);
 

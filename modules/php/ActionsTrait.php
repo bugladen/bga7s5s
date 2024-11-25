@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 
 trait ActionsTrait
 {
@@ -51,6 +52,35 @@ trait ActionsTrait
         $this->gamestate->nextState("");
     }
 
+    public function actPlanningPhase_01150(string $locations)
+    {
+        $this->theah->buildCity();
+
+        $playerName = $this->getActivePlayerName();
+
+        $locations = json_decode($locations, true);
+        $location = array_shift($locations);
+        $event = $this->theah->createEvent(Events::ReknownRemovedFromLocation);
+        if ($event instanceof EventReknownRemovedFromLocation) {
+            $event->location = $location;
+            $event->amount = 1;
+            $event->priority = Event::HIGH_PRIORITY;
+            $event->source = $playerName;
+        }
+        $this->theah->queueEvent($event);
+
+        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
+        if ($event instanceof EventReknownAddedToLocation) {
+            $event->location = Game::LOCATION_CITY_FORUM;
+            $event->amount = 1;
+            $event->priority = Event::HIGH_PRIORITY;
+            $event->source = $playerName;
+        }
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState("");
+    }
+
     public function actPlayCard(int $card_id): void
     {
         // Retrieve the active player ID.
@@ -85,12 +115,12 @@ trait ActionsTrait
         $player_id = (int)$this->getActivePlayerId();
 
         // Notify all players about the choice to pass.
-        $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} passes'), [
+        $this->notifyAllPlayers("playerPasses", clienttranslate('${player_name} passes.'), [
             "player_id" => $player_id,
             "player_name" => $this->getActivePlayerName(),
         ]);
 
         // at the end of the action, move to the next state
-        $this->gamestate->nextState("pass");
+        $this->gamestate->nextState("");
     }
 }

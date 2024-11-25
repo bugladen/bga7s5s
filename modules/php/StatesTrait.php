@@ -387,6 +387,7 @@ trait StatesTrait
                 $this->updateCardObjectInDb($card);
 
                 $cards[] = $card->getPropertyArray();
+                unset($card);
             }
 
             $cardList = implode(", ", array_map(function($card) { return $card['name']; }, $cards));
@@ -427,6 +428,8 @@ trait StatesTrait
     public function stHighDramaPhase() {
         //Notify players that it is high drama phase
         $this->notifyAllPlayers("highDramaPhase", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), []);
+       
+        $this->gamestate->changeActivePlayer($this->globals->get("firstPlayer"));
         $this->gamestate->nextState("");
     }
 
