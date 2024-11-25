@@ -138,7 +138,7 @@ trait DeckTrait
     }
 
     // Only methods that are used in the DeckTrait should be using this method.  
-    // Otherwise, create an even and let Theah handle it.
+    // Otherwise, create an event and let Theah handle it.
     private function updateCardObjectInDb($card) {
         $serialized = addslashes(serialize($card));
         $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $card->Id";

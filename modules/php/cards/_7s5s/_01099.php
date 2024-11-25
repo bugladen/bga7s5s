@@ -37,7 +37,7 @@ class _01099 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notifyAllPlayers("schemeResolves", clienttranslate('${scheme_name} now resolves. Reknown will be added to The Docks'), [
+            $event->theah->game->notifyAllPlayers("schemeResolvesMessage", clienttranslate('${scheme_name} now resolves. Reknown will be added to The Docks'), [
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
             ]);
 

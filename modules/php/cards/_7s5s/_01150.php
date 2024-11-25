@@ -39,7 +39,7 @@ class _01150 extends Scheme
 
             $game = $event->theah->game;
 
-            $game->notifyAllPlayers("schemeResolves", clienttranslate('${scheme_name} now resolves. A Reknown will be added to the The Forum.  Opponents MAY then choose a city location. One Reknown will move from chosen location to The Forum.'), [
+            $game->notifyAllPlayers("schemeResolvesMessage", clienttranslate('${scheme_name} now resolves. A Reknown will be added to the The Forum.  Opponents MAY then choose a city location. One Reknown will move from chosen location to The Forum.'), [
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
             ]);
 

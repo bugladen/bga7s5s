@@ -108,6 +108,7 @@ trait StatesTrait
                 $event->location = $location;
             }
             $this->theah->queueEvent($event);
+            unset($card);
         }
 
         $this->gamestate->nextState("");
