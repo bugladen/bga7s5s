@@ -3,6 +3,9 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class _01071 extends Scheme
 {
@@ -25,5 +28,27 @@ class _01071 extends Scheme
             "Duty",
             "Glory",
         ];
+    }
+
+    public function handleEvent($event)
+    {
+        parent::handleEvent($event);
+
+        //These two locations will each get one Reknown.
+        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
+
+            $event->theah->game->notifyAllPlayers("schemeResolves", clienttranslate('${scheme_name} now resolves. ${player_name} must choose a city location to place reknown onto.'), [
+                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+                "player_name" => $event->playerName,
+            ]);
+
+            //Transition to the state where player can choose two locations.
+            $transition = $event->theah->createEvent(Events::Transition);
+            if ($transition instanceof EventTransition) {
+                $transition->playerId = $event->playerId;
+                $transition->transition = 'pickOneLocationForReknown';
+            }
+            $event->theah->queueEvent($transition);
+        }
     }
 }
