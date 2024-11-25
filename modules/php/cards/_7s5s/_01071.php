@@ -34,7 +34,6 @@ class _01071 extends Scheme
     {
         parent::handleEvent($event);
 
-        //These two locations will each get one Reknown.
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
             $event->theah->game->notifyAllPlayers("schemeResolves", clienttranslate('${scheme_name} now resolves. ${player_name} must choose a city location to place reknown onto.'), [

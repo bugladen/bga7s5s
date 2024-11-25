@@ -246,6 +246,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "pickOneLocationForReknownWithNone" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_ONE_LOCATION_FOR_REKNOWN_WITH_NONE,
                 "pickOneLocationForReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_ONE_LOCATION_FOR_REKNOWN,
                 "pickTwoLocationsForReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS_FOR_REKNOWN,
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
@@ -260,6 +261,17 @@ $machinestates = [
             "args" => "argEmpty",
             "possibleactions" => [
                 "actPlanningPhase_01150", "actPass" 
+            ],
+            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+        ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_ONE_LOCATION_FOR_REKNOWN_WITH_NONE => [
+            "name" => "planningPhaseResolveSchemes_PickOneLocationForReknownWithNone",
+            "description" => clienttranslate('${actplayer} must choose a city location to place Reknown onto that doesn\'t have any.'),
+            "descriptionmyturn" => clienttranslate('${you} must choose a city location to place Reknown onto that doesn\'t have any.'),
+            "type" => "activeplayer",
+            "args" => "argEmpty",
+            "possibleactions" => [
+                "actCityLocationsForReknownSelected", 
             ],
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
