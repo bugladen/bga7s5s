@@ -127,7 +127,7 @@ function (dojo, declare) {
                 });
                 this.addTooltipHtml( `${playerId}-score-reknown`, `<div class='basic-tooltip'>${_('Current Reknown')}</div>` );
                 this.addTooltipHtml( `${playerId}-score-crewcap`, `<div class='basic-tooltip'>${_('Current Crew Cap')}</div>` );
-                this.addTooltipHtml( `${playerId}-score-panache`, `<div class='basic-tooltip'>${_('Current Leader Panache')}</div>` );
+                this.addTooltipHtml( `${playerId}-score-panache`, `<div class='basic-tooltip'>${_('Current Panache')}</div>` );
 
                 //Display only if we are out of pre-game setup
                 if (gamedatas.turnPhase > 0) {
@@ -258,7 +258,7 @@ function (dojo, declare) {
             this.factionHand.setSelectionAppearance( 'class' )
             dojo.connect( this.factionHand, 'onChangeSelection', this, 'onFactionCardSelected' );
             // For each card in the approach deck, create a stock item
-            gamedatas.factionCards.forEach((card) => {
+            gamedatas.factionHand.forEach((card) => {
                 this.addCardToDeck(this.factionHand, card);
             });
             this.factionHand.setSelectionMode(0);
@@ -495,8 +495,8 @@ function (dojo, declare) {
 
             this.addTooltipHtml( `${playerId}-crewcap`, `<div class='basic-tooltip'>${_('Current Crew Capacity')}</div>` );
             this.addTooltipHtml( `${playerId}-discard`, `<div class='basic-tooltip'>${_('Faction Deck Discard Pile')}</div>` );
-            this.addTooltipHtml( `${playerId}-locker`, `<div class='basic-tooltip'>${_('Player Locker Pile')}</div>` );
-            this.addTooltipHtml( `${playerId}-panache`, `<div class='basic-tooltip'>${_('Current Leader Panache')}</div>` );
+            this.addTooltipHtml( `${playerId}-locker`, `<div class='basic-tooltip'>${_('Player Locker')}</div>` );
+            this.addTooltipHtml( `${playerId}-panache`, `<div class='basic-tooltip'>${_('Current Panache')}</div>` );
         },
 
         getCardPropertiesByDivId: function( divId )

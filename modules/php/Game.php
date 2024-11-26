@@ -182,7 +182,7 @@ class Game extends \Table
         $result["bazaarCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_BAZAAR);
         $result["gardenCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_GOVERNORS_GARDEN);
         $result["approachDeck"] = $this->theah->getApproachCards($currentPlayerId);
-        $result["factionCards"] = $this->theah->getFactionCards($currentPlayerId);
+        $result["factionHand"] = $this->theah->getFactionHand($currentPlayerId);
         $result["locationReknown"] = $this->theah->getCityLocationReknown();
 
         return $result;

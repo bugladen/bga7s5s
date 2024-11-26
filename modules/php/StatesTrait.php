@@ -91,8 +91,7 @@ trait StatesTrait
                 //Get the first card in the array
                 $cityCard = array_shift($cityCard);
                 
-                //Remove the debug value
-                
+                //Remove the debug value                
                 $this->globals->delete(Game::DEBUG_INCLUDE_CITY_CARD);
             } else {
                 $cityCard = $this->cards->getCardOnTop(Game::LOCATION_CITY_DECK);

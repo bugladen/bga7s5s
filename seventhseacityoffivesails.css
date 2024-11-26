@@ -680,6 +680,6 @@ body {
     transform: translateX(-3px) translateY(-2px);
 }
 
-.spectatorMode #approachDeck-container #factionHand-container {
+.spectatorMode #approachDeck #approachDeck-container #factionHand #factionHand-container {
     display: none;
 }

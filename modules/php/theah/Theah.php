@@ -14,7 +14,7 @@ class Theah
     public Game $game;
     private array $cards;
     private array $approachCards;
-    private array $factionCards;
+    private array $factionHand;
     private array $purgatoryCards;
     private array $cityLocations;
     private bool $isLoaded;
@@ -28,7 +28,7 @@ class Theah
         $this->cards = [];
         $this->cityLocations = [];
         $this->approachCards = [];
-        $this->factionCards = [];
+        $this->factionHand = [];
         $this->purgatoryCards = [];
         $this->isLoaded = false;
         $this->db = new DB();
@@ -51,7 +51,7 @@ class Theah
         $this->cards += $this->db->getCardObjectsAtLocation(addslashes(Game::LOCATION_CITY_GOVERNORS_GARDEN));
 
         $this->approachCards = $this->db->getCardObjectsAtLocation(Game::LOCATION_APPROACH);
-        $this->factionCards = $this->db->getCardObjectsAtLocation(Game::LOCATION_HAND);
+        $this->factionHand = $this->db->getCardObjectsAtLocation(Game::LOCATION_HAND);
         $this->purgatoryCards = $this->db->getCardObjectsAtLocation(Game::LOCATION_PURGATORY);
 
         $this->isLoaded = true;
@@ -99,10 +99,10 @@ class Theah
         return $cards;
     }
 
-    public function getFactionCards($playerId)
+    public function getfactionHand($playerId)
     {
         $cards = [];
-        foreach ($this->factionCards as $card) {
+        foreach ($this->factionHand as $card) {
             if ($card->ControllerId != $playerId) {
                 continue;
             }
