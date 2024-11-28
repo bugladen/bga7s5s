@@ -43,11 +43,6 @@ abstract class Card
         // Do nothing by default
     }
 
-    public function immediateEffect($theah)
-    {
-        // Do nothing by default
-    }
-
     public function getPropertyArray()
     {
         $properties = [

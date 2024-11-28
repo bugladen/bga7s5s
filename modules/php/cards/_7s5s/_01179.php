@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityEventCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
 
@@ -23,46 +24,44 @@ class _01179 extends CityEventCard
         $this->CityCardNumber = 3;
     }
 
-    public function immediateEffect($theah)
-    {
-        parent::immediateEffect($theah);
-
-        $game = $theah->game;
-
-        //Each player will contribute a reknown to this card, if they have any
-        $players = $game->loadPlayersBasicInfos();
-        foreach ($players as $playerId => $player) {
-
-            // Notify players that the player has lost reknown
-            $game->notifyAllPlayers("sirensScream", clienttranslate(
-                'Siren\'s Scream effect triggers. All players will transfer 1 Reknown to the card if able.'), []);
-            $reknown = $game->getPlayerReknown($playerId);
-            if ($reknown > 0) {
-
-                //Player loses 1 reknown
-                $event = $theah->createEvent(Events::PlayerLosesReknown);
-                if ($event instanceof EventPlayerLosesReknown) {
-                    $event->priority = Event::LOW_PRIORITY;
-                    $event->playerId = $playerId;
-                    $event->amount = 1;
-                }
-                $theah->queueEvent($event);
-
-                // Add it to this card
-                $event = $theah->createEvent(Events::ReknownAddedToCard);
-                if ($event instanceof EventReknownAddedToCard) {
-                    $event->priority = Event::LOW_PRIORITY;
-                    $event->cardId = $this->Id;
-                    $event->amount = 1;
-                }
-                $theah->queueEvent($event);
-            }
-        }
-    }
-
     public function handleEvent($event)
     {
         parent::handleEvent($event);
+
+        if ($event instanceof EventCityCardAddedToLocation && $event->card->Id == $this->Id) {
+            $theah = $event->theah;
+            $game = $theah->game;
+
+            //Each player will contribute a reknown to this card, if they have any
+            $players = $game->loadPlayersBasicInfos();
+            foreach ($players as $playerId => $player) {
+    
+                // Notify players that the player has lost reknown
+                $game->notifyAllPlayers("sirensScream", clienttranslate(
+                    'Siren\'s Scream effect triggers. All players will transfer 1 Reknown to the card if able.'), []);
+                $reknown = $game->getPlayerReknown($playerId);
+                if ($reknown > 0) {
+    
+                    //Player loses 1 reknown
+                    $reknown = $theah->createEvent(Events::PlayerLosesReknown);
+                    if ($reknown instanceof EventPlayerLosesReknown) {
+                        $reknown->priority = Event::LOW_PRIORITY;
+                        $reknown->playerId = $playerId;
+                        $reknown->amount = 1;
+                    }
+                    $theah->queueEvent($reknown);
+    
+                    // Add it to this card
+                    $reknown = $theah->createEvent(Events::ReknownAddedToCard);
+                    if ($reknown instanceof EventReknownAddedToCard) {
+                        $reknown->priority = Event::LOW_PRIORITY;
+                        $reknown->cardId = $this->Id;
+                        $reknown->amount = 1;
+                    }
+                    $theah->queueEvent($reknown);
+                }
+            }
+        }
 
         if ($event instanceof EventReknownAddedToCard && $event->cardId == $this->Id) {
             $this->Reknown += $event->amount;
