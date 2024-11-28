@@ -43,7 +43,7 @@ trait UtilitiesTrait
         $this->DbQuery("UPDATE player SET player_score_aux=$score WHERE player_id='$player_id'");
     }
 
-    function incrementReknown($player_id, $inc) {
+    function incrementPlayerReknown($player_id, $inc) {
         $count = $this->getPlayerReknown($player_id);
         if ($inc != 0) {
             $count += $inc;

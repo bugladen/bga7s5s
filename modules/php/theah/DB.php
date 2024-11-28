@@ -87,7 +87,7 @@ class DB extends \APP_DbObject
         $this->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
     }
 
-    function incrementReknown($player_id, $inc) {
+    function incrementPlayerReknown($player_id, $inc) {
         $count = $this->getPlayerReknown($player_id);
         if ($inc != 0) {
             $count += $inc;

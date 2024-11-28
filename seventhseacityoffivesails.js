@@ -99,11 +99,11 @@ function (dojo, declare) {
             //Update the game phase indicator            
             if (gamedatas.turnPhase > 0) {
                 switch (gamedatas.turnPhase) {
-                    case 1: $('city-day-phase').innerHTML = 'Dawn'; break;
-                    case 2: $('city-day-phase').innerHTML = 'Planning'; break;
-                    case 3: $('city-day-phase').innerHTML = 'High Drama'; break;
-                    case 4: $('city-day-phase').innerHTML = 'Plunder'; break;
-                    case 5: $('city-day-phase').innerHTML = 'Dusk'; break;
+                    case 1: $('city-day-phase').innerHTML = _('Dawn'); break;
+                    case 2: $('city-day-phase').innerHTML = _('Planning'); break;
+                    case 3: $('city-day-phase').innerHTML = _('High Drama'); break;
+                    case 4: $('city-day-phase').innerHTML = _('Plunder'); break;
+                    case 5: $('city-day-phase').innerHTML = _('Dusk'); break;
                 }
                 
                 dojo.style('city-day-phase', 'display', 'block');
@@ -316,12 +316,12 @@ function (dojo, declare) {
             switch( stateName )
             {
                 case 'dawnBeginning':
-                    $('city-day-phase').innerHTML = 'Dawn';
+                    $('city-day-phase').innerHTML = _('Dawn');
                     dojo.style('city-day-phase', 'display', 'block');
                     break;
         
                 case 'planningPhase':
-                    $('city-day-phase').innerHTML = 'Planning';
+                    $('city-day-phase').innerHTML = _('Planning');
                     //Enable the approach deck
                     this.approachDeck.setSelectionMode(2);
                     break;
@@ -395,7 +395,7 @@ function (dojo, declare) {
                     break;
 
                 case 'highDramaPhase':
-                    $('city-day-phase').innerHTML = 'High Drama';
+                    $('city-day-phase').innerHTML = _('High Drama');
                     break;
     
             }
@@ -880,7 +880,7 @@ function (dojo, declare) {
             $(`${args.player_id}-score-crewcap`).innerHTML = args.leader.crewCap;
             $(`${args.player_id}-score-panache`).innerHTML = args.leader.panache;
 
-            $('pagemaintitletext').innerHTML = `${args.player_name} has selected <span style="font-weight:bold">${args.leader.name}</span> as their leader`;
+            $('pagemaintitletext').innerHTML = _(`${args.player_name} has selected <span style="font-weight:bold">${args.leader.name}</span> as their leader`);
         },
 
         notif_playApproachScheme: function( notif )
@@ -892,7 +892,7 @@ function (dojo, declare) {
 
             this.createCard(`${args.player_id}-${args.scheme.id}`, args.scheme, `${args.player_id}-scheme-anchor`);
 
-            $('pagemaintitletext').innerHTML = `${args.player_name} has selected <span style="font-weight:bold">${args.scheme.name}</span> as their Scheme today`;
+            $('pagemaintitletext').innerHTML = _(`${args.player_name} has selected <span style="font-weight:bold">${args.scheme.name}</span> as their Scheme today`);
         },
 
         notif_playApproachCharacter: function (notif) {
@@ -904,7 +904,7 @@ function (dojo, declare) {
 
             this.createCard(`${args.player_id}-${args.character.id}`, args.character, `${args.player_id}-home-anchor`);
 
-            $('pagemaintitletext').innerHTML = `${args.player_name} has selected <span style="font-weight:bold">${args.character.name}</span> as their Approach Character today`;
+            $('pagemaintitletext').innerHTML = _(`${args.player_name} has selected <span style="font-weight:bold">${args.character.name}</span> as their Approach Character today`);
         },
 
         notif_panacheModified: function( notif )
@@ -1057,7 +1057,7 @@ function (dojo, declare) {
             dojo.removeClass(`${args.playerId}-score-seal-first-player`, 'first-player-hidden');
             dojo.addClass(`${args.playerId}-score-seal-first-player`, 'first-player-score');
 
-            $('pagemaintitletext').innerHTML = `${args.player_name} is now the First Player`;
+            $('pagemaintitletext').innerHTML = _(`${args.player_name} is now the First Player`);
         },
     });      
 });
