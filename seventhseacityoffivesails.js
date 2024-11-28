@@ -240,7 +240,7 @@ function (dojo, declare) {
             this.approachDeck.create( this, $('approachDeck'), this.wholeCardWidth, this.wholeCardHeight ); 
             this.approachDeck.image_items_per_row = 0;
             this.approachDeck.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
-            this.approachDeck.onItemCreate = dojo.hitch( this, 'setupNewStockApproachCard' ); 
+            this.approachDeck.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
             this.approachDeck.setSelectionAppearance( 'class' )
             dojo.connect( this.approachDeck, 'onChangeSelection', this, 'onApproachCardSelected' );
             // For each card in the approach deck, create a stock item
@@ -254,7 +254,7 @@ function (dojo, declare) {
             this.factionHand.create( this, $('factionHand'), this.wholeCardWidth, this.wholeCardHeight ); 
             this.factionHand.image_items_per_row = 0;
             this.factionHand.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
-            this.factionHand.onItemCreate = dojo.hitch( this, 'setupNewStockApproachCard' ); 
+            this.factionHand.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
             this.factionHand.setSelectionAppearance( 'class' )
             dojo.connect( this.factionHand, 'onChangeSelection', this, 'onFactionCardSelected' );
             // For each card in the approach deck, create a stock item
@@ -262,6 +262,14 @@ function (dojo, declare) {
                 this.addCardToDeck(this.factionHand, card);
             });
             this.factionHand.setSelectionMode(0);
+
+            this.chooseList = new ebg.stock();
+            this.chooseList.create( this, $('chooseList'), this.wholeCardWidth, this.wholeCardHeight ); 
+            this.chooseList.image_items_per_row = 0;
+            this.chooseList.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
+            this.chooseList.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
+            this.chooseList.setSelectionAppearance( 'class' )
+            dojo.connect( this.chooseList, 'onChangeSelection', this, 'onChooseCardSelected' );
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -372,6 +380,22 @@ function (dojo, declare) {
                         });
                     }
                     break;
+                
+                case 'planningPhaseResolveSchemes_01044':
+                    if (this.isCurrentPlayerActive()) {
+                        dojo.removeClass('choose-container', 'hidden');
+                        dojo.removeClass('chooseList', 'hidden');
+                        $('choose-container-name').innerHTML = _('Your Discard Pile');
+
+                        // For each card in the players discard pile, create a stock item
+                        const player = this.gamedatas.players[this.getActivePlayerId()];                        
+                        player.discard.forEach((card) => {
+                            this.addCardToDeck(this.chooseList, card);
+                        });
+                        this.chooseList.setSelectionMode(1);
+
+                    }
+                    break;
 
                 case 'planningPhaseResolveSchemes_01150':
                     if (this.isCurrentPlayerActive()) {
@@ -424,6 +448,12 @@ function (dojo, declare) {
                         dojo.style(location, 'cursor', 'default');
                     });
                     break;    
+
+                case 'planningPhaseResolveSchemes_01044':
+                    dojo.addClass('choose-container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    break;
             }
 
             //Disconnect any connect handlers that were created
@@ -469,6 +499,12 @@ function (dojo, declare) {
                         this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                         this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
                         dojo.addClass('actCityLocationsSelected', 'disabled');
+                        break;
+
+                    case 'planningPhaseResolveSchemes_01044':
+                        this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseCardConfirmed());
+                        this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+                        dojo.addClass('actChooseCardSelected', 'disabled');
                         break;
 
                     case 'playerTurn':
@@ -706,10 +742,28 @@ function (dojo, declare) {
             this.bgaPerformAction("actDayPlanned", { 
                     'scheme' : scheme, 
                     'character' : character
-                }).then(() =>  {                
-                    // What to do after the server call if it succeeded
-                });        
+            }).then(() =>  {                
+                // What to do after the server call if it succeeded
+            });        
         },
+
+        onChooseCardConfirmed: function()
+        {
+            var items = this.chooseList.getSelectedItems();
+            const card = Object.values(items)[0];
+            this.chooseList.removeFromStockById(card.id);
+            let action = '';
+            switch (this.gamedatas.gamestate.name) {
+                case 'planningPhaseResolveSchemes_01044':
+                    action = 'actPlanningPhase_01044';
+                    break;
+            }
+            this.bgaPerformAction(action, { 
+                'id' : card.id
+        }).then(() =>  {                
+            // What to do after the server call if it succeeded
+        });        
+    },
 
         onPass: function()
         {
@@ -772,7 +826,7 @@ function (dojo, declare) {
             deck.addToStockWithId(card.id, card.id);
         },
 
-        setupNewStockApproachCard: function( cardDiv, cardTypeId, cardId )
+        setupNewStockCard: function( cardDiv, cardTypeId, cardId )
         {
             const card = this.cardProperties[cardTypeId];
             this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, 100);
@@ -807,6 +861,15 @@ function (dojo, declare) {
             var items = this.factionHand.getSelectedItems();
         },
 
+        onChooseCardSelected: function()
+        {
+            if (this.chooseList.getSelectedItems().length === 1) {
+                dojo.removeClass('actChooseCardSelected', 'disabled');
+            } else {
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
+        },
+
         
         ///////////////////////////////////////////////////
         //// Reaction to cometD notifications
@@ -838,7 +901,8 @@ function (dojo, declare) {
                 ['reknownUpdatedOnCard', 500],
                 ['reknownAddedToLocation', 500],
                 ['reknownRemovedFromLocation', 500],
-                ['factionCardDraw', 1000],
+                ['factionResolveCardDraw', 1000],
+                ['cardAddedToHand', 1000]
             ];
     
             notifs.forEach((notif) => {
@@ -927,14 +991,21 @@ function (dojo, declare) {
             });            
         },
 
-        notif_factionCardDraw: function( notif )
+        notif_factionResolveCardDraw: function( notif )
         {
-            console.log( 'notif_factionCardDraw' );
+            console.log( 'notif_factionResolveCardDraw' );
             console.log( notif );
 
             notif.args.cards.forEach((card) => {
                 this.addCardToDeck(this.factionHand, card);
             });            
+        },
+
+        notif_cardAddedToHand: function( notif )
+        {
+            console.log( 'notif_factionResolveCardDraw' );
+            console.log( notif );
+            this.addCardToDeck(this.factionHand, notif.args.card);
         },
 
         notif_newDay: function( notif )

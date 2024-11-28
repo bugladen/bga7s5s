@@ -16,4 +16,16 @@ trait DebugTrait
     {
         $this->DBQuery("UPDATE player SET player_score = $score WHERE player_id = $playerId");
     }
+
+    public function dbgSetCardInDiscardPile($playerId, $className)
+    {
+        $card = $this->instantiateCard($className);
+        if ($card) {
+            $location = $this->getPlayerDiscardDeckName($playerId);
+            $dbCard = $this->cards->getCardsOfType($className);
+            $dbCard = reset($dbCard);
+            if ($dbCard)
+                $this->cards->moveCard($dbCard['id'], $location, $playerId);
+        }
+    }
 }

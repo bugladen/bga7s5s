@@ -137,6 +137,34 @@ trait DeckTrait
         }
     }
 
+    public function getPlayerDiscardPile($playerId)
+    {
+        $location = $this->getPlayerDiscardDeckName($playerId);
+        $discards = $this->cards->getCardsInLocation($location);
+        $cards = [];
+        foreach ($discards as $discard) {
+            $card = $this->getCardObjectFromDb($discard['id']);
+            $cards[] = $card->getPropertyArray();
+            unset($card);
+        }
+        
+        return $cards;
+    }
+
+    public function getPlayerLocker($playerId)
+    {
+        $location = $this->getPlayerLockerName($playerId);
+        $lockerCards = $this->cards->getCardsInLocation($location);
+        $cards = [];
+        foreach ($lockerCards as $locker) {
+            $card = $this->getCardObjectFromDb($locker['id']);
+            $cards[] = $card->getPropertyArray();
+            unset($card);
+        }
+        
+        return $cards;
+    }
+
     // Only methods that are used in the DeckTrait should be using this method.  
     // Otherwise, create an event and let Theah handle it.
     private function updateCardObjectInDb($card) {

@@ -21,5 +21,8 @@ class Events
     const ReknownAddedToLocation = 'EventReknownAddedToLocation';
     const ReknownRemovedFromLocation = 'EventReknownRemovedFromLocation';
 
+    const CardAddedToHand = 'EventCardAddedToHand';
+    const CardRemovedFromDiscardPile = 'EventCardRemovedFromDiscardPile';
+    
     const Transition = 'EventTransition';
 }

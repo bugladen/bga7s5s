@@ -131,6 +131,12 @@ var jstpl_reknown_chip = `
 
 </script>  
 
+<div id="choose-container" class="whiteblock hand hidden">
+    <div><b><span id="choose-container-name"></span></b></div>
+    <div id="chooseList" class="hidden">
+    </div>
+</div>
+
 <!-- Begin City -->
 <div id="city">
     <div id="city-ul-tower">

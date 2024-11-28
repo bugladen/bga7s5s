@@ -4,6 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 
@@ -49,6 +51,32 @@ trait ActionsTrait
         }
 
         // Go back and finish running the Scheme events
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanningPhase_01044(int $id)
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+
+        //Move card in DB
+        $this->cards->moveCard($id, Game::LOCATION_HAND, $playerId);
+        $card = $this->getCardObjectFromDb($id);
+
+        $event = $this->theah->createEvent(Events::CardRemovedFromDiscardPile);
+        if ($event instanceof EventCardRemovedFromDiscardPile) {
+            $event->card = $card;
+            $event->playerId = $playerId;
+        }
+        $this->theah->queueEvent($event);
+
+        $event = $this->theah->createEvent(Events::CardAddedToHand);
+        if ($event instanceof EventCardAddedToHand) {
+            $event->card = $card;
+            $event->playerId = $playerId;
+        }
+        $this->theah->queueEvent($event);
+
         $this->gamestate->nextState("");
     }
 

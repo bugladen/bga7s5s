@@ -249,6 +249,7 @@ $machinestates = [
                 "pickOneLocationForReknownWithNone" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_ONE_LOCATION_FOR_REKNOWN_WITH_NONE,
                 "pickOneLocationForReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_ONE_LOCATION_FOR_REKNOWN,
                 "pickTwoLocationsForReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS_FOR_REKNOWN,
+                "01044" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01044,
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
                 "endOfEvents" => States::PLANNING_PHASE_DRAW
             ]
@@ -294,6 +295,18 @@ $machinestates = [
             "args" => "argEmpty",
             "possibleactions" => [
                 "actCityLocationsForReknownSelected", 
+            ],
+            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+        ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01044 => [
+            "name" => "planningPhaseResolveSchemes_01044",
+            "description" => clienttranslate('${actplayer} may choose an Attachment from their discard pile.'),
+            "descriptionmyturn" => clienttranslate('${you} may choose an Attachment from your discard pile.'),
+            "type" => "activeplayer",
+            "args" => "argEmpty",
+            "possibleactions" => [
+                "actPlanningPhase_01044", 
+                "actPass"
             ],
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],

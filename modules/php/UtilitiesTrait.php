@@ -60,6 +60,14 @@ trait UtilitiesTrait
         return "Faction-$playerId";
     }
 
+    function getPlayerDiscardDeckName($playerId) {
+        return "Discard-$playerId";
+    }
+
+    function getPlayerLockerName($playerId) {
+        return "Locker-$playerId";
+    }
+
     function getGameDeckObject() {
         return $this->cards;
     }

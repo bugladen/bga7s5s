@@ -162,6 +162,9 @@ class Game extends \Table
                 $card = $this->theah->getCardById($player['leader_card_id']);
                 $player['leader'] = $card->getPropertyArray();
 
+                $player['discard'] = $this->getPlayerDiscardPile($player_id);
+                $player['locker'] = $this->getPlayerLocker($player_id);
+
                 //Set updated player data back into the array
                 $players[$player_id] = $player;
             }

@@ -392,7 +392,7 @@ trait StatesTrait
             }
 
             $cardList = implode(", ", array_map(function($card) { return $card['name']; }, $cards));
-            $this->notifyPlayer($playerId, "factionCardDraw", 
+            $this->notifyPlayer($playerId, "factionResolveCardDraw", 
                 clienttranslate('Your panache value is: ${panache}.  As your draw you received: ${card_list}'), [
                     "panache" => $panache,
                     "card_list" => $cardList,
