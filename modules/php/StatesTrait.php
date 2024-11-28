@@ -215,7 +215,7 @@ trait StatesTrait
         // If we have a clear winner with no ties, set the first player and move on.
         if (! $tiedInitiative || count($players) == 1) {
             $this->globals->set("firstPlayer", $highPlayerId);
-            $this->gamestate->changeActivePlayer($highPlayerId);
+            $this->setNewPlayerOrder($highPlayerId);
 
             // Notify all players of the first player.
             $this->notifyAllPlayers("firstPlayer", clienttranslate('${player_name} has the highest initiative of ${initiative} and will be set as First Player.'), [
@@ -238,7 +238,7 @@ trait StatesTrait
             $nextPlayerId = $table[$firstPlayerId];
 
             $this->globals->set("firstPlayer", $nextPlayerId);
-            $this->gamestate->changeActivePlayer($nextPlayerId);
+            $this->setNewPlayerOrder($nextPlayerId);
 
             // Notify all players of the first player.
             $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as First Player.'), [
@@ -257,8 +257,8 @@ trait StatesTrait
         $rand = random_int(0, $size - 1);
         $slice = array_slice($players, $rand, 1, true);
         $firstPlayerId = key($slice);
-        $this->gamestate->changeActivePlayer($firstPlayerId);
         $this->globals->set("firstPlayer", $firstPlayerId);
+        $this->setNewPlayerOrder($firstPlayerId);
 
         // Notify all players of the first player.
         $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, and no previous First Player, ${player_name} has been chosen randomly as the First Player.'), [
@@ -311,10 +311,10 @@ trait StatesTrait
 
     public function stPlanningPhaseMuster() {
         // Muster the characters
-        $this->notifyAllPlayers("muster", clienttranslate('All Players MUSTER their chosen Characters'), []);
+        $this->notifyAllPlayers("muster", clienttranslate('All Players MUSTER their chosen Characters in player order starting with the FIRST PLAYER.'), []);
 
         $this->theah->buildCity();
-        $sql = "SELECT player_id, player_name, leader_card_id as leaderId FROM player";
+        $sql = "SELECT player_id, player_name, leader_card_id as leaderId FROM player ORDER BY turn_order";
         $players = $this->getCollectionFromDb($sql);
         foreach ( $players as $playerId => $player ) {
             $leader = $this->theah->getCardById($player['leaderId']);
@@ -342,10 +342,10 @@ trait StatesTrait
     public function stPlanningPhaseResolveSchemes() {
 
         // Resolve schemes
-        $this->notifyAllPlayers("resolveSchemes", clienttranslate('All Players RESOLVE their chosen Schemes in player order starting with the FIRST PLAYER'), []);
+        $this->notifyAllPlayers("resolveSchemes", clienttranslate('All Players RESOLVE their chosen Schemes in player order starting with the FIRST PLAYER.'), []);
 
         // Resolve the schemes in player order
-        $sql = "SELECT player_id, selected_scheme_id as schemeId FROM player ORDER by player_no";
+        $sql = "SELECT player_id, selected_scheme_id as schemeId FROM player ORDER by turn_order";
         $list = $this->getCollectionFromDB($sql);
         foreach ( $list as $playerId => $player ) {
             $schemeId = $player['schemeId'];

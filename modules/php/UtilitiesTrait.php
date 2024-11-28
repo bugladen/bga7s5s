@@ -72,4 +72,16 @@ trait UtilitiesTrait
         return $this->cards;
     }
 
+    function setNewPlayerOrder($firstPlayerId)
+    {
+        $playerNumber = 1;
+        $this->DbQuery("UPDATE player SET turn_order = $playerNumber WHERE player_id = $firstPlayerId");
+        $nextPlayerId = $this->getPlayerAfter($firstPlayerId);
+        while ($firstPlayerId != $nextPlayerId) {
+            $playerNumber++;
+            $this->DbQuery("UPDATE player SET turn_order = $playerNumber WHERE player_id = $nextPlayerId");
+            $nextPlayerId = $this->getPlayerAfter($nextPlayerId);
+        }
+    }
+
 }

@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS `events` (
 
 -- Player fields for selected deck
 ALTER TABLE `player` 
+  ADD `turn_order` tinyint NULL,
   ADD `deck_source` varchar(20) NULL,
   ADD `deck_id` varchar(20) NULL,
   ADD `leader_card_id` smallint NULL,
