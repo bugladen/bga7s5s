@@ -3,9 +3,10 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 
@@ -55,15 +56,14 @@ trait ActionsTrait
 
     public function actPlanningPhase_01044(int $id)
     {
-        $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
 
         //Move card in DB
         $this->cards->moveCard($id, Game::LOCATION_HAND, $playerId);
         $card = $this->getCardObjectFromDb($id);
 
-        $event = $this->theah->createEvent(Events::CardRemovedFromDiscardPile);
-        if ($event instanceof EventCardRemovedFromDiscardPile) {
+        $event = $this->theah->createEvent(Events::CardRemovedFromPlayerDiscardPile);
+        if ($event instanceof EventCardRemovedFromPlayerDiscardPile) {
             $event->card = $card;
             $event->playerId = $playerId;
         }
@@ -71,6 +71,40 @@ trait ActionsTrait
 
         $event = $this->theah->createEvent(Events::CardAddedToHand);
         if ($event instanceof EventCardAddedToHand) {
+            $event->card = $card;
+            $event->playerId = $playerId;
+        }
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanningPhase_01045(int $id)
+    {
+        $playerId = $this->getActivePlayerId();
+        $playerName = $this->getActivePlayerName();
+
+        //Move card to top of City Deck
+        $this->cards->insertCardOnExtremePosition($id, Game::LOCATION_CITY_DECK, true);
+        $card = $this->getCardObjectFromDb($id);
+
+        // Notify players of selected scheme
+        $this->notifyAllPlayers("message_0145", clienttranslate('${player_name} chose ${card_name} to move from the City Discard Pile to the top of the City Deck.'), [
+            "player_name" => $playerName,
+            "card_name" => "<span style='font-weight:bold'>{$card->Name}</span>",
+            "player_id" => $playerId,
+            "card" => $card->getPropertyArray(),
+        ]);
+
+        $event = $this->theah->createEvent(Events::CardRemovedFromCityDiscardPile);
+        if ($event instanceof EventCardRemovedFromCityDiscardPile) {
+            $event->card = $card;
+            $event->playerId = $playerId;
+        }
+        $this->theah->queueEvent($event);
+
+        $event = $this->theah->createEvent(Events::CardAddedToCityDeck);
+        if ($event instanceof EventCardAddedToCityDeck) {
             $event->card = $card;
             $event->playerId = $playerId;
         }

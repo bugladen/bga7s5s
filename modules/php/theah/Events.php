@@ -6,7 +6,11 @@ class Events
 {
     const NewDay = 'EventNewDay';
     const PhaseDawnBeginning = 'EventPhaseDawnBeginning';
+
     const CityCardAddedToLocation = 'EventCityCardAddedToLocation';
+    const CardRemovedFromCityDiscardPile = 'EventCardRemovedFromCityDiscardPile';
+    const CardAddedToCityDeck = 'EventCardAddedToCityDeck';
+
     const PhaseDawnEnding = 'EventPhaseDawnEnding';
     const PhasePlanningBeginning = 'EventPhasePlanningBeginning';
     const PhasePlanningEnd = 'EventPhasePlanningEnd';
@@ -22,7 +26,7 @@ class Events
     const ReknownRemovedFromLocation = 'EventReknownRemovedFromLocation';
 
     const CardAddedToHand = 'EventCardAddedToHand';
-    const CardRemovedFromDiscardPile = 'EventCardRemovedFromDiscardPile';
+    const CardRemovedFromPlayerDiscardPile = 'EventCardRemovedFromPlayerDiscardPile';
     
     const Transition = 'EventTransition';
 }

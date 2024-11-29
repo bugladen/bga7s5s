@@ -394,6 +394,27 @@ function (dojo, declare) {
                         });
                         this.chooseList.setSelectionMode(1);
 
+                        if (this.chooseList.count() > 0) 
+                            dojo.addClass('actPass', 'disabled');
+                    }
+                    break;
+
+                case 'planningPhaseResolveSchemes_01045':
+                    if (this.isCurrentPlayerActive()) {
+                        dojo.removeClass('choose-container', 'hidden');
+                        dojo.removeClass('chooseList', 'hidden');
+                        $('choose-container-name').innerHTML = _('Mercenaries in the City Deck Discard Pile');
+
+                        // For each card in the city discard pile, create a stock item
+                        this.gamedatas.cityDiscard.forEach((card) => {
+                            if (card.traits.includes('Mercenary')) {
+                                this.addCardToDeck(this.chooseList, card);
+                            }                            
+                        });
+                        this.chooseList.setSelectionMode(1);
+
+                        if (this.chooseList.count() > 0) 
+                            dojo.addClass('actPass', 'disabled');
                     }
                     break;
 
@@ -450,6 +471,7 @@ function (dojo, declare) {
                     break;    
 
                 case 'planningPhaseResolveSchemes_01044':
+                case 'planningPhaseResolveSchemes_01045':
                     dojo.addClass('choose-container', 'hidden');
                     dojo.addClass('chooseList', 'hidden');
                     this.chooseList.removeAll();
@@ -502,9 +524,11 @@ function (dojo, declare) {
                         break;
 
                     case 'planningPhaseResolveSchemes_01044':
+                    case 'planningPhaseResolveSchemes_01045':
                         this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseCardConfirmed());
                         this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
                         dojo.addClass('actChooseCardSelected', 'disabled');
+
                         break;
 
                     case 'playerTurn':
@@ -757,7 +781,10 @@ function (dojo, declare) {
                 case 'planningPhaseResolveSchemes_01044':
                     action = 'actPlanningPhase_01044';
                     break;
-            }
+                case 'planningPhaseResolveSchemes_01045':
+                    action = 'actPlanningPhase_01045';
+                    break;
+                }
             this.bgaPerformAction(action, { 
                 'id' : card.id
         }).then(() =>  {                

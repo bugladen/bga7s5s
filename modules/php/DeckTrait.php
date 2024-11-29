@@ -20,7 +20,7 @@ trait DeckTrait
                 return $deck->id === '7s5s';
             }
         ));
-        // Inject into card db
+
         foreach ($city->cards as $card) {
             $location = Game::LOCATION_CITY_DECK;
             $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$card}', 0, '{$location}', 0)";
@@ -137,27 +137,12 @@ trait DeckTrait
         }
     }
 
-    public function getPlayerDiscardPile($playerId)
+    public function getCardsInLocation($location)
     {
-        $location = $this->getPlayerDiscardDeckName($playerId);
-        $discards = $this->cards->getCardsInLocation($location);
         $cards = [];
-        foreach ($discards as $discard) {
-            $card = $this->getCardObjectFromDb($discard['id']);
-            $cards[] = $card->getPropertyArray();
-            unset($card);
-        }
-        
-        return $cards;
-    }
-
-    public function getPlayerLocker($playerId)
-    {
-        $location = $this->getPlayerLockerName($playerId);
-        $lockerCards = $this->cards->getCardsInLocation($location);
-        $cards = [];
-        foreach ($lockerCards as $locker) {
-            $card = $this->getCardObjectFromDb($locker['id']);
+        $locationCards = $this->cards->getCardsInLocation($location);
+        foreach ($locationCards as $cardId) {
+            $card = $this->getCardObjectFromDb($cardId['id']);
             $cards[] = $card->getPropertyArray();
             unset($card);
         }

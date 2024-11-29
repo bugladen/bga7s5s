@@ -58,6 +58,7 @@ abstract class Card
         ];
 
         $properties['type'] = 'Card';
+        $properties['traits'] = $this->Traits;
 
         return $properties;
     }

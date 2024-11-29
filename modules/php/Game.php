@@ -34,6 +34,7 @@ class Game extends \Table
 
     //Card locations
     final const LOCATION_CITY_DECK = 'City Deck';
+    final const LOCATION_CITY_DISCARD = 'City Discard';
     final const LOCATION_CITY_DOCKS = 'City Docks';
     final const LOCATION_CITY_FORUM = 'City Forum';
     final const LOCATION_CITY_BAZAAR = 'The Grand Bazaar';
@@ -162,8 +163,11 @@ class Game extends \Table
                 $card = $this->theah->getCardById($player['leader_card_id']);
                 $player['leader'] = $card->getPropertyArray();
 
-                $player['discard'] = $this->getPlayerDiscardPile($player_id);
-                $player['locker'] = $this->getPlayerLocker($player_id);
+                $location = $this->getPlayerDiscardDeckName($player_id);
+                $player['discard'] = $this->getCardsInLocation($location);
+
+                $location = $this->getPlayerLockerName($player_id);
+                $player['locker'] = $this->getCardsInLocation($location);
 
                 //Set updated player data back into the array
                 $players[$player_id] = $player;
@@ -178,14 +182,18 @@ class Game extends \Table
             $result["firstPlayer"] = $this->globals->get("firstPlayer");
         }
 
-        $result["homeCards"] = $this->theah->getCardsAtLocation(self::LOCATION_PLAYER_HOME);
-        $result["oleCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_OLES_INN);
-        $result["dockCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_DOCKS);
-        $result["forumCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_FORUM);
-        $result["bazaarCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_BAZAAR);
-        $result["gardenCards"] = $this->theah->getCardsAtLocation(self::LOCATION_CITY_GOVERNORS_GARDEN);
+        $result["homeCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_PLAYER_HOME);
+        $result["oleCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_OLES_INN);
+        $result["dockCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_DOCKS);
+        $result["forumCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_FORUM);
+        $result["bazaarCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_BAZAAR);
+        $result["gardenCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
         $result["approachDeck"] = $this->theah->getApproachCards($currentPlayerId);
         $result["factionHand"] = $this->theah->getFactionHand($currentPlayerId);
+
+        $result['cityDiscard'] = $this->getCardsInLocation(Game::LOCATION_CITY_DISCARD);
+
+
         $result["locationReknown"] = $this->theah->getCityLocationReknown();
 
         return $result;
@@ -239,7 +247,7 @@ class Game extends \Table
         // Init global values with their initial values.
 
         $this->setGameStateInitialValue("day", 0);
-        $this->setGameStateInitialValue("turnPhase", Self::SETUP_PHASE);
+        $this->setGameStateInitialValue("turnPhase", Game::SETUP_PHASE);
 
         //Setup the reknown for the city locations
         $playerCount = count($players);
