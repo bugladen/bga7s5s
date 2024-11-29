@@ -388,7 +388,7 @@ function (dojo, declare) {
                         $('choose-container-name').innerHTML = _('Your Discard Pile');
 
                         // For each card in the players discard pile, create a stock item
-                        const player = this.gamedatas.players[this.getActivePlayerId()];                        
+                        const player = this.gamedatas.players[this.getActivePlayerId()];      
                         player.discard.forEach((card) => {
                             this.addCardToDeck(this.chooseList, card);
                         });
@@ -1003,7 +1003,9 @@ function (dojo, declare) {
 
         notif_cardAddedToHand: function( notif )
         {
-            console.log( 'notif_factionResolveCardDraw' );
+            if (notif.args.player_id !== this.player_id) return;
+
+            console.log( 'notif_cardAddedToHand' );
             console.log( notif );
             this.addCardToDeck(this.factionHand, notif.args.card);
         },

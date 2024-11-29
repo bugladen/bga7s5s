@@ -42,7 +42,7 @@ trait EventHandler
                 $this->game->notifyAllPlayers("cardAddedToHand", clienttranslate('${player_name} added ${card_name} into their hand.'), [
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "card_name" => $event->card->Name,
+                    "card_name" => "<span style='font-weight:bold'>{$event->card->Name}</span>",
                     "card" => $event->card->getPropertyArray(),
                 ]);
 

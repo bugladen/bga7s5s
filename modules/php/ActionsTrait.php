@@ -45,7 +45,6 @@ trait ActionsTrait
             if ($event instanceof EventReknownAddedToLocation) {
                 $event->location = $location;
                 $event->amount = 1;
-                $event->priority = Event::HIGH_PRIORITY;
             }
             $this->theah->queueEvent($event);
         }
@@ -92,7 +91,6 @@ trait ActionsTrait
         if ($event instanceof EventReknownRemovedFromLocation) {
             $event->location = $location;
             $event->amount = 1;
-            $event->priority = Event::HIGH_PRIORITY;
             $event->source = $playerName;
         }
         $this->theah->queueEvent($event);
@@ -101,7 +99,6 @@ trait ActionsTrait
         if ($event instanceof EventReknownAddedToLocation) {
             $event->location = Game::LOCATION_CITY_FORUM;
             $event->amount = 1;
-            $event->priority = Event::HIGH_PRIORITY;
             $event->source = $playerName;
         }
         $this->theah->queueEvent($event);

@@ -44,7 +44,6 @@ class _01146 extends Scheme
             if ($reknown instanceof EventReknownAddedToLocation) {
                 $reknown->location = Game::LOCATION_CITY_DOCKS;
                 $reknown->amount = 1;
-                $reknown->priority = Event::HIGH_PRIORITY;
                 $reknown->source = $this->Name;
             }
             $event->theah->queueEvent($reknown);
@@ -53,7 +52,6 @@ class _01146 extends Scheme
             if ($reknown instanceof EventReknownAddedToLocation) {
                 $reknown->location = Game::LOCATION_CITY_FORUM;
                 $reknown->amount = 1;
-                $reknown->priority = Event::HIGH_PRIORITY;
                 $reknown->source = $this->Name;
             }
             $event->theah->queueEvent($reknown);

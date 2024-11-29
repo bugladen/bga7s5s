@@ -15,5 +15,6 @@ class EventReknownAddedToCard extends Event
 
         $this->cardId = 0;
         $this->amount = 0;
+        $this->priority = Event::HIGH_PRIORITY;
     }
 }
