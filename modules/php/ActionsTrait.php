@@ -38,8 +38,6 @@ trait ActionsTrait
 
     public function actCityLocationsForReknownSelected(string $locations)
     {
-        $this->theah->buildCity();
-
         $locations = json_decode($locations, true);
         foreach ($locations as $location) {
             $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
@@ -115,8 +113,6 @@ trait ActionsTrait
 
     public function actPlanningPhase_01150(string $locations)
     {
-        $this->theah->buildCity();
-
         $playerName = $this->getActivePlayerName();
 
         $locations = json_decode($locations, true);

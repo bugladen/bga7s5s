@@ -137,16 +137,22 @@ trait DeckTrait
         }
     }
 
-    public function getCardsInLocation($location)
+    public function getCardsInLocation($location, $playerId = null)
     {
         $cards = [];
         $locationCards = $this->cards->getCardsInLocation($location);
         foreach ($locationCards as $cardId) {
             $card = $this->getCardObjectFromDb($cardId['id']);
+            if ($playerId !== null && $card->OwnerId != $playerId)
+            {
+                unset($card);
+                continue;
+            }
+
             $cards[] = $card->getPropertyArray();
             unset($card);
         }
-        
+       
         return $cards;
     }
 

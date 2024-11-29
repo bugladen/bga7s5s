@@ -32,8 +32,6 @@ trait StatesTrait
         $day = $this->getGameStateValue("day") + 1;
         $this->setGameStateValue("day", $day);
 
-        $this->theah->buildCity();
-
         //Notify players that it is Dawn, New Day
         $this->notifyAllPlayers("newDay", clienttranslate('It is the start of <span style="font-weight:bold">DAY #${day}</span> in the city of Theah.'), [
             "day" => $day,
@@ -130,8 +128,6 @@ trait StatesTrait
         $turnPhase = Game::PLANNING;
         $this->setGameStateValue("turnPhase", $turnPhase);
 
-        $this->theah->buildCity();
-
         //Notify players that it is planning phase
         $this->notifyAllPlayers("planningPhase", clienttranslate('<span style="font-weight:bold">PLANNING PHASE</span>.'), []);
 
@@ -147,8 +143,6 @@ trait StatesTrait
 
     public function stPlanningPhaseApproachCardsPlayed()
     {
-        $this->theah->buildCity();
-
         $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
         $players = $this->getCollectionFromDb($sql);
 
@@ -159,7 +153,7 @@ trait StatesTrait
             $this->cards->moveCard($player['characterId'], Game::LOCATION_PLAYER_HOME, $playerId);
 
             // Run events that the character has been played to a location
-            $character = $this->theah->getPurgatoryCardById($player['characterId']);
+            $character = $this->getCardObjectFromDb($player['characterId']);
             $event = $this->theah->createEvent(Events::ApproachCharacterPlayed);
             if ($event instanceof EventApproachCharacterPlayed) {
                 $event->playerId = $playerId;
@@ -172,7 +166,7 @@ trait StatesTrait
             $this->cards->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
 
             // Run events that the scheme has been played to a location
-            $scheme = $this->theah->getPurgatoryCardById($player['schemeId']);
+            $scheme = $this->getCardObjectFromDb($player['schemeId']);
             $event = $this->theah->createEvent(Events::SchemeCardRevealed);
             if ($event instanceof EventSchemeCardRevealed) {
                 $event->playerId = $playerId;
@@ -186,9 +180,8 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
-    public function stPlanningPhaseDetermineFirstPlayer() {
-
-        $this->theah->buildCity();
+    public function stPlanningPhaseDetermineFirstPlayer() 
+    {
         $sql = "SELECT player_id, player_name, selected_scheme_id as schemeId FROM player";
         $players = $this->getCollectionFromDb($sql);
 
@@ -270,10 +263,8 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
-    public function stPlanningPhaseResolveWhenRevealedCards() {
-
-        $this->theah->buildCity();
-
+    public function stPlanningPhaseResolveWhenRevealedCards() 
+    {
         $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
         $players = $this->getCollectionFromDb($sql);
 
@@ -313,7 +304,6 @@ trait StatesTrait
         // Muster the characters
         $this->notifyAllPlayers("muster", clienttranslate('All Players MUSTER their chosen Characters in player order starting with the FIRST PLAYER.'), []);
 
-        $this->theah->buildCity();
         $sql = "SELECT player_id, player_name, leader_card_id as leaderId FROM player ORDER BY turn_order";
         $players = $this->getCollectionFromDb($sql);
         foreach ( $players as $playerId => $player ) {
@@ -368,7 +358,6 @@ trait StatesTrait
         // Draw cards
         $this->notifyAllPlayers("drawCards", clienttranslate('All Players DRAW cards.'), []);
 
-        $this->theah->buildCity();
         $players = $this->loadPlayersBasicInfos();
         foreach ( $players as $playerId => $player ) {
             //Get the player's leader

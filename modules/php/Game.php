@@ -162,17 +162,16 @@ class Game extends \Table
             {
                 $card = $this->theah->getCardById($player['leader_card_id']);
                 $player['leader'] = $card->getPropertyArray();
-
-                $location = $this->getPlayerDiscardDeckName($player_id);
-                $player['discard'] = $this->getCardsInLocation($location);
-
-                $location = $this->getPlayerLockerName($player_id);
-                $player['locker'] = $this->getCardsInLocation($location);
-
-                //Set updated player data back into the array
-                $players[$player_id] = $player;
             }
-        }
+            $location = $this->getPlayerDiscardDeckName($player_id);
+            $player['discard'] = $this->getCardsInLocation($location);
+
+            $location = $this->getPlayerLockerName($player_id);
+            $player['locker'] = $this->getCardsInLocation($location);
+
+            //Set updated player data back into the array
+            $players[$player_id] = $player;
+        }        
         $result["players"] = $players;
 
         $result["day"] = $this->getGameStateValue("day");
@@ -188,11 +187,11 @@ class Game extends \Table
         $result["forumCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_FORUM);
         $result["bazaarCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_BAZAAR);
         $result["gardenCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
-        $result["approachDeck"] = $this->theah->getApproachCards($currentPlayerId);
-        $result["factionHand"] = $this->theah->getFactionHand($currentPlayerId);
+
+        $result["approachDeck"] = $this->getCardsInLocation(Game::LOCATION_APPROACH, $currentPlayerId);
+        $result["factionHand"] = $this->getCardsInLocation(Game::LOCATION_HAND, $currentPlayerId);
 
         $result['cityDiscard'] = $this->getCardsInLocation(Game::LOCATION_CITY_DISCARD);
-
 
         $result["locationReknown"] = $this->theah->getCityLocationReknown();
 

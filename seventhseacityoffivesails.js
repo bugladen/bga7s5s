@@ -929,9 +929,11 @@ function (dojo, declare) {
                 ['reknownAddedToLocation', 500],
                 ['reknownRemovedFromLocation', 500],
                 ['factionResolveCardDraw', 1000],
-                ['cardAddedToHand', 1000]
+                ['cardAddedToHand', 1000],
+                ['cardRemovedFromCityDiscardPile', 500],
+                ['cardRemovedFromPlayerDiscardPile', 500],
             ];
-    
+
             notifs.forEach((notif) => {
                 dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
                 this.notifqueue.setSynchronous(notif[0], notif[1]);
@@ -1091,7 +1093,7 @@ function (dojo, declare) {
             console.log( notif );
 
             const args = notif.args;
-            $(`${args.playerId}-score-reknown`).innerHTML = args.amount;
+            $(`${args.player_id}-score-reknown`).innerHTML = args.amount;
         },
 
         notif_reknownUpdatedOnCard: function( notif )
@@ -1158,6 +1160,25 @@ function (dojo, declare) {
             dojo.addClass(`${args.playerId}-score-seal-first-player`, 'first-player-score');
 
             $('pagemaintitletext').innerHTML = _(`${args.player_name} is now the First Player`);
+        },
+
+        notif_cardRemovedFromCityDiscardPile: function ( notif )
+        {
+            console.log( 'notif_cardRemovedFromCityDiscardPile' );
+            console.log( notif );
+
+            const args = notif.args;
+            this.gamedatas.cityDiscard = this.gamedatas.cityDiscard.filter((c) => c.id !== args.card.id);
+        },
+
+        notif_cardRemovedFromPlayerDiscardPile: function ( notif )
+        {
+            console.log( 'notif_cardRemovedFromPlayerDiscardPile' );
+            console.log( notif );
+
+            const args = notif.args;
+            const player = this.gamedatas.players[args.player_id];
+            player.discard = player.discard.filter((c) => c.id !== args.card.id);
         },
     });      
 });

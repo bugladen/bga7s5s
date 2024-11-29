@@ -2,14 +2,16 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 
 trait EventHandler
 {
@@ -18,7 +20,6 @@ trait EventHandler
         switch (true) {
 
             case $event instanceof EventApproachCharacterPlayed:
-                unset($this->approachCards[$event->character->Id]);
                 $this->cards[$event->character->Id] = $event->character;
 
                 $event->character->Location = $event->location;
@@ -43,6 +44,24 @@ trait EventHandler
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
                     "card_name" => "<span style='font-weight:bold'>{$event->card->Name}</span>",
+                    "card" => $event->card->getPropertyArray(),
+                ]);
+
+                break;
+
+            case $event instanceof EventCardRemovedFromCityDiscardPile:
+                $this->game->notifyAllPlayers("cardRemovedFromCityDiscardPile", clienttranslate('${card_name} removed from City Discard pile.'), [
+                    "card_name" => $event->card->Name,
+                    "card" => $event->card->getPropertyArray(),
+                ]);
+
+                break;
+
+            case $event instanceof EventCardRemovedFromPlayerDiscardPile:
+                $this->game->notifyAllPlayers("cardRemovedFromPlayerDiscardPile", clienttranslate('${card_name} removed from ${player_name}\'s discard pile.'), [
+                    "player_id" => $event->playerId,
+                    "player_name" => $this->game->getPlayerNameById($event->playerId),
+                    "card_name" => $event->card->Name,
                     "card" => $event->card->getPropertyArray(),
                 ]);
 
@@ -73,7 +92,7 @@ trait EventHandler
 
                     // Notify players that the player has lost reknown
                     $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} loses ${amount} reknown.'), [
-                        "playerId" => $event->playerId,
+                        "player_id" => $event->playerId,
                         "player_name" => $this->game->getPlayerNameById($playerId),
                         "amount" => $event->amount,
                     ]);
@@ -118,7 +137,6 @@ trait EventHandler
                 break;
 
             case $event instanceof EventSchemeCardRevealed:
-                unset($this->approachCards[$event->scheme->Id]);
                 $this->cards[$event->scheme->Id] = $event->scheme;
 
                 $event->scheme->Location = $event->location;

@@ -13,9 +13,6 @@ class Theah
 {
     public Game $game;
     private array $cards;
-    private array $approachCards;
-    private array $factionHand;
-    private array $purgatoryCards;
     private array $cityLocations;
     private bool $isLoaded;
     private DB $db;
@@ -27,9 +24,6 @@ class Theah
         $this->game = $game;
         $this->cards = [];
         $this->cityLocations = [];
-        $this->approachCards = [];
-        $this->factionHand = [];
-        $this->purgatoryCards = [];
         $this->isLoaded = false;
         $this->db = new DB();
     }
@@ -49,10 +43,6 @@ class Theah
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_FORUM);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_BAZAAR);
         $this->cards += $this->db->getCardObjectsAtLocation(addslashes(Game::LOCATION_CITY_GOVERNORS_GARDEN));
-
-        $this->approachCards = $this->db->getCardObjectsAtLocation(Game::LOCATION_APPROACH);
-        $this->factionHand = $this->db->getCardObjectsAtLocation(Game::LOCATION_HAND);
-        $this->purgatoryCards = $this->db->getCardObjectsAtLocation(Game::LOCATION_PURGATORY);
 
         $this->isLoaded = true;
     }
@@ -87,30 +77,6 @@ class Theah
         }
     }
 
-    public function getApproachCards($playerId)
-    {
-        $cards = [];
-        foreach ($this->approachCards as $card) {
-            if ($card->ControllerId != $playerId) {
-                continue;
-            }
-            $cards[] = $card->getPropertyArray();
-        }
-        return $cards;
-    }
-
-    public function getfactionHand($playerId)
-    {
-        $cards = [];
-        foreach ($this->factionHand as $card) {
-            if ($card->ControllerId != $playerId) {
-                continue;
-            }
-            $cards[] = $card->getPropertyArray();
-        }
-        return $cards;
-    }
-
     public function getCardsAtLocation($location, $playerId = null)
     {
         $cards = [];
@@ -129,24 +95,6 @@ class Theah
     {
         if (array_key_exists($cardId, $this->cards)) {
             return $this->cards[$cardId];
-        }
-
-        return null;
-    }
-
-    public function getApproachCardById($cardId) : ?Card
-    {
-        if (array_key_exists($cardId, $this->approachCards)) {
-            return $this->approachCards[$cardId];
-        }
-
-        return null;
-    }
-
-    public function getPurgatoryCardById($cardId) : ?Card
-    {
-        if (array_key_exists($cardId, $this->purgatoryCards)) {
-            return $this->purgatoryCards[$cardId];
         }
 
         return null;
