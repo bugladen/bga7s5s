@@ -20,6 +20,8 @@ trait ArgumentsTrait
 
     public function argAvailableDecks(): array
     {
+        require('includes/starterdecks.inc.php');
+        
         /** @disregard P1012 */
         $starter_decks = json_decode($this->starter_decks);        
         $decks = array_map(function($deck) { 

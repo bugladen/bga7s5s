@@ -10,6 +10,8 @@ trait DeckTrait
 
         // *** Create the city deck ***
 
+        require('includes/citydecks.inc.php');
+
         // Load the city deck JSON
         $city_decks = json_decode($this->city_decks);
 
@@ -35,6 +37,7 @@ trait DeckTrait
         $this->cards->shuffle(Game::LOCATION_CITY_DECK);
 
         // Load the decks selected by the players
+        require('includes/starterdecks.inc.php');
         $starter_decks = json_decode($this->starter_decks);
         $players = $this->loadPlayersBasicInfos();
         foreach ( $players as $playerId => $player ) {
