@@ -49,7 +49,7 @@ class DB extends \APP_DbObject
             WHERE card_location = '$location'
             ";
         if ($playerId) {
-            $sql .= " AND playerId = $playerId";
+            $sql .= " AND card_location_arg = $playerId";
         }
         /** @disregard P1012 */
         $data = $this->getObjectListFromDB($sql);

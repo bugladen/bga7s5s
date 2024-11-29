@@ -129,7 +129,7 @@ $this->starter_decks = <<<JSON
                 { "id": "01165", "count": 2 },
                 { "id": "01168", "count": 1 },
                 { "id": "01172", "count": 2 },
-                { "id": "01176", "count": 1 },
+                { "id": "01176", "count": 1 }
             ]
         },
         {
