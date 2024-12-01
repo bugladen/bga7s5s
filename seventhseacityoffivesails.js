@@ -45,7 +45,9 @@ function (dojo, declare) {
 
             //City location selection
             this.numberOfCityLocationsSelectable = 0;
+            this.numberOfCharactersSelectable = 0;
             this.selectedCityLocations = [];
+            this.selectedCharacters = [];
 
             //Connect handlers for the city locations
             this.connects = [];
@@ -152,10 +154,10 @@ function (dojo, declare) {
                 }
 
                 //Display the leader next
-                const leader = homeCards.find((card) => card.type === 'Leader');
+                const leader = homeCards.find((card) => card.traits.includes('Leader'));
                 if (leader)
                 {
-                    homeCards = homeCards.filter((card) => card.type !== 'Leader');
+                    homeCards = homeCards.filter((card) => ! card.traits.includes('Leader'));
                     const divId = `${playerId}-${leader.id}`;
                     this.createCharacterCard(divId, playerInfo.color, leader, playerId + '-home-anchor');
                 }
@@ -279,7 +281,7 @@ function (dojo, declare) {
 
         createCard: function( divId, card, targetDiv )
         {
-            if (card.type === 'Character' || card.type === 'Leader')
+            if (card.type === 'Character')
             {
                 if (card.controllerId !== 0) {
                     const playerInfo = this.gamedatas.players[card.controllerId];
@@ -337,6 +339,7 @@ function (dojo, declare) {
                 case 'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone':
                     if (this.isCurrentPlayerActive()) {
                         const locations = this.getListofAvailableCityLocationImages();
+                        this.numberOfCityLocationsSelectable = 1;
                         locations.forEach((location) => {
                             const imageElement = $(location);
                             const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
@@ -346,7 +349,6 @@ function (dojo, declare) {
                             dojo.addClass(location, 'selectable');
                             dojo.style(location, 'cursor', 'pointer');
     
-                            this.numberOfCityLocationsSelectable = 1;
                             const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
                             this.connects.push(handle);
                         });
@@ -354,27 +356,99 @@ function (dojo, declare) {
                     break;
 
                 case 'planningPhaseResolveSchemes_PickOneLocationForReknown':
+                case 'planningPhaseResolveSchemes_01125_1': 
                     if (this.isCurrentPlayerActive()) {
                         const locations = this.getListofAvailableCityLocationImages();
+                        this.numberOfCityLocationsSelectable = 1;
                         locations.forEach((location) => {
                             dojo.addClass(location, 'selectable');
                             dojo.style(location, 'cursor', 'pointer');
     
-                            this.numberOfCityLocationsSelectable = 1;
                             const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
                             this.connects.push(handle);
                         });
                     }
                     break;
 
+                case 'planningPhaseResolveSchemes_01125_2': 
+                    if (this.isCurrentPlayerActive()) {
+                        const locations = this.getListofAvailableCityLocationImages();
+                        let count = 0;
+                        this.numberOfCityLocationsSelectable = 1;
+                        locations.forEach((location) => {
+                            const imageElement = $(location);
+                            const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+                            const reknown = parseInt(reknownElement.innerHTML);
+                            if (reknown == 0) return;
+
+                            count++;
+
+                            dojo.addClass(location, 'selectable');
+                            dojo.style(location, 'cursor', 'pointer');
+    
+                            const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                            this.connects.push(handle);
+                        });
+
+                        if (count > 0) {
+                            dojo.addClass('actPass', 'disabled');
+                        }
+                    }
+                    break;
+
+                case 'planningPhaseResolveSchemes_01125_3':
+                    if (this.isCurrentPlayerActive()) {
+                        // Get all the elements that have the class 'city-location'
+                        const selectedLocationElement = dojo.query(`[data-location="${args.args.location}"]`)[0];
+
+                        const locations = this.getListOfLocationsAdjacentToLocation(selectedLocationElement.id);
+                        this.numberOfCityLocationsSelectable = 1;
+                        locations.forEach((location) => {
+                            const imageElement = $(location);
+                            if (imageElement.id == selectedLocationElement.id) return;
+
+                            dojo.addClass(location, 'selectable');
+                            dojo.style(location, 'cursor', 'pointer');
+
+                            const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                            this.connects.push(handle);
+                        });
+                    }
+                    break;
+
+                case 'planningPhaseResolveSchemes_01125_4':
+                    if (this.isCurrentPlayerActive()) {
+                        this.numberOfCharactersSelectable = 1;
+                        let count = 0;
+                        for( const cardId in this.cardProperties ) {
+                            card = this.cardProperties[cardId];
+                            if (card.type === 'Character' && card.controllerId && card.controllerId != this.getActivePlayerId()) {
+                                //Get the element that is a child of card.divId with the class 'card'
+                                const imageElement = dojo.query('.card', card.divId)[0];
+                                dojo.addClass(imageElement, 'selectable');
+                                dojo.style(imageElement, 'cursor', 'pointer');
+
+                                const handle = dojo.connect(imageElement, 'onclick', this, 'onCharacterClicked');
+                                this.connects.push(handle);
+
+                                count++;
+                            }
+                        }
+                        if (count > 0) {
+                            dojo.addClass('actPass', 'disabled');
+                        }
+                    }
+
+                    break;
+
                 case 'planningPhaseResolveSchemes_PickTwoLocationsForReknown':
                     if (this.isCurrentPlayerActive()) {
                         const locations = this.getListofAvailableCityLocationImages();
+                        this.numberOfCityLocationsSelectable = 2;
                         locations.forEach((location) => {
                             dojo.addClass(location, 'selectable');
                             dojo.style(location, 'cursor', 'pointer');
     
-                            this.numberOfCityLocationsSelectable = 2;
                             const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
                             this.connects.push(handle);
                         });
@@ -421,6 +495,9 @@ function (dojo, declare) {
                 case 'planningPhaseResolveSchemes_01150':
                     if (this.isCurrentPlayerActive()) {
                         const locations = this.getListofAvailableCityLocationImages();
+                        this.numberOfCityLocationsSelectable = 1;
+
+
                         locations.forEach((location) => {
                             if (location == 'forum-image') return;
 
@@ -432,7 +509,6 @@ function (dojo, declare) {
                             dojo.addClass(location, 'selectable');
                             dojo.style(location, 'cursor', 'pointer');
     
-                            this.numberOfCityLocationsSelectable = 1;
                             const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
                             this.connects.push(handle);
                         });
@@ -458,9 +534,13 @@ function (dojo, declare) {
                 case 'planningPhase':
                     this.approachDeck.setSelectionMode(0);
                     break;
+
                 case 'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone':
                 case 'planningPhaseResolveSchemes_PickOneLocationForReknown':
                 case 'planningPhaseResolveSchemes_PickTwoLocationsForReknown':
+                case 'planningPhaseResolveSchemes_01125_1': 
+                case 'planningPhaseResolveSchemes_01125_2': 
+                case 'planningPhaseResolveSchemes_01125_3':
                 case 'planningPhaseResolveSchemes_01150':
                     const locations = this.getListofAvailableCityLocationImages();
                     locations.forEach((location) => {
@@ -468,7 +548,19 @@ function (dojo, declare) {
                         dojo.removeClass(location, 'selected');
                         dojo.style(location, 'cursor', 'default');
                     });
-                    break;    
+                    break;
+
+                case 'planningPhaseResolveSchemes_01125_4':
+                    for( const cardId in this.cardProperties ) {
+                        card = this.cardProperties[cardId];
+                        if (card.type === 'Character' && card.controllerId && card.controllerId != this.getActivePlayerId()) {
+                            const imageElement = dojo.query('.card', card.divId)[0];
+                            dojo.removeClass(imageElement, 'selectable');
+                            dojo.removeClass(imageElement, 'selected');
+                            dojo.style(imageElement, 'cursor', 'default');
+                        }
+                    }
+                    break;
 
                 case 'planningPhaseResolveSchemes_01044':
                 case 'planningPhaseResolveSchemes_01045':
@@ -477,6 +569,9 @@ function (dojo, declare) {
                     this.chooseList.removeAll();
                     break;
             }
+
+            this.selectedCityLocations = [];
+            this.selectedCharacters = [];
 
             //Disconnect any connect handlers that were created
             this.connects.forEach((handle) => {
@@ -512,11 +607,14 @@ function (dojo, declare) {
                         break;
 
                     case 'planningPhaseResolveSchemes_PickTwoLocationsForReknown':
+                    case 'planningPhaseResolveSchemes_01125_3':
                         this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
                         dojo.addClass('actCityLocationsSelected', 'disabled');
                         break;
 
                     case 'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone':
+                    case 'planningPhaseResolveSchemes_01125_1': 
+                    case 'planningPhaseResolveSchemes_01125_2': 
                     case 'planningPhaseResolveSchemes_01150':
                         this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                         this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
@@ -525,11 +623,17 @@ function (dojo, declare) {
 
                     case 'planningPhaseResolveSchemes_01044':
                     case 'planningPhaseResolveSchemes_01045':
-                        this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseCardConfirmed());
+                        this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseStockCardConfirmed());
                         this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
                         dojo.addClass('actChooseCardSelected', 'disabled');
-
                         break;
+
+                    case 'planningPhaseResolveSchemes_01125_4':
+                        this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseCharacterConfirmed());
+                        this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+                        dojo.addClass('actChooseCardSelected', 'disabled');
+                        break;
+
 
                     case 'playerTurn':
                         break;
@@ -561,7 +665,7 @@ function (dojo, declare) {
 
         getCardPropertiesByDivId: function( divId )
         {
-            for( const cardId in this.cardProperties )
+            for ( const cardId in this.cardProperties )
             {
                 if (this.cardProperties[cardId]?.divId === divId) {
                     return this.cardProperties[cardId];
@@ -700,6 +804,41 @@ function (dojo, declare) {
             return locations;
         },
 
+        getListOfLocationsAdjacentToLocation: function( location )
+        {
+            switch (location) {
+                case 'dock-image':
+                    locations = ['forum-image', 'oles-inn-image'];
+                    break;
+                case 'forum-image':
+                    locations = ['dock-image', 'bazaar-image'];
+                    break;
+                case 'bazaar-image':
+                    locations = ['forum-image', 'garden-image'];
+                    break;
+                case 'oles-inn-image':
+                    locations = ['dock-image'];
+                    break;
+                case 'garden-image':
+                    locations = ['bazaar-image'];
+                    break;
+            }
+
+            const playerCount = Object.keys(this.gamedatas.players).length;
+
+            //Remove The Gardens if there are only 3 players
+            if (Object.keys(this.gamedatas.players).length < 4) {
+                locations = locations.filter((location) => location !== 'garden-image');
+            }
+
+            //Remove Ole's Inn if there are only 2 players
+            if (Object.keys(this.gamedatas.players).length < 3) {
+                locations = locations.filter((location) => location !== 'oles-inn-image');
+            }
+
+            return locations;
+        },
+
         ///////////////////////////////////////////////////
         //// Player's action
         
@@ -727,25 +866,54 @@ function (dojo, declare) {
         },    
 
         onCityLocationsSelected: function() {
-            let act = '';
+            let action = '';
             switch (this.gamedatas.gamestate.name) {
                 case 'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone':
                 case 'planningPhaseResolveSchemes_PickOneLocationForReknown':
                 case 'planningPhaseResolveSchemes_PickTwoLocationsForReknown':
-                    act = 'actCityLocationsForReknownSelected';
+                    action = 'actCityLocationsForReknownSelected';
+                    break;
+
+                case 'planningPhaseResolveSchemes_01125_1': 
+                    action = 'actPlanningPhase_01125_1';
+                    break;
+
+                case 'planningPhaseResolveSchemes_01125_2': 
+                    action = 'actPlanningPhase_01125_2';
+                    break;
+
+                case 'planningPhaseResolveSchemes_01125_3':
+                    action = 'actPlanningPhase_01125_3';
                     break;
 
                 case 'planningPhaseResolveSchemes_01150':
-                    act = 'actPlanningPhase_01150';
+                    action = 'actPlanningPhase_01150';
                     break;
             }
 
             const locations = this.selectedCityLocations.map((loc) => $(loc).getAttribute('data-location'));
-            this.bgaPerformAction(act, { 
+            this.bgaPerformAction(action, { 
                 'locations': JSON.stringify(locations),
             }).then(() =>  {                
                 // What to do after the server call if it succeeded
             });
+        },
+
+        onChooseCharacterConfirmed: function()
+        {
+            let action = '';
+            switch (this.gamedatas.gamestate.name) {
+                case 'planningPhaseResolveSchemes_01125_4':
+                    action = 'actPlanningPhase_01125_4';
+                    break;
+            }
+
+            console.log(this.selectedCharacters);
+            this.bgaPerformAction(action, { 
+                'ids' : JSON.stringify(this.selectedCharacters),
+            }).then(() =>  {                
+                // What to do after the server call if it succeeded
+            });        
         },
 
         onPlanningCardsSelected: function()
@@ -771,7 +939,7 @@ function (dojo, declare) {
             });        
         },
 
-        onChooseCardConfirmed: function()
+        onChooseStockCardConfirmed: function()
         {
             var items = this.chooseList.getSelectedItems();
             const card = Object.values(items)[0];
@@ -784,17 +952,33 @@ function (dojo, declare) {
                 case 'planningPhaseResolveSchemes_01045':
                     action = 'actPlanningPhase_01045';
                     break;
-                }
+            }
+
             this.bgaPerformAction(action, { 
                 'id' : card.id
-        }).then(() =>  {                
-            // What to do after the server call if it succeeded
-        });        
-    },
+            }).then(() =>  {                
+                // What to do after the server call if it succeeded
+            });        
+        },
 
         onPass: function()
         {
-            this.bgaPerformAction("actPass", { 
+            let action = '';
+            switch (this.gamedatas.gamestate.name) {
+                case 'planningPhaseResolveSchemes_01125_1':
+                    action = 'actPlanningPhase_01125_1_Pass';
+                    break;
+                case 'planningPhaseResolveSchemes_01125_2':
+                    action = 'actPlanningPhase_01125_2_Pass';
+                    break;
+                case 'planningPhaseResolveSchemes_01125_4':
+                    action = 'actPlanningPhase_01125_4_Pass';
+                    break;
+                default:
+                    action = 'actPass';
+                    break;
+            }
+            this.bgaPerformAction(action, { 
             }).then(() =>  {                
                 // What to do after the server call if it succeeded
             });
@@ -825,17 +1009,34 @@ function (dojo, declare) {
             }
         },
 
-        onCardClick: function( card_id )
+        onCharacterClicked: function( event )
         {
-            console.log( 'onCardClick', card_id );
+            let id = event.target.id;
+            while (id === '') {
+                id = event.target.parentElement.id;
+            }
+            const card = this.getCardPropertiesByDivId(id);
+            const imageElement = dojo.query('.card', card.divId)[0];
+            if (dojo.hasClass(imageElement, 'selected')) 
+            {
+                dojo.removeClass(imageElement, 'selected');
+                this.selectedCharacters = this.selectedCharacters.filter((char) => char !== card.id);
+            } 
+            else 
+            {
+                if (this.selectedCharacters.length < this.numberOfCharactersSelectable) {
+                    dojo.addClass(imageElement, 'selected');
+                    this.selectedCharacters.push(card.id);
+                }
+            }
 
-            this.bgaPerformAction("actPlayCard", { 
-                card_id,
-            }).then(() =>  {                
-                // What to do after the server call if it succeeded
-                // (most of the time, nothing, as the game will react to notifs / change of state instead)
-            });        
-        },    
+            //Enable the confirm button if we have the right number of locations selected
+            if (this.selectedCharacters.length === this.numberOfCharactersSelectable) {
+                dojo.removeClass('actChooseCardSelected', 'disabled');
+            } else {
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
+        },
 
         // Utlity functions
 

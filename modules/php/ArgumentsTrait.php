@@ -34,6 +34,13 @@ trait ArgumentsTrait
         return ["availableDecks" => $decks];
     }
 
+    public function argsPlanningPhaseResolveSchemes_01125_3(): array
+    {
+        return [
+            "location" => $this->globals->get(GAME::CHOSEN_LOCATION)
+        ];
+    }
+
     public function argPlayerTurn(): array
     {
         $player_id = (int)$this->getActivePlayerId();

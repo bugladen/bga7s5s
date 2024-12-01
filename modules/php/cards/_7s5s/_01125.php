@@ -3,9 +3,14 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class _01125 extends Scheme
 {
+    public int $adversaryId;
+
     public function __construct()
     {
         parent::__construct();
@@ -24,5 +29,29 @@ class _01125 extends Scheme
             "Cunning", 
             "Hunt",
         ];
+
+        $this->adversaryId = 0;
+    }
+
+    public function handleEvent($event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
+            $event->theah->game->notifyAllPlayers("schemeResolvesMessage", clienttranslate('${scheme_name} now resolves. 
+            ${player_name} may first choose a city location to place reknown onto. If not, they may move a Reknown from a city location to an adjacent location. 
+            Lastly, they will choose an enemy character.'), [
+                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+                "player_name" => $event->playerName,
+            ]);
+
+            //Transition to the state where player can choose a location.
+            $transition = $event->theah->createEvent(Events::Transition);
+            if ($transition instanceof EventTransition) {
+                $transition->playerId = $event->playerId;
+                $transition->transition = '01125';
+            }
+            $event->theah->queueEvent($transition);
+        }
     }
 }

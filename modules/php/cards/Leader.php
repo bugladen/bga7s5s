@@ -51,8 +51,6 @@ abstract class Leader extends Character
         $properties['panache'] = $this->Panache;
         $properties['modifiedPanache'] = $this->ModifiedPanache;
 
-        $properties['type'] = 'Leader';
-
         return $properties;
     }
 

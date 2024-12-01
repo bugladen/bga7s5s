@@ -53,7 +53,7 @@ class _01150 extends Scheme
 
             $players = $game->loadPlayersBasicInfos();
 
-            //For each opponent, create an event
+            //For each opponent, create an event that transitions to the state where they can choose a location to remove reknown from.
             foreach ($players as $playerId => $player) {
                 if ($player['player_id'] == $this->OwnerId) continue;
 

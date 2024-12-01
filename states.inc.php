@@ -249,12 +249,64 @@ $machinestates = [
                 "pickOneLocationForReknownWithNone" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_ONE_LOCATION_FOR_REKNOWN_WITH_NONE,
                 "pickOneLocationForReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_ONE_LOCATION_FOR_REKNOWN,
                 "pickTwoLocationsForReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS_FOR_REKNOWN,
+                "01125" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_1,
                 "01044" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01044,
                 "01045" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01045,
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
                 "endOfEvents" => States::PLANNING_PHASE_DRAW
             ]
         ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_1 => [
+            "name" => "planningPhaseResolveSchemes_01125_1",
+            "description" => clienttranslate('${actplayer} may choose a City Location to place a Reknown onto.'),
+            "descriptionmyturn" => clienttranslate('${you} may choose a City Location to place a Reknown onto.'),
+            "type" => "activeplayer",
+            "args" => "argEmpty",
+            "possibleactions" => [
+                "actPlanningPhase_01125_1",
+                "actPlanningPhase_01125_1_Pass"
+            ],
+            "transitions" => [
+                "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_2,
+                "reknownPlaced" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4
+                ]
+        ],
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_2 => [
+                "name" => "planningPhaseResolveSchemes_01125_2",
+                "description" => clienttranslate('${actplayer} must choose a City Location to move a Reknown FROM, if able.'),
+                "descriptionmyturn" => clienttranslate('${you} must choose a City Location to move a Reknown FROM, if able.'),
+                "type" => "activeplayer",
+                "args" => "argEmpty",
+                "possibleactions" => [
+                    "actPlanningPhase_01125_2",
+                    "actPlanningPhase_01125_2_Pass"
+                ],
+                "transitions" => [
+                    "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4,
+                    "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_3
+                    ]
+                ],
+                States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_3 => [
+                    "name" => "planningPhaseResolveSchemes_01125_3",
+                    "description" => clienttranslate('${actplayer} must choose an adjacent City Location to move the Reknown TO.'),
+                    "descriptionmyturn" => clienttranslate('${you} must choose an adjacent City Location to move the Reknown TO.'),
+                    "type" => "activeplayer",
+                    "args" => "argsPlanningPhaseResolveSchemes_01125_3",
+                    "possibleactions" => ["actPlanningPhase_01125_3"],
+                    "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4]
+                ],
+                States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4 => [
+                    "name" => "planningPhaseResolveSchemes_01125_4",
+                    "description" => clienttranslate('${actplayer} must choose an enemy Character.'),
+                    "descriptionmyturn" => clienttranslate('${you} must choose an enemy Character.'),
+                    "type" => "activeplayer",
+                    "args" => "argEmpty",
+                    "possibleactions" => [
+                        "actPlanningPhase_01125_4",
+                        "actPlanningPhase_01125_4_Pass"
+                    ],
+                    "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+                ],
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01150 => [
             "name" => "planningPhaseResolveSchemes_01150",
             "description" => clienttranslate('${actplayer} may choose a city location to move a Reknown from.'),
@@ -262,7 +314,8 @@ $machinestates = [
             "type" => "activeplayer",
             "args" => "argEmpty",
             "possibleactions" => [
-                "actPlanningPhase_01150", "actPass" 
+                "actPlanningPhase_01150", 
+                "actPass" 
             ],
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
