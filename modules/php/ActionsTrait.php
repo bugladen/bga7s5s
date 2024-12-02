@@ -2,7 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01125;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
@@ -191,13 +190,8 @@ trait ActionsTrait
     public function actPlanningPhase_01125_4(string $ids)
     {
         $id = json_decode($ids, true)[0];
-        $playerId = $this->getActivePlayerId();
         $playerName = $this->getActivePlayerName();
         $character = $this->getCardObjectFromDb($id);
-
-        $sql = "SELECT selected_scheme_id as schemeId FROM player where player_id = $playerId";
-        $schemeId = $this->getUniqueValueFromDB($sql);
-        $scheme = $this->getCardObjectFromDb($schemeId);
 
         $this->notifyAllPlayers('message_01125_4', 
             clienttranslate('${player_name} has chosen ${character} as an adversary.'), [
@@ -205,10 +199,8 @@ trait ActionsTrait
             "character" => $character->Name
         ]);
 
-        if ($scheme instanceof _01125) {
-            $scheme->adversaryId = $id;
-            $this->updateCardObjectInDb($scheme);
-        }
+        $character->addCondition("Adversary of Yevgeni");
+        $this->updateCardObjectInDb($character);
 
         $this->gamestate->nextState("");
     }

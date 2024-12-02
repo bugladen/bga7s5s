@@ -9,8 +9,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class _01125 extends Scheme
 {
-    public int $adversaryId;
-
     public function __construct()
     {
         parent::__construct();
@@ -29,8 +27,6 @@ class _01125 extends Scheme
             "Cunning", 
             "Hunt",
         ];
-
-        $this->adversaryId = 0;
     }
 
     public function handleEvent($event)

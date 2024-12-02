@@ -15,6 +15,8 @@ abstract class Character extends Card
     public int $Influence;
     public int $ModifiedInfluence;
 
+    public array $conditions;
+
     public function __construct()
     {
         parent::__construct();
@@ -28,6 +30,8 @@ abstract class Character extends Card
         $this->ModifiedFinesse = 0;
         $this->Influence = 0;
         $this->ModifiedInfluence = 0;
+
+        $this->conditions = [];
     }
 
     public function hasWhenRevealedEffect() : bool
@@ -52,8 +56,21 @@ abstract class Character extends Card
         $properties['modifiedInfluence'] = $this->ModifiedInfluence;
 
         $properties['type'] = 'Character';
-
+        $properties['conditions'] = $this->conditions;
 
         return $properties;
+    }
+
+    public function addCondition($condition)
+    {
+        $this->conditions[] = $condition;
+    }
+
+    public function removeCondition($condition)
+    {
+        $index = array_search($condition, $this->conditions);
+        if ($index !== false) {
+            unset($this->conditions[$index]);
+        }
     }
 }
