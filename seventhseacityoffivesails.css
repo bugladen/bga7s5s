@@ -189,6 +189,20 @@ body {
     top: 5px;
 }
 
+.yevgeni-adversary-chip {
+    background-image: url('img/cards/7s5s/125.jpg');
+    background-size: 74px 101px;
+    background-position: -17px -51px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    position: relative;
+    display: inline-block;
+    left: 80px;
+    top: 40px;
+    border: 2px solid orangered
+}
+
 .city-image {
     background-image: var(--city-image);
     background-size: 272px 200px;

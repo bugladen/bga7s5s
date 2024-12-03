@@ -129,6 +129,10 @@ var jstpl_reknown_chip = `
 <div id="\${id}" class="reknown-chip card-reknown-chip">\${amount}</div>
 `;
 
+var jstpl_generic_chip = `
+<div id="\${id}" class="\${class}"></div>
+`;
+
 </script>  
 
 <div id="choose-container" class="whiteblock hand hidden">

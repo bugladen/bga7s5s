@@ -703,6 +703,19 @@ function (dojo, declare) {
             }
 
             this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, 100);
+
+            //Check for any special conditions where a token has to be displayed
+            if (character.conditions.includes('Adversary of Yevgeni')) {
+                //Get the first child of element divId
+                const child = $(divId).firstElementChild;
+                const id = `${divId}-yevgeni-adversary`;
+                dojo.place( this.format_block( 'jstpl_generic_chip', {
+                    id: id,
+                    class: 'yevgeni-adversary-chip',
+                }),  child, 'last');
+    
+                this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
+            }
         },  
 
         createEventCard: function( divId, event, location )
@@ -1133,6 +1146,7 @@ function (dojo, declare) {
                 ['cardAddedToHand', 1000],
                 ['cardRemovedFromCityDiscardPile', 500],
                 ['cardRemovedFromPlayerDiscardPile', 500],
+                ['yevgeni_adversary_chosen', 500],
             ];
 
             notifs.forEach((notif) => {
@@ -1381,5 +1395,22 @@ function (dojo, declare) {
             const player = this.gamedatas.players[args.player_id];
             player.discard = player.discard.filter((c) => c.id !== args.card.id);
         },
+
+        notif_yevgeni_adversary_chosen: function( notif )
+        {
+            console.log( 'notif_yevgeni_adversary_chosen' );
+            console.log( notif );
+
+            const args = notif.args;
+            const card = this.cardProperties[args.cardId];
+            const imageElement = dojo.query('.card', card.divId)[0];
+            const id = `${card.divId}-yevgeni-adversary`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: 'yevgeni-adversary-chip',
+            }),  imageElement, 'last');
+
+            this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
+        }
     });      
 });

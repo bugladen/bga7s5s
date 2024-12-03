@@ -193,10 +193,11 @@ trait ActionsTrait
         $playerName = $this->getActivePlayerName();
         $character = $this->getCardObjectFromDb($id);
 
-        $this->notifyAllPlayers('message_01125_4', 
-            clienttranslate('${player_name} has chosen ${character} as an adversary.'), [
+        $this->notifyAllPlayers('yevgeni_adversary_chosen', 
+            clienttranslate('${player_name} has chosen <span style="font-weight:bold">${character}</span> as Yevgeni\'s Adversary.'), [
             "player_name" => $playerName,
-            "character" => $character->Name
+            "character" => $character->Name,
+            "cardId" => $character->Id,
         ]);
 
         $character->addCondition("Adversary of Yevgeni");
