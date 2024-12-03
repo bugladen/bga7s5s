@@ -194,9 +194,9 @@ trait ActionsTrait
         $character = $this->getCardObjectFromDb($id);
 
         $this->notifyAllPlayers('yevgeni_adversary_chosen', 
-            clienttranslate('${player_name} has chosen <span style="font-weight:bold">${character}</span> as Yevgeni\'s Adversary.'), [
+            clienttranslate('${player_name} has chosen ${character} as Yevgeni\'s Adversary.'), [
             "player_name" => $playerName,
-            "character" => $character->Name,
+            "character" => "<span style='font-weight:bold'>{$character->Name}</span>",
             "cardId" => $character->Id,
         ]);
 

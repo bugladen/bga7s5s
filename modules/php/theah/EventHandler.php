@@ -76,7 +76,7 @@ trait EventHandler
                 
                 // Notify players that card has been played
                 $this->game->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_name} added to ${location} from the city deck'), [
-                    "card_name" => $event->card->Name,
+                    "card_name" => "<span style='font-weight:bold'>{$event->card->Name}</span>",
                     "location" => $event->location,
                     "card" => $event->card->getPropertyArray()
                 ]);
