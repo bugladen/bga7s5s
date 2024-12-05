@@ -15,6 +15,7 @@ abstract class Card
     public string $Faction;
     public bool $Engaged;
     public $Traits = [];
+    public array $conditions = [];
 
     public string $Location;
     public bool $IsUpdated;
@@ -59,6 +60,7 @@ abstract class Card
 
         $properties['type'] = 'Card';
         $properties['traits'] = $this->Traits;
+        $properties['conditions'] = $this->conditions;
 
         return $properties;
     }
