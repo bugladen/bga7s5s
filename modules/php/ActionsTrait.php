@@ -141,6 +141,13 @@ trait ActionsTrait
     public function actPlanningPhase_01125_2(string $locations)
     {
         $location = json_decode($locations, true)[0];
+
+        //Check if the location actually has reknown to move
+        $locationReknownName = $this->getReknownLocationName($location);
+        $reknown = $this->globals->get($locationReknownName);
+        if ($reknown <= 0) {
+            throw new \BgaUserException("{$location} does not have any reknown to move.");
+        }
         
         $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_2', 
             clienttranslate('You have chosen to move reknown from ${location}.  You must now choose a location to move the Reknown TO.'), [
