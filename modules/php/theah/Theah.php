@@ -1,4 +1,5 @@
 <?php
+
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -99,6 +100,11 @@ class Theah
         }
 
         return null;
+    }
+
+    public function getCityLocation(string $name): CityLocation
+    {
+        return $this->cityLocations[$name];
     }
 
     public function getCityLocationReknown()

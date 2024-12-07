@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -101,8 +102,19 @@ class _01126 extends Scheme
                 }
             }
 
-            //Discard all reknown
-
+            //Discard all reknown at chosen location
+            $location = $event->theah->getCityLocation($this->chosenLocation);
+            if ($location->Reknown > 0)
+            {
+                $reknown = $event->theah->createEvent(Events::ReknownRemovedFromLocation);
+                if ($reknown instanceof EventReknownRemovedFromLocation)
+                {
+                    $reknown->location = $this->chosenLocation;
+                    $reknown->amount = $location->Reknown;
+                    $reknown->source = $this->Name;
+                }
+                $event->theah->queueEvent($reknown);
+            }
         }
     }
 }
