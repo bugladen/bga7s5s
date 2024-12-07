@@ -72,7 +72,7 @@ class Theah
         }
     }
 
-    public function getCardsAtLocation($location, $playerId = null)
+    public function getCardPropertiesAtLocation($location, $playerId = null)
     {
         $cards = [];
         foreach ($this->cards as $card) {
@@ -81,9 +81,15 @@ class Theah
                     continue;
                 }
                 $cards[] = $card->getPropertyArray();
+                unset($card);
             }
         }
         return $cards;
+    }
+
+    public function getCardObjectsAtLocation($location, $playerId = null): array
+    {
+        return $this->db->getCardObjectsAtLocation($location, $playerId);
     }
 
     public function getCardById($cardId) : ?Card

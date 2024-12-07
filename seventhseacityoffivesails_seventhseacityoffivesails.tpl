@@ -122,6 +122,7 @@ var jstpl_card_scheme=`
         <div class="scheme-panache-value">\${panache}</div>
         <div class="scheme-panache-image"></div>
     </div>
+    <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="scheme-player-color"></div>
 </div>
 `;
 

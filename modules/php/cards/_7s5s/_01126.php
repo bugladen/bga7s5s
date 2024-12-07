@@ -2,10 +2,21 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class _01126 extends Scheme
 {
+    public string $chosenLocation = '';
+
     public function __construct()
     {
         parent::__construct();
@@ -24,5 +35,74 @@ class _01126 extends Scheme
             "Leshiya", 
             "Nature",
         ];
+    }
+
+    public function handleEvent($event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
+        {
+            $event->theah->game->notifyAllPlayers("schemeResolvesMessage", clienttranslate('${scheme_name} now resolves. 
+            ${player_name} may first choose an outermost city location. Then they will choose two locations to place reknown onto. '), [
+                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+                "player_name" => $event->playerName,
+            ]);
+
+            //Transition to the state where player can choose a location.
+            $transition = $event->theah->createEvent(Events::Transition);
+            if ($transition instanceof EventTransition) {
+                $transition->playerId = $event->playerId;
+                $transition->transition = '01126';
+            }
+            $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventSchemeMovedToCity && $event->scheme == $this)
+        {
+            $playerId = $event->theah->game->getActivePlayerId();
+            $deck = $event->theah->game->getGameDeckObject();
+
+            //Get all cards in the chosen location
+            $cards = $event->theah->getCardObjectsAtLocation($this->chosenLocation);
+            foreach ($cards as $card)
+            {
+                //Discard all city cards
+                if ($card instanceof CityDeckCard)
+                {
+                    $deck->moveCard($card->Id, Game::LOCATION_CITY_DISCARD);
+
+                    $discard = $event->theah->createEvent(Events::CardAddedToCityDiscardPile);
+                    if ($discard instanceof EventCardAddedToCityDiscardPile)
+                    {
+                        $discard->card = $card;
+                        $discard->fromLocation = $this->chosenLocation;
+                        $discard->playerId = $playerId;
+                    }
+
+                    $event->theah->queueEvent($discard);
+                }
+
+                //All characters go home
+                else if ($card instanceof Character)
+                {
+                    $deck->moveCard($card->Id, Game::LOCATION_PLAYER_HOME, $card->ControllerId);;
+
+                    $movedHome = $event->theah->createEvent(Events::CardMoved);
+                    if ($movedHome instanceof EventCardMoved)
+                    {
+                        $movedHome->card = $card;
+                        $movedHome->fromLocation = $this->chosenLocation;
+                        $movedHome->toLocation = Game::LOCATION_PLAYER_HOME;
+                        $movedHome->playerId = $card->ControllerId;
+                    }
+
+                    $event->theah->queueEvent($movedHome);
+                }
+            }
+
+            //Discard all reknown
+
+        }
     }
 }

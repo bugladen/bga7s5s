@@ -107,6 +107,8 @@ function (dojo, declare) {
                 case 'planningPhaseResolveSchemes_01125_1': 
                 case 'planningPhaseResolveSchemes_01125_2': 
                 case 'planningPhaseResolveSchemes_01125_3':
+                case 'planningPhaseResolveSchemes_01126_1':
+                case 'planningPhaseResolveSchemes_01126_2':
                 case 'planningPhaseResolveSchemes_01150':
                     const locations = this.getListofAvailableCityLocationImages();
                     locations.forEach((location) => {
@@ -168,6 +170,8 @@ function (dojo, declare) {
                         break;
 
                     case 'planningPhaseResolveSchemes_PickOneLocationForReknown':
+                    case 'planningPhaseResolveSchemes_01126_1': 
+                    case 'planningPhaseResolveSchemes_01126_2': 
                         this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                         dojo.addClass('actCityLocationsSelected', 'disabled');
                         break;

@@ -4,22 +4,27 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 class Events
 {
+    //Phase Events
     const NewDay = 'EventNewDay';
     const PhaseDawnBeginning = 'EventPhaseDawnBeginning';
-
-    const CityCardAddedToLocation = 'EventCityCardAddedToLocation';
-    const CardRemovedFromCityDiscardPile = 'EventCardRemovedFromCityDiscardPile';
-    const CardAddedToCityDeck = 'EventCardAddedToCityDeck';
-
     const PhaseDawnEnding = 'EventPhaseDawnEnding';
     const PhasePlanningBeginning = 'EventPhasePlanningBeginning';
     const PhasePlanningEnd = 'EventPhasePlanningEnd';
     const PhaseHighDrama = 'EventPhaseHighDrama';
 
+    //Planning Phase Events
     const ApproachCharacterPlayed = 'EventApproachCharacterPlayed';
     const SchemeCardRevealed = 'EventSchemeCardRevealed';
+    const SchemeMovedToCity = 'EventSchemeMovedToCity';
     const ResolveScheme = 'EventResolveScheme';
 
+    //City Card Events
+    const CardAddedToCityDeck = 'EventCardAddedToCityDeck';
+    const CityCardAddedToLocation = 'EventCityCardAddedToLocation';
+    const CardAddedToCityDiscardPile = 'EventCardAddedToCityDiscardPile';
+    const CardRemovedFromCityDiscardPile = 'EventCardRemovedFromCityDiscardPile';
+
+    //Reknown Events
     const PlayerLosesReknown = 'EventPlayerLosesReknown';
     const ReknownAddedToCard = 'EventReknownAddedToCard';
     const ReknownAddedToLocation = 'EventReknownAddedToLocation';
@@ -27,6 +32,8 @@ class Events
 
     const CardAddedToHand = 'EventCardAddedToHand';
     const CardRemovedFromPlayerDiscardPile = 'EventCardRemovedFromPlayerDiscardPile';
+
+    const CardMoved = 'EventCardMoved';
     
     const Transition = 'EventTransition';
 }

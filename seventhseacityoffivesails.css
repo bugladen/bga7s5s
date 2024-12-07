@@ -356,6 +356,9 @@ body {
     border-radius: 5px;
     top: 35px;
 }
+.scheme-in-city {
+    position: relative;
+}
 
 .first-player-home {
     position: absolute;
@@ -656,6 +659,21 @@ body {
     width:10px;
     font-size: 12pt;
     margin-left: 2px;
+}
+
+.scheme-player-color {
+    position: relative;
+    background-color: var(--player-color);
+    border-radius: 50%;
+    height: 12px;
+    width: 12px;
+    right: -130px;
+    bottom: -15px;
+    /*
+    left: 130px;
+    top: 15px;
+    */
+    border: 2px solid black;
 }
 
 

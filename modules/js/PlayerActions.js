@@ -49,33 +49,23 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },    
 
-    onCityLocationsSelected: function() {
-        let action = '';
-        switch (this.gamedatas.gamestate.name) {
-            case 'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone':
-            case 'planningPhaseResolveSchemes_PickOneLocationForReknown':
-            case 'planningPhaseResolveSchemes_PickTwoLocationsForReknown':
-                action = 'actCityLocationsForReknownSelected';
-                break;
+    onCityLocationsSelected: function() 
+    {
+        const actionArray = {
+            'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone': 'actCityLocationsForReknownSelected',
+            'planningPhaseResolveSchemes_PickOneLocationForReknown': 'actCityLocationsForReknownSelected',
+            'planningPhaseResolveSchemes_PickTwoLocationsForReknown': 'actCityLocationsForReknownSelected',
+            'planningPhaseResolveSchemes_01125_1': 'actPlanningPhase_01125_1',
+            'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2',
+            'planningPhaseResolveSchemes_01125_3': 'actPlanningPhase_01125_3',
+            'planningPhaseResolveSchemes_01126_1': 'actPlanningPhase_01126_1',
+            'planningPhaseResolveSchemes_01126_2': 'actPlanningPhase_01126_2',
+            'planningPhaseResolveSchemes_01150': 'actPlanningPhase_01150',
+        };
 
-            case 'planningPhaseResolveSchemes_01125_1': 
-                action = 'actPlanningPhase_01125_1';
-                break;
-
-            case 'planningPhaseResolveSchemes_01125_2': 
-                action = 'actPlanningPhase_01125_2';
-                break;
-
-            case 'planningPhaseResolveSchemes_01125_3':
-                action = 'actPlanningPhase_01125_3';
-                break;
-
-            case 'planningPhaseResolveSchemes_01150':
-                action = 'actPlanningPhase_01150';
-                break;
-        }
-
+        const action = actionArray[this.gamedatas.gamestate.name];
         const locations = this.selectedCityLocations.map((loc) => $(loc).getAttribute('data-location'));
+
         this.bgaPerformAction(action, { 
             'locations': JSON.stringify(locations),
         }).then(() =>  {                

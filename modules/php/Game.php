@@ -165,10 +165,10 @@ class Game extends \Table
                 $player['leader'] = $card->getPropertyArray();
             }
             $location = $this->getPlayerDiscardDeckName($player_id);
-            $player['discard'] = $this->getCardsInLocation($location);
+            $player['discard'] = $this->getCardPropertiesInLocation($location);
 
             $location = $this->getPlayerLockerName($player_id);
-            $player['locker'] = $this->getCardsInLocation($location);
+            $player['locker'] = $this->getCardPropertiesInLocation($location);
 
             //Set updated player data back into the array
             $players[$player_id] = $player;
@@ -182,17 +182,17 @@ class Game extends \Table
             $result["firstPlayer"] = $this->globals->get("firstPlayer");
         }
 
-        $result["homeCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_PLAYER_HOME);
-        $result["oleCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_OLES_INN);
-        $result["dockCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_DOCKS);
-        $result["forumCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_FORUM);
-        $result["bazaarCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_BAZAAR);
-        $result["gardenCards"] = $this->theah->getCardsAtLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
+        $result["homeCards"] = $this->theah->getCardPropertiesAtLocation(Game::LOCATION_PLAYER_HOME);
+        $result["oleCards"] = $this->theah->getCardPropertiesAtLocation(Game::LOCATION_CITY_OLES_INN);
+        $result["dockCards"] = $this->theah->getCardPropertiesAtLocation(Game::LOCATION_CITY_DOCKS);
+        $result["forumCards"] = $this->theah->getCardPropertiesAtLocation(Game::LOCATION_CITY_FORUM);
+        $result["bazaarCards"] = $this->theah->getCardPropertiesAtLocation(Game::LOCATION_CITY_BAZAAR);
+        $result["gardenCards"] = $this->theah->getCardPropertiesAtLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
 
-        $result["approachDeck"] = $this->getCardsInLocation(Game::LOCATION_APPROACH, $currentPlayerId);
-        $result["factionHand"] = $this->getCardsInLocation(Game::LOCATION_HAND, $currentPlayerId);
+        $result["approachDeck"] = $this->getCardPropertiesInLocation(Game::LOCATION_APPROACH, $currentPlayerId);
+        $result["factionHand"] = $this->getCardPropertiesInLocation(Game::LOCATION_HAND, $currentPlayerId);
 
-        $result['cityDiscard'] = $this->getCardsInLocation(Game::LOCATION_CITY_DISCARD);
+        $result['cityDiscard'] = $this->getCardPropertiesInLocation(Game::LOCATION_CITY_DISCARD);
 
         $result["locationReknown"] = $this->theah->getCityLocationReknown();
 

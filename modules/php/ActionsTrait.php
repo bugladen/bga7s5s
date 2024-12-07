@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDis
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 
 trait ActionsTrait
 {
@@ -218,6 +219,66 @@ trait ActionsTrait
         $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_4_Pass', 
             clienttranslate('You have passed choosing a character as an adversary.'), []);
 
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanningPhase_01126_1(string $locations)
+    {
+        $location = json_decode($locations, true)[0];
+        $playerId = $this->getActivePlayerId();
+        $playerName = $this->getActivePlayerName();
+
+        $this->notifyAllPlayers('message_01126_1', 
+            clienttranslate('${player_name} has chosen ${location} as the Chosen Location for ${card_name}'), [
+            "player_name" => $playerName,
+            "location" => $location,
+            "card_name" => '<span style="font-weight:bold">Leshiye of the Woods</span>',
+        ]);
+
+        //Get the chosen scheme card for the player
+        $sql = "SELECT selected_scheme_id FROM player WHERE player_id = $playerId";
+        $selectedSchemeId = $this->getUniqueValueFromDB($sql);
+        $scheme = $this->getCardObjectFromDb($selectedSchemeId);
+
+        if ($scheme instanceof \Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01126) {
+            $scheme->chosenLocation = $location;
+            $this->updateCardObjectInDb($scheme);
+        }
+
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanningPhase_01126_2(string $locations)
+    {
+        $locations = json_decode($locations, true);
+        foreach ($locations as $location) {
+            $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
+            if ($event instanceof EventReknownAddedToLocation) {
+                $event->location = $location;
+                $event->amount = 1;
+                $event->source = "Leshiye of the Woods: Adding Reknown to Location";
+            }
+            $this->theah->queueEvent($event);
+        }
+
+        $playerId = $this->getActivePlayerId();
+
+        // Move leshiye of the woods to the chosen location
+        $sql = "SELECT selected_scheme_id FROM player WHERE player_id = $playerId";
+        $selectedSchemeId = $this->getUniqueValueFromDB($sql);
+        $scheme = $this->getCardObjectFromDb($selectedSchemeId);
+
+        $this->cards->moveCard($selectedSchemeId, $scheme->chosenLocation, $playerId);
+
+        $event = $this->theah->createEvent(Events::SchemeMovedToCity);
+        if ($event instanceof EventSchemeMovedToCity) {
+            $event->scheme = $scheme;
+            $event->location = $scheme->chosenLocation;
+            $event->playerId = $playerId;
+        }
+        $this->theah->queueEvent($event);
+
+        // Go back and finish running the Scheme events
         $this->gamestate->nextState("");
     }
 

@@ -2,16 +2,19 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
-use Bga\Games\SeventhSeaCityOfFiveSails\Game;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 
 trait EventHandler
 {
@@ -32,7 +35,6 @@ trait EventHandler
                     "character_name" => "<span style='font-weight:bold'>{$event->character->Name}</span>",
                     "character" => $event->character->getPropertyArray(),
                 ]);
-
                 break;
 
             case $event instanceof EventCardAddedToHand:
@@ -46,17 +48,35 @@ trait EventHandler
                     "card_name" => "<span style='font-weight:bold'>{$event->card->Name}</span>",
                     "card" => $event->card->getPropertyArray(),
                 ]);
+                break;
 
+            case $event instanceof EventCardAddedToCityDiscardPile:
+                $this->game->notifyAllPlayers("cardAddedToCityDiscardPile", clienttranslate('${card_name} added to City Discard pile from ${location}.'), [
+                    "card_name" => $event->card->Name,
+                    "cardId" => $event->card->Id,
+                    "location" => $event->fromLocation,
+                ]);
+                break;
+
+            case $event instanceof EventCardMoved:
+                $event->card->Location = $event->toLocation;
+                $event->card->IsUpdated = true;
+
+                $this->game->notifyAllPlayers("cardMoved", clienttranslate('${card_name} moved from ${fromLocation} to ${toLocation}.'), [
+                    "card_name" => "<span style='font-weight:bold'>{$event->card->Name}</span>",
+                    "cardId" => $event->card->Id,
+                    "fromLocation" => $event->fromLocation,
+                    "toLocation" => $event->toLocation,
+                ]);
                 break;
 
             case $event instanceof EventCardRemovedFromCityDiscardPile:
                 $this->game->notifyAllPlayers("cardRemovedFromCityDiscardPile", clienttranslate('${card_name} removed from City Discard pile.'), [
                     "card_name" => $event->card->Name,
                     "card" => $event->card->getPropertyArray(),
-                ]);
-
+                ]);    
                 break;
-
+    
             case $event instanceof EventCardRemovedFromPlayerDiscardPile:
                 $this->game->notifyAllPlayers("cardRemovedFromPlayerDiscardPile", clienttranslate('${card_name} removed from ${player_name}\'s discard pile.'), [
                     "player_id" => $event->playerId,
@@ -150,6 +170,20 @@ trait EventHandler
                     "scheme" => $event->scheme->getPropertyArray(),
                 ]);
 
+                break;
+
+            case $event instanceof EventSchemeMovedToCity:
+                $event->scheme->Location = $event->location;
+                $event->scheme->IsUpdated = true;
+                $this->cards[$event->scheme->Id] = $event->scheme;
+        
+                $this->game->notifyAllPlayers('message_01126_2_scheme_moved', 
+                    clienttranslate('${card_name} moves to ${location}'), [
+                        "cardId" => $event->scheme->Id,
+                        "card_name" => '<span style="font-weight:bold">Leshiye of the Woods</span>',
+                        "location" => $event->location,
+                ]);
+        
                 break;
 
             }

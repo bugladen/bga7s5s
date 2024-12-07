@@ -153,13 +153,35 @@ return declare('seventhseacityoffivesails.utilities', null, {
         //Add to the card properties cache
         this.cardProperties[scheme.id] = scheme;
 
+        const playerId = scheme.controllerId;
+        const playerInfo = this.gamedatas.players[playerId];
+
+        let position = 'after';
+        
+        //Is the card in the city due to some effect?
+        const schemeInCity = this.isCardInCity(scheme.id);
+        if (schemeInCity) {
+            position = 'before';
+        }
+
         dojo.place( this.format_block( 'jstpl_card_scheme', {
             id: divId,
             image: scheme.image,
+            player_color: playerInfo.color,
             initiative: scheme.initiative,
             panache: this.formatModifer(scheme.panacheModifier),
-        }), location, "after" );
+        }), location, position );
 
+        if (schemeInCity) {
+            //Get the image element
+            const img = $(divId).firstElementChild;
+            //Add the scheme-in-city class to the card
+            dojo.addClass(img, 'scheme-in-city');
+        }
+        else {
+            dojo.removeClass(`${divId}-player-color`, 'scheme-player-color');
+        }
+        
         this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + scheme.image}" />`, 100);
     },  
 
@@ -220,6 +242,20 @@ return declare('seventhseacityoffivesails.utilities', null, {
         return locations;
     },
 
+    getListofOutermostCityLocations: function()
+    {
+        const playerCount = Object.keys(this.gamedatas.players).length;
+        switch (playerCount) {
+            case 1:
+            case 2:
+                return ['dock-image', 'bazaar-image'];
+            case 3:
+                return ['oles-inn-image', 'bazaar-image'];
+            case 4:
+                return ['oles-inn-image', 'garden-image'];
+        }
+    },
+
     getListOfLocationsAdjacentToLocation: function( location )
     {
         switch (location) {
@@ -259,6 +295,52 @@ return declare('seventhseacityoffivesails.utilities', null, {
     {
         const card = this.cardProperties[cardTypeId];
         this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, 100);
+    },
+
+    isCardInCity: function( cardId )
+    {
+        const card = this.cardProperties[cardId];
+        return (card.location === this.LOCATION_CITY_DOCKS 
+            || card.location === this.LOCATION_CITY_FORUM 
+            || card.location === this.LOCATION_CITY_BAZAAR 
+            || card.location === this.LOCATION_CITY_OLES_INN 
+            || card.location === this.LOCATION_CITY_GOVERNORS_GARDEN);
+    },
+
+    createCardId: function( card, location )
+    {
+        switch (location) {
+            case this.LOCATION_CITY_OLES_INN:
+                return `oles-inn-${card.id}`;
+            case this.LOCATION_CITY_DOCKS:
+                return `docks-${card.id}`;
+            case this.LOCATION_CITY_FORUM:
+                return `forum-${card.id}`;
+            case this.LOCATION_CITY_BAZAAR:
+                return `bazaar-${card.id}`;
+            case this.LOCATION_CITY_GOVERNORS_GARDEN:
+                return `garden-${card.id}`;
+            case this.LOCATION_PLAYER_HOME:
+                return `${card.controllerId}-${card.id}`;
+        }
+    },
+
+    getTargetElementForLocation: function ( location, playerId )
+    {
+        switch (location) {
+            case this.LOCATION_CITY_OLES_INN:
+                return 'oles-inn-endcap';
+            case this.LOCATION_CITY_DOCKS:
+                return 'dock-endcap';
+            case this.LOCATION_CITY_FORUM:
+                return 'forum-endcap';
+            case this.LOCATION_CITY_BAZAAR:
+                return 'bazaar-endcap';
+            case this.LOCATION_CITY_GOVERNORS_GARDEN:
+                return 'garden-endcap';
+            case this.LOCATION_PLAYER_HOME:
+                return `${playerId}-home-anchor`
+        }
     },
 
 })

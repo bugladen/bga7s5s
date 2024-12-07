@@ -140,7 +140,7 @@ trait DeckTrait
         }
     }
 
-    public function getCardsInLocation($location, $playerId = null)
+    public function getCardPropertiesInLocation($location, $playerId = null)
     {
         $cards = [];
         $locationCards = $this->cards->getCardsInLocation($location);

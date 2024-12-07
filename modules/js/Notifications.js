@@ -11,6 +11,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['approachCardsReceived', 1000],
             ['newDay', 1000],
             ['cityCardAddedToLocation', 500],
+            ['cardAddedToCityDiscardPile', 500],
+            ['cardMoved', 500],
             ['playApproachScheme', 2000],
             ['playApproachCharacter', 2000],
             ['firstPlayer', 1500],
@@ -24,6 +26,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardRemovedFromCityDiscardPile', 500],
             ['cardRemovedFromPlayerDiscardPile', 500],
             ['yevgeni_adversary_chosen', 500],
+            ['message_01126_2_scheme_moved', 500],
         ];
 
         notifs.forEach((notif) => {
@@ -45,7 +48,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
             args.leader
         );
 
-        this.createCard(`${args.player_id}-${args.leader.id}`, args.leader, `${args.player_id}-home-anchor`);
+        const target = this.getTargetElementForLocation(this.LOCATION_PLAYER_HOME, args.player_id);
+        const cardId = this.createCardId(args.leader, this.LOCATION_PLAYER_HOME);
+        this.createCard(cardId, args.leader, target);
 
         // Update the player panel
         dojo.addClass( `overall_player_board_${args.player_id}`, `home-${args.leader.faction.toLowerCase()}` );
@@ -119,6 +124,42 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.addCardToDeck(this.factionHand, notif.args.card);
     },
 
+    notif_cardAddedToCityDiscardPile: function( notif )
+    {
+        debug( 'notif_cardAddedToCityDiscardPile' );
+        debug( notif );
+
+        const args = notif.args;
+
+        const card = this.cardProperties[args.cardId];
+        card.location = this.LOCATION_CITY_DISCARD;
+
+        dojo.destroy(card.divId);
+        card.divId = null;
+
+        this.gamedatas.cityDiscard.push(notif.args.card);
+    },
+
+    notif_cardMoved: function( notif )
+    {
+        debug( 'notif_cardMoved' );
+        debug( notif );
+
+        const args = notif.args;
+
+        const card = this.cardProperties[args.cardId];
+
+        //Destry the old card element
+        dojo.destroy(card.divId);
+
+        //Create the new card element
+        const cardId = this.createCardId(card, args.toLocation);
+        console.log( `cardId: ${cardId}` );
+        const target = this.getTargetElementForLocation(args.toLocation, card.controllerId);
+        console.log( `target: ${target}` );
+        this.createCard(cardId, card, target);
+    },
+
     notif_newDay: function( notif )
     {
         console.log( 'notif_newDay' );
@@ -138,33 +179,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
 
         const card = args.card;
-        let cardId = null;
-        let location = '';
-        switch (args.location) {
-            case this.LOCATION_CITY_OLES_INN:
-                cardId = `oles-inn-${card.id}`;
-                location = 'oles-inn-endcap';
-                break;
-            case this.LOCATION_CITY_DOCKS:
-                cardId = `docks-${card.id}`;
-                location = 'dock-endcap';
-                break;
-            case this.LOCATION_CITY_FORUM:
-                cardId = `forum-${card.id}`;
-                location = 'forum-endcap';
-                break;
-            case this.LOCATION_CITY_BAZAAR:
-                cardId = `bazaar-${card.id}`;
-                location = 'bazaar-endcap';
-                break;
-            case this.LOCATION_CITY_GOVERNORS_GARDEN:
-                cardId = `garden-${card.id}`;
-                location = 'garden-endcap';
-                break;
-        }
-
-        this.createCard(cardId, card, location);
-
+        const target = this.getTargetElementForLocation(args.location, card.controllerId);
+        const cardId = this.createCardId(card, args.location);
+        this.createCard(cardId, card, target);
     },
 
     notif_playerReknownUpdated: function( notif )
@@ -276,6 +293,21 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }),  imageElement, 'last');
 
         this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
-    }
+    },
+
+    notif_message_01126_2_scheme_moved: function( notif )
+    {
+        console.log( 'notif_message_01126_2_scheme_moved');
+        console.log( notif );
+
+        const args = notif.args;
+
+        const card = this.cardProperties[args.cardId];
+        card.location = args.location;
+        dojo.destroy(card.divId);
+
+        args.card = card;
+        this.notif_cityCardAddedToLocation(notif);
+    },
 })
 });

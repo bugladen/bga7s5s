@@ -17,8 +17,8 @@ return declare('seventhseacityoffivesails.setup', null, {
 
         // Set up the city tooltips
         this.addTooltipHtml( 'oles-inn-image', `<div class='basic-tooltip'>${_("Ole's Inn")}</div>` );
-        this.addTooltipHtml( 'dock-image', `<div class='basic-tooltip'>${_('The Docks')}</div>` );
-        this.addTooltipHtml( 'forum-image', `<div class='basic-tooltip'>${_('The Forums')}</div>` );
+        this.addTooltipHtml( 'dock-image', `<div class='basic-tooltip'>${_('The City Docks')}</div>` );
+        this.addTooltipHtml( 'forum-image', `<div class='basic-tooltip'>${_('The City Forum')}</div>` );
         this.addTooltipHtml( 'bazaar-image', `<div class='basic-tooltip'>${_('The Grand Bazaar')}</div>` );
         this.addTooltipHtml( 'garden-image', `<div class='basic-tooltip'>${_("Governor's Garden")}</div>` );
 

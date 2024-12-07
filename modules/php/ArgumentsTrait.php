@@ -41,6 +41,25 @@ trait ArgumentsTrait
         ];
     }
 
+    public function argsPlanningPhaseResolveSchemes_01126_2(): array
+    {
+        $playerId = $this->getActivePlayerId();
+
+        //Get the chosen scheme card for the player
+        $sql = "SELECT selected_scheme_id FROM player WHERE player_id = $playerId";
+        $selectedSchemeId = $this->getUniqueValueFromDB($sql);
+
+        $scheme = $this->getCardObjectFromDb($selectedSchemeId);
+        $location = '';
+        if ($scheme instanceof \Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01126) {
+            $location = $scheme->chosenLocation;
+        }
+        return [
+            "selectedLocation" => $location
+        ];
+
+    }
+
     public function argPlayerTurn(): array
     {
         $player_id = (int)$this->getActivePlayerId();
