@@ -137,7 +137,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         dojo.destroy(card.divId);
         card.divId = null;
 
-        this.gamedatas.cityDiscard.push(notif.args.card);
+        this.gamedatas.cityDiscard.push(card);
     },
 
     notif_cardMoved: function( notif )
