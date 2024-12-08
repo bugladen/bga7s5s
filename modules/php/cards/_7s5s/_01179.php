@@ -37,7 +37,7 @@ class _01179 extends CityEventCard
             foreach ($players as $playerId => $player) {
     
                 // Notify players that the player has lost reknown
-                $game->notifyAllPlayers("sirensScream", clienttranslate(
+                $game->notifyAllPlayers("message", clienttranslate(
                     'Siren\'s Scream effect triggers. All players will transfer 1 Reknown to the card if able.'), []);
                 $reknown = $game->getPlayerReknown($playerId);
                 if ($reknown > 0) {

@@ -295,14 +295,14 @@ trait StatesTrait
             }
         }
 
-        $this->notifyAllPlayers("resolveWhenRevealedCards", clienttranslate("Resolving any WHEN REVEALED effects on cards."), []);
+        $this->notifyAllPlayers("message", clienttranslate("Resolving any WHEN REVEALED effects on cards."), []);
 
         $this->gamestate->nextState("");
     }
 
     public function stPlanningPhaseMuster() {
         // Muster the characters
-        $this->notifyAllPlayers("muster", clienttranslate('All Players MUSTER their chosen Characters in player order starting with the FIRST PLAYER.'), []);
+        $this->notifyAllPlayers("message", clienttranslate('All Players MUSTER their chosen Characters in player order starting with the FIRST PLAYER.'), []);
 
         $sql = "SELECT player_id, player_name, leader_card_id as leaderId FROM player ORDER BY turn_order";
         $players = $this->getCollectionFromDb($sql);
@@ -314,12 +314,12 @@ trait StatesTrait
             $characterCount = $this->theah->getCharacterCountByPlayerId($playerId);
             if ($characterCount > $crewCap) {
                 //TODO: Go into a state to allow the player to remove characters
-                $this->notifyAllPlayers("overCrewCapLimit", clienttranslate('${player_name} is over their Crew Cap limit of ${crewcap}'), [
+                $this->notifyAllPlayers("message", clienttranslate('${player_name} is over their Crew Cap limit of ${crewcap}'), [
                     'player_name' => $player['player_name'],
                     'crewcap' => $crewCap
                 ]);
             } else {
-                $this->notifyAllPlayers("underCrewCapLimit", clienttranslate('<span style=${player_name} is under their Crew Cap limit of ${crewcap}'), [
+                $this->notifyAllPlayers("message", clienttranslate('<span style=${player_name} is under their Crew Cap limit of ${crewcap}'), [
                     'player_name' => $player['player_name'],
                     'crewcap' => $crewCap
                 ]);
@@ -332,7 +332,7 @@ trait StatesTrait
     public function stPlanningPhaseResolveSchemes() {
 
         // Resolve schemes
-        $this->notifyAllPlayers("resolveSchemes", clienttranslate('All Players RESOLVE their chosen Schemes in player order starting with the FIRST PLAYER.'), []);
+        $this->notifyAllPlayers("message", clienttranslate('All Players RESOLVE their chosen Schemes in player order starting with the FIRST PLAYER.'), []);
 
         // Resolve the schemes in player order
         $sql = "SELECT player_id, selected_scheme_id as schemeId FROM player ORDER by turn_order";
@@ -356,7 +356,7 @@ trait StatesTrait
 
     public function stPlanningPhaseDraw() {
         // Draw cards
-        $this->notifyAllPlayers("drawCards", clienttranslate('All Players DRAW cards.'), []);
+        $this->notifyAllPlayers("message", clienttranslate('All Players DRAW cards.'), []);
 
         $players = $this->loadPlayersBasicInfos();
         foreach ( $players as $playerId => $player ) {
@@ -394,7 +394,7 @@ trait StatesTrait
 
     public function stPlanningPhaseEnd() {
         //Notify players that it is planning phase end
-        $this->notifyAllPlayers("planningPhaseEnd", clienttranslate('<span style="font-weight:bold">PLANNING PHASE END</span>.'), []);
+        $this->notifyAllPlayers("message", clienttranslate('<span style="font-weight:bold">PLANNING PHASE END</span>.'), []);
 
         //Create the Planning phase event
         $event = $this->theah->createEvent(Events::PhasePlanningEnd);
@@ -417,7 +417,7 @@ trait StatesTrait
 
     public function stHighDramaPhase() {
         //Notify players that it is high drama phase
-        $this->notifyAllPlayers("highDramaPhase", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), []);
+        $this->notifyAllPlayers("message", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), []);
        
         $this->gamestate->changeActivePlayer($this->globals->get("firstPlayer"));
         $this->gamestate->nextState("");

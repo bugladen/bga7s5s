@@ -228,7 +228,7 @@ trait ActionsTrait
         $playerId = $this->getActivePlayerId();
         $playerName = $this->getActivePlayerName();
 
-        $this->notifyAllPlayers('message_01126_1', 
+        $this->notifyAllPlayers('message', 
             clienttranslate('${player_name} has chosen ${location} as the Chosen Location for ${card_name}'), [
             "player_name" => $playerName,
             "location" => $location,
@@ -307,41 +307,13 @@ trait ActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlayCard(int $card_id): void
-    {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        // check input values
-        // $args = $this->argPlayerTurn();
-        // $playableCardsIds = $args['playableCardsIds'];
-        // if (!in_array($card_id, $playableCardsIds)) {
-        //     throw new \BgaUserException('Invalid card choice');
-        // }
-
-        // Add your game logic to play a card here.
-        // $card_name = $this->card_types[$card_id]['card_name'];
-
-        // Notify all players about the card played.
-        // $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
-        //     "player_id" => $player_id,
-        //     "player_name" => $this->getActivePlayerName(),
-        //     "card_name" => $card_name,
-        //     "card_id" => $card_id,
-        //     "i18n" => ['card_name'],
-        // ]);
-
-        // at the end of the action, move to the next state
-        // $this->gamestate->nextState("playCard");
-    }
-
     public function actPass(): void
     {
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
 
         // Notify all players about the choice to pass.
-        $this->notifyAllPlayers("playerPasses", clienttranslate('${player_name} passes.'), [
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} passes.'), [
             "player_id" => $player_id,
             "player_name" => $this->getActivePlayerName(),
         ]);

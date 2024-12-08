@@ -44,7 +44,7 @@ class _01126 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-            $event->theah->game->notifyAllPlayers("schemeResolvesMessage", clienttranslate('${scheme_name} now resolves. 
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves. 
             ${player_name} may first choose an outermost city location. Then they will choose two locations to place reknown onto. '), [
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $event->playerName,

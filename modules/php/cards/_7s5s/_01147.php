@@ -38,7 +38,7 @@ class _01147 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notifyAllPlayers("schemeResolvesMessage", clienttranslate('${scheme_name} now resolves.  
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves.  
             Reknown will be added to The Forum and The Grand Bazaar. 
             Cards will be revealed from the City Deck until an Attachment is revealed, then added to The Grand Bazaar.'), [
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
@@ -73,7 +73,7 @@ class _01147 extends Scheme
                     $found = true;
                     $deck->moveCard($cityCard['id'], Game::LOCATION_CITY_BAZAAR);
         
-                    $event->theah->game->notifyAllPlayers("schemeResolvesMessage", clienttranslate('${card_name} was found as the top Attachment card in the City Deck.  The cards above it will be sunk.'), [
+                    $event->theah->game->notifyAllPlayers("message", clienttranslate('${card_name} was found as the top Attachment card in the City Deck.  The cards above it will be sunk.'), [
                         "card_name" => $card->Name,
                     ]);
 
@@ -102,7 +102,7 @@ class _01147 extends Scheme
 
             // If not found, inform players.
             if (! $found)
-                $event->theah->game->notifyAllPlayers("schemeResolvesMessage", clienttranslate('An Attachment card was not found in City Deck.  No card added to The Grand Bazaar'), []);
+                $event->theah->game->notifyAllPlayers("message", clienttranslate('An Attachment card was not found in City Deck.  No card added to The Grand Bazaar'), []);
         }
     }
 }

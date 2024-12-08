@@ -36,7 +36,7 @@ class _01045 extends Scheme
         parent::handleEvent($event);
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
-            $event->theah->game->notifyAllPlayers("schemeResolvesMessage", clienttranslate('${scheme_name} now resolves.  
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves.  
             Reknown will be added to The Forum. 
             ${player_name} will now search the City Deck discard pile for a Mercenary to place on top of the City Deck.'), [
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
