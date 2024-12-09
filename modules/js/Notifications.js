@@ -304,6 +304,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const card = this.cardProperties[args.cardId];
         card.location = args.location;
+        this.gamedatas.homeCards = this.gamedatas.homeCards.filter((scheme) => scheme.id !== card.id);
         dojo.destroy(card.divId);
 
         args.card = card;

@@ -58,13 +58,12 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
     onCityDiscardClicked: function( event )
     {
         this.myDlg = new ebg.popindialog();
-        this.myDlg.create( 'cityDiscardDialog' );
+        this.myDlg.create( 'discardDialog' );
         this.myDlg.setTitle( _("City Discard Pile") );
         this.myDlg.setMaxWidth( 675 );
 
         let cards = "";
         this.gamedatas.cityDiscard.forEach(card => {
-             console.log(card);
              cards += this.format_block('jstpl_discard_card', {
                 image : g_gamethemeurl + card.image,
              });
@@ -81,13 +80,12 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         let playerName = this.getFormattedPlayerName(playerId);
 
         this.myDlg = new ebg.popindialog();
-        this.myDlg.create( 'playerDiscardDialog' );
+        this.myDlg.create( 'discardDialog' );
         this.myDlg.setTitle( _(`${playerName} Discard Pile`) );
         this.myDlg.setMaxWidth( 675 );
 
         let cards = "";
         this.gamedatas.players[playerId].discard.forEach(card => {
-             console.log(card);
              cards += this.format_block('jstpl_discard_card', {
                 image : g_gamethemeurl + card.image,
              });
@@ -104,13 +102,12 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         let playerName = this.getFormattedPlayerName(playerId);
 
         this.myDlg = new ebg.popindialog();
-        this.myDlg.create( 'playerLockerDialog' );
+        this.myDlg.create( 'discardDialog' );
         this.myDlg.setTitle( _(`${playerName} Locker`) );
         this.myDlg.setMaxWidth( 675 );
 
         let cards = "";
         this.gamedatas.players[playerId].locker.forEach(card => {
-             console.log(card);
              cards += this.format_block('jstpl_discard_card', {
                 image : g_gamethemeurl + card.image,
              });
