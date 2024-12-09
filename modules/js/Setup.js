@@ -15,6 +15,10 @@ return declare('seventhseacityoffivesails.setup', null, {
             dojo.destroy('city-oles-inn');
         }
 
+        // City Discard Pile
+        dojo.style($('city-discard'), 'cursor', 'zoom-in');
+        dojo.connect($('city-discard'), 'onclick', this, 'onCityDiscardClicked');
+
         // Set up the city tooltips
         this.addTooltipHtml( 'oles-inn-image', `<div class='basic-tooltip'>${_("Ole's Inn")}</div>` );
         this.addTooltipHtml( 'dock-image', `<div class='basic-tooltip'>${_('The City Docks')}</div>` );
@@ -72,6 +76,14 @@ return declare('seventhseacityoffivesails.setup', null, {
                 this.createHome(playerId, player.color, player.leader);
                 dojo.addClass( `overall_player_board_${playerId}`, `home-${player.leader.faction.toLowerCase()}` );
                 dojo.addClass( `${playerId}-score-seal`, `seal-score seal-${player.leader.faction.toLowerCase()}-score` );
+
+                // Discard Pile
+                dojo.style(`${playerId}-discard`, 'cursor', 'zoom-in');
+                dojo.connect($(`${playerId}-discard`), 'onclick', this, 'onPlayerDiscardClicked');
+
+                // Locker Pile
+                dojo.style(`${playerId}-locker`, 'cursor', 'zoom-in');
+                dojo.connect($(`${playerId}-locker`), 'onclick', this, 'onPlayerLockerClicked');
             }
 
             const playerInfo = this.gamedatas.players[playerId];

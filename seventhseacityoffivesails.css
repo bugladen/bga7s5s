@@ -687,6 +687,13 @@ body {
     top: 90px;
     border: 2px solid black;
 }
+
+.discard-pile-card {
+    width: 300px;
+    border-radius: 10px;
+    border: 2px solid black;
+    margin: 5px;
+}
  
 .basic-tooltip {
     font-family: "Pirata One", system-ui;

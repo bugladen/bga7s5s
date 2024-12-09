@@ -55,5 +55,70 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         }
     },
 
+    onCityDiscardClicked: function( event )
+    {
+        this.myDlg = new ebg.popindialog();
+        this.myDlg.create( 'cityDiscardDialog' );
+        this.myDlg.setTitle( _("City Discard Pile") );
+        this.myDlg.setMaxWidth( 675 );
+
+        let cards = "";
+        this.gamedatas.cityDiscard.forEach(card => {
+             console.log(card);
+             cards += this.format_block('jstpl_discard_card', {
+                image : g_gamethemeurl + card.image,
+             });
+        });
+
+        this.myDlg.setContent( cards ); // Must be set before calling show() so that the size of the content is defined before positioning the dialog
+        this.myDlg.show();
+    },
+
+    onPlayerDiscardClicked: function (event)
+    {
+        //Get the data-player-id attribute from the element
+        let playerId = $(event.target.id).getAttribute('data-player-id');
+        let playerName = this.getFormattedPlayerName(playerId);
+
+        this.myDlg = new ebg.popindialog();
+        this.myDlg.create( 'playerDiscardDialog' );
+        this.myDlg.setTitle( _(`${playerName} Discard Pile`) );
+        this.myDlg.setMaxWidth( 675 );
+
+        let cards = "";
+        this.gamedatas.players[playerId].discard.forEach(card => {
+             console.log(card);
+             cards += this.format_block('jstpl_discard_card', {
+                image : g_gamethemeurl + card.image,
+             });
+        });
+
+        this.myDlg.setContent( cards ); // Must be set before calling show() so that the size of the content is defined before positioning the dialog
+        this.myDlg.show();
+    },
+
+    onPlayerLockerClicked: function (event)
+    {
+        //Get the data-player-id attribute from the element
+        let playerId = $(event.target.id).getAttribute('data-player-id');
+        let playerName = this.getFormattedPlayerName(playerId);
+
+        this.myDlg = new ebg.popindialog();
+        this.myDlg.create( 'playerLockerDialog' );
+        this.myDlg.setTitle( _(`${playerName} Locker`) );
+        this.myDlg.setMaxWidth( 675 );
+
+        let cards = "";
+        this.gamedatas.players[playerId].locker.forEach(card => {
+             console.log(card);
+             cards += this.format_block('jstpl_discard_card', {
+                image : g_gamethemeurl + card.image,
+             });
+        });
+
+        this.myDlg.setContent( cards ); // Must be set before calling show() so that the size of the content is defined before positioning the dialog
+        this.myDlg.show();
+    },
+
 })
 });

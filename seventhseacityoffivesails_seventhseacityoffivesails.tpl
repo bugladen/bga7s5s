@@ -46,9 +46,9 @@ var jstpl_home=`
 <div id="\${id}" class="home-container home-\${faction}">
     <div class="home-panel">
         <div id="\${id}-crewcap" class="crew-cap home-crew-cap">\${crewcap}</div>
-        <div id="\${id}-discard" class="home-discard"></div>
+        <div id="\${id}-discard" data-player-id="\${id}" class="home-discard"></div>
         <div id="\${id}-panache" class="panache home-panache">\${panache}</div>
-        <div id="\${id}-locker" class="home-locker"></div>
+        <div id="\${id}-locker" data-player-id="\${id}" class="home-locker"></div>
         <div></div>
         <div class="seal-home seal-\${faction}-home"></div>
         <div>
@@ -132,6 +132,11 @@ var jstpl_reknown_chip = `
 
 var jstpl_generic_chip = `
 <div id="\${id}" class="\${class}"></div>
+`;
+
+var jstpl_discard_card = `
+<img class="discard-pile-card" src="\${image}" />
+</div>
 `;
 
 </script>  
