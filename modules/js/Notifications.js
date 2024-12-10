@@ -58,6 +58,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
         $(`${args.player_id}-score-crewcap`).innerHTML = args.leader.crewCap;
         $(`${args.player_id}-score-panache`).innerHTML = args.leader.panache;
 
+        // Discard Pile
+        dojo.style(`${args.player_id}-discard`, 'cursor', 'zoom-in');
+        dojo.connect($(`${args.player_id}-discard`), 'onclick', this, 'onPlayerDiscardClicked');
+
+        // Locker Pile
+        dojo.style(`${args.player_id}-locker`, 'cursor', 'zoom-in');
+        dojo.connect($(`${args.player_id}-locker`), 'onclick', this, 'onPlayerLockerClicked');
+
         $('pagemaintitletext').innerHTML = _(`${args.player_name} has selected <span style="font-weight:bold">${args.leader.name}</span> as their leader`);
     },
 
