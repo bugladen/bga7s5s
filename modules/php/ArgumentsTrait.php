@@ -60,6 +60,13 @@ trait ArgumentsTrait
 
     }
 
+    public function argsPlanningPhaseResolveSchemes_01144_2(): array
+    {
+        return [
+            "location" => $this->globals->get(GAME::CHOSEN_LOCATION)
+        ];
+    }
+
     public function argPlayerTurn(): array
     {
         $player_id = (int)$this->getActivePlayerId();

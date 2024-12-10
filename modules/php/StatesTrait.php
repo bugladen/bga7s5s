@@ -211,10 +211,11 @@ trait StatesTrait
             $this->setNewPlayerOrder($highPlayerId);
 
             // Notify all players of the first player.
-            $this->notifyAllPlayers("firstPlayer", clienttranslate('${player_name} has the highest initiative of ${initiative} and will be set as First Player.'), [
+            $this->notifyAllPlayers("firstPlayer", clienttranslate('${player_name} has the highest initiative of ${initiative} and will be set as ${firstPlayer}.'), [
                 'player_name' => $players[$highPlayerId]['player_name'],
                 'initiative' => $highInitiative,
-                'playerId' => $highPlayerId
+                'playerId' => $highPlayerId,
+                'firstPlayer' => "<span style='font-weight:bold; color:red'>First Player</span>"
             ]);
 
             $this->gamestate->nextState("");
@@ -234,10 +235,11 @@ trait StatesTrait
             $this->setNewPlayerOrder($nextPlayerId);
 
             // Notify all players of the first player.
-            $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as First Player.'), [
+            $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as ${firstPlayer}.'), [
                 'player_name' => $players[$nextPlayerId]['player_name'],
                 'initiative' => $highInitiative,
-                'playerId' => $nextPlayerId
+                'playerId' => $nextPlayerId,
+                'firstPlayer' => "<span style='font-weight:bold; color:red'>First Player</span>"
             ]);
 
             $this->gamestate->nextState("");

@@ -282,6 +282,60 @@ trait ActionsTrait
         $this->gamestate->nextState("");
     }
 
+    public function actPlanningPhase_01144_1(string $locations)
+    {
+        $locations = json_decode($locations, true);
+        $location = array_shift($locations);
+        $activePlayerId = $this->getActivePlayerId();
+        $playerName = $this->getActivePlayerName();
+
+        $this->globals->set(GAME::CHOSEN_LOCATION, $location);
+
+        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
+        if ($event instanceof EventReknownAddedToLocation) {
+            $event->location = $location;
+            $event->amount = 1;
+            $event->source = $playerName;
+        }
+        $this->theah->queueEvent($event);
+
+        // Get all the reknown to compare
+        $players = $this->getCollectionFromDb("SELECT player_id, player_score score FROM player ORDER BY player_score DESC");
+        if (count($players) == 1) {
+            $this->gamestate->nextState("fewestReknown");                
+            return;
+        }
+
+        if ($players[0]['player_id'] != $activePlayerId) {
+            $this->gamestate->nextState("notFewestReknown");                
+            return;
+        }
+
+        if ($players[0]['score'] == $players[1]['score']) {
+            $this->gamestate->nextState("notFewestReknown");                
+            return;
+        }
+
+        $this->gamestate->nextState("fewestReknown");
+    }
+
+    public function actPlanningPhase_01144_2(string $locations)
+    {
+        $locations = json_decode($locations, true);
+        $location = array_shift($locations);
+        $playerName = $this->getActivePlayerName();
+
+        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
+        if ($event instanceof EventReknownAddedToLocation) {
+            $event->location = $location;
+            $event->amount = 1;
+            $event->source = $playerName;
+        }
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState("");
+    }
+
     public function actPlanningPhase_01150(string $locations)
     {
         $playerName = $this->getActivePlayerName();

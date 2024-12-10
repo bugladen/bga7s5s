@@ -19,6 +19,8 @@ onLeavingState: function( stateName )
         case 'planningPhaseResolveSchemes_01125_3':
         case 'planningPhaseResolveSchemes_01126_1':
         case 'planningPhaseResolveSchemes_01126_2':
+        case 'planningPhaseResolveSchemes_01144_1':
+        case 'planningPhaseResolveSchemes_01144_2':
         case 'planningPhaseResolveSchemes_01150':
             const locations = this.getListofAvailableCityLocationImages();
             locations.forEach((location) => {

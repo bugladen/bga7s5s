@@ -60,6 +60,8 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01125_3': 'actPlanningPhase_01125_3',
             'planningPhaseResolveSchemes_01126_1': 'actPlanningPhase_01126_1',
             'planningPhaseResolveSchemes_01126_2': 'actPlanningPhase_01126_2',
+            'planningPhaseResolveSchemes_01144_1': 'actPlanningPhase_01144_1',
+            'planningPhaseResolveSchemes_01144_2': 'actPlanningPhase_01144_2',
             'planningPhaseResolveSchemes_01150': 'actPlanningPhase_01150',
         };
 

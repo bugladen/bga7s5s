@@ -10,12 +10,18 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             dojo.removeClass(location, 'selected');
             this.selectedCityLocations = this.selectedCityLocations.filter((loc) => loc !== location);
         } 
-        else 
+        else if (this.selectedCityLocations.length == this.numberOfCityLocationsSelectable == 1)
         {
-            if (this.selectedCityLocations.length < this.numberOfCityLocationsSelectable) {
-                dojo.addClass(location, 'selected');
-                this.selectedCityLocations.push(location);
-            }
+            this.selectedCityLocations.forEach((loc) => {
+                dojo.removeClass(loc, 'selected');
+            });
+            this.selectedCityLocations = [];
+            dojo.addClass(location, 'selected');
+            this.selectedCityLocations.push(location);
+        }
+        else if (this.selectedCityLocations.length < this.numberOfCityLocationsSelectable) {
+            dojo.addClass(location, 'selected');
+            this.selectedCityLocations.push(location);
         }
 
         //Enable the confirm button if we have the right number of locations selected
@@ -32,19 +38,28 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         while (id === '') {
             id = event.target.parentElement.id;
         }
-        const card = this.getCardPropertiesByDivId(id);
-        const imageElement = dojo.query('.card', card.divId)[0];
+        let card = this.getCardPropertiesByDivId(id);
+        let imageElement = dojo.query('.card', card.divId)[0];
         if (dojo.hasClass(imageElement, 'selected')) 
         {
             dojo.removeClass(imageElement, 'selected');
             this.selectedCharacters = this.selectedCharacters.filter((char) => char !== card.id);
         } 
-        else 
+        else if (this.selectedCharacters.length == this.numberOfCharactersSelectable == 1)
         {
-            if (this.selectedCharacters.length < this.numberOfCharactersSelectable) {
-                dojo.addClass(imageElement, 'selected');
-                this.selectedCharacters.push(card.id);
-            }
+            this.selectedCharacters.forEach((unsetId) => {
+                unsetCard = this.cardProperties[unsetId];
+                unsetImageElement = dojo.query('.card', unsetCard.divId)[0];
+                dojo.removeClass(unsetImageElement, 'selected');
+            });
+            this.selectedCharacters = [];
+
+            dojo.addClass(imageElement, 'selected');
+            this.selectedCharacters.push(card.id);
+        }
+        else if (this.selectedCharacters.length < this.numberOfCharactersSelectable) {
+            dojo.addClass(imageElement, 'selected');
+            this.selectedCharacters.push(card.id);
         }
 
         //Enable the confirm button if we have the right number of locations selected

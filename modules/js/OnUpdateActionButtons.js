@@ -23,6 +23,8 @@ onUpdateActionButtons: function( stateName, args )
             case 'planningPhaseResolveSchemes_PickOneLocationForReknown':
             case 'planningPhaseResolveSchemes_01126_1': 
             case 'planningPhaseResolveSchemes_01126_2': 
+            case 'planningPhaseResolveSchemes_01144_1': 
+            case 'planningPhaseResolveSchemes_01144_2':
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
                 break;

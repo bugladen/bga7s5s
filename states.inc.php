@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * SeventhSeaCityOfFiveSails implementation : © <Your name here> <Your email address here>
+ * SeventhSeaCityOfFiveSails implementation : © Edward Mittelstedt bugbucket@comcast.net
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -16,41 +16,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
  * SeventhSeaCityOfFiveSails game states description
  *
  */
-
-/*
-   Game state machine is a tool used to facilitate game developpement by doing common stuff that can be set up
-   in a very easy way from this configuration file.
-
-   Please check the BGA Studio presentation about game state to understand this, and associated documentation.
-
-   Summary:
-
-   States types:
-   _ activeplayer: in this type of state, we expect some action from the active player.
-   _ multipleactiveplayer: in this type of state, we expect some action from multiple players (the active players)
-   _ game: this is an intermediary state where we don't expect any actions from players. Your game logic must decide what is the next game state.
-   _ manager: special type for initial and final state
-
-   Arguments of game states:
-   _ name: the name of the GameState, in order you can recognize it on your own code.
-   _ description: the description of the current game state is always displayed in the action status bar on
-                  the top of the game. Most of the time this is useless for game state with "game" type.
-   _ descriptionmyturn: the description of the current game state when it's your turn.
-   _ type: defines the type of game states (activeplayer / multipleactiveplayer / game / manager)
-   _ action: name of the method to call when this game state become the current game state. Usually, the
-             action method is prefixed by "st" (ex: "stMyGameStateName").
-   _ possibleactions: array that specify possible player actions on this step. It allows you to use "checkAction"
-                      method on both client side (Javacript: this.checkAction) and server side (PHP: $this->checkAction).
-   _ transitions: the transitions are the possible paths to go from a game state to another. You must name
-                  transitions in order to use transition names in "nextState" PHP method, and use IDs to
-                  specify the next game state for each transition.
-   _ args: name of the method to call to retrieve arguments for this gamestate. Arguments are sent to the
-           client side to be used on "onEnteringState" or to set arguments in the gamestate description.
-   _ updateGameProgression: when specified, the game progression is updated (=> call to your getGameProgression
-                            method).
-*/
-
-//    !! It is not a good idea to modify this file when a game is running !!
 
 $machinestates = [
 
@@ -162,7 +127,7 @@ $machinestates = [
     States::PLANNING_PHASE => [
         "name" => "planningPhase",
         "description" => clienttranslate('Your opponent must choose their Scheme Character to muster for the day.'),
-        "descriptionmyturn" => clienttranslate('${you} must choose ONE Scheme and ONE Character from your Approach Deck to muster for the day.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose ONE Scheme and ONE Character from your Approach Deck to muster for the day: '),
         "type" => "multipleactiveplayer",
         "args" => "argEmpty",
         "action" => "stPlanningPhase",
@@ -253,6 +218,7 @@ $machinestates = [
                 "01126" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_1,
                 "01044" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01044,
                 "01045" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01045,
+                "01144" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_1,
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
                 "endOfEvents" => States::PLANNING_PHASE_DRAW
             ]
@@ -260,7 +226,7 @@ $machinestates = [
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_1 => [
             "name" => "planningPhaseResolveSchemes_01125_1",
             "description" => clienttranslate('${actplayer} may choose a City Location to place a Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('${you} may choose a City Location to place a Reknown onto.'),
+            "descriptionmyturn" => clienttranslate('${you} may choose a City Location to place a Reknown onto: '),
             "type" => "activeplayer",
             "args" => "argEmpty",
             "possibleactions" => [
@@ -275,7 +241,7 @@ $machinestates = [
             States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_2 => [
                 "name" => "planningPhaseResolveSchemes_01125_2",
                 "description" => clienttranslate('${actplayer} must choose a City Location to move a Reknown FROM, if able.'),
-                "descriptionmyturn" => clienttranslate('${you} must choose a City Location to move a Reknown FROM, if able.'),
+                "descriptionmyturn" => clienttranslate('${you} must choose a City Location to move a Reknown FROM, if able: '),
                 "type" => "activeplayer",
                 "args" => "argEmpty",
                 "possibleactions" => [
@@ -320,18 +286,43 @@ $machinestates = [
             ],
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2]
         ],
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2 => [
-            "name" => "planningPhaseResolveSchemes_01126_2",
-            "description" => clienttranslate('${actplayer} must choose two other locations to place Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('${you} must choose two other locations to place Reknown onto.'),
-            "type" => "activeplayer",
-            "args" => "argsPlanningPhaseResolveSchemes_01126_2",
-            "possibleactions" => [
-                "actPlanningPhase_01126_2",
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2 => [
+                "name" => "planningPhaseResolveSchemes_01126_2",
+                "description" => clienttranslate('${actplayer} must choose two other locations to place Reknown onto.'),
+                "descriptionmyturn" => clienttranslate('${you} must choose two other locations to place Reknown onto.'),
+                "type" => "activeplayer",
+                "args" => "argsPlanningPhaseResolveSchemes_01126_2",
+                "possibleactions" => [
+                    "actPlanningPhase_01126_2",
+                ],
+                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
             ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-        ],
 
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_1 => [
+            "name" => "planningPhaseResolveSchemes_01144_1",
+            "description" => clienttranslate('${actplayer} must choose a city location to place Reknown onto.'),
+            "descriptionmyturn" => clienttranslate('${you} must choose a city location to place Reknown onto.'),
+            "type" => "activeplayer",
+            "args" => "argEmpty",
+            "possibleactions" => [
+                "actPlanningPhase_01144_1", 
+            ],
+            "transitions" => [
+                "fewestReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_2,
+                "notFewestReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
+            ]
+        ],
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_2 => [
+                "name" => "planningPhaseResolveSchemes_01144_2",
+                "description" => clienttranslate('${actplayer} must choose a different city location to place Reknown onto.'),
+                "descriptionmyturn" => clienttranslate('${you} must choose a different city location to place Reknown onto.'),
+                "type" => "activeplayer",
+                "args" => "argsPlanningPhaseResolveSchemes_01144_2",
+                "possibleactions" => [
+                    "actPlanningPhase_01144_2", 
+                ],
+                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+            ],
 
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01150 => [
             "name" => "planningPhaseResolveSchemes_01150",
