@@ -43,6 +43,7 @@ trait ActionsTrait
         foreach ($locations as $location) {
             $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
             if ($event instanceof EventReknownAddedToLocation) {
+                $event->playerId = $this->getActivePlayerId();
                 $event->location = $location;
                 $event->amount = 1;
             }
@@ -122,6 +123,7 @@ trait ActionsTrait
         
         $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
         if ($event instanceof EventReknownAddedToLocation) {
+            $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
             $event->source = "The Boar's Guile: Adding Reknown to Location";
@@ -186,6 +188,7 @@ trait ActionsTrait
 
         $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
         if ($event instanceof EventReknownAddedToLocation) {
+            $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
             $event->source = "The Boar's Guile: Moving Reknown from one Location to an adjacent location";
@@ -254,6 +257,7 @@ trait ActionsTrait
         foreach ($locations as $location) {
             $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
             if ($event instanceof EventReknownAddedToLocation) {
+                $event->playerId = $this->getActivePlayerId();
                 $event->location = $location;
                 $event->amount = 1;
                 $event->source = "Leshiye of the Woods: Adding Reknown to Location";
@@ -293,6 +297,7 @@ trait ActionsTrait
 
         $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
         if ($event instanceof EventReknownAddedToLocation) {
+            $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
             $event->source = $playerName;
@@ -327,6 +332,7 @@ trait ActionsTrait
 
         $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
         if ($event instanceof EventReknownAddedToLocation) {
+            $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
             $event->source = $playerName;
@@ -352,6 +358,7 @@ trait ActionsTrait
 
         $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
         if ($event instanceof EventReknownAddedToLocation) {
+            $event->playerId = $this->getActivePlayerId();
             $event->location = Game::LOCATION_CITY_FORUM;
             $event->amount = 1;
             $event->source = $playerName;

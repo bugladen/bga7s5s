@@ -43,6 +43,7 @@ class _01149 extends Scheme
 
             $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
             if ($reknown instanceof EventReknownAddedToLocation) {
+                $reknown->playerId = $this->ControllerId;
                 $reknown->location = Game::LOCATION_CITY_DOCKS;
                 $reknown->amount = 1;
                 $reknown->source = $this->Name;
@@ -51,6 +52,7 @@ class _01149 extends Scheme
 
             $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
             if ($reknown instanceof EventReknownAddedToLocation) {
+                $reknown->playerId = $this->ControllerId;
                 $reknown->location = Game::LOCATION_CITY_BAZAAR;
                 $reknown->amount = 1;
                 $reknown->source = $this->Name;

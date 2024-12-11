@@ -12,6 +12,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class _01150 extends Scheme
 {
+    public Array $interveneList = [];
+
     public function __construct()
     {
         parent::__construct();
@@ -45,6 +47,7 @@ class _01150 extends Scheme
 
             $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
             if ($reknown instanceof EventReknownAddedToLocation) {
+                $reknown->playerId = $this->ControllerId;
                 $reknown->location = Game::LOCATION_CITY_FORUM;
                 $reknown->amount = 1;
                 $reknown->source = $this->Name;
@@ -64,6 +67,27 @@ class _01150 extends Scheme
                 }
                 $event->theah->queueEvent($transition);
             }
+        }
+
+        if ($event instanceof EventReknownAddedToLocation && $event->location == Game::LOCATION_CITY_FORUM) {
+            $game = $event->theah->game;
+            if ( $event->playerId != 0 && ! in_array($event->playerId, $this->interveneList)) {
+                $this->interveneList[] = $event->playerId;
+                $this->IsUpdated = true;
+            }
+
+            $playerNames = [];
+            foreach ($this->interveneList as $playerId) {
+                    $playerName = $game->getUniqueValueFromDB("SELECT player_name from player where player_id = {$playerId}");
+                    $playerNames[] = $playerName;
+            }
+            $playerName = implode(", ", $playerNames);
+
+            $game->notifyAllPlayers("message", clienttranslate('${card_name}: ${player_name} has added Reknown to The Forums and may intervene this turn.'), [
+                "card_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+                "player_name" => $playerName,
+            ]);
+
         }
     }
 }
