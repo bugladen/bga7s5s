@@ -8,6 +8,8 @@ class Events
     const NewDay = 'EventNewDay';
     const PhaseDawnBeginning = 'EventPhaseDawnBeginning';
     const PhaseDawnEnding = 'EventPhaseDawnEnding';
+    const FirstPlayerDetermined = 'EventFirstPlayerDetermined';
+    const PhaseMuster = 'EventPhaseMuster';
     const PhasePlanningBeginning = 'EventPhasePlanningBeginning';
     const PhasePlanningEnd = 'EventPhasePlanningEnd';
     const PhaseHighDrama = 'EventPhaseHighDrama';

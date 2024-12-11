@@ -218,6 +218,8 @@ trait StatesTrait
                 'firstPlayer' => "<span style='font-weight:bold; color:red'>First Player</span>"
             ]);
 
+            $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
+            $this->theah->queueEvent($event);
             $this->gamestate->nextState("");
             return;
         }
@@ -242,6 +244,8 @@ trait StatesTrait
                 'firstPlayer' => "<span style='font-weight:bold; color:red'>First Player</span>"
             ]);
 
+            $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
+            $this->theah->queueEvent($event);
             $this->gamestate->nextState("");
             return;
         }
@@ -262,8 +266,10 @@ trait StatesTrait
             'playerId' => $firstPlayerId
         ]);
  
+        $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
+        $this->theah->queueEvent($event);
         $this->gamestate->nextState("");
-    }
+    }   
 
     public function stPlanningPhaseResolveWhenRevealedCards() 
     {
@@ -328,6 +334,8 @@ trait StatesTrait
             }
         }
 
+        $event = $this->theah->createEvent(Events::PhaseMuster);
+        $this->theah->queueEvent($event);
         $this->gamestate->nextState("");
     }
 
@@ -410,7 +418,6 @@ trait StatesTrait
         $turnPhase = Game::HIGH_DRAMA;
         $this->setGameStateValue("turnPhase", $turnPhase);
 
-        //Create the Planning phase event
         $event = $this->theah->createEvent(Events::PhaseHighDrama);
         $this->theah->queueEvent($event);
         
