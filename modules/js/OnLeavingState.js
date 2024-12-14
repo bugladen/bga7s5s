@@ -46,7 +46,7 @@ onLeavingState: function( stateName )
             }
             break;
 
-        case 'client_highDramaBeginning_01144_1':
+        case 'highDramaBeginning_01144_1_client':
             this.factionHand.setSelectionMode(0);
             this.clientArgs = {};
             break;

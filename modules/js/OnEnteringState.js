@@ -24,7 +24,7 @@ onEnteringState: function( stateName, args )
             this.approachDeck.setSelectionMode(2);
             break;
 
-        case 'client_highDramaBeginning_01144_1':
+        case 'highDramaBeginning_01144_1_client':
             card = this.cardProperties[this.clientArgs.selectedCharacters[0]];
             const image = $(`${card.divId}_image`);
             dojo.addClass(image, 'selectable');
