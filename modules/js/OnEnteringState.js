@@ -4,6 +4,12 @@ return declare('seventhseacityoffivesails.onenteringstate', null, {
 onEnteringState: function( stateName, args )
 {
     console.log( 'Entering state: '+stateName, args );
+
+    const methods = {
+        'dawnBeginning': (args) => {
+            
+        }
+    };
     
     switch( stateName )
     {
@@ -16,6 +22,46 @@ onEnteringState: function( stateName, args )
             $('city-day-phase').innerHTML = _('Planning');
             //Enable the approach deck
             this.approachDeck.setSelectionMode(2);
+            break;
+
+        case 'client_highDramaBeginning_01144_1':
+            card = this.cardProperties[this.clientArgs.selectedCharacters[0]];
+            const image = $(`${card.divId}_image`);
+            dojo.addClass(image, 'selectable');
+
+            const cost = $(`${card.divId}_wealth_cost`);
+            let discountedCost = parseInt(cost.innerHTML) - this.clientArgs.discount;
+            discountedCost = discountedCost < 0 ? 0 : discountedCost;
+            this.clientArgs.discountedCost = discountedCost;
+            cost.innerHTML = parseInt(discountedCost);
+            dojo.addClass(cost, 'discounted-wealth-cost');
+
+            this.factionHand.setSelectionMode(2);
+            break;
+
+        case 'highDramaBeginning_01144':
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCharactersSelectable = 1;
+                this.clientArgs.discount = args.args.discount;
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) ) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.addClass(image, 'selectable');
+                        dojo.style(image, 'cursor', 'pointer');
+
+                        const cost = $(`${card.divId}_wealth_cost`);
+                        let discountedCost = parseInt(cost.innerHTML) - this.clientArgs.discount;
+                        discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                        cost.innerHTML = parseInt(discountedCost);
+                        dojo.addClass(cost, 'discounted-wealth-cost');
+
+                        const handle = dojo.connect(image, 'onclick', this, 'onCharacterClicked');
+                        this.connects.push(handle);                        
+                    }
+                }
+            }
+
             break;
 
         case 'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone':
@@ -226,7 +272,7 @@ onEnteringState: function( stateName, args )
                 });
             }
             break;
-    
+
         case 'planningPhaseResolveSchemes_01150':
             if (this.isCurrentPlayerActive()) {
                 const locations = this.getListofAvailableCityLocationImages();
@@ -250,7 +296,7 @@ onEnteringState: function( stateName, args )
             }
             break;
 
-        case 'highDramaPhase':
+        case 'highDramaBeginning':
             $('city-day-phase').innerHTML = _('High Drama');
             break;
 

@@ -35,14 +35,18 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
     onCharacterClicked: function( event )
     {
         let id = event.target.id;
-        while (id === '') {
-            id = event.target.parentElement.id;
-        }
-        let card = this.getCardPropertiesByDivId(id);
-        let imageElement = dojo.query('.card', card.divId)[0];
-        if (dojo.hasClass(imageElement, 'selected')) 
+
+        //If id does not contain '_image' then ignore, we clicked on the some element inside the image that is not the image
+        if (!id.includes('_image')) { return }
+
+        //Remove '_image' from the id to get the card divId
+        const divId = id.substring(0, id.length - 6);
+
+        const card = this.getCardPropertiesByDivId(divId);
+        let image = $(id);
+        if (dojo.hasClass(image, 'selected')) 
         {
-            dojo.removeClass(imageElement, 'selected');
+            dojo.removeClass(image, 'selected');
             this.selectedCharacters = this.selectedCharacters.filter((char) => char !== card.id);
         } 
         else if (this.selectedCharacters.length == this.numberOfCharactersSelectable == 1)
@@ -54,11 +58,11 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             });
             this.selectedCharacters = [];
 
-            dojo.addClass(imageElement, 'selected');
+            dojo.addClass(image, 'selected');
             this.selectedCharacters.push(card.id);
         }
         else if (this.selectedCharacters.length < this.numberOfCharactersSelectable) {
-            dojo.addClass(imageElement, 'selected');
+            dojo.addClass(image, 'selected');
             this.selectedCharacters.push(card.id);
         }
 

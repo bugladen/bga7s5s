@@ -514,6 +514,9 @@ body {
 .city-character-wealth-cost {
     left: 65px;
 }
+.discounted-wealth-cost {
+    color: yellow;
+}
 
 .card-stat-box {
     width: 38px;

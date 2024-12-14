@@ -22,7 +22,6 @@ trait ArgumentsTrait
     {
         require('includes/starterdecks.inc.php');
         
-        /** @disregard P1012 */
         $starter_decks = json_decode($this->starter_decks);        
         $decks = array_map(function($deck) { 
             return [ 
@@ -32,6 +31,12 @@ trait ArgumentsTrait
         }, $starter_decks->decks);
 
         return ["availableDecks" => $decks];
+    }
+
+    public function argsHighDramaBeginning_01144(): array{
+        return [
+            "discount" => $this->globals->get(GAME::RECRUIT_DISCOUNT)
+        ];
     }
 
     public function argsPlanningPhaseResolveSchemes_01125_3(): array

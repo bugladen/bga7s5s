@@ -12,7 +12,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['newDay', 1000],
             ['cityCardAddedToLocation', 500],
             ['cardAddedToCityDiscardPile', 500],
+            ['cardAddedToPlayerDiscardPile', 500],
             ['cardMoved', 500],
+            ['characterRecruited', 1000],
             ['playApproachScheme', 2000],
             ['playApproachCharacter', 2000],
             ['firstPlayer', 1500],
@@ -25,7 +27,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardAddedToHand', 1000],
             ['cardRemovedFromCityDiscardPile', 500],
             ['cardRemovedFromPlayerDiscardPile', 500],
-            ['yevgeni_adversary_chosen', 500],
+            ['yevgeniAdversaryChosen', 500],
             ['message_01126_2_scheme_moved', 500],
         ];
 
@@ -148,6 +150,30 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.gamedatas.cityDiscard.push(card);
     },
 
+    notif_cardAddedToPlayerDiscardPile: function( notif )
+    {
+        debug( 'notif_cardAddedToPlayerDiscardPile' );
+        debug( notif );
+
+        const args = notif.args;
+        let card = null;
+
+        if (notif.args.playerId == this.player_id)
+        {
+            card = this.cardProperties[args.card.id];
+            this.factionHand.removeFromStockById(card.id);
+        }
+        else
+        {
+            card = args.card
+            this.cardProperties[card.id] = card;
+        }
+
+        card.location = this.LOCATION_PLAYER_DISCARD;
+        const player = this.gamedatas.players[args.playerId];
+        player.discard.push(card);
+    },
+
     notif_cardMoved: function( notif )
     {
         debug( 'notif_cardMoved' );
@@ -162,9 +188,27 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         //Create the new card element
         const cardId = this.createCardId(card, args.toLocation);
-        console.log( `cardId: ${cardId}` );
         const target = this.getTargetElementForLocation(args.toLocation, card.controllerId);
-        console.log( `target: ${target}` );
+        this.createCard(cardId, card, target);
+    },
+
+    notif_characterRecruited: function( notif )
+    {
+        console.log( 'notif_characterRecruited' );
+        console.log( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        card.controllerId = args.player_id;
+
+        //Remove from this.cardProperties
+        delete this.cardProperties[args.characterId];
+        dojo.destroy(card.divId);
+
+        const cardId = this.createCardId(card, card.location);
+        console.log( cardId );
+        const target = this.getTargetElementForLocation(card.location, card.controllerId);
+        console.log( target );
         this.createCard(cardId, card, target);
     },
 
@@ -286,15 +330,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
         player.discard = player.discard.filter((c) => c.id !== args.card.id);
     },
 
-    notif_yevgeni_adversary_chosen: function( notif )
+    notif_yevgeniAdversaryChosen: function( notif )
     {
-        console.log( 'notif_yevgeni_adversary_chosen' );
+        console.log( 'notif_yevgeniAdversaryChosen' );
         console.log( notif );
 
         const args = notif.args;
         const card = this.cardProperties[args.cardId];
         const imageElement = dojo.query('.card', card.divId)[0];
-        const id = `${card.divId}-yevgeni-adversary`;
+        const id = `${card.divId}_yevgeni_adversary`;
         dojo.place( this.format_block( 'jstpl_generic_chip', {
             id: id,
             class: 'yevgeni-adversary-chip',

@@ -53,7 +53,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             if (card.controllerId !== 0) {
                 const playerInfo = this.gamedatas.players[card.controllerId];
                 this.createCharacterCard(divId, playerInfo.color, card, targetDiv);
-                dojo.style( `${divId}-wealth-cost`, 'display', 'none' );
+                dojo.style( `${divId}_wealth_cost`, 'display', 'none' );
             }
             else {
                 this.createCharacterCard(divId, '', card, targetDiv);
@@ -101,8 +101,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
             cost: wealthCost,
         }), location, "before" );
 
-        if (!character.wealthCost) {
-            dojo.style( `${divId}-wealth-cost`, 'display', 'none' );
+        if (!character.wealthCost || character.controllerId) {
+            dojo.style( `${divId}_wealth_cost`, 'display', 'none' );
         }
 
         this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, 100);
@@ -111,7 +111,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         if (character.conditions.includes('Adversary of Yevgeni')) {
             //Get the first child of element divId
             const child = $(divId).firstElementChild;
-            const id = `${divId}-yevgeni-adversary`;
+            const id = `${divId}_yevgeni_adversary`;
             dojo.place( this.format_block( 'jstpl_generic_chip', {
                 id: id,
                 class: 'yevgeni-adversary-chip',

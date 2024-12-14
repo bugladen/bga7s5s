@@ -7,6 +7,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\DB;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -172,7 +174,7 @@ class Theah
     {
         $count = 0;
         foreach ($this->cards as $card) {
-            if ($card->ControllerId == $playerId) {
+            if (($card instanceof Character || $card instanceof CityCharacter) && $card->ControllerId == $playerId) {
                 $count++;
             }
         }

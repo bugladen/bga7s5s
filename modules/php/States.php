@@ -58,6 +58,7 @@ class States
 
     const HIGH_DRAMA_BEGINNING = 30;
         const HIGH_DRAMA_BEGINNING_EVENTS = 300;
+        const HIGH_DRAMA_BEGINNING_01144 = 3001144;
 
     const HIGH_DRAMA_PHASE = 31;
 

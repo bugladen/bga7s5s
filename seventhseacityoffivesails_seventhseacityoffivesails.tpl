@@ -63,19 +63,19 @@ var jstpl_home=`
 
 var jstpl_character=`
 <div id="\${id}">
-    <div class="card home-\${faction}" style="--card_image:url('\${image}')">
+    <div id="\${id}_image" class="card home-\${faction}" style="--card_image:url('\${image}')">
         <div class="card-resolve">\${resolve}</div>
-        <div id="\${id}-wealth-cost" class="card-wealth-cost city-character-wealth-cost">\${cost}</div>
+        <div id="\${id}_wealth_cost" class="card-wealth-cost city-character-wealth-cost">\${cost}</div>
         <div class="card-stat-box card-combat-box">
-            <div class="card-combat-value">\${combat}</div>
+            <div id="\${id}_combat_value" class="card-combat-value">\${combat}</div>
             <div class="card-combat-image"></div>
         </div>
         <div class="card-stat-box card-finesse-box">
-            <div class="finesse-value card-finesse-value">\${finesse}</div>
+            <div id="\${id}_finesse_value" class="finesse-value card-finesse-value">\${finesse}</div>
             <div class="card-finesse-image"></div>
         </div>
         <div class="card-stat-box card-influence">
-            <div class="card-influence-value">\${influence}</div>
+            <div id="\${id}_influence_value" class="card-influence-value">\${influence}</div>
             <div class="card-influence-image"></div>
         </div>
         <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="character-player-color"></div>
@@ -87,7 +87,7 @@ var jstpl_card_attachment=`
 <div id="\${id}">
     <div class="card home-\${faction}" style="--card_image:url('\${image}')">
         <div class="card-resolve">\${resolve}</div>
-        <div id="\${id}-wealth-cost" class="card-wealth-cost">\${cost}</div>
+        <div id="\${id}_wealth_cost" class="card-wealth-cost">\${cost}</div>
         <div class="card-stat-box card-combat-box">
             <div class="card-combat-value attachment-combat-value">\${combat}</div>
             <div class="card-combat-image"></div>
@@ -214,7 +214,7 @@ var jstpl_discard_card = `
 </div>
 
 <div id="factionHand-container" class="whiteblock hand">
-    <div><b>Your Faction Hand</b></div>
+    <div><span><b>Your Faction Hand</b></span> <span id="faction_hand_info"</span></div>
     <div id="factionHand">
     </div>
 </div>

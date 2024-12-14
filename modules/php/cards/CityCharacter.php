@@ -18,7 +18,8 @@ abstract class CityCharacter extends CityDeckCard
     public int $WealthCost;
     public bool $Negotiable;
 
-    public function __construct(){
+    public function __construct()
+    {
         parent::__construct();
 
         $this->Resolve = 0;

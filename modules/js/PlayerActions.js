@@ -28,6 +28,19 @@ return declare('seventhseacityoffivesails.actions', null, {
     onFactionCardSelected: function( control_name, item_id )
     {
         var items = this.factionHand.getSelectedItems();
+
+        switch (this.gamedatas.gamestate.name) {
+            case 'client_highDramaBeginning_01144_1':
+                let wealth = 0;
+                items.forEach((item) => {
+                    const card = this.cardProperties[item.type];
+                    wealth += card.traits.includes('Wealth') ? 2 : 1;
+                    
+                });
+                $('faction_hand_info').innerHTML = items.length > 0 ? `(${wealth} Wealth worth of cards selected)` : '';
+
+                break;
+            }
     },
 
     onChooseCardSelected: function()
@@ -77,19 +90,30 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onChooseCharacterConfirmed: function()
     {
-        let action = '';
-        switch (this.gamedatas.gamestate.name) {
-            case 'planningPhaseResolveSchemes_01125_4':
-                action = 'actPlanningPhase_01125_4';
-                break;
-        }
+        const actionArray = {
+            'highDramaBeginning_01144': 'client_highDramaBeginning_01144_1',
+            'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4',
+        };
 
-        console.log(this.selectedCharacters);
-        this.bgaPerformAction(action, { 
-            'ids' : JSON.stringify(this.selectedCharacters),
-        }).then(() =>  {                
-            // What to do after the server call if it succeeded
-        });        
+        const clientMessageArray = {
+            'client_highDramaBeginning_01144_1': "${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
+        };
+
+        const action = actionArray[this.gamedatas.gamestate.name];
+
+        //If the action has client_ in the name, we need to call a client side function
+        if (action.includes('client_')) {
+            this.clientArgs.selectedCharacters = this.selectedCharacters;
+            const clientMessage = clientMessageArray[action];
+            this.setClientState(action, {
+                'descriptionmyturn' : _(clientMessage),
+            })
+        } else {
+            const ids = JSON.stringify(this.selectedCharacters);
+            this.bgaPerformAction(action, { 
+                'ids' : ids,
+            });
+        }
     },
 
     onPlanningCardsSelected: function()
@@ -137,23 +161,34 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
+    onRecruitCharacterConfirmed: function()
+    {
+        var items = this.factionHand.getSelectedItems();
+        items = items.map((item) => item.id);
+
+        const actionArray = {
+            'client_highDramaBeginning_01144_1': 'actHighDramaBeginning_01144',
+        };
+
+        const action = actionArray[this.gamedatas.gamestate.name];
+        this.bgaPerformAction(action, { 
+            'recruitId': this.clientArgs.selectedCharacters[0],
+            'payWithCards': JSON.stringify(items),
+        });        
+    },
+
     onPass: function()
     {
-        let action = '';
-        switch (this.gamedatas.gamestate.name) {
-            case 'planningPhaseResolveSchemes_01125_1':
-                action = 'actPlanningPhase_01125_1_Pass';
-                break;
-            case 'planningPhaseResolveSchemes_01125_2':
-                action = 'actPlanningPhase_01125_2_Pass';
-                break;
-            case 'planningPhaseResolveSchemes_01125_4':
-                action = 'actPlanningPhase_01125_4_Pass';
-                break;
-            default:
-                action = 'actPass';
-                break;
-        }
+        const actionArray = {
+            'planningPhaseResolveSchemes_01125_1': 'actPlanningPhase_01125_1_Pass',
+            'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2_Pass',
+            'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4_Pass',
+        };
+
+        //If the current game state is in actionArray set the action to the value in the array
+        //Otherwise set the action to actPass
+        let action = actionArray[this.gamedatas.gamestate.name] || 'actPass';
+
         this.bgaPerformAction(action, { 
         }).then(() =>  {                
             // What to do after the server call if it succeeded

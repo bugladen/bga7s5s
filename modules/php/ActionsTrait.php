@@ -2,11 +2,14 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
@@ -204,7 +207,7 @@ trait ActionsTrait
         $playerName = $this->getActivePlayerName();
         $character = $this->getCardObjectFromDb($id);
 
-        $this->notifyAllPlayers('yevgeni_adversary_chosen', 
+        $this->notifyAllPlayers('yevgeniAdversaryChosen', 
             clienttranslate('${player_name} has chosen ${character} as Yevgeni\'s Adversary.'), [
             "player_name" => $playerName,
             "character" => "<span style='font-weight:bold'>{$character->Name}</span>",
@@ -336,6 +339,64 @@ trait ActionsTrait
             $event->location = $location;
             $event->amount = 1;
             $event->source = $playerName;
+        }
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState("");
+    }
+
+    public function actHighDramaBeginning_01144(int $recruitId, string $payWithCards)
+    {
+        $character = $this->getCardObjectFromDb($recruitId);
+        if ($character == null)
+        {
+            throw new \BgaUserException("Character not found.");
+        }
+        if ( ! $character instanceof CityCharacter)
+        {
+            throw new \BgaUserException("Character is not a City Character.");
+        }
+
+        $discount = $this->globals->get(Game::RECRUIT_DISCOUNT);        
+
+        $cost = $character->WealthCost - $discount;
+        if ($cost < 0) $cost = 0;
+
+        $cardIds = json_decode($payWithCards, true);
+        
+        //Total up the wealth of the cards to see if player paid correctly
+        $totalWealth = 0;
+        foreach ($cardIds as $cardId) {
+            $card = $this->getCardObjectFromDb($cardId);
+            //If $card has wealth in its traits, add it to the total wealth
+            $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+        }
+        if ($totalWealth != $cost) {
+            throw new \BgaUserException("Cost of Mercenary is {$cost}. You selected {$totalWealth} Wealth of cards.");
+        }
+
+        $playerId = $this->getActivePlayerId();
+
+        //Move the cards used to pay to the player's discard pile
+        foreach ($cardIds as $cardId) {
+            $card = $this->getCardObjectFromDb($cardId);
+            $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
+
+            $event = $this->theah->createEvent(Events::CardAddedToPlayerDiscardPile);
+            if ($event instanceof EventCardAddedToPlayerDiscardPile) {
+                $event->playerId = $playerId;
+                $event->card = $card;
+            }
+            $this->theah->queueEvent($event);
+        }
+
+        //Recruit the character
+        $event = $this->theah->createEvent(Events::CharacterRecruited);
+        if ($event instanceof EventCharacterRecruited) {
+            $event->character = $character;
+            $event->playerId = $playerId;
+            $event->discount = $discount;
+            $event->cost = $cost;
         }
         $this->theah->queueEvent($event);
 

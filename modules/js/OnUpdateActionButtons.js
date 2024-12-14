@@ -44,6 +44,10 @@ onUpdateActionButtons: function( stateName, args )
                 dojo.addClass('actCityLocationsSelected', 'disabled');
                 break;
 
+            case 'client_highDramaBeginning_01144_1':
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onRecruitCharacterConfirmed());
+                break;
+
             case 'planningPhaseResolveSchemes_01044':
             case 'planningPhaseResolveSchemes_01045':
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseStockCardConfirmed());
@@ -51,6 +55,7 @@ onUpdateActionButtons: function( stateName, args )
                 dojo.addClass('actChooseCardSelected', 'disabled');
                 break;
 
+            case 'highDramaBeginning_01144':
             case 'planningPhaseResolveSchemes_01125_4':
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseCharacterConfirmed());
                 this.addActionButton(`actPass`, _('Pass'), () => this.onPass());

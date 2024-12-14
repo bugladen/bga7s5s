@@ -30,6 +30,28 @@ onLeavingState: function( stateName )
             });
             break;
 
+        case 'highDramaBeginning_01144':
+            for( const cardId in this.cardProperties ) {
+                card = this.cardProperties[cardId];
+                if (card.type === 'Character' && this.isCardInCity(card.id)) {
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, 'selectable');
+                    dojo.removeClass(image, 'selected');
+                    dojo.style(image, 'cursor', 'default');
+
+                    const cost = $(`${card.divId}_wealth_cost`);
+                    cost.innerHTML = card.wealthCost;
+                    dojo.removeClass(cost, 'discounted-wealth-cost');
+                }
+            }
+            break;
+
+        case 'client_highDramaBeginning_01144_1':
+            this.factionHand.setSelectionMode(0);
+            this.clientArgs = {};
+            break;
+
+
         case 'planningPhaseResolveSchemes_01125_4':
             for( const cardId in this.cardProperties ) {
                 card = this.cardProperties[cardId];

@@ -2,8 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPhaseHighDrama;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -45,6 +47,50 @@ class _01144 extends Scheme
             $transition = $event->theah->createEvent(Events::Transition);
             if ($transition instanceof EventTransition) {
                 $transition->playerId = $event->playerId;
+                $transition->transition = '01144';
+            }
+            $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventPhaseHighDrama) {
+            $players = $event->theah->game->loadPlayersBasicInfos();
+
+            //Find the player with lowest count of characters in play.  Ties are ignored.
+            $lowestCount = 999;
+            $lowestPlayerId = null;
+            foreach ($players as $playerId => $player) {
+                $count = $event->theah->getCharacterCountByPlayerId($playerId);
+                if ($count == $lowestCount) {
+                    $lowestPlayerId = null;
+                }
+                else if ($count < $lowestCount) {
+                    $lowestCount = $count;
+                    $lowestPlayerId = $playerId;
+                }
+            }
+
+            if ($lowestPlayerId != $this->ControllerId) {
+                return;
+            }
+
+            // Get the higest stat for the player's leader
+            $leader = $event->theah->getLeaderByPlayerId($this->ControllerId);
+            $discount = max($leader->ModifiedCombat, $leader->ModifiedFinesse, $leader->ModifiedInfluence);
+
+            //Set the discount for recruiting a mercenary.
+            $event->theah->game->globals->set(Game::RECRUIT_DISCOUNT, $discount);
+
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} Leader Reaction: ${player_name} has the least (non-tied) amount of characters in play (${amount}).
+            They may now Recruit a mercenary at a discount of their Leader\'s highest stat.'), [
+                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+                "amount" => $lowestCount,
+                "player_name" => $players[$this->ControllerId]['player_name'],
+            ]);
+
+            //Transition to the state where player can choose a mercenary to recruit.
+            $transition = $event->theah->createEvent(Events::Transition);
+            if ($transition instanceof EventTransition) {
+                $transition->playerId = $this->ControllerId;
                 $transition->transition = '01144';
             }
             $event->theah->queueEvent($transition);

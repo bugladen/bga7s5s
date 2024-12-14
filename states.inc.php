@@ -428,7 +428,23 @@ $machinestates = [
             "description" => clienttranslate("Resolving Events for the Beginning of High Drama..."),
             "type" => "game",
             "action" => "stRunEvents",
-            "transitions" => ["endOfEvents" => States::HIGH_DRAMA_PHASE]
+            "transitions" => [
+                "01144" => States::HIGH_DRAMA_BEGINNING_01144,
+                "endOfEvents" => States::HIGH_DRAMA_PHASE
+                ]
+        ],
+
+        States::HIGH_DRAMA_BEGINNING_01144 => [
+            "name" => "highDramaBeginning_01144",
+            "description" => clienttranslate('${actplayer} may choose a Mercenary from a City Location to recruit to their home'),
+            "descriptionmyturn" => clienttranslate('${you} may choose a Mercenary from a City Location to recruit to your home:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaBeginning_01144",
+            "possibleactions" => [
+                "actHighDramaBeginning_01144", 
+                "actPass"
+            ],
+            "transitions" => ["" => States::HIGH_DRAMA_BEGINNING_EVENTS]
         ],
 
     States::HIGH_DRAMA_PHASE => [

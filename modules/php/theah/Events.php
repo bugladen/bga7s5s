@@ -32,8 +32,13 @@ class Events
     const ReknownAddedToLocation = 'EventReknownAddedToLocation';
     const ReknownRemovedFromLocation = 'EventReknownRemovedFromLocation';
 
+    //Player Hand events
     const CardAddedToHand = 'EventCardAddedToHand';
+    const CardAddedToPlayerDiscardPile = 'EventCardAddedToPlayerDiscardPile';
     const CardRemovedFromPlayerDiscardPile = 'EventCardRemovedFromPlayerDiscardPile';
+
+    //Character Events
+    const CharacterRecruited = 'EventCharacterRecruited';
 
     const CardMoved = 'EventCardMoved';
     

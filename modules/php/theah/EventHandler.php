@@ -8,7 +8,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
@@ -58,6 +60,16 @@ trait EventHandler
                 ]);
                 break;
 
+            case $event instanceof EventCardAddedToPlayerDiscardPile:
+                $this->game->notifyAllPlayers('cardAddedToPlayerDiscardPile',
+                    clienttranslate('${player_name} discarded ${card_name}.'), [
+                    "player_name" => $this->game->getPlayerNameById($event->playerId),
+                    "card_name" => $event->card->Name,
+                    "playerId" => $event->playerId,
+                    "card" => $event->card->getPropertyArray(),
+                ]);
+                break;
+
             case $event instanceof EventCardMoved:
                 $event->card->Location = $event->toLocation;
                 $event->card->IsUpdated = true;
@@ -84,7 +96,22 @@ trait EventHandler
                     "card_name" => $event->card->Name,
                     "card" => $event->card->getPropertyArray(),
                 ]);
+                break;
 
+            case $event instanceof EventCharacterRecruited:
+                $character = $this->cards[$event->character->Id];
+                $character->ControllerId = $event->playerId;
+                $character->IsUpdated = true;
+
+                // Notify players of recruited character
+                $this->game->notifyAllPlayers("characterRecruited", clienttranslate('${player_name} recruits ${character_name} at a discount of ${discount} for ${cost} Wealth.'), [
+                    "player_id" => $event->playerId,
+                    "player_name" => $this->game->getPlayerNameById($event->playerId),
+                    "character_name" => "<span style='font-weight:bold'>{$event->character->Name}</span>",
+                    "characterId" => $event->character->Id,
+                    "discount" => $event->discount,
+                    "cost" => $event->cost,
+                ]);
                 break;
 
             case $event instanceof EventCityCardAddedToLocation:

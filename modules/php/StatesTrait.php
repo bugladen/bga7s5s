@@ -418,6 +418,9 @@ trait StatesTrait
         $turnPhase = Game::HIGH_DRAMA;
         $this->setGameStateValue("turnPhase", $turnPhase);
 
+        //Notify players that it is high drama phase
+        $this->notifyAllPlayers("message", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), []);
+
         $event = $this->theah->createEvent(Events::PhaseHighDrama);
         $this->theah->queueEvent($event);
         
@@ -425,9 +428,6 @@ trait StatesTrait
     }
 
     public function stHighDramaPhase() {
-        //Notify players that it is high drama phase
-        $this->notifyAllPlayers("message", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), []);
-       
         $this->gamestate->changeActivePlayer($this->globals->get("firstPlayer"));
         $this->gamestate->nextState("");
     }
