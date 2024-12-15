@@ -64,28 +64,62 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onCityLocationsSelected: function() 
     {
-        const actionArray = {
+        //Special logic for specific states
+        const methods = {
+            planningPhaseResolveSchemes_01126_2_client: () => {
+                const leshiyeLocation = $(this.clientStateArgs.selectedCityLocations[0]).getAttribute('data-location');
+                const locations = this.selectedCityLocations.map((loc) => $(loc).getAttribute('data-location'));
+
+                this.bgaPerformAction('actPlanningPhase_01126_2', { 
+                    'leshiyeLocation': leshiyeLocation,
+                    'locations': JSON.stringify(locations),
+                }).then(() =>  {                
+                    // What to do after the server call if it succeeded
+                });
+            },
+        }
+
+        if (methods[this.gamedatas.gamestate.name]) {
+            methods[this.gamedatas.gamestate.name]();
+            return;
+        }
+
+        //Generic method when no specific logic is needed
+        const actionMap = {
             'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_PickOneLocationForReknown': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_PickTwoLocationsForReknown': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01125_1': 'actPlanningPhase_01125_1',
             'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2',
             'planningPhaseResolveSchemes_01125_3': 'actPlanningPhase_01125_3',
-            'planningPhaseResolveSchemes_01126_1': 'actPlanningPhase_01126_1',
-            'planningPhaseResolveSchemes_01126_2': 'actPlanningPhase_01126_2',
+            'planningPhaseResolveSchemes_01126': 'planningPhaseResolveSchemes_01126_2_client',
             'planningPhaseResolveSchemes_01144_1': 'actPlanningPhase_01144_1',
             'planningPhaseResolveSchemes_01144_2': 'actPlanningPhase_01144_2',
             'planningPhaseResolveSchemes_01150': 'actPlanningPhase_01150',
         };
 
-        const action = actionArray[this.gamedatas.gamestate.name];
+        const clientMessageArray = {
+            'planningPhaseResolveSchemes_01126_2_client': "${you} must choose two other locations to place Reknown onto:",
+        };
+
+        const action = actionMap[this.gamedatas.gamestate.name];
         const locations = this.selectedCityLocations.map((loc) => $(loc).getAttribute('data-location'));
 
-        this.bgaPerformAction(action, { 
-            'locations': JSON.stringify(locations),
-        }).then(() =>  {                
-            // What to do after the server call if it succeeded
-        });
+        //If the action ends with _client, we need to call a client side function
+        if (action.includes('_client')) {
+            this.clientStateArgs.selectedCityLocations = this.selectedCityLocations
+            const clientMessage = clientMessageArray[action];
+            this.setClientState(action, {
+                'descriptionmyturn' : _(clientMessage),
+            })
+        } else {
+
+            this.bgaPerformAction(action, { 
+                'locations': JSON.stringify(locations),
+            }).then(() =>  {                
+                // What to do after the server call if it succeeded
+            });
+        }
     },
 
     onChooseCharacterConfirmed: function()

@@ -59,11 +59,11 @@ onLeavingState: function( stateName )
             }
         },
 
-        'planningPhaseResolveSchemes_01126_1': () => {
+        'planningPhaseResolveSchemes_01126': () => {
             this.resetCityLocations();
         },
 
-        'planningPhaseResolveSchemes_01126_2': () => {
+        'planningPhaseResolveSchemes_01126_2_client': () => {
             this.resetCityLocations();
         },
 

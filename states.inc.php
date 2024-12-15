@@ -215,7 +215,7 @@ $machinestates = [
                 "pickOneLocationForReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_ONE_LOCATION_FOR_REKNOWN,
                 "pickTwoLocationsForReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS_FOR_REKNOWN,
                 "01125" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_1,
-                "01126" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_1,
+                "01126" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126,
                 "01044" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01044,
                 "01045" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01045,
                 "01144" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_1,
@@ -275,28 +275,17 @@ $machinestates = [
                     "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
                 ],
 
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_1 => [
-            "name" => "planningPhaseResolveSchemes_01126_1",
-            "description" => clienttranslate('${actplayer} must choose an outer City Location for Leshiye of the Wood.'),
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01126 => [
+            "name" => "planningPhaseResolveSchemes_01126",
+            "description" => clienttranslate('${actplayer} must choose options for Leshiye of the Wood.'),
             "descriptionmyturn" => clienttranslate('${you} must choose an outer City Location for Leshiye of the Wood:'),
             "type" => "activeplayer",
             "args" => "argEmpty",
             "possibleactions" => [
-                "actPlanningPhase_01126_1",
+                "actPlanningPhase_01126_2",
             ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2]
+            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2 => [
-                "name" => "planningPhaseResolveSchemes_01126_2",
-                "description" => clienttranslate('${actplayer} must choose two other locations to place Reknown onto.'),
-                "descriptionmyturn" => clienttranslate('${you} must choose two other locations to place Reknown onto:'),
-                "type" => "activeplayer",
-                "args" => "argsPlanningPhaseResolveSchemes_01126_2",
-                "possibleactions" => [
-                    "actPlanningPhase_01126_2",
-                ],
-                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-            ],
 
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_1 => [
             "name" => "planningPhaseResolveSchemes_01144_1",

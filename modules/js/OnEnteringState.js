@@ -185,7 +185,7 @@ onEnteringState: function( stateName, args )
             }
         },
 
-        'planningPhaseResolveSchemes_01126_1': () => {
+        'planningPhaseResolveSchemes_01126': () => {
             if (this.isCurrentPlayerActive()) {
                 const locations = this.getListofOutermostCityLocations();
                 this.numberOfCityLocationsSelectable = 1;
@@ -201,13 +201,15 @@ onEnteringState: function( stateName, args )
         },
                 
 
-        'planningPhaseResolveSchemes_01126_2': () => {
+        'planningPhaseResolveSchemes_01126_2_client': () => {
             if (this.isCurrentPlayerActive()) {
-                const selectedLocationElement = dojo.query(`[data-location="${args.args.selectedLocation}"]`)[0];
+                const selectedLocationElement = $(this.clientStateArgs.selectedCityLocations[0]);
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 2;
                 locations.forEach((location) => {
                     const imageElement = $(location);
+                    console.log(imageElement.id, selectedLocationElement.id);
+                    
                     if (imageElement.id == selectedLocationElement.id) return;
         
                     dojo.addClass(location, 'selectable');

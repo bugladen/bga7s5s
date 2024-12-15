@@ -254,8 +254,28 @@ trait ActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhase_01126_2(string $locations)
+    public function actPlanningPhase_01126_2(string $leshiyeLocation, string $locations)
     {
+        $playerId = $this->getActivePlayerId();
+        $playerName = $this->getActivePlayerName();
+
+        $this->notifyAllPlayers('message', 
+            clienttranslate('${player_name} has chosen ${location} as the Chosen Location for ${card_name}'), [
+            "player_name" => $playerName,
+            "location" => $leshiyeLocation,
+            "card_name" => '<span style="font-weight:bold">Leshiye of the Woods</span>',
+        ]);
+
+        //Get the chosen scheme card for the player
+        $sql = "SELECT selected_scheme_id FROM player WHERE player_id = $playerId";
+        $selectedSchemeId = $this->getUniqueValueFromDB($sql);
+        $scheme = $this->getCardObjectFromDb($selectedSchemeId);
+
+        if ($scheme instanceof \Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01126) {
+            $scheme->chosenLocation = $leshiyeLocation;
+            $this->updateCardObjectInDb($scheme);
+        }
+
         $locations = json_decode($locations, true);
         foreach ($locations as $location) {
             $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
@@ -267,8 +287,6 @@ trait ActionsTrait
             }
             $this->theah->queueEvent($event);
         }
-
-        $playerId = $this->getActivePlayerId();
 
         // Move leshiye of the woods to the chosen location
         $sql = "SELECT selected_scheme_id FROM player WHERE player_id = $playerId";
