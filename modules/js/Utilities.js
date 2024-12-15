@@ -173,9 +173,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }), location, position );
 
         if (schemeInCity) {
-            //Get the image element
-            const img = $(divId).firstElementChild;
-            //Add the scheme-in-city class to the card
+            dojo.addClass(divId, 'scheme-container-in-city');
+            const img = $(`${divId}-image`);
             dojo.addClass(img, 'scheme-in-city');
         }
         else {

@@ -359,6 +359,9 @@ body {
 .scheme-in-city {
     position: relative;
 }
+.scheme-container-in-city{
+    margin-left: 15px;
+}
 
 .first-player-home {
     position: absolute;

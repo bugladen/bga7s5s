@@ -113,7 +113,7 @@ var jstpl_card_event=`
 
 var jstpl_card_scheme=`
 <div id="\${id}">
-    <div class="scheme" style="--card_image:url('\${image}')"></div>
+    <div id="\${id}-image" class="scheme" style="--card_image:url('\${image}')"></div>
     <div class="card-stat-box scheme-initiative-box">
         <div class="scheme-initiative-value">\${initiative}</div>
         <div class="scheme-initiative-image"></div>
