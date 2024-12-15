@@ -3,68 +3,35 @@ return declare('seventhseacityoffivesails.onenteringstate', null, {
 
 onEnteringState: function( stateName, args )
 {
-    console.log( 'Entering state: '+stateName, args );
+    debug( 'Entering state: '+ stateName, args );
 
     const methods = {
         'dawnBeginning': (args) => {
-            
-        }
-    };
-    
-    switch( stateName )
-    {
-        case 'dawnBeginning':
             $('city-day-phase').innerHTML = _('Dawn');
-            dojo.style('city-day-phase', 'display', 'block');
-            break;
+            dojo.style('city-day-phase', 'display', 'block');            
+        },
 
-        case 'planningPhase':
+        'planningPhase': () => {
             $('city-day-phase').innerHTML = _('Planning');
             //Enable the approach deck
             this.approachDeck.setSelectionMode(2);
-            break;
+        },
 
-        case 'highDramaBeginning_01144_1_client':
-            card = this.cardProperties[this.clientArgs.selectedCharacters[0]];
-            const image = $(`${card.divId}_image`);
-            dojo.addClass(image, 'selectable');
-
-            const cost = $(`${card.divId}_wealth_cost`);
-            let discountedCost = parseInt(cost.innerHTML) - this.clientArgs.discount;
-            discountedCost = discountedCost < 0 ? 0 : discountedCost;
-            this.clientArgs.discountedCost = discountedCost;
-            cost.innerHTML = parseInt(discountedCost);
-            dojo.addClass(cost, 'discounted-wealth-cost');
-
-            this.factionHand.setSelectionMode(2);
-            break;
-
-        case 'highDramaBeginning_01144':
+        'planningPhaseResolveSchemes_PickOneLocationForReknown': () => {
             if (this.isCurrentPlayerActive()) {
-                this.numberOfCharactersSelectable = 1;
-                this.clientArgs.discount = args.args.discount;
-                for( const cardId in this.cardProperties ) {
-                    card = this.cardProperties[cardId];
-                    if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) ) {
-                        const image = $(`${card.divId}_image`);
-                        dojo.addClass(image, 'selectable');
-                        dojo.style(image, 'cursor', 'pointer');
+                const locations = this.getListofAvailableCityLocationImages();
+                this.numberOfCityLocationsSelectable = 1;
+                locations.forEach((location) => {
+                    dojo.addClass(location, 'selectable');
+                    dojo.style(location, 'cursor', 'pointer');
 
-                        const cost = $(`${card.divId}_wealth_cost`);
-                        let discountedCost = parseInt(cost.innerHTML) - this.clientArgs.discount;
-                        discountedCost = discountedCost < 0 ? 0 : discountedCost;
-                        cost.innerHTML = parseInt(discountedCost);
-                        dojo.addClass(cost, 'discounted-wealth-cost');
-
-                        const handle = dojo.connect(image, 'onclick', this, 'onCharacterClicked');
-                        this.connects.push(handle);                        
-                    }
-                }
+                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                    this.connects.push(handle);
+                });
             }
+        },
 
-            break;
-
-        case 'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone':
+        'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone': () => {
             if (this.isCurrentPlayerActive()) {
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 1;
@@ -81,25 +48,9 @@ onEnteringState: function( stateName, args )
                     this.connects.push(handle);
                 });
             }
-            break;
+        },
 
-        case 'planningPhaseResolveSchemes_PickOneLocationForReknown':
-        case 'planningPhaseResolveSchemes_01125_1': 
-        case 'planningPhaseResolveSchemes_01144_1': 
-            if (this.isCurrentPlayerActive()) {
-                const locations = this.getListofAvailableCityLocationImages();
-                this.numberOfCityLocationsSelectable = 1;
-                locations.forEach((location) => {
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
-                });
-            }
-            break;
-
-        case 'planningPhaseResolveSchemes_PickTwoLocationsForReknown':
+        'planningPhaseResolveSchemes_PickTwoLocationsForReknown': () => {
             if (this.isCurrentPlayerActive()) {
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 2;
@@ -111,9 +62,9 @@ onEnteringState: function( stateName, args )
                     this.connects.push(handle);
                 });
             }
-            break;
-        
-        case 'planningPhaseResolveSchemes_01044':
+        },
+
+        'planningPhaseResolveSchemes_01044': () => {
             if (this.isCurrentPlayerActive()) {
                 dojo.removeClass('choose-container', 'hidden');
                 dojo.removeClass('chooseList', 'hidden');
@@ -129,9 +80,9 @@ onEnteringState: function( stateName, args )
                 if (this.chooseList.count() > 0) 
                     dojo.addClass('actPass', 'disabled');
             }
-            break;
+        },
 
-        case 'planningPhaseResolveSchemes_01045':
+        'planningPhaseResolveSchemes_01045': () => {
             if (this.isCurrentPlayerActive()) {
                 dojo.removeClass('choose-container', 'hidden');
                 dojo.removeClass('chooseList', 'hidden');
@@ -142,16 +93,30 @@ onEnteringState: function( stateName, args )
                     if (card.traits.includes('Mercenary')) {
                         this.addCardToDeck(this.chooseList, card);
                     }                            
+
                 });
                 this.chooseList.setSelectionMode(1);
 
                 if (this.chooseList.count() > 0) 
                     dojo.addClass('actPass', 'disabled');
             }
-            break;
+        },
 
+        'planningPhaseResolveSchemes_01125_1': () => {
+            if (this.isCurrentPlayerActive()) {
+                const locations = this.getListofAvailableCityLocationImages();
+                this.numberOfCityLocationsSelectable = 1;
+                locations.forEach((location) => {
+                    dojo.addClass(location, 'selectable');
+                    dojo.style(location, 'cursor', 'pointer');
 
-        case 'planningPhaseResolveSchemes_01125_2': 
+                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                    this.connects.push(handle);
+                });
+            }
+        },
+
+        'planningPhaseResolveSchemes_01125_2': () => {
             if (this.isCurrentPlayerActive()) {
                 const locations = this.getListofAvailableCityLocationImages();
                 let count = 0;
@@ -175,9 +140,9 @@ onEnteringState: function( stateName, args )
                     dojo.addClass('actPass', 'disabled');
                 }
             }
-            break;
+        },
 
-        case 'planningPhaseResolveSchemes_01125_3':
+        'planningPhaseResolveSchemes_01125_3': () => {
             if (this.isCurrentPlayerActive()) {
                 const selectedLocationElement = dojo.query(`[data-location="${args.args.location}"]`)[0];
 
@@ -194,9 +159,9 @@ onEnteringState: function( stateName, args )
                     this.connects.push(handle);
                 });
             }
-            break;
+        },
 
-        case 'planningPhaseResolveSchemes_01125_4':
+        'planningPhaseResolveSchemes_01125_4': () => {
             if (this.isCurrentPlayerActive()) {
                 this.numberOfCharactersSelectable = 1;
                 let count = 0;
@@ -218,10 +183,25 @@ onEnteringState: function( stateName, args )
                     dojo.addClass('actPass', 'disabled');
                 }
             }
+        },
 
-            break;
+        'planningPhaseResolveSchemes_01126_1': () => {
+            if (this.isCurrentPlayerActive()) {
+                const locations = this.getListofOutermostCityLocations();
+                this.numberOfCityLocationsSelectable = 1;
 
-        case 'planningPhaseResolveSchemes_01126_2':
+                locations.forEach((location) => {
+                    dojo.addClass(location, 'selectable');
+                    dojo.style(location, 'cursor', 'pointer');
+
+                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                    this.connects.push(handle);
+                });
+            }
+        },
+                
+
+        'planningPhaseResolveSchemes_01126_2': () => {
             if (this.isCurrentPlayerActive()) {
                 const selectedLocationElement = dojo.query(`[data-location="${args.args.selectedLocation}"]`)[0];
                 const locations = this.getListofAvailableCityLocationImages();
@@ -237,13 +217,12 @@ onEnteringState: function( stateName, args )
                     this.connects.push(handle);
                 });
             }
-            break;
+        },
 
-        case 'planningPhaseResolveSchemes_01126_1':
+        'planningPhaseResolveSchemes_01144_1': () => {
             if (this.isCurrentPlayerActive()) {
-                const locations = this.getListofOutermostCityLocations();
+                const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 1;
-
                 locations.forEach((location) => {
                     dojo.addClass(location, 'selectable');
                     dojo.style(location, 'cursor', 'pointer');
@@ -252,9 +231,9 @@ onEnteringState: function( stateName, args )
                     this.connects.push(handle);
                 });
             }
-            break;
+        },
 
-        case 'planningPhaseResolveSchemes_01144_2':
+        'planningPhaseResolveSchemes_01144_2': () => {
             if (this.isCurrentPlayerActive()) {
                 const selectedLocationElement = dojo.query(`[data-location="${args.args.location}"]`)[0];
 
@@ -271,14 +250,12 @@ onEnteringState: function( stateName, args )
                     this.connects.push(handle);
                 });
             }
-            break;
+        },
 
-        case 'planningPhaseResolveSchemes_01150':
+        'planningPhaseResolveSchemes_01150': () => {
             if (this.isCurrentPlayerActive()) {
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 1;
-
-
                 locations.forEach((location) => {
                     if (location == 'forum-image') return;
 
@@ -294,12 +271,54 @@ onEnteringState: function( stateName, args )
                     this.connects.push(handle);
                 });
             }
-            break;
+        },
 
-        case 'highDramaBeginning':
+        'highDramaBeginning': () => {
             $('city-day-phase').innerHTML = _('High Drama');
-            break;
+        },
 
+        'highDramaBeginning_01144': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCharactersSelectable = 1;
+                this.clientArgs.discount = args.args.discount;
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) ) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.addClass(image, 'selectable');
+                        dojo.style(image, 'cursor', 'pointer');
+
+                        const cost = $(`${card.divId}_wealth_cost`);
+                        let discountedCost = parseInt(cost.innerHTML) - this.clientArgs.discount;
+                        discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                        cost.innerHTML = parseInt(discountedCost);
+                        dojo.addClass(cost, 'discounted-wealth-cost');
+
+                        const handle = dojo.connect(image, 'onclick', this, 'onCharacterClicked');
+                        this.connects.push(handle);                        
+                    }
+                }
+            }
+        },
+
+        'highDramaBeginning_01144_1_client': () => {
+            const card = this.cardProperties[this.clientArgs.selectedCharacters[0]];
+            const image = $(`${card.divId}_image`);
+            dojo.addClass(image, 'selectable');
+
+            const cost = $(`${card.divId}_wealth_cost`);
+            let discountedCost = parseInt(cost.innerHTML) - this.clientArgs.discount;
+            discountedCost = discountedCost < 0 ? 0 : discountedCost;
+            this.clientArgs.discountedCost = discountedCost;
+            cost.innerHTML = parseInt(discountedCost);
+            dojo.addClass(cost, 'discounted-wealth-cost');
+
+            this.factionHand.setSelectionMode(2);
+        },
+    };
+    
+    if (methods[stateName]) {
+        methods[stateName](args);
     }
 }
 
