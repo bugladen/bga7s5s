@@ -129,7 +129,7 @@ $machinestates = [
         "description" => clienttranslate('Your opponent must choose their Scheme Character to muster for the day.'),
         "descriptionmyturn" => clienttranslate('${you} must choose ONE Scheme and ONE Character from your Approach Deck to muster for the day: '),
         "type" => "multipleactiveplayer",
-        "args" => "argEmpty",
+        "args" => "argsEmpty",
         "action" => "stPlanningPhase",
         "possibleactions" => [
             "actDayPlanned", 
@@ -228,7 +228,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} may choose a City Location to place a Reknown onto.'),
             "descriptionmyturn" => clienttranslate('${you} may choose a City Location to place a Reknown onto: '),
             "type" => "activeplayer",
-            "args" => "argEmpty",
+            "args" => "argsEmpty",
             "possibleactions" => [
                 "actPlanningPhase_01125_1",
                 "actPlanningPhase_01125_1_Pass"
@@ -243,7 +243,7 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} must choose a City Location to move a Reknown FROM, if able.'),
                 "descriptionmyturn" => clienttranslate('${you} must choose a City Location to move a Reknown FROM, if able: '),
                 "type" => "activeplayer",
-                "args" => "argEmpty",
+                "args" => "argsEmpty",
                 "possibleactions" => [
                     "actPlanningPhase_01125_2",
                     "actPlanningPhase_01125_2_Pass"
@@ -267,7 +267,7 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} must choose an enemy Character.'),
                     "descriptionmyturn" => clienttranslate('${you} must choose an enemy Character:'),
                     "type" => "activeplayer",
-                    "args" => "argEmpty",
+                    "args" => "argsEmpty",
                     "possibleactions" => [
                         "actPlanningPhase_01125_4",
                         "actPlanningPhase_01125_4_Pass"
@@ -280,7 +280,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} must choose options for Leshiye of the Wood.'),
             "descriptionmyturn" => clienttranslate('${you} must choose an outer City Location for Leshiye of the Wood:'),
             "type" => "activeplayer",
-            "args" => "argEmpty",
+            "args" => "argsEmpty",
             "possibleactions" => [
                 "actPlanningPhase_01126_2",
             ],
@@ -292,7 +292,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} must choose a city location to place Reknown onto.'),
             "descriptionmyturn" => clienttranslate('${you} must choose a city location to place Reknown onto:'),
             "type" => "activeplayer",
-            "args" => "argEmpty",
+            "args" => "argsEmpty",
             "possibleactions" => [
                 "actPlanningPhase_01144_1", 
             ],
@@ -318,7 +318,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} may choose a city location to move a Reknown from.'),
             "descriptionmyturn" => clienttranslate('${you} may choose a city location to move a Reknown from:'),
             "type" => "activeplayer",
-            "args" => "argEmpty",
+            "args" => "argsEmpty",
             "possibleactions" => [
                 "actPlanningPhase_01150", 
                 "actPass" 
@@ -330,7 +330,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} must choose a city location to place Reknown onto that doesn\'t have any.'),
             "descriptionmyturn" => clienttranslate('${you} must choose a city location to place Reknown onto that doesn\'t have any:'),
             "type" => "activeplayer",
-            "args" => "argEmpty",
+            "args" => "argsEmpty",
             "possibleactions" => [
                 "actCityLocationsForReknownSelected", 
             ],
@@ -341,7 +341,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} must choose a city location to place Reknown onto.'),
             "descriptionmyturn" => clienttranslate('${you} must choose a city location to place Reknown onto:'),
             "type" => "activeplayer",
-            "args" => "argEmpty",
+            "args" => "argsEmpty",
             "possibleactions" => [
                 "actCityLocationsForReknownSelected", 
             ],
@@ -352,7 +352,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} must choose two city locations to place Reknown onto.'),
             "descriptionmyturn" => clienttranslate('${you} must choose two city locations to place Reknown onto:'),
             "type" => "activeplayer",
-            "args" => "argEmpty",
+            "args" => "argsEmpty",
             "possibleactions" => [
                 "actCityLocationsForReknownSelected", 
             ],
@@ -363,7 +363,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} must choose an Attachment from your discard pile if able.'),
             "descriptionmyturn" => clienttranslate('${you} must choose an Attachment from your discard pile if able:'),
             "type" => "activeplayer",
-            "args" => "argEmpty",
+            "args" => "argsEmpty",
             "possibleactions" => [
                 "actPlanningPhase_01044", 
                 "actPass"
@@ -375,7 +375,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} must choose a Mercenary from the City Deck discard pile if able.'),
             "descriptionmyturn" => clienttranslate('${you} must choose a Mercenary from the City Deck discard pile if able:'),
             "type" => "activeplayer",
-            "args" => "argEmpty",
+            "args" => "argsEmpty",
             "possibleactions" => [
                 "actPlanningPhase_01045", 
                 "actPass"

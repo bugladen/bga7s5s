@@ -13,7 +13,7 @@ trait ArgumentsTrait
      * @see ./states.inc.php
      */
 
-    public function argEmpty(): array
+    public function argsEmpty(): array
     {
         return [];
     }    
@@ -33,12 +33,6 @@ trait ArgumentsTrait
         return ["availableDecks" => $decks];
     }
 
-    public function argsHighDramaBeginning_01144(): array{
-        return [
-            "discount" => $this->globals->get(GAME::RECRUIT_DISCOUNT)
-        ];
-    }
-
     public function argsPlanningPhaseResolveSchemes_01125_3(): array
     {
         return [
@@ -46,29 +40,16 @@ trait ArgumentsTrait
         ];
     }
 
-    public function argsPlanningPhaseResolveSchemes_01126_2(): array
-    {
-        $playerId = $this->getActivePlayerId();
-
-        //Get the chosen scheme card for the player
-        $sql = "SELECT selected_scheme_id FROM player WHERE player_id = $playerId";
-        $selectedSchemeId = $this->getUniqueValueFromDB($sql);
-
-        $scheme = $this->getCardObjectFromDb($selectedSchemeId);
-        $location = '';
-        if ($scheme instanceof \Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01126) {
-            $location = $scheme->chosenLocation;
-        }
-        return [
-            "selectedLocation" => $location
-        ];
-
-    }
-
     public function argsPlanningPhaseResolveSchemes_01144_2(): array
     {
         return [
             "location" => $this->globals->get(GAME::CHOSEN_LOCATION)
+        ];
+    }
+
+    public function argsHighDramaBeginning_01144(): array{
+        return [
+            "discount" => $this->globals->get(GAME::RECRUIT_DISCOUNT)
         ];
     }
 
