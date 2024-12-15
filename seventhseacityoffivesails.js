@@ -74,7 +74,7 @@ function (dojo, declare) {
             this.numberOfCharactersSelectable = 0;
             this.selectedCityLocations = [];
             this.selectedCharacters = [];
-            this.clientArgs = {};
+            this.clientStateArgs = {};
 
             //Connect handlers for the city locations
             this.connects = [];

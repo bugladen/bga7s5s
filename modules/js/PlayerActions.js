@@ -101,9 +101,9 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const action = actionArray[this.gamedatas.gamestate.name];
 
-        //If the action has client_ in the name, we need to call a client side function
-        if (action.includes('client_')) {
-            this.clientArgs.selectedCharacters = this.selectedCharacters;
+        //If the action ends with _client, we need to call a client side function
+        if (action.includes('_client')) {
+            this.clientStateArgs.selectedCharacters = this.selectedCharacters;
             const clientMessage = clientMessageArray[action];
             this.setClientState(action, {
                 'descriptionmyturn' : _(clientMessage),
@@ -172,7 +172,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const action = actionArray[this.gamedatas.gamestate.name];
         this.bgaPerformAction(action, { 
-            'recruitId': this.clientArgs.selectedCharacters[0],
+            'recruitId': this.clientStateArgs.selectedCharacters[0],
             'payWithCards': JSON.stringify(items),
         });        
     },

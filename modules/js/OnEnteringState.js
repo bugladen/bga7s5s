@@ -280,7 +280,7 @@ onEnteringState: function( stateName, args )
         'highDramaBeginning_01144': () => {
             if (this.isCurrentPlayerActive()) {
                 this.numberOfCharactersSelectable = 1;
-                this.clientArgs.discount = args.args.discount;
+                this.clientStateArgs.discount = args.args.discount;
                 for( const cardId in this.cardProperties ) {
                     card = this.cardProperties[cardId];
                     if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) ) {
@@ -289,7 +289,7 @@ onEnteringState: function( stateName, args )
                         dojo.style(image, 'cursor', 'pointer');
 
                         const cost = $(`${card.divId}_wealth_cost`);
-                        let discountedCost = parseInt(cost.innerHTML) - this.clientArgs.discount;
+                        let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
                         discountedCost = discountedCost < 0 ? 0 : discountedCost;
                         cost.innerHTML = parseInt(discountedCost);
                         dojo.addClass(cost, 'discounted-wealth-cost');
@@ -302,14 +302,14 @@ onEnteringState: function( stateName, args )
         },
 
         'highDramaBeginning_01144_1_client': () => {
-            const card = this.cardProperties[this.clientArgs.selectedCharacters[0]];
+            const card = this.cardProperties[this.clientStateArgs.selectedCharacters[0]];
             const image = $(`${card.divId}_image`);
             dojo.addClass(image, 'selectable');
 
             const cost = $(`${card.divId}_wealth_cost`);
-            let discountedCost = parseInt(cost.innerHTML) - this.clientArgs.discount;
+            let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
             discountedCost = discountedCost < 0 ? 0 : discountedCost;
-            this.clientArgs.discountedCost = discountedCost;
+            this.clientStateArgs.discountedCost = discountedCost;
             cost.innerHTML = parseInt(discountedCost);
             dojo.addClass(cost, 'discounted-wealth-cost');
 

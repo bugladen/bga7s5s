@@ -97,7 +97,7 @@ onLeavingState: function( stateName )
 
         'highDramaBeginning_01144_1_client': () => {
             this.factionHand.setSelectionMode(0);
-            this.clientArgs = {};
+            this.clientStateArgs = {};
         },
 
     };
