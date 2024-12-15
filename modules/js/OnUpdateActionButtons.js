@@ -8,7 +8,7 @@ onUpdateActionButtons: function( stateName, args )
     if( ! this.isCurrentPlayerActive() )
         return;
 
-    const states = {
+    const methods = {
         'pickDecks': () => {
             args.availableDecks.forEach(
                 (deck) => { this.addActionButton(`actPickDeck${deck.id}-btn`, _(deck.name), () => this.onStarterDeckSelected(deck.id)) }
@@ -109,8 +109,8 @@ onUpdateActionButtons: function( stateName, args )
 
     };
 
-    if( states[stateName] )
-        states[stateName]();
+    if( methods[stateName] )
+        methods[stateName]();
 }
 
 })
