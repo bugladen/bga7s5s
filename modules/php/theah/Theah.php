@@ -18,6 +18,7 @@ class Theah
     private array $cards;
     private array $cityLocations;
     private DB $db;
+    private bool $cityBuilt;
 
     use EventHandler;
 
@@ -27,11 +28,14 @@ class Theah
         $this->cards = [];
         $this->cityLocations = [];
         $this->db = new DB();
+        $this->cityBuilt = false;
     }
 
 
     public function buildCity()
     {
+        if ($this->cityBuilt) return;
+
         $this->cards = [];
 
         $this->buildCityLocations();
@@ -43,6 +47,8 @@ class Theah
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_BAZAAR);
         $this->cards += $this->db->getCardObjectsAtLocation(addslashes(Game::LOCATION_CITY_GOVERNORS_GARDEN));
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_HAND, $this->game->getActivePlayerId());
+
+        $this->cityBuilt = true;
     }
 
     private function buildCityLocations()
@@ -128,7 +134,9 @@ class Theah
     public function eventCheck(Event $event)
     {
         foreach ($this->cards as $card) {
+            $event->theah = $this;
             $card->eventCheck($event);
+            unset($event->theah);
         }
     }
 
