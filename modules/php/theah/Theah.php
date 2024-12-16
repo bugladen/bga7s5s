@@ -131,6 +131,17 @@ class Theah
         return $event;
     }
 
+    /// <summary>
+    /// Run through the cards in the city to see if an event can be run.
+    /// A card should throw an exception if it cannot allow the event.
+    ///
+    /// Call this directly only when you need to queue up several events in one method.
+    /// In that case call this for each event before queueing them up.
+    /// See examples in ActionsTrait.php
+    ///
+    /// Otherwise, if you have only one event, call queueEvent() to queue up the event intead, 
+    /// which will call this method.
+    /// </summary>
     public function eventCheck(Event $event)
     {
         foreach ($this->cards as $card) {

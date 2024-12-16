@@ -148,14 +148,12 @@ trait ActionsTrait
             $event->amount = 1;
             $event->source = "The Boar's Guile: Adding Reknown to Location";
         }
-        $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);
 
         $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_1', 
             clienttranslate('You have chosen to place reknown onto ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
             "location" => $location
         ]);
-
-        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("reknownPlaced");
     }
@@ -186,14 +184,13 @@ trait ActionsTrait
             $event->amount = 1;
             $event->source = "The Boar's Guile: Moving Reknown from one Location to an adjacent location";
         }
-        $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);
 
         $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_2', 
             clienttranslate('You have chosen to move reknown from ${location}.  You must now choose a location to move the Reknown TO.'), [
             "location" => $location
         ]);
         
-        $this->theah->queueEvent($event);
         $this->globals->set(GAME::CHOSEN_LOCATION, $location);
 
         $this->gamestate->nextState("locationChosen");
@@ -219,14 +216,12 @@ trait ActionsTrait
             $event->amount = 1;
             $event->source = "The Boar's Guile: Moving Reknown from one Location to an adjacent location";
         }
-        $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);
 
         $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_3', 
             clienttranslate('You have chosen to move reknown to ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
             "location" => $location
         ]);
-
-        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("");
     }
@@ -343,7 +338,6 @@ trait ActionsTrait
             $event->amount = 1;
             $event->source = $playerName;
         }
-        $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
         $this->globals->set(GAME::CHOSEN_LOCATION, $location);
@@ -383,7 +377,6 @@ trait ActionsTrait
             $event->source = $playerName;
         }
 
-        $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("");

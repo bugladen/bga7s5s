@@ -48,6 +48,12 @@ class _01126 extends Scheme
             if ($event->location == $this->chosenLocation)
                 throw new \BgaUserException(_("Leshiye of the Woods does not allow Reknown to be placed at its location."));    
         }
+
+        if ($event instanceof EventReknownRemovedFromLocation)
+        {
+            if ($event->location == $this->chosenLocation)
+                throw new \BgaUserException(_("Leshiye of the Woods does not allow Reknown to be removed from its location."));    
+        }
     }
 
     public function handleEvent($event)
