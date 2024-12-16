@@ -45,6 +45,18 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         return null;
     },
+
+    getCardPropertiesByName: function( name )
+    {
+        for ( const cardId in this.cardProperties )
+        {
+            if (this.cardProperties[cardId]?.name === name) {
+                return this.cardProperties[cardId];
+            }
+        }
+
+        return null;
+    },
     
     createCard: function( divId, card, targetDiv )
     {

@@ -25,7 +25,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         }
 
         //Enable the confirm button if we have the right number of locations selected
-        if (this.selectedCityLocations.length === this.numberOfCityLocationsSelectable) {
+        if (this.selectedCityLocations.length > 0) {
             dojo.removeClass('actCityLocationsSelected', 'disabled');
         } else {
             dojo.addClass('actCityLocationsSelected', 'disabled');

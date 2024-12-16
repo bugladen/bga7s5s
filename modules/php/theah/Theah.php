@@ -125,9 +125,21 @@ class Theah
         return $event;
     }
 
+    public function eventCheck(Event $event)
+    {
+        foreach ($this->cards as $card) {
+            $card->eventCheck($event);
+        }
+    }
+
     public function queueEvent(Event $event)
     {
-        $this->db->queueEvent($event);
+        try {
+            $this->eventCheck($event);
+            $this->db->queueEvent($event);
+        } catch (\Exception $e) {
+            $this->game->notifyAllPlayers("message", clienttranslate($e->getMessage()), []);
+        }
     }
 
     public function runEvents()

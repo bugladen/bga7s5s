@@ -39,6 +39,11 @@ abstract class Card
         $this->Reknown = 0;
     }
 
+    public function eventCheck($event)
+    {
+        // Do nothing by default
+    }
+    
     public function handleEvent($event)
     {
         // Do nothing by default

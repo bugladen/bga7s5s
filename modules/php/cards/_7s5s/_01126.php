@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
@@ -36,6 +37,17 @@ class _01126 extends Scheme
             "Leshiya", 
             "Nature",
         ];
+    }
+
+    public function eventCheck($event)
+    {
+        parent::eventCheck($event);
+
+        if ($event instanceof EventReknownAddedToLocation) 
+        {
+            if ($event->location == $this->chosenLocation)
+                throw new \BgaUserException(_("Leshiye of the Woods does not allow Reknown to be placed at its location."));    
+        }
     }
 
     public function handleEvent($event)

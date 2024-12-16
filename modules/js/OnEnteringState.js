@@ -73,7 +73,8 @@ onEnteringState: function( stateName, args )
                 // For each card in the players discard pile, create a stock item
                 const player = this.gamedatas.players[this.getActivePlayerId()];      
                 player.discard.forEach((card) => {
-                    this.addCardToDeck(this.chooseList, card);
+                    if (card.type === 'Attachment')
+                        this.addCardToDeck(this.chooseList, card);
                 });
                 this.chooseList.setSelectionMode(1);
 

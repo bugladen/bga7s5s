@@ -64,6 +64,16 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onCityLocationsSelected: function() 
     {
+        if (this.selectedCityLocations.length < this.numberOfCityLocationsSelectable )
+         this.confirmationDialog(_("You did not select as many locations as you are allowed. Are you sure you want to continue?"),
+            () => {this.submitLocations();}
+        );
+        else
+            this.submitLocations();
+    },
+
+    submitLocations: function()
+    {
         //Special logic for specific states
         const methods = {
             planningPhaseResolveSchemes_01126_2_client: () => {
@@ -177,7 +187,6 @@ return declare('seventhseacityoffivesails.actions', null, {
     {
         var items = this.chooseList.getSelectedItems();
         const card = Object.values(items)[0];
-        this.chooseList.removeFromStockById(card.id);
         let action = '';
         switch (this.gamedatas.gamestate.name) {
             case 'planningPhaseResolveSchemes_01044':
@@ -191,7 +200,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         this.bgaPerformAction(action, { 
             'id' : card.id
         }).then(() =>  {                
-            // What to do after the server call if it succeeded
+            this.chooseList.removeFromStockById(card.id);
         });        
     },
 
@@ -208,6 +217,11 @@ return declare('seventhseacityoffivesails.actions', null, {
         this.bgaPerformAction(action, { 
             'recruitId': this.clientStateArgs.selectedCharacters[0],
             'payWithCards': JSON.stringify(items),
+        }).catch(() =>  {                
+            this.setClientState('highDramaBeginning_01144',
+                {
+                    'descriptionmyturn' : _("${you} may choose a Mercenary from a City Location to recruit to your home:"),
+                })
         });        
     },
 
