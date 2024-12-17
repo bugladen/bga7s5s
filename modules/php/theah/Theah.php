@@ -144,6 +144,7 @@ class Theah
     /// </summary>
     public function eventCheck(Event $event)
     {
+        $this->buildCity();
         foreach ($this->cards as $card) {
             $event->theah = $this;
             $card->eventCheck($event);

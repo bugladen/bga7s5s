@@ -42,7 +42,6 @@ trait ActionsTrait
 
     public function actCityLocationsForReknownSelected(string $locations)
     {
-        $this->theah->buildCity();
         $locations = json_decode($locations, true);
 
         foreach ($locations as $location) {
@@ -71,7 +70,6 @@ trait ActionsTrait
 
     public function actPlanningPhase_01044(int $id)
     {
-        $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
         $card = $this->getCardObjectFromDb($id);
 
@@ -100,7 +98,6 @@ trait ActionsTrait
 
     public function actPlanningPhase_01045(int $id)
     {
-        $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
         $playerName = $this->getActivePlayerName();
         $card = $this->getCardObjectFromDb($id);
@@ -138,7 +135,6 @@ trait ActionsTrait
 
     public function actPlanningPhase_01125_1(string $locations)
     {
-        $this->theah->buildCity();
         $location = json_decode($locations, true)[0];
         
         $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
@@ -168,7 +164,6 @@ trait ActionsTrait
 
     public function actPlanningPhase_01125_2(string $locations)
     {
-        $this->theah->buildCity();
         $location = json_decode($locations, true)[0];
 
         //Check if the location actually has reknown to move
@@ -206,7 +201,6 @@ trait ActionsTrait
 
     public function actPlanningPhase_01125_3(string $locations)
     {
-        $this->theah->buildCity();
         $location = json_decode($locations, true)[0];
 
         $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
@@ -255,7 +249,6 @@ trait ActionsTrait
 
     public function actPlanningPhase_01126_2(string $leshiyeLocation, string $locations)
     {
-        $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
         $playerName = $this->getActivePlayerName();
 
@@ -325,7 +318,6 @@ trait ActionsTrait
 
     public function actPlanningPhase_01144_1(string $locations)
     {
-        $this->theah->buildCity();
         $locations = json_decode($locations, true);
         $location = array_shift($locations);
         $activePlayerId = $this->getActivePlayerId();
@@ -364,7 +356,6 @@ trait ActionsTrait
 
     public function actPlanningPhase_01144_2(string $locations)
     {
-        $this->theah->buildCity();
         $locations = json_decode($locations, true);
         $location = array_shift($locations);
         $playerName = $this->getActivePlayerName();
@@ -384,7 +375,6 @@ trait ActionsTrait
 
     public function actHighDramaBeginning_01144(int $recruitId, string $payWithCards)
     {
-        $this->theah->buildCity();
         $character = $this->getCardObjectFromDb($recruitId);
         if ($character == null)
         {
@@ -458,7 +448,6 @@ trait ActionsTrait
 
     public function actPlanningPhase_01150(string $locations)
     {
-        $this->theah->buildCity();
         $playerName = $this->getActivePlayerName();
 
         $locations = json_decode($locations, true);
