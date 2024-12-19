@@ -209,8 +209,6 @@ onEnteringState: function( stateName, args )
                 this.numberOfCityLocationsSelectable = 2;
                 locations.forEach((location) => {
                     const imageElement = $(location);
-                    console.log(imageElement.id, selectedLocationElement.id);
-                    
                     if (imageElement.id == selectedLocationElement.id) return;
         
                     dojo.addClass(location, 'selectable');
@@ -246,6 +244,51 @@ onEnteringState: function( stateName, args )
                     const imageElement = $(location);
                     if (imageElement.id == selectedLocationElement.id) return;
 
+                    dojo.addClass(location, 'selectable');
+                    dojo.style(location, 'cursor', 'pointer');
+
+                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                    this.connects.push(handle);
+                });
+            }
+        },
+
+        'planningPhaseResolveSchemes_01145': () => {
+            if (this.isCurrentPlayerActive()) {
+                const locations = this.getListofAvailableCityLocationImages();
+                let count = 0;
+                this.numberOfCityLocationsSelectable = 1;
+                locations.forEach((location) => {
+                    console.log(location)
+                    const imageElement = $(location);
+                    const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+                    const reknown = parseInt(reknownElement.innerHTML);
+                    if (reknown == 0) return;
+
+                    count++;
+
+                    dojo.addClass(location, 'selectable');
+                    dojo.style(location, 'cursor', 'pointer');
+
+                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                    this.connects.push(handle);
+                });
+
+                if (count > 0) {
+                    dojo.addClass('actPass', 'disabled');
+                }
+            }
+        },
+
+        'planningPhaseResolveSchemes_01145_2_client': () => {
+            if (this.isCurrentPlayerActive()) {
+                const selectedLocationElement = $(this.clientStateArgs.selectedCityLocations[0]);
+                const locations = this.getListofAvailableCityLocationImages();
+                this.numberOfCityLocationsSelectable = 1;
+                locations.forEach((location) => {
+                    const imageElement = $(location);
+                    if (imageElement.id == selectedLocationElement.id) return;
+        
                     dojo.addClass(location, 'selectable');
                     dojo.style(location, 'cursor', 'pointer');
 

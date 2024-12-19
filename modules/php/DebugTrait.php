@@ -12,10 +12,6 @@ trait DebugTrait
         }
     }
 
-    public function dbgSetPlayerReknown($playerId, $score)
-    {
-        $this->DBQuery("UPDATE player SET player_score = $score WHERE player_id = $playerId");
-    }
 
     public function dbgSetCardInPlayerDiscardPile($playerId, $className)
     {
@@ -39,5 +35,15 @@ trait DebugTrait
             if ($dbCard)
                 $this->cards->moveCard($dbCard['id'], $location);
         }
+    }
+
+    public function dbgSetPlayerReknown($playerId, $score)
+    {
+        $this->DBQuery("UPDATE player SET player_score = $score WHERE player_id = $playerId");
+    }
+
+    public function dbgSetRenownAtLocation($location, $amount)
+    {
+        $this->setReknownForLocation($location, $amount);
     }
 }

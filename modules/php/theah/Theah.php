@@ -31,6 +31,10 @@ class Theah
         $this->cityBuilt = false;
     }
 
+    public function getDBObject()
+    {
+        return $this->db;
+    }
 
     public function buildCity()
     {
@@ -57,26 +61,26 @@ class Theah
         $game = $this->game;
 
         $location = new CityLocation(Game::LOCATION_CITY_DOCKS);
-        $location->Reknown = $game->globals->get($game->getReknownLocationName(Game::LOCATION_CITY_DOCKS));
+        $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_DOCKS);
         $this->cityLocations[Game::LOCATION_CITY_DOCKS] = $location;
 
         $location = new CityLocation(Game::LOCATION_CITY_FORUM);
-        $location->Reknown = $game->globals->get($game->getReknownLocationName(Game::LOCATION_CITY_FORUM));
+        $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_FORUM);
         $this->cityLocations[Game::LOCATION_CITY_FORUM] = $location;
 
         $location = new CityLocation(Game::LOCATION_CITY_BAZAAR);
-        $location->Reknown = $game->globals->get($game->getReknownLocationName(Game::LOCATION_CITY_BAZAAR));
+        $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_BAZAAR);
         $this->cityLocations[Game::LOCATION_CITY_BAZAAR] = $location;
 
         if (count($players) > 2) {
             $location = new CityLocation(Game::LOCATION_CITY_OLES_INN);
-            $location->Reknown = $game->globals->get($game->getReknownLocationName(Game::LOCATION_CITY_OLES_INN));
+            $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_OLES_INN);
             $this->cityLocations[Game::LOCATION_CITY_OLES_INN] = $location;
         }
 
         if (count($players) > 3) {
             $location = new CityLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
-            $location->Reknown = $game->globals->get($game->getReknownLocationName(Game::LOCATION_CITY_GOVERNORS_GARDEN));
+            $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
             $this->cityLocations[Game::LOCATION_CITY_GOVERNORS_GARDEN] = $location;
         }
     }

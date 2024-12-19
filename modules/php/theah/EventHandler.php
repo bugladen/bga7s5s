@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToPlayerDiscardPile;
@@ -37,6 +38,26 @@ trait EventHandler
                     "character_name" => "<span style='font-weight:bold'>{$event->character->Name}</span>",
                     "character" => $event->character->getPropertyArray(),
                 ]);
+                break;
+
+            case $event instanceof EventCardDrawn:
+                $event->card->Location = Game::LOCATION_HAND;
+                $event->card->IsUpdated = true;
+
+                $this->game->notifyPlayer($event->playerId, "drawCard", 'You drew ${card_name} because of ${reason}.', [
+                    "card_name" => "<span style='font-weight:bold'>{$event->card->Name}</span>",
+                    "card" => $event->card->getPropertyArray(),
+                    "reason" => $event->reason,
+                ]);
+
+                // Notify players that card has been added to hand
+                $this->game->notifyAllPlayers("drawCardMessage", clienttranslate('${player_name} drew a card into their hand because of ${reason}.'), [
+                    "playerId" => $event->playerId,
+                    "player_name" => $this->game->getPlayerNameById($event->playerId),
+                    "reason" => $event->reason,
+                ]);
+                break;
+                
                 break;
 
             case $event instanceof EventCardAddedToHand:
@@ -150,9 +171,8 @@ trait EventHandler
             case $event instanceof EventReknownAddedToLocation:
 
                 //Update the reknown for the location in the database
-                $locationReknownName = $this->game->getReknownLocationName($event->location);
-                $reknown = $this->game->globals->get($locationReknownName) + $event->amount;
-                $this->game->globals->set($locationReknownName, $reknown);
+                $reknown = $this->game->getReknownForLocation($event->location) + $event->amount;
+                $this->game->setReknownForLocation($event->location, $reknown);
 
                 $this->cityLocations[$event->location]->Reknown += $event->amount;
 
@@ -168,9 +188,8 @@ trait EventHandler
             case $event instanceof EventReknownRemovedFromLocation:
 
                 //Update the reknown for the location in the database
-                $locationReknownName = $this->game->getReknownLocationName($event->location);
-                $reknown = $this->game->globals->get($locationReknownName) - $event->amount;
-                $this->game->globals->set($locationReknownName, $reknown);
+                $reknown = $this->game->getReknownForLocation($event->location) - $event->amount;
+                $this->game->setReknownForLocation($event->location, $reknown);
 
                 $this->cityLocations[$event->location]->Reknown -= $event->amount;
 

@@ -35,8 +35,8 @@ class _01144 extends Scheme
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
-
+        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id)
+        {
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves. ${player_name} must choose a city location to place reknown onto.
             Then if they have the fewest Reknown, they may add a Reknown to a different location.'), [
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
@@ -52,26 +52,15 @@ class _01144 extends Scheme
             $event->theah->queueEvent($transition);
         }
 
-        if ($event instanceof EventPhaseHighDrama) {
-            $players = $event->theah->game->loadPlayersBasicInfos();
+        if ($event instanceof EventPhaseHighDrama) 
+        {
+            list($playerId, $lowestCount) = $event->theah->game->getPlayerControllingFewestCharacters();
 
-            //Find the player with lowest count of characters in play.  Ties are ignored.
-            $lowestCount = 999;
-            $lowestPlayerId = null;
-            foreach ($players as $playerId => $player) {
-                $count = $event->theah->getCharacterCountByPlayerId($playerId);
-                if ($count == $lowestCount) {
-                    $lowestPlayerId = null;
-                }
-                else if ($count < $lowestCount) {
-                    $lowestCount = $count;
-                    $lowestPlayerId = $playerId;
-                }
-            }
-
-            if ($lowestPlayerId != $this->ControllerId) {
+            if ($playerId != $this->ControllerId) {
                 return;
             }
+
+            $players = $event->theah->game->loadPlayersBasicInfos();
 
             // Get the higest stat for the player's leader
             $leader = $event->theah->getLeaderByPlayerId($this->ControllerId);
@@ -82,7 +71,7 @@ class _01144 extends Scheme
 
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} Leader Reaction: ${player_name} has the least (non-tied) amount of characters in play (${amount}).
             They may now Recruit a mercenary at a discount of their Leader\'s highest stat.'), [
-                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+                "scheme_name" => "<strong>{$this->Name}</strong>",
                 "amount" => $lowestCount,
                 "player_name" => $players[$this->ControllerId]['player_name'],
             ]);

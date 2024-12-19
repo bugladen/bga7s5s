@@ -219,6 +219,7 @@ $machinestates = [
                 "01044" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01044,
                 "01045" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01045,
                 "01144" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_1,
+                "01145" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145,
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
                 "endOfEvents" => States::PLANNING_PHASE_DRAW
             ]
@@ -313,6 +314,19 @@ $machinestates = [
                 "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
             ],
 
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01145 => [
+            "name" => "planningPhaseResolveSchemes_01145",
+            "description" => clienttranslate('${actplayer} is choosing options for Inspire Generosity.'),
+            "descriptionmyturn" => clienttranslate('${you} must choose a city location to move a Reknown from:'),
+            "type" => "activeplayer",
+            "args" => "argsEmpty",
+            "possibleactions" => [
+                "actPlanningPhase_01145",
+                "actPlanningPhase_01145_Pass"
+            ],
+            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+        ],
+    
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01150 => [
             "name" => "planningPhaseResolveSchemes_01150",
             "description" => clienttranslate('${actplayer} may choose a city location to move a Reknown from.'),
@@ -325,6 +339,7 @@ $machinestates = [
             ],
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
+
         States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_ONE_LOCATION_FOR_REKNOWN_WITH_NONE => [
             "name" => "planningPhaseResolveSchemes_PickOneLocationForReknownWithNone",
             "description" => clienttranslate('${actplayer} must choose a city location to place Reknown onto that doesn\'t have any.'),

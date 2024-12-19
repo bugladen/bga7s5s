@@ -83,10 +83,18 @@ return declare('seventhseacityoffivesails.actions', null, {
                 this.bgaPerformAction('actPlanningPhase_01126_2', { 
                     'leshiyeLocation': leshiyeLocation,
                     'locations': JSON.stringify(locations),
-                }).then(() =>  {                
-                    // What to do after the server call if it succeeded
                 });
             },
+
+            planningPhaseResolveSchemes_01145_2_client: () => {
+                const fromLocation = $(this.clientStateArgs.selectedCityLocations[0]).getAttribute('data-location');
+                const toLocation = $(this.selectedCityLocations[0]).getAttribute('data-location');
+
+                this.bgaPerformAction('actPlanningPhase_01145', { 
+                    'fromLocation': fromLocation,
+                    'toLocation': toLocation,
+                });
+            }
         }
 
         if (methods[this.gamedatas.gamestate.name]) {
@@ -105,11 +113,14 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01126': 'planningPhaseResolveSchemes_01126_2_client',
             'planningPhaseResolveSchemes_01144_1': 'actPlanningPhase_01144_1',
             'planningPhaseResolveSchemes_01144_2': 'actPlanningPhase_01144_2',
+            'planningPhaseResolveSchemes_01145': 'planningPhaseResolveSchemes_01145_2_client',
+            'planningPhaseResolveSchemes_01145_2_client': 'actPlanningPhase_01145',
             'planningPhaseResolveSchemes_01150': 'actPlanningPhase_01150',
         };
 
         const clientMessageArray = {
             'planningPhaseResolveSchemes_01126_2_client': "${you} must choose two other locations to place Reknown onto:",
+            'planningPhaseResolveSchemes_01145_2_client': "${you} must choose a location to move the Reknown to:",
         };
 
         const action = actionMap[this.gamedatas.gamestate.name];
@@ -227,10 +238,19 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onPass: function()
     {
+        this.confirmationDialog(_("Are you sure you want to pass?"),
+        () => {this.passConfirmed();}
+        );
+    },
+
+    passConfirmed: function()
+    {
         const actionArray = {
             'planningPhaseResolveSchemes_01125_1': 'actPlanningPhase_01125_1_Pass',
             'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2_Pass',
             'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4_Pass',
+            'planningPhaseResolveSchemes_01145': 'actPlanningPhase_01145_Pass',            
+            'planningPhaseResolveSchemes_01145_2_client': 'actPlanningPhase_01145_Pass',            
         };
 
         //If the current game state is in actionArray set the action to the value in the array
@@ -242,5 +262,6 @@ return declare('seventhseacityoffivesails.actions', null, {
             // What to do after the server call if it succeeded
         });
     },
+
 });      
 });

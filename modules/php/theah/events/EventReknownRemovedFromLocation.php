@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 class EventReknownRemovedFromLocation extends Event
 {
+    public int $playerId;
     public string $location;
     public int $amount;
     public string $source;
@@ -14,6 +15,7 @@ class EventReknownRemovedFromLocation extends Event
     {
         parent::__construct();
 
+        $this->playerId = 0;
         $this->location = "";
         $this->amount = 0;
         $this->source = "";

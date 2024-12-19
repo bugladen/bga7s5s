@@ -58,7 +58,8 @@ class Game extends \Table
     use UtilitiesTrait;
 
     private \Deck $cards;
-    private Theah $theah;
+
+    public Theah $theah;
 
     /**
      * Your global variables labels:
@@ -252,14 +253,14 @@ class Game extends \Table
 
         //Setup the reknown for the city locations
         $playerCount = count($players);
-        $this->globals->set($this->getReknownLocationName(Game::LOCATION_CITY_DOCKS), 0);
-        $this->globals->set($this->getReknownLocationName(Game::LOCATION_CITY_FORUM), 0);
-        $this->globals->set($this->getReknownLocationName(Game::LOCATION_CITY_BAZAAR), 0);
+        $this->setReknownForLocation(Game::LOCATION_CITY_DOCKS, 0);
+        $this->setReknownForLocation(Game::LOCATION_CITY_FORUM, 0);
+        $this->setReknownForLocation(Game::LOCATION_CITY_BAZAAR, 0);
         if ($playerCount > 2) {
-            $this->globals->set($this->getReknownLocationName(Game::LOCATION_CITY_OLES_INN), 0);
+            $this->setReknownForLocation(Game::LOCATION_CITY_OLES_INN, 0);
         }
         if ($playerCount > 3) {
-            $this->globals->set($this->getReknownLocationName(Game::LOCATION_CITY_GOVERNORS_GARDEN), 0);
+            $this->setReknownForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN, 0);
         }
 
         // Init game statistics.

@@ -35,10 +35,16 @@ class DB extends \APP_DbObject
         return $event;
     }
 
-    public function getObjectList(string $sql, bool $bUniqueValue = false): array
+    public function getCollection(string $sql): array
     {
         /** @disregard P1012 */
-        return $this->getCollectionFromDb($sql);
+        return $this->getCollectionFromDB($sql);
+    }
+
+    public function getObjectList(string $sql): array
+    {
+        /** @disregard P1012 */
+        return $this->getObjectListFromDB($sql);
     }
 
     public function getCardObjectsAtLocation(string $location, $playerId = null): array

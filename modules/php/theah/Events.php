@@ -41,6 +41,7 @@ class Events
     const CharacterRecruited = 'EventCharacterRecruited';
 
     const CardMoved = 'EventCardMoved';
+    const CardDrawn = 'EventCardDrawn';
     
     const Transition = 'EventTransition';
 }

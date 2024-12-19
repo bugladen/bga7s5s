@@ -10,11 +10,13 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['playLeader', 1500],
             ['approachCardsReceived', 1000],
             ['newDay', 1000],
-            ['cityCardAddedToLocation', 500],
+            ['cityCardAddedToLocation', 1000],
             ['cardAddedToCityDiscardPile', 500],
             ['cardAddedToPlayerDiscardPile', 500],
-            ['cardMoved', 500],
+            ['cardAddedToHand', 2000],
+            ['cardMoved', 1000],
             ['characterRecruited', 1000],
+            ['drawCard', 2000],
             ['playApproachScheme', 2000],
             ['playApproachCharacter', 2000],
             ['firstPlayer', 1500],
@@ -24,7 +26,6 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['reknownAddedToLocation', 500],
             ['reknownRemovedFromLocation', 500],
             ['factionResolveCardDraw', 1000],
-            ['cardAddedToHand', 1000],
             ['cardRemovedFromCityDiscardPile', 500],
             ['cardRemovedFromPlayerDiscardPile', 500],
             ['yevgeniAdversaryChosen', 500],
@@ -35,6 +36,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
             this.notifqueue.setSynchronous(notif[0], notif[1]);
         });
+
+        this.notifqueue.setIgnoreNotificationCheck( 'drawCardMessage', (notif) => (notif.args.playerId == this.player_id) );
     },  
 
     notif_playLeader: function( notif )
@@ -132,6 +135,18 @@ return declare('seventhseacityoffivesails.notifications', null, {
         console.log( 'notif_cardAddedToHand' );
         console.log( notif );
         this.addCardToDeck(this.factionHand, notif.args.card);
+    },
+
+    notif_drawCard: function( notif )
+    {
+        console.log( 'notif_drawCard' );
+        console.log( notif );
+
+        const args = notif.args;
+
+        const card = args.card;
+        this.cardProperties[card.id] = card;
+        this.addCardToDeck(this.factionHand, card);
     },
 
     notif_cardAddedToCityDiscardPile: function( notif )

@@ -378,14 +378,8 @@ trait StatesTrait
             }
 
             $cards = [];
-            $location = $this->getPlayerFactionDeckName($playerId);
             for ($i = 0; $i < $panache; $i++) {
-                $cardInfo = $this->cards->pickCard($location, $playerId);
-                $card = $this->getCardObjectFromDb($cardInfo['id']);
-                $card->ControllerId = $playerId;
-                $card->OwnerId = $playerId;
-                $this->updateCardObjectInDb($card);
-
+                $card = $this->playerDrawCard($playerId);
                 $cards[] = $card->getPropertyArray();
                 unset($card);
             }

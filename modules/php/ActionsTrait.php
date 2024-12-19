@@ -16,6 +16,21 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 
 trait ActionsTrait
 {
+    public function actPass(): void
+    {
+        // Retrieve the active player ID.
+        $player_id = (int)$this->getActivePlayerId();
+
+        // Notify all players about the choice to pass.
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} passes.'), [
+            "player_id" => $player_id,
+            "player_name" => $this->getActivePlayerName(),
+        ]);
+
+        // at the end of the action, move to the next state
+        $this->gamestate->nextState("");
+    }
+    
     public function actPickDeck(string $deck_type, string $deck_id): void
     {
         $playerId = $this->getCurrentPlayerId();
@@ -122,7 +137,7 @@ trait ActionsTrait
         // Notify players
         $this->notifyAllPlayers("message_01045", clienttranslate('${player_name} chose ${card_name} to move from the City Discard Pile to the top of the City Deck.'), [
             "player_name" => $playerName,
-            "card_name" => "<span style='font-weight:bold'>{$card->Name}</span>",
+            "card_name" => "<strong>{$card->Name}</strong>",
             "player_id" => $playerId,
             "card" => $card->getPropertyArray(),
         ]);
@@ -144,6 +159,7 @@ trait ActionsTrait
             $event->amount = 1;
             $event->source = "The Boar's Guile: Adding Reknown to Location";
         }
+        $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
         $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_1', 
@@ -167,8 +183,7 @@ trait ActionsTrait
         $location = json_decode($locations, true)[0];
 
         //Check if the location actually has reknown to move
-        $locationReknownName = $this->getReknownLocationName($location);
-        $reknown = $this->globals->get($locationReknownName);
+        $reknown = $this->getReknownForLocation($location);
         if ($reknown <= 0) {
             throw new \BgaUserException("{$location} does not have any reknown to move.");
         }
@@ -179,6 +194,7 @@ trait ActionsTrait
             $event->amount = 1;
             $event->source = "The Boar's Guile: Moving Reknown from one Location to an adjacent location";
         }
+        $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
         $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_2', 
@@ -210,6 +226,7 @@ trait ActionsTrait
             $event->amount = 1;
             $event->source = "The Boar's Guile: Moving Reknown from one Location to an adjacent location";
         }
+        $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
         $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_3', 
@@ -229,7 +246,7 @@ trait ActionsTrait
         $this->notifyAllPlayers('yevgeniAdversaryChosen', 
             clienttranslate('${player_name} has chosen ${character} as Yevgeni\'s Adversary.'), [
             "player_name" => $playerName,
-            "character" => "<span style='font-weight:bold'>{$character->Name}</span>",
+            "character" => "<strong>{$character->Name}</strong>",
             "cardId" => $character->Id,
         ]);
 
@@ -267,9 +284,7 @@ trait ActionsTrait
         }
 
         //Get the chosen scheme card for the player
-        $sql = "SELECT selected_scheme_id FROM player WHERE player_id = $playerId";
-        $selectedSchemeId = $this->getUniqueValueFromDB($sql);
-        $scheme = $this->getCardObjectFromDb($selectedSchemeId);
+        $scheme = $this->getPlayerChosenScheme($playerId);
 
         //Check if event can be run
         $schemeMoveEvent = $this->theah->createEvent(Events::SchemeMovedToCity);
@@ -284,7 +299,7 @@ trait ActionsTrait
             clienttranslate('${player_name} has chosen ${location} as the Chosen Location for ${card_name}'), [
             "player_name" => $playerName,
             "location" => $leshiyeLocation,
-            "card_name" => '<span style="font-weight:bold">Leshiye of the Woods</span>',
+            "card_name" => "<strong>Leshiye of the Woods</strong>",
         ]);
 
 
@@ -301,15 +316,12 @@ trait ActionsTrait
                 $event->amount = 1;
                 $event->source = "Leshiye of the Woods: Adding Reknown to Location";
             }
+            $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
         }
 
         // Move leshiye of the woods to the chosen location
-        $sql = "SELECT selected_scheme_id FROM player WHERE player_id = $playerId";
-        $selectedSchemeId = $this->getUniqueValueFromDB($sql);
-        $scheme = $this->getCardObjectFromDb($selectedSchemeId);
-
-        $this->cards->moveCard($selectedSchemeId, $leshiyeLocation, $playerId);
+        $this->cards->moveCard($scheme->Id, $leshiyeLocation, $playerId);
         $this->theah->queueEvent($schemeMoveEvent);
 
         // Go back and finish running the Scheme events
@@ -330,12 +342,13 @@ trait ActionsTrait
             $event->amount = 1;
             $event->source = $playerName;
         }
+        $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
         $this->globals->set(GAME::CHOSEN_LOCATION, $location);
 
         // Get all the reknown to compare
-        $players = $this->getCollectionFromDb("SELECT player_id, player_score score FROM player ORDER BY player_score DESC");
+        $players = $this->getObjectListFromDb("SELECT player_id, player_score score FROM player ORDER BY player_score DESC");
         if (count($players) == 1) {
             $this->gamestate->nextState("fewestReknown");                
             return;
@@ -368,7 +381,56 @@ trait ActionsTrait
             $event->source = $playerName;
         }
 
+        $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanningPhase_01145(string $fromLocation, string $toLocation)
+    {
+        $playerId = $this->getActivePlayerId();
+        $scheme = $this->getPlayerChosenScheme($playerId);
+        $scheme->planningPhaseAction($this, $fromLocation, $toLocation);
+
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanningPhase_01145_Pass()
+    {
+        $playerId = $this->getActivePlayerId();
+        $scheme = $this->getPlayerChosenScheme($playerId);
+        $scheme->planningPhaseAction($this, 'Pass', 'Pass');
+
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanningPhase_01150(string $locations)
+    {
+        $playerName = $this->getActivePlayerName();
+
+        $locations = json_decode($locations, true);
+        $location = array_shift($locations);
+        $removeEvent = $this->theah->createEvent(Events::ReknownRemovedFromLocation);
+        if ($removeEvent instanceof EventReknownRemovedFromLocation) {
+            $removeEvent->playerId = $this->getActivePlayerId();
+            $removeEvent->location = $location;
+            $removeEvent->amount = 1;
+            $removeEvent->source = $playerName;
+        }
+        $this->theah->eventCheck($removeEvent);
+
+        $addEvent = $this->theah->createEvent(Events::ReknownAddedToLocation);
+        if ($addEvent instanceof EventReknownAddedToLocation) {
+            $addEvent->playerId = $this->getActivePlayerId();
+            $addEvent->location = Game::LOCATION_CITY_FORUM;
+            $addEvent->amount = 1;
+            $addEvent->source = $playerName;
+        }
+        $this->theah->eventCheck($addEvent);
+
+        $this->theah->queueEvent($removeEvent);
+        $this->theah->queueEvent($addEvent);
 
         $this->gamestate->nextState("");
     }
@@ -405,19 +467,7 @@ trait ActionsTrait
 
         $playerId = $this->getActivePlayerId();
 
-        //Check to see if the cards used to pay can be moved to the player's discard pile
-        foreach ($cardIds as $cardId) {
-            $card = $this->getCardObjectFromDb($cardId);
-
-            $event = $this->theah->createEvent(Events::CardAddedToPlayerDiscardPile);
-            if ($event instanceof EventCardAddedToPlayerDiscardPile) {
-                $event->playerId = $playerId;
-                $event->card = $card;
-            }
-            $this->theah->eventCheck($event);
-        }
-
-        //Check to see if the character can be recruited
+        //Recruit the character
         $recruitCharacterEvent = $this->theah->createEvent(Events::CharacterRecruited);
         if ($recruitCharacterEvent instanceof EventCharacterRecruited) {
             $recruitCharacterEvent->character = $character;
@@ -426,6 +476,7 @@ trait ActionsTrait
             $recruitCharacterEvent->cost = $cost;
         }
         $this->theah->eventCheck($recruitCharacterEvent);
+        $this->theah->queueEvent($recruitCharacterEvent);
 
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
@@ -437,56 +488,11 @@ trait ActionsTrait
                 $event->playerId = $playerId;
                 $event->card = $card;
             }
+            //No check needed
             $this->theah->queueEvent($event);
         }
 
-        //Recruit the character
-        $this->theah->queueEvent($recruitCharacterEvent);
-
         $this->gamestate->nextState("");
     }
-
-    public function actPlanningPhase_01150(string $locations)
-    {
-        $playerName = $this->getActivePlayerName();
-
-        $locations = json_decode($locations, true);
-        $location = array_shift($locations);
-        $removeEvent = $this->theah->createEvent(Events::ReknownRemovedFromLocation);
-        if ($removeEvent instanceof EventReknownRemovedFromLocation) {
-            $removeEvent->location = $location;
-            $removeEvent->amount = 1;
-            $removeEvent->source = $playerName;
-        }
-        $this->theah->eventCheck($removeEvent);
-
-        $addEvent = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($addEvent instanceof EventReknownAddedToLocation) {
-            $addEvent->playerId = $this->getActivePlayerId();
-            $addEvent->location = Game::LOCATION_CITY_FORUM;
-            $addEvent->amount = 1;
-            $addEvent->source = $playerName;
-        }
-        $this->theah->eventCheck($addEvent);
-
-        $this->theah->queueEvent($removeEvent);
-        $this->theah->queueEvent($addEvent);
-
-        $this->gamestate->nextState("");
-    }
-
-    public function actPass(): void
-    {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        // Notify all players about the choice to pass.
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} passes.'), [
-            "player_id" => $player_id,
-            "player_name" => $this->getActivePlayerName(),
-        ]);
-
-        // at the end of the action, move to the next state
-        $this->gamestate->nextState("");
-    }
+ 
 }
