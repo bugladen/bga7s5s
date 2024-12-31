@@ -25,11 +25,6 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
-        'planningPhaseResolveSchemes_PickTwoLocationsForReknown': () => {
-            this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
-            dojo.addClass('actCityLocationsSelected', 'disabled');
-        },
-
         'planningPhaseResolveSchemes_01044': () => {
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseStockCardConfirmed());
             this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
@@ -45,6 +40,11 @@ onUpdateActionButtons: function( stateName, args )
         'planningPhaseResolveSchemes_01072': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
             this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            dojo.addClass('actCityLocationsSelected', 'disabled');
+        },
+
+        'planningPhaseResolveSchemes_01098': () => {
+            this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
@@ -107,6 +107,16 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
             this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             dojo.addClass('actCityLocationsSelected', 'disabled');
+        },
+
+        'planningPhaseEnd_01098': () => {
+            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseCharacterConfirmed());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            dojo.addClass('actChooseCardSelected', 'disabled');
+        },
+
+        'planningPhaseEnd_01098_2': () => {
+            this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
         },
 
         'highDramaBeginning_01144': () => {

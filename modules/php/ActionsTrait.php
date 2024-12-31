@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
@@ -29,6 +30,11 @@ trait ActionsTrait
 
         // at the end of the action, move to the next state
         $this->gamestate->nextState("");
+    }
+
+    public function actMultipleOk(): void{
+        $playerId = $this->getCurrentPlayerId();
+        $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
     }
     
     public function actPickDeck(string $deck_type, string $deck_id): void
@@ -494,5 +500,45 @@ trait ActionsTrait
 
         $this->gamestate->nextState("");
     }
+
+    public function actPlanningPhaseEnd_01098(string $ids)
+    {
+        $id = json_decode($ids, true)[0];
+        $leader = $this->getCardObjectFromDb($id);
+        $chosenPlayerId = $leader->ControllerId;
+
+        //Get the chosen player's name
+        $chosenPlayerName = $this->getPlayerNameById($chosenPlayerId);
+
+        //Get the chosen player's hand
+        $hand = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $chosenPlayerId);
+
+        //Randomly select a card from the hand
+        $card = $hand[array_rand($hand)];
+        $pickedCard = $this->getCardObjectFromDb($card['id']);
+
+        $playerId = $this->getActivePlayerId();
+        $playerName = $this->getActivePlayerName();
+
+        //Get the chosen scheme card for the active player and updated it with the chosen card
+        $scheme = $this->getPlayerChosenScheme($playerId);
+        if ($scheme instanceof _01098) {
+            $scheme->EmbargoedCardId = $pickedCard->Id;
+            $this->updateCardObjectInDb($scheme);
+        }
+
+        $this->globals->set(GAME::CATS_EMBARGO, $pickedCard->Id);
+
+        $this->notifyAllPlayers('message', 
+            clienttranslate('${player_name} has chosen to reveal ${picked_card} randomly from ${chosen_player_name}\'s hand.'), [
+            "player_name" => $playerName,
+            "chosen_player_name" => "<strong>$chosenPlayerName</strong>",
+            "picked_card" => "<strong>{$pickedCard->Name}</strong>",
+            "card" => $pickedCard->getPropertyArray(),
+        ]);
+
+        $this->gamestate->nextState("");
+   }
+
  
 }

@@ -31,20 +31,6 @@ onEnteringState: function( stateName, args )
             }
         },
 
-        'planningPhaseResolveSchemes_PickTwoLocationsForReknown': () => {
-            if (this.isCurrentPlayerActive()) {
-                const locations = this.getListofAvailableCityLocationImages();
-                this.numberOfCityLocationsSelectable = 2;
-                locations.forEach((location) => {
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
-                });
-            }
-        },
-
         'planningPhaseResolveSchemes_01044': () => {
             if (this.isCurrentPlayerActive()) {
                 dojo.removeClass('choose-container', 'hidden');
@@ -94,6 +80,20 @@ onEnteringState: function( stateName, args )
                     const reknown = parseInt(reknownElement.innerHTML);
                     if (reknown > 0) return;
         
+                    dojo.addClass(location, 'selectable');
+                    dojo.style(location, 'cursor', 'pointer');
+
+                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                    this.connects.push(handle);
+                });
+            }
+        },
+
+        'planningPhaseResolveSchemes_01098': () => {
+            if (this.isCurrentPlayerActive()) {
+                const locations = this.getListofAvailableCityLocationImages();
+                this.numberOfCityLocationsSelectable = 2;
+                locations.forEach((location) => {
                     dojo.addClass(location, 'selectable');
                     dojo.style(location, 'cursor', 'pointer');
 
@@ -318,6 +318,40 @@ onEnteringState: function( stateName, args )
                 });
             }
         },
+
+        'planningPhaseEnd_01098': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCharactersSelectable = 1;
+                let count = 0;
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.traits.includes('Leader') && card.controllerId && card.controllerId != this.getActivePlayerId()) {
+                        //Get the element that is a child of card.divId with the class 'card'
+                        const imageElement = $(`${card.divId}_image`);
+                        dojo.addClass(imageElement, 'selectable');
+                        dojo.style(imageElement, 'cursor', 'pointer');
+
+                        const handle = dojo.connect(imageElement, 'onclick', this, 'onCharacterClicked');
+                        this.connects.push(handle);
+
+                        count++;
+                    }
+                }
+                if (count > 0) {
+                    dojo.addClass('actPass', 'disabled');
+                }
+            }
+        },
+
+        'planningPhaseEnd_01098_2': () => {
+            dojo.removeClass('choose-container', 'hidden');
+            dojo.removeClass('chooseList', 'hidden');
+            $('choose-container-name').innerHTML = _('Revealed Card');
+
+            // For each card in the players discard pile, create a stock item
+            this.addCardToDeck(this.chooseList, args.args.card);
+            this.chooseList.setSelectionMode(0);
+    },
 
         'highDramaBeginning': () => {
             $('city-day-phase').innerHTML = _('High Drama');

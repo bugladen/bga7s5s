@@ -47,6 +47,15 @@ trait ArgumentsTrait
         ];
     }
 
+    public function argsPlanningPhaseEnd_01098_2(): array
+    {
+        $id = $this->globals->get(GAME::CATS_EMBARGO);
+        $card = $this->getCardObjectFromDb($id);
+        return [
+            "card" => $card->getPropertyArray()
+        ];
+    }
+
     public function argsHighDramaBeginning_01144(): array{
         return [
             "discount" => $this->globals->get(GAME::RECRUIT_DISCOUNT)

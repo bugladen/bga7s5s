@@ -15,26 +15,26 @@ onLeavingState: function( stateName )
             this.resetCityLocations();
         },
         
-        'planningPhaseResolveSchemes_PickTwoLocationsForReknown': () => {
-            this.resetCityLocations();
-        },
-        
         'planningPhaseResolveSchemes_01044': () => {
             dojo.addClass('choose-container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
         },
         
-        'planningPhaseResolveSchemes_01072': () => {
-            this.resetCityLocations();
-        },
-
         'planningPhaseResolveSchemes_01045': () => {
             dojo.addClass('choose-container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
         },
 
+        'planningPhaseResolveSchemes_01072': () => {
+            this.resetCityLocations();
+        },
+
+        'planningPhaseResolveSchemes_01098': () => {
+            this.resetCityLocations();
+        },
+        
         'planningPhaseResolveSchemes_01125_1': () => {
             this.resetCityLocations();
         },
@@ -85,6 +85,25 @@ onLeavingState: function( stateName )
 
         'planningPhaseResolveSchemes_01150': () => {
             this.resetCityLocations();
+        },
+
+        'planningPhaseEnd_01098': () => {
+            for( const cardId in this.cardProperties ) {
+                card = this.cardProperties[cardId];
+                if (card.type === 'Character' && card.traits.includes('Leader') && card.controllerId && card.controllerId != this.getActivePlayerId()) {
+                    //Get the element that is a child of card.divId with the class 'card'
+                    const imageElement = $(`${card.divId}_image`);
+                    dojo.removeClass(imageElement, 'selectable');
+                    dojo.removeClass(imageElement, 'selected');
+                    dojo.style(imageElement, 'cursor', 'default');
+                }
+            }
+        },
+
+        'planningPhaseEnd_01098_2': () => {
+            dojo.addClass('choose-container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
         },
 
         'highDramaBeginning_01144': () => {

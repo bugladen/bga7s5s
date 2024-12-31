@@ -106,7 +106,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         const actionMap = {
             'planningPhaseResolveSchemes_01072': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_PickOneLocationForReknown': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_PickTwoLocationsForReknown': 'actCityLocationsForReknownSelected',
+            'planningPhaseResolveSchemes_01098': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01125_1': 'actPlanningPhase_01125_1',
             'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2',
             'planningPhaseResolveSchemes_01125_3': 'actPlanningPhase_01125_3',
@@ -147,6 +147,7 @@ return declare('seventhseacityoffivesails.actions', null, {
     {
         const actionArray = {
             'highDramaBeginning_01144': 'highDramaBeginning_01144_1_client',
+            'planningPhaseEnd_01098': 'actPlanningPhaseEnd_01098',
             'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4',
         };
 
@@ -241,6 +242,12 @@ return declare('seventhseacityoffivesails.actions', null, {
         this.confirmationDialog(_("Are you sure you want to pass?"),
         () => {this.passConfirmed();}
         );
+    },
+
+    onMultipleOk: function()
+    {
+        this.bgaPerformAction("actMultipleOk", { 
+        });        
     },
 
     passConfirmed: function()

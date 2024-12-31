@@ -29,7 +29,7 @@ $machinestates = [
 
     States::PICK_DECKS => [
         "name" => "pickDecks",
-        "description" => clienttranslate('Your opponent must pick a deck to play with.'),
+        "description" => clienttranslate('Your opponent(s) must pick a deck to play with.'),
         "descriptionmyturn" => clienttranslate('${you} must pick your deck to play with:'),
         "type" => "multipleactiveplayer",
         "args" => "argAvailableDecks",
@@ -126,7 +126,7 @@ $machinestates = [
 
     States::PLANNING_PHASE => [
         "name" => "planningPhase",
-        "description" => clienttranslate('Your opponent must choose their Scheme Character to muster for the day.'),
+        "description" => clienttranslate('Your opponent(s) must choose their Scheme Character to muster for the day.'),
         "descriptionmyturn" => clienttranslate('${you} must choose ONE Scheme and ONE Character from your Approach Deck to muster for the day: '),
         "type" => "multipleactiveplayer",
         "args" => "argsEmpty",
@@ -213,7 +213,7 @@ $machinestates = [
             "transitions" => [
                 "01072" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01072,
                 "pickOneLocationForReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_ONE_LOCATION_FOR_REKNOWN,
-                "pickTwoLocationsForReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS_FOR_REKNOWN,
+                "01098" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01098,
                 "01125" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_1,
                 "01126" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126,
                 "01044" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01044,
@@ -342,8 +342,8 @@ $machinestates = [
 
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01072 => [
             "name" => "planningPhaseResolveSchemes_01072",
-            "description" => clienttranslate('Réputation Méritée - ${actplayer} must choose a city location to place Reknown onto that doesn\'t have any.'),
-            "descriptionmyturn" => clienttranslate('Réputation Méritée - ${you} must choose a city location to place Reknown onto that doesn\'t have any:'),
+            "description" => clienttranslate('Réputation Méritée: ${actplayer} must choose a city location to place Reknown onto that doesn\'t have any.'),
+            "descriptionmyturn" => clienttranslate('Réputation Méritée: ${you} must choose a city location to place Reknown onto that doesn\'t have any:'),
             "type" => "activeplayer",
             "args" => "argsEmpty",
             "possibleactions" => [
@@ -363,10 +363,10 @@ $machinestates = [
             ],
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_TWO_LOCATIONS_FOR_REKNOWN => [
-            "name" => "planningPhaseResolveSchemes_PickTwoLocationsForReknown",
-            "description" => clienttranslate('${actplayer} must choose two city locations to place Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('${you} must choose two city locations to place Reknown onto:'),
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01098 => [
+            "name" => "planningPhaseResolveSchemes_01098",
+            "description" => clienttranslate('The Cat\'s Embargo: ${actplayer} must choose two city locations to place Reknown onto.'),
+            "descriptionmyturn" => clienttranslate('The Cat\'s Embargo: ${you} must choose two city locations to place Reknown onto:'),
             "type" => "activeplayer",
             "args" => "argsEmpty",
             "possibleactions" => [
@@ -418,9 +418,36 @@ $machinestates = [
             "description" => clienttranslate("Resolving Events for the End of the Planning Phase..."),
             "type" => "game",
             "action" => "stRunEvents",
-            "transitions" => ["endOfEvents" => States::HIGH_DRAMA_BEGINNING]
+            "transitions" => [
+                "01098" => States::PLANNING_PHASE_END_01098,
+                "endOfEvents" => States::HIGH_DRAMA_BEGINNING
+            ]
         ],
-
+        States::PLANNING_PHASE_END_01098 => [
+            "name" => "planningPhaseEnd_01098",
+            "description" => clienttranslate('The Cat\'s Embargo: ${actplayer} must choose an opponent to reveal a card from hand.'),
+            "descriptionmyturn" => clienttranslate('The Cat\'s Embargo: ${you} must choose an opponent to reveal a card from hand:'),
+            "type" => "activeplayer",
+            "args" => "argsEmpty",
+            "possibleactions" => [
+                "actPass",
+                "actPlanningPhaseEnd_01098", 
+            ],
+            "transitions" => ["" => States::PLANNING_PHASE_END_01098_2]
+        ],
+        States::PLANNING_PHASE_END_01098_2 => [
+            "name" => "planningPhaseEnd_01098_2",
+            "description" => clienttranslate('The Cat\'s Embargo: Your opponent(s) must acknowlege revealed card.'),
+            "descriptionmyturn" => clienttranslate('The Cat\'s Embargo: ${you} must must acknowlege revealed card:'),
+            "type" => "multipleactiveplayer",
+            "args" => "argsPlanningPhaseEnd_01098_2",
+            "action" => "stMultiPlayerInit",
+            "possibleactions" => [
+                "actMultipleOk", 
+            ],
+            "transitions" => ["multipleOk" => States::PLANNING_PHASE_END_EVENTS]
+        ],
+    
     States::HIGH_DRAMA_BEGINNING => [
         "name" => "highDramaBeginning",
         "description" => clienttranslate("Beginning of High Drama..."),
