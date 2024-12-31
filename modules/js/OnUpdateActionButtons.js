@@ -30,22 +30,22 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
-        'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone': () => {
-            this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
-            dojo.addClass('actCityLocationsSelected', 'disabled');
-        },
-
         'planningPhaseResolveSchemes_01044': () => {
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseStockCardConfirmed());
             this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
-
+        
         'planningPhaseResolveSchemes_01045': () => {
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseStockCardConfirmed());
             this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
+        },
+        
+        'planningPhaseResolveSchemes_01072': () => {
+            this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
         'planningPhaseResolveSchemes_01125_1': () => {

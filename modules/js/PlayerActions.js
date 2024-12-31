@@ -104,7 +104,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         //Generic method when no specific logic is needed
         const actionMap = {
-            'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone': 'actCityLocationsForReknownSelected',
+            'planningPhaseResolveSchemes_01072': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_PickOneLocationForReknown': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_PickTwoLocationsForReknown': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01125_1': 'actPlanningPhase_01125_1',

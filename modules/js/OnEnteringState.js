@@ -31,25 +31,6 @@ onEnteringState: function( stateName, args )
             }
         },
 
-        'planningPhaseResolveSchemes_PickOneLocationForReknownWithNone': () => {
-            if (this.isCurrentPlayerActive()) {
-                const locations = this.getListofAvailableCityLocationImages();
-                this.numberOfCityLocationsSelectable = 1;
-                locations.forEach((location) => {
-                    const imageElement = $(location);
-                    const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
-                    const reknown = parseInt(reknownElement.innerHTML);
-                    if (reknown > 0) return;
-        
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
-                });
-            }
-        },
-
         'planningPhaseResolveSchemes_PickTwoLocationsForReknown': () => {
             if (this.isCurrentPlayerActive()) {
                 const locations = this.getListofAvailableCityLocationImages();
@@ -100,6 +81,25 @@ onEnteringState: function( stateName, args )
 
                 if (this.chooseList.count() > 0) 
                     dojo.addClass('actPass', 'disabled');
+            }
+        },
+
+        'planningPhaseResolveSchemes_01072': () => {
+            if (this.isCurrentPlayerActive()) {
+                const locations = this.getListofAvailableCityLocationImages();
+                this.numberOfCityLocationsSelectable = 1;
+                locations.forEach((location) => {
+                    const imageElement = $(location);
+                    const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+                    const reknown = parseInt(reknownElement.innerHTML);
+                    if (reknown > 0) return;
+        
+                    dojo.addClass(location, 'selectable');
+                    dojo.style(location, 'cursor', 'pointer');
+
+                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                    this.connects.push(handle);
+                });
             }
         },
 

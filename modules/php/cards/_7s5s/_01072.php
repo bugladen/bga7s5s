@@ -44,7 +44,7 @@ class _01072 extends Scheme
             $transition = $event->theah->createEvent(Events::Transition);
             if ($transition instanceof EventTransition) {
                 $transition->playerId = $event->playerId;
-                $transition->transition = 'pickOneLocationForReknownWithNone';
+                $transition->transition = '01072';
             }
             $event->theah->queueEvent($transition);
         }
