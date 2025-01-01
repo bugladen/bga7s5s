@@ -290,8 +290,8 @@ $machinestates = [
 
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_1 => [
             "name" => "planningPhaseResolveSchemes_01144_1",
-            "description" => clienttranslate('${actplayer} must choose a city location to place Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('${you} must choose a city location to place Reknown onto:'),
+            "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose a city location to place Reknown onto.'),
+            "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose a city location to place Reknown onto:'),
             "type" => "activeplayer",
             "args" => "argsEmpty",
             "possibleactions" => [
@@ -304,8 +304,8 @@ $machinestates = [
         ],
             States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_2 => [
                 "name" => "planningPhaseResolveSchemes_01144_2",
-                "description" => clienttranslate('${actplayer} must choose a different city location to place Reknown onto.'),
-                "descriptionmyturn" => clienttranslate('${you} must choose a different city location to place Reknown onto:'),
+                "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose a different city location to place Reknown onto.'),
+                "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose a different city location to place Reknown onto:'),
                 "type" => "activeplayer",
                 "args" => "argsPlanningPhaseResolveSchemes_01144_2",
                 "possibleactions" => [
@@ -316,8 +316,8 @@ $machinestates = [
 
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01145 => [
             "name" => "planningPhaseResolveSchemes_01145",
-            "description" => clienttranslate('${actplayer} is choosing options for Inspire Generosity.'),
-            "descriptionmyturn" => clienttranslate('${you} must choose a city location to move a Reknown from:'),
+            "description" => clienttranslate('Inspire Generosity: ${actplayer} is choosing options for Inspire Generosity.'),
+            "descriptionmyturn" => clienttranslate('Inspire Generosity: ${you} must choose a city location to move a Reknown from:'),
             "type" => "activeplayer",
             "args" => "argsEmpty",
             "possibleactions" => [
@@ -468,8 +468,8 @@ $machinestates = [
 
         States::HIGH_DRAMA_BEGINNING_01144 => [
             "name" => "highDramaBeginning_01144",
-            "description" => clienttranslate('${actplayer} may choose a Mercenary from a City Location to recruit to their home'),
-            "descriptionmyturn" => clienttranslate('${you} may choose a Mercenary from a City Location to recruit to your home:'),
+            "description" => clienttranslate('Filling The Ranks: ${actplayer} may choose a Mercenary from a City Location to recruit to their home'),
+            "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} may choose a Mercenary from a City Location to recruit to your home:'),
             "type" => "activeplayer",
             "args" => "argsHighDramaBeginning_01144",
             "possibleactions" => [

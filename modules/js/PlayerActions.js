@@ -120,7 +120,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const clientMessageArray = {
             'planningPhaseResolveSchemes_01126_2_client': "Leshiye of the Woods: ${you} must choose two other locations to place Reknown onto:",
-            'planningPhaseResolveSchemes_01145_2_client': "${you} must choose a location to move the Reknown to:",
+            'planningPhaseResolveSchemes_01145_2_client': "Inspire Generosity: ${you} must choose a location to move the Reknown to:",
         };
 
         const action = actionMap[this.gamedatas.gamestate.name];
