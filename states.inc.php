@@ -226,8 +226,8 @@ $machinestates = [
         ],
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_1 => [
             "name" => "planningPhaseResolveSchemes_01125_1",
-            "description" => clienttranslate('${actplayer} may choose a City Location to place a Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('${you} may choose a City Location to place a Reknown onto: '),
+            "description" => clienttranslate('The Boar\'s Guile: ${actplayer} may choose a City Location to place a Reknown onto.'),
+            "descriptionmyturn" => clienttranslate('The Boar\'s Guile: ${you} may choose a City Location to place a Reknown onto: '),
             "type" => "activeplayer",
             "args" => "argsEmpty",
             "possibleactions" => [
@@ -241,8 +241,8 @@ $machinestates = [
         ],
             States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_2 => [
                 "name" => "planningPhaseResolveSchemes_01125_2",
-                "description" => clienttranslate('${actplayer} must choose a City Location to move a Reknown FROM, if able.'),
-                "descriptionmyturn" => clienttranslate('${you} must choose a City Location to move a Reknown FROM, if able: '),
+                "description" => clienttranslate('The Boar\'s Guile: ${actplayer} must choose a City Location to move a Reknown FROM, if able.'),
+                "descriptionmyturn" => clienttranslate('The Boar\'s Guile: ${you} must choose a City Location to move a Reknown FROM, if able: '),
                 "type" => "activeplayer",
                 "args" => "argsEmpty",
                 "possibleactions" => [
@@ -256,8 +256,8 @@ $machinestates = [
                 ],
                 States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_3 => [
                     "name" => "planningPhaseResolveSchemes_01125_3",
-                    "description" => clienttranslate('${actplayer} must choose an adjacent City Location to move the Reknown TO.'),
-                    "descriptionmyturn" => clienttranslate('${you} must choose an adjacent City Location to move the Reknown TO:'),
+                    "description" => clienttranslate('The Boar\'s Guile: ${actplayer} must choose an adjacent City Location to move the Reknown TO.'),
+                    "descriptionmyturn" => clienttranslate('The Boar\'s Guile: ${you} must choose an adjacent City Location to move the Reknown TO:'),
                     "type" => "activeplayer",
                     "args" => "argsPlanningPhaseResolveSchemes_01125_3",
                     "possibleactions" => ["actPlanningPhase_01125_3"],
@@ -265,8 +265,8 @@ $machinestates = [
                 ],
                 States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4 => [
                     "name" => "planningPhaseResolveSchemes_01125_4",
-                    "description" => clienttranslate('${actplayer} must choose an enemy Character.'),
-                    "descriptionmyturn" => clienttranslate('${you} must choose an enemy Character:'),
+                    "description" => clienttranslate('The Boar\'s Guile: ${actplayer} must choose an enemy Character.'),
+                    "descriptionmyturn" => clienttranslate('The Boar\'s Guile: ${you} must choose an enemy Character:'),
                     "type" => "activeplayer",
                     "args" => "argsEmpty",
                     "possibleactions" => [
@@ -376,8 +376,8 @@ $machinestates = [
         ],
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01044 => [
             "name" => "planningPhaseResolveSchemes_01044",
-            "description" => clienttranslate('${actplayer} must choose an Attachment from your discard pile if able.'),
-            "descriptionmyturn" => clienttranslate('${you} must choose an Attachment from your discard pile if able:'),
+            "description" => clienttranslate('Armed and Marshaled: ${actplayer} must choose an Attachment from your discard pile if able.'),
+            "descriptionmyturn" => clienttranslate('Armed and Marshaled: ${you} must choose an Attachment from your discard pile if able:'),
             "type" => "activeplayer",
             "args" => "argsEmpty",
             "possibleactions" => [
