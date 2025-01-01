@@ -66,6 +66,8 @@ function (dojo, declare) {
             this.LOCATION_CITY_GOVERNORS_GARDEN = "Governor's Garden";
             this.LOCATION_PLAYER_HOME = 'Player Home';
 
+            this.CARD_TOOLTIP_DELAY = 500;
+
             //Global array containing cached properties of all the cards this page has had access to
             this.cardProperties = {};
 

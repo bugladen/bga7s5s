@@ -117,7 +117,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.style( `${divId}_wealth_cost`, 'display', 'none' );
         }
 
-        this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, 100);
+        this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, this.CARD_TOOLTIP_DELAY);
 
         //Check for any special conditions where a token has to be displayed
         if (character.conditions.includes('Adversary of Yevgeni')) {
@@ -146,7 +146,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             image: event.image,
         }), location, "before" );
 
-        this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + event.image}" />`, 100);
+        this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + event.image}" />`, this.CARD_TOOLTIP_DELAY);
 
         if (event.reknown > 0) {
             divId = `${divId}-reknown`;
@@ -193,7 +193,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.removeClass(`${divId}-player-color`, 'scheme-player-color');
         }
         
-        this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + scheme.image}" />`, 100);
+        this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + scheme.image}" />`, this.CARD_TOOLTIP_DELAY);
     },  
 
     createAttachmentCard: function( divId, color, attachment, location )
@@ -216,7 +216,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             cost: attachment.wealthCost,
         }), location, "before" );
 
-        this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + attachment.image}" />`, 100);
+        this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + attachment.image}" />`, this.CARD_TOOLTIP_DELAY);
     },
 
     formatModifer: function( modifier )
@@ -305,7 +305,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
     setupNewStockCard: function( cardDiv, cardTypeId, cardId )
     {
         const card = this.cardProperties[cardTypeId];
-        this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, 100);
+        this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, this.CARD_TOOLTIP_DELAY);
     },
 
     isCardInCity: function( cardId )
