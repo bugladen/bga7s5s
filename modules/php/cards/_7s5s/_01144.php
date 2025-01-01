@@ -54,9 +54,17 @@ class _01144 extends Scheme
 
         if ($event instanceof EventPhaseHighDrama) 
         {
-            list($playerId, $lowestCount) = $event->theah->game->getPlayerControllingFewestCharacters();
+            list($playerIdWithLeastCharacters, $lowestCount) = $event->theah->game->getPlayerControllingFewestCharacters();
 
-            if ($playerId != $this->ControllerId) {
+            if ($playerIdWithLeastCharacters != $this->ControllerId) 
+            {
+                $player_name = $event->theah->game->getPlayerNameById($this->ControllerId);
+
+                $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} Leader Reaction: ${player_name} DOES NOT have the least (non-tied) amount of characters in play.'), [
+                    "scheme_name" => "<strong>{$this->Name}</strong>",
+                    "player_name" => $player_name,
+                ]);
+
                 return;
             }
 
