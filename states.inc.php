@@ -278,8 +278,8 @@ $machinestates = [
 
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01126 => [
             "name" => "planningPhaseResolveSchemes_01126",
-            "description" => clienttranslate('${actplayer} must choose options for Leshiye of the Wood.'),
-            "descriptionmyturn" => clienttranslate('${you} must choose an outer City Location for Leshiye of the Wood:'),
+            "description" => clienttranslate('Leshiye of the Woods: ${actplayer} must choose options for Leshiye of the Wood.'),
+            "descriptionmyturn" => clienttranslate('Leshiye of the Woods: ${you} must choose an outer City Location for Leshiye of the Wood:'),
             "type" => "activeplayer",
             "args" => "argsEmpty",
             "possibleactions" => [
@@ -388,8 +388,8 @@ $machinestates = [
         ],
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01045 => [
             "name" => "planningPhaseResolveSchemes_01045",
-            "description" => clienttranslate('${actplayer} must choose a Mercenary from the City Deck discard pile if able.'),
-            "descriptionmyturn" => clienttranslate('${you} must choose a Mercenary from the City Deck discard pile if able:'),
+            "description" => clienttranslate('The Song of Eisen: ${actplayer} must choose a Mercenary from the City Deck discard pile if able.'),
+            "descriptionmyturn" => clienttranslate('The Song of Eisen: ${you} must choose a Mercenary from the City Deck discard pile if able:'),
             "type" => "activeplayer",
             "args" => "argsEmpty",
             "possibleactions" => [

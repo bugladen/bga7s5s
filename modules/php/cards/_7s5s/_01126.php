@@ -34,7 +34,7 @@ class _01126 extends Scheme
         $this->PanacheModifier = 0;
 
         $this->Traits = [
-            "Leshiya", 
+            "Leshiye", 
             "Nature",
         ];
     }
