@@ -17,20 +17,6 @@ onEnteringState: function( stateName, args )
             this.approachDeck.setSelectionMode(2);
         },
 
-        'planningPhaseResolveSchemes_PickOneLocationForReknown': () => {
-            if (this.isCurrentPlayerActive()) {
-                const locations = this.getListofAvailableCityLocationImages();
-                this.numberOfCityLocationsSelectable = 1;
-                locations.forEach((location) => {
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
-                });
-            }
-        },
-
         'planningPhaseResolveSchemes_01044': () => {
             if (this.isCurrentPlayerActive()) {
                 dojo.removeClass('choose-container', 'hidden');
@@ -67,6 +53,20 @@ onEnteringState: function( stateName, args )
 
                 if (this.chooseList.count() > 0) 
                     dojo.addClass('actPass', 'disabled');
+            }
+        },
+
+        'planningPhaseResolveSchemes_01071': () => {
+            if (this.isCurrentPlayerActive()) {
+                const locations = this.getListofAvailableCityLocationImages();
+                this.numberOfCityLocationsSelectable = 1;
+                locations.forEach((location) => {
+                    dojo.addClass(location, 'selectable');
+                    dojo.style(location, 'cursor', 'pointer');
+
+                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                    this.connects.push(handle);
+                });
             }
         },
 

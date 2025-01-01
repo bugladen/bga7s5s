@@ -211,8 +211,8 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "01071" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01071,
                 "01072" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01072,
-                "pickOneLocationForReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_ONE_LOCATION_FOR_REKNOWN,
                 "01098" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01098,
                 "01125" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_1,
                 "01126" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126,
@@ -340,6 +340,17 @@ $machinestates = [
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
 
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01071 => [
+            "name" => "planningPhaseResolveSchemes_01071",
+            "description" => clienttranslate('Épée Sanglante: ${actplayer} must choose a city location to place Reknown onto.'),
+            "descriptionmyturn" => clienttranslate('Épée Sanglante: ${you} must choose a city location to place Reknown onto:'),
+            "type" => "activeplayer",
+            "args" => "argsEmpty",
+            "possibleactions" => [
+                "actCityLocationsForReknownSelected", 
+            ],
+            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+        ],
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01072 => [
             "name" => "planningPhaseResolveSchemes_01072",
             "description" => clienttranslate('Réputation Méritée: ${actplayer} must choose a city location to place Reknown onto that doesn\'t have any.'),
@@ -349,17 +360,6 @@ $machinestates = [
             "possibleactions" => [
                 "actCityLocationsForReknownSelected", 
                 "actPass"
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-        ],
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_PICK_ONE_LOCATION_FOR_REKNOWN => [
-            "name" => "planningPhaseResolveSchemes_PickOneLocationForReknown",
-            "description" => clienttranslate('${actplayer} must choose a city location to place Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('${you} must choose a city location to place Reknown onto:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actCityLocationsForReknownSelected", 
             ],
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],

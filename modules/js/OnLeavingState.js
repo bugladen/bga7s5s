@@ -11,10 +11,6 @@ onLeavingState: function( stateName )
             this.approachDeck.setSelectionMode(0);
         },
 
-        'planningPhaseResolveSchemes_PickOneLocationForReknown': () => {
-            this.resetCityLocations();
-        },
-        
         'planningPhaseResolveSchemes_01044': () => {
             dojo.addClass('choose-container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
@@ -27,6 +23,10 @@ onLeavingState: function( stateName )
             this.chooseList.removeAll();
         },
 
+        'planningPhaseResolveSchemes_01071': () => {
+            this.resetCityLocations();
+        },
+        
         'planningPhaseResolveSchemes_01072': () => {
             this.resetCityLocations();
         },

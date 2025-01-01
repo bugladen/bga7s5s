@@ -20,11 +20,6 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actEndPlanningPhase', 'disabled');
         },
 
-        'planningPhaseResolveSchemes_PickOneLocationForReknown': () => {
-            this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-            dojo.addClass('actCityLocationsSelected', 'disabled');
-        },
-
         'planningPhaseResolveSchemes_01044': () => {
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseStockCardConfirmed());
             this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
@@ -37,6 +32,11 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
         
+        'planningPhaseResolveSchemes_01071': () => {
+            this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+            dojo.addClass('actCityLocationsSelected', 'disabled');
+        },
+
         'planningPhaseResolveSchemes_01072': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
             this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
