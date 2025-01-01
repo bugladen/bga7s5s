@@ -329,8 +329,8 @@ $machinestates = [
     
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01150 => [
             "name" => "planningPhaseResolveSchemes_01150",
-            "description" => clienttranslate('${actplayer} may choose a city location to move a Reknown from.'),
-            "descriptionmyturn" => clienttranslate('${you} may choose a city location to move a Reknown from:'),
+            "description" => clienttranslate('Parlay Gone Wrong: ${actplayer} may choose a city location to move a Reknown from.'),
+            "descriptionmyturn" => clienttranslate('Parlay Gone Wrong: ${you} may choose a city location to move a Reknown from:'),
             "type" => "activeplayer",
             "args" => "argsEmpty",
             "possibleactions" => [

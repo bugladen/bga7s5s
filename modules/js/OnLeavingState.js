@@ -84,6 +84,7 @@ onLeavingState: function( stateName )
         },
 
         'planningPhaseResolveSchemes_01150': () => {
+            dojo.removeClass("forum-image", 'darkened');
             this.resetCityLocations();
         },
 

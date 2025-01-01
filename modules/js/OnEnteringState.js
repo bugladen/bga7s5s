@@ -303,7 +303,11 @@ onEnteringState: function( stateName, args )
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 1;
                 locations.forEach((location) => {
-                    if (location == 'forum-image') return;
+                    if (location == 'forum-image')
+                    {
+                        dojo.addClass(location, 'darkened');
+                        return;
+                    } 
 
                     const imageElement = $(location);
                     const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];

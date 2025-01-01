@@ -719,6 +719,10 @@ body {
     box-shadow: 0 0 2px 2px lime;
 }
 
+.darkened {
+    filter: brightness(50%);
+}
+
 /* Leave as-is for stock component */
 .stockitem_selected {
 	border: 3px solid lime !important;
