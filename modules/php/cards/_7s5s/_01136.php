@@ -10,11 +10,12 @@ class _01136 extends Risk
     {
         parent::__construct();
 
-        $this->Name = "Mu Fight, Alone";
+        $this->Name = "My Fight, Alone";
         $this->Image = "img/cards/7s5s/136.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
-        
+        $this->Faction = "Usurra";
+
         $this->WealthCost = 0;
         $this->Riposte = 1;
         $this->Parry = 1;

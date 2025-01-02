@@ -14,6 +14,7 @@ class _01073 extends FactionAttachment
         $this->Image = "img/cards/7s5s/073.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->Faction = 'Montaigne';
         
         $this->ResolveModifier = 0;
         $this->CombatModifier = 0;

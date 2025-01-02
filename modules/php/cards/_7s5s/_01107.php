@@ -14,6 +14,7 @@ class _01107 extends Risk
         $this->Image = "img/cards/7s5s/107.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->Faction = "Castille";
         
         $this->WealthCost = 0;
         $this->Riposte = 1;
