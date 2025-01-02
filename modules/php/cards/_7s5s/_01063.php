@@ -23,10 +23,7 @@ class _01063 extends Character
         $this->Finesse = 4;
         $this->Influence = 1;
 
-        $this->ModifiedResolve = $this->Resolve;
-        $this->ModifiedCombat = $this->Combat;
-        $this->ModifiedFinesse = $this->Finesse;
-        $this->ModifiedInfluence = $this->Influence;
+        $this->resetModifiedCharacterStats();
         
         $this->Traits = [
             "Duelist",

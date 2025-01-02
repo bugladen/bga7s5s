@@ -25,10 +25,7 @@ class _01116 extends Leader
         $this->CrewCap = 5;
         $this->Panache = 5;
 
-        $this->ModifiedResolve = $this->Resolve;
-        $this->ModifiedCombat = $this->Combat;
-        $this->ModifiedFinesse = $this->Finesse;
-        $this->ModifiedInfluence = $this->Influence;
+        $this->resetModifiedCharacterStats();
         
         $this->ModifiedCrewCap = $this->CrewCap;
         $this->ModifiedPanache = $this->Panache;

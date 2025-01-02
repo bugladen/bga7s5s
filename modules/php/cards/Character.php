@@ -31,6 +31,14 @@ abstract class Character extends Card
 
     }
 
+    public function resetModifiedCharacterStats()
+    {
+        $this->ModifiedResolve = $this->Resolve;
+        $this->ModifiedCombat = $this->Combat;
+        $this->ModifiedFinesse = $this->Finesse;
+        $this->ModifiedInfluence = $this->Influence;
+    }
+
     public function hasWhenRevealedEffect() : bool
     {
         return false;

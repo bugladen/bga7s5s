@@ -23,10 +23,7 @@ class _01199 extends CityCharacter
         $this->Finesse = 2;
         $this->Influence = 2;
 
-        $this->ModifiedResolve = $this->Resolve;
-        $this->ModifiedCombat = $this->Combat;
-        $this->ModifiedFinesse = $this->Finesse;
-        $this->ModifiedInfluence = $this->Influence;
+        $this->resetModifiedCharacterStats();
 
         $this->WealthCost = 3;
         $this->CityCardNumber = 23;

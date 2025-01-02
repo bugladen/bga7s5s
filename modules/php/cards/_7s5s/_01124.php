@@ -23,10 +23,7 @@ class _01124 extends Character
         $this->Finesse = 2;
         $this->Influence = 3;
 
-        $this->ModifiedResolve = $this->Resolve;
-        $this->ModifiedCombat = $this->Combat;
-        $this->ModifiedFinesse = $this->Finesse;
-        $this->ModifiedInfluence = $this->Influence;
+        $this->resetModifiedCharacterStats();
         
         $this->Traits = [
             "Sorcerer",
