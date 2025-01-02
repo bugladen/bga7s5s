@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-class Risk extends Card implements IFactionCard, IWealthCost
+abstract class FactionCharacter extends Character implements IFactionCard, IWealthCost
 {
     use FactionCardTrait;
     use WealthCostTrait;
@@ -12,8 +12,6 @@ class Risk extends Card implements IFactionCard, IWealthCost
         $properties = parent::getPropertyArray();
         $this->addFactionProperties($properties);
         $this->addWealthCostProperties($properties);
-
-        $properties['type'] = 'Risk';
 
         return $properties;
     }

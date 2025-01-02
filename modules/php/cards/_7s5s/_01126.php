@@ -4,7 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityDeckCard;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
@@ -87,7 +87,7 @@ class _01126 extends Scheme
             foreach ($cards as $card)
             {
                 //Discard all city cards
-                if ($card instanceof CityDeckCard)
+                if ($card instanceof ICityDeckCard)
                 {
                     $deck->moveCard($card->Id, Game::LOCATION_CITY_DISCARD);
 

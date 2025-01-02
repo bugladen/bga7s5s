@@ -2,32 +2,16 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-abstract class FactionAttachment extends FactionDeckCard
+abstract class FactionAttachment extends Attachment implements IFactionCard, IWealthCost
 {
-    public int $ResolveModifier;
-    public int $CombatModifier;
-    public int $FinesseModifier;
-    public int $InfluenceModifier;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->ResolveModifier = 0;
-        $this->CombatModifier = 0;
-        $this->FinesseModifier = 0;
-        $this->InfluenceModifier = 0;
-    }
+    use FactionCardTrait;
+    use WealthCostTrait;
 
     public function getPropertyArray(): array
     {
         $properties = parent::getPropertyArray();
-
-        //Add faction attachment specific properties
-        $properties['resolveModifier'] = $this->ResolveModifier;
-        $properties['combatModifier'] = $this->CombatModifier;
-        $properties['finesseModifier'] = $this->FinesseModifier;
-        $properties['influenceModifier'] = $this->InfluenceModifier;
+        $this->addFactionProperties($properties);
+        $this->addWealthCostProperties($properties);
 
         $properties['type'] = 'Attachment';
 
