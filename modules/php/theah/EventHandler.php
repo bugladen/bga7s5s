@@ -58,8 +58,6 @@ trait EventHandler
                 ]);
                 break;
                 
-                break;
-
             case $event instanceof EventCardAddedToHand:
                 $event->card->Location = Game::LOCATION_HAND;
                 $event->card->IsUpdated = true;

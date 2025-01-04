@@ -5,7 +5,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
@@ -34,10 +33,10 @@ class _01146 extends Scheme
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
-
+        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
+        {
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves.  Reknown will be added to The Docks and The Forum.'), [
-                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+                "scheme_name" => "<strong>{$this->Name}</strong>",
             ]);
 
             $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
