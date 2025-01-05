@@ -11,6 +11,22 @@ onLeavingState: function( stateName )
             this.approachDeck.setSelectionMode(0);
         },
 
+        'planningPhaseResolveSchemes_01016': () => {
+            this.resetCityLocations();
+        },
+        
+        'planningPhaseResolveSchemes_01016_2': () => {
+            dojo.addClass('choose-container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+        },
+
+        'planningPhaseResolveSchemes_01016_3': () => {
+            dojo.addClass('choose-container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+        },
+
         'planningPhaseResolveSchemes_01044': () => {
             dojo.addClass('choose-container', 'hidden');
             dojo.addClass('chooseList', 'hidden');

@@ -39,6 +39,13 @@ class _01126 extends Scheme
         ];
     }
 
+    public function getPropertyArray(): array
+    {
+        $properties = parent::getPropertyArray();
+        $properties['chosenLocation'] = $this->chosenLocation;
+        return $properties;
+    }
+
     public function eventCheck($event)
     {
         parent::eventCheck($event);

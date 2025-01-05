@@ -36,6 +36,7 @@ class Events
     const CardAddedToHand = 'EventCardAddedToHand';
     const CardAddedToPlayerDiscardPile = 'EventCardAddedToPlayerDiscardPile';
     const CardRemovedFromPlayerDiscardPile = 'EventCardRemovedFromPlayerDiscardPile';
+    const CardRemovedFromPlayerFactionDeck = 'EventCardRemovedFromPlayerFactionDeck';
 
     //Character Events
     const CharacterRecruited = 'EventCharacterRecruited';

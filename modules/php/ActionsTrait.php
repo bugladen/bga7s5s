@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
@@ -17,7 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 
 trait ActionsTrait
 {
-    public function actPass(): void
+    public function actPass(string $transition = ""): void
     {
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
@@ -29,7 +30,12 @@ trait ActionsTrait
         ]);
 
         // at the end of the action, move to the next state
-        $this->gamestate->nextState("");
+        $this->gamestate->nextState($transition);
+    }
+
+    public function actPlanningPhase_01016_2_Pass()
+    {
+        $this->actPass("pass");
     }
 
     public function actMultipleOk(): void{
@@ -87,6 +93,36 @@ trait ActionsTrait
 
         // Go back and finish running the Scheme events
         $this->gamestate->nextState("");
+    }
+
+    public function actPlanningPhase_01016_2(int $id)
+    {
+        $playerId = $this->getActivePlayerId();
+        $card = $this->getCardObjectFromDb($id);
+
+        $removeEvent = $this->theah->createEvent(Events::CardRemovedFromPlayerFactionDeck);
+        if ($removeEvent instanceof EventCardRemovedFromPlayerFactionDeck) {
+            $removeEvent->card = $card;
+            $removeEvent->playerId = $playerId;
+        }
+        $this->theah->eventCheck($removeEvent);
+
+        $addEvent = $this->theah->createEvent(Events::CardAddedToHand);
+        if ($addEvent instanceof EventCardAddedToHand) {
+            $addEvent->card = $card;
+            $addEvent->playerId = $playerId;
+        }
+        $this->theah->eventCheck($addEvent);
+
+        //Move card in DB
+        $this->cards->moveCard($id, Game::LOCATION_HAND, $playerId);
+
+        $this->theah->queueEvent($removeEvent);
+        $this->theah->queueEvent($addEvent);
+
+        $this->globals->set(GAME::CHOSEN_CARD, $card->Id);
+
+        $this->gamestate->nextState("cardChosen");
     }
 
     public function actPlanningPhase_01044(int $id)
@@ -168,7 +204,7 @@ trait ActionsTrait
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
-        $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_1', 
+        $this->notifyPlayer($this->getActivePlayerId(), 'message', 
             clienttranslate('You have chosen to place reknown onto ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
             "location" => $location
         ]);
@@ -178,7 +214,7 @@ trait ActionsTrait
 
     public function actPlanningPhase_01125_1_Pass()
     {
-        $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_1_Pass', 
+        $this->notifyPlayer($this->getActivePlayerId(), 'message', 
             clienttranslate('You have chosen to pass placing reknown onto a location.  Per The Boar\'s Guile you will now choose a city location to move a Reknown FROM.'), []);
 
         $this->gamestate->nextState("pass");
@@ -530,7 +566,7 @@ trait ActionsTrait
         $this->globals->set(GAME::CATS_EMBARGO, $pickedCard->Id);
 
         $this->notifyAllPlayers('message', 
-            clienttranslate('${player_name} has chosen to reveal ${picked_card} randomly from ${chosen_player_name}\'s hand.'), [
+            clienttranslate('${player_name} reveals ${picked_card} randomly from ${chosen_player_name}\'s hand.'), [
             "player_name" => $playerName,
             "chosen_player_name" => "<strong>$chosenPlayerName</strong>",
             "picked_card" => "<strong>{$pickedCard->Name}</strong>",

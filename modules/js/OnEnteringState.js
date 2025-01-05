@@ -17,6 +17,44 @@ onEnteringState: function( stateName, args )
             this.approachDeck.setSelectionMode(2);
         },
 
+        'planningPhaseResolveSchemes_01016': () => {
+            if (this.isCurrentPlayerActive()) {
+                const locations = this.getListofAvailableCityLocationImages();
+                this.numberOfCityLocationsSelectable = 2;
+                locations.forEach((location) => {
+                    dojo.addClass(location, 'selectable');
+                    dojo.style(location, 'cursor', 'pointer');
+
+                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+                    this.connects.push(handle);
+                });
+            }
+        },
+
+        'planningPhaseResolveSchemes_01016_2': () => {
+            if (this.isCurrentPlayerActive()) {
+                dojo.removeClass('choose-container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose-container-name').innerHTML = _('Red Hand Thugs in Your Faction Deck');
+
+                // For each Red Hand Thug card in the players deck, create a stock item
+                args.args.thugs.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });            
+                this.chooseList.setSelectionMode(1);
+            }
+        },
+
+        'planningPhaseResolveSchemes_01016_3': () => {
+            dojo.removeClass('choose-container', 'hidden');
+            dojo.removeClass('chooseList', 'hidden');
+            $('choose-container-name').innerHTML = _('Chosen Red Hand Thug');
+
+            this.addCardToDeck(this.chooseList, args.args.card);
+            this.chooseList.setSelectionMode(1);
+        },
+
+
         'planningPhaseResolveSchemes_01044': () => {
             if (this.isCurrentPlayerActive()) {
                 dojo.removeClass('choose-container', 'hidden');
@@ -355,7 +393,7 @@ onEnteringState: function( stateName, args )
             // For each card in the players discard pile, create a stock item
             this.addCardToDeck(this.chooseList, args.args.card);
             this.chooseList.setSelectionMode(0);
-    },
+        },
 
         'highDramaBeginning': () => {
             $('city-day-phase').innerHTML = _('High Drama');

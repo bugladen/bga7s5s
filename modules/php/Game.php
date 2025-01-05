@@ -47,6 +47,7 @@ class Game extends \Table
 
     //Global variable names
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
+    final const CHOSEN_CARD = "chosenCard";
     final const CHOSEN_LOCATION = "chosenLocation";
     final const RECRUIT_DISCOUNT = "recruitDiscount";
     final const CATS_EMBARGO = "catsEmbargo";

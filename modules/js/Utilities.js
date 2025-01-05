@@ -6,7 +6,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.cardProperties[card.id] = card;
 
         //Different weight depending on the type. Scheme cards go first
-        const weight = card.type === "Scheme" || card.type === 'Attachment'? 1 : 2;
+        const weight = card.type === "Scheme" || card.type === 'Attachment' ? 1 : 2;
 
         //Each card is a different image, so would be considered a different type for the stock object
         deck.addItemType(card.id, weight, g_gamethemeurl + card.image, 0);

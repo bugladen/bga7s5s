@@ -64,17 +64,4 @@ abstract class Character extends Card
 
         return $properties;
     }
-
-    public function addCondition($condition)
-    {
-        $this->conditions[] = $condition;
-    }
-
-    public function removeCondition($condition)
-    {
-        $index = array_search($condition, $this->conditions);
-        if ($index !== false) {
-            unset($this->conditions[$index]);
-        }
-    }
 }

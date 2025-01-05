@@ -49,6 +49,19 @@ abstract class Card
         // Do nothing by default
     }
 
+    public function addCondition($condition)
+    {
+        $this->conditions[] = $condition;
+    }
+
+    public function removeCondition($condition)
+    {
+        $index = array_search($condition, $this->conditions);
+        if ($index !== false) {
+            unset($this->conditions[$index]);
+        }
+    }
+    
     public function getPropertyArray()
     {
         $properties = [

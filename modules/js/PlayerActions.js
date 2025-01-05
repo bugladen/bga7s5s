@@ -104,6 +104,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         //Generic method when no specific logic is needed
         const actionMap = {
+            'planningPhaseResolveSchemes_01016': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01071': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01072': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01098': 'actCityLocationsForReknownSelected',
@@ -201,6 +202,9 @@ return declare('seventhseacityoffivesails.actions', null, {
         const card = Object.values(items)[0];
         let action = '';
         switch (this.gamedatas.gamestate.name) {
+            case 'planningPhaseResolveSchemes_01016_2':
+                action = 'actPlanningPhase_01016_2';
+                break;
             case 'planningPhaseResolveSchemes_01044':
                 action = 'actPlanningPhase_01044';
                 break;
@@ -253,6 +257,7 @@ return declare('seventhseacityoffivesails.actions', null, {
     passConfirmed: function()
     {
         const actionArray = {
+            'planningPhaseResolveSchemes_01016_2': 'actPlanningPhase_01016_2_Pass',
             'planningPhaseResolveSchemes_01125_1': 'actPlanningPhase_01125_1_Pass',
             'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2_Pass',
             'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4_Pass',
