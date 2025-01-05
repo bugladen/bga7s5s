@@ -41,7 +41,7 @@ class _01071 extends Scheme
                 "player_name" => $event->playerName,
             ]);
 
-            //Transition to the state where player can choose two locations.
+            //Transition to the state where player can choose any location.
             $transition = $event->theah->createEvent(Events::Transition);
             if ($transition instanceof EventTransition) {
                 $transition->playerId = $event->playerId;

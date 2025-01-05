@@ -96,6 +96,12 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
+        'planningPhaseResolveSchemes_01143': () => {
+            this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            dojo.addClass('actCityLocationsSelected', 'disabled');
+        },
+
         'planningPhaseResolveSchemes_01144_1': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
             dojo.addClass('actCityLocationsSelected', 'disabled');

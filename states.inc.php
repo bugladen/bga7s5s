@@ -219,6 +219,7 @@ $machinestates = [
                 "01126" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126,
                 "01044" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01044,
                 "01045" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01045,
+                "01143" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01143,
                 "01144" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_1,
                 "01145" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145,
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
@@ -323,6 +324,19 @@ $machinestates = [
             "args" => "argsEmpty",
             "possibleactions" => [
                 "actPlanningPhase_01126_2",
+            ],
+            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+        ],
+
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01143 => [
+            "name" => "planningPhaseResolveSchemes_01143",
+            "description" => clienttranslate('Contempt and Hatred: ${actplayer} may choose a city location to place Reknown onto.'),
+            "descriptionmyturn" => clienttranslate('Contempt and Hatred: ${you} may choose a city location to place Reknown onto:'),
+            "type" => "activeplayer",
+            "args" => "argsEmpty",
+            "possibleactions" => [
+                "actPass",
+                "actPlanningPhase_01143", 
             ],
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],

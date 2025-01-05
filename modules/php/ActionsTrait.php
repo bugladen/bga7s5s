@@ -2,10 +2,12 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
@@ -367,6 +369,47 @@ trait ActionsTrait
         $this->theah->queueEvent($schemeMoveEvent);
 
         // Go back and finish running the Scheme events
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanningPhase_01143(string $locations)
+    {
+        $locations = json_decode($locations, true);
+        $location = array_shift($locations);
+        $playerId = $this->getActivePlayerId();
+        $playerName = $this->getActivePlayerName();
+
+        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
+        if ($event instanceof EventReknownAddedToLocation) {
+            $event->playerId = $this->getActivePlayerId();
+            $event->location = $location;
+            $event->amount = 1;
+            $event->source = $playerName;
+        }
+        $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);
+
+        //Get all cards in the chosen location
+        $cards = $this->theah->getCardObjectsAtLocation($location);
+        foreach ($cards as $card)
+        {
+            //Discard all city cards
+            if ($card instanceof ICityDeckCard)
+            {
+                $this->cards->moveCard($card->Id, Game::LOCATION_CITY_DISCARD);
+
+                $discard = $this->theah->createEvent(Events::CardAddedToCityDiscardPile);
+                if ($discard instanceof EventCardAddedToCityDiscardPile)
+                {
+                    $discard->card = $card;
+                    $discard->fromLocation = $location;
+                    $discard->playerId = $playerId;
+                }
+
+                $this->theah->queueEvent($discard);
+            }
+        }
+
         $this->gamestate->nextState("");
     }
 
