@@ -50,8 +50,12 @@ onEnteringState: function( stateName, args )
             dojo.removeClass('chooseList', 'hidden');
             $('choose-container-name').innerHTML = _('Chosen Red Hand Thug');
 
-            this.addCardToDeck(this.chooseList, args.args.card);
-            this.chooseList.setSelectionMode(1);
+            //Wait a second for stock object to catch up?
+            setTimeout(() => {
+                this.addCardToDeck(this.chooseList, args.args.card);
+                this.chooseList.setSelectionMode(0);
+            }, 500);
+
         },
 
 
