@@ -3,7 +3,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     setupNotifications: function()
     {
-        console.log( 'notifications subscriptions setup' );
+        debug( 'notifications subscriptions setup' );
         
         // TODO: here, associate your game notifications with local methods
         const notifs = [
@@ -42,8 +42,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_playLeader: function( notif )
     {
-        console.log( 'notif_playLeader' );
-        console.log( notif );
+        debug( 'notif_playLeader' );
+        debug( notif );
 
         const args = notif.args;
 
@@ -76,8 +76,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_playApproachScheme: function( notif )
     {
-        console.log( 'notif_playApproachScheme' );
-        console.log( notif );
+        debug( 'notif_playApproachScheme' );
+        debug( notif );
 
         const args = notif.args;
 
@@ -87,8 +87,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
     },
 
     notif_playApproachCharacter: function (notif) {
-        console.log( 'notif_playApproachCharacter' );
-        console.log( notif );
+        debug( 'notif_playApproachCharacter' );
+        debug( notif );
 
 
         const args = notif.args;
@@ -100,8 +100,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_panacheModified: function( notif )
     {
-        console.log( 'notif_panacheModified' );
-        console.log( notif );
+        debug( 'notif_panacheModified' );
+        debug( notif );
 
         const args = notif.args;
         $(`${args.playerId}-score-panache`).innerHTML = args.panache;
@@ -110,8 +110,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_approachCardsReceived: function( notif )
     {
-        console.log( 'notif_approachCardsReceived' );
-        console.log( notif );
+        debug( 'notif_approachCardsReceived' );
+        debug( notif );
 
         notif.args.cards.forEach((card) => {
             this.addCardToDeck(this.approachDeck, card);
@@ -120,8 +120,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_factionResolveCardDraw: function( notif )
     {
-        console.log( 'notif_factionResolveCardDraw' );
-        console.log( notif );
+        debug( 'notif_factionResolveCardDraw' );
+        debug( notif );
 
         notif.args.cards.forEach((card) => {
             this.addCardToDeck(this.factionHand, card);
@@ -132,15 +132,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
     {
         if (notif.args.player_id !== this.player_id) return;
 
-        console.log( 'notif_cardAddedToHand' );
-        console.log( notif );
+        debug( 'notif_cardAddedToHand' );
+        debug( notif );
         this.addCardToDeck(this.factionHand, notif.args.card);
     },
 
     notif_drawCard: function( notif )
     {
-        console.log( 'notif_drawCard' );
-        console.log( notif );
+        debug( 'notif_drawCard' );
+        debug( notif );
 
         const args = notif.args;
 
@@ -209,8 +209,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_characterRecruited: function( notif )
     {
-        console.log( 'notif_characterRecruited' );
-        console.log( notif );
+        debug( 'notif_characterRecruited' );
+        debug( notif );
 
         const args = notif.args;
         const card = this.cardProperties[args.characterId];
@@ -221,16 +221,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
         dojo.destroy(card.divId);
 
         const cardId = this.createCardId(card, card.location);
-        console.log( cardId );
         const target = this.getTargetElementForLocation(card.location, card.controllerId);
-        console.log( target );
         this.createCard(cardId, card, target);
     },
 
     notif_newDay: function( notif )
     {
-        console.log( 'notif_newDay' );
-        console.log( notif );
+        debug( 'notif_newDay' );
+        debug( notif );
 
         const args = notif.args;
 
@@ -240,8 +238,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_cityCardAddedToLocation: function( notif )
     {
-        console.log( 'notif_cityCardAddedToLocation' );
-        console.log( notif );
+        debug( 'notif_cityCardAddedToLocation' );
+        debug( notif );
 
         const args = notif.args;
 
@@ -253,8 +251,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_playerReknownUpdated: function( notif )
     {
-        console.log( 'notif_playerReknownUpdated' );
-        console.log( notif );
+        debug( 'notif_playerReknownUpdated' );
+        debug( notif );
 
         const args = notif.args;
         $(`${args.player_id}-score-reknown`).innerHTML = args.amount;
@@ -262,8 +260,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_reknownUpdatedOnCard: function( notif )
     {
-        console.log( 'notif_reknownUpdatedOnCard' );
-        console.log( notif );
+        debug( 'notif_reknownUpdatedOnCard' );
+        debug( notif );
 
         const args = notif.args;
 
@@ -282,8 +280,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_reknownAddedToLocation: function( notif )
     {
-        console.log( 'notif_reknownAddedToLocation' );
-        console.log( notif );
+        debug( 'notif_reknownAddedToLocation' );
+        debug( notif );
 
         const args = notif.args;
         //Find the image element with the attribute data-location that matches arg.location
@@ -296,8 +294,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_reknownRemovedFromLocation: function( notif )
     {
-        console.log( 'notif_reknownRemovedFromLocation' );
-        console.log( notif );
+        debug( 'notif_reknownRemovedFromLocation' );
+        debug( notif );
 
         const args = notif.args;
         //Find the image element with the attribute data-location that matches arg.location
@@ -310,8 +308,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_firstPlayer: function( notif )
     {
-        console.log( 'notif_firstPlayer' );
-        console.log( notif );
+        debug( 'notif_firstPlayer' );
+        debug( notif );
 
         //Remove any existing first player classes
         dojo.query('.first-player-home').removeClass('first-player-home');
@@ -328,8 +326,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_cardRemovedFromCityDiscardPile: function ( notif )
     {
-        console.log( 'notif_cardRemovedFromCityDiscardPile' );
-        console.log( notif );
+        debug( 'notif_cardRemovedFromCityDiscardPile' );
+        debug( notif );
 
         const args = notif.args;
         this.gamedatas.cityDiscard = this.gamedatas.cityDiscard.filter((c) => c.id !== args.card.id);
@@ -337,8 +335,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_cardRemovedFromPlayerDiscardPile: function ( notif )
     {
-        console.log( 'notif_cardRemovedFromPlayerDiscardPile' );
-        console.log( notif );
+        debug( 'notif_cardRemovedFromPlayerDiscardPile' );
+        debug( notif );
 
         const args = notif.args;
         const player = this.gamedatas.players[args.player_id];
@@ -347,8 +345,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_yevgeniAdversaryChosen: function( notif )
     {
-        console.log( 'notif_yevgeniAdversaryChosen' );
-        console.log( notif );
+        debug( 'notif_yevgeniAdversaryChosen' );
+        debug( notif );
 
         const args = notif.args;
         const card = this.cardProperties[args.cardId];
@@ -364,8 +362,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     notif_message_01126_2_scheme_moved: function( notif )
     {
-        console.log( 'notif_message_01126_2_scheme_moved');
-        console.log( notif );
+        debug( 'notif_message_01126_2_scheme_moved');
+        debug( notif );
 
         const args = notif.args;
 

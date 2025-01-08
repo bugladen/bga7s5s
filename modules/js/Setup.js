@@ -3,8 +3,8 @@ return declare('seventhseacityoffivesails.setup', null, {
 
     setup: function( gamedatas )
     {
-        console.log( "Starting game setup" );
-        console.log( "gamedatas", gamedatas );
+        debug( "Starting game setup" );
+        debug( "gamedatas", gamedatas );
 
         // Remove city sections that are not used
         const playerCount = Object.keys(gamedatas.players).length;
@@ -223,7 +223,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         // Setup game notifications to handle (see "setupNotifications" method below)
         this.setupNotifications();
 
-        console.log( "Ending game setup" );
+        debug( "Ending game setup" );
     },
 })
 });

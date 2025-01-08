@@ -315,7 +315,6 @@ onEnteringState: function( stateName, args )
                 let count = 0;
                 this.numberOfCityLocationsSelectable = 1;
                 locations.forEach((location) => {
-                    console.log(location)
                     const imageElement = $(location);
                     const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
                     const reknown = parseInt(reknownElement.innerHTML);

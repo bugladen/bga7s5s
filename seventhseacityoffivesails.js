@@ -51,7 +51,7 @@ function (dojo, declare) {
     {
         constructor: function(){
 
-            console.log('seventhseacityoffivesails constructor');
+            debug('seventhseacityoffivesails constructor');
 
             this.wholeCardWidth = 72;
             this.wholeCardHeight = 98;

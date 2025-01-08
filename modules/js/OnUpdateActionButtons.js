@@ -3,7 +3,7 @@ return declare('seventhseacityoffivesails.onupdateactionbuttons', null, {
 
 onUpdateActionButtons: function( stateName, args )
 {
-    console.log( 'onUpdateActionButtons: '+ stateName, args );
+    debug( 'onUpdateActionButtons: '+ stateName, args );
                 
     if( ! this.isCurrentPlayerActive() )
         return;
