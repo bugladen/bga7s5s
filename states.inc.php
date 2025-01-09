@@ -576,17 +576,17 @@ $machinestates = [
         "description" => clienttranslate("High Drama Phase"),
         "type" => "game",
         "action" => "stHighDramaPhase",
-        "transitions" => ["" => States::PLAYER_TURN]
+        "transitions" => ["" => States::HIGH_DRAMA_PLAYER_TURN]
     ],
 
-    States::PLAYER_TURN => [
-        "name" => "playerTurn",
+    States::HIGH_DRAMA_PLAYER_TURN => [
+        "name" => "highDramaPlayerTurn",
         "description" => clienttranslate('${actplayer} must perform an action or pass'),
         "descriptionmyturn" => clienttranslate('${you} must perform an action or pass:'),
         "type" => "activeplayer",
         "args" => "argPlayerTurn",
         "possibleactions" => [
-            "actPlayCard", 
+            "actMoveCharacter", 
             "actPass",
         ],
         "transitions" => [
@@ -594,6 +594,15 @@ $machinestates = [
             "pass" => States::NEXT_PLAYER
         ]
     ],
+        States::HIGH_DRAMA_PLAYER_TURN_EVENTS => [
+            "name" => "highDramaPlayerTurnEvents",
+            "description" => clienttranslate("Resolving Events for High Drama Player Turn..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "endOfEvents" => States::NEXT_PLAYER
+                ]
+        ],
 
     States::NEXT_PLAYER => [
         "name" => "nextPlayer",
@@ -601,7 +610,10 @@ $machinestates = [
         "type" => "game",
         "action" => "stNextPlayer",
         "updateGameProgression" => true,
-        "transitions" => ["endGame" => States::END_GAME, "nextPlayer" => States::PLAYER_TURN]
+        "transitions" => [
+            "endGame" => States::END_GAME, 
+            "nextPlayer" => States::HIGH_DRAMA_PLAYER_TURN
+        ]
     ],
 
     // Final state.

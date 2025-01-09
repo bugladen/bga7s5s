@@ -167,6 +167,13 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onRecruitCharacterConfirmed());
         },
 
+        'highDramaPlayerTurn': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actMoveAction`, _('Move'), () => this.onPass());
+                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            }
+        }
+
     };
 
     if( methods[stateName] )

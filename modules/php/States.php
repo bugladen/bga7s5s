@@ -71,7 +71,8 @@ class States
 
     const HIGH_DRAMA_PHASE = 31;
 
-    const PLAYER_TURN = 40;
+    const HIGH_DRAMA_PLAYER_TURN = 40;
+    const HIGH_DRAMA_PLAYER_TURN_EVENTS = 400;
 
     const NEXT_PLAYER = 50;
 
