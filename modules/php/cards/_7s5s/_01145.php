@@ -64,8 +64,7 @@ class _01145 extends Scheme
     {
         $playerId = $game->getActivePlayerId();
         $playerName = $game->getActivePlayerName();
-        $players = $game->loadPlayersBasicInfos();
-        $playerCount = count($players);
+        $playerCount = $game->globals->get(Game::PLAYER_COUNT);
 
         if ($fromLocation == 'Pass' || $toLocation == 'Pass')
         {

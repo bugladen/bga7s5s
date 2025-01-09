@@ -46,6 +46,7 @@ class Game extends \Table
     final const LOCATION_PURGATORY = 'Purgatory';
 
     //Global variable names
+    final const PLAYER_COUNT = "playerCount";
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
     final const CHOSEN_CARD = "chosenCard";
     final const CHOSEN_LOCATION = "chosenLocation";
@@ -255,6 +256,7 @@ class Game extends \Table
 
         //Setup the reknown for the city locations
         $playerCount = count($players);
+        $this->globals->set(Game::PLAYER_COUNT, $playerCount);
         $this->setReknownForLocation(Game::LOCATION_CITY_DOCKS, 0);
         $this->setReknownForLocation(Game::LOCATION_CITY_FORUM, 0);
         $this->setReknownForLocation(Game::LOCATION_CITY_BAZAAR, 0);
