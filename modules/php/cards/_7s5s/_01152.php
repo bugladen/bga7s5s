@@ -3,6 +3,9 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class _01152 extends Scheme
 {
@@ -24,5 +27,28 @@ class _01152 extends Scheme
             "Ad Hoc", 
             "Demoralize",
         ];
+    }
+
+    public function handleEvent($event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
+        {
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves. 
+            ${player_name} may choose a city location to place reknown onto. 
+            If they choose not to, they may move a Reknown from a city location to an adjacent location.'), [
+                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+                "player_name" => $event->playerName,
+            ]);
+
+            //Transition to the state where player can choose a location.
+            $transition = $event->theah->createEvent(Events::Transition);
+            if ($transition instanceof EventTransition) {
+                $transition->playerId = $event->playerId;
+                $transition->transition = '01152';
+            }
+            $event->theah->queueEvent($transition);
+        }
     }
 }

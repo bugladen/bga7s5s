@@ -223,6 +223,7 @@ $machinestates = [
                 "01144" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_1,
                 "01145" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145,
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
+                "01152" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152,
                 "endOfEvents" => States::PLANNING_PHASE_DRAW
             ]
         ],
@@ -264,7 +265,65 @@ $machinestates = [
                 ],
                 "transitions" => ["multipleOk" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
             ],
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_1 => [
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01044 => [
+                "name" => "planningPhaseResolveSchemes_01044",
+                "description" => clienttranslate('Armed and Marshaled: ${actplayer} must choose an Attachment from your discard pile if able.'),
+                "descriptionmyturn" => clienttranslate('Armed and Marshaled: ${you} must choose an Attachment from your discard pile if able:'),
+                "type" => "activeplayer",
+                "args" => "argsEmpty",
+                "possibleactions" => [
+                    "actPlanningPhase_01044", 
+                    "actPass"
+                ],
+                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+            ],
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01045 => [
+                "name" => "planningPhaseResolveSchemes_01045",
+                "description" => clienttranslate('The Song of Eisen: ${actplayer} must choose a Mercenary from the City Deck discard pile if able.'),
+                "descriptionmyturn" => clienttranslate('The Song of Eisen: ${you} must choose a Mercenary from the City Deck discard pile if able:'),
+                "type" => "activeplayer",
+                "args" => "argsEmpty",
+                "possibleactions" => [
+                    "actPlanningPhase_01045", 
+                    "actPass"
+                ],
+                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+            ],
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01071 => [
+                "name" => "planningPhaseResolveSchemes_01071",
+                "description" => clienttranslate('Épée Sanglante: ${actplayer} must choose a city location to place Reknown onto.'),
+                "descriptionmyturn" => clienttranslate('Épée Sanglante: ${you} must choose a city location to place Reknown onto:'),
+                "type" => "activeplayer",
+                "args" => "argsEmpty",
+                "possibleactions" => [
+                    "actCityLocationsForReknownSelected", 
+                ],
+                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+            ],
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01072 => [
+                "name" => "planningPhaseResolveSchemes_01072",
+                "description" => clienttranslate('Réputation Méritée: ${actplayer} must choose a city location to place Reknown onto that doesn\'t have any.'),
+                "descriptionmyturn" => clienttranslate('Réputation Méritée: ${you} must choose a city location to place Reknown onto that doesn\'t have any:'),
+                "type" => "activeplayer",
+                "args" => "argsEmpty",
+                "possibleactions" => [
+                    "actCityLocationsForReknownSelected", 
+                    "actPass"
+                ],
+                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+            ],
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01098 => [
+                "name" => "planningPhaseResolveSchemes_01098",
+                "description" => clienttranslate('The Cat\'s Embargo: ${actplayer} must choose two city locations to place Reknown onto.'),
+                "descriptionmyturn" => clienttranslate('The Cat\'s Embargo: ${you} must choose two city locations to place Reknown onto:'),
+                "type" => "activeplayer",
+                "args" => "argsEmpty",
+                "possibleactions" => [
+                    "actCityLocationsForReknownSelected", 
+                ],
+                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+            ],
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_1 => [
             "name" => "planningPhaseResolveSchemes_01125_1",
             "description" => clienttranslate('The Boar\'s Guile: ${actplayer} may choose a City Location to place a Reknown onto.'),
             "descriptionmyturn" => clienttranslate('The Boar\'s Guile: ${you} may choose a City Location to place a Reknown onto: '),
@@ -278,7 +337,7 @@ $machinestates = [
                 "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_2,
                 "reknownPlaced" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4
                 ]
-        ],
+            ],
             States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_2 => [
                 "name" => "planningPhaseResolveSchemes_01125_2",
                 "description" => clienttranslate('The Boar\'s Guile: ${actplayer} must choose a City Location to move a Reknown FROM, if able.'),
@@ -392,65 +451,45 @@ $machinestates = [
             ],
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
-
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01071 => [
-            "name" => "planningPhaseResolveSchemes_01071",
-            "description" => clienttranslate('Épée Sanglante: ${actplayer} must choose a city location to place Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('Épée Sanglante: ${you} must choose a city location to place Reknown onto:'),
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01152 => [
+            "name" => "planningPhaseResolveSchemes_01152",
+            "description" => clienttranslate('Until Morale Improves: ${actplayer} may choose a City Location to place a Reknown onto.'),
+            "descriptionmyturn" => clienttranslate('Until Morale Improves: ${you} may choose a City Location to place a Reknown onto: '),
             "type" => "activeplayer",
             "args" => "argsEmpty",
             "possibleactions" => [
-                "actCityLocationsForReknownSelected", 
+                "actPlanningPhase_01152",
+                "actPlanningPhase_01152_Pass"
             ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-        ],
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01072 => [
-            "name" => "planningPhaseResolveSchemes_01072",
-            "description" => clienttranslate('Réputation Méritée: ${actplayer} must choose a city location to place Reknown onto that doesn\'t have any.'),
-            "descriptionmyturn" => clienttranslate('Réputation Méritée: ${you} must choose a city location to place Reknown onto that doesn\'t have any:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actCityLocationsForReknownSelected", 
-                "actPass"
+            "transitions" => [
+                "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2,
+                "reknownPlaced" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
+                ]
             ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-        ],
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01098 => [
-            "name" => "planningPhaseResolveSchemes_01098",
-            "description" => clienttranslate('The Cat\'s Embargo: ${actplayer} must choose two city locations to place Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('The Cat\'s Embargo: ${you} must choose two city locations to place Reknown onto:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actCityLocationsForReknownSelected", 
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-        ],
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01044 => [
-            "name" => "planningPhaseResolveSchemes_01044",
-            "description" => clienttranslate('Armed and Marshaled: ${actplayer} must choose an Attachment from your discard pile if able.'),
-            "descriptionmyturn" => clienttranslate('Armed and Marshaled: ${you} must choose an Attachment from your discard pile if able:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actPlanningPhase_01044", 
-                "actPass"
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-        ],
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01045 => [
-            "name" => "planningPhaseResolveSchemes_01045",
-            "description" => clienttranslate('The Song of Eisen: ${actplayer} must choose a Mercenary from the City Deck discard pile if able.'),
-            "descriptionmyturn" => clienttranslate('The Song of Eisen: ${you} must choose a Mercenary from the City Deck discard pile if able:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actPlanningPhase_01045", 
-                "actPass"
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-        ],
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2 => [
+                "name" => "planningPhaseResolveSchemes_01152_2",
+                "description" => clienttranslate('Until Morale Improves: ${actplayer} must choose a City Location to move a Reknown FROM, if able.'),
+                "descriptionmyturn" => clienttranslate('Until Morale Improves: ${you} must choose a City Location to move a Reknown FROM, if able: '),
+                "type" => "activeplayer",
+                "args" => "argsEmpty",
+                "possibleactions" => [
+                    "actPlanningPhase_01152_2",
+                    "actPlanningPhase_01152_2_Pass"
+                ],
+                "transitions" => [
+                    "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
+                    "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3
+                    ]
+                ],
+                States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3 => [
+                    "name" => "planningPhaseResolveSchemes_01152_3",
+                    "description" => clienttranslate('Until Morale Improves: ${actplayer} must choose an adjacent City Location to move the Reknown TO.'),
+                    "descriptionmyturn" => clienttranslate('Until Morale Improves: ${you} must choose an adjacent City Location to move the Reknown TO:'),
+                    "type" => "activeplayer",
+                    "args" => "argsPlanningPhaseResolveSchemes_01152_3",
+                    "possibleactions" => ["actPlanningPhase_01152_3"],
+                    "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+                ],
     States::PLANNING_PHASE_DRAW => [
         "name" => "planningPhaseDraw",
         "description" => '',

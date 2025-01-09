@@ -33,9 +33,11 @@ class _01125 extends Scheme
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
+        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
+        {
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves. 
-            ${player_name} may first choose a city location to place reknown onto. If not, they may move a Reknown from a city location to an adjacent location. 
+            ${player_name} may first choose a city location to place reknown onto. 
+            If they choose not to, they may move a Reknown from a city location to an adjacent location. 
             Lastly, they will choose an enemy character.'), [
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $event->playerName,

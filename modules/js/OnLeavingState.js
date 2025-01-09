@@ -108,6 +108,18 @@ onLeavingState: function( stateName )
             this.resetCityLocations();
         },
 
+        'planningPhaseResolveSchemes_01152': () => {
+            this.resetCityLocations();
+        },
+
+        'planningPhaseResolveSchemes_01152_2': () => {
+            this.resetCityLocations();
+        },
+
+        'planningPhaseResolveSchemes_01152_3': () => {
+            this.resetCityLocations();
+        },
+
         'planningPhaseEnd_01098': () => {
             for( const cardId in this.cardProperties ) {
                 card = this.cardProperties[cardId];
