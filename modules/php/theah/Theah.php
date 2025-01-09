@@ -45,11 +45,11 @@ class Theah
         $this->buildCityLocations();
 
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_PLAYER_HOME);
-        $this->cards += $this->db->getCardObjectsAtLocation(addslashes(Game::LOCATION_CITY_OLES_INN));
+        $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_OLES_INN);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_DOCKS);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_FORUM);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_BAZAAR);
-        $this->cards += $this->db->getCardObjectsAtLocation(addslashes(Game::LOCATION_CITY_GOVERNORS_GARDEN));
+        $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_HAND, $this->game->getActivePlayerId());
 
         $this->cityBuilt = true;

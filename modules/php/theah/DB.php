@@ -49,6 +49,7 @@ class DB extends \APP_DbObject
 
     public function getCardObjectsAtLocation(string $location, $playerId = null): array
     {
+        $location = addslashes($location);
         $sql = "
             SELECT card_id as id, card_location_arg as playerId, card_serialized as json
             FROM card 
