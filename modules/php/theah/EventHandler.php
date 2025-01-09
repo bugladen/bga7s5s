@@ -220,14 +220,6 @@ trait EventHandler
                 $event->scheme->Location = $event->location;
                 $event->scheme->IsUpdated = true;
                 $this->cards[$event->scheme->Id] = $event->scheme;
-        
-                $this->game->notifyAllPlayers('message_01126_2_scheme_moved', 
-                    clienttranslate('${card_name} moves to ${location}'), [
-                        "cardId" => $event->scheme->Id,
-                        "card_name" => '<span style="font-weight:bold">Leshiye of the Woods</span>',
-                        "location" => $event->location,
-                ]);
-        
                 break;
 
             }

@@ -23,7 +23,7 @@ class _01126 extends Scheme
     {
         parent::__construct();
 
-        $this->Name = "Leshiye of the Woods";
+        $this->Name = "Leshiye of the Wood";
         $this->Image = "img/cards/7s5s/126.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
@@ -53,13 +53,14 @@ class _01126 extends Scheme
         if ($event instanceof EventReknownAddedToLocation) 
         {
             if ($event->location == $this->chosenLocation)
-                throw new \BgaUserException(_("Leshiye of the Woods does not allow Reknown to be placed at its location."));    
+                throw new \BgaUserException(_("Leshiye of the Wood does not allow Reknown to be placed at its location."));    
         }
 
-        if ($event instanceof EventReknownRemovedFromLocation)
+        //We have to allow the reknown to be removed by the scheme itself
+        if ($event instanceof EventReknownRemovedFromLocation && $event->source != $this->Name) 
         {
             if ($event->location == $this->chosenLocation)
-                throw new \BgaUserException(_("Leshiye of the Woods does not allow Reknown to be removed from its location."));    
+                throw new \BgaUserException(_("Leshiye of the Wood does not allow Reknown to be removed from its location."));    
         }
     }
 
@@ -88,6 +89,13 @@ class _01126 extends Scheme
         {
             $playerId = $event->theah->game->getActivePlayerId();
             $deck = $event->theah->game->getGameDeckObject();
+
+            $event->theah->game->notifyAllPlayers('message_01126_2_scheme_moved', 
+                clienttranslate('${card_name} moves to ${location}'), [
+                    "cardId" => $this->Id,
+                    "card_name" => '<strong>Leshiye of the Wood</strong>',
+                    "location" => $event->location,
+            ]);    
 
             //Get all cards in the chosen location
             $cards = $event->theah->getCardObjectsAtLocation($this->chosenLocation);

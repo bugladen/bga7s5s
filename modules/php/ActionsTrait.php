@@ -322,7 +322,7 @@ trait ActionsTrait
                 $event->playerId = $this->getActivePlayerId();
                 $event->location = $location;
                 $event->amount = 1;
-                $event->source = "Leshiye of the Woods: Adding Reknown to Location";
+                $event->source = "Leshiye of the Wood: Adding Reknown to Location";
             }
             $this->theah->eventCheck($event);        
         }
@@ -343,7 +343,7 @@ trait ActionsTrait
             clienttranslate('${player_name} has chosen ${location} as the Chosen Location for ${card_name}'), [
             "player_name" => $playerName,
             "location" => $leshiyeLocation,
-            "card_name" => "<strong>Leshiye of the Woods</strong>",
+            "card_name" => "<strong>Leshiye of the Wood</strong>",
         ]);
 
 
@@ -358,13 +358,14 @@ trait ActionsTrait
                 $event->playerId = $this->getActivePlayerId();
                 $event->location = $location;
                 $event->amount = 1;
-                $event->source = "Leshiye of the Woods: Adding Reknown to Location";
+                $event->source = "Leshiye of the Wood: Adding Reknown to Location";
             }
             $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
         }
 
-        // Move leshiye of the woods to the chosen location
+        // Move Leshiye of the Wood to the chosen location
+        //addslashes
         $this->cards->moveCard($scheme->Id, $leshiyeLocation, $playerId);
         $this->theah->queueEvent($schemeMoveEvent);
 
