@@ -192,7 +192,7 @@ trait ActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhase_01125_1(string $locations)
+    public function actPlanningPhase_01125(string $locations)
     {
         $location = json_decode($locations, true)[0];
         
@@ -214,7 +214,7 @@ trait ActionsTrait
         $this->gamestate->nextState("reknownPlaced");
     }
 
-    public function actPlanningPhase_01125_1_Pass()
+    public function actPlanningPhase_01125_Pass()
     {
         $this->notifyPlayer($this->getActivePlayerId(), 'message', 
             clienttranslate('You have chosen to pass placing reknown onto a location.  Per The Boar\'s Guile you will now choose a city location to move a Reknown FROM.'), []);

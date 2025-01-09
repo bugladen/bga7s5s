@@ -108,7 +108,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01071': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01072': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01098': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_01125_1': 'actPlanningPhase_01125_1',
+            'planningPhaseResolveSchemes_01125': 'actPlanningPhase_01125',
             'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2',
             'planningPhaseResolveSchemes_01125_3': 'actPlanningPhase_01125_3',
             'planningPhaseResolveSchemes_01126': 'planningPhaseResolveSchemes_01126_2_client',
@@ -262,7 +262,7 @@ return declare('seventhseacityoffivesails.actions', null, {
     {
         const actionArray = {
             'planningPhaseResolveSchemes_01016_2': 'actPlanningPhase_01016_2_Pass',
-            'planningPhaseResolveSchemes_01125_1': 'actPlanningPhase_01125_1_Pass',
+            'planningPhaseResolveSchemes_01125': 'actPlanningPhase_01125_Pass',
             'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2_Pass',
             'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4_Pass',
             'planningPhaseResolveSchemes_01145': 'actPlanningPhase_01145_Pass',            

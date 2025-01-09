@@ -215,7 +215,7 @@ $machinestates = [
                 "01071" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01071,
                 "01072" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01072,
                 "01098" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01098,
-                "01125" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_1,
+                "01125" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125,
                 "01126" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126,
                 "01044" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01044,
                 "01045" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01045,
@@ -323,15 +323,15 @@ $machinestates = [
                 ],
                 "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
             ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_1 => [
-            "name" => "planningPhaseResolveSchemes_01125_1",
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01125 => [
+            "name" => "planningPhaseResolveSchemes_01125",
             "description" => clienttranslate('The Boar\'s Guile: ${actplayer} may choose a City Location to place a Reknown onto.'),
             "descriptionmyturn" => clienttranslate('The Boar\'s Guile: ${you} may choose a City Location to place a Reknown onto: '),
             "type" => "activeplayer",
             "args" => "argsEmpty",
             "possibleactions" => [
-                "actPlanningPhase_01125_1",
-                "actPlanningPhase_01125_1_Pass"
+                "actPlanningPhase_01125",
+                "actPlanningPhase_01125_Pass"
             ],
             "transitions" => [
                 "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_2,

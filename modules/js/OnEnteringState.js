@@ -145,7 +145,7 @@ onEnteringState: function( stateName, args )
             }
         },
 
-        'planningPhaseResolveSchemes_01125_1': () => {
+        'planningPhaseResolveSchemes_01125': () => {
             if (this.isCurrentPlayerActive()) {
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 1;

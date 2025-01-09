@@ -51,7 +51,7 @@ onLeavingState: function( stateName )
             this.resetCityLocations();
         },
         
-        'planningPhaseResolveSchemes_01125_1': () => {
+        'planningPhaseResolveSchemes_01125': () => {
             this.resetCityLocations();
         },
 
