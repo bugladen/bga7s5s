@@ -276,7 +276,7 @@ onEnteringState: function( stateName, args )
             }
         },
 
-        'planningPhaseResolveSchemes_01144_1': () => {
+        'planningPhaseResolveSchemes_01144': () => {
             if (this.isCurrentPlayerActive()) {
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 1;
@@ -499,7 +499,7 @@ onEnteringState: function( stateName, args )
             }
         },
 
-        'highDramaBeginning_01144_1_client': () => {
+        'highDramaBeginning_01144_client': () => {
             const card = this.cardProperties[this.clientStateArgs.selectedCharacters[0]];
             const image = $(`${card.divId}_image`);
             dojo.addClass(image, 'selectable');

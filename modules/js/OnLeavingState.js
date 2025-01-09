@@ -87,7 +87,7 @@ onLeavingState: function( stateName )
             this.resetCityLocations();
         },
 
-        'planningPhaseResolveSchemes_01144_1': () => {
+        'planningPhaseResolveSchemes_01144': () => {
             this.resetCityLocations();
         },
 
@@ -155,7 +155,7 @@ onLeavingState: function( stateName )
             }
         },
 
-        'highDramaBeginning_01144_1_client': () => {
+        'highDramaBeginning_01144_client': () => {
             this.factionHand.setSelectionMode(0);
             this.clientStateArgs = {};
         },

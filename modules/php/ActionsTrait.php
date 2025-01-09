@@ -413,7 +413,7 @@ trait ActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhase_01144_1(string $locations)
+    public function actPlanningPhase_01144(string $locations)
     {
         $locations = json_decode($locations, true);
         $location = array_shift($locations);

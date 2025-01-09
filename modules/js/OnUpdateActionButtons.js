@@ -102,7 +102,7 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
-        'planningPhaseResolveSchemes_01144_1': () => {
+        'planningPhaseResolveSchemes_01144': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
@@ -163,7 +163,7 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
-        'highDramaBeginning_01144_1_client': () => {
+        'highDramaBeginning_01144_client': () => {
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onRecruitCharacterConfirmed());
         },
 

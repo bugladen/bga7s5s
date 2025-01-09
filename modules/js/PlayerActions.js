@@ -30,7 +30,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         var items = this.factionHand.getSelectedItems();
 
         switch (this.gamedatas.gamestate.name) {
-            case 'highDramaBeginning_01144_1_client':
+            case 'highDramaBeginning_01144_client':
                 let wealth = 0;
                 items.forEach((item) => {
                     const card = this.cardProperties[item.type];
@@ -113,7 +113,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01125_3': 'actPlanningPhase_01125_3',
             'planningPhaseResolveSchemes_01126': 'planningPhaseResolveSchemes_01126_2_client',
             'planningPhaseResolveSchemes_01143': 'actPlanningPhase_01143',
-            'planningPhaseResolveSchemes_01144_1': 'actPlanningPhase_01144_1',
+            'planningPhaseResolveSchemes_01144': 'actPlanningPhase_01144',
             'planningPhaseResolveSchemes_01144_2': 'actPlanningPhase_01144_2',
             'planningPhaseResolveSchemes_01145': 'planningPhaseResolveSchemes_01145_2_client',
             'planningPhaseResolveSchemes_01145_2_client': 'actPlanningPhase_01145',
@@ -151,13 +151,13 @@ return declare('seventhseacityoffivesails.actions', null, {
     onChooseCharacterConfirmed: function()
     {
         const actionArray = {
-            'highDramaBeginning_01144': 'highDramaBeginning_01144_1_client',
+            'highDramaBeginning_01144': 'highDramaBeginning_01144_client',
             'planningPhaseEnd_01098': 'actPlanningPhaseEnd_01098',
             'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4',
         };
 
         const clientMessageArray = {
-            'highDramaBeginning_01144_1_client': "${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
+            'highDramaBeginning_01144_client': "${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
         };
 
         const action = actionArray[this.gamedatas.gamestate.name];
@@ -230,7 +230,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         items = items.map((item) => item.id);
 
         const actionArray = {
-            'highDramaBeginning_01144_1_client': 'actHighDramaBeginning_01144',
+            'highDramaBeginning_01144_client': 'actHighDramaBeginning_01144',
         };
 
         const action = actionArray[this.gamedatas.gamestate.name];

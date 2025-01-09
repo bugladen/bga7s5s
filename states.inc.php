@@ -220,7 +220,7 @@ $machinestates = [
                 "01044" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01044,
                 "01045" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01045,
                 "01143" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01143,
-                "01144" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_1,
+                "01144" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144,
                 "01145" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145,
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
                 "01152" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152,
@@ -400,14 +400,14 @@ $machinestates = [
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
 
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_1 => [
-            "name" => "planningPhaseResolveSchemes_01144_1",
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01144 => [
+            "name" => "planningPhaseResolveSchemes_01144",
             "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose a city location to place Reknown onto.'),
             "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose a city location to place Reknown onto:'),
             "type" => "activeplayer",
             "args" => "argsEmpty",
             "possibleactions" => [
-                "actPlanningPhase_01144_1", 
+                "actPlanningPhase_01144", 
             ],
             "transitions" => [
                 "fewestReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_2,
