@@ -720,6 +720,10 @@ trait ActionsTrait
        $card = $this->getCardObjectFromDb($cardId);       
        $this->cards->moveCard($cardId, $location, $card->ControllerId);
 
+       $this->notifyAllPlayers("message", clienttranslate('${player_name} performed a Move Action.'), [
+        "player_name" => $playerName,
+        ]);
+
        $movedHome = $this->theah->createEvent(Events::CardMoved);
        if ($movedHome instanceof EventCardMoved)
        {

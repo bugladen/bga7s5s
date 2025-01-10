@@ -99,7 +99,7 @@ trait EventHandler
                 $card->IsUpdated = true;
 
                 $this->game->notifyAllPlayers("cardMoved", clienttranslate('${card_name} moved from ${fromLocation} to ${toLocation}.'), [
-                    "card_name" => "<span style='font-weight:bold'>{$event->card->Name}</span>",
+                    "card_name" => "<strong>{$event->card->Name}</strong>",
                     "cardId" => $event->card->Id,
                     "fromLocation" => $event->fromLocation,
                     "toLocation" => $event->toLocation,

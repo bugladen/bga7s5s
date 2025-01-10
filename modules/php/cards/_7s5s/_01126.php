@@ -128,7 +128,7 @@ class _01126 extends Scheme
                         $movedHome->card = $card;
                         $movedHome->fromLocation = $this->chosenLocation;
                         $movedHome->toLocation = Game::LOCATION_PLAYER_HOME;
-                        $movedHome->playerId = $card->ControllerId;
+                        $movedHome->playerId = $this->ControllerId;
                     }
 
                     $event->theah->queueEvent($movedHome);

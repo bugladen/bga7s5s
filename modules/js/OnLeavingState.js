@@ -173,6 +173,10 @@ onLeavingState: function( stateName )
                     this.clearCardAsSelectable(image);
                 }
             }
+            var home = $(`${this.getActivePlayerId()}-home-anchor`);
+            dojo.removeClass(home, 'selectable');
+            dojo.removeClass(home, 'selected');
+            dojo.style(home, 'cursor', 'default');
         },
     };
 

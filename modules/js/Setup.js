@@ -84,6 +84,8 @@ return declare('seventhseacityoffivesails.setup', null, {
                 // Locker Pile
                 dojo.style(`${playerId}-locker`, 'cursor', 'zoom-in');
                 dojo.connect($(`${playerId}-locker`), 'onclick', this, 'onPlayerLockerClicked');
+
+                $(`${playerId}-home-anchor`).setAttribute('data-location', this.LOCATION_PLAYER_HOME);                
             }
 
             const playerInfo = this.gamedatas.players[playerId];

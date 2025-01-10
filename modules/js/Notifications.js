@@ -197,8 +197,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
 
         const card = this.cardProperties[args.cardId];
+        card.engaged = args.engage;
 
-        //Destry the old card element
+        //Destroy the old card element
         dojo.destroy(card.divId);
 
         //Create the new card element

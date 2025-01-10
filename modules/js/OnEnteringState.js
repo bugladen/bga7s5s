@@ -445,8 +445,19 @@ onEnteringState: function( stateName, args )
             if (this.isCurrentPlayerActive()) {
                 this.numberOfCityLocationsSelectable = 1;                
                 args.args.locations.forEach((location) => {
-                    const selectedLocationElement = dojo.query(`[data-location="${location}"]`)[0];
-                    this.makeCityLocationSelectable(selectedLocationElement.id);
+                    if (location == this.LOCATION_PLAYER_HOME)
+                    {
+                        var home = $(`${this.getActivePlayerId()}-home-anchor`);
+                        dojo.addClass(home, 'selectable');
+                        dojo.style(home, 'cursor', 'pointer');
+                        const handle = dojo.connect($(home), 'onclick', this, 'onCityLocationClicked');
+                        this.connects.push(handle);                
+                    }
+                    else
+                    {
+                        const selectedLocationElement = dojo.query(`[data-location="${location}"]`)[0];
+                        this.makeCityLocationSelectable(selectedLocationElement.id);
+                    }
                 });
                 card = this.cardProperties[args.args.selectedCharacterId];
                 const image = $(`${card.divId}_image`);

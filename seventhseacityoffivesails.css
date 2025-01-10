@@ -287,7 +287,9 @@ body {
     border-radius: 10px;
     margin-right: 15px;
     margin-top: 5px;
+    margin-bottom: 10px;
     border: 1px solid black;
+    height:110px;
 }
 
 .home-panel {
@@ -394,7 +396,7 @@ body {
     top: 30px;
     left: 53px;
     z-index:10;
-    border: 2px solid yellow;
+    border: 2px solid lightgray;
 }
 .first-player-score {
     display: inline-block;
@@ -741,6 +743,10 @@ body {
 
 .darkened {
     filter: brightness(50%);
+}
+
+.engaged {
+    transform: rotate(90deg);
 }
 
 /* Leave as-is for stock component */

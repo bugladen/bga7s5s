@@ -131,6 +131,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
             this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
         }
+
+        if (character.engaged)
+            dojo.addClass(`${divId}_image`, 'engaged');
     },  
 
     createEventCard: function( divId, event, location )
