@@ -318,6 +318,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
             || card.location === this.LOCATION_CITY_GOVERNORS_GARDEN);
     },
 
+    isCardInPlay: function( cardId )
+    {
+        const card = this.cardProperties[cardId];
+        return (this.isCardInCity(cardId) || card.location === this.LOCATION_PLAYER_HOME);
+    },
+
     createCardId: function( card, location )
     {
         switch (location) {
@@ -354,5 +360,34 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
+    makeCityLocationSelectable: function(location) {
+        dojo.addClass(location, 'selectable');
+        dojo.style(location, 'cursor', 'pointer');
+        const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
+        this.connects.push(handle);
+    },
+    
+    makeCharacterSelectable: function(image) {
+        dojo.addClass(image, 'selectable');
+        dojo.style(image, 'cursor', 'pointer');
+        const handle = dojo.connect(image, 'onclick', this, 'onCharacterClicked');
+        this.connects.push(handle);                        
+    },   
+    
+    resetCityLocations: function() {
+        const locations = this.getListofAvailableCityLocationImages();
+        locations.forEach((location) => {
+            dojo.removeClass(location, 'selectable');
+            dojo.removeClass(location, 'selected');
+            dojo.style(location, 'cursor', 'default');
+        });
+    },
+    
+    clearCardAsSelectable: function(image) {
+        dojo.removeClass(image, 'selectable');
+        dojo.removeClass(image, 'selected');
+        dojo.style(image, 'cursor', 'default');
+    },
+    
 })
 });

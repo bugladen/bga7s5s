@@ -103,11 +103,7 @@ onEnteringState: function( stateName, args )
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 1;
                 locations.forEach((location) => {
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -121,12 +117,8 @@ onEnteringState: function( stateName, args )
                     const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
                     const reknown = parseInt(reknownElement.innerHTML);
                     if (reknown > 0) return;
-        
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
 
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -136,11 +128,7 @@ onEnteringState: function( stateName, args )
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 2;
                 locations.forEach((location) => {
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -150,11 +138,7 @@ onEnteringState: function( stateName, args )
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 1;
                 locations.forEach((location) => {
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -170,13 +154,8 @@ onEnteringState: function( stateName, args )
                     const reknown = parseInt(reknownElement.innerHTML);
                     if (reknown == 0) return;
 
+                    this.makeCityLocationSelectable(location);
                     count++;
-
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
                 });
 
                 if (count > 0) {
@@ -195,11 +174,7 @@ onEnteringState: function( stateName, args )
                     const imageElement = $(location);
                     if (imageElement.id == selectedLocationElement.id) return;
 
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -212,12 +187,8 @@ onEnteringState: function( stateName, args )
                     card = this.cardProperties[cardId];
                     if (card.type === 'Character' && card.controllerId && card.controllerId != this.getActivePlayerId()) {
                         //Get the element that is a child of card.divId with the class 'card'
-                        const imageElement = dojo.query('.card', card.divId)[0];
-                        dojo.addClass(imageElement, 'selectable');
-                        dojo.style(imageElement, 'cursor', 'pointer');
-
-                        const handle = dojo.connect(imageElement, 'onclick', this, 'onCharacterClicked');
-                        this.connects.push(handle);
+                        const image = dojo.query('.card', card.divId)[0];
+                        this.makeCharacterSelectable(image);
 
                         count++;
                     }
@@ -234,11 +205,7 @@ onEnteringState: function( stateName, args )
                 this.numberOfCityLocationsSelectable = 1;
 
                 locations.forEach((location) => {
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -252,12 +219,8 @@ onEnteringState: function( stateName, args )
                 locations.forEach((location) => {
                     const imageElement = $(location);
                     if (imageElement.id == selectedLocationElement.id) return;
-        
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
 
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -267,11 +230,7 @@ onEnteringState: function( stateName, args )
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 1;
                 locations.forEach((location) => {
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -281,11 +240,7 @@ onEnteringState: function( stateName, args )
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 1;
                 locations.forEach((location) => {
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -300,11 +255,7 @@ onEnteringState: function( stateName, args )
                     const imageElement = $(location);
                     if (imageElement.id == selectedLocationElement.id) return;
 
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -320,13 +271,8 @@ onEnteringState: function( stateName, args )
                     const reknown = parseInt(reknownElement.innerHTML);
                     if (reknown == 0) return;
 
+                    this.makeCityLocationSelectable(location);
                     count++;
-
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
                 });
 
                 if (count > 0) {
@@ -343,12 +289,8 @@ onEnteringState: function( stateName, args )
                 locations.forEach((location) => {
                     const imageElement = $(location);
                     if (imageElement.id == selectedLocationElement.id) return;
-        
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
 
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -368,12 +310,8 @@ onEnteringState: function( stateName, args )
                     const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
                     const reknown = parseInt(reknownElement.innerHTML);
                     if (reknown === 0) return;
-        
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
 
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -383,11 +321,7 @@ onEnteringState: function( stateName, args )
                 const locations = this.getListofAvailableCityLocationImages();
                 this.numberOfCityLocationsSelectable = 1;
                 locations.forEach((location) => {
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -403,13 +337,8 @@ onEnteringState: function( stateName, args )
                     const reknown = parseInt(reknownElement.innerHTML);
                     if (reknown == 0) return;
 
+                    this.makeCityLocationSelectable(location);
                     count++;
-
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
                 });
 
                 if (count > 0) {
@@ -428,11 +357,7 @@ onEnteringState: function( stateName, args )
                     const imageElement = $(location);
                     if (imageElement.id == selectedLocationElement.id) return;
 
-                    dojo.addClass(location, 'selectable');
-                    dojo.style(location, 'cursor', 'pointer');
-
-                    const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                    this.connects.push(handle);
+                    this.makeCityLocationSelectable(location);
                 });
             }
         },
@@ -444,13 +369,8 @@ onEnteringState: function( stateName, args )
                 for( const cardId in this.cardProperties ) {
                     card = this.cardProperties[cardId];
                     if (card.type === 'Character' && card.traits.includes('Leader') && card.controllerId && card.controllerId != this.getActivePlayerId()) {
-                        //Get the element that is a child of card.divId with the class 'card'
-                        const imageElement = $(`${card.divId}_image`);
-                        dojo.addClass(imageElement, 'selectable');
-                        dojo.style(imageElement, 'cursor', 'pointer');
-
-                        const handle = dojo.connect(imageElement, 'onclick', this, 'onCharacterClicked');
-                        this.connects.push(handle);
+                        const image = $(`${card.divId}_image`);
+                        this.makeCharacterSelectable(image);
 
                         count++;
                     }
@@ -483,17 +403,13 @@ onEnteringState: function( stateName, args )
                     card = this.cardProperties[cardId];
                     if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) ) {
                         const image = $(`${card.divId}_image`);
-                        dojo.addClass(image, 'selectable');
-                        dojo.style(image, 'cursor', 'pointer');
+                        this.makeCharacterSelectable(image);
 
                         const cost = $(`${card.divId}_wealth_cost`);
                         let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
                         discountedCost = discountedCost < 0 ? 0 : discountedCost;
                         cost.innerHTML = parseInt(discountedCost);
                         dojo.addClass(cost, 'discounted-wealth-cost');
-
-                        const handle = dojo.connect(image, 'onclick', this, 'onCharacterClicked');
-                        this.connects.push(handle);                        
                     }
                 }
             }

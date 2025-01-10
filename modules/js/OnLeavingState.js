@@ -66,11 +66,9 @@ onLeavingState: function( stateName )
         'planningPhaseResolveSchemes_01125_4': () => {
             for( const cardId in this.cardProperties ) {
                 card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && card.controllerId != this.getActivePlayerId()) {
-                    const imageElement = dojo.query('.card', card.divId)[0];
-                    dojo.removeClass(imageElement, 'selectable');
-                    dojo.removeClass(imageElement, 'selected');
-                    dojo.style(imageElement, 'cursor', 'default');
+                if (card.type === 'Character' && card.controllerId && card.controllerId != this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                    const image = dojo.query('.card', card.divId)[0];
+                    this.clearCardAsSelectable(image);
                 }
             }
         },
@@ -120,15 +118,13 @@ onLeavingState: function( stateName )
             this.resetCityLocations();
         },
 
+        //Clear the leader cards after one is selected
         'planningPhaseEnd_01098': () => {
             for( const cardId in this.cardProperties ) {
                 card = this.cardProperties[cardId];
                 if (card.type === 'Character' && card.traits.includes('Leader') && card.controllerId && card.controllerId != this.getActivePlayerId()) {
-                    //Get the element that is a child of card.divId with the class 'card'
-                    const imageElement = $(`${card.divId}_image`);
-                    dojo.removeClass(imageElement, 'selectable');
-                    dojo.removeClass(imageElement, 'selected');
-                    dojo.style(imageElement, 'cursor', 'default');
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
                 }
             }
         },
@@ -144,9 +140,7 @@ onLeavingState: function( stateName )
                 card = this.cardProperties[cardId];
                 if (card.type === 'Character' && this.isCardInCity(card.id)) {
                     const image = $(`${card.divId}_image`);
-                    dojo.removeClass(image, 'selectable');
-                    dojo.removeClass(image, 'selected');
-                    dojo.style(image, 'cursor', 'default');
+                    this.clearCardAsSelectable(image);
 
                     const cost = $(`${card.divId}_wealth_cost`);
                     cost.innerHTML = card.wealthCost;
@@ -172,15 +166,6 @@ onLeavingState: function( stateName )
     //Disconnect any connect handlers that were created
     this.connects.forEach((handle) => {
         dojo.disconnect(handle);
-    });
-},
-
-resetCityLocations: function() {
-    const locations = this.getListofAvailableCityLocationImages();
-    locations.forEach((location) => {
-        dojo.removeClass(location, 'selectable');
-        dojo.removeClass(location, 'selected');
-        dojo.style(location, 'cursor', 'default');
     });
 },
 
