@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToPlayerDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
@@ -33,6 +34,11 @@ trait ActionsTrait
 
         // at the end of the action, move to the next state
         $this->gamestate->nextState($transition);
+    }
+
+    public function actBack(): void
+    {
+        $this->gamestate->nextState("back");
     }
 
     public function actPlanningPhase_01016_2_Pass()
@@ -365,7 +371,6 @@ trait ActionsTrait
         }
 
         // Move Leshiye of the Wood to the chosen location
-        //addslashes
         $this->cards->moveCard($scheme->Id, $leshiyeLocation, $playerId);
         $this->theah->queueEvent($schemeMoveEvent);
 
@@ -686,6 +691,48 @@ trait ActionsTrait
         ]);
 
         $this->gamestate->nextState("");
+   }
+
+   public function actHighDramaMoveActionStart()
+   {
+       $this->gamestate->nextState("moveActionStart");
+   }
+
+   public function actHighDramaMoveActionCharacterChosen(string $ids)
+   {
+       $id = json_decode($ids, true)[0];
+       $character = $this->getCardObjectFromDb($id);
+       $playerId = $this->getActivePlayerId();
+       $playerName = $this->getActivePlayerName();
+
+       $this->globals->set(GAME::CHOSEN_CARD, $character->Id);
+
+       $this->gamestate->nextState("characterChosen");
+   }
+
+   public function actHighDramaMoveActionDestinationChosen(string $locations)
+   {
+       $location = json_decode($locations, true)[0];
+       $playerId = $this->getActivePlayerId();
+       $playerName = $this->getActivePlayerName();
+
+       $cardId = $this->globals->get(GAME::CHOSEN_CARD);
+       $card = $this->getCardObjectFromDb($cardId);       
+       $this->cards->moveCard($cardId, $location, $card->ControllerId);
+
+       $movedHome = $this->theah->createEvent(Events::CardMoved);
+       if ($movedHome instanceof EventCardMoved)
+       {
+           $movedHome->card = $card;
+           $movedHome->fromLocation = $card->Location;
+           $movedHome->toLocation = $location;
+           $movedHome->playerId = $card->ControllerId;
+           $movedHome->Engage = $card->Location != Game::LOCATION_PLAYER_HOME;
+       }
+       $this->theah->eventCheck($movedHome);
+       $this->theah->queueEvent($movedHome);
+
+       $this->gamestate->nextState("destinationChosen");
    }
 
  

@@ -429,12 +429,36 @@ onEnteringState: function( stateName, args )
 
             this.factionHand.setSelectionMode(2);
         },
+
+        'highDramaMoveActionChooseCharacter': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCharactersSelectable = 1;
+                args.args.ids.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.makeCharacterSelectable(image);
+                });
+            }
+        },
+
+        'highDramaMoveActionChooseLocation': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCityLocationsSelectable = 1;                
+                args.args.locations.forEach((location) => {
+                    const selectedLocationElement = dojo.query(`[data-location="${location}"]`)[0];
+                    this.makeCityLocationSelectable(selectedLocationElement.id);
+                });
+                card = this.cardProperties[args.args.selectedCharacterId];
+                const image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'selected');
+            }
+        },
     };
     
     if (methods[stateName]) {
         methods[stateName](args);
     }
-}
+},
 
 })
 });

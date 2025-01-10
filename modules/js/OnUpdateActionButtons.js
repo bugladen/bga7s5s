@@ -169,11 +169,26 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaPlayerTurn': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actMoveAction`, _('Move'), () => this.onPass());
+                this.addActionButton(`actMoveAction`, _('Move'), () => this.bgaPerformAction('actHighDramaMoveActionStart', {}));
                 this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             }
-        }
+        },
 
+        'highDramaMoveActionChooseCharacter': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('< Back'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseCharacterConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
+        },
+
+        'highDramaMoveActionChooseLocation': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('< Back'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            }
+        },
     };
 
     if( methods[stateName] )

@@ -11,6 +11,7 @@ class EventCardMoved extends Event
     public string $fromLocation;
     public string $toLocation;
     public int $playerId;
+    public bool $Engage = true;
 
     public function __construct()
     {

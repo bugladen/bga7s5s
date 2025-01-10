@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
@@ -90,14 +91,19 @@ trait EventHandler
                 break;
 
             case $event instanceof EventCardMoved:
-                $event->card->Location = $event->toLocation;
-                $event->card->IsUpdated = true;
+                $card = $this->cards[$event->card->Id];
+                $card->Location = $event->toLocation;
+                if($card instanceof Character) {
+                    $card->Engaged = $event->Engage;
+                }
+                $card->IsUpdated = true;
 
                 $this->game->notifyAllPlayers("cardMoved", clienttranslate('${card_name} moved from ${fromLocation} to ${toLocation}.'), [
                     "card_name" => "<span style='font-weight:bold'>{$event->card->Name}</span>",
                     "cardId" => $event->card->Id,
                     "fromLocation" => $event->fromLocation,
                     "toLocation" => $event->toLocation,
+                    "engage" => $event->Engage,
                 ]);
                 break;
 

@@ -103,6 +103,40 @@ trait ArgumentsTrait
         ];
     }
 
+    public function argsHighDramaMoveActionChooseCharacter(): array
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+        $characters = $this->theah->getCharactersByPlayerId($playerId);
+        
+        //Filter out those characters that are engaged
+        $characters = array_filter($characters, function($character) { return $character->Engaged == false; });  
+
+        //Select only the Ids of the characters
+        $characterIds = array_map(function($character) { return $character->Id; }, $characters);
+
+        return [
+            "ids" => $characterIds
+        ];
+    }
+
+    public function argsHighDramaMoveActionChooseDestination(): array
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $characterId = $this->globals->get(GAME::CHOSEN_CARD);
+        $character = $this->theah->getCharacterById($characterId);
+        $currentLocation = $character->Location;
+
+        $locations = $this->theah->getAdjacentCityLocations($currentLocation);
+
+        return [
+            "selectedCharacterId" => $characterId,
+            "locations" => $locations            
+        ];
+    }
+
     public function argPlayerTurn(): array
     {
         $player_id = (int)$this->getActivePlayerId();

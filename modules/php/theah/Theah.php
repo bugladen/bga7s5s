@@ -8,7 +8,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -210,11 +209,32 @@ class Theah
     {
         $count = 0;
         foreach ($this->cards as $card) {
-            if (($card instanceof Character || $card instanceof CityCharacter) && $card->ControllerId == $playerId) {
+            if ($card instanceof Character && $card->ControllerId == $playerId) {
                 $count++;
             }
         }
         return $count;
+    }
+
+    function getCharacterById($id)
+    {
+        foreach ($this->cards as $card) {
+            if ($card instanceof Character && $card->Id == $id) {
+                return $card;
+            }
+        }
+        return null;
+    }
+
+    function getCharactersByPlayerId($playerId)
+    {
+        $characters = [];
+        foreach ($this->cards as $card) {
+            if ($card instanceof Character && $card->ControllerId == $playerId) {
+                $characters[] = $card;
+            }
+        }
+        return $characters;
     }
 
     function getLeaderByPlayerId($playerId)
@@ -225,5 +245,50 @@ class Theah
             }
         }
         return null;
+    }
+
+    function getAdjacentCityLocations($location)
+    {
+        $playerCount = $this->game->globals->get(Game::PLAYER_COUNT);
+        $locations = [];
+        switch ($location) {
+            case Game::LOCATION_PLAYER_HOME:
+                $locations = [Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_FORUM, Game::LOCATION_CITY_BAZAAR];
+                if ($playerCount > 2) {
+                    $locations[] = Game::LOCATION_CITY_OLES_INN;
+                }
+                if ($playerCount > 3) {
+                    $locations[] = Game::LOCATION_CITY_GOVERNORS_GARDEN;
+                }
+                break;
+
+            case Game::LOCATION_CITY_DOCKS:
+                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM];
+                if ($playerCount > 2) {
+                    $locations[] = Game::LOCATION_CITY_OLES_INN;
+                }
+                break;
+
+            case Game::LOCATION_CITY_FORUM:
+                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_BAZAAR];
+                break;
+
+            case Game::LOCATION_CITY_BAZAAR:
+                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM];
+                if ($playerCount > 3) {
+                    $locations[] = Game::LOCATION_CITY_GOVERNORS_GARDEN;
+                }
+                break;
+
+            case Game::LOCATION_CITY_OLES_INN:
+                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_DOCKS];
+                break;
+                
+            case Game::LOCATION_CITY_GOVERNORS_GARDEN:
+                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_BAZAAR];
+                break;
+        }
+
+        return $locations;
     }
 }

@@ -102,7 +102,6 @@ return declare('seventhseacityoffivesails.actions', null, {
             return;
         }
 
-        //Generic method when no specific logic is needed
         const actionMap = {
             'planningPhaseResolveSchemes_01016': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01071': 'actCityLocationsForReknownSelected',
@@ -121,6 +120,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01152': 'actPlanningPhase_01152',
             'planningPhaseResolveSchemes_01152_2': 'actPlanningPhase_01152_2',
             'planningPhaseResolveSchemes_01152_3': 'actPlanningPhase_01152_3',
+            'highDramaMoveActionChooseLocation': 'actHighDramaMoveActionDestinationChosen',
         };
 
         const clientMessageArray = {
@@ -154,6 +154,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaBeginning_01144': 'highDramaBeginning_01144_client',
             'planningPhaseEnd_01098': 'actPlanningPhaseEnd_01098',
             'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4',
+            'highDramaMoveActionChooseCharacter' : 'actHighDramaMoveActionCharacterChosen',
         };
 
         const clientMessageArray = {
