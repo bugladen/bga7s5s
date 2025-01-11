@@ -154,7 +154,7 @@ onLeavingState: function( stateName )
             this.clientStateArgs = {};
         },
 
-        'highDramaMoveActionChooseCharacter': () => {
+        'highDramaMoveActionChoosePerformer': () => {
             for ( const cardId in this.cardProperties ) {
                 card = this.cardProperties[cardId];
                 if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {

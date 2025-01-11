@@ -698,7 +698,7 @@ trait ActionsTrait
        $this->gamestate->nextState("moveActionStart");
    }
 
-   public function actHighDramaMoveActionCharacterChosen(string $ids)
+   public function actHighDramaMoveActionPerformerChosen(string $ids)
    {
        $id = json_decode($ids, true)[0];
        $character = $this->getCardObjectFromDb($id);

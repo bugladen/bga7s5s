@@ -590,7 +590,7 @@ $machinestates = [
             "actPass",
         ],
         "transitions" => [
-            "moveActionStart" => States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_CHARACTER, 
+            "moveActionStart" => States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_PERFORMER, 
             "pass" => States::NEXT_PLAYER
         ]
     ],
@@ -603,14 +603,14 @@ $machinestates = [
                 "endOfEvents" => States::NEXT_PLAYER
                 ]
         ],
-        States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_CHARACTER => [
-            "name" => "highDramaMoveActionChooseCharacter",
-            "description" => clienttranslate('${actplayer} wants to perform a Move Action.  They must choose a character to move.'),
-            "descriptionmyturn" => clienttranslate('${you} are performing a Move Action.  Choose a character to move:'),
+        States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_PERFORMER => [
+            "name" => "highDramaMoveActionChoosePerformer",
+            "description" => clienttranslate('${actplayer} wants to perform a Move Action.  They must choose a Performer to move.'),
+            "descriptionmyturn" => clienttranslate('${you} are performing a Move Action.  Choose a Performer to move:'),
             "type" => "activeplayer",
-            "args" => "argsHighDramaMoveActionChooseCharacter",
+            "args" => "argsHighDramaMoveActionChoosePerformer",
             "possibleactions" => [
-                "actHighDramaMoveActionCharacterChosen", 
+                "actHighDramaMoveActionPerformerChosen", 
                 "actBack",
             ],
             "transitions" => [
@@ -618,22 +618,22 @@ $machinestates = [
                 "back" => States::HIGH_DRAMA_PLAYER_TURN
             ]
         ],
-        States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_DESTINATION => [
-            "name" => "highDramaMoveActionChooseLocation",
-            "description" => clienttranslate('${actplayer} wants to perform a Move Action.  They must choose a destination location for their character.'),
-            "descriptionmyturn" => clienttranslate('${you} are performing a Move Action.  Choose a destination location for your character:'),
-            "type" => "activeplayer",
-            "args" => "argsHighDramaMoveActionChooseDestination",
-            "possibleactions" => [
-                "actHighDramaMoveActionDestinationChosen", 
-                "actBack",
+            States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_DESTINATION => [
+                "name" => "highDramaMoveActionChooseLocation",
+                "description" => clienttranslate('${actplayer} wants to perform a Move Action.  They must choose a destination location for their Performer.'),
+                "descriptionmyturn" => clienttranslate('${you} are performing a Move Action.  Choose a destination location for your Perfomer:'),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaMoveActionChooseDestination",
+                "possibleactions" => [
+                    "actHighDramaMoveActionDestinationChosen", 
+                    "actBack",
+                ],
+                "transitions" => [
+                    "destinationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
+                    "back" => States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_PERFORMER
+                ]
             ],
-            "transitions" => [
-                "destinationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
-                "back" => States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_CHARACTER
-            ]
-        ],
-
+    
     States::NEXT_PLAYER => [
         "name" => "nextPlayer",
         "description" => '',

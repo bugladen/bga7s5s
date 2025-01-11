@@ -430,7 +430,7 @@ onEnteringState: function( stateName, args )
             this.factionHand.setSelectionMode(2);
         },
 
-        'highDramaMoveActionChooseCharacter': () => {
+        'highDramaMoveActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
                 this.numberOfCharactersSelectable = 1;
                 args.args.ids.forEach((cardId) => {

@@ -174,7 +174,7 @@ onUpdateActionButtons: function( stateName, args )
             }
         },
 
-        'highDramaMoveActionChooseCharacter': () => {
+        'highDramaMoveActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
                 this.addActionButton(`actBack`, _('< Back'), () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseCharacterConfirmed());

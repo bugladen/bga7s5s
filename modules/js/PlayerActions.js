@@ -154,7 +154,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaBeginning_01144': 'highDramaBeginning_01144_client',
             'planningPhaseEnd_01098': 'actPlanningPhaseEnd_01098',
             'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4',
-            'highDramaMoveActionChooseCharacter' : 'actHighDramaMoveActionCharacterChosen',
+            'highDramaMoveActionChoosePerformer' : 'actHighDramaMoveActionPerformerChosen',
         };
 
         const clientMessageArray = {

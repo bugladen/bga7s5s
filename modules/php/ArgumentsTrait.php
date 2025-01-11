@@ -103,7 +103,7 @@ trait ArgumentsTrait
         ];
     }
 
-    public function argsHighDramaMoveActionChooseCharacter(): array
+    public function argsHighDramaMoveActionChoosePerformer(): array
     {
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
