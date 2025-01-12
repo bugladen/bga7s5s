@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToPlayerDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
@@ -184,12 +185,10 @@ trait ActionsTrait
         //Move card to top of City Deck
         $this->cards->insertCardOnExtremePosition($id, Game::LOCATION_CITY_DECK, true);
 
-        // Notify players
-        $this->notifyAllPlayers("message_01045", clienttranslate('${player_name} chose ${card_name} to move from the City Discard Pile to the top of the City Deck.'), [
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} chose ${card_name} to move from the City Discard Pile to the top of the City Deck.'), [
             "player_name" => $playerName,
             "card_name" => "<strong>{$card->Name}</strong>",
-            "player_id" => $playerId,
-            "card" => $card->getPropertyArray(),
+            "player_id" => $playerId
         ]);
 
         $this->theah->queueEvent($removeEvent);
@@ -396,6 +395,7 @@ trait ActionsTrait
         $this->theah->queueEvent($event);
 
         //Get all cards in the chosen location
+        $this->theah->buildCity();
         $cards = $this->theah->getCardObjectsAtLocation($location);
         foreach ($cards as $card)
         {
@@ -594,7 +594,7 @@ trait ActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actHighDramaBeginning_01144(int $recruitId, string $payWithCards)
+    public function recruitMercenary(int $recruitId, string $payWithCards)
     {
         $character = $this->getCardObjectFromDb($recruitId);
         if ($character == null)
@@ -650,7 +650,11 @@ trait ActionsTrait
             //No check needed
             $this->theah->queueEvent($event);
         }
+    }
 
+    public function actHighDramaBeginning_01144(int $recruitId, string $payWithCards)
+    {
+        $this->recruitMercenary($recruitId, $payWithCards);
         $this->gamestate->nextState("");
     }
 
@@ -691,53 +695,141 @@ trait ActionsTrait
         ]);
 
         $this->gamestate->nextState("");
-   }
+    }
 
-   public function actHighDramaMoveActionStart()
-   {
-       $this->gamestate->nextState("moveActionStart");
-   }
+    public function actHighDramaPass()
+    {
+        $this->actPass("pass");
+    }
 
-   public function actHighDramaMoveActionPerformerChosen(string $ids)
-   {
-       $id = json_decode($ids, true)[0];
-       $character = $this->getCardObjectFromDb($id);
-       $playerId = $this->getActivePlayerId();
-       $playerName = $this->getActivePlayerName();
+    public function actHighDramaMoveActionStart()
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
 
-       $this->globals->set(GAME::CHOSEN_CARD, $character->Id);
+        if ($this->theah->playerCanMove($player_id) == false) {
+            throw new \BgaUserException("Moving is not allowed right now.");
+        }
 
-       $this->gamestate->nextState("characterChosen");
-   }
+        $this->gamestate->nextState("moveActionStart");
+    }
 
-   public function actHighDramaMoveActionDestinationChosen(string $locations)
-   {
-       $location = json_decode($locations, true)[0];
-       $playerId = $this->getActivePlayerId();
-       $playerName = $this->getActivePlayerName();
+    public function actHighDramaMoveActionPerformerChosen(string $ids)
+    {
+        $id = json_decode($ids, true)[0];
+        $character = $this->getCardObjectFromDb($id);
+        $playerId = $this->getActivePlayerId();
+        $playerName = $this->getActivePlayerName();
 
-       $cardId = $this->globals->get(GAME::CHOSEN_CARD);
-       $card = $this->getCardObjectFromDb($cardId);       
-       $this->cards->moveCard($cardId, $location, $card->ControllerId);
+        $this->globals->set(GAME::CHOSEN_CARD, $character->Id);
 
-       $this->notifyAllPlayers("message", clienttranslate('${player_name} performed a Move Action.'), [
+        $this->gamestate->nextState("performerChosen");
+    }
+
+    public function actHighDramaMoveActionDestinationChosen(string $locations)
+    {
+        $location = json_decode($locations, true)[0];
+        $playerId = $this->getActivePlayerId();
+        $playerName = $this->getActivePlayerName();
+
+        $cardId = $this->globals->get(GAME::CHOSEN_CARD);
+        $card = $this->getCardObjectFromDb($cardId);       
+        $this->cards->moveCard($cardId, $location, $card->ControllerId);
+
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} performed a Move Action.'), [
         "player_name" => $playerName,
         ]);
 
-       $movedHome = $this->theah->createEvent(Events::CardMoved);
-       if ($movedHome instanceof EventCardMoved)
-       {
-           $movedHome->card = $card;
-           $movedHome->fromLocation = $card->Location;
-           $movedHome->toLocation = $location;
-           $movedHome->playerId = $card->ControllerId;
-           $movedHome->Engage = $card->Location != Game::LOCATION_PLAYER_HOME;
-       }
-       $this->theah->eventCheck($movedHome);
-       $this->theah->queueEvent($movedHome);
+        $movedHome = $this->theah->createEvent(Events::CardMoved);
+        if ($movedHome instanceof EventCardMoved)
+        {
+            $movedHome->card = $card;
+            $movedHome->fromLocation = $card->Location;
+            $movedHome->toLocation = $location;
+            $movedHome->playerId = $card->ControllerId;
+            $movedHome->Engage = $card->Location != Game::LOCATION_PLAYER_HOME;
+        }
+        $this->theah->eventCheck($movedHome);
+        $this->theah->queueEvent($movedHome);
 
-       $this->gamestate->nextState("destinationChosen");
-   }
+        $this->gamestate->nextState("destinationChosen");
+    }
 
- 
+    public function actHighDramaRecruitActionStart()
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        if ($this->theah->playerCanRecruit($player_id) == false) {
+            throw new \BgaUserException("Recruiting is not allowed right now.");
+        }
+
+        $this->gamestate->nextState("recruitActionStart");
+    }
+
+    public function actHighDramaRecruitActionPerformerChosen(string $ids)
+    {
+        $this->theah->buildCity();
+        $id = json_decode($ids, true)[0];
+        $character = $this->getCardObjectFromDb($id);
+
+        if (!$this->theah->cardInCity($character)) {
+            throw new \BgaUserException("Character is not in the City.");
+        }
+
+        $this->globals->set(GAME::CHOSEN_CARD, $character->Id);
+
+        $this->gamestate->nextState("performerChosen");
+    }
+
+    public function actHighDramaRecruitActionParleyYes()
+    {
+        $id = $this->globals->get(GAME::CHOSEN_CARD);
+        $character = $this->getCardObjectFromDb($id);
+
+        //Set the discount for recruiting a mercenary.
+        $discount = $character->getParleyDiscount(true);
+        $this->globals->set(Game::RECRUIT_DISCOUNT, $discount);
+
+        $this->gamestate->nextState("parleyChosen");
+    }
+
+    public function actHighDramaRecruitActionParleyNo()
+    {
+        $this->globals->set(Game::RECRUIT_DISCOUNT, 0);
+        $this->gamestate->nextState("parleyChosen");
+    }
+
+    public function actHighDramaRecruitActionMercenaryChosen(int $recruitId, string $payWithCards)
+    {
+        $playerId = $this->getActivePlayerId();
+        $playerName = $this->getActivePlayerName();
+        $discount = $this->globals->get(Game::RECRUIT_DISCOUNT);
+        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performer = $this->getCardObjectFromDb($performerId);
+
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} chose ${card_name} to perform a Recruit Action.'), [
+            "player_name" => $playerName,
+            "card_name" => "<strong>{$performer->Name}</strong>",
+        ]);
+
+        if ($discount > 0)
+        {
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} chose to Parley with ${card_name}.'), [
+                "player_name" => $playerName,
+                "card_name" => "<strong>{$performer->Name}</strong>",
+            ]);
+            
+            $removeEvent = $this->theah->createEvent(Events::CardEngaged);
+            if ($removeEvent instanceof EventCardEngaged) {
+                $removeEvent->card = $performer;
+                $removeEvent->playerId = $playerId;
+            }
+            $this->theah->eventCheck($removeEvent);
+            $this->theah->queueEvent($removeEvent);
+        }
+
+        $this->recruitMercenary($recruitId, $payWithCards);
+        $this->gamestate->nextState("mercenaryChosen");
+    }
 }

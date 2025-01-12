@@ -38,4 +38,9 @@ class _01035 extends Leader
         ];
     }
 
+    public function getParleyDiscount(bool $parleying) : int
+    {
+        return parent::getParleyDiscount($parleying) + 2;
+    }
+
 }

@@ -44,6 +44,11 @@ abstract class Character extends Card
         return false;
     }
 
+    public function getParleyDiscount(bool $parleying) : int
+    {
+        return $parleying ? $this->ModifiedInfluence : 0;
+    }
+
     public function getPropertyArray(): array
     {
         $properties = parent::getPropertyArray();

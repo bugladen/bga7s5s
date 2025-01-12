@@ -43,6 +43,7 @@ class Events
 
     const CardMoved = 'EventCardMoved';
     const CardDrawn = 'EventCardDrawn';
+    const CardEngaged = 'EventCardEngaged';
     
     const Transition = 'EventTransition';
 }

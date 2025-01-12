@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToPlayerDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
@@ -89,6 +90,18 @@ trait EventHandler
                     "card" => $event->card->getPropertyArray(),
                 ]);
                 break;
+
+            case $event instanceof EventCardEngaged:
+                $card = $this->cards[$event->card->Id];
+                $card->Engaged = true;
+                $card->IsUpdated = true;
+
+                $this->game->notifyAllPlayers("cardEngaged", clienttranslate('${player_name} Engages ${card_name}.'), [
+                    "player_name" => $this->game->getPlayerNameById($event->playerId),
+                    "card_name" => "<strong>{$event->card->Name}</strong>",
+                    "cardId" => $event->card->Id,
+                ]);
+                break;                
 
             case $event instanceof EventCardMoved:
                 $card = $this->cards[$event->card->Id];

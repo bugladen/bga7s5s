@@ -169,7 +169,11 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaPlayerTurn': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actMoveAction`, _('Move'), () => this.bgaPerformAction('actHighDramaMoveActionStart', {}));
+                if (args.canMove)
+                    this.addActionButton(`actMoveAction`, _('Move'), () => this.bgaPerformAction('actHighDramaMoveActionStart', {}));
+                if (args.canRecruit)
+                    this.addActionButton(`actRecruitAction`, _('Recruit'), () => this.bgaPerformAction('actHighDramaRecruitActionStart', {}));
+
                 this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             }
         },
@@ -188,6 +192,37 @@ onUpdateActionButtons: function( stateName, args )
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             }
+        },
+
+        'highDramaRecruitActionChoosePerformer': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('< Back'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseCharacterConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
+        },
+
+        'highDramaRecruitActionParley': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('< Back'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseYes`, _('Yes'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyYes', {}));
+                this.addActionButton(`actChooseNo`, _('No'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyNo', {}));
+            }
+        },
+
+        'highDramaRecruitActionChooseMercenary': () => {
+            this.addActionButton(`actBack`, _('< Back'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseCharacterConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
+        },
+
+        'highDramaRecruitActionChooseMercenary_client': () => {
+            this.addActionButton(`actBack`, _('< Back'), () => 
+                this.setClientState('highDramaRecruitActionChooseMercenary',
+                    {
+                        'descriptionmyturn' : _("${you} are performing a Recruit Action.  Choose a Mercenary to recruit:"),
+                    }));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onRecruitCharacterConfirmed());
         },
     };
 

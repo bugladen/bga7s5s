@@ -178,6 +178,49 @@ onLeavingState: function( stateName )
             dojo.removeClass(home, 'selected');
             dojo.style(home, 'cursor', 'default');
         },
+
+        'highDramaRecruitActionChoosePerformer': () => {
+            for ( const cardId in this.cardProperties ) {
+                card = this.cardProperties[cardId];
+                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                }
+            }
+        },
+
+        'highDramaRecruitActionParley': () => {
+            for( const cardId in this.cardProperties ) {
+                card = this.cardProperties[cardId];
+                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                }
+            }
+        },
+
+        'highDramaRecruitActionChooseMercenary': () => {
+            for( const cardId in this.cardProperties ) {
+                card = this.cardProperties[cardId];
+                if (card.type === 'Character' && this.isCardInCity(card.id) && card.id != this.clientStateArgs.performerId) {
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+
+                    const cost = $(`${card.divId}_wealth_cost`);
+                    cost.innerHTML = card.wealthCost;
+                    dojo.removeClass(cost, 'discounted-wealth-cost');
+                }
+            }
+        },
+
+        'highDramaRecruitActionChooseMercenary_client': () => {
+            this.factionHand.setSelectionMode(0);
+            const card = this.cardProperties[this.clientStateArgs.performerId];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image)
+            this.clientStateArgs = {};
+        },
+
     };
 
     if (methods[stateName]) {

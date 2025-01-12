@@ -464,7 +464,71 @@ onEnteringState: function( stateName, args )
                 dojo.addClass(image, 'selected');
             }
         },
-    };
+
+        'highDramaRecruitActionChoosePerformer': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCharactersSelectable = 1;
+                args.args.ids.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCharacterSelectable(image);
+                });
+            }
+        },
+
+        'highDramaRecruitActionParley': () => {
+            if (this.isCurrentPlayerActive()) {
+                card = this.cardProperties[args.args.selectedCharacterId];
+                const image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'selected');
+            }
+        },
+
+        'highDramaRecruitActionChooseMercenary': () => {
+            if (this.isCurrentPlayerActive()) {
+                console.log('hjere')
+                card = this.cardProperties[args.args.selectedCharacterId];
+                this.clientStateArgs.performerId = card.id;
+                const image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'selected');
+
+                this.numberOfCharactersSelectable = 1;
+                this.clientStateArgs.discount = args.args.discount;
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) ) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                        this.makeCharacterSelectable(image);
+
+                        if (card.negotiable)                             
+                        {
+                            const cost = $(`${card.divId}_wealth_cost`);
+                            let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
+                            discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                            cost.innerHTML = parseInt(discountedCost);
+                            dojo.addClass(cost, 'discounted-wealth-cost');
+                        }
+                    }
+                }
+            }
+        },
+
+        'highDramaRecruitActionChooseMercenary_client': () => {
+            const card = this.cardProperties[this.clientStateArgs.selectedCharacters[0]];
+            const image = $(`${card.divId}_image`);
+            dojo.addClass(image, 'selected');
+
+            const cost = $(`${card.divId}_wealth_cost`);
+            let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
+            discountedCost = discountedCost < 0 ? 0 : discountedCost;
+            this.clientStateArgs.discountedCost = discountedCost;
+            cost.innerHTML = parseInt(discountedCost);
+            dojo.addClass(cost, 'discounted-wealth-cost');
+
+            this.factionHand.setSelectionMode(2);
+        },    };
     
     if (methods[stateName]) {
         methods[stateName](args);

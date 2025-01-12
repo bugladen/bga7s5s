@@ -81,9 +81,10 @@ class _01150 extends Scheme
                     $playerName = $game->getUniqueValueFromDB("SELECT player_name from player where player_id = {$playerId}");
                     $playerNames[] = $playerName;
             }
+            $hasHave = count($playerNames) > 1 ? "have" : "has";
             $playerName = implode(", ", $playerNames);
 
-            $game->notifyAllPlayers("message", clienttranslate('${card_name}: ${player_name} has added Reknown to The Forums and may intervene this turn.'), [
+            $game->notifyAllPlayers("message", clienttranslate('${card_name}: ${player_name} ${hasHave} added Reknown to The Forums and may intervene this turn.'), [
                 "card_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $playerName,
             ]);

@@ -331,15 +331,15 @@ return declare('seventhseacityoffivesails.utilities', null, {
     {
         switch (location) {
             case this.LOCATION_CITY_OLES_INN:
-                return `oles-inn-${card.id}`;
+                return card.controllerId ? `${card.controllerId}-${card.id}` : `oles-inn-${card.id}`;
             case this.LOCATION_CITY_DOCKS:
-                return `docks-${card.id}`;
+                return card.controllerId ? `${card.controllerId}-${card.id}` : `docks-${card.id}`;
             case this.LOCATION_CITY_FORUM:
-                return `forum-${card.id}`;
+                return card.controllerId ? `${card.controllerId}-${card.id}` : `forum-${card.id}`;
             case this.LOCATION_CITY_BAZAAR:
-                return `bazaar-${card.id}`;
+                return card.controllerId ? `${card.controllerId}-${card.id}` : `bazaar-${card.id}`;
             case this.LOCATION_CITY_GOVERNORS_GARDEN:
-                return `garden-${card.id}`;
+                return card.controllerId ? `${card.controllerId}-${card.id}` : `garden-${card.id}`;
             case this.LOCATION_PLAYER_HOME:
                 return `${card.controllerId}-${card.id}`;
         }

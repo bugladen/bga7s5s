@@ -237,6 +237,17 @@ class Theah
         return $characters;
     }
 
+    function getCharactersAtLocation($location)
+    {
+        $characters = [];
+        foreach ($this->cards as $card) {
+            if ($card instanceof Character && $card->Location == $location) {
+                $characters[] = $card;
+            }
+        }
+        return $characters;
+    }
+
     function getLeaderByPlayerId($playerId)
     {
         foreach ($this->cards as $card) {
@@ -247,7 +258,17 @@ class Theah
         return null;
     }
 
-    function getAdjacentCityLocations($location)
+    function cardInCity($card): bool
+    {
+        return $card->Location ==         
+        Game::LOCATION_CITY_OLES_INN ||
+        Game::LOCATION_CITY_DOCKS ||
+        Game::LOCATION_CITY_FORUM ||
+        Game::LOCATION_CITY_BAZAAR ||
+        Game::LOCATION_CITY_GOVERNORS_GARDEN;
+    }
+
+    function getAdjacentCityLocations($location): array
     {
         $playerCount = $this->game->globals->get(Game::PLAYER_COUNT);
         $locations = [];
@@ -283,12 +304,38 @@ class Theah
             case Game::LOCATION_CITY_OLES_INN:
                 $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_DOCKS];
                 break;
-                
+
             case Game::LOCATION_CITY_GOVERNORS_GARDEN:
                 $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_BAZAAR];
                 break;
         }
 
         return $locations;
+    }
+
+    public function playerCanMove($playerId): bool
+    {
+        $characters = $this->getCharactersByPlayerId($playerId);
+        $enGardeCharacters = array_filter($characters, function($character) { return $character->Engaged == false; });
+        return $enGardeCharacters > 0;
+    }
+
+    public function playerCanRecruit($playerId): bool
+    {
+        $characters = $this->getCharactersByPlayerId($playerId);
+
+        //Get all characters that are in the city that have mercenaries at their location
+        $charactersThatCanReruit = [];
+        $charactersInCity = array_filter($characters, function($character) { return $character->Location == $this->cardInCity($character); });
+
+        foreach ($charactersInCity as $character) {
+            $charactersAtLocation = $this->getCharactersAtLocation($character->Location);
+            $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return in_array("Mercenary", $character->Traits); });
+            if (count($mercenariesAtLocation) > 0) {
+                $charactersThatCanReruit[] = $character;
+            }
+        }
+
+        return count($charactersThatCanReruit) > 0;        
     }
 }

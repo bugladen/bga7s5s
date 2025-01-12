@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
@@ -426,22 +427,31 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
-    /**
-     * Game state action, example content.
-     *
-     * The action method of state `nextPlayer` is called everytime the current game state is set to `nextPlayer`.
-     */
+    public function stHighDramaRecruitActionParleyable()
+    {
+        $id = $this->globals->get(GAME::CHOSEN_CARD);
+        $card = $this->getCardObjectFromDb($id);
+        if ($card instanceof Character)
+        {
+            if ($card->Engaged)
+            {
+                //Discount might have special abilities above parleying
+                $discount = $card->getParleyDiscount(false);
+                $this->globals->set(Game::RECRUIT_DISCOUNT, $discount);
+                $this->gamestate->nextState("notParleyable");
+            }
+            else
+                $this->gamestate->nextState("parleyable");
+        }
+    }
+
     public function stNextPlayer(): void {
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
 
-        // Give some extra time to the active player when he completed an action
         $this->giveExtraTime($player_id);
-        
         $this->activeNextPlayer();
 
-        // Go to another gamestate
-        // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
         $this->gamestate->nextState("nextPlayer");
     }
 }

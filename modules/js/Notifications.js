@@ -14,6 +14,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardAddedToCityDiscardPile', 500],
             ['cardAddedToPlayerDiscardPile', 500],
             ['cardAddedToHand', 2000],
+            ['cardEngaged', 1000],
             ['cardMoved', 1000],
             ['characterRecruited', 1000],
             ['drawCard', 2000],
@@ -206,6 +207,17 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const cardId = this.createCardId(card, args.toLocation);
         const target = this.getTargetElementForLocation(args.toLocation, card.controllerId);
         this.createCard(cardId, card, target);
+    },
+
+    notif_cardEngaged: function( notif )
+    {
+        debug( 'notif_cardEngaged' );
+        debug( notif );
+
+        const args = notif.args;
+
+        const card = this.cardProperties[args.cardId];
+        dojo.addClass(`${card.divId}_image`, 'engaged');
     },
 
     notif_characterRecruited: function( notif )

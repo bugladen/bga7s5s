@@ -103,10 +103,22 @@ trait ArgumentsTrait
         ];
     }
 
+    public function argPlayerTurn(): array
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        return [
+            "canMove" => $this->theah->playerCanMove($player_id),
+            "canRecruit" => $this->theah->playerCanRecruit($player_id),
+        ];
+    }
+
     public function argsHighDramaMoveActionChoosePerformer(): array
     {
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
+
         $characters = $this->theah->getCharactersByPlayerId($playerId);
         
         //Filter out those characters that are engaged
@@ -137,15 +149,41 @@ trait ArgumentsTrait
         ];
     }
 
-    public function argPlayerTurn(): array
+    public function argsHighDramaRecruitActionChoosePerformer(): array
     {
-        $player_id = (int)$this->getActivePlayerId();
-        // $cards = $this->cards->getCardsInLocation('hand', $player_id);
-        // $playableCardsIds = array_map(function($card) { return $card['id']; }, $cards);
-        $playableCardsIds = [];
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $characters = $this->theah->getCharactersByPlayerId($playerId);
+        
+        //Filter out those characters that are in the city
+        $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
+
+        //Select only the Ids of the characters
+        $characterIds = array_map(function($character) { return $character->Id; }, $characters);
 
         return [
-            "playableCardsIds" => $playableCardsIds,
+            "ids" => $characterIds
+        ];
+
+    }
+
+    public function argsHighDramaRecruitActionParley(): array
+    {
+        $characterId = $this->globals->get(GAME::CHOSEN_CARD);
+
+        return [
+            "selectedCharacterId" => $characterId,
+        ];
+    }    
+
+    public function argsHighDramaRecruitActionChooseMercenary(): array
+    {
+        $characterId = $this->globals->get(GAME::CHOSEN_CARD);
+
+        return [
+            "discount" => $this->globals->get(GAME::RECRUIT_DISCOUNT),
+            "selectedCharacterId" => $characterId,
         ];
     }
 

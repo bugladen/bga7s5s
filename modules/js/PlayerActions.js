@@ -31,6 +31,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         switch (this.gamedatas.gamestate.name) {
             case 'highDramaBeginning_01144_client':
+            case 'highDramaRecruitActionChooseMercenary_client':
                 let wealth = 0;
                 items.forEach((item) => {
                     const card = this.cardProperties[item.type];
@@ -155,10 +156,13 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseEnd_01098': 'actPlanningPhaseEnd_01098',
             'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4',
             'highDramaMoveActionChoosePerformer' : 'actHighDramaMoveActionPerformerChosen',
+            'highDramaRecruitActionChoosePerformer' : 'actHighDramaRecruitActionPerformerChosen',
+            'highDramaRecruitActionChooseMercenary': 'highDramaRecruitActionChooseMercenary_client',
         };
 
         const clientMessageArray = {
             'highDramaBeginning_01144_client': "${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
+            'highDramaRecruitActionChooseMercenary_client': "${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
         };
 
         const action = actionArray[this.gamedatas.gamestate.name];
@@ -232,17 +236,19 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const actionArray = {
             'highDramaBeginning_01144_client': 'actHighDramaBeginning_01144',
+            'highDramaRecruitActionChooseMercenary_client': 'actHighDramaRecruitActionMercenaryChosen',
         };
 
         const action = actionArray[this.gamedatas.gamestate.name];
         this.bgaPerformAction(action, { 
             'recruitId': this.clientStateArgs.selectedCharacters[0],
             'payWithCards': JSON.stringify(items),
-        }).catch(() =>  {                
-            this.setClientState('highDramaBeginning_01144',
-                {
-                    'descriptionmyturn' : _("${you} may choose a Mercenary from a City Location to recruit to your home:"),
-                })
+        }).catch(() =>  {
+            if (this.gamedatas.gamestate.name == 'highDramaBeginning_01144_client')
+                this.setClientState('highDramaBeginning_01144',
+                    {
+                        'descriptionmyturn' : _("${you} may choose a Mercenary from a City Location to recruit to your home:"),
+                    })
         });        
     },
 
@@ -262,6 +268,7 @@ return declare('seventhseacityoffivesails.actions', null, {
     passConfirmed: function()
     {
         const actionArray = {
+            'highDramaPlayerTurn': 'actHighDramaPass',
             'planningPhaseResolveSchemes_01016_2': 'actPlanningPhase_01016_2_Pass',
             'planningPhaseResolveSchemes_01125': 'actPlanningPhase_01125_Pass',
             'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2_Pass',
