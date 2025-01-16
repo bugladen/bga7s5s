@@ -3,6 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 
 trait UtilitiesTrait
 {
@@ -101,6 +103,45 @@ trait UtilitiesTrait
         $card = new $className();
 
         return $card;
+    }
+
+    public function handHasAttachments(int $playerId)
+    {
+        $hand = $this->cards->getCardsInLocation('hand', $playerId);
+        foreach ($hand as $handCard) {
+            $card = $this->getCardObjectFromDb($handCard['id']);
+            if ($card instanceof Attachment) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getAttachmentsInHand(int $playerId)
+    {
+        $hand = $this->cards->getCardsInLocation('hand', $playerId);
+        $attachments = [];
+        foreach ($hand as $handCard) {
+            $card = $this->getCardObjectFromDb($handCard['id']);
+            if ($card instanceof Attachment) {
+                $attachments[] = $card;
+            }
+        }
+        return $attachments;
+    }
+
+    public function characterHasAttachmentOfType($character, $type)
+    {
+        if ($character instanceof Character)
+            return false;
+        
+        foreach ($character->Attachments as $attachment) {
+            $card = $this->getCardObjectFromDb($attachment);
+            if (in_array($type, $card->Traits)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function playerDrawCard($playerId): Card

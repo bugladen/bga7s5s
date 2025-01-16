@@ -32,7 +32,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         }
     },
 
-    onCharacterClicked: function( event )
+    onCardInPlayClicked: function( event )
     {
         let id = event.target.id;
 
@@ -47,27 +47,27 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         if (dojo.hasClass(image, 'selected')) 
         {
             dojo.removeClass(image, 'selected');
-            this.selectedCharacters = this.selectedCharacters.filter((char) => char !== card.id);
+            this.selectedCards = this.selectedCards.filter((char) => char !== card.id);
         } 
-        else if (this.selectedCharacters.length == this.numberOfCharactersSelectable == 1)
+        else if (this.selectedCards.length == this.numberOfCardsSelectable == 1)
         {
-            this.selectedCharacters.forEach((unsetId) => {
+            this.selectedCards.forEach((unsetId) => {
                 unsetCard = this.cardProperties[unsetId];
                 unsetImageElement = dojo.query('.card', unsetCard.divId)[0];
                 dojo.removeClass(unsetImageElement, 'selected');
             });
-            this.selectedCharacters = [];
+            this.selectedCards = [];
 
             dojo.addClass(image, 'selected');
-            this.selectedCharacters.push(card.id);
+            this.selectedCards.push(card.id);
         }
-        else if (this.selectedCharacters.length < this.numberOfCharactersSelectable) {
+        else if (this.selectedCards.length < this.numberOfCardsSelectable) {
             dojo.addClass(image, 'selected');
-            this.selectedCharacters.push(card.id);
+            this.selectedCards.push(card.id);
         }
 
         //Enable the confirm button if we have the right number of locations selected
-        if (this.selectedCharacters.length === this.numberOfCharactersSelectable) {
+        if (this.selectedCards.length === this.numberOfCardsSelectable) {
             dojo.removeClass('actChooseCardSelected', 'disabled');
         } else {
             dojo.addClass('actChooseCardSelected', 'disabled');

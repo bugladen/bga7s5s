@@ -504,6 +504,8 @@ body {
     width: 110px;
     height: 110px;
     border-radius: 10px;
+    position:relative;
+    z-index: 10;
 }
 
 .card-resolve {
@@ -523,7 +525,6 @@ body {
 
 .card-wealth-cost {
     position: relative;
-    left: 65px;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.3) calc(var(--png-board-resource-height) * 0.3);
     background-position: -69px -47px;
@@ -538,6 +539,12 @@ body {
 }
 .city-character-wealth-cost {
     left: 65px;
+}
+.city-attachment-wealth-cost {
+    left: 65px;
+}
+.hand-wealth-cost {
+    left: -15px;
 }
 .discounted-wealth-cost {
     color: yellow;
@@ -565,6 +572,11 @@ body {
     background-position: -545px -2px;
     width: 15px;
     height: 19px;
+}
+
+.modified-stat-value {
+    color: yellow;
+    text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
 }
 
 .card-combat-value {
@@ -704,7 +716,6 @@ body {
     border: 2px solid black;
 }
 
-
 .character-player-color {
     position: relative;
     background-color: var(--player-color);
@@ -714,6 +725,18 @@ body {
     left: 90px;
     top: 90px;
     border: 2px solid black;
+}
+
+.attachment-container {
+    position:relative;
+    margin-left: calc(var(--attachment-count) * 20px);
+}
+
+.attached-card {
+    position: absolute;
+    top: 0px;
+    left: calc(var(--attachment-index) * -20px);
+    z-index: calc(10 - var(--attachment-index));
 }
 
 .discard-pile-card {
@@ -739,6 +762,10 @@ body {
 
 .selected {
     box-shadow: 0 0 2px 2px lime;
+}
+
+.unselectable {
+    box-shadow: 0 0 2px 2px red;
 }
 
 .darkened {

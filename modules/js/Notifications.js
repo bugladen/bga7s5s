@@ -9,6 +9,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const notifs = [
             ['playLeader', 1500],
             ['approachCardsReceived', 1000],
+            ['attachmentEquipped', 1000],
             ['newDay', 1000],
             ['cityCardAddedToLocation', 1000],
             ['cardAddedToCityDiscardPile', 500],
@@ -119,6 +120,44 @@ return declare('seventhseacityoffivesails.notifications', null, {
         });            
     },
 
+    notif_attachmentEquipped: function( notif )
+    {
+        debug( 'notif_attachmentEquipped' );
+        debug( notif );
+
+        const args = notif.args;
+        const attachment = args.attachment;
+        const performer = this.cardProperties[args.performerId];
+
+        //See if the card came from the hand
+        if (this.factionHand.getItemById(attachment.id) !== null)
+        {
+            this.factionHand.removeFromStockById(attachment.id);
+        }
+        else
+        {
+            const oldCard = this.cardProperties[attachment.id];
+
+            //Destroy the old card element
+            dojo.destroy(oldCard.divId);
+        }
+
+        this.attachCard(performer, attachment);
+
+        //Create a placeholder html element in front of the performer
+        const placeholderId = "equip-placeholder";
+        dojo.place(`<div id="${placeholderId}"></div>`, performer.divId, 'before');
+
+        //Destroy old character element
+        dojo.destroy(performer.divId);
+
+        //Create the new character element    
+        this.createCard(performer.divId, performer, placeholderId);
+
+        //Destroy the placeholder
+        dojo.destroy(placeholderId);
+    },
+
     notif_factionResolveCardDraw: function( notif )
     {
         debug( 'notif_factionResolveCardDraw' );
@@ -181,7 +220,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
         else
         {
-            card = args.card
+            card = args.card;
             this.cardProperties[card.id] = card;
         }
 

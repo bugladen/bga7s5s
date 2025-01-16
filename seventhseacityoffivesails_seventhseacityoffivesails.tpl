@@ -62,7 +62,7 @@ var jstpl_home=`
 `;
 
 var jstpl_character=`
-<div id="\${id}">
+<div id="\${id}" style="--attachment-count:\${attachmentCount}">
     <div id="\${id}_image" class="card home-\${faction}" style="--card_image:url('\${image}')">
         <div class="card-resolve">\${resolve}</div>
         <div id="\${id}_wealth_cost" class="card-wealth-cost city-character-wealth-cost">\${cost}</div>
@@ -84,10 +84,10 @@ var jstpl_character=`
 `;
 
 var jstpl_card_attachment=`
-<div id="\${id}">
-    <div class="card home-\${faction}" style="--card_image:url('\${image}')">
+<div id="\${id}" style="--attachment-index:\${attachmentIndex}">
+    <div id="\${id}_image" class="card home-\${faction}" style="--card_image:url('\${image}')">
         <div class="card-resolve">\${resolve}</div>
-        <div id="\${id}_wealth_cost" class="card-wealth-cost">\${cost}</div>
+        <div id="\${id}_wealth_cost" class="card-wealth-cost city-attachment-wealth-cost">\${cost}</div>
         <div class="card-stat-box card-combat-box">
             <div class="card-combat-value attachment-combat-value">\${combat}</div>
             <div class="card-combat-image"></div>
@@ -104,9 +104,13 @@ var jstpl_card_attachment=`
 </div>
 `;
 
+var jstpl_hand_wealth_cost_chip=`
+<div id="\${id}_wealth_cost" class="card-wealth-cost hand-wealth-cost">\${cost}</div>
+`;
+
 var jstpl_card_event=`
 <div id="\${id}">
-    <div class="card" style="--card_image:url('\${image}')">
+    <div id="\${id}_image" class="card" style="--card_image:url('\${image}')">
     </div>
 </div>
 `;

@@ -73,9 +73,9 @@ function (dojo, declare) {
 
             //City location selection
             this.numberOfCityLocationsSelectable = 0;
-            this.numberOfCharactersSelectable = 0;
+            this.numberOfCardsSelectable = 0;
             this.selectedCityLocations = [];
-            this.selectedCharacters = [];
+            this.selectedCards = [];
             this.clientStateArgs = {};
 
             //Connect handlers for the city locations

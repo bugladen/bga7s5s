@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDis
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
@@ -594,7 +595,7 @@ trait ActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function recruitMercenary(int $recruitId, string $payWithCards)
+    private function recruitMercenary(int $recruitId, string $payWithCards)
     {
         $character = $this->getCardObjectFromDb($recruitId);
         if ($character == null)
@@ -606,7 +607,7 @@ trait ActionsTrait
             throw new \BgaUserException("Character is not a City Character.");
         }
 
-        $discount = $this->globals->get(Game::RECRUIT_DISCOUNT);        
+        $discount = $this->globals->get(Game::DISCOUNT);        
 
         $cost = $character->WealthCost - $discount;
         if ($cost < 0) $cost = 0;
@@ -770,11 +771,29 @@ trait ActionsTrait
     public function actHighDramaRecruitActionPerformerChosen(string $ids)
     {
         $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
         $id = json_decode($ids, true)[0];
         $character = $this->getCardObjectFromDb($id);
 
         if (!$this->theah->cardInCity($character)) {
             throw new \BgaUserException("Character is not in the City.");
+        }
+
+        $characters = $this->theah->getCharactersByPlayerId($playerId);
+        //Filter out those characters that are not in the city
+        $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
+        $charactersThatCanReruit = [];
+        foreach ($characters as $character) {
+            $charactersAtLocation = $this->theah->getCharactersAtLocation($character->Location);
+            $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return in_array("Mercenary", $character->Traits); });
+            if (count($mercenariesAtLocation) > 0) {
+                $charactersThatCanReruit[] = $character;
+            }
+        }
+        //Select only the Ids of the characters
+        $characterIds = array_map(function($character) { return $character->Id; }, $charactersThatCanReruit);
+        if (!in_array($id, $characterIds)) {
+            throw new \BgaUserException("Character not in a state to recruit mercenaries.");
         }
 
         $this->globals->set(GAME::CHOSEN_CARD, $character->Id);
@@ -789,24 +808,32 @@ trait ActionsTrait
 
         //Set the discount for recruiting a mercenary.
         $discount = $character->getParleyDiscount(true);
-        $this->globals->set(Game::RECRUIT_DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT, $discount);
 
         $this->gamestate->nextState("parleyChosen");
     }
 
     public function actHighDramaRecruitActionParleyNo()
     {
-        $this->globals->set(Game::RECRUIT_DISCOUNT, 0);
+        $this->globals->set(Game::DISCOUNT, 0);
         $this->gamestate->nextState("parleyChosen");
     }
 
     public function actHighDramaRecruitActionMercenaryChosen(int $recruitId, string $payWithCards)
     {
+        $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
         $playerName = $this->getActivePlayerName();
-        $discount = $this->globals->get(Game::RECRUIT_DISCOUNT);
+        $discount = $this->globals->get(Game::DISCOUNT);
         $performerId = $this->globals->get(GAME::CHOSEN_CARD);
         $performer = $this->getCardObjectFromDb($performerId);
+
+        $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
+        $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return in_array("Mercenary", $character->Traits); });        
+        $mercenaryIds = array_map(function($character) { return $character->Id; }, $mercenariesAtLocation);
+        if (!in_array($recruitId, $mercenaryIds)) {
+            throw new \BgaUserException("Chosen character is not a Mercenary at the Performer's Location.");
+        }        
 
         $this->notifyAllPlayers("message", clienttranslate('${player_name} chose ${card_name} to perform a Recruit Action.'), [
             "player_name" => $playerName,
@@ -831,5 +858,140 @@ trait ActionsTrait
 
         $this->recruitMercenary($recruitId, $payWithCards);
         $this->gamestate->nextState("mercenaryChosen");
+    }
+
+    public function actHighDramaEquipActionStart()
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        if (!$this->handHasAttachments($playerId) && !$this->theah->playerCanEquip($playerId)) {
+            throw new \BgaUserException("Equipping is not allowed right now.");
+        }
+
+        $this->gamestate->nextState("equipActionStart");
+    }
+
+    public function actHighDramaEquipActionPerformerChosen(string $ids)
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+        $id = json_decode($ids, true)[0];
+        $performer = $this->getCardObjectFromDb($id);
+
+        $characters = $this->theah->getCharactersByPlayerId($playerId);        
+        //Filter out those characters that are not in the city
+        $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });
+        $charactersThatCanEquip = [];
+        foreach ($characters as $character) {
+            $attachmentsAtLocation = $this->theah->getAvailalbleAttachmentsAtLocation($character->Location);
+            if (count($attachmentsAtLocation) > 0) {
+                $charactersThatCanEquip[] = $character;
+            }
+        }
+        $charactersAtHome = $this->theah->getCharactersAtHome($playerId);
+        $charactersThatCanEquip = array_merge($charactersThatCanEquip, $charactersAtHome);
+
+        //Select only the Ids of the characters
+        $characterIds = array_map(function($character) { return $character->Id; }, $charactersThatCanEquip);
+        if (!in_array($id, $characterIds)) {
+            throw new \BgaUserException("Character cannot equip attachments.");
+        }
+
+        //Set the discount for equipping.
+        $discount = $performer->getEquipDiscount(true);
+        $this->globals->set(Game::DISCOUNT, $discount);
+
+        $this->globals->set(GAME::CHOSEN_CARD, $performer->Id);
+
+        $this->gamestate->nextState("performerChosen");
+    }
+
+    public function actHighDramaEquipAttachment(int $attachmentId, string $payWithCards)
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+        $playerName = $this->getActivePlayerName();
+
+        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performer = $this->getCardObjectFromDb($performerId);
+        
+        $attachment = $this->getCardObjectFromDb($attachmentId);
+
+        //Sanity checks
+        if ($attachment->Location == Game::LOCATION_HAND)
+        {
+            //Get the chosen player's hand
+            $handCard = $this->cards->getCard($attachmentId);
+            $card = $this->getCardObjectFromDb($handCard['id']);
+            if ($card->Location != Game::LOCATION_HAND || $card->ControllerId != $playerId) {
+                throw new \BgaUserException("Attachment is not in Player's Hand.");
+            }
+        }
+        if ($attachment->Location != Game::LOCATION_HAND)
+        {
+            $attachmentsAtLocation = $this->theah->getAvailalbleAttachmentsAtLocation($performer->Location);
+            $attachmentIds = array_map(function($attachment) { return $attachment->Id; }, $attachmentsAtLocation);
+            if (!in_array($attachmentId, $attachmentIds)) {
+                throw new \BgaUserException("Attachment is not at Performer's Location.");
+            }
+        }
+        if (in_array("Armor", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Armor")) {
+            throw new \BgaUserException("Character cannot have more than one Armor attachment.");
+        }
+        if (in_array("Attire", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Attire")) {
+            throw new \BgaUserException("Character cannot have more than one Attire attachment.");
+        }
+        if (in_array("Weapon", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Weapon")) {
+            throw new \BgaUserException("Character cannot have more than one Weapon attachment.");
+        }
+
+        $cost = $attachment->WealthCost;
+        $discount = $this->globals->get(Game::DISCOUNT);
+
+        $cardIds = json_decode($payWithCards, true);
+        
+        //Total up the wealth of the cards to see if player paid correctly
+        $totalWealth = 0;
+        foreach ($cardIds as $cardId) {
+            $card = $this->getCardObjectFromDb($cardId);
+            //If $card has wealth in its traits, add it to the total wealth
+            $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+        }
+        if ($totalWealth != $cost) {
+            throw new \BgaUserException("Cost of Attachment is {$cost}. You selected {$totalWealth} Wealth of cards.");
+        }
+
+        $playerId = $this->getActivePlayerId();
+
+        //Equip the attachment
+        $equipAttachmentEvent = $this->theah->createEvent(Events::AttachmentEquipped);
+        if ($equipAttachmentEvent instanceof EventAttachmentEquipped) {
+            $equipAttachmentEvent->attachment = $attachment;
+            $equipAttachmentEvent->performer = $performer;
+            $equipAttachmentEvent->playerId = $playerId;
+            $equipAttachmentEvent->discount = $discount;
+            $equipAttachmentEvent->cost = $cost;
+        }
+        $this->theah->eventCheck($equipAttachmentEvent);
+
+        //Move the cards used to pay to the player's discard pile
+        foreach ($cardIds as $cardId) {
+            $card = $this->getCardObjectFromDb($cardId);
+            $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
+
+            $event = $this->theah->createEvent(Events::CardAddedToPlayerDiscardPile);
+            if ($event instanceof EventCardAddedToPlayerDiscardPile) {
+                $event->playerId = $playerId;
+                $event->card = $card;
+            }
+            //No check needed
+            $this->theah->queueEvent($event);
+        }
+
+        $this->cards->moveCard($attachment->Id, $performer->Location, $attachment->ControllerId);
+        $this->theah->queueEvent($equipAttachmentEvent);
+
+        $this->gamestate->nextState("attachmentEquipped");
     }
 }

@@ -50,7 +50,7 @@ class Game extends \Table
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
     final const CHOSEN_CARD = "chosenCard";
     final const CHOSEN_LOCATION = "chosenLocation";
-    final const RECRUIT_DISCOUNT = "recruitDiscount";
+    final const DISCOUNT = "discount";
     final const CATS_EMBARGO = "catsEmbargo";
 
     use DeckTrait;

@@ -27,11 +27,11 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onFactionCardSelected: function( control_name, item_id )
     {
-        var items = this.factionHand.getSelectedItems();
 
-        switch (this.gamedatas.gamestate.name) {
-            case 'highDramaBeginning_01144_client':
-            case 'highDramaRecruitActionChooseMercenary_client':
+        const methods = {
+
+            'highDramaBeginning_01144_client': () => {
+                var items = this.factionHand.getSelectedItems();
                 let wealth = 0;
                 items.forEach((item) => {
                     const card = this.cardProperties[item.type];
@@ -39,9 +39,76 @@ return declare('seventhseacityoffivesails.actions', null, {
                     
                 });
                 $('faction_hand_info').innerHTML = items.length > 0 ? `(${wealth} Wealth worth of cards selected)` : '';
+            },
 
-                break;
+            'highDramaRecruitActionChooseMercenary_client': () => {
+                var items = this.factionHand.getSelectedItems();
+                let wealth = 0;
+                items.forEach((item) => {
+                    const card = this.cardProperties[item.type];
+                    wealth += card.traits.includes('Wealth') ? 2 : 1;
+                    
+                });
+                $('faction_hand_info').innerHTML = items.length > 0 ? `(${wealth} Wealth worth of cards selected)` : '';
+            },
+
+            'highDramaEquipActionChooseAttachmentFromHand_client': () => {
+                var items = this.factionHand.getSelectedItems();
+                const types = {};
+                items.forEach((item) => {
+                    const type = this.cardProperties[item.type].type;
+                    if (type != 'Attachment')
+                        this.factionHand.unselectItem(item.id);
+                    else if (types[type])
+                    {
+                        this.factionHand.unselectItem(item.id);
+                        this.factionHand.selectItem(item_id);
+                    }
+                    else
+                        types[type] = true;
+                });
+
+                // Enable the confirm button if we have a card selected
+                items = this.factionHand.getSelectedItems();
+                if (items.length === 1) {
+                    dojo.removeClass('actFactionCardsSelected', 'disabled');
+                } else {
+                    dojo.addClass('actFactionCardsSelected', 'disabled');
+                }
+            },
+
+            'highDramaEquipActionPayForAttachmentFromHand_client': () => {
+                var items = this.factionHand.getSelectedItems();
+                let wealth = 0;
+                const div = this.factionHand.getItemDivId(item_id);                
+                if (item_id !== undefined && dojo.hasClass(div, 'unselectable')) {
+                    this.factionHand.unselectItem(item_id);
+                    return;
+                }
+                items.forEach((item) => {
+                    const card = this.cardProperties[item.type];
+                    wealth += card.traits.includes('Wealth') ? 2 : 1;
+                    
+                });
+                $('faction_hand_info').innerHTML = `(${wealth} Wealth worth of cards selected)`;
+            },
+
+            'highDramaEquipActionPayForAttachmentFromPlay_client': () => {
+                var items = this.factionHand.getSelectedItems();
+                let wealth = 0;
+                items.forEach((item) => {
+                    const card = this.cardProperties[item.type];
+                    wealth += card.traits.includes('Wealth') ? 2 : 1;
+                    
+                });
+                $('faction_hand_info').innerHTML = `(${wealth} Wealth worth of cards selected)`;
             }
+
+        };
+
+        if (methods[this.gamedatas.gamestate.name]) {
+            methods[this.gamedatas.gamestate.name]();
+        }
     },
 
     onChooseCardSelected: function()
@@ -149,33 +216,36 @@ return declare('seventhseacityoffivesails.actions', null, {
         }
     },
 
-    onChooseCharacterConfirmed: function()
+    onChooseInPlayCardConfirmed: function()
     {
         const actionArray = {
-            'highDramaBeginning_01144': 'highDramaBeginning_01144_client',
-            'planningPhaseEnd_01098': 'actPlanningPhaseEnd_01098',
-            'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4',
-            'highDramaMoveActionChoosePerformer' : 'actHighDramaMoveActionPerformerChosen',
-            'highDramaRecruitActionChoosePerformer' : 'actHighDramaRecruitActionPerformerChosen',
-            'highDramaRecruitActionChooseMercenary': 'highDramaRecruitActionChooseMercenary_client',
+            'planningPhaseResolveSchemes_01125_4'                   : 'actPlanningPhase_01125_4',
+            'planningPhaseEnd_01098'                                : 'actPlanningPhaseEnd_01098',
+            'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
+            'highDramaMoveActionChoosePerformer'                    : 'actHighDramaMoveActionPerformerChosen',
+            'highDramaRecruitActionChoosePerformer'                 : 'actHighDramaRecruitActionPerformerChosen',
+            'highDramaRecruitActionChooseMercenary'                 : 'highDramaRecruitActionChooseMercenary_client',
+            'highDramaEquipActionChoosePerformer'                   : 'actHighDramaEquipActionPerformerChosen',
+            'highDramaEquipActionChooseAttachmentFromPlay_client'   : 'highDramaEquipActionPayForAttachmentFromPlay_client',
         };
 
         const clientMessageArray = {
-            'highDramaBeginning_01144_client': "${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
-            'highDramaRecruitActionChooseMercenary_client': "${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
+            'highDramaBeginning_01144_client'                       : "${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
+            'highDramaRecruitActionChooseMercenary_client'          : "${you} are performing a Recruit Action. ${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
+            'highDramaEquipActionPayForAttachmentFromPlay_client'   : "${you} are performing an Equip Action. Choose cards from your Faction Hand to pay for selected Attachment:",
         };
 
         const action = actionArray[this.gamedatas.gamestate.name];
 
         //If the action ends with _client, we need to call a client side function
         if (action.includes('_client')) {
-            this.clientStateArgs.selectedCharacters = this.selectedCharacters;
+            this.clientStateArgs.selectedCards = this.selectedCards;
             const clientMessage = clientMessageArray[action];
             this.setClientState(action, {
                 'descriptionmyturn' : _(clientMessage),
             })
         } else {
-            const ids = JSON.stringify(this.selectedCharacters);
+            const ids = JSON.stringify(this.selectedCards);
             this.bgaPerformAction(action, { 
                 'ids' : ids,
             });
@@ -203,6 +273,15 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).then(() =>  {                
             // What to do after the server call if it succeeded
         });        
+    },
+
+    onChooseHandAttachmentConfirmed: function()
+    {
+        var items = this.factionHand.getSelectedItems();
+        this.clientStateArgs.chosenAttachmentId = Object.values(items)[0].id;
+        this.setClientState('highDramaEquipActionPayForAttachmentFromHand_client', {
+            'descriptionmyturn' : _("${you} are performing an Equip Action. Choose cards from your Faction Hand to pay for selected Attachment:"),
+        });
     },
 
     onChooseStockCardConfirmed: function()
@@ -241,7 +320,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const action = actionArray[this.gamedatas.gamestate.name];
         this.bgaPerformAction(action, { 
-            'recruitId': this.clientStateArgs.selectedCharacters[0],
+            'recruitId': this.clientStateArgs.selectedCards[0],
             'payWithCards': JSON.stringify(items),
         }).catch(() =>  {
             if (this.gamedatas.gamestate.name == 'highDramaBeginning_01144_client')
@@ -249,6 +328,19 @@ return declare('seventhseacityoffivesails.actions', null, {
                     {
                         'descriptionmyturn' : _("${you} may choose a Mercenary from a City Location to recruit to your home:"),
                     })
+        });        
+    },
+
+    onAttachmentPaymentConfirmed: function()
+    {
+        var items = this.factionHand.getSelectedItems();
+        items = items.map((item) => item.id);
+
+        this.bgaPerformAction('actHighDramaEquipAttachment', { 
+            'performerId': this.clientStateArgs.selectedPerformerId,
+            'attachmentId': this.clientStateArgs.chosenAttachmentId,
+            'payWithCards': JSON.stringify(items),
+        }).catch(() =>  {
         });        
     },
 

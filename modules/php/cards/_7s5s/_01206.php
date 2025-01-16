@@ -10,7 +10,7 @@ class _01206 extends CityAttachment
     {
         parent::__construct();
 
-        $this->Name = "Captains Coat Pistol";
+        $this->Name = "Captain's Coat";
         $this->Image = "img/cards/7s5s/206.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

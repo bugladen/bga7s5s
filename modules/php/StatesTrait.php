@@ -437,7 +437,7 @@ trait StatesTrait
             {
                 //Discount might have special abilities above parleying
                 $discount = $card->getParleyDiscount(false);
-                $this->globals->set(Game::RECRUIT_DISCOUNT, $discount);
+                $this->globals->set(Game::DISCOUNT, $discount);
                 $this->gamestate->nextState("notParleyable");
             }
             else

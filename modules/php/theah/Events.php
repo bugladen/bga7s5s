@@ -40,6 +40,7 @@ class Events
 
     //Character Events
     const CharacterRecruited = 'EventCharacterRecruited';
+    const AttachmentEquipped = 'EventAttachmentEquipped';
 
     const CardMoved = 'EventCardMoved';
     const CardDrawn = 'EventCardDrawn';

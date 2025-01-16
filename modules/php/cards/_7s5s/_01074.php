@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 
 class _01074 extends FactionAttachment
 {
@@ -31,5 +32,16 @@ class _01074 extends FactionAttachment
             'Melee',
             "Sword",
         ];
+    }
+
+    public function eventCheck($event)
+    {
+        parent::eventCheck($event);
+
+        if ($event instanceof EventAttachmentEquipped && $event->attachment->Id == $this->Id) 
+        {
+            if (!in_array("Duelist", $event->performer->Traits))
+                throw new \BgaUserException(_("Mastercrafted Rapier can only be equipped to Duelists."));
+        }
     }
 }

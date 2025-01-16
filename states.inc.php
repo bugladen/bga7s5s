@@ -588,11 +588,13 @@ $machinestates = [
         "possibleactions" => [
             "actHighDramaMoveActionStart", 
             "actHighDramaRecruitActionStart",
+            "actHighDramaEquipActionStart",
             "actHighDramaPass",
         ],
         "transitions" => [
             "moveActionStart" => States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_PERFORMER, 
             "recruitActionStart" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER,
+            "equipActionStart" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER,
             "pass" => States::NEXT_PLAYER
         ]
     ],
@@ -691,6 +693,38 @@ $machinestates = [
                     "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
                 ]
             ],
+
+            States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER => [
+                "name" => "highDramaEquipActionChoosePerformer",
+                "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+                "descriptionmyturn" => clienttranslate('${you} are performing an Equip Action.  Choose a Performer to equip:'),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaEquipActionChoosePerformer",
+                "possibleactions" => [
+                    "actHighDramaEquipActionPerformerChosen", 
+                    "actBack",
+                ],
+                "transitions" => [
+                    "performerChosen" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION, 
+                    "back" => States::HIGH_DRAMA_PLAYER_TURN
+                ]
+            ],
+            States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION => [
+                "name" => "highDramaEquipActionChooseAttachmentLocation",
+                "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+                "descriptionmyturn" => clienttranslate('${you} are performing an Equip Action.  Choose an Attachment Location to equip from:'),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaEquipActionChooseAttachmentLocation",
+                "possibleactions" => [
+                    "actHighDramaEquipAttachment", 
+                    "actBack",
+                ],
+                "transitions" => [
+                    "attachmentEquipped" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
+                    "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER
+                ]
+            ],
+
         
     States::NEXT_PLAYER => [
         "name" => "nextPlayer",

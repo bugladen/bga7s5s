@@ -15,6 +15,10 @@ abstract class Character extends Card
     public int $Influence;
     public int $ModifiedInfluence;
 
+    public int $ModifiedEquipDiscount;
+
+    public Array $Attachments = [];
+
     public function __construct()
     {
         parent::__construct();
@@ -28,7 +32,7 @@ abstract class Character extends Card
         $this->ModifiedFinesse = 0;
         $this->Influence = 0;
         $this->ModifiedInfluence = 0;
-
+        $this->ModifiedEquipDiscount = 0;
     }
 
     public function resetModifiedCharacterStats()
@@ -49,6 +53,34 @@ abstract class Character extends Card
         return $parleying ? $this->ModifiedInfluence : 0;
     }
 
+    public function getEquipDiscount() : int
+    {
+        return $this->ModifiedEquipDiscount;
+    }
+
+    public function addAttachment(Attachment $attachment)
+    {
+        $this->ModifiedResolve += $attachment->ResolveModifier;
+        $this->ModifiedCombat += $attachment->CombatModifier;
+        $this->ModifiedFinesse += $attachment->FinesseModifier;
+        $this->ModifiedInfluence += $attachment->InfluenceModifier;
+
+        $this->Attachments[] = $attachment->Id;
+    }
+
+    public function removeAttachment(Attachment $attachment)
+    {
+        $index = array_search($attachment->Id, $this->Attachments);
+        if ($index !== false) {
+            $this->ModifiedResolve -= $attachment->ResolveModifier;
+            $this->ModifiedCombat -= $attachment->CombatModifier;
+            $this->ModifiedFinesse -= $attachment->FinesseModifier;
+            $this->ModifiedInfluence -= $attachment->InfluenceModifier;
+
+            unset($this->Attachments[$index]);
+        }    
+    }
+
     public function getPropertyArray(): array
     {
         $properties = parent::getPropertyArray();
@@ -64,6 +96,9 @@ abstract class Character extends Card
         $properties['modifiedFinesse'] = $this->ModifiedFinesse;
         $properties['influence'] = $this->Influence;
         $properties['modifiedInfluence'] = $this->ModifiedInfluence;
+        $properties['modifiedEquipDiscount'] = $this->ModifiedEquipDiscount;
+
+        $properties['attachments'] = $this->Attachments;
 
         $properties['type'] = 'Character';
 

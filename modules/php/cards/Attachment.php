@@ -10,6 +10,8 @@ abstract class Attachment extends Card implements IWealthCost
     public int $CombatModifier;
     public int $FinesseModifier;
     public int $InfluenceModifier;
+
+    public int $AttachedToId;
     
     public function __construct()
     {
@@ -19,6 +21,7 @@ abstract class Attachment extends Card implements IWealthCost
         $this->CombatModifier = 0;
         $this->FinesseModifier = 0;
         $this->InfluenceModifier = 0;
+        $this->AttachedToId = 0;
     }
 
     public function getPropertyArray(): array
@@ -32,6 +35,7 @@ abstract class Attachment extends Card implements IWealthCost
         $properties['influenceModifier'] = $this->InfluenceModifier;
 
         $properties['type'] = 'Attachment';
+        $properties['attachedToId'] = $this->AttachedToId;
 
         return $properties;
     }

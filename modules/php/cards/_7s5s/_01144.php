@@ -75,7 +75,7 @@ class _01144 extends Scheme
             $discount = max($leader->ModifiedCombat, $leader->ModifiedFinesse, $leader->ModifiedInfluence);
 
             //Set the discount for recruiting a mercenary.
-            $event->theah->game->globals->set(Game::RECRUIT_DISCOUNT, $discount);
+            $event->theah->game->globals->set(Game::DISCOUNT, $discount);
 
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} Leader Reaction: ${player_name} has the least (non-tied) amount of characters in play (${amount}).
             They may now Recruit a mercenary at a discount of their Leader\'s highest stat.'), [

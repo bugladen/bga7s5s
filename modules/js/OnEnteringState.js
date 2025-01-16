@@ -55,7 +55,6 @@ onEnteringState: function( stateName, args )
                 this.addCardToDeck(this.chooseList, args.args.card);
                 this.chooseList.setSelectionMode(0);
             }, 500);
-
         },
 
 
@@ -181,14 +180,14 @@ onEnteringState: function( stateName, args )
 
         'planningPhaseResolveSchemes_01125_4': () => {
             if (this.isCurrentPlayerActive()) {
-                this.numberOfCharactersSelectable = 1;
+                this.numberOfCardsSelectable = 1;
                 let count = 0;
                 for( const cardId in this.cardProperties ) {
                     card = this.cardProperties[cardId];
                     if (card.type === 'Character' && card.controllerId && card.controllerId != this.getActivePlayerId()) {
                         //Get the element that is a child of card.divId with the class 'card'
                         const image = dojo.query('.card', card.divId)[0];
-                        this.makeCharacterSelectable(image);
+                        this.makeCardSelectable(image);
 
                         count++;
                     }
@@ -364,13 +363,13 @@ onEnteringState: function( stateName, args )
         
         'planningPhaseEnd_01098': () => {
             if (this.isCurrentPlayerActive()) {
-                this.numberOfCharactersSelectable = 1;
+                this.numberOfCardsSelectable = 1;
                 let count = 0;
                 for( const cardId in this.cardProperties ) {
                     card = this.cardProperties[cardId];
                     if (card.type === 'Character' && card.traits.includes('Leader') && card.controllerId && card.controllerId != this.getActivePlayerId()) {
                         const image = $(`${card.divId}_image`);
-                        this.makeCharacterSelectable(image);
+                        this.makeCardSelectable(image);
 
                         count++;
                     }
@@ -397,13 +396,13 @@ onEnteringState: function( stateName, args )
 
         'highDramaBeginning_01144': () => {
             if (this.isCurrentPlayerActive()) {
-                this.numberOfCharactersSelectable = 1;
+                this.numberOfCardsSelectable = 1;
                 this.clientStateArgs.discount = args.args.discount;
                 for( const cardId in this.cardProperties ) {
                     card = this.cardProperties[cardId];
                     if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) ) {
                         const image = $(`${card.divId}_image`);
-                        this.makeCharacterSelectable(image);
+                        this.makeCardSelectable(image);
 
                         const cost = $(`${card.divId}_wealth_cost`);
                         let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
@@ -416,7 +415,7 @@ onEnteringState: function( stateName, args )
         },
 
         'highDramaBeginning_01144_client': () => {
-            const card = this.cardProperties[this.clientStateArgs.selectedCharacters[0]];
+            const card = this.cardProperties[this.clientStateArgs.selectedCards[0]];
             const image = $(`${card.divId}_image`);
             dojo.addClass(image, 'selectable');
 
@@ -430,13 +429,17 @@ onEnteringState: function( stateName, args )
             this.factionHand.setSelectionMode(2);
         },
 
+        'highDramaPlayerTurn': () => {
+            this.clientStateArgs = {};
+        },
+
         'highDramaMoveActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
-                this.numberOfCharactersSelectable = 1;
+                this.numberOfCardsSelectable = 1;
                 args.args.ids.forEach((cardId) => {
                     card = this.cardProperties[cardId];
                     const image = $(`${card.divId}_image`);
-                    this.makeCharacterSelectable(image);
+                    this.makeCardSelectable(image);
                 });
             }
         },
@@ -459,7 +462,7 @@ onEnteringState: function( stateName, args )
                         this.makeCityLocationSelectable(selectedLocationElement.id);
                     }
                 });
-                card = this.cardProperties[args.args.selectedCharacterId];
+                card = this.cardProperties[args.args.selectedPerformerId];
                 const image = $(`${card.divId}_image`);
                 dojo.addClass(image, 'selected');
             }
@@ -467,19 +470,19 @@ onEnteringState: function( stateName, args )
 
         'highDramaRecruitActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
-                this.numberOfCharactersSelectable = 1;
+                this.numberOfCardsSelectable = 1;
                 args.args.ids.forEach((cardId) => {
                     card = this.cardProperties[cardId];
                     const image = $(`${card.divId}_image`);
                     this.clearCardAsSelectable(image);
-                    this.makeCharacterSelectable(image);
+                    this.makeCardSelectable(image);
                 });
             }
         },
 
         'highDramaRecruitActionParley': () => {
             if (this.isCurrentPlayerActive()) {
-                card = this.cardProperties[args.args.selectedCharacterId];
+                card = this.cardProperties[args.args.selectedPerformerId];
                 const image = $(`${card.divId}_image`);
                 dojo.addClass(image, 'selected');
             }
@@ -487,20 +490,19 @@ onEnteringState: function( stateName, args )
 
         'highDramaRecruitActionChooseMercenary': () => {
             if (this.isCurrentPlayerActive()) {
-                console.log('hjere')
-                card = this.cardProperties[args.args.selectedCharacterId];
+                card = this.cardProperties[args.args.selectedPerformerId];
                 this.clientStateArgs.performerId = card.id;
                 const image = $(`${card.divId}_image`);
                 dojo.addClass(image, 'selected');
 
-                this.numberOfCharactersSelectable = 1;
+                this.numberOfCardsSelectable = 1;
                 this.clientStateArgs.discount = args.args.discount;
                 for( const cardId in this.cardProperties ) {
                     card = this.cardProperties[cardId];
                     if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) ) {
                         const image = $(`${card.divId}_image`);
                         this.clearCardAsSelectable(image);
-                        this.makeCharacterSelectable(image);
+                        this.makeCardSelectable(image);
 
                         if (card.negotiable)                             
                         {
@@ -516,7 +518,7 @@ onEnteringState: function( stateName, args )
         },
 
         'highDramaRecruitActionChooseMercenary_client': () => {
-            const card = this.cardProperties[this.clientStateArgs.selectedCharacters[0]];
+            const card = this.cardProperties[this.clientStateArgs.selectedCards[0]];
             const image = $(`${card.divId}_image`);
             dojo.addClass(image, 'selected');
 
@@ -528,7 +530,97 @@ onEnteringState: function( stateName, args )
             dojo.addClass(cost, 'discounted-wealth-cost');
 
             this.factionHand.setSelectionMode(2);
-        },    };
+        },    
+
+        'highDramaEquipActionChoosePerformer': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCardsSelectable = 1;
+                args.args.ids.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+            }
+        },
+
+        'highDramaEquipActionChooseAttachmentLocation': () => {
+            if (this.isCurrentPlayerActive()) {
+                card = this.cardProperties[args.args.selectedPerformerId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'selected');
+
+                this.clientStateArgs = args.args;
+            }
+        },
+
+        'highDramaEquipActionChooseAttachmentFromHand_client': () => {
+            this.clientStateArgs.attachmentsInHand.forEach((cardId) => {
+                let div = this.factionHand.getItemDivId(cardId);
+                dojo.addClass(div, 'selectable');
+            });
+            this.factionHand.setSelectionMode(2);
+        },
+
+        'highDramaEquipActionChooseAttachmentFromPlay_client': () => {
+            this.numberOfCardsSelectable = 1;
+            this.clientStateArgs.attachmentsInPlay.forEach((cardId) => {
+                card = this.cardProperties[cardId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+                this.makeCardSelectable(image);
+            });
+        },
+
+        'highDramaEquipActionPayForAttachmentFromHand_client': () => {
+            const chosenAttachmentId = this.clientStateArgs.chosenAttachmentId;
+            const card = this.cardProperties[chosenAttachmentId];
+            let div = this.factionHand.getItemDivId(chosenAttachmentId);
+            dojo.addClass(div, 'unselectable');
+
+            dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                id: div,
+                cost: card.wealthCost,
+            }), div, "first" );    
+
+            const costDiv = $(`${div}_wealth_cost`);
+            const cost = parseInt(costDiv.innerHTML);
+            let discountedCost = cost - this.clientStateArgs.discount;
+            discountedCost = discountedCost < 0 ? 0 : discountedCost;
+            if (discountedCost !== cost)
+            {
+                this.clientStateArgs.discountedCost = discountedCost;
+                costDiv.innerHTML = parseInt(discountedCost);
+                dojo.addClass(costDiv, 'discounted-wealth-cost');
+            }
+
+            $('faction_hand_info').innerHTML = `(0 Wealth worth of cards selected)`;
+            this.factionHand.setSelectionMode(2);
+        },
+
+        'highDramaEquipActionPayForAttachmentFromPlay_client': () => {
+            this.clientStateArgs.chosenAttachmentId = this.clientStateArgs.selectedCards[0];
+            const card = this.cardProperties[this.clientStateArgs.chosenAttachmentId];
+            const image = $(`${card.divId}_image`);
+            dojo.addClass(image, 'selected');
+
+            const costDiv = $(`${card.divId}_wealth_cost`);
+            const cost = parseInt(costDiv.innerHTML);
+            let discountedCost = cost - this.clientStateArgs.discount;
+            discountedCost = discountedCost < 0 ? 0 : discountedCost;
+            if (discountedCost !== cost)
+            {
+                this.clientStateArgs.discountedCost = discountedCost;
+                cost.innerHTML = parseInt(discountedCost);
+                dojo.addClass(costDiv, 'discounted-wealth-cost');
+            }
+    
+            $('faction_hand_info').innerHTML = `(0 Wealth worth of cards selected)`;
+            this.factionHand.setSelectionMode(2);
+        }
+
+    };
     
     if (methods[stateName]) {
         methods[stateName](args);

@@ -79,10 +79,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         else if (card.type === 'Attachment') {
             if (card.controllerId !== 0) {
                 const playerInfo = this.gamedatas.players[card.controllerId];
-                this.createAttachmentCard(divId, playerInfo.color, card, targetDiv);
+                this.createAttachmentCard(divId, card, targetDiv);
             }
             else {
-                this.createAttachmentCard(divId, '', card, targetDiv);
+                this.createAttachmentCard(divId, card, targetDiv);
             }
         }
         else if (card.type === 'Scheme') {
@@ -90,7 +90,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
-    createCharacterCard: function( divId, color, character, location )
+    createCharacterCard: function( divId, color, character, targetDiv )
     {
         //Set the divId of the card
         character.divId = divId;
@@ -99,25 +99,38 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.cardProperties[character.id] = character;
 
         const wealthCost = character.wealthCost ? character.wealthCost : '';
-        const influence = character.influence >= 0 ? character.influence  : '-';
+        const influence = character.modifiedInfluence >= 0 ? character.modifiedInfluence  : '-';
 
         dojo.place( this.format_block( 'jstpl_character', {
             id: divId,
+            attachmentCount: character.attachedCards?.length ?? 0,
             faction: character.faction.toLowerCase(),
             image: character.image,
             player_color: color,
-            resolve: character.resolve,
-            combat: character.combat,
-            finesse: character.finesse,
+            resolve: character.modifiedResolve,
+            combat: character.modifiedCombat,
+            finesse: character.modifiedFinesse,
             influence: influence,
             cost: wealthCost,
-        }), location, "before" );
+        }), targetDiv, "before" );
+
+        if (character.combat != character.modifiedCombat) 
+            dojo.addClass(`${divId}_combat_value`, 'modified-stat-value');
+
+        if (character.finesse != character.modifiedFinesse) 
+            dojo.addClass(`${divId}_finesse_value`, 'modified-stat-value');
+
+        if (character.resolve != character.modifiedResolve)
+            dojo.addClass(`${divId}_resolve_value`, 'modified-stat-value');
+
+        if (character.influence != character.modifiedInfluence)
+            dojo.addClass(`${divId}_influence_value`, 'modified-stat-value');
 
         if (!character.wealthCost || character.controllerId) {
             dojo.style( `${divId}_wealth_cost`, 'display', 'none' );
         }
 
-        this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + character.image}" />`, this.CARD_TOOLTIP_DELAY);
+        this.addTooltipHtml(`${divId}_image`, `<img src="${g_gamethemeurl + character.image}" />`, this.CARD_TOOLTIP_DELAY);
 
         //Check for any special conditions where a token has to be displayed
         if (character.conditions.includes('Adversary of Yevgeni')) {
@@ -134,9 +147,16 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         if (character.engaged)
             dojo.addClass(`${divId}_image`, 'engaged');
+
+        //Display the attachments in front of the character, offset
+        character.attachedCards?.forEach((attachment) => {
+            const divId = this.createCardId(attachment, attachment.location);
+            this.createAttachmentCard(divId, attachment, character.divId);
+        });
+
     },  
 
-    createEventCard: function( divId, event, location )
+    createEventCard: function( divId, event, targetDiv )
     {
         //Set the divId of the card
         event.divId = divId;
@@ -147,7 +167,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         dojo.place( this.format_block( 'jstpl_card_event', {
             id: divId,
             image: event.image,
-        }), location, "before" );
+        }), targetDiv, "before" );
 
         this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + event.image}" />`, this.CARD_TOOLTIP_DELAY);
 
@@ -199,7 +219,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + scheme.image}" />`, this.CARD_TOOLTIP_DELAY);
     },  
 
-    createAttachmentCard: function( divId, color, attachment, location )
+    createAttachmentCard: function( divId, attachment, targetDiv )
     {
         //Set the divId of the card
         attachment.divId = divId;
@@ -207,17 +227,32 @@ return declare('seventhseacityoffivesails.utilities', null, {
         //Add to the card properties cache
         this.cardProperties[attachment.id] = attachment;
 
+        //Get the attached character and set up as a container
+        if (attachment.attachedToId) {
+            const character = this.cardProperties[attachment.attachedToId];
+            dojo.addClass(character.divId, 'attachment-container');
+        }
+
+        let placement = attachment.attachedToId ? 'last' : 'before';
+        let attachmentIndex = attachment.attachmentIndex ?? 0;
+
         dojo.place( this.format_block( 'jstpl_card_attachment', {
             id: divId,
-            faction: attachment.faction.toLowerCase(),
+            attachmentIndex: attachmentIndex,
+            faction: attachment.faction?.toLowerCase(),
             image: attachment.image,
-            player_color: color,
             resolve: this.attachmentFormatModifer(attachment.resolveModifier),
             combat: this.attachmentFormatModifer(attachment.combatModifier),
             finesse: this.attachmentFormatModifer(attachment.finesseModifier),
             influence: this.attachmentFormatModifer(attachment.influenceModifier),
             cost: attachment.wealthCost,
-        }), location, "before" );
+        }), targetDiv, placement );
+        
+        if (attachment.controllerId)
+        {
+            dojo.addClass(divId, 'attached-card');
+            dojo.addClass(`${divId}_wealth_cost`, 'hidden');
+        } 
 
         this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + attachment.image}" />`, this.CARD_TOOLTIP_DELAY);
     },
@@ -370,10 +405,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.connects.push(handle);
     },
     
-    makeCharacterSelectable: function(image) {
+    makeCardSelectable: function(image) {
         dojo.addClass(image, 'selectable');
         dojo.style(image, 'cursor', 'pointer');
-        const handle = dojo.connect(image, 'onclick', this, 'onCharacterClicked');
+        const handle = dojo.connect(image, 'onclick', this, 'onCardInPlayClicked');
         this.connects.push(handle);                        
     },   
     
@@ -391,6 +426,28 @@ return declare('seventhseacityoffivesails.utilities', null, {
         dojo.removeClass(image, 'selected');
         dojo.style(image, 'cursor', 'default');
     },
+
+    attachCard: function( equipped, attachment) {
+        if (!equipped.attachedCards) {
+            equipped.attachedCards = [];
+        }
+        equipped.attachedCards.push(attachment);
+        attachment.attachmentIndex = equipped.attachedCards.length;
+    },
+
+    moveAttachmentsToCharacters: function(list) {
+        const attachments = list.filter((card) => card.type === 'Attachment');
+        attachments.forEach((attachment, index) => {
+            //If the attachment is not attached to a character, then ignore
+            if (!attachment.attachedToId) return;
+            
+            //Remove the attachment from the list
+            list = list.filter((card) => card.id !== attachment.id);
+            let equipped = list.find((card) => card.id == attachment.attachedToId);
+            this.attachCard(equipped, attachment);
+        });
+        return list;
+    }
     
 })
 });

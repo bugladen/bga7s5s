@@ -14,8 +14,8 @@ abstract class Card
     public int $CardNumber;
     public string $Faction;
     public bool $Engaged;
-    public $Traits = [];
-    public array $conditions = [];
+    public Array $Traits = [];
+    public Array $Conditions = [];
 
     public string $Location;
     public bool $IsUpdated;
@@ -51,12 +51,12 @@ abstract class Card
 
     public function addCondition($condition)
     {
-        $this->conditions[] = $condition;
+        $this->Conditions[] = $condition;
     }
 
     public function removeCondition($condition)
     {
-        $index = array_search($condition, $this->conditions);
+        $index = array_search($condition, $this->Conditions);
         if ($index !== false) {
             unset($this->conditions[$index]);
         }
@@ -78,7 +78,7 @@ abstract class Card
 
         $properties['type'] = 'Card';
         $properties['traits'] = $this->Traits;
-        $properties['conditions'] = $this->conditions;
+        $properties['conditions'] = $this->Conditions;
 
         return $properties;
     }

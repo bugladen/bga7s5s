@@ -92,7 +92,7 @@ trait ArgumentsTrait
 
     public function argsHighDramaBeginning_01144(): array{
         return [
-            "discount" => $this->globals->get(GAME::RECRUIT_DISCOUNT)
+            "discount" => $this->globals->get(GAME::DISCOUNT)
         ];
     }
 
@@ -105,12 +105,13 @@ trait ArgumentsTrait
 
     public function argPlayerTurn(): array
     {
-        $player_id = (int)$this->getActivePlayerId();
+        $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
         return [
-            "canMove" => $this->theah->playerCanMove($player_id),
-            "canRecruit" => $this->theah->playerCanRecruit($player_id),
+            "canMove" => $this->theah->playerCanMove($playerId),
+            "canRecruit" => $this->theah->playerCanRecruit($playerId),
+            "canEquip" => $this->handHasAttachments($playerId) || $this->theah->playerCanEquip($playerId),
         ];
     }
 
@@ -137,14 +138,14 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $characterId = $this->globals->get(GAME::CHOSEN_CARD);
-        $character = $this->theah->getCharacterById($characterId);
-        $currentLocation = $character->Location;
+        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performer = $this->theah->getCharacterById($performerId);
+        $currentLocation = $performer->Location;
 
         $locations = $this->theah->getAdjacentCityLocations($currentLocation);
 
         return [
-            "selectedCharacterId" => $characterId,
+            "selectedPerformerId" => $performerId,
             "locations" => $locations            
         ];
     }
@@ -155,12 +156,20 @@ trait ArgumentsTrait
         $this->theah->buildCity();
 
         $characters = $this->theah->getCharactersByPlayerId($playerId);
-        
-        //Filter out those characters that are in the city
+        //Filter out those characters that are not in the city
         $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
 
+        $charactersThatCanReruit = [];
+        foreach ($characters as $character) {
+            $charactersAtLocation = $this->theah->getCharactersAtLocation($character->Location);
+            $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return in_array("Mercenary", $character->Traits); });
+            if (count($mercenariesAtLocation) > 0) {
+                $charactersThatCanReruit[] = $character;
+            }
+        }
+
         //Select only the Ids of the characters
-        $characterIds = array_map(function($character) { return $character->Id; }, $characters);
+        $characterIds = array_map(function($character) { return $character->Id; }, $charactersThatCanReruit);
 
         return [
             "ids" => $characterIds
@@ -170,20 +179,72 @@ trait ArgumentsTrait
 
     public function argsHighDramaRecruitActionParley(): array
     {
-        $characterId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
 
         return [
-            "selectedCharacterId" => $characterId,
+            "selectedPerformerId" => $performerId,
         ];
     }    
 
     public function argsHighDramaRecruitActionChooseMercenary(): array
     {
-        $characterId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
 
         return [
-            "discount" => $this->globals->get(GAME::RECRUIT_DISCOUNT),
-            "selectedCharacterId" => $characterId,
+            "discount" => $this->globals->get(GAME::DISCOUNT),
+            "selectedPerformerId" => $performerId,
+        ];
+    }
+
+    public function argsHighDramaEquipActionChoosePerformer(): array
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $characters = $this->theah->getCharactersByPlayerId($playerId);
+        
+        //Filter out those characters that are not in the city
+        $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
+
+        $charactersThatCanEquip = [];
+        foreach ($characters as $character) {
+            $attachmentsAtLocation = $this->theah->getAvailalbleAttachmentsAtLocation($character->Location);
+            if (count($attachmentsAtLocation) > 0) {
+                $charactersThatCanEquip[] = $character;
+            }
+        }
+
+        $charactersAtHome = $this->theah->getCharactersAtHome($playerId);
+        $charactersThatCanEquip = array_merge($charactersThatCanEquip, $charactersAtHome);
+
+        //Select only the Ids of the characters
+        $characterIds = array_map(function($character) { return $character->Id; }, $charactersThatCanEquip);
+
+        return [
+            "ids" => $characterIds
+        ];
+    }
+
+    public function argsHighDramaEquipActionChooseAttachmentLocation(): array
+    {
+        $this->theah->buildCity();
+        $playerId = (int)$this->getActivePlayerId();
+        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performer = $this->theah->getCharacterById($performerId);
+        $discount = $this->globals->get(GAME::DISCOUNT);
+
+        $attachmentsInHand = $this->getAttachmentsInHand($playerId);
+        $attachmentsInPlay = [];
+        if ($performer->Location != Game::LOCATION_PLAYER_HOME) 
+        {
+            $attachmentsInPlay = $this->theah->getAvailalbleAttachmentsAtLocation($performer->Location);
+        }
+        
+        return [
+            "selectedPerformerId" => $performerId,
+            "discount" => $discount,
+            "attachmentsInHand" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInHand),
+            "attachmentsInPlay" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInPlay),
         ];
     }
 

@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\DB;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
@@ -237,6 +238,17 @@ class Theah
         return $characters;
     }
 
+    function getCharactersAtHome($playerId)
+    {
+        $characters = [];
+        foreach ($this->cards as $card) {
+            if ($card instanceof Character && $card->Location == Game::LOCATION_PLAYER_HOME && $card->ControllerId == $playerId) {
+                $characters[] = $card;
+            }
+        }
+        return $characters;
+    }
+
     function getCharactersAtLocation($location)
     {
         $characters = [];
@@ -246,6 +258,17 @@ class Theah
             }
         }
         return $characters;
+    }
+
+    function getAvailalbleAttachmentsAtLocation($location)
+    {
+        $attachments = [];
+        foreach ($this->cards as $card) {
+            if ($card instanceof Attachment && $card->Location == $location && $card->AttachedToId == 0) {
+                $attachments[] = $card;
+            }
+        }
+        return $attachments;
     }
 
     function getLeaderByPlayerId($playerId)
@@ -337,5 +360,23 @@ class Theah
         }
 
         return count($charactersThatCanReruit) > 0;        
+    }
+
+    public function playerCanEquip($playerId): bool
+    {
+        $characters = $this->getCharactersByPlayerId($playerId);
+
+        //Get all characters that are in the city that have attachments at their location
+        $charactersThatCanEquip = [];
+        $charactersInCity = array_filter($characters, function($character) { return $character->Location == $this->cardInCity($character); });
+
+        foreach ($charactersInCity as $character) {
+            $attachmentsAtLocation = $this->getAvailalbleAttachmentsAtLocation($character->Location);
+            if (count($attachmentsAtLocation) > 0) {
+                $charactersThatCanEquip[] = $character;
+            }
+        }
+
+        return count($charactersThatCanEquip) > 0;        
     }
 }

@@ -81,7 +81,7 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'planningPhaseResolveSchemes_01125_4': () => {
-            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseCharacterConfirmed());
+            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
             this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
@@ -148,7 +148,7 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'planningPhaseEnd_01098': () => {
-            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseCharacterConfirmed());
+            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
             this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
@@ -158,7 +158,7 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaBeginning_01144': () => {
-            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseCharacterConfirmed());
+            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
             this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
@@ -173,6 +173,8 @@ onUpdateActionButtons: function( stateName, args )
                     this.addActionButton(`actMoveAction`, _('Move'), () => this.bgaPerformAction('actHighDramaMoveActionStart', {}));
                 if (args.canRecruit)
                     this.addActionButton(`actRecruitAction`, _('Recruit'), () => this.bgaPerformAction('actHighDramaRecruitActionStart', {}));
+                if (args.canEquip)
+                    this.addActionButton(`actEquipAction`, _('Equip'), () => this.bgaPerformAction('actHighDramaEquipActionStart', {}));
 
                 this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             }
@@ -180,15 +182,15 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaMoveActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('< Back'), () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseCharacterConfirmed());
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }
         },
 
         'highDramaMoveActionChooseLocation': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('< Back'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             }
@@ -196,34 +198,100 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaRecruitActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('< Back'), () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseCharacterConfirmed());
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }
         },
 
         'highDramaRecruitActionParley': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('< Back'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseYes`, _('Yes'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyYes', {}));
                 this.addActionButton(`actChooseNo`, _('No'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyNo', {}));
             }
         },
 
         'highDramaRecruitActionChooseMercenary': () => {
-            this.addActionButton(`actBack`, _('< Back'), () => this.bgaPerformAction('actBack', {}));
-            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseCharacterConfirmed());
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaRecruitActionChooseMercenary_client': () => {
-            this.addActionButton(`actBack`, _('< Back'), () => 
+            this.addActionButton(`actBack`, _('<'), () => 
                 this.setClientState('highDramaRecruitActionChooseMercenary',
                     {
                         'descriptionmyturn' : _("${you} are performing a Recruit Action.  Choose a Mercenary to recruit:"),
                     }));
-            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onRecruitCharacterConfirmed());
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onRecruitCharacterConfirmed());
         },
+
+        'highDramaEquipActionChoosePerformer': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
+        },
+
+        'highDramaEquipActionChooseAttachmentLocation': () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            if (args.attachmentsInHand.length > 0) {
+                this.addActionButton(`actChooseFromHand`, _('Equip from Hand'), () => {
+                    this.setClientState('highDramaEquipActionChooseAttachmentFromHand_client', {
+                        'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment to equip from Your Hand:"),
+                    })
+                });
+            }
+            if (args.attachmentsInPlay.length > 0) {
+                this.addActionButton(`actChooseFromPlay`, _('Equip from Play'), () => {
+                    this.setClientState('highDramaEquipActionChooseAttachmentFromPlay_client', {
+                        'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment to equip from play:"),
+                    })
+            });
+            }
+        },
+
+        'highDramaEquipActionChooseAttachmentFromHand_client': () => {
+            this.addActionButton(`actBack`, _('<'), () => {
+                this.setClientState('highDramaEquipActionChooseAttachmentLocation', {
+                    'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment Location to equip from:"),
+                })
+            });
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onChooseHandAttachmentConfirmed());
+            dojo.addClass('actFactionCardsSelected', 'disabled');
+        },
+
+        'highDramaEquipActionChooseAttachmentFromPlay_client': () => {
+            this.addActionButton(`actBack`, _('<'), () => {
+                this.setClientState('highDramaEquipActionChooseAttachmentLocation', {
+                    'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment Location to equip from:"),
+                })
+            });
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
+        },
+
+        'highDramaEquipActionPayForAttachmentFromHand_client': () => {
+            this.addActionButton(`actBack`, _('<'), () => {
+                this.setClientState('highDramaEquipActionChooseAttachmentFromHand_client', {
+                    'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment to equip from Your Hand:"),
+                })
+            });
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
+        },
+
+        'highDramaEquipActionPayForAttachmentFromPlay_client': () => {
+            this.addActionButton(`actBack`, _('<'), () => {
+                this.setClientState('highDramaEquipActionChooseAttachmentFromPlay_client', {
+                    'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment to equip from play:"),
+                })
+            });
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
+        }
+
+        
     };
 
     if( methods[stateName] )

@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
@@ -41,6 +42,33 @@ trait EventHandler
                     "character" => $event->character->getPropertyArray(),
                 ]);
                 break;
+
+            case $event instanceof EventAttachmentEquipped:
+                $performer = $this->cards[$event->performer->Id];
+                $attachment = $this->cards[$event->attachment->Id];
+
+                $performer->addAttachment($attachment);
+                $performer->IsUpdated = true;
+
+                $attachment->ControllerId = $event->playerId;
+                $attachment->AttachedToId = $performer->Id;
+                $attachment->Location = $performer->Location;
+                $attachment->IsUpdated = true;
+                
+                // Notify players of recruited character
+                $this->game->notifyAllPlayers("attachmentEquipped", clienttranslate('${player_name} equipped ${attachment_name} to ${performer_name} at a discount of ${discount} for a cost of ${cost} Wealth.'), [
+                    "player_id" => $event->playerId,
+                    "player_name" => $this->game->getPlayerNameById($event->playerId),
+                    "attachment_name" => "<span style='font-weight:bold'>{$attachment->Name}</span>",
+                    "performer_name" => "<span style='font-weight:bold'>{$performer->Name}</span>",
+                    "attachment" => $attachment->getPropertyArray(),
+                    "performerId" => $performer->Id,
+                    "discount" => $event->discount,
+                    "cost" => $event->cost,
+                ]);
+
+                break;
+
 
             case $event instanceof EventCardDrawn:
                 $event->card->Location = Game::LOCATION_HAND;
@@ -106,8 +134,14 @@ trait EventHandler
             case $event instanceof EventCardMoved:
                 $card = $this->cards[$event->card->Id];
                 $card->Location = $event->toLocation;
-                if($card instanceof Character) {
+                if ($card instanceof Character) {
                     $card->Engaged = $event->Engage;
+
+                    foreach ($card->Attachments as $attachmentId) {
+                        $attachment = $this->cards[$attachmentId];
+                        $attachment->Location = $event->toLocation;
+                        $attachment->IsUpdated = true;
+                    }
                 }
                 $card->IsUpdated = true;
 
@@ -142,7 +176,7 @@ trait EventHandler
                 $character->IsUpdated = true;
 
                 // Notify players of recruited character
-                $this->game->notifyAllPlayers("characterRecruited", clienttranslate('${player_name} recruits ${character_name} at a discount of ${discount} for ${cost} Wealth.'), [
+                $this->game->notifyAllPlayers("characterRecruited", clienttranslate('${player_name} recruits ${character_name} at a discount of ${discount} for a cost of ${cost} Wealth.'), [
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
                     "character_name" => "<span style='font-weight:bold'>{$event->character->Name}</span>",

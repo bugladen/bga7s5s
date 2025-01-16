@@ -6,7 +6,6 @@ abstract class Scheme extends Card
 {
     public int $Initiative;
     public int $PanacheModifier;
-    public $Traits = [];
 
     public function __construct()
     {
