@@ -32,7 +32,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardRemovedFromCityDiscardPile', 500],
             ['cardRemovedFromPlayerDiscardPile', 500],
             ['yevgeniAdversaryChosen', 500],
-            ['message_01126_2_scheme_moved', 500],
+            ['01126_2_scheme_moved', 500],
         ];
 
         notifs.forEach((notif) => {
@@ -417,9 +417,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
     },
 
-    notif_message_01126_2_scheme_moved: function( notif )
+    notif_01126_2_scheme_moved: function( notif )
     {
-        debug( 'notif_message_01126_2_scheme_moved');
+        debug( 'notif_01126_2_scheme_moved');
         debug( notif );
 
         const args = notif.args;

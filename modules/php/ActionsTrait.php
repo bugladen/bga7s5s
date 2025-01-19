@@ -248,7 +248,7 @@ trait ActionsTrait
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
-        $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_2', 
+        $this->notifyPlayer($this->getActivePlayerId(), 'message', 
             clienttranslate('You have chosen to move reknown from ${location}.  You must now choose a location to move the Reknown TO.'), [
             "location" => $location
         ]);
@@ -260,7 +260,7 @@ trait ActionsTrait
 
     public function actPlanningPhase_01125_2_Pass()
     {
-        $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_2_Pass', 
+        $this->notifyPlayer($this->getActivePlayerId(), 'message', 
             clienttranslate('You have passed choosing a location to move reknown from.  Per The Boar\'s Guile you must now choose an enemy character to target.'), []);
 
         $this->gamestate->nextState("pass");
@@ -280,7 +280,7 @@ trait ActionsTrait
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
-        $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_3', 
+        $this->notifyPlayer($this->getActivePlayerId(), 'message', 
             clienttranslate('You have chosen to move reknown to ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
             "location" => $location
         ]);
@@ -309,7 +309,7 @@ trait ActionsTrait
 
     public function actPlanningPhase_01125_4_Pass()
     {
-        $this->notifyPlayer($this->getActivePlayerId(), 'message_01125_4_Pass', 
+        $this->notifyPlayer($this->getActivePlayerId(), 'message', 
             clienttranslate('You have passed choosing a character as an adversary.'), []);
 
         $this->gamestate->nextState("");

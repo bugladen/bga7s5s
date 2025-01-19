@@ -90,7 +90,7 @@ class _01126 extends Scheme
             $playerId = $event->theah->game->getActivePlayerId();
             $deck = $event->theah->game->getGameDeckObject();
 
-            $event->theah->game->notifyAllPlayers('message_01126_2_scheme_moved', 
+            $event->theah->game->notifyAllPlayers('01126_2_scheme_moved', 
                 clienttranslate('${card_name} moves to ${location}'), [
                     "cardId" => $this->Id,
                     "card_name" => '<strong>Leshiye of the Wood</strong>',
