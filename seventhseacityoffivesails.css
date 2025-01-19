@@ -368,6 +368,21 @@ body {
     float: right;
 }
 
+.hand-count {
+    display: inline-block;
+    background-image: url('img/boardResources.png');
+    background-position: -315px 0px;
+    background-size: calc(var(--png-board-resource-width) * .65) calc(var(--png-board-resource-height) * .65);
+    width: 35px;
+    height: 32px;
+    text-align:center;
+    font-size: 18pt;
+    font-family: "Pirata One", system-ui;
+    line-height: 32px;
+    color:black;
+    margin-left: -5px;
+}
+
 .scheme {
     position: absolute;
     background-image: var(--card_image);

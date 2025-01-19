@@ -176,6 +176,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( 'notif_cardAddedToHand' );
         debug( notif );
         this.addCardToDeck(this.factionHand, notif.args.card);
+        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
     },
 
     notif_drawCard: function( notif )
@@ -188,6 +189,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const card = args.card;
         this.cardProperties[card.id] = card;
         this.addCardToDeck(this.factionHand, card);
+        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
+
     },
 
     notif_cardAddedToCityDiscardPile: function( notif )
@@ -218,6 +221,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         {
             card = this.cardProperties[args.card.id];
             this.factionHand.removeFromStockById(card.id);
+            $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
         }
         else
         {

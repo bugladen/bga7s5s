@@ -64,6 +64,7 @@ return declare('seventhseacityoffivesails.setup', null, {
                 reknown: player.score,
                 crewcap: player.leader?.modifiedCrewCap ?? '',
                 panache: player.leader?.modifiedPanache ?? '',
+                handCount: player.handCount,
                 faction: player.leader?.faction.toLowerCase() ?? '',
             });
             this.addTooltipHtml( `${playerId}-score-reknown`, `<div class='basic-tooltip'>${_('Current Reknown')}</div>` );

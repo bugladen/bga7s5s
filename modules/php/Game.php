@@ -175,6 +175,8 @@ class Game extends \Table
             $location = $this->getPlayerLockerName($player_id);
             $player['locker'] = $this->getCardPropertiesInLocation($location);
 
+            $player['handCount'] = count($this->cards->getPlayerHand($player_id));
+
             //Set updated player data back into the array
             $players[$player_id] = $player;
         }        
