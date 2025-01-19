@@ -15,8 +15,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['newDay', 1000],
             ['cityCardAddedToLocation', 1000],
             ['cardAddedToCityDiscardPile', 500],
-            ['cardAddedToPlayerDiscardPile', 500],
             ['cardAddedToHand', 2000],
+            ['cardDiscardedFromHand', 500],
             ['cardEngaged', 1000],
             ['cardMoved', 1000],
             ['characterRecruited', 1000],
@@ -206,9 +206,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.gamedatas.cityDiscard.push(card);
     },
 
-    notif_cardAddedToPlayerDiscardPile: function( notif )
+    notif_cardDiscardedFromHand: function( notif )
     {
-        debug( 'notif_cardAddedToPlayerDiscardPile' );
+        debug( 'notif_cardDiscardedFromHand' );
         debug( notif );
 
         const args = notif.args;

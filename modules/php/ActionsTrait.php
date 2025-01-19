@@ -9,7 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToPlayerDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
@@ -644,8 +644,8 @@ trait ActionsTrait
             $card = $this->getCardObjectFromDb($cardId);
             $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
 
-            $event = $this->theah->createEvent(Events::CardAddedToPlayerDiscardPile);
-            if ($event instanceof EventCardAddedToPlayerDiscardPile) {
+            $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
+            if ($event instanceof EventCardDiscardedFromHand) {
                 $event->playerId = $playerId;
                 $event->card = $card;
             }
@@ -981,8 +981,8 @@ trait ActionsTrait
             $card = $this->getCardObjectFromDb($cardId);
             $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
 
-            $event = $this->theah->createEvent(Events::CardAddedToPlayerDiscardPile);
-            if ($event instanceof EventCardAddedToPlayerDiscardPile) {
+            $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
+            if ($event instanceof EventCardDiscardedFromHand) {
                 $event->playerId = $playerId;
                 $event->card = $card;
             }

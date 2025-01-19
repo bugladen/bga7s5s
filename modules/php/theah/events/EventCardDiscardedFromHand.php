@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
-class EventCardAddedToPlayerDiscardPile extends Event
+class EventCardDiscardedFromHand extends Event
 {
     public $playerId;
     public Card $card;

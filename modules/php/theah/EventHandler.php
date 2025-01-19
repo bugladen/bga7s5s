@@ -11,7 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscard
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToPlayerDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
@@ -110,8 +110,8 @@ trait EventHandler
                 ]);
                 break;
 
-            case $event instanceof EventCardAddedToPlayerDiscardPile:
-                $this->game->notifyAllPlayers('cardAddedToPlayerDiscardPile',
+            case $event instanceof EventCardDiscardedFromHand:
+                $this->game->notifyAllPlayers('cardDiscardedFromHand',
                     clienttranslate('${player_name} discarded ${card_name}.'), [
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
                     "card_name" => $event->card->Name,
