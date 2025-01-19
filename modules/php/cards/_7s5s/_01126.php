@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
@@ -61,6 +62,11 @@ class _01126 extends Scheme
         {
             if ($event->location == $this->chosenLocation)
                 throw new \BgaUserException(_("Leshiye of the Wood does not allow Reknown to be removed from its location."));    
+        }
+
+        if ($event instanceof EventLocationClaimed && $event->location == $this->chosenLocation)
+        {
+            throw new \BgaUserException(_("Leshiye of the Wood does not allow locations to be claimed at its location."));    
         }
     }
 
