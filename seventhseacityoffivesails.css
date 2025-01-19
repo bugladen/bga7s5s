@@ -709,10 +709,6 @@ body {
     width: 12px;
     right: -130px;
     bottom: -15px;
-    /*
-    left: 130px;
-    top: 15px;
-    */
     border: 2px solid black;
 }
 
@@ -724,6 +720,17 @@ body {
     width: 12px;
     left: 90px;
     top: 90px;
+    border: 2px solid black;
+}
+
+.location-controller-player-color {
+    position: absolute;
+    background-color: var(--player-color);
+    border-radius: 50%;
+    height: 20px;
+    width: 20px;
+    top: 45px;
+    left: 65px;
     border: 2px solid black;
 }
 

@@ -200,6 +200,7 @@ class Game extends \Table
         $result['cityDiscard'] = $this->getCardPropertiesInLocation(Game::LOCATION_CITY_DISCARD);
 
         $result["locationReknown"] = $this->theah->getCityLocationReknown();
+        $result["locationControllers"] = $this->theah->getCityLocationControllers();
 
         return $result;
     }
@@ -254,9 +255,10 @@ class Game extends \Table
         $this->setGameStateInitialValue("day", 0);
         $this->setGameStateInitialValue("turnPhase", Game::SETUP_PHASE);
 
-        //Setup the reknown for the city locations
         $playerCount = count($players);
         $this->globals->set(Game::PLAYER_COUNT, $playerCount);
+
+        //Setup the reknown for the city locations
         $this->setReknownForLocation(Game::LOCATION_CITY_DOCKS, 0);
         $this->setReknownForLocation(Game::LOCATION_CITY_FORUM, 0);
         $this->setReknownForLocation(Game::LOCATION_CITY_BAZAAR, 0);
@@ -265,6 +267,17 @@ class Game extends \Table
         }
         if ($playerCount > 3) {
             $this->setReknownForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN, 0);
+        }
+
+        //Setup the controller for the city locations
+        $this->setControllerForLocation(Game::LOCATION_CITY_DOCKS, null);
+        $this->setControllerForLocation(Game::LOCATION_CITY_FORUM, null);
+        $this->setControllerForLocation(Game::LOCATION_CITY_BAZAAR, null);
+        if ($playerCount > 2) {
+            $this->setControllerForLocation(Game::LOCATION_CITY_OLES_INN, null);
+        }
+        if ($playerCount > 3) {
+            $this->setControllerForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN, null);
         }
 
         // Init game statistics.
@@ -303,9 +316,14 @@ class Game extends \Table
 
         if ($state["type"] === "activeplayer") {
             switch ($state_name) {
+                case "highDramaPlayerTurn":
+                {
+                    $this->gamestate->nextState("pass");
+                    break;
+                }
                 default:
                 {
-                    $this->gamestate->nextState("zombiePass");
+                    throw new \feException("Zombie mode not supported at this game state: \"{$state_name}\".");
                     break;
                 }
             }
@@ -314,7 +332,13 @@ class Game extends \Table
         }
 
         // Make sure player is in a non-blocking status for role turn.
-        if ($state["type"] === "multipleactiveplayer") {
+        if ($state["type"] === "multipleactiveplayer") 
+        {
+            if ($state_name === "roleTurn") {
+                $this->gamestate->setPlayerNonMultiactive($active_player, 'roleTurn');
+                return;
+            }
+
             $this->gamestate->setPlayerNonMultiactive($active_player, '');
             return;
         }

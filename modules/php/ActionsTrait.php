@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerD
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
@@ -595,7 +596,7 @@ trait ActionsTrait
         $this->gamestate->nextState("");
     }
 
-    private function recruitMercenary(int $recruitId, string $payWithCards)
+    private function actRecruitMercenary(int $recruitId, string $payWithCards)
     {
         $character = $this->getCardObjectFromDb($recruitId);
         if ($character == null)
@@ -655,7 +656,7 @@ trait ActionsTrait
 
     public function actHighDramaBeginning_01144(int $recruitId, string $payWithCards)
     {
-        $this->recruitMercenary($recruitId, $payWithCards);
+        $this->actRecruitMercenary($recruitId, $payWithCards);
         $this->gamestate->nextState("");
     }
 
@@ -856,7 +857,7 @@ trait ActionsTrait
             $this->theah->queueEvent($removeEvent);
         }
 
-        $this->recruitMercenary($recruitId, $payWithCards);
+        $this->actRecruitMercenary($recruitId, $payWithCards);
         $this->gamestate->nextState("mercenaryChosen");
     }
 
@@ -884,7 +885,7 @@ trait ActionsTrait
         $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });
         $charactersThatCanEquip = [];
         foreach ($characters as $character) {
-            $attachmentsAtLocation = $this->theah->getAvailalbleAttachmentsAtLocation($character->Location);
+            $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($character->Location);
             if (count($attachmentsAtLocation) > 0) {
                 $charactersThatCanEquip[] = $character;
             }
@@ -930,7 +931,7 @@ trait ActionsTrait
         }
         if ($attachment->Location != Game::LOCATION_HAND)
         {
-            $attachmentsAtLocation = $this->theah->getAvailalbleAttachmentsAtLocation($performer->Location);
+            $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($performer->Location);
             $attachmentIds = array_map(function($attachment) { return $attachment->Id; }, $attachmentsAtLocation);
             if (!in_array($attachmentId, $attachmentIds)) {
                 throw new \BgaUserException("Attachment is not at Performer's Location.");
@@ -994,4 +995,101 @@ trait ActionsTrait
 
         $this->gamestate->nextState("attachmentEquipped");
     }
+
+    public function actHighDramaClaimActionStart()
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        if ($this->theah->playerCanClaim($player_id) == false) {
+            throw new \BgaUserException("Claim Action is not allowed right now.");
+        }
+
+        $this->gamestate->nextState("claimActionStart");
+    }
+
+    public function actHighDramaClaimActionPerformerChosen(string $ids)
+    {
+        $id = json_decode($ids, true)[0];
+        $activePlayerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $performer = $this->getCardObjectFromDb($id);
+        if ($performer->Engaged) {
+            throw new \BgaUserException("Performer cannot Claim because it is engaged.");
+        }
+
+        $characters = $this->theah->getCharactersByPlayerId($activePlayerId);
+        
+        //Filter out those characters that are not in the city
+        $charactersInCity = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
+
+        //Select the Ids of the characters
+        $characterIds = array_map(function($character) { return $character->Id; }, $charactersInCity);
+
+        if (!in_array($id, $characterIds)) {
+            throw new \BgaUserException("Performer is not in the City.");
+        }
+
+        //Get an array of players to keep track of their influence at the location 
+        $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player ORDER BY player_score DESC");
+        foreach ($playerInfluences as $playerId => $player) {
+            $player["influence"] = 0;
+            $playerInfluences[$playerId] = $player;
+        }
+
+        //Get the total influence of the characters at the location
+        $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
+        foreach ($charactersAtLocation as $character) 
+        {
+            if (!$character->ControllerId) continue;
+
+            $player = $playerInfluences[$character->ControllerId];
+            $player['influence'] += $character->getPressureInfluenceValue();
+            $playerInfluences[$character->ControllerId] = $player;
+        }
+
+        //Get the player with the most influence
+        $maxInfluence = 0;
+        $maxPlayerId = 0;
+        $totals = "";
+        foreach ($playerInfluences as $playerId => $player) {
+            $totals .= "{$this->getPlayerNameById($playerId)}:({$player['influence']}) ";
+            if ($player['influence'] > $maxInfluence) {
+                $maxInfluence = $player['influence'];
+                $maxPlayerId = $playerId;
+            }
+        }
+
+        if ($activePlayerId != $maxPlayerId) {
+            throw new \BgaUserException("You do not have the most influence at the location. Totals: {$totals}");
+        }
+
+        $this->setControllerForLocation($performer->Location, $activePlayerId);
+
+        $engageEvent = $this->theah->createEvent(Events::CardEngaged);
+        if ($engageEvent instanceof EventCardEngaged)
+        {
+            $engageEvent->card = $performer;
+            $engageEvent->playerId = $activePlayerId;
+        }
+        $this->theah->eventCheck($engageEvent);
+
+        $claimEvent = $this->theah->createEvent(Events::LocationClaimed);
+        if ($claimEvent instanceof EventLocationClaimed)
+        {
+            $claimEvent->performer = $performer;
+            $claimEvent->location = $performer->Location;
+            $claimEvent->playerId = $activePlayerId;
+            $claimEvent->totalsExplanation = $totals;
+        }    
+
+        $this->theah->eventCheck($claimEvent);
+
+        $this->theah->queueEvent($engageEvent);
+        $this->theah->queueEvent($claimEvent);
+
+        $this->gamestate->nextState("performerChosen");
+    }
+
 }

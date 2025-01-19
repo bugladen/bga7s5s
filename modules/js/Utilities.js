@@ -447,6 +447,19 @@ return declare('seventhseacityoffivesails.utilities', null, {
             this.attachCard(equipped, attachment);
         });
         return list;
+    },
+
+    displayLocationControlChip: function( location ) {
+        const controllerId = this.gamedatas.locationControllers[location];
+        if (controllerId != 0) 
+        {
+            const player = this.gamedatas.players[controllerId];
+            const imageElement = dojo.query(`[data-location="${location}"]`)[0];
+            dojo.place( this.format_block( 'jstpl_location_control_chip', {
+                id: imageElement.id,
+                player_color: player.color,
+            }),  imageElement, 'before');
+        }
     }
     
 })

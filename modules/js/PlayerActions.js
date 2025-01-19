@@ -99,7 +99,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onChooseInPlayCardConfirmed: function()
     {
-        const actionArray = {
+        const actions = {
             'planningPhaseResolveSchemes_01125_4'                   : 'actPlanningPhase_01125_4',
             'planningPhaseEnd_01098'                                : 'actPlanningPhaseEnd_01098',
             'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
@@ -108,20 +108,21 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaRecruitActionChooseMercenary'                 : 'highDramaRecruitActionChooseMercenary_client',
             'highDramaEquipActionChoosePerformer'                   : 'actHighDramaEquipActionPerformerChosen',
             'highDramaEquipActionChooseAttachmentFromPlay_client'   : 'highDramaEquipActionPayForAttachmentFromPlay_client',
+            'highDramaClaimActionChoosePerformer'                   : 'actHighDramaClaimActionPerformerChosen',    
         };
 
-        const clientMessageArray = {
+        const clientMessages = {
             'highDramaBeginning_01144_client'                       : "${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
             'highDramaRecruitActionChooseMercenary_client'          : "${you} are performing a Recruit Action. ${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
             'highDramaEquipActionPayForAttachmentFromPlay_client'   : "${you} are performing an Equip Action. Choose cards from your Faction Hand to pay for selected Attachment:",
         };
 
-        const action = actionArray[this.gamedatas.gamestate.name];
+        const action = actions[this.gamedatas.gamestate.name];
 
         //If the action ends with _client, we need to call a client side function
         if (action.includes('_client')) {
             this.clientStateArgs.selectedCards = this.selectedCards;
-            const clientMessage = clientMessageArray[action];
+            const clientMessage = clientMessages[action];
             this.setClientState(action, {
                 'descriptionmyturn' : _(clientMessage),
             })

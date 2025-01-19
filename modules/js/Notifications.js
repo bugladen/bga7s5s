@@ -9,6 +9,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const notifs = [
             ['playLeader', 1500],
             ['approachCardsReceived', 1000],
+            ['approachCharacterPlayed', 2000],
+            ['approachSchemePlayed', 2000],
             ['attachmentEquipped', 1000],
             ['newDay', 1000],
             ['cityCardAddedToLocation', 1000],
@@ -19,9 +21,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardMoved', 1000],
             ['characterRecruited', 1000],
             ['drawCard', 2000],
-            ['playApproachScheme', 2000],
-            ['playApproachCharacter', 2000],
             ['firstPlayer', 1500],
+            ['locationClaimed', 500],
             ['panacheModified', 1000],
             ['playerReknownUpdated', 500],
             ['reknownUpdatedOnCard', 500],
@@ -76,9 +77,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         $('pagemaintitletext').innerHTML = _(`${args.player_name} has selected <span style="font-weight:bold">${args.leader.name}</span> as their leader`);
     },
 
-    notif_playApproachScheme: function( notif )
+    notif_approachSchemePlayed: function( notif )
     {
-        debug( 'notif_playApproachScheme' );
+        debug( 'notif_approachSchemePlayed' );
         debug( notif );
 
         const args = notif.args;
@@ -88,8 +89,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         $('pagemaintitletext').innerHTML = _(`${args.player_name} has selected <span style="font-weight:bold">${args.scheme.name}</span> as their Scheme today`);
     },
 
-    notif_playApproachCharacter: function (notif) {
-        debug( 'notif_playApproachCharacter' );
+    notif_approachCharacterPlayed: function (notif) {
+        debug( 'notif_approachCharacterPlayed' );
         debug( notif );
 
 
@@ -427,5 +428,22 @@ return declare('seventhseacityoffivesails.notifications', null, {
         args.card = card;
         this.notif_cityCardAddedToLocation(notif);
     },
+
+    notif_locationClaimed: function( notif )
+    {
+        debug( 'notif_locationClaimed' );
+        debug( notif );
+
+        const args = notif.args;
+        //Find the image element with the attribute data-location that matches arg.location
+        const imageElement = dojo.query(`[data-location="${args.location}"]`)[0];
+
+        const player = this.gamedatas.players[args.playerId];
+
+        dojo.place( this.format_block( 'jstpl_location_control_chip', {
+            id: imageElement.id,
+            player_color: player.color,
+        }),  imageElement, 'before');
+    }
 })
 });

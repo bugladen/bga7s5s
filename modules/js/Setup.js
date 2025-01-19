@@ -146,8 +146,9 @@ return declare('seventhseacityoffivesails.setup', null, {
         if (gamedatas.locationReknown[this.LOCATION_CITY_OLES_INN] != null) {
             $('oles-inn-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_OLES_INN];
             $('oles-inn-image').setAttribute('data-location', this.LOCATION_CITY_OLES_INN);            
+            this.displayLocationControlChip(this.LOCATION_CITY_OLES_INN);
         }
-
+    
         // Set up The Docks
         gamedatas.dockCards = this.moveAttachmentsToCharacters(gamedatas.dockCards);
         for( const index in gamedatas.dockCards )
@@ -158,6 +159,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         }
         $('dock-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_DOCKS];
         $('dock-image').setAttribute('data-location', this.LOCATION_CITY_DOCKS);
+        this.displayLocationControlChip(this.LOCATION_CITY_DOCKS);
 
         // Set up The Forum
         gamedatas.forumCards = this.moveAttachmentsToCharacters(gamedatas.forumCards);
@@ -169,6 +171,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         }
         $('forum-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_FORUM];
         $('forum-image').setAttribute('data-location', this.LOCATION_CITY_FORUM);
+        this.displayLocationControlChip(this.LOCATION_CITY_FORUM);
             
         // Set up cards in the bazaar
         gamedatas.bazaarCards = this.moveAttachmentsToCharacters(gamedatas.bazaarCards);
@@ -180,6 +183,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         }
         $('bazaar-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_BAZAAR];
         $('bazaar-image').setAttribute('data-location', this.LOCATION_CITY_BAZAAR);
+        this.displayLocationControlChip(this.LOCATION_CITY_BAZAAR);
 
         // Set up cards in the governors garden
         gamedatas.gardenCards = this.moveAttachmentsToCharacters(gamedatas.gardenCards);
@@ -192,6 +196,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         if (gamedatas.locationReknown[this.LOCATION_CITY_GOVERNORS_GARDEN] != null) {
             $('garden-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_GOVERNORS_GARDEN];
             $('garden-image').setAttribute('data-location', this.LOCATION_CITY_GOVERNORS_GARDEN);
+            this.displayLocationControlChip(this.LOCATION_CITY_GOVERNORS_GARDEN);
         }
 
         // Create Approach deck
@@ -201,7 +206,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         this.approachDeck.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
         this.approachDeck.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
         this.approachDeck.setSelectionAppearance( 'class' )
-        dojo.connect( this.approachDeck, 'onChangeSelection', this, 'onApproachCardSelected' );
+        dojo.connect( this.approachDeck, 'onChangeSelection', this, 'onApproachCardClicked' );
         // For each card in the approach deck, create a stock item
         gamedatas.approachDeck.forEach((card) => {
             this.addCardToDeck(this.approachDeck, card);
@@ -215,7 +220,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         this.factionHand.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
         this.factionHand.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
         this.factionHand.setSelectionAppearance( 'class' )
-        dojo.connect( this.factionHand, 'onChangeSelection', this, 'onFactionCardSelected' );
+        dojo.connect( this.factionHand, 'onChangeSelection', this, 'onFactionCardClicked' );
         // For each card in the approach deck, create a stock item
         gamedatas.factionHand.forEach((card) => {
             this.addCardToDeck(this.factionHand, card);
@@ -228,7 +233,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         this.chooseList.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
         this.chooseList.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
         this.chooseList.setSelectionAppearance( 'class' )
-        dojo.connect( this.chooseList, 'onChangeSelection', this, 'onChooseCardSelected' );
+        dojo.connect( this.chooseList, 'onChangeSelection', this, 'onChooseCardClicked' );
 
         // Setup game notifications to handle (see "setupNotifications" method below)
         this.setupNotifications();

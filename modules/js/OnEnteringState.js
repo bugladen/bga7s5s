@@ -40,7 +40,7 @@ onEnteringState: function( stateName, args )
                 // For each Red Hand Thug card in the players deck, create a stock item
                 args.args.thugs.forEach((card) => {
                     this.addCardToDeck(this.chooseList, card);
-                });            
+                });
                 this.chooseList.setSelectionMode(1);
             }
         },
@@ -446,7 +446,7 @@ onEnteringState: function( stateName, args )
 
         'highDramaMoveActionChooseLocation': () => {
             if (this.isCurrentPlayerActive()) {
-                this.numberOfCityLocationsSelectable = 1;                
+                this.numberOfCityLocationsSelectable = 1;
                 args.args.locations.forEach((location) => {
                     if (location == this.LOCATION_PLAYER_HOME)
                     {
@@ -618,7 +618,20 @@ onEnteringState: function( stateName, args )
     
             $('faction_hand_info').innerHTML = `(0 Wealth worth of cards selected)`;
             this.factionHand.setSelectionMode(2);
-        }
+        },
+
+        'highDramaClaimActionChoosePerformer': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCardsSelectable = 1;
+                args.args.ids.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+            }
+        },
+
 
     };
     

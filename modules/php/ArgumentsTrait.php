@@ -112,6 +112,7 @@ trait ArgumentsTrait
             "canMove" => $this->theah->playerCanMove($playerId),
             "canRecruit" => $this->theah->playerCanRecruit($playerId),
             "canEquip" => $this->handHasAttachments($playerId) || $this->theah->playerCanEquip($playerId),
+            "canClaim" => $this->theah->playerCanClaim($playerId),
         ];
     }
 
@@ -123,7 +124,7 @@ trait ArgumentsTrait
         $characters = $this->theah->getCharactersByPlayerId($playerId);
         
         //Filter out those characters that are engaged
-        $characters = array_filter($characters, function($character) { return $character->Engaged == false; });  
+        $characters = array_values(array_filter($characters, function($character) { return $character->Engaged == false; }));
 
         //Select only the Ids of the characters
         $characterIds = array_map(function($character) { return $character->Id; }, $characters);
@@ -208,7 +209,7 @@ trait ArgumentsTrait
 
         $charactersThatCanEquip = [];
         foreach ($characters as $character) {
-            $attachmentsAtLocation = $this->theah->getAvailalbleAttachmentsAtLocation($character->Location);
+            $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($character->Location);
             if (count($attachmentsAtLocation) > 0) {
                 $charactersThatCanEquip[] = $character;
             }
@@ -237,7 +238,7 @@ trait ArgumentsTrait
         $attachmentsInPlay = [];
         if ($performer->Location != Game::LOCATION_PLAYER_HOME) 
         {
-            $attachmentsInPlay = $this->theah->getAvailalbleAttachmentsAtLocation($performer->Location);
+            $attachmentsInPlay = $this->theah->getAvailableAttachmentsAtLocation($performer->Location);
         }
         
         return [
@@ -247,5 +248,23 @@ trait ArgumentsTrait
             "attachmentsInPlay" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInPlay),
         ];
     }
+
+    public function argsHighDramaClaimActionChoosePerformer(): array
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $characters = $this->theah->getCharactersByPlayerId($playerId);
+        
+        //Filter out those characters that are not in the city
+        $characters = array_values(array_filter($characters, function($character) { return $this->theah->cardInCity($character); }));
+
+        //Select the Ids of the characters
+        $characterIds = array_map(function($character) { return $character->Id; }, $characters);
+
+        return [
+            "ids" => $characterIds
+        ];
+    }    
 
 }

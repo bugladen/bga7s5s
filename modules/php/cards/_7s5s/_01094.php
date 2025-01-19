@@ -30,4 +30,10 @@ class _01094 extends Character
             "Castille",
         ];
     }
+
+    public function getPressureInfluenceValue(): int
+    {
+        return parent::getPressureInfluenceValue() + 2;
+        
+    }
 }

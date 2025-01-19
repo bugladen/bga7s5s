@@ -143,6 +143,10 @@ var jstpl_discard_card = `
 </div>
 `;
 
+var jstpl_location_control_chip = `
+<div id="\${id}-location-control-chip" style="--player-color:#\${player_color}" class="location-controller-player-color"></div>
+`;
+
 </script>  
 
 <div id="choose-container" class="whiteblock hand hidden">

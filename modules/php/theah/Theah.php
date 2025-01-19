@@ -62,25 +62,30 @@ class Theah
 
         $location = new CityLocation(Game::LOCATION_CITY_DOCKS);
         $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_DOCKS);
+        $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_DOCKS);
         $this->cityLocations[Game::LOCATION_CITY_DOCKS] = $location;
 
         $location = new CityLocation(Game::LOCATION_CITY_FORUM);
         $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_FORUM);
+        $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_FORUM);
         $this->cityLocations[Game::LOCATION_CITY_FORUM] = $location;
 
         $location = new CityLocation(Game::LOCATION_CITY_BAZAAR);
         $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_BAZAAR);
+        $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_BAZAAR);
         $this->cityLocations[Game::LOCATION_CITY_BAZAAR] = $location;
 
         if (count($players) > 2) {
             $location = new CityLocation(Game::LOCATION_CITY_OLES_INN);
             $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_OLES_INN);
+            $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_OLES_INN);
             $this->cityLocations[Game::LOCATION_CITY_OLES_INN] = $location;
         }
 
         if (count($players) > 3) {
             $location = new CityLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
             $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
+            $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
             $this->cityLocations[Game::LOCATION_CITY_GOVERNORS_GARDEN] = $location;
         }
     }
@@ -126,6 +131,15 @@ class Theah
             $reknown[$location->Name] = $location->Reknown;
         }
         return $reknown;
+    }
+
+    public function getCityLocationControllers()
+    {
+        $controllers = [];
+        foreach ($this->cityLocations as $location) {
+            $controllers[$location->Name] = $location->Controller;
+        }
+        return $controllers;
     }
 
     public function createEvent(string $eventName) : Event
@@ -260,7 +274,7 @@ class Theah
         return $characters;
     }
 
-    function getAvailalbleAttachmentsAtLocation($location)
+    function getAvailableAttachmentsAtLocation($location)
     {
         $attachments = [];
         foreach ($this->cards as $card) {
@@ -283,12 +297,12 @@ class Theah
 
     function cardInCity($card): bool
     {
-        return $card->Location ==         
-        Game::LOCATION_CITY_OLES_INN ||
-        Game::LOCATION_CITY_DOCKS ||
-        Game::LOCATION_CITY_FORUM ||
-        Game::LOCATION_CITY_BAZAAR ||
-        Game::LOCATION_CITY_GOVERNORS_GARDEN;
+        return 
+         $card->Location == Game::LOCATION_CITY_OLES_INN ||
+         $card->Location == Game::LOCATION_CITY_DOCKS ||
+         $card->Location == Game::LOCATION_CITY_FORUM ||
+         $card->Location == Game::LOCATION_CITY_BAZAAR ||
+         $card->Location == Game::LOCATION_CITY_GOVERNORS_GARDEN;
     }
 
     function getAdjacentCityLocations($location): array
@@ -349,7 +363,7 @@ class Theah
 
         //Get all characters that are in the city that have mercenaries at their location
         $charactersThatCanReruit = [];
-        $charactersInCity = array_filter($characters, function($character) { return $character->Location == $this->cardInCity($character); });
+        $charactersInCity = array_filter($characters, function($character) { return $this->cardInCity($character); });
 
         foreach ($charactersInCity as $character) {
             $charactersAtLocation = $this->getCharactersAtLocation($character->Location);
@@ -368,15 +382,31 @@ class Theah
 
         //Get all characters that are in the city that have attachments at their location
         $charactersThatCanEquip = [];
-        $charactersInCity = array_filter($characters, function($character) { return $character->Location == $this->cardInCity($character); });
+        $charactersInCity = array_filter($characters, function($character) { return $this->cardInCity($character); });
 
         foreach ($charactersInCity as $character) {
-            $attachmentsAtLocation = $this->getAvailalbleAttachmentsAtLocation($character->Location);
+            $attachmentsAtLocation = $this->getAvailableAttachmentsAtLocation($character->Location);
             if (count($attachmentsAtLocation) > 0) {
                 $charactersThatCanEquip[] = $character;
             }
         }
 
         return count($charactersThatCanEquip) > 0;        
+    }
+
+    public function playerCanClaim($playerId): bool
+    {
+        $characters = $this->getCharactersByPlayerId($playerId);
+        $charactersThatCanClaim = [];
+        foreach ($characters as $character) {
+            if (!$this->cardInCity($character)) {
+                continue;
+            }
+            if ($character->Engaged)
+                continue;
+            $charactersThatCanClaim[] = $character;
+        }
+        
+        return count($charactersThatCanClaim) > 0;
     }
 }

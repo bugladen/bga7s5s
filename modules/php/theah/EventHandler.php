@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
@@ -35,7 +36,7 @@ trait EventHandler
                 $event->character->IsUpdated = true;
 
                 // Notify players of selected character
-                $this->game->notifyAllPlayers("playApproachCharacter", clienttranslate('${player_name} plays ${character_name} as their Approach Character.'), [
+                $this->game->notifyAllPlayers("approachCharacterPlayed", clienttranslate('${player_name} plays ${character_name} as their Approach Character.'), [
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
                     "character_name" => "<span style='font-weight:bold'>{$event->character->Name}</span>",
@@ -199,13 +200,29 @@ trait EventHandler
                     "location" => $event->location,
                     "card" => $event->card->getPropertyArray()
                 ]);
-
                 break;
+
+            case $event instanceof EventLocationClaimed:
+                {
+                    $this->cityLocations[$event->location]->Controller = $event->playerId;
+
+                    $this->game->notifyAllPlayers("locationClaimed", clienttranslate('${player_name} chose ${card_name} to Claim ${location_name}. Influence Totals: ${totals}'), [
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
+                        "card_name" => "<strong>{$event->performer->Name}</strong>",
+                        "location_name" => "<strong>{$event->performer->Location}</strong>",
+                        "totals" => $event->totalsExplanation,
+                        "playerId" => $event->playerId,
+                        "location" => $event->performer->Location,
+                    ]);
+            
+                    break;
+                }
     
             case $event instanceof EventPlayerLosesReknown:
                 $playerId = $event->playerId;
                 $reknown = $this->db->getPlayerReknown($playerId);
-                if ($reknown > 0) {
+                if ($reknown > 0) 
+                {
                     $reknown -= $event->amount;
                     $this->db->setPlayerReknown($playerId, $reknown);
 
@@ -260,7 +277,7 @@ trait EventHandler
                 $event->scheme->IsUpdated = true;
 
                 // Notify players of selected scheme
-                $this->game->notifyAllPlayers("playApproachScheme", clienttranslate('${player_name} plays ${scheme_name} as their Approach Scheme.'), [
+                $this->game->notifyAllPlayers("approachSchemePlayed", clienttranslate('${player_name} plays ${scheme_name} as their Approach Scheme.'), [
                     "player_name" => $event->playerName,
                     "scheme_name" => "<span style='font-weight:bold'>{$event->scheme->Name}</span>",
                     "player_id" => $event->playerId,

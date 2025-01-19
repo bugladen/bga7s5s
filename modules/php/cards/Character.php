@@ -58,6 +58,11 @@ abstract class Character extends Card
         return $this->ModifiedEquipDiscount;
     }
 
+    public function getPressureInfluenceValue(): int
+    {
+        return $this->ModifiedInfluence;
+    }
+
     public function addAttachment(Attachment $attachment)
     {
         $this->ModifiedResolve += $attachment->ResolveModifier;

@@ -169,13 +169,15 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaPlayerTurn': () => {
             if (this.isCurrentPlayerActive()) {
+                if (args.canClaim)
+                    this.addActionButton(`actClaimAction`, _('Claim'), () => this.bgaPerformAction('actHighDramaClaimActionStart', {}));
+                if (args.canEquip)
+                    this.addActionButton(`actEquipAction`, _('Equip'), () => this.bgaPerformAction('actHighDramaEquipActionStart', {}));
                 if (args.canMove)
                     this.addActionButton(`actMoveAction`, _('Move'), () => this.bgaPerformAction('actHighDramaMoveActionStart', {}));
                 if (args.canRecruit)
                     this.addActionButton(`actRecruitAction`, _('Recruit'), () => this.bgaPerformAction('actHighDramaRecruitActionStart', {}));
-                if (args.canEquip)
-                    this.addActionButton(`actEquipAction`, _('Equip'), () => this.bgaPerformAction('actHighDramaEquipActionStart', {}));
-
+                
                 this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             }
         },
@@ -289,8 +291,15 @@ onUpdateActionButtons: function( stateName, args )
                 })
             });
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
-        }
+        },
 
+        'highDramaClaimActionChoosePerformer': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
+        },
         
     };
 

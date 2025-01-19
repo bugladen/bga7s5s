@@ -73,8 +73,24 @@ trait UtilitiesTrait
         return $this->globals->get($this->getReknownLocationName(addslashes($location)));
     }
 
+    function setReknownForLocation($location, $reknown) {
+        $this->globals->set($this->getReknownLocationName(addslashes($location)), $reknown);
+    }
+
     function getReknownLocationName($location) {
         return "Reknown_" . $location;
+    }
+
+    function getControllerForLocation($location) {
+        return $this->globals->get($this->getControllerLocationName(addslashes($location))) ?? 0;
+    }
+
+    function setControllerForLocation($location, $playerId) {
+        $this->globals->set($this->getControllerLocationName(addslashes($location)), $playerId);
+    }
+
+    function getControllerLocationName($location) {
+        return "Control_" . $location;
     }
 
     function incrementPlayerReknown($player_id, $inc) {
@@ -157,7 +173,7 @@ trait UtilitiesTrait
         return $card;
     }
 
-   function setNewPlayerOrder($firstPlayerId)
+    function setNewPlayerOrder($firstPlayerId)
     {
         $playerNumber = 1;
         $this->DbQuery("UPDATE player SET turn_order = $playerNumber WHERE player_id = $firstPlayerId");
@@ -171,10 +187,6 @@ trait UtilitiesTrait
 
     function setPlayerReknown($playerId, $reknown) {
         $this->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
-    }
-
-    function setReknownForLocation($location, $reknown) {
-        $this->globals->set($this->getReknownLocationName(addslashes($location)), $reknown);
     }
 
 }

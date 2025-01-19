@@ -45,6 +45,8 @@ class Events
     const CardMoved = 'EventCardMoved';
     const CardDrawn = 'EventCardDrawn';
     const CardEngaged = 'EventCardEngaged';
+
+    const LocationClaimed = 'EventLocationClaimed';
     
     const Transition = 'EventTransition';
 }
