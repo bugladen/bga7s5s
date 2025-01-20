@@ -70,6 +70,7 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.addTooltipHtml( `${playerId}-score-reknown`, `<div class='basic-tooltip'>${_('Current Reknown')}</div>` );
             this.addTooltipHtml( `${playerId}-score-crewcap`, `<div class='basic-tooltip'>${_('Current Crew Cap')}</div>` );
             this.addTooltipHtml( `${playerId}-score-panache`, `<div class='basic-tooltip'>${_('Current Panache')}</div>` );
+            this.addTooltipHtml( `${playerId}-score-hand-count`, `<div class='basic-tooltip'>${_('Number of cards in Faction Hand')}</div>` );
 
             //Display only if we are out of pre-game setup
             if (gamedatas.turnPhase > 0) {
