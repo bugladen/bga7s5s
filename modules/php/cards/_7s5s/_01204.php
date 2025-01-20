@@ -3,9 +3,13 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 
-class _01204 extends CityAttachment
+class _01204 extends CityAttachment implements IHasTechniques
 {
+    use TechniqueTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -30,5 +34,12 @@ class _01204 extends CityAttachment
             'Unique',
         ];
     }
-}
 
+    public function getPropertyArray(): array
+    {
+        $properties = parent::getPropertyArray();
+        $this->addTechniqueProperties($properties);
+
+        return $properties;
+    }
+}

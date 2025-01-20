@@ -3,9 +3,13 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 
-class _01155 extends FactionAttachment
+class _01155 extends FactionAttachment implements IHasTechniques
 {
+    use TechniqueTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -31,5 +35,13 @@ class _01155 extends FactionAttachment
             'Melee',
             'Ad Hoc',
         ];
+    }
+
+    public function getPropertyArray(): array
+    {
+        $properties = parent::getPropertyArray();
+        $this->addTechniqueProperties($properties);
+
+        return $properties;
     }
 }

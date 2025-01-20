@@ -3,9 +3,13 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 
-class _01093 extends Character
+class _01093 extends Character implements IHasTechniques
 {
+    use TechniqueTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -30,5 +34,13 @@ class _01093 extends Character
             "Pirate",
             "Castille",
         ];
+    }
+
+    public function getPropertyArray(): array
+    {
+        $properties = parent::getPropertyArray();
+        $this->addTechniqueProperties($properties);
+
+        return $properties;
     }
 }

@@ -3,10 +3,14 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 
-class _01074 extends FactionAttachment
+class _01074 extends FactionAttachment implements IHasTechniques
 {
+    use TechniqueTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -43,5 +47,13 @@ class _01074 extends FactionAttachment
             if (!in_array("Duelist", $event->performer->Traits))
                 throw new \BgaUserException(_("Mastercrafted Rapier can only be equipped to Duelists."));
         }
+    }
+
+    public function getPropertyArray(): array
+    {
+        $properties = parent::getPropertyArray();
+        $this->addTechniqueProperties($properties);
+
+        return $properties;
     }
 }

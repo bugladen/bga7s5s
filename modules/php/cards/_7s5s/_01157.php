@@ -3,9 +3,13 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 
-class _01157 extends FactionAttachment
+class _01157 extends FactionAttachment implements IHasTechniques
 {
+    use TechniqueTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -30,5 +34,13 @@ class _01157 extends FactionAttachment
             'Ranged',
             'Knife',
         ];
+    }
+
+    public function getPropertyArray(): array
+    {
+        $properties = parent::getPropertyArray();
+        $this->addTechniqueProperties($properties);
+
+        return $properties;
     }
 }
