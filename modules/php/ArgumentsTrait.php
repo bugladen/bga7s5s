@@ -111,7 +111,7 @@ trait ArgumentsTrait
         return [
             "canMove" => $this->theah->playerCanMove($playerId),
             "canRecruit" => $this->theah->playerCanRecruit($playerId),
-            "canEquip" => $this->handHasAttachments($playerId) || $this->theah->playerCanEquip($playerId),
+            "canEquip" => $this->theah->playerCanEquip($playerId),
             "canClaim" => $this->theah->playerCanClaim($playerId),
         ];
     }
@@ -203,20 +203,23 @@ trait ArgumentsTrait
         $this->theah->buildCity();
 
         $characters = $this->theah->getCharactersByPlayerId($playerId);
-        
-        //Filter out those characters that are not in the city
-        $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
+        $charactersInCity = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
 
+        $handHasAttachments = $this->handHasAttachments($playerId);
         $charactersThatCanEquip = [];
-        foreach ($characters as $character) {
+        foreach ($charactersInCity as $character) {
             $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($character->Location);
-            if (count($attachmentsAtLocation) > 0) {
+            if (count($attachmentsAtLocation) > 0 || $handHasAttachments) {
                 $charactersThatCanEquip[] = $character;
             }
         }
 
         $charactersAtHome = $this->theah->getCharactersAtHome($playerId);
-        $charactersThatCanEquip = array_merge($charactersThatCanEquip, $charactersAtHome);
+        foreach($charactersAtHome as $character) {
+            if ($handHasAttachments) {
+                $charactersThatCanEquip[] = $character;
+            }
+        }
 
         //Select only the Ids of the characters
         $characterIds = array_map(function($character) { return $character->Id; }, $charactersThatCanEquip);

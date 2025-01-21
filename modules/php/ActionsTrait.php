@@ -879,6 +879,7 @@ trait ActionsTrait
         $playerId = $this->getActivePlayerId();
         $id = json_decode($ids, true)[0];
         $performer = $this->getCardObjectFromDb($id);
+        $handHasAttachments = $this->handHasAttachments($playerId);
 
         $characters = $this->theah->getCharactersByPlayerId($playerId);        
         //Filter out those characters that are not in the city
@@ -886,12 +887,16 @@ trait ActionsTrait
         $charactersThatCanEquip = [];
         foreach ($characters as $character) {
             $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($character->Location);
-            if (count($attachmentsAtLocation) > 0) {
+            if (count($attachmentsAtLocation) > 0 || $handHasAttachments) {
                 $charactersThatCanEquip[] = $character;
             }
         }
         $charactersAtHome = $this->theah->getCharactersAtHome($playerId);
-        $charactersThatCanEquip = array_merge($charactersThatCanEquip, $charactersAtHome);
+        foreach ($charactersAtHome as $character) {
+            if ($handHasAttachments) {
+                $charactersThatCanEquip[] = $character;
+            }
+        }
 
         //Select only the Ids of the characters
         $characterIds = array_map(function($character) { return $character->Id; }, $charactersThatCanEquip);

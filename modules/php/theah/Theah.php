@@ -381,17 +381,17 @@ class Theah
         $characters = $this->getCharactersByPlayerId($playerId);
 
         //Get all characters that are in the city that have attachments at their location
-        $charactersThatCanEquip = [];
+        $charactersThatCanEquipInCity = [];
         $charactersInCity = array_filter($characters, function($character) { return $this->cardInCity($character); });
 
         foreach ($charactersInCity as $character) {
             $attachmentsAtLocation = $this->getAvailableAttachmentsAtLocation($character->Location);
             if (count($attachmentsAtLocation) > 0) {
-                $charactersThatCanEquip[] = $character;
+                $charactersThatCanEquipInCity[] = $character;
             }
         }
 
-        return count($charactersThatCanEquip) > 0;        
+        return count($charactersThatCanEquipInCity) > 0 || $this->game->handHasAttachments($playerId);        
     }
 
     public function playerCanClaim($playerId): bool
