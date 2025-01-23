@@ -131,11 +131,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const performer = this.cardProperties[args.performerId];
 
         //See if the card came from the hand
-        if (this.factionHand.getItemById(attachment.id) !== null)
+        if (this.factionHand.getItemById(attachment.id) !== undefined)
         {
             this.factionHand.removeFromStockById(attachment.id);
         }
-        else
+        else if (this.cardProperties[attachment.id] !== undefined)
         {
             const oldCard = this.cardProperties[attachment.id];
 
