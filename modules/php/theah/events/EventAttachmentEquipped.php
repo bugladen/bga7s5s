@@ -17,6 +17,6 @@ class EventAttachmentEquipped extends Event
     {
         parent::__construct();
 
-        $this->priority = Event::HIGH_PRIORITY;
+        $this->priority = Event::MEDIUM_PRIORITY;
     }
 }

@@ -14,6 +14,6 @@ class EventPlayerLosesReknown extends Event
 
         $this->playerId = 0;
         $this->amount = 0;
-        $this->priority = Event::HIGH_PRIORITY;
+        $this->priority = Event::MEDIUM_PRIORITY;
     }
 }
