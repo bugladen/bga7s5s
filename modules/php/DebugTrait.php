@@ -4,7 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 trait DebugTrait
 {
-    public function dbgIncludeCityCard($className)
+    public function debug_IncludeCityCard($className)
     {
         $card = $this->instantiateCard($className);
         if ($card) {
@@ -13,7 +13,7 @@ trait DebugTrait
     }
 
 
-    public function dbgSetCardInPlayerDiscardPile($playerId, $className)
+    public function debug_SetCardInPlayerDiscardPile($playerId, $className)
     {
         $card = $this->instantiateCard($className);
         if ($card) {
@@ -25,7 +25,7 @@ trait DebugTrait
         }
     }
 
-    public function dbgSetCardinCityDiscardPile($className)
+    public function debug_SetCardinCityDiscardPile($className)
     {
         $card = $this->instantiateCard($className);
         if ($card) {
@@ -37,12 +37,12 @@ trait DebugTrait
         }
     }
 
-    public function dbgSetPlayerReknown($playerId, $score)
+    public function debug_SetPlayerReknown($playerId, $score)
     {
         $this->DBQuery("UPDATE player SET player_score = $score WHERE player_id = $playerId");
     }
 
-    public function dbgSetRenownAtLocation($location, $amount)
+    public function debug_SetRenownAtLocation($location, $amount)
     {
         $this->setReknownForLocation($location, $amount);
     }
