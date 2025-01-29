@@ -245,7 +245,7 @@ $machinestates = [
                 "type" => "activeplayer",
                 "args" => "argsPlanningPhaseResolveSchemes_01016_2",
                 "possibleactions" => [
-                    "actPlanningPhase_01016_2_Pass",
+                    "actPassWithPass",
                     "actPlanningPhase_01016_2", 
                 ],
                 "transitions" => [
@@ -459,7 +459,7 @@ $machinestates = [
             "args" => "argsEmpty",
             "possibleactions" => [
                 "actPlanningPhase_01152",
-                "actPlanningPhase_01152_Pass"
+                "actPassWithPass"
             ],
             "transitions" => [
                 "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2,
@@ -474,7 +474,7 @@ $machinestates = [
                 "args" => "argsEmpty",
                 "possibleactions" => [
                     "actPlanningPhase_01152_2",
-                    "actPlanningPhase_01152_2_Pass"
+                    "actPassWithPass"
                 ],
                 "transitions" => [
                     "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
@@ -586,13 +586,15 @@ $machinestates = [
         "type" => "activeplayer",
         "args" => "argPlayerTurn",
         "possibleactions" => [
+            "actHighDramaChallengeActionStart",
             "actHighDramaClaimActionStart",
             "actHighDramaEquipActionStart",
             "actHighDramaMoveActionStart", 
             "actHighDramaRecruitActionStart",
-            "actHighDramaPass",
+            "actPassWithPass",
         ],
         "transitions" => [
+            "challengeActionStart" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_PERFORMER,
             "claimActionStart" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER,
             "equipActionStart" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER,
             "moveActionStart" => States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_PERFORMER, 
@@ -607,6 +609,167 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "endOfEvents" => States::NEXT_PLAYER
+                ]
+        ],
+
+        States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_PERFORMER => [
+            "name" => "highDramaChallengeActionChoosePerformer",
+            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            "descriptionmyturn" => clienttranslate('${you} are performing a Challenge Action.  Choose a Performer to Challenge with:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaChallengeActionChoosePerformer",
+            "possibleactions" => [
+                "actHighDramaChallengeActionPerformerChosen", 
+                "actBack",
+            ],
+            "transitions" => [
+                "performerChosen" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET, 
+                "back" => States::HIGH_DRAMA_PLAYER_TURN
+            ]
+        ],
+        States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET => [
+            "name" => "highDramaChallengeActionChooseTarget",
+            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            "descriptionmyturn" => clienttranslate('${you} are performing a Challenge Action.  Choose a Target Character to Challenge:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaChallengeActionChooseTarget",
+            "possibleactions" => [
+                "actHighDramaChallengeActionTargetChosen", 
+                "actBack",
+            ],
+            "transitions" => [
+                "targetChosen" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE, 
+                "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_PERFORMER
+            ]
+        ],
+        States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE => [
+            "name" => "highDramaChallengeActionTechniqueAvailable",
+            "type" => "game",
+            "action" => "stTechniqueAvailable",
+            "transitions" => [
+                "hasTechique" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE,
+                "noTechnique" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE
+            ]
+        ],
+        States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE => [
+            "name" => "highDramaChallengeActionActivateTechnique",
+            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            "descriptionmyturn" => clienttranslate('${you} are performing a Challenge Action.  You may activate a Technique for the Challenge:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaChallengeActionActivateTechnique",
+            "possibleactions" => [
+                "actHighDramaChallengeActionTechniqueActivated", 
+                "actHighDramaChallengeActionActivateTechnique_Pass",
+                "actBack",
+            ],
+            "transitions" => [
+                "techniqueActivated" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS,
+                "pass" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE,
+                "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET
+            ]
+        ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS => [
+                "name" => "highDramaChallengeActionActivateTechniqueEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE
+                    ]
+            ],
+    
+        States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE => [
+            "name" => "highDramaChallengeActionSetupChallenge",
+            "type" => "game",
+            "action" => "stSetupChallenge",
+            "transitions" => [
+                "challengeSetUp" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_EVENTS,
+                "challengeFailed" => States::HIGH_DRAMA_PLAYER_TURN
+            ]
+        ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_EVENTS => [
+                "name" => "highDramaChallengeActionSetupChallengeEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE
+                ]
+            ],
+    States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE => [
+            "name" => "highDramaChallengeActionAcceptChallenge",
+            "description" => clienttranslate('${actplayer} is choosing to accept Challenge.'),
+            "descriptionmyturn" => clienttranslate('${you} must choose to accept Challenge, or Intervene:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaChallengeActionAcceptChallenge",
+            "possibleactions" => [
+                "actHighDramaChallengeActionAccept",
+                "actHighDramaChallengeActionReject",
+                "actHighDramaChallengeActionIntervene"
+            ],
+            "transitions" => [
+                "" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE,
+            ]
+        ],
+        States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE => [
+            "name" => "highDramaChallengeActionResolveTechnique",
+            "type" => "game",
+            "action" => "stHighDramaChallengeActionResolveTechnique",
+            "transitions" => [
+                "" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS
+                ]
+        ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS => [
+                "name" => "highDramaChallengeActionResolveTechniqueEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "01067b" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS_01067b,
+                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT
+                    ]
+            ],
+        States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS_01067b => [
+            "name" => "highDramaChallengeActionResolveTechnique_01067b",
+            "description" => clienttranslate('${actplayer} is choosing options to resolve Jean Urbain Technique.'),
+            "descriptionmyturn" => clienttranslate('Jean Urbain: +1 Thrust or Riposte: ${you} may choose Thrust or Riposte:'),
+            "type" => "activeplayer",
+            "args" => "argsEmpty",
+            "possibleactions" => [
+                "actHighDramaChallengeActionResolveTechnique_01067b_01067b", 
+            ],
+            "transitions" => [
+                "" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS,
+            ]
+        ],
+        States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT => [
+            "name" => "highDramaChallengeActionGenerateThreat",
+            "type" => "game",
+            "action" => "stHighDramaChallengeActionGenerateThreat",
+            "transitions" => [
+                "" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_EVENTS,
+                ]
+        ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_EVENTS => [
+                "name" => "highDramaChallengeActionGenerateThreatEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION
+                    ]
+            ],
+        States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION => [
+            "name" => "highDramaChallengeActionResolution",
+            "type" => "game",
+            "action" => "stHighDramaChallengeActionResolution",
+            "transitions" => [
+                "accepted" => States::HIGH_DRAMA_PLAYER_TURN,
+                "rejected" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION_EVENTS,
+                ]
+        ],
+        States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION_EVENTS => [
+            "name" => "highDramaChallengeActionResolutionEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "endOfEvents" => States::HIGH_DRAMA_PLAYER_TURN
                 ]
         ],
 

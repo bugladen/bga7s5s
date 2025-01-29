@@ -26,7 +26,7 @@ $gameinfos = [
     'bgg_id' => 367584,
 
     // Players configuration that can be played (ex: 2 to 4 players)
-    'players' => [1, 2, 3, 4],
+    'players' => [2, 3, 4],
 
     // Suggest players to play with this number of players. Must be null if there is no such advice, or if there is only one possible player configuration.
     // NB: the automatic lobby will try first the lowest number of players if this is not specified. So you _have to_ specify this parameter if the lowest player number is not compatible with the default options.
@@ -43,10 +43,10 @@ $gameinfos = [
     'fast_additional_time' => 60,
 
     // Time in second add to a player when "giveExtraTime" is called (speed profile = medium)
-    'medium_additional_time' => 80,
+    'medium_additional_time' => 120,
 
     // Time in second add to a player when "giveExtraTime" is called (speed profile = slow)
-    'slow_additional_time' => 100,
+    'slow_additional_time' => 180,
 
     // If you are using a tie breaker in your game (using "player_score_aux"), you must describe here
     // the formula used to compute "player_score_aux". This description will be used as a tooltip to explain

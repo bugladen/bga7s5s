@@ -38,15 +38,23 @@ class Events
     const CardRemovedFromPlayerDiscardPile = 'EventCardRemovedFromPlayerDiscardPile';
     const CardRemovedFromPlayerFactionDeck = 'EventCardRemovedFromPlayerFactionDeck';
 
-    //Character Events
+    //High Drama Events
+    const LocationClaimed = 'EventLocationClaimed';
+    const ChallengeIssued = 'EventChallengeIssued';
     const CharacterRecruited = 'EventCharacterRecruited';
     const AttachmentEquipped = 'EventAttachmentEquipped';
+    
+    //Challenge Events
+    const CharacterIntervened = 'EventCharacterIntervened';
+    const TechniqueActivated = 'EventTechniqueActivated';
+    const ResolveTechnique = 'EventResolveTechnique';
+    const GenerateThreat = 'EventGenerateThreat';
 
+    const CharacterWounded = 'EventCharacterWounded';
+    
     const CardMoved = 'EventCardMoved';
     const CardDrawn = 'EventCardDrawn';
     const CardEngaged = 'EventCardEngaged';
-
-    const LocationClaimed = 'EventLocationClaimed';
     
     const Transition = 'EventTransition';
 }

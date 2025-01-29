@@ -5,6 +5,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_PlusOneParry;
+
 
 class _01120 extends Character implements IHasTechniques
 {
@@ -32,6 +34,13 @@ class _01120 extends Character implements IHasTechniques
         $this->Traits = [
             "Academic",
             "Usurra",
+        ];
+
+        $technique = new Technique_PlusOneParry();
+        $technique->setId("Technique_01120");
+        $technique->Name = "Pavel Ivanov: +1 Parry";
+        $this->Techniques = [
+            $technique,
         ];
     }
 

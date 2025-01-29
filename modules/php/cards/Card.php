@@ -39,6 +39,14 @@ abstract class Card
         $this->Reknown = 0;
     }
 
+    public function setId($id)
+    {
+        $this->Id = $id;
+        if ($this instanceof IHasTechniques) {
+            $this->updateTechniqeOwnerIds($id);
+        }
+    }
+
     public function eventCheck($event)
     {
         // Do nothing by default
@@ -46,7 +54,12 @@ abstract class Card
     
     public function handleEvent($event)
     {
-        // Do nothing by default
+        if ($this instanceof IHasTechniques) {
+            /** @disregard P1012 */
+            foreach ($this->Techniques as $technique) {
+                $technique->handleEvent($this, $event);
+            }
+        }
     }
 
     public function addCondition($condition)

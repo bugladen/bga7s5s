@@ -9,7 +9,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Theah
@@ -90,6 +92,165 @@ class Theah
         }
     }
 
+    public function createEvent(string $eventName) : Event
+    {
+        $className = "\Bga\Games\SeventhSeaCityOfFiveSails\\theah\\events\\$eventName";
+        $event = new $className();
+        return $event;
+    }
+
+    /// <summary>
+    /// Run through the cards in the city to see if an event can be run.
+    /// A card should throw an exception if it cannot allow the event.
+    ///
+    /// Call this directly only when you need to queue up several events in one method.
+    /// In that case call this for each event before queueing them up.
+    /// See examples in ActionsTrait.php
+    ///
+    /// Otherwise, if you have only one event, call queueEvent() to queue up the event intead, 
+    /// which will call this method.
+    /// </summary>
+    public function eventCheck(Event $event)
+    {
+        $this->buildCity();
+        foreach ($this->cards as $card) {
+            $event->theah = $this;
+            $card->eventCheck($event);
+            unset($event->theah);
+        }
+    }
+
+    public function queueEvent(Event $event)
+    {
+        try {
+            $this->eventCheck($event);
+            $this->db->queueEvent($event);
+        } catch (\Exception $e) {
+            $this->game->notifyAllPlayers("message", clienttranslate($e->getMessage()), []);
+        }
+    }
+
+    public function runEvents()
+    {
+        while (true) {
+           
+            // Get the next event from the database
+            $event = $this->db->getNextEvent();
+
+            // Break if there are no more events
+            if (!$event) break;
+
+            $event->theah = $this;
+
+            if ( ! $event->runHandlerAfterCards)
+                $this->handleEvent($event);
+
+            //Run the event for all cards in play
+            foreach ($this->cards as $card) 
+            {
+                $card->handleEvent($event);
+            }
+            
+            // Run the event handler for Theah for cleanup
+            if ($event->runHandlerAfterCards)
+                $this->handleEvent($event);
+
+            foreach ($this->cards as $card) {
+            // If any cards were updated, update them in the database
+                if ($card->IsUpdated) {
+                    $card->IsUpdated = false;
+                    $this->db->updateCardObject($card);
+                }
+            }
+
+            if ($event instanceof EventTransition) {                
+                if($event->getPlayerId()) {
+                    $this->game->gamestate->changeActivePlayer($event->getPlayerId());
+                }
+                $this->game->gamestate->nextState($event->transition);
+                return;
+            }
+        }
+
+        $this->game->gamestate->nextState('endOfEvents');
+    }
+
+    function getAdjacentCityLocations($location): array
+    {
+        $playerCount = $this->game->globals->get(Game::PLAYER_COUNT);
+        $locations = [];
+        switch ($location) {
+            case Game::LOCATION_PLAYER_HOME:
+                $locations = [Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_FORUM, Game::LOCATION_CITY_BAZAAR];
+                if ($playerCount > 2) {
+                    $locations[] = Game::LOCATION_CITY_OLES_INN;
+                }
+                if ($playerCount > 3) {
+                    $locations[] = Game::LOCATION_CITY_GOVERNORS_GARDEN;
+                }
+                break;
+
+            case Game::LOCATION_CITY_DOCKS:
+                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM];
+                if ($playerCount > 2) {
+                    $locations[] = Game::LOCATION_CITY_OLES_INN;
+                }
+                break;
+
+            case Game::LOCATION_CITY_FORUM:
+                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_BAZAAR];
+                break;
+
+            case Game::LOCATION_CITY_BAZAAR:
+                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM];
+                if ($playerCount > 3) {
+                    $locations[] = Game::LOCATION_CITY_GOVERNORS_GARDEN;
+                }
+                break;
+
+            case Game::LOCATION_CITY_OLES_INN:
+                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_DOCKS];
+                break;
+
+            case Game::LOCATION_CITY_GOVERNORS_GARDEN:
+                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_BAZAAR];
+                break;
+        }
+
+        return $locations;
+    }
+
+    function getAvailableAttachmentsAtLocation($location)
+    {
+        $attachments = [];
+        foreach ($this->cards as $card) {
+            if ($card instanceof Attachment && $card->Location == $location && $card->AttachedToId == 0) {
+                $attachments[] = $card;
+            }
+        }
+        return $attachments;
+    }
+
+    function getAvailableCharacterTechniques($character)
+    {
+        $techniques = [];
+
+        if (!($character instanceof IHasTechniques)) {
+            return $techniques;
+        }
+
+        $techniques += $character->getTechniquesArray();
+
+        foreach($character->Attachments as $attachment) {
+            $attachmentCard = $this->getCardById($attachment);
+            if ($attachmentCard instanceof IHasTechniques) {
+                $techniques += $attachmentCard->getTechniquesArray();
+            }
+        }
+
+        return $techniques;
+    }
+
     public function getCardPropertiesAtLocation($location, $playerId = null)
     {
         $cards = [];
@@ -140,84 +301,6 @@ class Theah
             $controllers[$location->Name] = $location->Controller;
         }
         return $controllers;
-    }
-
-    public function createEvent(string $eventName) : Event
-    {
-        $className = "\Bga\Games\SeventhSeaCityOfFiveSails\\theah\\events\\$eventName";
-        $event = new $className();
-        return $event;
-    }
-
-    /// <summary>
-    /// Run through the cards in the city to see if an event can be run.
-    /// A card should throw an exception if it cannot allow the event.
-    ///
-    /// Call this directly only when you need to queue up several events in one method.
-    /// In that case call this for each event before queueing them up.
-    /// See examples in ActionsTrait.php
-    ///
-    /// Otherwise, if you have only one event, call queueEvent() to queue up the event intead, 
-    /// which will call this method.
-    /// </summary>
-    public function eventCheck(Event $event)
-    {
-        $this->buildCity();
-        foreach ($this->cards as $card) {
-            $event->theah = $this;
-            $card->eventCheck($event);
-            unset($event->theah);
-        }
-    }
-
-    public function queueEvent(Event $event)
-    {
-        try {
-            $this->eventCheck($event);
-            $this->db->queueEvent($event);
-        } catch (\Exception $e) {
-            $this->game->notifyAllPlayers("message", clienttranslate($e->getMessage()), []);
-        }
-    }
-
-    public function runEvents()
-    {
-        while (true) {
-           
-            // Get the next event from the database
-            $event = $this->db->getNextEvent();
-
-            // Break if there are no more events
-            if (!$event) break;
-
-            // Run the event for Theah
-            $event->theah = $this;
-            $this->handleEvent($event);
-
-            //Run the event for all cards in play
-            foreach ($this->cards as $card) 
-            {
-                $card->handleEvent($event);
-            }
-
-            // If any cards were updated, update them in the database
-            foreach ($this->cards as $card) {
-                if ($card->IsUpdated) {
-                    $card->IsUpdated = false;
-                    $this->db->updateCardObject($card);
-                }
-            }
-
-            if ($event instanceof EventTransition) {                
-                if($event->getPlayerId()) {
-                    $this->game->gamestate->changeActivePlayer($event->getPlayerId());
-                }
-                $this->game->gamestate->nextState($event->transition);
-                return;
-            }
-        }
-
-        $this->game->gamestate->nextState('endOfEvents');
     }
 
     function getCharacterCountByPlayerId($playerId)
@@ -274,17 +357,6 @@ class Theah
         return $characters;
     }
 
-    function getAvailableAttachmentsAtLocation($location)
-    {
-        $attachments = [];
-        foreach ($this->cards as $card) {
-            if ($card instanceof Attachment && $card->Location == $location && $card->AttachedToId == 0) {
-                $attachments[] = $card;
-            }
-        }
-        return $attachments;
-    }
-
     function getLeaderByPlayerId($playerId)
     {
         foreach ($this->cards as $card) {
@@ -292,6 +364,33 @@ class Theah
                 return $card;
             }
         }
+        return null;
+    }
+
+    function getTechniqueById($id): ?Technique
+    {
+        foreach ($this->cards as $card) {
+
+            if ($card instanceof IHasTechniques)
+            {
+                $technique = $card->getTechniqueById($id);
+                if ($technique)
+                    return $technique;
+            }
+
+            if ($card instanceof Character) 
+                foreach ($card->Attachments as $attachmentId) 
+                {
+                    $attachment = $this->getCardById($attachmentId);
+                    if ($attachment instanceof IHasTechniques)
+                    {
+                        $technique = $attachment->getTechniqueById($id);
+                        if ($technique)
+                            return $technique;
+                    }
+                }
+        }
+
         return null;
     }
 
@@ -303,51 +402,6 @@ class Theah
          $card->Location == Game::LOCATION_CITY_FORUM ||
          $card->Location == Game::LOCATION_CITY_BAZAAR ||
          $card->Location == Game::LOCATION_CITY_GOVERNORS_GARDEN;
-    }
-
-    function getAdjacentCityLocations($location): array
-    {
-        $playerCount = $this->game->globals->get(Game::PLAYER_COUNT);
-        $locations = [];
-        switch ($location) {
-            case Game::LOCATION_PLAYER_HOME:
-                $locations = [Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_FORUM, Game::LOCATION_CITY_BAZAAR];
-                if ($playerCount > 2) {
-                    $locations[] = Game::LOCATION_CITY_OLES_INN;
-                }
-                if ($playerCount > 3) {
-                    $locations[] = Game::LOCATION_CITY_GOVERNORS_GARDEN;
-                }
-                break;
-
-            case Game::LOCATION_CITY_DOCKS:
-                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM];
-                if ($playerCount > 2) {
-                    $locations[] = Game::LOCATION_CITY_OLES_INN;
-                }
-                break;
-
-            case Game::LOCATION_CITY_FORUM:
-                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_BAZAAR];
-                break;
-
-            case Game::LOCATION_CITY_BAZAAR:
-                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM];
-                if ($playerCount > 3) {
-                    $locations[] = Game::LOCATION_CITY_GOVERNORS_GARDEN;
-                }
-                break;
-
-            case Game::LOCATION_CITY_OLES_INN:
-                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_DOCKS];
-                break;
-
-            case Game::LOCATION_CITY_GOVERNORS_GARDEN:
-                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_BAZAAR];
-                break;
-        }
-
-        return $locations;
     }
 
     public function playerCanMove($playerId): bool
@@ -392,6 +446,25 @@ class Theah
         }
 
         return count($charactersThatCanEquipInCity) > 0 || $this->game->handHasAttachments($playerId);        
+    }
+
+    public function playerCanChallenge($playerId): bool
+    {
+        $characters = $this->getCharactersByPlayerId($playerId);
+        $charactersThatCanChallenge = [];
+        foreach ($characters as $character) 
+        {
+            if (!$this->cardInCity($character)) continue;
+            if ($character->Engaged) continue;
+
+            $otherCharacters = $this->getCharactersAtLocation($character->Location);
+            $otherCharacters = array_filter($otherCharacters, fn($otherCharacter) => $otherCharacter->ControllerId && $otherCharacter->ControllerId != $playerId );
+
+            if (count($otherCharacters) > 0)
+                $charactersThatCanChallenge[] = $character;
+        }
+        
+        return count($charactersThatCanChallenge) > 0;
     }
 
     public function playerCanClaim($playerId): bool

@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
@@ -10,7 +11,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 
 trait StatesTrait
 {
@@ -443,6 +449,175 @@ trait StatesTrait
             else
                 $this->gamestate->nextState("parleyable");
         }
+    }
+
+    public function stTechniqueAvailable()
+    {
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->getCardObjectFromDb($performerId);
+
+        if ($performer instanceof IHasTechniques)
+        {
+            if ($performer->anyTechniquesAvailable())
+            {
+                $this->gamestate->nextState("hasTechique");
+                return;
+            }
+        }
+
+        foreach($performer->Attachments as $attachmentId)
+        {
+            $attachment = $this->getCardObjectFromDb($attachmentId);
+            if ($attachment instanceof IHasTechniques)
+            {
+                if ($attachment->anyTechniquesAvailable())
+                {
+                    $this->gamestate->nextState("hasTechique");
+                    return;
+                }
+            }
+        }
+
+        //Set the turn to the target player
+        $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
+        $target = $this->getCardObjectFromDb($targetId);
+        $this->gamestate->changeActivePlayer($target->ControllerId);
+
+        $this->gamestate->nextState("noTechnique");
+    }
+
+    public function stSetupChallenge()
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+        $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
+        $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
+
+        if ($this->globals->has(GAME::CHOSEN_TECHNIQUE))
+        {
+            $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE);
+            $technique = $this->theah->getTechniqueById($techniqueId);
+        }
+        else
+        {
+            $technique = null;
+        }
+
+        $engageEvent = $this->theah->createEvent(Events::CardEngaged);
+        if ($engageEvent instanceof EventCardEngaged)
+        {
+            $engageEvent->card = $performer;
+            $engageEvent->playerId = $playerId;
+        }
+        $this->theah->eventCheck($engageEvent);
+        $this->theah->queueEvent($engageEvent);
+
+        $challengeEvent = $this->theah->createEvent(Events::ChallengeIssued);
+        if ($challengeEvent instanceof EventChallengeIssued)
+        {
+            $challengeEvent->playerId = $playerId;
+            $challengeEvent->performer = $performer;
+            $challengeEvent->target = $target;
+            $challengeEvent->activatedTechnique = $technique;
+        }
+
+        try 
+        {
+            $this->theah->eventCheck($challengeEvent);
+        }
+        catch (\Exception $e) {
+            $this->game->notifyAllPlayers("message", clienttranslate($e->getMessage()), []);
+            $this->gamestate->nextState("challengeFailed");
+            return;
+        }
+
+        $this->theah->queueEvent($challengeEvent);
+        $this->gamestate->changeActivePlayer($target->ControllerId);
+        $this->gamestate->nextState("challengeSetUp");
+    }
+
+    public function stHighDramaChallengeActionResolveTechnique(): void
+    {
+        $this->theah->buildCity();
+
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->theah->getCharacterById($performerId);
+
+        $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
+        $target = $this->theah->getCharacterById($targetId);
+
+        $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE);
+        $technique = $this->theah->getTechniqueById($techniqueId);
+
+        $ownerId = $technique->OwnerId;
+        $techniqueOwner = $this->theah->getCardById($ownerId);
+
+        $event = $this->theah->createEvent(Events::ResolveTechnique);
+        if ($event instanceof EventResolveTechnique)
+        {
+            $event->playerId = $performer->ControllerId;
+            $event->performer = $performer;
+            $event->target = $target;
+            $event->technique = $technique;
+            $event->techniqueOwner = $techniqueOwner;
+        }
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState();
+    }
+
+    public function stHighDramaChallengeActionGenerateThreat()
+    {
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->getCardObjectFromDb($performerId);
+
+        $event = $this->theah->createEvent(Events::GenerateThreat);
+        if ($event instanceof EventGenerateThreat)
+        {
+            $event->performer = $performer;
+        }
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState();
+    }
+
+    public function stHighDramaChallengeActionResolution()
+    {
+        if ($this->globals->get(GAME::CHALLENGE_ACCEPTED))
+        {
+            $this->gamestate->nextState("accepted");
+        }
+        else
+        {
+            //Challege was rejected, wound the target by the threat value.  Limit amount done by the performer's Combat value.
+            $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+            $performer = $this->getCardObjectFromDb($performerId);
+            $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
+            $target = $this->getCardObjectFromDb($targetId);
+
+            $threat = $this->globals->get(GAME::CHALLENGE_THREAT);
+            $combat = $performer->ModifiedCombat;
+            $wounds = $threat;
+            $reason = "Challenge Rejected. Generated Threat was {$threat}.";
+            if ($threat > $combat)
+            {
+                $wounds = $combat;
+                $reduction = $threat - $combat;
+                $reason .= "  Threat reduced by {$reduction} due to Restricted Hostilities (Combat value of {$combat}). ";
+            }
+
+            $event = $this->theah->createEvent(Events::CharacterWounded);
+            if ($event instanceof EventCharacterWounded)
+            {
+                $event->character = $target;
+                $event->wounds = $wounds;
+                $event->reason = $reason;
+            }
+            $this->theah->eventCheck($event);
+            $this->theah->queueEvent($event);
+            
+            $this->gamestate->nextState("rejected");
+        }        
     }
 
     public function stNextPlayer(): void {

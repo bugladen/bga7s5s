@@ -31,7 +31,7 @@ trait DeckTrait
             //Store the card Id in the object, and serialize the card object to the db
             $id = $this->DbGetLastId();
             $card = $this->instantiateCard($card);
-            $card->Id = $id;
+            $card->setId($id);
             $this->updateCardObjectInDb($card);
         }
         $this->cards->shuffle(Game::LOCATION_CITY_DECK);
@@ -68,7 +68,7 @@ trait DeckTrait
             $card->OwnerId = $playerId;
             $card->ControllerId = $playerId;
             if ($card instanceof Leader) {
-                $card->Id = $id;
+                $card->setId($id);
                 $card->Location = $location;
                 $this->updateCardObjectInDb($card);
 
@@ -98,7 +98,7 @@ trait DeckTrait
                 //Create an instance of the card, set the ID, and save it back into the db
                 $id = $this->DbGetLastId();
                 $card = $this->instantiateCard($approachCard);
-                $card->Id = $id;
+                $card->setId($id);
                 $card->OwnerId = $playerId;
                 $card->ControllerId = $playerId;
                 $card->Location = $location;
@@ -126,7 +126,7 @@ trait DeckTrait
                     //Create an instance of the card, set the ID, and save it back into the db
                     $id = $this->DbGetLastId();
                     $card = $this->instantiateCard($factionCard->id);
-                    $card->Id = $id;
+                    $card->setId($id);
                     $card->OwnerId = $playerId;
                     $card->ControllerId = $playerId;
                     $card->Location = $location;

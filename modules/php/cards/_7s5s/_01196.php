@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01196;
 
 class _01196 extends CityCharacter implements IHasTechniques
 {
@@ -38,6 +39,10 @@ class _01196 extends CityCharacter implements IHasTechniques
             'Pirate',
             'Sorcerer',
             'Montaigne',
+        ];
+
+        $this->Techniques = [
+            new Technique_01196(),
         ];
     }
 

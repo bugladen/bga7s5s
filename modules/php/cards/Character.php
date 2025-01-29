@@ -2,6 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateThreat;
+
 abstract class Character extends Card
 {
     public string $Title;
@@ -84,6 +87,37 @@ abstract class Character extends Card
 
             unset($this->Attachments[$index]);
         }    
+    }
+
+    public function handleEvent($event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventGenerateThreat && $event->performer->Id == $this->Id)
+        {
+            $event->threat += $this->ModifiedCombat;
+            $event->explanations[] = clienttranslate("{$this->Name} adds {$this->ModifiedCombat} Threat from their Combat Stat.");
+        }
+
+        if ($event instanceof EventCharacterWounded && $event->character->Id == $this->Id)
+        {
+            $this->ModifiedResolve -= $event->wounds;    
+
+            if ($this->ModifiedResolve < 0) 
+            {
+                $this->ModifiedResolve = 0;
+            }
+
+            $this->IsUpdated = true;
+
+            $event->theah->game->notifyAllPlayers("characterResolveChanged", clienttranslate('${target_name} has received ${wounds} wound(s) due to ${reason} ${target_name}\'s New Resolve: ${resolve}'), [
+                "target_name" => "<strong>{$event->character->Name}</strong>",
+                "characterId" => $event->character->Id,
+                "wounds" => $event->wounds,
+                "reason" => $event->reason,
+                'resolve' => $this->ModifiedResolve
+            ]);
+        }
     }
 
     public function getPropertyArray(): array

@@ -14,14 +14,19 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDis
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 
 trait EventHandler
 {
@@ -289,9 +294,64 @@ trait EventHandler
             case $event instanceof EventSchemeMovedToCity:
                 $event->scheme->Location = $event->location;
                 $event->scheme->IsUpdated = true;
+                
+                //Card is now in city
                 $this->cards[$event->scheme->Id] = $event->scheme;
                 break;
 
-            }
+            case $event instanceof EventTechniqueActivated:
+                $handler = function ($theah, $event)
+                {
+                    $technique = $theah->getTechniqueById($event->technique->Id);
+                    $technique->setActive($theah, true);
+                    $technique->setUsed($theah, true);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventChallengeIssued:
+                $handler = function ($theah, $event)
+                {
+                    $message = '${player_name} has chosen to have ${performer_name} Challenge ${target_name}. ';
+                    if ($event->activatedTechnique) $message .= '${player_name} will activate Technique ${technique_name}. for the Challenge.';
+
+                    $theah->game->notifyAllPlayers("message", clienttranslate($message), [
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "performer_name" => "<strong>{$event->performer->Name}</strong>",
+                        "target_name" => "<strong>{$event->target->Name}</strong>",
+                        "technique_name" => "<strong>{$event->activatedTechnique?->Name}</strong>",
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCharacterIntervened:
+                $handler = function ($theah, $event)
+                {
+                    $this->game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to have ${intervener_name} INTERVENE in the Challenge in place of ${target_name}.'), [
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "intervener_name" => "<strong>{$event->newTarget->Name}</strong>",
+                        "target_name" => "<strong>{$event->oldTarget->Name}</strong>",
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventGenerateThreat:
+                $handler = function ($theah, $event)
+                {
+                    $theah->game->globals->set(Game::CHALLENGE_THREAT, $event->threat);
+                    
+                    foreach ($event->explanations as $explanation) {
+                        $theah->game->notifyAllPlayers("message", clienttranslate($explanation));
+                    }
+                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has generated ${threat} total Threat for the Challenge.'), [
+                        "player_name" => $theah->game->getPlayerNameById($event->performer->ControllerId),
+                        "threat" => $event->threat,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+        }
     }
 }

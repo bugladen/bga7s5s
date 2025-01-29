@@ -5,6 +5,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01157;
+
 
 class _01157 extends FactionAttachment implements IHasTechniques
 {
@@ -33,6 +35,10 @@ class _01157 extends FactionAttachment implements IHasTechniques
             'Weapon',
             'Ranged',
             'Knife',
+        ];
+
+        $this->Techniques = [
+            new Technique_01157(),
         ];
     }
 

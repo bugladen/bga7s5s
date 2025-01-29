@@ -108,7 +108,10 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaRecruitActionChooseMercenary'                 : 'highDramaRecruitActionChooseMercenary_client',
             'highDramaEquipActionChoosePerformer'                   : 'actHighDramaEquipActionPerformerChosen',
             'highDramaEquipActionChooseAttachmentFromPlay_client'   : 'highDramaEquipActionPayForAttachmentFromPlay_client',
-            'highDramaClaimActionChoosePerformer'                   : 'actHighDramaClaimActionPerformerChosen',    
+            'highDramaClaimActionChoosePerformer'                   : 'actHighDramaClaimActionPerformerChosen',
+            'highDramaChallengeActionChoosePerformer'               : 'actHighDramaChallengeActionPerformerChosen',
+            'highDramaChallengeActionChooseTarget'                  : 'actHighDramaChallengeActionTargetChosen',
+            'highDramaChallengeActionAcceptChallenge'               : 'actHighDramaChallengeActionIntervene', 
         };
 
         const clientMessages = {
@@ -219,7 +222,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         items = items.map((item) => item.id);
 
         this.bgaPerformAction('actHighDramaEquipAttachment', { 
-            'performerId': this.clientStateArgs.selectedPerformerId,
+            'performerId': this.clientStateArgs.performerId,
             'attachmentId': this.clientStateArgs.chosenAttachmentId,
             'payWithCards': JSON.stringify(items),
         }).catch(() =>  {
@@ -242,15 +245,16 @@ return declare('seventhseacityoffivesails.actions', null, {
     passConfirmed: function()
     {
         const actionArray = {
-            'highDramaPlayerTurn': 'actHighDramaPass',
-            'planningPhaseResolveSchemes_01016_2': 'actPlanningPhase_01016_2_Pass',
+            'highDramaPlayerTurn': 'actPassWithPass',
+            'planningPhaseResolveSchemes_01016_2': 'actPassWithPass',
             'planningPhaseResolveSchemes_01125': 'actPlanningPhase_01125_Pass',
             'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2_Pass',
             'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4_Pass',
             'planningPhaseResolveSchemes_01145': 'actPlanningPhase_01145_Pass',            
             'planningPhaseResolveSchemes_01145_2_client': 'actPlanningPhase_01145_Pass',            
-            'planningPhaseResolveSchemes_01152': 'actPlanningPhase_01152_Pass',
-            'planningPhaseResolveSchemes_01152_2': 'actPlanningPhase_01152_2_Pass',
+            'planningPhaseResolveSchemes_01152': 'actPassWithPass',
+            'planningPhaseResolveSchemes_01152_2': 'actPassWithPass',
+            'highDramaChallengeActionActivateTechnique': 'actHighDramaChallengeActionActivateTechnique_Pass',
         };
 
         //If the current game state is in actionArray set the action to the value in the array

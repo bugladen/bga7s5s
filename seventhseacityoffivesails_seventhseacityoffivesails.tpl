@@ -65,7 +65,7 @@ var jstpl_home=`
 var jstpl_character=`
 <div id="\${id}" style="--attachment-count:\${attachmentCount}">
     <div id="\${id}_image" class="card home-\${faction}" style="--card_image:url('\${image}')">
-        <div class="card-resolve">\${resolve}</div>
+        <div id="\${id}_resolve_value" class="card-resolve">\${resolve}</div>
         <div id="\${id}_wealth_cost" class="card-wealth-cost city-character-wealth-cost">\${cost}</div>
         <div class="card-stat-box card-combat-box">
             <div id="\${id}_combat_value" class="card-combat-value">\${combat}</div>

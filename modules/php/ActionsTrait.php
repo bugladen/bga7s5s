@@ -17,10 +17,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerD
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 
 trait ActionsTrait
 {
@@ -39,14 +41,14 @@ trait ActionsTrait
         $this->gamestate->nextState($transition);
     }
 
+    public function actPassWithPass(): void
+    {
+        $this->actPass("pass");
+    }
+
     public function actBack(): void
     {
         $this->gamestate->nextState("back");
-    }
-
-    public function actPlanningPhase_01016_2_Pass()
-    {
-        $this->actPass("pass");
     }
 
     public function actMultipleOk(): void{
@@ -545,11 +547,6 @@ trait ActionsTrait
         $this->gamestate->nextState("reknownPlaced");
     }
 
-    public function actPlanningPhase_01152_Pass()
-    {
-        $this->actPass("pass");
-    }
-
     public function actPlanningPhase_01152_2(string $locations)
     {
         $location = json_decode($locations, true)[0];
@@ -572,11 +569,6 @@ trait ActionsTrait
         $this->globals->set(GAME::CHOSEN_LOCATION, $location);
 
         $this->gamestate->nextState("locationChosen");
-    }
-
-    public function actPlanningPhase_01152_2_Pass()
-    {
-        $this->actPass("pass");
     }
 
     public function actPlanningPhase_01152_3(string $locations)
@@ -699,11 +691,6 @@ trait ActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actHighDramaPass()
-    {
-        $this->actPass("pass");
-    }
-
     public function actHighDramaMoveActionStart()
     {
         $player_id = (int)$this->getActivePlayerId();
@@ -720,8 +707,6 @@ trait ActionsTrait
     {
         $id = json_decode($ids, true)[0];
         $character = $this->getCardObjectFromDb($id);
-        $playerId = $this->getActivePlayerId();
-        $playerName = $this->getActivePlayerName();
 
         $this->globals->set(GAME::CHOSEN_CARD, $character->Id);
 
@@ -731,7 +716,6 @@ trait ActionsTrait
     public function actHighDramaMoveActionDestinationChosen(string $locations)
     {
         $location = json_decode($locations, true)[0];
-        $playerId = $this->getActivePlayerId();
         $playerName = $this->getActivePlayerName();
 
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
@@ -774,7 +758,7 @@ trait ActionsTrait
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
         $id = json_decode($ids, true)[0];
-        $character = $this->getCardObjectFromDb($id);
+        $character = $this->theah->getCharacterById($id);
 
         if (!$this->theah->cardInCity($character)) {
             throw new \BgaUserException("Character is not in the City.");
@@ -827,7 +811,7 @@ trait ActionsTrait
         $playerName = $this->getActivePlayerName();
         $discount = $this->globals->get(Game::DISCOUNT);
         $performerId = $this->globals->get(GAME::CHOSEN_CARD);
-        $performer = $this->getCardObjectFromDb($performerId);
+        $performer = $this->theah->getCharacterById($performerId);
 
         $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
         $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return in_array("Mercenary", $character->Traits); });        
@@ -878,7 +862,7 @@ trait ActionsTrait
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
         $id = json_decode($ids, true)[0];
-        $performer = $this->getCardObjectFromDb($id);
+        $performer = $this->theah->getCharacterById($id);
         $handHasAttachments = $this->handHasAttachments($playerId);
 
         $characters = $this->theah->getCharactersByPlayerId($playerId);        
@@ -920,7 +904,7 @@ trait ActionsTrait
         $playerName = $this->getActivePlayerName();
 
         $performerId = $this->globals->get(GAME::CHOSEN_CARD);
-        $performer = $this->getCardObjectFromDb($performerId);
+        $performer = $this->theah->getCharacterById($performerId);
         
         $attachment = $this->getCardObjectFromDb($attachmentId);
 
@@ -1013,13 +997,196 @@ trait ActionsTrait
         $this->gamestate->nextState("claimActionStart");
     }
 
+    public function actHighDramaChallengeActionStart()
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        if ($this->theah->playerCanChallenge($player_id) == false) {
+            throw new \BgaUserException("Challenge Action is not allowed right now.");
+        }
+
+        $this->globals->delete(GAME::CHOSEN_PERFORMER);
+        $this->globals->delete(GAME::CHOSEN_TARGET);
+        $this->globals->delete(GAME::CHOSEN_TECHNIQUE);
+        $this->globals->delete(GAME::CHALLENGE_THREAT);
+        $this->globals->delete(GAME::CHALLENGE_ACCEPTED);
+
+        $this->gamestate->nextState("challengeActionStart");
+    }
+
+    public function actHighDramaChallengeActionPerformerChosen(string $ids)
+    {
+        $id = json_decode($ids, true)[0];
+        $activePlayerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $performer = $this->theah->getCharacterById($id);
+        if ($performer->Engaged) {
+            throw new \BgaUserException("Performer cannot Challenge because it is engaged.");
+        }
+
+        $characters = $this->theah->getCharactersByPlayerId($activePlayerId);
+        
+        //Filter out those characters that are not in the city
+        $charactersInCity = array_filter($characters, fn($character) => $this->theah->cardInCity($character) );  
+
+        //Select the Ids of the characters
+        $characterIds = array_map(function($character) { return $character->Id; }, $charactersInCity);
+
+        if (!in_array($id, $characterIds)) {
+            throw new \BgaUserException("Performer is not in the City.");
+        }
+
+        $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
+        $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => $character->ControllerId && $character->ControllerId != $activePlayerId );
+        if (count($charactersAtLocation) == 0)
+        {
+            throw new \BgaUserException("No Challengable Characters at Performer's location.");
+        }
+
+        $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
+
+        $this->gamestate->nextState("performerChosen");
+    }
+
+    public function actHighDramaChallengeActionTargetChosen(string $ids)
+    {
+        $id = json_decode($ids, true)[0];
+
+        $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
+        $target = $this->getCardObjectFromDb($id);
+
+        if ($target->Location != $performer->Location) {
+            throw new \BgaUserException("Target is not in the same location as your Peformer.");
+        }
+
+        $this->globals->set(GAME::CHOSEN_TARGET, $target->Id);
+
+        $this->notifyPlayer($performer->ControllerId, "message", clienttranslate('You have chosen to have ${performer_name} challenge ${target_name}.'), [
+            "performer_name" => "<strong>{$performer->Name}</strong>",
+            "target_name" => "<strong>{$target->Name}</strong>",
+        ]);
+
+        $this->gamestate->nextState("targetChosen");
+    }
+
+    public function actHighDramaChallengeActionTechniqueActivated(string $techniqueId)
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+        $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
+        $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
+
+        $technique = $this->theah->getTechniqueById($techniqueId);
+        if ($technique == null) {
+            throw new \BgaUserException("Technique not found.");
+        }
+
+        if ($technique->OwnerId != $performer->Id) {
+            throw new \BgaUserException("Technique does not belong to the Performer.");
+        }
+
+        $this->globals->set(GAME::CHOSEN_TECHNIQUE, $technique->Id);
+
+        $owner = $this->theah->getCharacterById($technique->OwnerId);
+
+        $techniqueEvent = $this->theah->createEvent(Events::TechniqueActivated);
+        if ($techniqueEvent instanceof EventTechniqueActivated)
+        {
+            $techniqueEvent->playerId = $playerId;
+            $techniqueEvent->performer = $performer;
+            $techniqueEvent->target = $target;
+            $techniqueEvent->techniqueOwner  = $owner;
+            $techniqueEvent->technique = $technique;
+        }
+
+        $this->theah->eventCheck($techniqueEvent);
+        $this->theah->queueEvent($techniqueEvent);
+
+        $this->gamestate->nextState("techniqueActivated");
+    }
+
+    public function actHighDramaChallengeActionActivateTechnique_Pass()
+    {
+        $this->gamestate->nextState("pass");
+
+    }
+
+    public function actHighDramaChallengeActionAccept()
+    {
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} ACCEPTS The Challenge.'), [
+            "player_name" => $this->getActivePlayerName(),
+        ]);
+
+        $this->globals->set(GAME::CHALLENGE_ACCEPTED, true);
+
+        $this->gamestate->nextState("");
+    }
+
+    public function actHighDramaChallengeActionReject()
+    {
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} REJECTS The Challenge.'), [
+            "player_name" => $this->getActivePlayerName(),
+        ]);
+
+        $this->globals->set(GAME::CHALLENGE_ACCEPTED, false);
+
+        $this->gamestate->nextState("");
+    }
+
+    public function actHighDramaChallengeActionIntervene(string $ids)
+    {
+        $id = json_decode($ids, true)[0];
+        $playerId = $this->getActivePlayerId();
+        $playerName = $this->getActivePlayerName();
+
+        $this->theah->buildCity();
+        $character = $this->theah->getCardById($id);
+
+        $target = $this->theah->getCardById($this->globals->get(GAME::CHOSEN_TARGET));
+        if ($target->Location != $character->Location) {
+            throw new \BgaUserException("Character is not at the same location as the target.");
+        }    
+
+        if($character->Engaged) {
+            throw new \BgaUserException("Character is engaged. Cannot Intervene.");
+        }    
+
+        $this->globals->set(Game::CHOSEN_TARGET, $character->Id);
+
+        $engageEvent = $this->theah->createEvent(Events::CardEngaged);
+        if ($engageEvent instanceof EventCardEngaged)
+        {
+            $engageEvent->card = $character;
+            $engageEvent->playerId = $playerId;
+        }    
+        $this->theah->eventCheck($engageEvent);
+        
+        $interveneEvent = $this->theah->createEvent(Events::CharacterIntervened);
+        if ($interveneEvent instanceof EventCharacterIntervened)
+        {
+            $interveneEvent->playerId = $playerId;
+            $interveneEvent->oldTarget = $target;
+            $interveneEvent->newTarget = $character;
+        }    
+        $this->theah->eventCheck($interveneEvent);
+
+        $this->theah->queueEvent($engageEvent);
+        $this->theah->queueEvent($interveneEvent);
+
+        $this->globals->set(GAME::CHALLENGE_ACCEPTED, true);
+
+        $this->gamestate->nextState("");
+    }    
+
     public function actHighDramaClaimActionPerformerChosen(string $ids)
     {
         $id = json_decode($ids, true)[0];
         $activePlayerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $performer = $this->getCardObjectFromDb($id);
+        $performer = $this->theah->getCharacterById($id);
         if ($performer->Engaged) {
             throw new \BgaUserException("Performer cannot Claim because it is engaged.");
         }
@@ -1027,7 +1194,7 @@ trait ActionsTrait
         $characters = $this->theah->getCharactersByPlayerId($activePlayerId);
         
         //Filter out those characters that are not in the city
-        $charactersInCity = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
+        $charactersInCity = array_filter($characters, fn($character) => $this->theah->cardInCity($character) );  
 
         //Select the Ids of the characters
         $characterIds = array_map(function($character) { return $character->Id; }, $charactersInCity);

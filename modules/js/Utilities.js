@@ -424,6 +424,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
     clearCardAsSelectable: function(image) {
         dojo.removeClass(image, 'selectable');
         dojo.removeClass(image, 'selected');
+        dojo.removeClass(image, 'chosen');
         dojo.style(image, 'cursor', 'default');
     },
 

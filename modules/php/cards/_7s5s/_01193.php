@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01193;
 
 class _01193 extends CityAttachment implements IHasTechniques
 {
@@ -30,6 +31,10 @@ class _01193 extends CityAttachment implements IHasTechniques
 
         $this->Traits = [
             'Armor',
+        ];
+
+        $this->Techniques = [
+            new Technique_01193(),
         ];
     }
 

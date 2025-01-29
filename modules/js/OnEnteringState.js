@@ -462,9 +462,9 @@ onEnteringState: function( stateName, args )
                         this.makeCityLocationSelectable(selectedLocationElement.id);
                     }
                 });
-                card = this.cardProperties[args.args.selectedPerformerId];
+                card = this.cardProperties[args.args.performerId];
                 const image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'selected');
+                dojo.addClass(image, 'chosen');
             }
         },
 
@@ -482,18 +482,18 @@ onEnteringState: function( stateName, args )
 
         'highDramaRecruitActionParley': () => {
             if (this.isCurrentPlayerActive()) {
-                card = this.cardProperties[args.args.selectedPerformerId];
+                card = this.cardProperties[args.args.performerId];
                 const image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'selected');
+                dojo.addClass(image, 'chosen');
             }
         },
 
         'highDramaRecruitActionChooseMercenary': () => {
             if (this.isCurrentPlayerActive()) {
-                card = this.cardProperties[args.args.selectedPerformerId];
+                card = this.cardProperties[args.args.performerId];
                 this.clientStateArgs.performerId = card.id;
                 const image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'selected');
+                dojo.addClass(image, 'chosen');
 
                 this.numberOfCardsSelectable = 1;
                 this.clientStateArgs.discount = args.args.discount;
@@ -520,7 +520,7 @@ onEnteringState: function( stateName, args )
         'highDramaRecruitActionChooseMercenary_client': () => {
             const card = this.cardProperties[this.clientStateArgs.selectedCards[0]];
             const image = $(`${card.divId}_image`);
-            dojo.addClass(image, 'selected');
+            dojo.addClass(image, 'chosen');
 
             const cost = $(`${card.divId}_wealth_cost`);
             let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
@@ -546,16 +546,21 @@ onEnteringState: function( stateName, args )
 
         'highDramaEquipActionChooseAttachmentLocation': () => {
             if (this.isCurrentPlayerActive()) {
-                card = this.cardProperties[args.args.selectedPerformerId];
+                card = this.cardProperties[args.args.performerId];
                 const image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
-                dojo.addClass(image, 'selected');
+                dojo.addClass(image, 'chosen');
 
                 this.clientStateArgs = args.args;
             }
         },
 
         'highDramaEquipActionChooseAttachmentFromHand_client': () => {
+            card = this.cardProperties[this.clientStateArgs.performerId];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+            dojo.addClass(image, 'chosen');
+
             this.clientStateArgs.attachmentsInHand.forEach((cardId) => {
                 let div = this.factionHand.getItemDivId(cardId);
                 dojo.addClass(div, 'selectable');
@@ -565,6 +570,11 @@ onEnteringState: function( stateName, args )
 
         'highDramaEquipActionChooseAttachmentFromPlay_client': () => {
             this.numberOfCardsSelectable = 1;
+            card = this.cardProperties[this.clientStateArgs.performerId];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+            dojo.addClass(image, 'chosen');
+
             this.clientStateArgs.attachmentsInPlay.forEach((cardId) => {
                 card = this.cardProperties[cardId];
                 const image = $(`${card.divId}_image`);
@@ -603,7 +613,7 @@ onEnteringState: function( stateName, args )
             this.clientStateArgs.chosenAttachmentId = this.clientStateArgs.selectedCards[0];
             const card = this.cardProperties[this.clientStateArgs.chosenAttachmentId];
             const image = $(`${card.divId}_image`);
-            dojo.addClass(image, 'selected');
+            dojo.addClass(image, 'chosen');
 
             const costDiv = $(`${card.divId}_wealth_cost`);
             const cost = parseInt(costDiv.innerHTML);
@@ -632,7 +642,71 @@ onEnteringState: function( stateName, args )
             }
         },
 
+        'highDramaChallengeActionChoosePerformer': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCardsSelectable = 1;
+                args.args.ids.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+            }
+        },
+        
+        'highDramaChallengeActionChooseTarget': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCardsSelectable = 1;
 
+                card = this.cardProperties[args.args.performerId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'chosen');
+
+                args.args.ids.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+            }
+        },
+
+        'highDramaChallengeActionActivateTechnique' : () => {
+            if (this.isCurrentPlayerActive()) {
+                card = this.cardProperties[args.args.performerId];
+                image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'chosen');
+
+                card = this.cardProperties[args.args.targetId];
+                image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'chosen');
+            }
+        },
+
+        'highDramaChallengeActionAcceptChallenge' : () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCardsSelectable = 1;
+                card = this.cardProperties[args.args.performerId];
+                image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'chosen');
+
+                card = this.cardProperties[args.args.targetId];
+                image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'chosen');
+
+                args.args.ids.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+            }
+        }
     };
     
     if (methods[stateName]) {

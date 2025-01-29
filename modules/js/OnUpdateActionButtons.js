@@ -169,6 +169,8 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaPlayerTurn': () => {
             if (this.isCurrentPlayerActive()) {
+                if (args.canChallenge)
+                    this.addActionButton(`actChallengeAction`, _('Challenge'), () => this.bgaPerformAction('actHighDramaChallengeActionStart', {}));
                 if (args.canClaim)
                     this.addActionButton(`actClaimAction`, _('Claim'), () => this.bgaPerformAction('actHighDramaClaimActionStart', {}));
                 if (args.canEquip)
@@ -300,7 +302,40 @@ onUpdateActionButtons: function( stateName, args )
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }
         },
+
+        'highDramaChallengeActionChoosePerformer': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
+        },
+
+        'highDramaChallengeActionChooseTarget': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
+        },
+
+        'highDramaChallengeActionActivateTechnique': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+                args.techniques.forEach((technique) => { 
+                    this.addActionButton(
+                        `actChooseTechnique${technique.id}-btn`, _(technique.name), () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 
+                });
+            }
+        },
         
+        'highDramaChallengeActionAcceptChallenge': () => {
+            this.addActionButton(`actAccept`, _('Accept'), () => this.bgaPerformAction('actHighDramaChallengeActionAccept', {})) 
+            this.addActionButton(`actReject`, _('Reject'), () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
+            this.addActionButton(`actChooseCardSelected`, _('Intervene'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
+        },
     };
 
     if( methods[stateName] )

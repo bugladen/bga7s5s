@@ -20,6 +20,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardEngaged', 1000],
             ['cardMoved', 1000],
             ['characterRecruited', 1000],
+            ['characterResolveChanged', 1000],
             ['drawCard', 2000],
             ['firstPlayer', 1500],
             ['locationClaimed', 500],
@@ -280,6 +281,21 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const cardId = this.createCardId(card, card.location);
         const target = this.getTargetElementForLocation(card.location, card.controllerId);
         this.createCard(cardId, card, target);
+    },
+
+    notif_characterResolveChanged: function( notif )
+    {
+        debug( 'notif_characterResolveChanged' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        card.modifiedResolve -= args.wounds;
+
+        const element = $(`${card.divId}_resolve_value`);
+        element.innerHTML = card.modifiedResolve;
+        if (card.modifiedResolve != card.resolve)
+            dojo.addClass(element, 'modified-stat-value');
     },
 
     notif_newDay: function( notif )

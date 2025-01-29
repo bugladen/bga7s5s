@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_PlusOneThrust;
 
 class _01048 extends FactionAttachment implements IHasTechniques
 {
@@ -35,6 +36,16 @@ class _01048 extends FactionAttachment implements IHasTechniques
             'Melee',
             'Sword',
         ];
+
+        $technique = new Technique_PlusOneThrust();
+        $technique->setId("Technique_01048_1");
+        $technique->Name = "Langschwert: +1 Thrust";
+        $this->Techniques[] = $technique;
+
+        $technique = new Technique_PlusOneThrust();
+        $technique->setId("Technique_01048_2");
+        $technique->Name = "Langschwert: +1 Thrust";
+        $this->Techniques[] = $technique;
     }
 
     public function getPropertyArray(): array

@@ -6,6 +6,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_PlusOneRiposte;
+
 
 class _01074 extends FactionAttachment implements IHasTechniques
 {
@@ -35,6 +37,13 @@ class _01074 extends FactionAttachment implements IHasTechniques
             'Weapon',
             'Melee',
             "Sword",
+        ];
+
+        $technique = new Technique_PlusOneRiposte();
+        $technique->setId("Technique_01074");
+        $technique->Name = "Mastercrafted Rapier: +1 Riposte";
+        $this->Techniques = [
+            $technique,
         ];
     }
 

@@ -13,10 +13,12 @@ abstract class Event
 
     public Theah $theah;
     public int $priority;
+    public bool $runHandlerAfterCards;
 
     public function __construct()
     {
         $this->priority = Event::LOWEST_PRIORITY;
+        $this->runHandlerAfterCards = false;
     }
 
     public function queueEvent(Event $event)
