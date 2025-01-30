@@ -10,7 +10,7 @@ interface IHasTechniques
 
     public function anyTechniquesAvailable(): bool;
 
-    public function getTechniqueNames(): Array;
+    public function getTechniqueNames($includeAvailable = false): Array;
 
     public function getTechniquesArray(): Array;
 

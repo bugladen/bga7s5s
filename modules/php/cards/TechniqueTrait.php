@@ -24,11 +24,12 @@ trait TechniqueTrait
         return false;
     }
 
-    public function getTechniqueNames(): Array
+    public function getTechniqueNames($includeAvailable = false): Array
     {
         $names = [];
         foreach ($this->Techniques as $technique) {
-            $names[] = $technique->name;
+            if ($technique->isAvailable())
+                $names[] = $technique->name;
         }
         return $names;
     }

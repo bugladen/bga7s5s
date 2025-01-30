@@ -97,6 +97,7 @@ abstract class Card
         if ($this instanceof ICityDeckCard) $this->addCityProperties($properties);
         if ($this instanceof IFactionCard) $this->addFactionProperties($properties);
         if ($this instanceof IHasTechniques) $this->addTechniqueProperties($properties);
+        if ($this instanceof IHasManeuvers) $this->addManeuverProperties($properties);
 
         return $properties;
     }

@@ -3,13 +3,16 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01155;
 
 
-class _01155 extends FactionAttachment implements IHasTechniques
+class _01155 extends FactionAttachment implements IHasManeuvers, IHasTechniques
 {
+    use ManeuverTrait;
     use TechniqueTrait;
 
     public function __construct()
