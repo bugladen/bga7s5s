@@ -47,12 +47,4 @@ class _01048 extends FactionAttachment implements IHasTechniques
         $technique->Name = "Langschwert: +1 Thrust";
         $this->Techniques[] = $technique;
     }
-
-    public function getPropertyArray(): array
-    {
-        $properties = parent::getPropertyArray();
-        $this->addTechniqueProperties($properties);
-
-        return $properties;
-    }
 }

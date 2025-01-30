@@ -40,12 +40,4 @@ class _01013 extends Character implements IHasTechniques
             new Technique_01013(),
         ];
     }
-
-    public function getPropertyArray(): array
-    {
-        $properties = parent::getPropertyArray();
-        $this->addTechniqueProperties($properties);
-
-        return $properties;
-    }
 }

@@ -96,6 +96,7 @@ abstract class Card
         if ($this instanceof IWealthCost) $this->addWealthCostProperties($properties);
         if ($this instanceof ICityDeckCard) $this->addCityProperties($properties);
         if ($this instanceof IFactionCard) $this->addFactionProperties($properties);
+        if ($this instanceof IHasTechniques) $this->addTechniqueProperties($properties);
 
         return $properties;
     }

@@ -42,12 +42,4 @@ class _01155 extends FactionAttachment implements IHasTechniques
             new Technique_01155(),
         ];
     }
-
-    public function getPropertyArray(): array
-    {
-        $properties = parent::getPropertyArray();
-        $this->addTechniqueProperties($properties);
-
-        return $properties;
-    }
 }

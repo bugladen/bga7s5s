@@ -57,12 +57,4 @@ class _01074 extends FactionAttachment implements IHasTechniques
                 throw new \BgaUserException(_("Mastercrafted Rapier can only be equipped to Duelists."));
         }
     }
-
-    public function getPropertyArray(): array
-    {
-        $properties = parent::getPropertyArray();
-        $this->addTechniqueProperties($properties);
-
-        return $properties;
-    }
 }

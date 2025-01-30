@@ -45,12 +45,4 @@ class _01186 extends CityCharacter implements IHasTechniques
             new Technique_01186(),
         ];
     }
-
-    public function getPropertyArray(): array
-    {
-        $properties = parent::getPropertyArray();
-        $this->addTechniqueProperties($properties);
-
-        return $properties;
-    }
 }

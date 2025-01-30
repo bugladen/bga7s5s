@@ -37,12 +37,4 @@ class _01193 extends CityAttachment implements IHasTechniques
             new Technique_01193(),
         ];
     }
-
-    public function getPropertyArray(): array
-    {
-        $properties = parent::getPropertyArray();
-        $this->addTechniqueProperties($properties);
-
-        return $properties;
-    }
 }
