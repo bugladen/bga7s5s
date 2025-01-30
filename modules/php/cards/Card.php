@@ -93,6 +93,10 @@ abstract class Card
         $properties['traits'] = $this->Traits;
         $properties['conditions'] = $this->Conditions;
 
+        if ($this instanceof IWealthCost) $this->addWealthCostProperties($properties);
+        if ($this instanceof ICityDeckCard) $this->addCityProperties($properties);
+        if ($this instanceof IFactionCard) $this->addFactionProperties($properties);
+
         return $properties;
     }
 }

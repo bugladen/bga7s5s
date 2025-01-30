@@ -6,15 +6,4 @@ abstract class FactionAttachment extends Attachment implements IFactionCard, IWe
 {
     use FactionCardTrait;
     use WealthCostTrait;
-
-    public function getPropertyArray(): array
-    {
-        $properties = parent::getPropertyArray();
-        $this->addFactionProperties($properties);
-        $this->addWealthCostProperties($properties);
-
-        $properties['type'] = 'Attachment';
-
-        return $properties;
-    }
 }

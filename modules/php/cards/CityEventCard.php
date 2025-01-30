@@ -30,8 +30,6 @@ abstract class CityEventCard extends Card implements ICityDeckCard
     {
         $properties = parent::getPropertyArray();
 
-        $this->addCityProperties($properties);
-
         $properties['type'] = 'Event';
 
         return $properties;

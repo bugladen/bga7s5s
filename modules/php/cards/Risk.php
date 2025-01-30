@@ -10,8 +10,6 @@ class Risk extends Card implements IFactionCard, IWealthCost
     public function getPropertyArray(): array
     {
         $properties = parent::getPropertyArray();
-        $this->addFactionProperties($properties);
-        $this->addWealthCostProperties($properties);
 
         $properties['type'] = 'Risk';
 

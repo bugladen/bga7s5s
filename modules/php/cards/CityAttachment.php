@@ -11,13 +11,4 @@ abstract class CityAttachment extends Attachment implements ICityDeckCard
         parent::__construct();
     }
 
-    public function getPropertyArray(): array
-    {
-        $properties = parent::getPropertyArray();
-        
-        $this->addCityProperties($properties);
-
-        return $properties;
-    }
-
 }

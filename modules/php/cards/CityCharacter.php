@@ -20,9 +20,6 @@ abstract class CityCharacter extends Character implements ICityDeckCard, IWealth
     {
         $properties = parent::getPropertyArray();
 
-        $this->addCityProperties($properties);
-        $this->addWealthCostProperties($properties);
-
         $properties['negotiable'] = $this->Negotiable;
 
         return $properties;

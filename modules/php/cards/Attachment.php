@@ -27,7 +27,6 @@ abstract class Attachment extends Card implements IWealthCost
     public function getPropertyArray(): array
     {
         $properties = parent::getPropertyArray();
-        $this->addWealthCostProperties($properties);
         
         $properties['resolveModifier'] = $this->ResolveModifier;
         $properties['combatModifier'] = $this->CombatModifier;
