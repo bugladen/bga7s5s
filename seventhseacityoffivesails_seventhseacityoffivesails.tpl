@@ -150,8 +150,8 @@ var jstpl_location_control_chip = `
 
 </script>  
 
-<div id="choose-container" class="whiteblock hand hidden">
-    <div><b><span id="choose-container-name"></span></b></div>
+<div id="choose_container" class="whiteblock hand hidden">
+    <div><b><span id="choose_container_name"></span></b></div>
     <div id="chooseList" class="hidden">
     </div>
 </div>

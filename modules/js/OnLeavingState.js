@@ -16,25 +16,25 @@ onLeavingState: function( stateName )
         },
         
         'planningPhaseResolveSchemes_01016_2': () => {
-            dojo.addClass('choose-container', 'hidden');
+            dojo.addClass('choose_container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
         },
 
         'planningPhaseResolveSchemes_01016_3': () => {
-            dojo.addClass('choose-container', 'hidden');
+            dojo.addClass('choose_container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
         },
 
         'planningPhaseResolveSchemes_01044': () => {
-            dojo.addClass('choose-container', 'hidden');
+            dojo.addClass('choose_container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
         },
         
         'planningPhaseResolveSchemes_01045': () => {
-            dojo.addClass('choose-container', 'hidden');
+            dojo.addClass('choose_container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
         },
@@ -130,7 +130,7 @@ onLeavingState: function( stateName )
         },
 
         'planningPhaseEnd_01098_2': () => {
-            dojo.addClass('choose-container', 'hidden');
+            dojo.addClass('choose_container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
         },

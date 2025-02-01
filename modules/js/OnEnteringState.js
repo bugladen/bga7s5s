@@ -33,9 +33,9 @@ onEnteringState: function( stateName, args )
 
         'planningPhaseResolveSchemes_01016_2': () => {
             if (this.isCurrentPlayerActive()) {
-                dojo.removeClass('choose-container', 'hidden');
+                dojo.removeClass('choose_container', 'hidden');
                 dojo.removeClass('chooseList', 'hidden');
-                $('choose-container-name').innerHTML = _('Red Hand Thugs in Your Faction Deck');
+                $('choose_container_name').innerHTML = _('Red Hand Thugs in Your Faction Deck');
 
                 // For each Red Hand Thug card in the players deck, create a stock item
                 args.args.thugs.forEach((card) => {
@@ -46,9 +46,9 @@ onEnteringState: function( stateName, args )
         },
 
         'planningPhaseResolveSchemes_01016_3': () => {
-            dojo.removeClass('choose-container', 'hidden');
+            dojo.removeClass('choose_container', 'hidden');
             dojo.removeClass('chooseList', 'hidden');
-            $('choose-container-name').innerHTML = _('Chosen Red Hand Thug');
+            $('choose_container_name').innerHTML = _('Chosen Red Hand Thug');
 
             //Wait a second for stock object to catch up?
             setTimeout(() => {
@@ -60,9 +60,9 @@ onEnteringState: function( stateName, args )
 
         'planningPhaseResolveSchemes_01044': () => {
             if (this.isCurrentPlayerActive()) {
-                dojo.removeClass('choose-container', 'hidden');
+                dojo.removeClass('choose_container', 'hidden');
                 dojo.removeClass('chooseList', 'hidden');
-                $('choose-container-name').innerHTML = _('Your Discard Pile');
+                $('choose_container_name').innerHTML = _('Your Discard Pile');
 
                 // For each card in the players discard pile, create a stock item
                 const player = this.gamedatas.players[this.getActivePlayerId()];      
@@ -79,9 +79,9 @@ onEnteringState: function( stateName, args )
 
         'planningPhaseResolveSchemes_01045': () => {
             if (this.isCurrentPlayerActive()) {
-                dojo.removeClass('choose-container', 'hidden');
+                dojo.removeClass('choose_container', 'hidden');
                 dojo.removeClass('chooseList', 'hidden');
-                $('choose-container-name').innerHTML = _('Mercenaries in the City Deck Discard Pile');
+                $('choose_container_name').innerHTML = _('Mercenaries in the City Deck Discard Pile');
 
                 // For each card in the city discard pile, create a stock item
                 this.gamedatas.cityDiscard.forEach((card) => {
@@ -381,9 +381,9 @@ onEnteringState: function( stateName, args )
         },
 
         'planningPhaseEnd_01098_2': () => {
-            dojo.removeClass('choose-container', 'hidden');
+            dojo.removeClass('choose_container', 'hidden');
             dojo.removeClass('chooseList', 'hidden');
-            $('choose-container-name').innerHTML = _('Revealed Card');
+            $('choose_container_name').innerHTML = _('Revealed Card');
 
             // For each card in the players discard pile, create a stock item
             this.addCardToDeck(this.chooseList, args.args.card);
