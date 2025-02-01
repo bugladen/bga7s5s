@@ -57,4 +57,5 @@ class Events
     const CardEngaged = 'EventCardEngaged';
     
     const Transition = 'EventTransition';
+    const ChangeActivePlayer = 'EventChangeActivePlayer';
 }

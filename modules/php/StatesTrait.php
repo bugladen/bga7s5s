@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
@@ -615,9 +616,20 @@ trait StatesTrait
             }
             $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
-            
+
+            //Find out who the next player is in order
+            $table = $this->getNextPlayerTable();
+            $nextPlayerId = $table[$performer->ControllerId];
+
+            $nextPlayerEvent = $this->theah->createEvent(Events::ChangeActivePlayer);
+            if ($nextPlayerEvent instanceof EventChangeActivePlayer)
+            {
+                $nextPlayerEvent->playerId = $nextPlayerId;
+            }
+            $this->theah->queueEvent($nextPlayerEvent);
+
             $this->gamestate->nextState("rejected");
-        }        
+        }
     }
 
     public function stNextPlayer(): void {

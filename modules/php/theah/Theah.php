@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Theah
@@ -161,6 +162,10 @@ class Theah
                     $card->IsUpdated = false;
                     $this->db->updateCardObject($card);
                 }
+            }
+
+            if ($event instanceof EventChangeActivePlayer) {
+                $this->game->gamestate->changeActivePlayer($event->playerId);
             }
 
             if ($event instanceof EventTransition) {                
