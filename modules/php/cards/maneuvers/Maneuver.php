@@ -6,8 +6,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbility;
 
 abstract class Maneuver extends CardAbility
 {
-    public readonly bool $ResetOnDuelEnd;
-    public readonly bool $ResetOnDayEnd;
+    public bool $ResetOnDuelEnd;
+    public bool $ResetOnDayEnd;
 
     public function __construct()
     {
