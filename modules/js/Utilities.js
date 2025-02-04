@@ -58,17 +58,17 @@ return declare('seventhseacityoffivesails.utilities', null, {
         return null;
     },
     
-    createCard: function( divId, card, targetDiv )
+    createCard: function( divId, card, targetDiv, inDuel = false )
     {
         if (card.type === 'Character')
         {
             if (card.controllerId !== 0) {
                 const playerInfo = this.gamedatas.players[card.controllerId];
-                this.createCharacterCard(divId, playerInfo.color, card, targetDiv);
+                this.createCharacterCard(divId, playerInfo.color, card, targetDiv, inDuel);
                 dojo.style( `${divId}_wealth_cost`, 'display', 'none' );
             }
             else {
-                this.createCharacterCard(divId, '', card, targetDiv);
+                this.createCharacterCard(divId, '', card, targetDiv, inDuel);
                 dojo.removeClass(`${divId}-player-color`, 'character-player-color');
             }
         }
@@ -90,7 +90,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
-    createCharacterCard: function( divId, color, character, targetDiv )
+    createCharacterCard: function( divId, color, character, targetDiv, inDuel = false )
     {
         //Set the divId of the card
         character.divId = divId;
@@ -100,6 +100,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         const wealthCost = character.wealthCost ? character.wealthCost : '';
         const influence = character.modifiedInfluence >= 0 ? character.modifiedInfluence  : '-';
+
+        const placement = inDuel ? 'first' : 'before';
 
         dojo.place( this.format_block( 'jstpl_character', {
             id: divId,
@@ -112,7 +114,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             finesse: character.modifiedFinesse,
             influence: influence,
             cost: wealthCost,
-        }), targetDiv, "before" );
+        }), targetDiv, placement );
 
         if (character.combat != character.modifiedCombat) 
             dojo.addClass(`${divId}_combat_value`, 'modified-stat-value');
@@ -145,7 +147,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
         }
 
-        if (character.engaged)
+        if (character.engaged && !inDuel) 
             dojo.addClass(`${divId}_image`, 'engaged');
 
         //Display the attachments in front of the character, offset
@@ -375,12 +377,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 return card.controllerId ? `${card.controllerId}-${card.id}` : `bazaar-${card.id}`;
             case this.LOCATION_CITY_GOVERNORS_GARDEN:
                 return card.controllerId ? `${card.controllerId}-${card.id}` : `garden-${card.id}`;
+            case this.IN_DUEL:
+                return `duel-${card.id}`;
             case this.LOCATION_PLAYER_HOME:
                 return `${card.controllerId}-${card.id}`;
         }
     },
 
-    getTargetElementForLocation: function ( location, playerId )
+    getTargetElementForLocation: function ( location, playerId = null )
     {
         switch (location) {
             case this.LOCATION_CITY_OLES_INN:
@@ -461,7 +465,50 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 player_color: player.color,
             }),  imageElement, 'before');
         }
-    }
+    },
+
+    displayDuelTable: function() {
+        const city = $('city');
+        const id = 'duelTable';
+        dojo.place( this.format_block( 'jstpl_duel_table', {
+        }),  city, 'before');
+    },
+
+    displayDuelRow: function( 
+        round, 
+        actorId, 
+        challengerName, 
+        challengerThreat, 
+        defenderName, 
+        defenderThreat, 
+        technique = null, 
+        maneuver = null, 
+        combatCard = null, 
+        endingChallengerThreat = null,
+        endingDefenderThreat = null )
+    {
+        const headerRow = $('duel_header_row');
+
+        console.log(challengerThreat);
+
+        dojo.place( this.format_block( 'jstpl_duel_round', {
+            round: round,
+            challengerName: challengerName,
+            challengerThreat: challengerThreat,
+            defenderName: defenderName,
+            defenderThreat: defenderThreat,
+            technique: technique ?? 'Not Chosen Yet',
+            maneuver: maneuver ?? 'Not Chosen Yet',
+            combatCard: combatCard ?? 'Not Chosen Yet',
+            endingChallengerThreat: endingChallengerThreat ?? "?",
+            endingDefenderThreat: endingDefenderThreat ?? "?",
+        }),  headerRow, 'after');
+
+        const card = this.cardProperties[actorId];
+        const divId = this.createCardId(card, this.LOCATION_DUEL);
+        this.createCard(divId, card, `duel_round_${round}_actor`, true);
+    },
+
     
 })
 });

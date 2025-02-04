@@ -523,20 +523,27 @@ body {
     z-index: 10;
 }
 
-.card-resolve {
-    position: absolute;
+.resolve {
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.3) calc(var(--png-board-resource-height) * 0.3);
-    background-position: 0px -46px;
+    background-position: 0px -47px;
     width: 29px;
     height:30px;
-    margin-left: -15px;
     font-family: "Pirata One", system-ui;
     font-size: 14pt;
     line-height: 30px;
     text-align: center;
+}
+.card-resolve {
+    position: absolute;
+    margin-left: -15px;
     color: #EE4B38;
 }
+.duel-resolve {
+    color: white;
+    display: inline-block;
+}
+
 
 .card-wealth-cost {
     position: relative;
@@ -810,4 +817,27 @@ body {
 
 .spectatorMode #approachDeck #approachDeck-container #factionHand #factionHand-container {
     display: none;
+}
+
+#duel_table, .threat-table {
+    width: 100%;
+    background-color: white;
+    font-family: "Pirata One", system-ui;
+    font-size: 12pt;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+th, td {
+    padding: 5px;
+    text-align: center;
+    table-layout: auto;
+    width:auto;
+}
+
+.duel-round-indicator {
+    font-size:18pt;
 }

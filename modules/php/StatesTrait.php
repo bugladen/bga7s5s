@@ -15,6 +15,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
@@ -539,30 +541,33 @@ trait StatesTrait
 
     public function stHighDramaChallengeActionResolveTechnique(): void
     {
-        $this->theah->buildCity();
-
-        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
-        $performer = $this->theah->getCharacterById($performerId);
-
-        $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
-        $target = $this->theah->getCharacterById($targetId);
-
         $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE);
-        $technique = $this->theah->getTechniqueById($techniqueId);
-
-        $ownerId = $technique->OwnerId;
-        $techniqueOwner = $this->theah->getCardById($ownerId);
-
-        $event = $this->theah->createEvent(Events::ResolveTechnique);
-        if ($event instanceof EventResolveTechnique)
+        if ($techniqueId != null)
         {
-            $event->playerId = $performer->ControllerId;
-            $event->performer = $performer;
-            $event->target = $target;
-            $event->technique = $technique;
-            $event->techniqueOwner = $techniqueOwner;
+            $this->theah->buildCity();
+
+            $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+            $performer = $this->theah->getCharacterById($performerId);
+    
+            $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
+            $target = $this->theah->getCharacterById($targetId);
+    
+            $technique = $this->theah->getTechniqueById($techniqueId);
+    
+            $ownerId = $technique->OwnerId;
+            $techniqueOwner = $this->theah->getCardById($ownerId);
+    
+            $event = $this->theah->createEvent(Events::ResolveTechnique);
+            if ($event instanceof EventResolveTechnique)
+            {
+                $event->playerId = $performer->ControllerId;
+                $event->performer = $performer;
+                $event->target = $target;
+                $event->technique = $technique;
+                $event->techniqueOwner = $techniqueOwner;
+            }
+            $this->theah->queueEvent($event);
         }
-        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState();
     }
@@ -632,11 +637,130 @@ trait StatesTrait
         }
     }
 
-    public function stNextPlayer(): void {
+    public function stDuelStarted()
+    {
+        $duelId = $this->globals->get(GAME::DUEL_ID) + 1;
+        $this->globals->set(GAME::DUEL_ID, $duelId);
+        
+        $this->globals->set(GAME::IN_DUEL, true);
+        
+        $challengerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $challenger = $this->getCardObjectFromDb($challengerId);
+        $defenderId = $this->globals->get(GAME::CHOSEN_TARGET);
+        $defender = $this->getCardObjectFromDb($defenderId);
+        $threat = $this->globals->get(GAME::CHALLENGE_THREAT);
+        
+        $sql = "INSERT INTO duel (duel_id, challenging_player_id, challenger_id, defending_player_id, defender_id, challenger_threat, defender_threat) 
+        VALUES ($duelId, {$challenger->ControllerId}, $challengerId, {$defender->ControllerId}, $defenderId, 0, $threat)";
+        $this->DbQuery($sql);
+        
+        $this->notifyAllPlayers("duelStarted", clienttranslate('A DUEL HAS STARTED.'), [
+            "duelId" => $duelId,
+            "challengerId" => $challengerId,
+            "challengingPlayerId" => $challenger->ControllerId,
+            "defenderId" => $defenderId,
+            "defendingPlayerId" => $defender->ControllerId,
+            "threat" => $threat
+        ]);
+
+        $event = $this->theah->createEvent(Events::DuelStarted);
+        if ($event instanceof EventDuelStarted)
+        {
+            $event->challengerId = $challengerId;
+            $event->defenderId = $defenderId;
+        }
+        $this->theah->queueEvent($event);
+        
+        $this->gamestate->nextState();
+    }
+
+    public function stDuelNewRound()
+    {
+        $duelId = $this->globals->get(GAME::DUEL_ID);
+        $round = 1;
+        
+        if ( ! $this->globals->has(GAME::DUEL_ROUND))
+            $this->globals->set(GAME::DUEL_ROUND, $round);
+        else
+        {
+            $round = $this->globals->get(GAME::DUEL_ROUND) + 1;
+            $this->globals->set(GAME::DUEL_ROUND, $round);
+        }
+
+        $this->globals->delete(GAME::CHOSEN_TECHNIQUE);
+        $this->globals->delete(GAME::CHOSEN_MANEUVER);
+
+        $sql = "SELECT challenger_threat, defender_threat FROM duel WHERE duel_id = {$duelId}";
+        $threat = $this->getObjectListFromDb($sql);
+        $challengerThreat = $threat[0]['challenger_threat'];
+        $defenderThreat = $threat[0]['defender_threat'];
+
+        //If the round is odd, then the defender is the active player
+        if ($round % 2 == 1)
+            $sql = "SELECT challenger_id, defender_id, defending_player_id as playerId, defender_id as actorId FROM duel WHERE duel_id = {$duelId}";
+        else
+            $sql = "SELECT challenger_id, defender_id, challenging_player_id as playerId, challenger_id as actorId FROM duel WHERE duel_id = {$duelId}";
+        $result = $this->getObjectListFromDb($sql);
+        $playerId = $result[0]['playerId'];
+
+        $actorId = $result[0]['actorId'];
+        $actor = $this->getCardObjectFromDb($actorId);
+
+        $challengerId = $result[0]['challenger_id'];
+        $challenger = $this->getCardObjectFromDb($challengerId);
+        $defenderId = $result[0]['defender_id'];
+        $defender = $this->getCardObjectFromDb($defenderId);
+
+        $sql = "INSERT INTO duel_round (duel_round_id, duel_id, player_id, actor_id, starting_challenger_threat, starting_defender_threat) 
+        VALUES ($round, $duelId, $playerId, $actorId, $challengerThreat, $defenderThreat)";
+        $this->DbQuery($sql);
+
+        $event = $this->theah->createEvent(Events::DuelNewRound);
+        if ($event instanceof EventDuelNewRound)
+        {
+            $event->duelId = $duelId;
+            $event->round = $round;
+            $event->playerId = $playerId;
+            $event->actorId = $actorId;
+            $event->challengerThreat = $challengerThreat;
+            $event->defenderThreat = $defenderThreat;
+        }
+        $this->theah->queueEvent($event);
+
+        $playerName = $this->getPlayerNameById($playerId);
+        $this->notifyAllPlayers("duelRound", clienttranslate('DUEL ROUND #${round} HAS STARTED for ${player_name} and their ${role} character ${character_name}.'), [
+            "player_name" => $playerName,
+            "role" => $round % 2 == 1 ? "Defending" : "Challenging",
+            "character_name" => "<strong>{$actor->Name}</strong>",
+            "round" => $round,
+            "playerId" => $playerId,
+            "actorId" => $actorId,
+            "challengerName" => $challenger->Name,
+            "defenderName" => $defender->Name,
+            "challengerThreat" => $challengerThreat,
+            "defenderThreat" => $defenderThreat
+            ]);    
+
+        //Change to the active player based on the round number
+        $this->gamestate->changeActivePlayer($playerId);
+
+        $this->gamestate->nextState();
+    }
+
+    public function stNextPlayer(): void 
+    {
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
-
         $this->giveExtraTime($player_id);
+
+        // Clear the player action globals
+        $this->globals->delete(GAME::CHOSEN_CARD);
+        $this->globals->delete(GAME::CHOSEN_LOCATION);
+        $this->globals->delete(GAME::CHOSEN_PERFORMER);
+        $this->globals->delete(GAME::CHOSEN_TARGET);
+        $this->globals->delete(GAME::CHOSEN_TECHNIQUE);
+        $this->globals->delete(GAME::CHOSEN_MANEUVER);
+
         $this->activeNextPlayer();
 
         $this->gamestate->nextState("nextPlayer");

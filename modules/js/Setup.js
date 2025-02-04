@@ -113,7 +113,7 @@ return declare('seventhseacityoffivesails.setup', null, {
             {
                 homeCards = homeCards.filter((card) => ! card.traits.includes('Leader'));
                 const divId = `${playerId}-${leader.id}`;
-                this.createCharacterCard(divId, playerInfo.color, leader, playerId + '-home-anchor');
+                this.createCharacterCard(divId, playerInfo.color, leader, playerId + '-home-anchor', this.inDuel);
             }
 
             //Display the rest of the cards
@@ -121,7 +121,7 @@ return declare('seventhseacityoffivesails.setup', null, {
             {
                 const divId = this.createCardId(card, this.LOCATION_PLAYER_HOME);
                 const location = this.getTargetElementForLocation(this.LOCATION_PLAYER_HOME, playerId);
-                this.createCharacterCard(divId, playerInfo.color, card, location);
+                this.createCharacterCard(divId, playerInfo.color, card, location, this.inDuel);
             });
     
         }
@@ -236,6 +236,20 @@ return declare('seventhseacityoffivesails.setup', null, {
         this.chooseList.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
         this.chooseList.setSelectionAppearance( 'class' )
         dojo.connect( this.chooseList, 'onChangeSelection', this, 'onChooseCardClicked' );
+
+        if (gamedatas.inDuel)
+        {
+            this.inDuel = true;
+
+            this.displayDuelTable();
+
+            if (this.player_id == gamedatas.challengingPlayerId || this.player_id == gamedatas.defendingPlayerId)
+                dojo.place('factionHand-container', 'duel', 'before');
+
+            gamedatas.duelRounds.forEach((round) => {
+                this.displayDuelRow(round.round, round.actorId, round.challengerName, round.challengerThreat, round.defenderName, round.defenderThreat);
+            });
+        }
 
         // Setup game notifications to handle (see "setupNotifications" method below)
         this.setupNotifications();

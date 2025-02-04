@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use ArrayAccess;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
@@ -12,10 +13,85 @@ trait UtilitiesTrait
         $this->DbQuery("UPDATE player SET player_score_aux=$score WHERE player_id='$player_id'");
     }
 
+    public function getAttachmentsInHand(int $playerId)
+    {
+        $hand = $this->cards->getCardsInLocation('hand', $playerId);
+        $attachments = [];
+        foreach ($hand as $handCard) {
+            $card = $this->getCardObjectFromDb($handCard['id']);
+            if ($card instanceof Attachment) {
+                $attachments[] = $card;
+            }
+        }
+        return $attachments;
+    }
+
     public function getCardObjectFromDb($cardId) : Card {
         $data = $this->getObjectFromDB("SELECT card_serialized FROM card WHERE card_id = $cardId");
         $card = unserialize($data['card_serialized']);
         return $card;
+    }
+
+    public function getDuelRows() : Array
+    {
+        $rounds = [];
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $sql = "
+        SELECT 
+            duel_round_id as round, 
+            actor_id as actorId, 
+            d.challenger_id as challengerId,
+            challenger_threat as challengerThreat,
+            d.defender_id as defenderId,
+            defender_threat as defenderThreat,
+            technique_card_id as techniqueId,
+            maneuver_card_id as maneuverId,
+            combat_card_id as combatCardId,
+            applied_riposte as appliedRiposte,
+            applied_parry as appliedParry,
+            applied_thrust as appliedThrust,
+            ending_challenger_threat as endingChallengerThreat,
+            ending_defender_threat as endingDefenderThreat
+            FROM duel_round r
+            INNER JOIN duel d ON d.duel_id = r.duel_id
+            WHERE r.duel_id = $duelId";
+        $rounds_result = $this->getCollectionFromDb($sql);
+
+        foreach ($rounds_result as $round)
+        {
+            $row = [];
+            $row['round'] = $round['round'];
+            $row['actorId'] = $round['actorId'];
+
+            $challenger = $this->getCardObjectFromDb($round['challengerId']);
+            $row['challengerName'] = $challenger->Name;
+            $row['challengerThreat'] = $round['challengerThreat'];
+
+            $defender = $this->getCardObjectFromDb($round['defenderId']);
+            $row['defenderName'] = $defender->Name;
+            $row['defenderThreat'] = $round['defenderThreat'];
+
+            $row['techniqueName'] = null;
+            if ($round['techniqueId'] != null) {
+                $technique = $this->theah->getTechniqueById($round['techniqueId']);
+                $row['techniqueName'] = $technique->Name;
+            }
+
+            $row['maneuverName'] = null;
+            if ($round['maneuverId'] != null) {
+            }
+
+            $row['combatCardId'] = $round['combatCardId'];
+            $row['appliedRiposte'] = $round['appliedRiposte'];
+            $row['appliedParry'] = $round['appliedParry'];
+            $row['appliedThrust'] = $round['appliedThrust'];
+            $row['endingChallengerThreat'] = $round['endingChallengerThreat'];
+            $row['endingDefenderThreat'] = $round['endingDefenderThreat'];
+
+            $rounds[] = $row;
+        }
+
+        return $rounds;
     }
 
     function getGameDeckObject() {
@@ -131,19 +207,6 @@ trait UtilitiesTrait
             }
         }
         return false;
-    }
-
-    public function getAttachmentsInHand(int $playerId)
-    {
-        $hand = $this->cards->getCardsInLocation('hand', $playerId);
-        $attachments = [];
-        foreach ($hand as $handCard) {
-            $card = $this->getCardObjectFromDb($handCard['id']);
-            if ($card instanceof Attachment) {
-                $attachments[] = $card;
-            }
-        }
-        return $attachments;
     }
 
     public function characterHasAttachmentOfType($character, $type)

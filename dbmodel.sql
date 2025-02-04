@@ -20,13 +20,43 @@ CREATE TABLE IF NOT EXISTS `card` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `events` (
-  `event_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `event_id` smallint unsigned NOT NULL AUTO_INCREMENT,
   `event_priority` tinyint NOT NULL,
   `event_serialized` text NULL,
   PRIMARY KEY (`event_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
--- Player fields for selected deck
+CREATE TABLE IF NOT EXISTS `duel` (
+  `duel_id` tinyint unsigned NOT NULL AUTO_INCREMENT,
+  `challenging_player_id` int NOT NULL,
+  `challenger_id` int NOT NULL,
+  `defending_player_id` int NOT NULL,
+  `defender_id` int NOT NULL,
+  `challenger_threat` tinyint NOT NULL,
+  `defender_threat` tinyint NOT NULL,
+  PRIMARY KEY (`duel_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+CREATE TABLE IF NOT EXISTS `duel_round` (
+  `duel_round_id` smallint unsigned NOT NULL AUTO_INCREMENT,
+  `duel_id` tinyint NOT NULL,
+  `player_id` int NOT NULL,
+  `actor_id` int NOT NULL,
+  `starting_challenger_threat` tinyint NOT NULL,
+  `starting_defender_threat` tinyint NOT NULL,
+  `technique_card_id` int NULL,
+  `maneuver_card_id` int NULL,
+  `combat_card_id` int NULL,
+  `applied_riposte` tinyint NULL,
+  `applied_parry` tinyint NULL,
+  `applied_thrust` tinyint NULL,
+  `ending_challenger_threat` tinyint NULL,
+  `ending_defender_threat` tinyint NULL,
+  PRIMARY KEY (`duel_round_id`),
+  FOREIGN KEY (`duel_id`) REFERENCES `duel` (`duel_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- Player fields for selected deck and cards
 ALTER TABLE `player` 
   ADD `turn_order` tinyint NULL,
   ADD `deck_source` varchar(20) NULL,

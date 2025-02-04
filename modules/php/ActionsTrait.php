@@ -1006,12 +1006,6 @@ trait ActionsTrait
             throw new \BgaUserException("Challenge Action is not allowed right now.");
         }
 
-        $this->globals->delete(GAME::CHOSEN_PERFORMER);
-        $this->globals->delete(GAME::CHOSEN_TARGET);
-        $this->globals->delete(GAME::CHOSEN_TECHNIQUE);
-        $this->globals->delete(GAME::CHALLENGE_THREAT);
-        $this->globals->delete(GAME::CHALLENGE_ACCEPTED);
-
         $this->gamestate->nextState("challengeActionStart");
     }
 

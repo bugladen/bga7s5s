@@ -80,6 +80,8 @@ function (dojo, declare) {
 
             //Connect handlers for the city locations
             this.connects = [];
+
+            this.inDuel = false;
         },
     });      
 });

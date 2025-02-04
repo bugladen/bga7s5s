@@ -50,6 +50,10 @@ class Events
     const ResolveTechnique = 'EventResolveTechnique';
     const GenerateThreat = 'EventGenerateThreat';
 
+    //Duel Events
+    const DuelStarted = 'EventDuelStarted';
+    const DuelNewRound = 'EventDuelNewRound';
+    
     const CharacterWounded = 'EventCharacterWounded';
     
     const CardMoved = 'EventCardMoved';

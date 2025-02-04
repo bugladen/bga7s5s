@@ -760,19 +760,26 @@ $machinestates = [
             "type" => "game",
             "action" => "stHighDramaChallengeActionResolution",
             "transitions" => [
-                "accepted" => States::HIGH_DRAMA_PLAYER_TURN,
-                "rejected" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION_EVENTS,
+                "accepted" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS,
+                "rejected" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_EVENTS,
                 ]
         ],
-        States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION_EVENTS => [
-            "name" => "highDramaChallengeActionResolutionEvents",
-            "type" => "game",
-            "action" => "stRunEvents",
-            "transitions" => [
-                "endOfEvents" => States::HIGH_DRAMA_PLAYER_TURN
-                ]
-        ],
-
+            States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_EVENTS => [
+                "name" => "highDramaChallengeActionRejectEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "endOfEvents" => States::HIGH_DRAMA_PLAYER_TURN
+                    ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS => [
+                "name" => "highDramaChallengeActionAcceptEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "endOfEvents" => States::DUEL_STARTED
+                    ]
+            ],
         States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER => [
             "name" => "highDramaClaimActionChoosePerformer",
             "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -907,7 +914,51 @@ $machinestates = [
                     "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
                 ]
             ],
-        
+
+        States::DUEL_STARTED => [
+            "name" => "duelStarted",
+            "type" => "game",
+            "action" => "stDuelStarted",
+            "transitions" => [
+                "" => States::DUEL_STARTED_EVENTS
+                ]
+        ],
+            States::DUEL_STARTED_EVENTS => [
+                "name" => "duelStartedEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "endOfEvents" => States::DUEL_NEW_ROUND
+                    ]
+            ],
+        States::DUEL_NEW_ROUND => [
+            "name" => "duelNewRound",
+            "type" => "game",
+            "action" => "stDuelNewRound",
+            "transitions" => [
+                "" => States::DUEL_NEW_ROUND_EVENTS
+                ]
+        ],
+            States::DUEL_NEW_ROUND_EVENTS => [
+                "name" => "duelNewRoundEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "endOfEvents" => States::DUEL_CHOOSE_ACTION
+                    ]
+            ],
+        States::DUEL_CHOOSE_ACTION => [
+            "name" => "duelChooseAction",
+            "description" => clienttranslate('${actplayer} is choosing a Duel Action.'),
+            "descriptionmyturn" => clienttranslate('${you} must perform a Duel Action:'),
+            "type" => "activeplayer",
+            "args" => "argsEmpty",
+            "possibleactions" => [
+            ],
+            "transitions" => [
+            ]
+        ],
+            
     States::NEXT_PLAYER => [
         "name" => "nextPlayer",
         "description" => '',

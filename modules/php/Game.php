@@ -7,12 +7,6 @@
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
  * -----
- *
- * Game.php
- *
- * This is the main file for your game logic.
- *
- * In this PHP file, you are going to defines the rules of the game.
  */
 declare(strict_types=1);
 
@@ -48,15 +42,28 @@ class Game extends \Table
     //Global variable names
     final const PLAYER_COUNT = "playerCount";
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
+    final const CHALLENGE_THREAT = "challengeThreat";
+    final const CHALLENGE_ACCEPTED = "challengeAccepted";
+    final const DISCOUNT = "discount";
+    final const CATS_EMBARGO = "catsEmbargo";
+
+    //Player action global variables
+    //Delete these in stNextPlayer
     final const CHOSEN_CARD = "chosenCard";
     final const CHOSEN_LOCATION = "chosenLocation";
     final const CHOSEN_PERFORMER = "chosenPerformer";
     final const CHOSEN_TARGET = "chosenTarget";
     final const CHOSEN_TECHNIQUE = "chosenTechnique";
-    final const CHALLENGE_THREAT = "challengeThreat";
-    final const CHALLENGE_ACCEPTED = "challengeAccepted";
-    final const DISCOUNT = "discount";
-    final const CATS_EMBARGO = "catsEmbargo";
+    final const CHOSEN_MANEUVER = "chosenManeuver";
+
+    //Duel global variables
+    //Duel Names
+    final const DUEL_CHALLENGER = "Challenger";
+    final const DUEL_DEFENDER = "Defender";
+    //Delete these at the end of the duel
+    final const IN_DUEL = "inDuel";
+    final const DUEL_ID = "duelId";
+    final const DUEL_ROUND = "duelRound";
 
     use DeckTrait;
     use StatesTrait;
@@ -209,6 +216,21 @@ class Game extends \Table
         $result["locationReknown"] = $this->theah->getCityLocationReknown();
         $result["locationControllers"] = $this->theah->getCityLocationControllers();
 
+        $inDuel = $this->globals->get(Game::IN_DUEL, false);
+        $result["inDuel"] = $inDuel;
+        if ($inDuel)
+        {
+            $performerId = $this->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $this->getCardObjectFromDb($performerId);
+            $result["challengingPlayerId"] = $performer->ControllerId;
+
+            $targetId = $this->globals->get(Game::CHOSEN_TARGET);
+            $target = $this->getCardObjectFromDb($targetId);
+            $result["defendingPlayerId"] = $target->ControllerId;
+    
+            $result["duelRounds"] = $this->getDuelRows();
+        }
+
         return $result;
     }
 
@@ -286,6 +308,9 @@ class Game extends \Table
         if ($playerCount > 3) {
             $this->setControllerForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN, null);
         }
+
+        //Set the initial duel round number
+        $this->globals->set(Game::DUEL_ID, 0);
 
         // Init game statistics.
         //

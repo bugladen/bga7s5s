@@ -34,6 +34,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardRemovedFromPlayerDiscardPile', 500],
             ['yevgeniAdversaryChosen', 500],
             ['01126_2_scheme_moved', 500],
+            ['duelStarted', 500],
+            ['duelRound', 500],
         ];
 
         notifs.forEach((notif) => {
@@ -464,6 +466,32 @@ return declare('seventhseacityoffivesails.notifications', null, {
             id: imageElement.id,
             player_color: player.color,
         }),  imageElement, 'before');
+    },
+
+    notif_duelStarted: function( notif )
+    {
+        debug( 'notif_duelStarted' );
+        debug( notif );
+
+        const args = notif.args;
+
+        this.inDuel = true;
+        this.displayDuelTable();
+        
+        if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)
+        {
+            dojo.place('factionHand-container', 'duel', 'before');
+        }
+    },
+
+    notif_duelRound: function( notif )
+    {
+        debug( 'notif_duelRound' );
+        debug( notif );
+
+        const args = notif.args;
+        this.displayDuelRow(args.round, args.actorId, args.challengerName, args.challengerThreat, args.defenderName, args.defenderThreat);
+
     }
 })
 });
