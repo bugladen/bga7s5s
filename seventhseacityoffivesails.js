@@ -68,6 +68,9 @@ function (dojo, declare) {
 
             this.CARD_TOOLTIP_DELAY = 1000;
 
+            //Card conditions
+            this.ADVERSARY_OF_YEVGENI = 'Adversary of Yevgeni';
+
             //Global array containing cached properties of all the cards this page has had access to
             this.cardProperties = {};
 

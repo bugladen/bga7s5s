@@ -135,7 +135,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.addTooltipHtml(`${divId}_image`, `<img src="${g_gamethemeurl + character.image}" />`, this.CARD_TOOLTIP_DELAY);
 
         //Check for any special conditions where a token has to be displayed
-        if (character.conditions.includes('Adversary of Yevgeni')) {
+        if (character.conditions.includes(this.ADVERSARY_OF_YEVGENI)) {
             //Get the first child of element divId
             const child = $(divId).firstElementChild;
             const id = `${divId}_yevgeni_adversary`;

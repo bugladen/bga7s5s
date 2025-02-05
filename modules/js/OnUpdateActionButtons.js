@@ -67,6 +67,16 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
             this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             dojo.addClass('actCityLocationsSelected', 'disabled');
+
+            let numberofLocationsWithReknown = 0;
+            const locations = this.getListofAvailableCityLocationImages();
+            locations.forEach((location) => {
+                const imageElement = $(location);
+                const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+                const reknown = parseInt(reknownElement.innerHTML);
+                if (reknown > 0) numberofLocationsWithReknown++
+            });
+            if (numberofLocationsWithReknown === 0) dojo.addClass('actPass', 'disabled');
         },
 
         'planningPhaseResolveSchemes_01125_2': () => {

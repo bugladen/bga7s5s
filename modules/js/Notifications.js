@@ -425,6 +425,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         const card = this.cardProperties[args.cardId];
+        card.conditions.push(this.ADVERSARY_OF_YEVGENI);
+        
         const imageElement = dojo.query('.card', card.divId)[0];
         const id = `${card.divId}_yevgeni_adversary`;
         dojo.place( this.format_block( 'jstpl_generic_chip', {
