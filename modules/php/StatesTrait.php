@@ -694,26 +694,48 @@ trait StatesTrait
         $this->globals->delete(GAME::CHOSEN_TECHNIQUE);
         $this->globals->delete(GAME::CHOSEN_MANEUVER);
 
-        $sql = "SELECT challenger_threat, defender_threat FROM duel WHERE duel_id = {$duelId}";
-        $threat = $this->getObjectListFromDb($sql);
-        $challengerThreat = $threat[0]['challenger_threat'];
-        $defenderThreat = $threat[0]['defender_threat'];
-
-        //If the round is odd, then the defender is the active player
-        if ($round % 2 == 1)
-            $sql = "SELECT challenger_id, defender_id, defending_player_id as playerId, defender_id as actorId FROM duel WHERE duel_id = {$duelId}";
-        else
-            $sql = "SELECT challenger_id, defender_id, challenging_player_id as playerId, challenger_id as actorId FROM duel WHERE duel_id = {$duelId}";
+        $sql = "SELECT challenging_player_id, challenger_id, challenger_threat, defending_player_id, defender_id, defender_threat FROM duel WHERE duel_id = {$duelId}";
         $result = $this->getObjectListFromDb($sql);
-        $playerId = $result[0]['playerId'];
-
-        $actorId = $result[0]['actorId'];
-        $actor = $this->getCardObjectFromDb($actorId);
-
+        $challengingPlayerId = $result[0]['challenging_player_id'];
         $challengerId = $result[0]['challenger_id'];
-        $challenger = $this->getCardObjectFromDb($challengerId);
+        $challengerThreat = $result[0]['challenger_threat'];
+        
+        $defendingPlayerId = $result[0]['defending_player_id'];
         $defenderId = $result[0]['defender_id'];
+        $defenderThreat = $result[0]['defender_threat'];
+        
+        $challenger = $this->getCardObjectFromDb($challengerId);
         $defender = $this->getCardObjectFromDb($defenderId);
+
+
+        //If the first round, then the defender is the active player
+        $actorId = 0;
+        $actor = null;
+        $playerId = 0;
+        if ($round == 1)
+        {
+            $actorId = $defenderId;
+            $actor = $defender;
+            $playerId = $defendingPlayerId;
+        }
+        else
+        {
+            //Get the actor from the previous round
+            $sql = "SELECT actor_id FROM duel_round WHERE duel_id = {$duelId} AND duel_round_id = " . ($round - 1);
+            $lastActorId = $this->getUniqueValueFromDB($sql);
+            if ($lastActorId == $challengerId)
+            {
+                $actorId = $defenderId;
+                $actor = $defender;
+                $playerId = $defendingPlayerId;
+            }
+            else
+            {
+                $actorId = $challengerId;
+                $actor = $challenger;
+                $playerId = $challengingPlayerId;
+            }
+        }
 
         $sql = "INSERT INTO duel_round (duel_round_id, duel_id, player_id, actor_id, starting_challenger_threat, starting_defender_threat) 
         VALUES ($round, $duelId, $playerId, $actorId, $challengerThreat, $defenderThreat)";
