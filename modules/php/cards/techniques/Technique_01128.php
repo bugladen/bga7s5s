@@ -13,8 +13,8 @@ class Technique_01128 extends Technique
         $this->Name = "Mireli Sabre: +1 Parry or Thrust";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     { 
-        parent::handleEvent($owner, $event);
+        parent::handleEvent($event);
     }
 }

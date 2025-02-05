@@ -13,8 +13,8 @@ class Technique_01204 extends Technique
         $this->Name = "Syrneth Hand: Wound and -2 Parry";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     { 
-        parent::handleEvent($owner, $event);
+        parent::handleEvent($event);
     }
 }

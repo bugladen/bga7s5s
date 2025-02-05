@@ -13,8 +13,8 @@ class Technique_01011 extends Technique
         $this->Name = "Servo Scarpa: Add Thrust";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     { 
-        parent::handleEvent($owner, $event);
+        parent::handleEvent($event);
     }
 }

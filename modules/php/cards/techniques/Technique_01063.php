@@ -13,8 +13,8 @@ class Technique_01063 extends Technique
         $this->Name = "Bastien Girard: Wound Adversary";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     { 
-        parent::handleEvent($owner, $event);
+        parent::handleEvent($event);
     }
 }

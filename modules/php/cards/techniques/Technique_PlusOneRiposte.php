@@ -13,8 +13,8 @@ class Technique_PlusOneRiposte extends Technique
         $this->Name = "+1 Riposte";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     { 
-        parent::handleEvent($owner, $event);
+        parent::handleEvent($event);
     }
 }

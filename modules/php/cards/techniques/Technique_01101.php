@@ -13,9 +13,9 @@ class Technique_01101 extends Technique
         $this->Name = "Gallegos Blade: -1 Parry";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     { 
-        parent::handleEvent($owner, $event);
+        parent::handleEvent($event);
     }
 
 }

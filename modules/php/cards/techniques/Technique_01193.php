@@ -13,8 +13,8 @@ class Technique_01193 extends Technique
         $this->Name = "Burnished Cuirass: -1 Thrust";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     { 
-        parent::handleEvent($owner, $event);
+        parent::handleEvent($event);
     }
 }

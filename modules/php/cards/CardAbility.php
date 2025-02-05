@@ -41,7 +41,7 @@ abstract class CardAbility
         $this->Id = "{$id}_{$this->ClassId}";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     {
         //Does nothing by default
     }

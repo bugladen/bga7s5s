@@ -13,8 +13,8 @@ class Technique_01186 extends Technique
         $this->Name = "Marayam Benu Pleroma: No Adversary Maneuvers";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     { 
-        parent::handleEvent($owner, $event);
+        parent::handleEvent($event);
     }
 }

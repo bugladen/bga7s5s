@@ -13,8 +13,8 @@ class Technique_01093 extends Technique
         $this->Name = "Maya de La Rioja: -1 Riposte";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     { 
-        parent::handleEvent($owner, $event);
+        parent::handleEvent($event);
     }
 }

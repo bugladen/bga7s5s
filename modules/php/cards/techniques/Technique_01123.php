@@ -14,9 +14,9 @@ class Technique_01123 extends Technique
         $this->Name = "Valeri Mikhailov: +1 Thrust";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     { 
-        parent::handleEvent($owner, $event);
+        parent::handleEvent($event);
 
         if ($event instanceof EventGenerateThreat && $this->Active)
         {

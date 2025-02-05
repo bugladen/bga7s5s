@@ -19,9 +19,9 @@ class Technique_01067b extends Technique
         $this->Name = "Jean Urbain: +1 Thrust or Riposte";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     {
-        parent::handleEvent($owner, $event);
+        parent::handleEvent($event);
         
         //When activated, if there is more than one Musketeer as owner location, 
         //switch to state where player can choose one to gain +1 Thrust or +1 Riposte.

@@ -14,9 +14,9 @@ class Technique_PlusOneThrust extends Technique
         $this->Name = "+1 Thrust";
     }
 
-    public function handleEvent(Card $owner, Event $event)
+    public function handleEvent(Event $event)
     { 
-        parent::handleEvent($owner, $event);
+        parent::handleEvent($event);
 
         if ($event instanceof EventGenerateThreat && $this->Active) 
         {

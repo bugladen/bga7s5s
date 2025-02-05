@@ -57,7 +57,7 @@ abstract class Card
         if ($this instanceof IHasTechniques) {
             /** @disregard P1012 */
             foreach ($this->Techniques as $technique) {
-                $technique->handleEvent($this, $event);
+                $technique->handleEvent($event);
             }
         }
     }
