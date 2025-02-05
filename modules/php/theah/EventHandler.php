@@ -312,14 +312,24 @@ trait EventHandler
             case $event instanceof EventChallengeIssued:
                 $handler = function ($theah, $event)
                 {
-                    $message = '${player_name} has chosen to have ${performer_name} Challenge ${target_name}. ';
+                    $challenger = $this->cards[$event->challenger->Id];
+                    $challenger->addCondition(GAME::DUEL_CHALLENGER);
+                    $challenger->IsUpdated = true;
+
+                    $defender = $this->cards[$event->defender->Id];
+                    $defender->addCondition(GAME::DUEL_DEFENDER);
+                    $defender->IsUpdated = true;
+
+                    $message = '${player_name} has chosen to have ${challenger_name} Challenge ${defender_name}. ';
                     if ($event->activatedTechnique) $message .= '${player_name} will activate Technique ${technique_name}. for the Challenge.';
 
-                    $theah->game->notifyAllPlayers("message", clienttranslate($message), [
+                    $theah->game->notifyAllPlayers("challengeIssued", clienttranslate($message), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "performer_name" => "<strong>{$event->performer->Name}</strong>",
-                        "target_name" => "<strong>{$event->target->Name}</strong>",
+                        "challenger_name" => "<strong>{$event->challenger->Name}</strong>",
+                        "defender_name" => "<strong>{$event->defender->Name}</strong>",
                         "technique_name" => "<strong>{$event->activatedTechnique?->Name}</strong>",
+                        "challengerId" => $event->challenger->Id,
+                        "defenderId" => $event->defender->Id,
                     ]);
                 };
                 $handler($this, $event);
@@ -346,7 +356,7 @@ trait EventHandler
                         $theah->game->notifyAllPlayers("message", clienttranslate($explanation));
                     }
                     $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has generated ${threat} total Threat for the Challenge.'), [
-                        "player_name" => $theah->game->getPlayerNameById($event->performer->ControllerId),
+                        "player_name" => $theah->game->getPlayerNameById($event->challenger->ControllerId),
                         "threat" => $event->threat,
                     ]);
                 };

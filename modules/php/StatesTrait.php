@@ -519,8 +519,8 @@ trait StatesTrait
         if ($challengeEvent instanceof EventChallengeIssued)
         {
             $challengeEvent->playerId = $playerId;
-            $challengeEvent->performer = $performer;
-            $challengeEvent->target = $target;
+            $challengeEvent->challenger = $performer;
+            $challengeEvent->defender = $target;
             $challengeEvent->activatedTechnique = $technique;
         }
 
@@ -574,13 +574,17 @@ trait StatesTrait
 
     public function stHighDramaChallengeActionGenerateThreat()
     {
-        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
-        $performer = $this->getCardObjectFromDb($performerId);
+        $challengerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $challenger = $this->getCardObjectFromDb($challengerId);
+
+        $defenderId = $this->globals->get(GAME::CHOSEN_TARGET);
+        $defender = $this->getCardObjectFromDb($defenderId);
 
         $event = $this->theah->createEvent(Events::GenerateThreat);
         if ($event instanceof EventGenerateThreat)
         {
-            $event->performer = $performer;
+            $event->challenger = $challenger;
+            $event->defender = $defender;
         }
         $this->theah->queueEvent($event);
 
@@ -595,7 +599,7 @@ trait StatesTrait
         }
         else
         {
-            //Challege was rejected, wound the target by the threat value.  Limit amount done by the performer's Combat value.
+            //Challenge was rejected, wound the target by the threat value.  Limit amount done by Restricted Hostilities.
             $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
             $performer = $this->getCardObjectFromDb($performerId);
             $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
@@ -734,6 +738,8 @@ trait StatesTrait
             "character_name" => "<strong>{$actor->Name}</strong>",
             "round" => $round,
             "playerId" => $playerId,
+            "challengerId" => $challengerId,
+            "defenderId" => $defenderId,
             "actorId" => $actorId,
             "challengerName" => $challenger->Name,
             "defenderName" => $defender->Name,

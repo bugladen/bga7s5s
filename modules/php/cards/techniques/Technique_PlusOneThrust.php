@@ -20,12 +20,8 @@ class Technique_PlusOneThrust extends Technique
 
         if ($event instanceof EventGenerateThreat && $this->Active) 
         {
-            $owner = $this->getOwningCharacter($event->theah);
-            if ($owner && $owner->Id == $event->performer->Id)
-            {
-                $event->threat += 1;
-                $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Threat.");
-            }
+            $event->threat += 1;
+            $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Threat.");
         }
     }
 }

@@ -9,8 +9,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 class EventChallengeIssued extends Event
 {
     public int $playerId;
-    public Character $performer;
-    public Character $target;
+    public Character $challenger;
+    public Character $defender;
     public ?Technique $activatedTechnique;
 
     public function __construct()

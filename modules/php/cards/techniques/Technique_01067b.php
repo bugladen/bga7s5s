@@ -45,7 +45,7 @@ class Technique_01067b extends Technique
         if ($event instanceof EventGenerateThreat && $this->Active)
         {
             $owner = $event->theah->getCharacterById($this->OwnerId);
-            if ($owner && $owner->Id == $event->performer->Id)
+            if ($owner && $owner->Id == $event->challenger->Id)
             {
                 $characters = $event->theah->getCharactersAtLocation($owner->Location);
                 $characters = array_filter($characters, 

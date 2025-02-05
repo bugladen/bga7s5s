@@ -27,7 +27,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'planningPhaseResolveSchemes_01016_2': () => {
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseStockCardConfirmed());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
@@ -37,13 +37,13 @@ onUpdateActionButtons: function( stateName, args )
 
         'planningPhaseResolveSchemes_01044': () => {
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseStockCardConfirmed());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
         
         'planningPhaseResolveSchemes_01045': () => {
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseStockCardConfirmed());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
         
@@ -54,7 +54,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'planningPhaseResolveSchemes_01072': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
@@ -65,7 +65,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'planningPhaseResolveSchemes_01125': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actCityLocationsSelected', 'disabled');
 
             let numberofLocationsWithReknown = 0;
@@ -81,7 +81,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'planningPhaseResolveSchemes_01125_2': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
@@ -92,7 +92,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'planningPhaseResolveSchemes_01125_4': () => {
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
@@ -108,7 +108,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'planningPhaseResolveSchemes_01143': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
@@ -124,31 +124,31 @@ onUpdateActionButtons: function( stateName, args )
 
         'planningPhaseResolveSchemes_01145': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
         'planningPhaseResolveSchemes_01145_2_client': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
         'planningPhaseResolveSchemes_01150': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
         'planningPhaseResolveSchemes_01152': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
         'planningPhaseResolveSchemes_01152_2': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
@@ -159,7 +159,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'planningPhaseEnd_01098': () => {
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
@@ -169,7 +169,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaBeginning_01144': () => {
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
@@ -190,7 +190,7 @@ onUpdateActionButtons: function( stateName, args )
                 if (args.canRecruit)
                     this.addActionButton(`actRecruitAction`, _('Recruit'), () => this.bgaPerformAction('actHighDramaRecruitActionStart', {}));
                 
-                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+                this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             }
         },
 
@@ -332,7 +332,7 @@ onUpdateActionButtons: function( stateName, args )
         'highDramaChallengeActionActivateTechnique': () => {
             if (this.isCurrentPlayerActive()) {
                 this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+                this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
                 args.techniques.forEach((technique) => { 
                     this.addActionButton(
                         `actChooseTechnique${technique.id}-btn`, _(technique.name), () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 

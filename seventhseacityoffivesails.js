@@ -70,6 +70,8 @@ function (dojo, declare) {
 
             //Card conditions
             this.ADVERSARY_OF_YEVGENI = 'Adversary of Yevgeni';
+            this.CHALLENGER = 'Challenger';
+            this.DEFENDER = 'Defender';
 
             //Global array containing cached properties of all the cards this page has had access to
             this.cardProperties = {};

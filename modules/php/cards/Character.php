@@ -93,7 +93,7 @@ abstract class Character extends Card
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventGenerateThreat && $event->performer->Id == $this->Id)
+        if ($event instanceof EventGenerateThreat && $event->challenger->Id == $this->Id)
         {
             $event->threat += $this->ModifiedCombat;
             $event->explanations[] = clienttranslate("{$this->Name} adds {$this->ModifiedCombat} Threat from their Combat Stat.");

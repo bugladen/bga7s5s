@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `duel` (
 
 CREATE TABLE IF NOT EXISTS `duel_round` (
   `duel_round_id` smallint unsigned NOT NULL AUTO_INCREMENT,
-  `duel_id` tinyint NOT NULL,
+  `duel_id` tinyint unsigned NOT NULL,
   `player_id` int NOT NULL,
   `actor_id` int NOT NULL,
   `starting_challenger_threat` tinyint NOT NULL,

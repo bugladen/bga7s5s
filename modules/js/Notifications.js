@@ -34,6 +34,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardRemovedFromPlayerDiscardPile', 500],
             ['yevgeniAdversaryChosen', 500],
             ['01126_2_scheme_moved', 500],
+            ['challengeIssued', 500],
             ['duelStarted', 500],
             ['duelRound', 500],
         ];
@@ -426,7 +427,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
         const card = this.cardProperties[args.cardId];
         card.conditions.push(this.ADVERSARY_OF_YEVGENI);
-        
+
         const imageElement = dojo.query('.card', card.divId)[0];
         const id = `${card.divId}_yevgeni_adversary`;
         dojo.place( this.format_block( 'jstpl_generic_chip', {
@@ -469,6 +470,33 @@ return declare('seventhseacityoffivesails.notifications', null, {
             player_color: player.color,
         }),  imageElement, 'before');
     },
+    
+    notif_challengeIssued: function( notif )
+    {
+        debug( 'notif_challengeIssued' );
+        debug( notif );
+
+        const args = notif.args;
+        const challenger = this.cardProperties[args.challengerId];
+        challenger.conditions.push(this.CHALLENGER);
+        const challengerImage = $(`${challenger.divId}_image`);
+        const challengerChipId = `${challenger.divId}_challenger`;
+        dojo.place( this.format_block( 'jstpl_generic_chip', {
+            id: challengerChipId,
+            class: 'challenger-chip',
+        }),  challengerImage, 'last');
+        this.addTooltipHtml( challengerChipId, `<div class='basic-tooltip'>${_("Duel Challenger")}</div>` );
+
+        const defender = this.cardProperties[args.defenderId];
+        defender.conditions.push(this.DEFENDER);
+        const defenderImage = $(`${defender.divId}_image`);
+        const defenderChipId = `${defender.divId}_defender`;
+        dojo.place( this.format_block( 'jstpl_generic_chip', {
+            id: defenderChipId,
+            class: 'defender-chip',
+        }),  defenderImage, 'last');
+        this.addTooltipHtml( defenderChipId, `<div class='basic-tooltip'>${_("Duel Defender")}</div>` );
+    },
 
     notif_duelStarted: function( notif )
     {
@@ -492,7 +520,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
-        this.displayDuelRow(args.round, args.actorId, args.challengerName, args.challengerThreat, args.defenderName, args.defenderThreat);
+        this.displayDuelRow(args.round, args.challengerId, args.defenderId, args.actorId, args.challengerName, args.challengerThreat, args.defenderName, args.defenderThreat);
 
     }
 })

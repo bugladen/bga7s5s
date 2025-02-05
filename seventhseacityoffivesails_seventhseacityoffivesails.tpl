@@ -170,8 +170,14 @@ var jstpl_duel_round = `
     <td id="duel_round_\${round}_actor"></td>
     <td>
     <table class="threat-table">
-    <tr><td>\${challengerName}</td><td><div class="resolve duel-resolve">\${challengerThreat}</div></td></tr>
-    <tr><td>\${defenderName}</td><td><div class="resolve duel-resolve">\${defenderThreat}</div></td></tr>
+        <tr id="duel_round_\${round}_starting_challenger_threat_row">
+            <td>\${challengerName}</td>
+            <td><div id="duel_round_\${round}_starting_challenger_threat" class="resolve duel-resolve">\${challengerThreat}</div></td>
+        </tr>
+        <tr id="duel_round_\${round}_starting_defender_threat_row">
+            <td>\${defenderName}</td>
+            <td><div id="duel_round_\${round}_starting_defender_threat" class="resolve duel-resolve">\${defenderThreat}</div></td>
+        </tr>
     </table>
     </td>
     <td id="duel_round_\${round}_technique">\${technique}</td>
@@ -179,8 +185,14 @@ var jstpl_duel_round = `
     <td id="duel_round_\${round}_combat_card">\${combatCard}</td>
     <td>
     <table class="threat-table" id="duel_round_\${round}_ending_threat_table">
-    <tr><td>\${challengerName}</td><td><div id="duel_round_\${round}_ending_challenger_threat" class="resolve duel-resolve">\${endingChallengerThreat}</div></td></tr>
-    <tr><td>\${defenderName}</td><td><div id="duel_round_\${round}_ending_defender_threat" class="resolve duel-resolve">\${endingDefenderThreat}</div></td></tr>
+        <tr id="duel_round_\${round}_ending_challenger_threat_row">
+            <td>\${challengerName}</td>
+            <td><div id="duel_round_\${round}_ending_challenger_threat" class="resolve duel-resolve">\${endingChallengerThreat}</div></td>
+        </tr>
+        <tr id="duel_round_\${round}_ending_defender_threat_row">
+            <td>\${defenderName}</td>
+            <td><div id="duel_round_\${round}_ending_defender_threat" class="resolve duel-resolve">\${endingDefenderThreat}</div></td>
+        </tr>
     </table>
     </td>
 </tr>

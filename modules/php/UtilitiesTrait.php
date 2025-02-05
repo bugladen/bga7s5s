@@ -61,6 +61,8 @@ trait UtilitiesTrait
         {
             $row = [];
             $row['round'] = $round['round'];
+            $row['challengerId'] = $round['challengerId'];
+            $row['defenderId'] = $round['defenderId'];
             $row['actorId'] = $round['actorId'];
 
             $challenger = $this->getCardObjectFromDb($round['challengerId']);

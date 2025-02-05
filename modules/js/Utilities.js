@@ -137,18 +137,35 @@ return declare('seventhseacityoffivesails.utilities', null, {
         //Check for any special conditions where a token has to be displayed
         if (character.conditions.includes(this.ADVERSARY_OF_YEVGENI)) {
             //Get the first child of element divId
-            const child = $(divId).firstElementChild;
             const id = `${divId}_yevgeni_adversary`;
             dojo.place( this.format_block( 'jstpl_generic_chip', {
                 id: id,
                 class: 'yevgeni-adversary-chip',
-            }),  child, 'last');
-
+            }),  `${divId}_image`, 'last');
             this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
+        }
+        if (character.conditions.includes(this.CHALLENGER)) {
+            id = `${divId}_challenger`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: 'challenger-chip',
+            }),  `${divId}_image`, 'last');
+            this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Duel Challenger")}</div>` );
+        }
+        if (character.conditions.includes(this.DEFENDER)) {
+            id = `${divId}_defender`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: 'defender-chip',
+            }),  `${divId}_image`, 'last');
+            this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Duel Defender")}</div>` );
         }
 
         if (character.engaged && !inDuel) 
             dojo.addClass(`${divId}_image`, 'engaged');
+
+        if (inDuel)
+            dojo.addClass(`${divId}_image`, 'duel-character');
 
         //Display the attachments in front of the character, offset
         character.attachedCards?.forEach((attachment) => {
@@ -476,6 +493,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     displayDuelRow: function( 
         round, 
+        challengerId,
+        defenderId,
         actorId, 
         challengerName, 
         challengerThreat, 
@@ -503,6 +522,22 @@ return declare('seventhseacityoffivesails.utilities', null, {
             endingChallengerThreat: endingChallengerThreat ?? "?",
             endingDefenderThreat: endingDefenderThreat ?? "?",
         }),  headerRow, 'after');
+
+        if (challengerThreat > 0)
+            dojo.addClass(`duel_round_${round}_starting_challenger_threat`, 'duel-resolve-threatened');
+        if (defenderThreat > 0)
+            dojo.addClass(`duel_round_${round}_starting_defender_threat`, 'duel-resolve-threatened');
+        if (actorId === challengerId)
+        {
+            dojo.addClass(`duel_round_${round}_starting_challenger_threat_row`, 'duel-acting-character');
+            dojo.addClass(`duel_round_${round}_ending_challenger_threat_row`, 'duel-acting-character');
+            
+        }
+        if (actorId == defenderId)
+        {
+            dojo.addClass(`duel_round_${round}_starting_defender_threat_row`, 'duel-acting-character');
+            dojo.addClass(`duel_round_${round}_ending_defender_threat_row`, 'duel-acting-character');
+        }
 
         const card = this.cardProperties[actorId];
         const divId = this.createCardId(card, this.LOCATION_DUEL);

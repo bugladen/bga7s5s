@@ -190,16 +190,16 @@ body {
 }
 
 .yevgeni-adversary-chip {
+    position: absolute;
     background-image: url('img/cards/7s5s/125.jpg');
     background-size: 74px 101px;
     background-position: -17px -51px;
     width: 25px;
     height: 25px;
     border-radius: 50%;
-    position: relative;
     display: inline-block;
     left: 80px;
-    top: 40px;
+    top: 60px;
     border: 2px solid orangered
 }
 
@@ -510,7 +510,7 @@ body {
 
 .card {
     display: inline-block;
-    margin-left:15px;
+    margin-left:25px;
     margin-right:5px;
 
     background-image: var(--card_image);
@@ -521,6 +521,10 @@ body {
     border-radius: 10px;
     position:relative;
     z-index: 10;
+}
+
+.duel-character  {
+    margin-left:0px;
 }
 
 .resolve {
@@ -540,10 +544,12 @@ body {
     color: #EE4B38;
 }
 .duel-resolve {
-    color: white;
+    color: lightgray;
     display: inline-block;
 }
-
+.duel-resolve-threatened {
+    color: yellow;
+}
 
 .card-wealth-cost {
     position: relative;
@@ -807,6 +813,7 @@ body {
 
 .engaged {
     transform: rotate(90deg);
+    margin-left:15px;
 }
 
 /* Leave as-is for stock component */
@@ -819,9 +826,13 @@ body {
     display: none;
 }
 
+#duel_table {
+    margin-bottom: 10px;
+}
+
 #duel_table, .threat-table {
     width: 100%;
-    background-color: white;
+    background-color: lightgrey;
     font-family: "Pirata One", system-ui;
     font-size: 12pt;
     border-collapse: collapse;
@@ -829,6 +840,11 @@ body {
 
 table, th, td {
     border: 1px solid black;
+}
+
+#duel_table>tbody>:nth-child(1), #duel_table>tbody>:nth-child(2), .duel-acting-character
+{
+    background-color: white;
 }
 
 th, td {
@@ -840,4 +856,28 @@ th, td {
 
 .duel-round-indicator {
     font-size:18pt;
+}
+
+.challenger-chip {
+    position: absolute;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * 0.3) calc(var(--png-board-resource-height) * 0.3);
+    background-position: -99px -47px;
+    width: 30px;
+    height:30px;
+    display: inline-block;
+    left: 80px;
+    top: 0px;
+}
+
+.defender-chip {
+    position: absolute;
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * 0.3) calc(var(--png-board-resource-height) * 0.3);
+    background-position: -129px -47px;
+    width: 30px;
+    height:30px;
+    display: inline-block;
+    left: 80px;
+    top: 0px;
 }

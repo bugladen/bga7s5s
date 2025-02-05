@@ -229,7 +229,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
-    onPass: function()
+    onConfirmPass: function()
     {
         this.confirmationDialog(_("Are you sure you want to pass?"),
         () => {this.passConfirmed();}

@@ -6,7 +6,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 
 class EventGenerateThreat extends Event
 {
-    public Character $performer;
+    public Character $challenger;
+    public Character $defender;
     public int $threat;
     public Array $explanations;
 

@@ -247,7 +247,7 @@ return declare('seventhseacityoffivesails.setup', null, {
                 dojo.place('factionHand-container', 'duel', 'before');
 
             gamedatas.duelRounds.forEach((round) => {
-                this.displayDuelRow(round.round, round.actorId, round.challengerName, round.challengerThreat, round.defenderName, round.defenderThreat);
+                this.displayDuelRow(round.round, round.challengerId, round.defenderId, round.actorId, round.challengerName, round.challengerThreat, round.defenderName, round.defenderThreat);
             });
         }
 
