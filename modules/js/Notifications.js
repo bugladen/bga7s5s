@@ -20,7 +20,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardEngaged', 1000],
             ['cardMoved', 1000],
             ['characterRecruited', 1000],
-            ['characterResolveChanged', 1000],
+            ['characterWounded', 1000],
             ['drawCard', 2000],
             ['firstPlayer', 1500],
             ['locationClaimed', 500],
@@ -286,14 +286,29 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.createCard(cardId, card, target);
     },
 
-    notif_characterResolveChanged: function( notif )
+    notif_characterWounded: function( notif )
     {
-        debug( 'notif_characterResolveChanged' );
+        debug( 'notif_characterWounded' );
         debug( notif );
 
         const args = notif.args;
         const card = this.cardProperties[args.characterId];
+        noWounds = args.wounds == 0;
+        if (noWounds == 0)
+        {
+            const characterImage = $(`${card.divId}_image`);
+            const woundChip = `${card.divId}_wounds`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: woundChip,
+                class: 'wound-chip',
+            }),  characterImage, 'last');
+            this.addTooltipHtml( woundChip, `<div class='basic-tooltip'>${_("Wounds")}</div>` );
+        }
+        card.wounds += args.wounds;
         card.modifiedResolve -= args.wounds;
+
+        const woundChip = $(`${card.divId}_wounds`);
+        woundChip.innerHTML = card.wounds;
 
         const element = $(`${card.divId}_resolve_value`);
         element.innerHTML = card.modifiedResolve;

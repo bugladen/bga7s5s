@@ -1,1 +1,1 @@
-magick reknown.jpg compass.jpg +append boardResources.jpg
+magick reknown.jpg compass.jpg threat.jpg wound.jpg +append boardResources.jpg

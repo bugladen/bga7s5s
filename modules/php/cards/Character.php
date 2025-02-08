@@ -102,6 +102,7 @@ abstract class Character extends Card
         if ($event instanceof EventCharacterWounded && $event->character->Id == $this->Id)
         {
             $this->ModifiedResolve -= $event->wounds;    
+            $this->Wounds += $event->wounds;
 
             if ($this->ModifiedResolve < 0) 
             {
@@ -110,7 +111,7 @@ abstract class Character extends Card
 
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("characterResolveChanged", clienttranslate('${target_name} has received ${wounds} wound(s) due to ${reason} ${target_name}\'s New Resolve: ${resolve}'), [
+            $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_name} has received ${wounds} wound(s) due to ${reason} ${target_name}\'s New Resolve: ${resolve}'), [
                 "target_name" => "<strong>{$event->character->Name}</strong>",
                 "characterId" => $event->character->Id,
                 "wounds" => $event->wounds,

@@ -122,7 +122,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         if (character.finesse != character.modifiedFinesse) 
             dojo.addClass(`${divId}_finesse_value`, 'modified-stat-value');
 
-        if (character.resolve != character.modifiedResolve)
+        if (character.resolve != character.modifiedResolve || character.wounds > 0)
             dojo.addClass(`${divId}_resolve_value`, 'modified-stat-value');
 
         if (character.influence != character.modifiedInfluence)
@@ -159,6 +159,16 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 class: 'defender-chip',
             }),  `${divId}_image`, 'last');
             this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Duel Defender")}</div>` );
+        }
+        if (character.wounds > 0)
+        {
+            const woundChip = `${divId}_wounds`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: woundChip,
+                class: 'wound-chip',
+            }),  `${divId}_image`, 'last');
+            $(woundChip).innerHTML = character.wounds;
+            this.addTooltipHtml( woundChip, `<div class='basic-tooltip'>${_("Wounds")}</div>` );
         }
 
         if (character.engaged && !inDuel) 

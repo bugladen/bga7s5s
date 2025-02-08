@@ -16,7 +16,7 @@
 /* Note: you must not use any @import directive */
 
 :root {
-    --jpg-board-resource-width: 134px;
+    --jpg-board-resource-width: 290px;
     --jpg-board-resource-height: 78px;
     --png-board-resource-width: 805px;
     --png-board-resource-height: 257px;
@@ -880,4 +880,23 @@ th, td {
     display: inline-block;
     left: 80px;
     top: 0px;
+}
+
+.wound-chip {
+    position: absolute;
+    background-image: url('img/boardResources.jpg');
+    background-size: calc(var(--jpg-board-resource-width) * .3) calc(var(--jpg-board-resource-height) * .3);
+    background-position: -63px 0px;
+    width: 23px;
+    height:23px;
+    line-height: 23px;
+    display: inline-block;
+    left: 7px;
+    top: 7px;
+    border: 1px solid grey;
+    border-radius: 50%;
+    font-family: "Pirata One", system-ui;
+    font-size: 12pt;
+    text-align: center;
+    color: red;
 }
