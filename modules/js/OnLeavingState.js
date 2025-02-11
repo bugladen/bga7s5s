@@ -324,6 +324,13 @@ onLeavingState: function( stateName )
             }
         },
 
+        'duelChooseAction': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.factionHand.setSelectionMode(0);
+            }
+        }
+
+
     };
 
     if (methods[stateName]) {

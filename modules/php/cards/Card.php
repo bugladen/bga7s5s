@@ -49,7 +49,12 @@ abstract class Card
 
     public function eventCheck($event)
     {
-        // Do nothing by default
+        if ($this instanceof IHasTechniques) {
+            /** @disregard P1012 */
+            foreach ($this->Techniques as $technique) {
+                $technique->eventCheck($event);
+            }
+        }
     }
     
     public function handleEvent($event)

@@ -48,12 +48,13 @@ class Events
     const CharacterIntervened = 'EventCharacterIntervened';
     const TechniqueActivated = 'EventTechniqueActivated';
     const ResolveTechnique = 'EventResolveTechnique';
-    const GenerateThreat = 'EventGenerateThreat';
+    const GenerateChallengeThreat = 'EventGenerateChallengeThreat';
 
     //Duel Events
     const DuelStarted = 'EventDuelStarted';
     const DuelNewRound = 'EventDuelNewRound';
-    
+    const DuelCalculateTechniqueValues = 'EventDuelCalculateTechniqueValues';
+
     const CharacterWounded = 'EventCharacterWounded';
     
     const CardMoved = 'EventCardMoved';

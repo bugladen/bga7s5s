@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateThreat;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 
 abstract class Character extends Card
 {
@@ -93,7 +93,7 @@ abstract class Character extends Card
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventGenerateThreat && $event->challenger->Id == $this->Id)
+        if ($event instanceof EventGenerateChallengeThreat && $event->actorId == $this->Id)
         {
             $event->threat += $this->ModifiedCombat;
             $event->explanations[] = clienttranslate("{$this->Name} adds {$this->ModifiedCombat} Threat from their Combat Stat.");
@@ -111,7 +111,7 @@ abstract class Character extends Card
 
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_name} has received ${wounds} wound(s) due to ${reason} ${target_name}\'s New Resolve: ${resolve}'), [
+            $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_name} has received ${wounds} wound(s) due to: ${reason} ${target_name}\'s new Resolve: ${resolve}'), [
                 "target_name" => "<strong>{$event->character->Name}</strong>",
                 "characterId" => $event->character->Id,
                 "wounds" => $event->wounds,

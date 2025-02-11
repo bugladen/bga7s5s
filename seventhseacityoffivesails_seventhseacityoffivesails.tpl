@@ -65,7 +65,7 @@ var jstpl_home=`
 var jstpl_character=`
 <div id="\${id}" style="--attachment-count:\${attachmentCount}">
     <div id="\${id}_image" class="card home-\${faction}" style="--card_image:url('\${image}')">
-        <div id="\${id}_resolve_value" class="resolve card-resolve">\${resolve}</div>
+        <div id="\${id}_resolve_value" class="card-resolve">\${resolve}</div>
         <div id="\${id}_wealth_cost" class="card-wealth-cost city-character-wealth-cost">\${cost}</div>
         <div class="card-stat-box card-combat-box">
             <div id="\${id}_combat_value" class="card-combat-value">\${combat}</div>
@@ -87,7 +87,7 @@ var jstpl_character=`
 var jstpl_card_attachment=`
 <div id="\${id}" style="--attachment-index:\${attachmentIndex}">
     <div id="\${id}_image" class="card home-\${faction}" style="--card_image:url('\${image}')">
-        <div class="resolve card-resolve">\${resolve}</div>
+        <div class="card-resolve">\${resolve}</div>
         <div id="\${id}_wealth_cost" class="card-wealth-cost city-attachment-wealth-cost">\${cost}</div>
         <div class="card-stat-box card-combat-box">
             <div class="card-combat-value attachment-combat-value">\${combat}</div>
@@ -152,12 +152,12 @@ var jstpl_duel_table = `
 <div id="duel">
 <table id="duel_table" class="duel">
 <tr id="duel_header_row">
-    <th>Round</th>
+    <th>Duel Round</th>
     <th>Actor</th>
     <th>Starting Threat</th>
-    <th>Technique</th>
-    <th>Maneuver</th>
-    <th>Combat</th>
+    <th colspan="2">Combat</th>
+    <th colspan="2">Technique</th>
+    <th colspan="2">Maneuver</th>
     <th>Ending Threat</th>
 </tr>
 </table>
@@ -172,26 +172,47 @@ var jstpl_duel_round = `
     <table class="threat-table">
         <tr id="duel_round_\${round}_starting_challenger_threat_row">
             <td>\${challengerName}</td>
-            <td><div id="duel_round_\${round}_starting_challenger_threat" class="resolve duel-resolve">\${challengerThreat}</div></td>
+            <td><div id="duel_round_\${round}_starting_challenger_threat" class="threat-chip">\${startingChallengerThreat}</div></td>
         </tr>
         <tr id="duel_round_\${round}_starting_defender_threat_row">
             <td>\${defenderName}</td>
-            <td><div id="duel_round_\${round}_starting_defender_threat" class="resolve duel-resolve">\${defenderThreat}</div></td>
+            <td><div id="duel_round_\${round}_starting_defender_threat" class="threat-chip">\${startingDefenderThreat}</div></td>
         </tr>
     </table>
     </td>
-    <td id="duel_round_\${round}_technique">\${technique}</td>
-    <td id="duel_round_\${round}_maneuver">\${maneuver}</td>
     <td id="duel_round_\${round}_combat_card">\${combatCard}</td>
+    <td id="duel_round_\${round}_combat_card_stats">
+        <table class="ability-table">
+            <tr><td><div class="combat-chip riposte-chip"><span id="duel_round_\${round}_combat_riposte" class="chip-value">\${combatRiposte}</span></div></td></tr>
+            <tr><td><div class="combat-chip parry-chip"><span id="duel_round_\${round}_combat_parry" class="chip-value">\${combatParry}</span></div></td></tr>
+            <tr><td><div class="combat-chip thrust-chip"><span id="duel_round_\${round}_combat_thrust" class="chip-value">\${combatThrust}</span></div></td></tr>
+        </table>
+    </td>
+    <td id="duel_round_\${round}_technique">\${technique}</td>
+    <td id="duel_round_\${round}_technique_stats">
+        <table class="ability-table">
+            <tr><td><div class="combat-chip riposte-chip"><span id="duel_round_\${round}_technique_riposte" class="chip-value">\${techniqueRiposte}</span></div></td></tr>
+            <tr><td><div class="combat-chip parry-chip"><span id="duel_round_\${round}_technique_parry" class="chip-value">\${techniqueParry}</span></div></td></tr>
+            <tr><td><div class="combat-chip thrust-chip"><span id="duel_round_\${round}_technique_thrust" class="chip-value">\${techniqueThrust}</span></div></td></tr>
+        </table>
+    </td>
+    <td id="duel_round_\${round}_maneuver">\${maneuver}</td>
+    <td id="duel_round_\${round}_maneuver_stats">
+        <table class="ability-table">
+            <tr><td><div class="combat-chip riposte-chip"><span id="duel_round_\${round}_maneuver_riposte" class="chip-value">\${maneuverRiposte}</span></div></td></tr>
+            <tr><td><div class="combat-chip parry-chip"><span id="duel_round_\${round}_maneuver_parry" class="chip-value">\${maneuverParry}</span></div></td></tr>
+            <tr><td><div class="combat-chip thrust-chip"><span id="duel_round_\${round}_maneuver_thrust" class="chip-value">\${maneuverThrust}</span></div></td></tr>
+        </table>
+    </td>
     <td>
     <table class="threat-table" id="duel_round_\${round}_ending_threat_table">
         <tr id="duel_round_\${round}_ending_challenger_threat_row">
             <td>\${challengerName}</td>
-            <td><div id="duel_round_\${round}_ending_challenger_threat" class="resolve duel-resolve">\${endingChallengerThreat}</div></td>
+            <td><div id="duel_round_\${round}_ending_challenger_threat" class="threat-chip">\${endingChallengerThreat}</div></td>
         </tr>
         <tr id="duel_round_\${round}_ending_defender_threat_row">
             <td>\${defenderName}</td>
-            <td><div id="duel_round_\${round}_ending_defender_threat" class="resolve duel-resolve">\${endingDefenderThreat}</div></td>
+            <td><div id="duel_round_\${round}_ending_defender_threat" class="threat-chip">\${endingDefenderThreat}</div></td>
         </tr>
     </table>
     </td>

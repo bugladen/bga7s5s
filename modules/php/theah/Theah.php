@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
@@ -240,21 +241,42 @@ class Theah
     {
         $techniques = [];
 
-        if (!($character instanceof IHasTechniques)) {
+        if ( ! $character instanceof IHasTechniques) {
             return $techniques;
         }
 
-        $techniques += $character->getTechniquesArray();
+        $techniques += $character->getTechniquesArray($mustBeAvailable = true);
 
         foreach($character->Attachments as $attachment) {
             $attachmentCard = $this->getCardById($attachment);
             if ($attachmentCard instanceof IHasTechniques) {
-                $techniques += $attachmentCard->getTechniquesArray();
+                $techniques += $attachmentCard->getTechniquesArray($mustBeAvailable = true);
             }
         }
 
         return $techniques;
     }
+
+    function getAvailableCharacterManeuvers($character)
+    {
+        $maneuvers = [];
+
+        if ( ! $character instanceof IHasManeuvers) {
+            return $maneuvers;
+        }
+
+        $maneuvers += $character->getManeuversArray($mustBeAvailable = true);
+
+        foreach($character->Attachments as $attachment) {
+            $attachmentCard = $this->getCardById($attachment);
+            if ($attachmentCard instanceof IHasManeuvers) {
+                $maneuvers += $attachmentCard->getManeuversArray($mustBeAvailable = true);
+            }
+        }
+
+        return $maneuvers;
+    }
+    
 
     public function getCardPropertiesAtLocation($location, $playerId = null)
     {
@@ -308,7 +330,7 @@ class Theah
         return $controllers;
     }
 
-    function getCharacterCountByPlayerId($playerId)
+    function getCharacterCountByPlayerId($playerId): int
     {
         $count = 0;
         foreach ($this->cards as $card) {
@@ -319,7 +341,7 @@ class Theah
         return $count;
     }
 
-    function getCharacterById($id)
+    function getCharacterById($id): ?Character
     {
         foreach ($this->cards as $card) {
             if ($card instanceof Character && $card->Id == $id) {
@@ -329,18 +351,18 @@ class Theah
         return null;
     }
 
-    function getCharactersByPlayerId($playerId)
+    function getCharactersInPlayByPlayerId($playerId): array
     {
         $characters = [];
         foreach ($this->cards as $card) {
-            if ($card instanceof Character && $card->ControllerId == $playerId) {
+            if ($card instanceof Character && $card->ControllerId == $playerId && $card->Location != Game::LOCATION_HAND) {
                 $characters[] = $card;
             }
         }
         return $characters;
     }
 
-    function getCharactersAtHome($playerId)
+    function getCharactersAtHome($playerId): array
     {
         $characters = [];
         foreach ($this->cards as $card) {
@@ -399,6 +421,27 @@ class Theah
         return null;
     }
 
+    function isTechniqueOwnedByCharacter($technique, $character): bool
+    {
+        if ($character instanceof IHasTechniques)
+        {
+            if ($character->getTechniqueById($technique->Id))
+                return true;
+        }
+
+        foreach ($character->Attachments as $attachmentId) 
+        {
+            $attachment = $this->getCardById($attachmentId);
+            if ($attachment instanceof IHasTechniques)
+            {
+                if ($attachment->getTechniqueById($technique->Id))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
     function cardInCity($card): bool
     {
         return 
@@ -411,14 +454,14 @@ class Theah
 
     public function playerCanMove($playerId): bool
     {
-        $characters = $this->getCharactersByPlayerId($playerId);
+        $characters = $this->getCharactersInPlayByPlayerId($playerId);
         $enGardeCharacters = array_filter($characters, function($character) { return $character->Engaged == false; });
         return $enGardeCharacters > 0;
     }
 
     public function playerCanRecruit($playerId): bool
     {
-        $characters = $this->getCharactersByPlayerId($playerId);
+        $characters = $this->getCharactersInPlayByPlayerId($playerId);
 
         //Get all characters that are in the city that have mercenaries at their location
         $charactersThatCanReruit = [];
@@ -437,7 +480,7 @@ class Theah
 
     public function playerCanEquip($playerId): bool
     {
-        $characters = $this->getCharactersByPlayerId($playerId);
+        $characters = $this->getCharactersInPlayByPlayerId($playerId);
 
         //Get all characters that are in the city that have attachments at their location
         $charactersThatCanEquipInCity = [];
@@ -455,7 +498,7 @@ class Theah
 
     public function playerCanChallenge($playerId): bool
     {
-        $characters = $this->getCharactersByPlayerId($playerId);
+        $characters = $this->getCharactersInPlayByPlayerId($playerId);
         $charactersThatCanChallenge = [];
         foreach ($characters as $character) 
         {
@@ -474,7 +517,7 @@ class Theah
 
     public function playerCanClaim($playerId): bool
     {
-        $characters = $this->getCharactersByPlayerId($playerId);
+        $characters = $this->getCharactersInPlayByPlayerId($playerId);
         $charactersThatCanClaim = [];
         foreach ($characters as $character) {
             if (!$this->cardInCity($character)) {

@@ -2,21 +2,21 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateThreat;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Technique_01067b extends Technique
 {
-    public bool $UseParryInstead = false;
+    public bool $UseParryInstead;
 
     public function __construct()
     {
         parent::__construct();
         $this->Name = "Jean Urbain: +1 Thrust or Riposte";
+        $this->UseParryInstead = false;
     }
 
     public function handleEvent(Event $event)
@@ -25,7 +25,7 @@ class Technique_01067b extends Technique
         
         //When activated, if there is more than one Musketeer as owner location, 
         //switch to state where player can choose one to gain +1 Thrust or +1 Riposte.
-        if ($event instanceof EventResolveTechnique && $this->Active)
+        if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $owner = $event->theah->getCharacterById($this->OwnerId);
             $characters = $event->theah->getCharactersAtLocation($owner->Location);
@@ -37,15 +37,16 @@ class Technique_01067b extends Technique
                 if ($transition instanceof EventTransition) {
                     $transition->playerId = $owner->ControllerId;
                     $transition->transition = '01067b';
+                    $transition->priority = Event::HIGH_PRIORITY;
                 }
                 $event->theah->queueEvent($transition);
             }
         }
 
-        if ($event instanceof EventGenerateThreat && $this->Active)
+        if ($event instanceof EventGenerateChallengeThreat && $this->Active)
         {
             $owner = $event->theah->getCharacterById($this->OwnerId);
-            if ($owner && $owner->Id == $event->challenger->Id)
+            if ($owner && $owner->Id == $event->actorId)
             {
                 $characters = $event->theah->getCharactersAtLocation($owner->Location);
                 $characters = array_filter($characters, 
@@ -57,5 +58,11 @@ class Technique_01067b extends Technique
                 }
             }
         }
+    }
+
+    public function cleanup()
+    {
+        parent::cleanup();
+        $this->UseParryInstead = false;
     }
 }

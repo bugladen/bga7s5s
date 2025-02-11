@@ -109,6 +109,15 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     
                 });
                 $('faction_hand_info').innerHTML = `(${wealth} Wealth worth of cards selected)`;
+            },
+            
+            'duelChooseAction': () => {
+                const items = this.factionHand.getSelectedItems();
+                if (items.length === 1) {
+                    dojo.removeClass('btnCombatCard', 'disabled');
+                } else {
+                    dojo.addClass('btnCombatCard', 'disabled');
+                }
             }
 
         };

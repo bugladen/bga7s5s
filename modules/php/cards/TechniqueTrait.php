@@ -34,10 +34,13 @@ trait TechniqueTrait
         return $names;
     }
 
-    public function getTechniquesArray(): Array
+    public function getTechniquesArray(bool $mustBeAvailable = false): Array
     {
         $array = [];
         foreach ($this->Techniques as $technique) {
+            if ($mustBeAvailable && !$technique->isAvailable()) {
+                continue;
+            }
             $array[] = ["id" => $technique->Id, "name" => $technique->Name];
         }
 
@@ -47,9 +50,8 @@ trait TechniqueTrait
     public function getTechniqueById($id): ?Technique
     {
         foreach ($this->Techniques as $technique) {
-            if ($technique->Id == $id) {
+            if ($technique->Id == $id)
                 return $technique;
-            }
         }
         return null;
     }

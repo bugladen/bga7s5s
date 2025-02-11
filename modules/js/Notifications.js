@@ -36,7 +36,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['01126_2_scheme_moved', 500],
             ['challengeIssued', 500],
             ['duelStarted', 500],
-            ['duelRound', 500],
+            ['newDuelRound', 500],
+            ['updateRoundWithTechnique', 500],
         ];
 
         notifs.forEach((notif) => {
@@ -529,13 +530,37 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
-    notif_duelRound: function( notif )
+    notif_newDuelRound: function( notif )
     {
-        debug( 'notif_duelRound' );
+        debug( 'notif_newDuelRound' );
         debug( notif );
 
         const args = notif.args;
-        this.displayDuelRow(args.round, args.challengerId, args.defenderId, args.actorId, args.challengerName, args.challengerThreat, args.defenderName, args.defenderThreat);
+        this.displayDuelRow(args);
+
+    },
+
+    notif_updateRoundWithTechnique: function( notif )
+    {
+        debug( 'notif_updateRoundWithTechnique' );
+        debug( notif );
+
+        const args = notif.args;
+        
+        $(`duel_round_${args.round}_technique`).innerHTML = args.technique_name;
+        $(`duel_round_${args.round}_technique_riposte`).innerHTML = args.riposte;
+        $(`duel_round_${args.round}_technique_parry`).innerHTML = args.parry;
+        $(`duel_round_${args.round}_technique_thrust`).innerHTML = args.thrust;
+        $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML = args.endingChallengerThreatAfter;
+        $(`duel_round_${args.round}_ending_defender_threat`).innerHTML = args.endingDefenderThreatAfter;
+
+        if (args.endingChallengerThreatAfter > 0)
+            dojo.addClass(`duel_round_${args.round}_starting_challenger_threat`, 'threat-chip-threatened');
+        else
+            dojo.removeClass(`duel_round_${args.round}_starting_challenger_threat`, 'threat-chip-threatened');
+
+        dojo.removeClass(`duel_round_${args.round}_technique`, 'ability-not-chosen');
+        dojo.removeClass(`duel_round_${args.round}_technique_stats`, 'ability-not-chosen');
 
     }
 })

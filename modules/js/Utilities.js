@@ -372,7 +372,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
     setupNewStockCard: function( cardDiv, cardTypeId, cardId )
     {
         const card = this.cardProperties[cardTypeId];
-        this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, this.CARD_TOOLTIP_DELAY);
+        //Add tooltip to card
+        this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
     },
 
     isCardInCity: function( cardId )
@@ -501,59 +502,73 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }),  city, 'before');
     },
 
-    displayDuelRow: function( 
-        round, 
-        challengerId,
-        defenderId,
-        actorId, 
-        challengerName, 
-        challengerThreat, 
-        defenderName, 
-        defenderThreat, 
-        technique = null, 
-        maneuver = null, 
-        combatCard = null, 
-        endingChallengerThreat = null,
-        endingDefenderThreat = null )
+    displayDuelRow: function(row)
     {
         const headerRow = $('duel_header_row');
 
-        console.log(challengerThreat);
-
         dojo.place( this.format_block( 'jstpl_duel_round', {
-            round: round,
-            challengerName: challengerName,
-            challengerThreat: challengerThreat,
-            defenderName: defenderName,
-            defenderThreat: defenderThreat,
-            technique: technique ?? 'Not Chosen Yet',
-            maneuver: maneuver ?? 'Not Chosen Yet',
-            combatCard: combatCard ?? 'Not Chosen Yet',
-            endingChallengerThreat: endingChallengerThreat ?? "?",
-            endingDefenderThreat: endingDefenderThreat ?? "?",
+            round: row.round,
+            challengerName: row.challengerName,
+            startingChallengerThreat: row.startingChallengerThreat,
+            defenderName: row.defenderName,
+            startingDefenderThreat: row.startingDefenderThreat,
+            combatCard: row.combatCard ?? 'Not Chosen',
+            combatRiposte: row.combatRiposte ?? 0,
+            combatParry: row.combatParry ?? 0,
+            combatThrust: row.combatThrust ?? 0,
+            technique: row.techniqueName ?? 'Not Chosen',
+            techniqueRiposte: row.techniqueRiposte ?? 0,
+            techniqueParry: row.techniqueParry ?? 0,
+            techniqueThrust: row.techniqueThrust ?? 0,
+            maneuver: row.maneuver ?? 'Not Chosen',
+            maneuverRiposte: row.maneuverRiposte ?? 0,
+            maneuverParry: row.maneuverParry ?? 0,
+            maneuverThrust: row.maneuverThrust ?? 0,
+            endingChallengerThreat: row.endingChallengerThreat,
+            endingDefenderThreat: row.endingDefenderThreat,
         }),  headerRow, 'after');
 
-        if (challengerThreat > 0)
-            dojo.addClass(`duel_round_${round}_starting_challenger_threat`, 'duel-resolve-threatened');
-        if (defenderThreat > 0)
-            dojo.addClass(`duel_round_${round}_starting_defender_threat`, 'duel-resolve-threatened');
-        if (actorId === challengerId)
+        if (!row.combatCard)
         {
-            dojo.addClass(`duel_round_${round}_starting_challenger_threat_row`, 'duel-acting-character');
-            dojo.addClass(`duel_round_${round}_ending_challenger_threat_row`, 'duel-acting-character');
+            dojo.addClass(`duel_round_${row.round}_combat_card`, 'ability-not-chosen');
+            dojo.addClass(`duel_round_${row.round}_combat_card_stats`, 'ability-not-chosen');
+        }
+        if (!row.techniqueName)
+        {
+            dojo.addClass(`duel_round_${row.round}_technique`, 'ability-not-chosen');
+            dojo.addClass(`duel_round_${row.round}_technique_stats`, 'ability-not-chosen');
+        }
+        if (!row.maneuver)
+        {
+            dojo.addClass(`duel_round_${row.round}_maneuver`, 'ability-not-chosen');
+            dojo.addClass(`duel_round_${row.round}_maneuver_stats`, 'ability-not-chosen');
+        }
+
+        if (row.startingChallengerThreat > 0)
+            dojo.addClass(`duel_round_${row.round}_starting_challenger_threat`, 'threat-chip-threatened');
+        if (row.startingDefenderThreat > 0)
+            dojo.addClass(`duel_round_${row.round}_starting_defender_threat`, 'threat-chip-threatened');
+        if (row.endingChallengerThreat > 0)
+            dojo.addClass(`duel_round_${row.round}_ending_challenger_threat`, 'threat-chip-threatened');
+        if (row.endingDefenderThreat > 0)
+            dojo.addClass(`duel_round_${row.round}_ending_defender_threat`, 'threat-chip-threatened');
+
+        if (row.actorId === row.challengerId)
+        {
+            dojo.addClass(`duel_round_${row.round}_starting_challenger_threat_row`, 'duel-acting-character');
+            dojo.addClass(`duel_round_${row.round}_ending_challenger_threat_row`, 'duel-acting-character');
             
         }
-        if (actorId == defenderId)
+        if (row.actorId == row.defenderId)
         {
-            dojo.addClass(`duel_round_${round}_starting_defender_threat_row`, 'duel-acting-character');
-            dojo.addClass(`duel_round_${round}_ending_defender_threat_row`, 'duel-acting-character');
+            dojo.addClass(`duel_round_${row.round}_starting_defender_threat_row`, 'duel-acting-character');
+            dojo.addClass(`duel_round_${row.round}_ending_defender_threat_row`, 'duel-acting-character');
         }
 
-        const card = this.cardProperties[actorId];
+        const card = this.cardProperties[row.actorId];
         const divId = this.createCardId(card, this.LOCATION_DUEL);
-        this.createCard(divId, card, `duel_round_${round}_actor`, true);
+        this.createCard(divId, card, `duel_round_${row.round}_actor`, true);
     },
 
-    
 })
 });

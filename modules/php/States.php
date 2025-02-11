@@ -104,9 +104,12 @@ class States
     const DUEL_NEW_ROUND = 51;
         const DUEL_NEW_ROUND_EVENTS = 510;
     const DUEL_CHOOSE_ACTION = 52;
-        const DUEL_NEXT_PLAYER = 53;
+        const DUEL_CHOOSE_TECHNIQUE = 521;
+            const DUEL_CHOOSE_TECHNIQUE_EVENTS = 5210;
+            const DUEL_CHOOSE_TECHNIQUE_EVENTS_01013 = 52101013;
+    const DUEL_NEXT_PLAYER = 60;
         
-    const NEXT_PLAYER = 60;
+    const NEXT_PLAYER = 70;
 
     const END_GAME = 99;   
 }

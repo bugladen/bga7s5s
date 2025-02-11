@@ -67,6 +67,7 @@ function (dojo, declare) {
             this.LOCATION_PLAYER_HOME = 'Player Home';
 
             this.CARD_TOOLTIP_DELAY = 1000;
+            this.STOCK_CARD_TOOLTIP_DELAY = 100;
 
             //Card conditions
             this.ADVERSARY_OF_YEVGENI = 'Adversary of Yevgeni';

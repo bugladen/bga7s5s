@@ -2,9 +2,8 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateThreat;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 
 class Technique_01123 extends Technique
 {
@@ -18,16 +17,18 @@ class Technique_01123 extends Technique
     { 
         parent::handleEvent($event);
 
-        if ($event instanceof EventGenerateThreat && $this->Active)
+        if ($event instanceof EventGenerateChallengeThreat && $this->Active)
         {
-            if ($event->challenger->ModifiedResolve < $event->defender->ModifiedResolve)
+            $actor = $event->theah->getCharacterById($event->actorId);
+            $adversary = $event->theah->getCharacterById($event->adversaryId);
+            if ($actor->Wounds >= $adversary->Wounds)
             {
                 $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds no Threat due to Valeri having more Wounds than opponent.");
             }
             else
             {
                 $event->threat += 1;
-                $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Threat due to Valeri having more or equal Wounds than opponent.");
+                $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Threat due to Valeri having fewer Wounds than opponent.");
             }
         }
     }

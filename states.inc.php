@@ -726,19 +726,19 @@ $machinestates = [
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT
                     ]
             ],
-        States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS_01067b => [
-            "name" => "highDramaChallengeActionResolveTechnique_01067b",
-            "description" => clienttranslate('${actplayer} is choosing options to resolve Jean Urbain Technique.'),
-            "descriptionmyturn" => clienttranslate('Jean Urbain: +1 Thrust or Riposte: ${you} may choose Thrust or Riposte:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actHighDramaChallengeActionResolveTechnique_01067b_01067b", 
-            ],
-            "transitions" => [
-                "" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS,
-            ]
-        ],
+                States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS_01067b => [
+                    "name" => "highDramaChallengeActionResolveTechnique_01067b",
+                    "description" => clienttranslate('${actplayer} is choosing options to resolve Jean Urbain\'s Technique.'),
+                    "descriptionmyturn" => clienttranslate('Jean Urbain: +1 Thrust or Riposte: ${you} may choose Thrust or Riposte:'),
+                    "type" => "activeplayer",
+                    "args" => "argsEmpty",
+                    "possibleactions" => [
+                        "actHighDramaChallengeActionResolveTechnique_01067b", 
+                    ],
+                    "transitions" => [
+                        "" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS,
+                    ]
+                ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT => [
             "name" => "highDramaChallengeActionGenerateThreat",
             "type" => "game",
@@ -949,15 +949,54 @@ $machinestates = [
             ],
         States::DUEL_CHOOSE_ACTION => [
             "name" => "duelChooseAction",
-            "description" => clienttranslate('${actplayer} is choosing a Duel Action.'),
-            "descriptionmyturn" => clienttranslate('${you} must perform a Duel Action:'),
+            "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+            "descriptionmyturn" => clienttranslate('${you} must choose a Duel Action:'),
             "type" => "activeplayer",
-            "args" => "argsEmpty",
+            "args" => "argsChooseDuelAction",
             "possibleactions" => [
+                "actDuelActionChooseTechnique"
             ],
             "transitions" => [
+                "chooseTechnique" => States::DUEL_CHOOSE_TECHNIQUE
             ]
         ],
+            States::DUEL_CHOOSE_TECHNIQUE => [
+                "name" => "duelChooseTechnique",
+                "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+                "descriptionmyturn" => clienttranslate('${you} must choose a Technique for this Round:'),
+                "type" => "activeplayer",
+                "args" => "argsChooseDuelTechnique",
+                "possibleactions" => [
+                    "actDuelTechniqueChosen",
+                    "actBack"
+                ],
+                "transitions" => [
+                    "techniqueChosen" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+                    "back" => States::DUEL_CHOOSE_ACTION
+                ]
+            ],
+                States::DUEL_CHOOSE_TECHNIQUE_EVENTS => [
+                    "name" => "duelChooseTechniqueEvents",
+                    "type" => "game",
+                    "action" => "stRunEvents",
+                    "transitions" => [
+                        "01013" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS_01013,
+                        "endOfEvents" => States::DUEL_CHOOSE_ACTION
+                        ]
+                ],
+                States::DUEL_CHOOSE_TECHNIQUE_EVENTS_01013 => [
+                    "name" => "duelActionResolveTechnique_01013",
+                    "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+                    "descriptionmyturn" => clienttranslate('Vissenta Scarpa: Add Parry or Thrust: ${you} must choose Parry or Thrust:'),
+                    "type" => "activeplayer",
+                    "args" => "argsEmpty",
+                    "possibleactions" => [
+                        "actDuelActionResolveTechnique_01013", 
+                    ],
+                    "transitions" => [
+                        "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+                    ]
+                ],
             
     States::NEXT_PLAYER => [
         "name" => "nextPlayer",

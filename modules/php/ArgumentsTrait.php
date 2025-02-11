@@ -122,7 +122,7 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $characters = $this->theah->getCharactersByPlayerId($playerId);
+        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
         
         //Filter out those characters that are engaged
         $characters = array_values(array_filter($characters, function($character) { return $character->Engaged == false; }));
@@ -157,7 +157,7 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $characters = $this->theah->getCharactersByPlayerId($playerId);
+        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
         //Filter out those characters that are not in the city
         $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
 
@@ -203,7 +203,7 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $characters = $this->theah->getCharactersByPlayerId($playerId);
+        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
         $charactersInCity = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
 
         $handHasAttachments = $this->handHasAttachments($playerId);
@@ -258,7 +258,7 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $characters = $this->theah->getCharactersByPlayerId($playerId);
+        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
         
         //Filter out those characters that are not in the city
         $characters = array_values(array_filter($characters, fn($character) => $this->theah->cardInCity($character) ));
@@ -276,7 +276,7 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $characters = $this->theah->getCharactersByPlayerId($playerId);
+        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
         
         //Filter out those characters that are not in the city
         $characters = array_values(array_filter($characters, fn($character) => $this->theah->cardInCity($character) ));
@@ -347,6 +347,43 @@ trait ArgumentsTrait
             "performerId" => $performerId,
             "targetId" => $targetId,
             "ids" => $ids
+        ];
+
+    }
+
+    public function argsChooseDuelAction(): array
+    {
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $round = $this->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
+        $round = $this->getObjectListFromDB($sql)[0];
+
+        $actorId = $round['actor_id'];
+        $actor = $this->theah->getCharacterById($actorId);
+
+        $maneuevers = $this->theah->getAvailableCharacterManeuvers($actor);
+        $techniques = $this->theah->getAvailableCharacterTechniques($actor);
+
+        return [
+            "maneuverAvailable" => count($maneuevers) > 0 && $round['maneuver_id'] == null,
+            "techniqueAvailable" => count($techniques) > 0 && $round['technique_id'] == null
+        ];
+    }
+
+    public function argsChooseDuelTechnique(): array
+    {
+        $this->theah->buildCity();
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $round = $this->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
+        $round = $this->getObjectListFromDB($sql)[0];
+
+        $actorId = $round['actor_id'];
+        $actor = $this->theah->getCharacterById($actorId);
+
+        $techniques = $this->theah->getAvailableCharacterTechniques($actor);
+        return [
+            "techniques" => $techniques
         ];
 
     }

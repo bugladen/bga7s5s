@@ -13,4 +13,18 @@ trait ManeuverTrait
         //Add maneuver specific properties
         $properties['numberofManeuvers'] = count($this->Maneuvers);
     }
+
+    public function getManeuversArray(bool $mustBeActive = false): Array
+    {
+        $array = [];
+        foreach ($this->Maneuvers as $maneuver) {
+            if ($mustBeActive && !$maneuver->IsActive) {
+                continue;
+            }
+            $array[] = ["id" => $maneuver->Id, "name" => $maneuver->Name];
+        }
+
+        return $array;
+    }
+
 }

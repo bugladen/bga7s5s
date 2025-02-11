@@ -706,6 +706,12 @@ onEnteringState: function( stateName, args )
                     this.makeCardSelectable(image);
                 });
             }
+        },
+
+        'duelChooseAction': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.factionHand.setSelectionMode(1);
+            }
         }
     };
     

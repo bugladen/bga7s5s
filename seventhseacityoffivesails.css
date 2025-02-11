@@ -18,7 +18,7 @@
 :root {
     --jpg-board-resource-width: 290px;
     --jpg-board-resource-height: 78px;
-    --png-board-resource-width: 805px;
+    --png-board-resource-width: 941px;
     --png-board-resource-height: 257px;
 }
 
@@ -527,8 +527,10 @@ body {
     margin-left:0px;
 }
 
-.resolve {
+.card-resolve {
     background-image: url('img/boardResources.png');
+    position: absolute;
+    margin-left: -15px;
     background-size: calc(var(--png-board-resource-width) * 0.3) calc(var(--png-board-resource-height) * 0.3);
     background-position: 0px -47px;
     width: 29px;
@@ -537,17 +539,25 @@ body {
     font-size: 14pt;
     line-height: 30px;
     text-align: center;
-}
-.card-resolve {
-    position: absolute;
-    margin-left: -15px;
     color: #EE4B38;
+    z-index:5;
 }
-.duel-resolve {
+
+.threat-chip {
+    background-image: url('img/boardResources.jpg');
+    background-size: calc(var(--jpg-board-resource-width) * .5) calc(var(--jpg-board-resource-height) * .5);
+    background-position: -67px 0px;
+    width: 39px;
+    height: 39px;
+    line-height: 39px;
+    border-radius: 50%;
+    font-family: "Pirata One", system-ui;
+    font-size:20pt;
+    text-align:center;
     color: lightgray;
     display: inline-block;
 }
-.duel-resolve-threatened {
+.threat-chip-threatened {
     color: yellow;
 }
 
@@ -826,38 +836,6 @@ body {
     display: none;
 }
 
-#duel_table {
-    margin-bottom: 10px;
-}
-
-#duel_table, .threat-table {
-    width: 100%;
-    background-color: lightgrey;
-    font-family: "Pirata One", system-ui;
-    font-size: 12pt;
-    border-collapse: collapse;
-}
-
-table, th, td {
-    border: 1px solid black;
-}
-
-#duel_table>tbody>:nth-child(1), #duel_table>tbody>:nth-child(2), .duel-acting-character
-{
-    background-color: white;
-}
-
-th, td {
-    padding: 5px;
-    text-align: center;
-    table-layout: auto;
-    width:auto;
-}
-
-.duel-round-indicator {
-    font-size:18pt;
-}
-
 .challenger-chip {
     position: absolute;
     background-image: url('img/boardResources.png');
@@ -900,3 +878,75 @@ th, td {
     text-align: center;
     color: red;
 }
+
+#duel_table {
+    margin-bottom: 10px;
+}
+
+#duel_table, .threat-table {
+    width: 100%;
+    background-color: silver;
+    font-family: "Pirata One", system-ui;
+    font-size: 12pt;
+    border-collapse: collapse;
+}
+
+#duel_table>tbody>:nth-child(1), #duel_table>tbody>:nth-child(2), .duel-acting-character
+{
+    background-color: white;
+}
+
+#duel_table {
+    border: 1px solid black;
+}
+#duel_table>tbody>tr:nth-child(1)>th {
+    border-bottom: 1px solid black;
+}
+
+#duel_table>tbody>tr>td:not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(8)):not(:nth-child(10)) {
+    border-right: 1px solid black;
+}
+
+#duel_table th, #duel_table td {
+    padding: 5px;
+    text-align: center;
+    table-layout: auto;
+    width:auto;
+}
+
+.ability-not-chosen {
+    background-color: silver;
+}
+
+.ability-table {
+    border: none;
+    display: block;
+}
+
+.duel-round-indicator {
+    font-size:18pt;
+}
+
+.combat-chip {
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * 0.3) calc(var(--png-board-resource-height) * 0.3);
+    font-family: "Pirata One", system-ui;
+    height:30px;
+    width: 44px;
+    font-size: 18pt;
+    line-height: 31px;
+    text-align: center;
+}
+.riposte-chip {
+    background-position: -158px -47px;
+}
+.parry-chip {
+    background-position: -197px -47px;
+}
+.thrust-chip {
+    background-position: -238px -47px;
+}
+.chip-value {
+  opacity: 1.0;
+}
+

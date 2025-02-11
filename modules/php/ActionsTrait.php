@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
@@ -18,9 +19,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerF
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 
@@ -764,7 +767,7 @@ trait ActionsTrait
             throw new \BgaUserException("Character is not in the City.");
         }
 
-        $characters = $this->theah->getCharactersByPlayerId($playerId);
+        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
         //Filter out those characters that are not in the city
         $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
         $charactersThatCanReruit = [];
@@ -865,7 +868,7 @@ trait ActionsTrait
         $performer = $this->theah->getCharacterById($id);
         $handHasAttachments = $this->handHasAttachments($playerId);
 
-        $characters = $this->theah->getCharactersByPlayerId($playerId);        
+        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);        
         //Filter out those characters that are not in the city
         $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });
         $charactersThatCanEquip = [];
@@ -1020,7 +1023,7 @@ trait ActionsTrait
             throw new \BgaUserException("Performer cannot Challenge because it is engaged.");
         }
 
-        $characters = $this->theah->getCharactersByPlayerId($activePlayerId);
+        $characters = $this->theah->getCharactersInPlayByPlayerId($activePlayerId);
         
         //Filter out those characters that are not in the city
         $charactersInCity = array_filter($characters, fn($character) => $this->theah->cardInCity($character) );  
@@ -1089,10 +1092,8 @@ trait ActionsTrait
         if ($techniqueEvent instanceof EventTechniqueActivated)
         {
             $techniqueEvent->playerId = $playerId;
-            $techniqueEvent->performer = $performer;
-            $techniqueEvent->target = $target;
-            $techniqueEvent->techniqueOwner  = $owner;
-            $techniqueEvent->technique = $technique;
+            $techniqueEvent->techniqueId = $technique->Id;
+            $techniqueEvent->inDuel = false;
         }
 
         $this->theah->eventCheck($techniqueEvent);
@@ -1185,7 +1186,7 @@ trait ActionsTrait
             throw new \BgaUserException("Performer cannot Claim because it is engaged.");
         }
 
-        $characters = $this->theah->getCharactersByPlayerId($activePlayerId);
+        $characters = $this->theah->getCharactersInPlayByPlayerId($activePlayerId);
         
         //Filter out those characters that are not in the city
         $charactersInCity = array_filter($characters, fn($character) => $this->theah->cardInCity($character) );  
@@ -1256,6 +1257,98 @@ trait ActionsTrait
         $this->theah->queueEvent($claimEvent);
 
         $this->gamestate->nextState("performerChosen");
+    }
+
+    public function actDuelActionChooseTechnique()
+    {
+        $this->theah->buildCity();
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $round = $this->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
+        $round = $this->getObjectListFromDB($sql)[0];
+
+        $actorId = $round['actor_id'];
+        $actor = $this->theah->getCharacterById($actorId);
+
+        $techniques = $this->theah->getAvailableCharacterTechniques($actor);
+        if (count($techniques) == 0) {
+            throw new \BgaUserException("No Techniques available for {$actor->Name}.");
+        }
+
+        $this->gamestate->nextState("chooseTechnique");
+    }
+
+    public function actDuelTechniqueChosen(string $techniqueId)
+    {
+        $playerId = $this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $round = $this->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
+        $result = $this->getObjectListFromDB($sql)[0];
+
+        $actorId = $result['actor_id'];
+        $actor = $this->theah->getCharacterById($actorId);
+
+        $technique = $this->theah->getTechniqueById($techniqueId);
+        if ($technique == null) {
+            throw new \BgaUserException("Technique not found.");
+        }
+        
+        if ( ! $this->theah->isTechniqueOwnedByCharacter($technique, $actor)) {
+            throw new \BgaUserException("Technique does not belong to the Actor.");
+        }
+
+        $activateEvent = $this->theah->createEvent(Events::TechniqueActivated);
+        if ($activateEvent instanceof EventTechniqueActivated)
+        {
+            $activateEvent->playerId = $playerId;
+            $activateEvent->techniqueId = $technique->Id;
+        }
+        $this->theah->eventCheck($activateEvent);
+        $this->theah->queueEvent($activateEvent);
+
+        $adversaryId = $this->getDuelOpponentId($actorId);
+        $adversary = $this->theah->getCharacterById($adversaryId);
+
+        $resolveEvent = $this->theah->createEvent(Events::ResolveTechnique);
+        if ($resolveEvent instanceof EventResolveTechnique)
+        {
+            $resolveEvent->playerId = $playerId;
+            $resolveEvent->adversaryId = $adversary->Id;
+            $resolveEvent->techniqueId = $technique->Id;
+        }
+        $this->theah->eventCheck($resolveEvent);
+        $this->theah->queueEvent($resolveEvent);
+
+        $threatEvent = $this->theah->createEvent(Events::DuelCalculateTechniqueValues);
+        if ($threatEvent instanceof EventDuelCalculateTechniqueValues)
+        {
+            $threatEvent->actorId = $actor->Id;
+            $threatEvent->adversaryId = $adversary->Id;
+            $threatEvent->techniqueId = $technique->Id;
+        }
+        $this->theah->eventCheck($threatEvent);
+        $this->theah->queueEvent($threatEvent);
+
+        $this->gamestate->nextState("techniqueChosen");
+    }
+
+    public function actDuelActionResolveTechnique_01013 (bool $useThrust)
+    {
+        $this->theah->buildCity();
+        $techniqueId = $this->globals->get(Game::CHOSEN_TECHNIQUE);
+        $technique = $this->theah->getTechniqueById($techniqueId);
+
+        if ($technique instanceof Technique_01013)
+        {
+            $technique->UseThrust = $useThrust;
+            $owner = $this->theah->getCharacterById($technique->OwnerId);
+            $owner->IsUpdated = true;        
+        }
+
+        $this->gamestate->nextState("");
     }
 
 }

@@ -41,6 +41,11 @@ abstract class CardAbility
         $this->Id = "{$id}_{$this->ClassId}";
     }
 
+    public function eventCheck(Event $event)
+    {
+        
+    }
+
     public function handleEvent(Event $event)
     {
         //Does nothing by default
@@ -78,11 +83,11 @@ abstract class CardAbility
 
     public function setActive(Theah $theah, bool $active)
     {
+        $this->Active = $active;
+
         if ($this->OwnerId == null) {
             return;
         }
-
-        $this->Active = $active;
 
         $owner = $theah->getCardById($this->OwnerId);
         $owner->IsUpdated = true;
@@ -90,13 +95,19 @@ abstract class CardAbility
 
     public function setUsed(Theah $theah, bool $used)
     {
+        $this->Used = $used;
+
         if ($this->OwnerId == null) {
             return;
         }
 
-        $this->Used = $used;
-
         $owner = $theah->getCardById($this->OwnerId);
         $owner->IsUpdated = true;
+    }
+
+    public function cleanup()
+    {
+        $this->Active = false;
+        $this->Used = false;
     }
 }

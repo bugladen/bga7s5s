@@ -2,12 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-
-class EventGenerateThreat extends Event
+class EventGenerateChallengeThreat extends Event
 {
-    public Character $challenger;
-    public Character $defender;
+    public int $actorId;
+    public int $adversaryId;
     public int $threat;
     public Array $explanations;
 
@@ -15,6 +13,9 @@ class EventGenerateThreat extends Event
     {
         parent::__construct();
         $this->priority = Event::MEDIUM_PRIORITY;
+
+        $this->actorId = 0;
+        $this->adversaryId = 0;
         $this->threat = 0;
         $this->explanations = [];
         $this->runHandlerAfterCards = true;

@@ -38,18 +38,24 @@ trait UtilitiesTrait
         $duelId = $this->globals->get(Game::DUEL_ID);
         $sql = "
         SELECT 
-            duel_round_id as round, 
+            round as round, 
             actor_id as actorId, 
             d.challenger_id as challengerId,
-            challenger_threat as challengerThreat,
+            challenger_threat as startingChallengerThreat,
             d.defender_id as defenderId,
-            defender_threat as defenderThreat,
-            technique_card_id as techniqueId,
-            maneuver_card_id as maneuverId,
+            defender_threat as startingDefenderThreat,
+            technique_id as techniqueId,
+            technique_riposte as techniqueRiposte,
+            technique_parry as techniqueParry,
+            technique_thrust as techniqueThrust,
+            maneuver_id as maneuverId,
+            maneuver_riposte as maneuverRiposte,
+            maneuver_parry as maneuverParry,
+            maneuver_thrust as maneuverThrust,
             combat_card_id as combatCardId,
-            applied_riposte as appliedRiposte,
-            applied_parry as appliedParry,
-            applied_thrust as appliedThrust,
+            combat_riposte as combatRiposte,
+            combat_parry as combatParry,
+            combat_thrust as combatThrust,
             ending_challenger_threat as endingChallengerThreat,
             ending_defender_threat as endingDefenderThreat
             FROM duel_round r
@@ -67,26 +73,35 @@ trait UtilitiesTrait
 
             $challenger = $this->getCardObjectFromDb($round['challengerId']);
             $row['challengerName'] = $challenger->Name;
-            $row['challengerThreat'] = $round['challengerThreat'];
+            $row['startingChallengerThreat'] = $round['startingChallengerThreat'];
 
             $defender = $this->getCardObjectFromDb($round['defenderId']);
             $row['defenderName'] = $defender->Name;
-            $row['defenderThreat'] = $round['defenderThreat'];
+            $row['startingDefenderThreat'] = $round['startingDefenderThreat'];
 
             $row['techniqueName'] = null;
             if ($round['techniqueId'] != null) {
                 $technique = $this->theah->getTechniqueById($round['techniqueId']);
                 $row['techniqueName'] = $technique->Name;
             }
+            $row['techniqueRiposte'] = $round['techniqueRiposte'];
+            $row['techniqueParry'] = $round['techniqueParry'];
+            $row['techniqueThrust'] = $round['techniqueThrust'];
 
             $row['maneuverName'] = null;
             if ($round['maneuverId'] != null) {
+                $maneuver = $this->theah->getManeuverById($round['maneuverId']);
+                $row['maneuverName'] = $maneuver->Name;
             }
+            $row['maneuverRiposte'] = $round['maneuverRiposte'];
+            $row['maneuverParry'] = $round['maneuverParry'];
+            $row['maneuverThrust'] = $round['maneuverThrust'];
 
             $row['combatCardId'] = $round['combatCardId'];
-            $row['appliedRiposte'] = $round['appliedRiposte'];
-            $row['appliedParry'] = $round['appliedParry'];
-            $row['appliedThrust'] = $round['appliedThrust'];
+            $row['combatRiposte'] = $round['combatRiposte'];
+            $row['combatParry'] = $round['combatParry'];
+            $row['combatThrust'] = $round['combatThrust'];
+
             $row['endingChallengerThreat'] = $round['endingChallengerThreat'];
             $row['endingDefenderThreat'] = $round['endingDefenderThreat'];
 
@@ -94,6 +109,17 @@ trait UtilitiesTrait
         }
 
         return $rounds;
+    }
+
+    function getDuelOpponentId($actorId)
+    {
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $sql = "SELECT challenger_id, defender_id FROM duel WHERE duel_id = $duelId";
+        $duel = $this->getObjectListFromDB($sql)[0];
+        if ($duel['challenger_id'] == $actorId) {
+            return $duel['defender_id'];
+        }
+        return $duel['challenger_id'];
     }
 
     function getGameDeckObject() {

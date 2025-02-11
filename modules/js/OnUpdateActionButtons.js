@@ -341,11 +341,36 @@ onUpdateActionButtons: function( stateName, args )
         },
         
         'highDramaChallengeActionAcceptChallenge': () => {
-            this.addActionButton(`actAccept`, _('Accept'), () => this.bgaPerformAction('actHighDramaChallengeActionAccept', {})) 
-            this.addActionButton(`actReject`, _('Reject'), () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
+            this.addActionButton(`btnAccept`, _('Accept'), () => this.bgaPerformAction('actHighDramaChallengeActionAccept', {})) 
+            this.addActionButton(`btnReject`, _('Reject'), () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
             this.addActionButton(`actChooseCardSelected`, _('Intervene'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
+
+        'duelChooseAction': () => {
+            this.addActionButton(`btnGamble`, _('Gamble'), () => this.bgaPerformAction('actDuelActionChooseGamble', {})) 
+            if (args.maneuversAvailable)
+                this.addActionButton(`btnManueuver`, _('Character Maneuver'), () => this.bgaPerformAction('actDuelActionChooseManeuver', {})) 
+            if (args.techniqueAvailable)
+                this.addActionButton(`btnTechnique`, _('Character Technique'), () => this.bgaPerformAction('actDuelActionChooseTechnique', {})) 
+            this.addActionButton(`btnCombatCard`, _('Play Combat Card'), () => this.onChooseStockCardConfirmed());
+            this.addActionButton(`btnDone`, _('End Round'), () => this.bgaPerformAction('actDuelChooseActionEndRound', {})) 
+            this.addActionButton(`btnEndDuel`, _('Quit Duel'), () => this.bgaPerformAction('actDuelChooseActionEndDuel', {})) 
+            dojo.addClass('btnCombatCard', 'disabled');
+        },
+
+        'duelChooseTechnique': () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            args.techniques.forEach((technique) => { 
+                this.addActionButton(
+                    `btnChooseTechnique${technique.id}-btn`, _(technique.name), () => this.bgaPerformAction('actDuelTechniqueChosen', { techniqueId: technique.id})) 
+            });
+        },
+
+        'duelActionResolveTechnique_01013': () => {
+            this.addActionButton(`btnParry`, _('+1 Parry'), () => this.bgaPerformAction('actDuelActionResolveTechnique_01013', { useThrust: false}));
+            this.addActionButton(`btnThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actDuelActionResolveTechnique_01013', { useThrust: true}));
+        }
     };
 
     if( methods[stateName] )
