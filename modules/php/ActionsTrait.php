@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
@@ -20,6 +21,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
@@ -1351,4 +1353,103 @@ trait ActionsTrait
         $this->gamestate->nextState("");
     }
 
+    public function actDuelActionGamble()
+    {
+        $this->gamestate->nextState("chooseGambleCard");
+    }
+
+    public function actDuelActionChooseCombatCard(string $cardId)
+    {
+        $this->theah->buildCity();
+        $card = $this->theah->getCardById($cardId);
+        if ($card == null) {
+            throw new \BgaUserException("Card not found.");
+        }
+
+        $playerId = $this->getActivePlayerId();
+        if ($card->OwnerId != $playerId) {
+            throw new \BgaUserException("Card does not belong to the player.");
+        }
+
+        if ($card->Location != Game::LOCATION_HAND) {
+            throw new \BgaUserException("Card is not in your hand.");
+        }
+
+        $this->globals->set(Game::CHOSEN_CARD, $card->Id);
+
+        //Remove card from hand
+        $this->cards->moveCard($card->Id, $this->getPlayerDiscardDeckName($playerId));
+
+        $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
+        if ($event instanceof EventCardDiscardedFromHand) {
+            $event->playerId = $playerId;
+            $event->card = $card;
+        }
+        //No check needed
+        $this->theah->queueEvent($event);
+
+        if ($card instanceof IHasManeuvers)
+        {
+            $this->gamestate->nextState("useManeuver");
+        }
+        else
+        {
+            $this->gamestate->nextState("applyCombatCardStats");
+        }   
+    }
+
+    public function actGambleCardChosen(int $id)
+    {
+        $playerId = $this->getActivePlayerId();
+        $deckName = $this->getPlayerFactionDeckName($playerId);
+        $cards = $this->cards->getCardsOnTop(2, $deckName);
+
+        $cardId = 0;
+        foreach ($cards as $card) {
+            if ($card['id'] == $id) 
+                $cardId = $card['id'];
+            else
+                //Sink the card not chosen
+                $this->cards->insertCardOnExtremePosition($card['id'], $deckName, false);
+
+        }
+
+        $this->globals->set(Game::CHOSEN_CARD, $cardId);
+
+        $card = $this->getCardObjectFromDb($cardId);
+        $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
+        $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
+        if ($event instanceof EventCardDiscardedFromHand) {
+            $event->playerId = $playerId;
+            $event->card = $card;
+        }
+        //No check needed
+        $this->theah->queueEvent($event);
+
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $round = $this->globals->get(Game::DUEL_ROUND);
+
+        //Set that the player has gambled
+        $sql = "UPDATE duel_round set gambled = 1 WHERE duel_id = $duelId AND round = $round";
+        $this->DbQuery($sql);
+
+        $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
+        $result = $this->getObjectListFromDB($sql)[0];
+
+        $actorId = $result['actor_id'];
+        $adversaryId = $this->getDuelOpponentId($actorId);
+
+        $event = $this->theah->createEvent(Events::DuelPlayerGambled);
+        if ($event instanceof EventDuelPlayerGambled)
+        {
+            $event->playerId = $playerId;
+            $event->actorId = $actorId;
+            $event->adversaryId = $adversaryId;
+            $event->chosenCardId = $cardId;
+        }
+        $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);        
+
+        $this->gamestate->nextState();
+    }
 }

@@ -169,7 +169,17 @@ return declare('seventhseacityoffivesails.actions', null, {
         });
     },
 
-    onChooseStockCardConfirmed: function()
+    onDuelChooseCombatCardConfirmed: function()
+    {
+        var items = this.factionHand.getSelectedItems();
+        const card = Object.values(items)[0];
+        this.bgaPerformAction('actDuelActionChooseCombatCard', { 
+            'cardId' : card.id
+        }).then(() =>  {                
+        });                
+    },
+
+    onChooseListCardConfirmed: function()
     {
         var items = this.chooseList.getSelectedItems();
         const card = Object.values(items)[0];
@@ -183,6 +193,9 @@ return declare('seventhseacityoffivesails.actions', null, {
                 break;
             case 'planningPhaseResolveSchemes_01045':
                 action = 'actPlanningPhase_01045';
+                break;
+            case 'duelChooseGambleCard':
+                action = 'actGambleCardChosen';
                 break;
         }
 

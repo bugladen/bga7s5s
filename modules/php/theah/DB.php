@@ -4,7 +4,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 
 /** @disregard P1012 */
 class DB extends \APP_DbObject
@@ -110,7 +109,7 @@ class DB extends \APP_DbObject
         return $count;
     }
 
-    function updateRoundWithTechnique(int $duelId, int $round, EventDuelCalculateTechniqueValues $event): array
+    function updateRoundWithCombatStats(int $duelId, int $round, string $mode, int $eventRiposte, int $eventParry, int $eventThrust): array
     {
         $sql = "SELECT r.actor_id, d.challenger_id, d.defender_id, r.ending_challenger_threat, r.ending_defender_threat
         FROM duel_round r JOIN duel d ON r.duel_id = d.duel_id WHERE r.duel_id = $duelId AND r.round = $round";
@@ -122,62 +121,62 @@ class DB extends \APP_DbObject
         $endingChallengerThreat = $result['ending_challenger_threat'];
         $endingDefenderThreat = $result['ending_defender_threat'];
 
-        $techniqueResults = [];
-        $techniqueResults['endingChallengerThreatBefore'] = $endingChallengerThreat;
-        $techniqueResults['endingDefenderThreatBefore'] = $endingDefenderThreat;
+        $results = [];
+        $results['endingChallengerThreatBefore'] = $endingChallengerThreat;
+        $results['endingDefenderThreatBefore'] = $endingDefenderThreat;
 
         if ($actorId == $challengerId)
         {
             //Riposte sends threat back to adversary, only in the amount it reduced threat to the actor
-            $riposte = $event->riposte;
+            $riposte = $eventRiposte;
             if ($riposte > $endingChallengerThreat) $riposte = $endingChallengerThreat;
             $endingChallengerThreat -= $riposte;
             $endingDefenderThreat += $riposte;
-            $techniqueResults['riposte'] = $riposte;
+            $results['riposte'] = $riposte;
 
             //Parry reduces threat
-            $parry = $event->parry;
+            $parry = $eventParry;
             if ($parry > $endingChallengerThreat) $parry = $endingChallengerThreat;
             $endingChallengerThreat -= $parry;
-            $techniqueResults['parry'] = $parry;
+            $results['parry'] = $parry;
 
             //Thrust adds threat
-            $endingDefenderThreat += $event->thrust;
-            $techniqueResults['thrust'] = $event->thrust;
+            $endingDefenderThreat += $eventThrust;
+            $results['thrust'] = $eventThrust;
         }
         else if ($actorId == $defenderId)
         {
             //Riposte sends threat back to adversary, only in the amount it reduced threat to the actor
-            $riposte = $event->riposte;
+            $riposte = $eventRiposte;
             if ($riposte > $endingDefenderThreat) $riposte = $endingDefenderThreat;
             $endingDefenderThreat -= $riposte;
             $endingChallengerThreat += $riposte;
-            $techniqueResults['riposte'] = $riposte;
+            $results['riposte'] = $riposte;
 
             //Parry reduces threat
-            $parry = $event->parry;
+            $parry = $eventParry;
             if ($parry > $endingDefenderThreat) $parry = $endingDefenderThreat;
             $endingDefenderThreat -= $parry;
-            $techniqueResults['parry'] = $parry;
+            $results['parry'] = $parry;
 
             //Thrust adds threat
-            $endingChallengerThreat += $event->thrust;
-            $techniqueResults['thrust'] = $event->thrust;
+            $endingChallengerThreat += $eventThrust;
+            $results['thrust'] = $eventThrust;
         }
 
-        $techniqueResults['endingChallengerThreatAfter'] = $endingChallengerThreat;
-        $techniqueResults['endingDefenderThreatAfter'] = $endingDefenderThreat;
+        $results['endingChallengerThreatAfter'] = $endingChallengerThreat;
+        $results['endingDefenderThreatAfter'] = $endingDefenderThreat;
         
         $sql = "UPDATE duel_round SET 
-            technique_riposte = {$event->riposte}, 
-            technique_parry = {$event->parry}, 
-            technique_thrust = {$event->thrust},
+            {$mode}_riposte = {$eventRiposte}, 
+            {$mode}_parry = {$eventParry}, 
+            {$mode}_thrust = {$eventThrust},
             ending_challenger_threat = $endingChallengerThreat,
             ending_defender_threat = $endingDefenderThreat 
             WHERE duel_id = $duelId AND round = $round";
 
         $this->executeSql($sql);
 
-        return $techniqueResults;
+        return $results;
     }
 }

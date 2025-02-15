@@ -26,7 +26,7 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'planningPhaseResolveSchemes_01016_2': () => {
-            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseStockCardConfirmed());
+            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
             this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
@@ -36,13 +36,13 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'planningPhaseResolveSchemes_01044': () => {
-            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseStockCardConfirmed());
+            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
             this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
         
         'planningPhaseResolveSchemes_01045': () => {
-            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseStockCardConfirmed());
+            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
             this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
@@ -348,15 +348,24 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelChooseAction': () => {
-            this.addActionButton(`btnGamble`, _('Gamble'), () => this.bgaPerformAction('actDuelActionChooseGamble', {})) 
+            if (args.combatCardAvailable)
+                this.addActionButton(`btnGamble`, _(`Gamble (${args.gamblesLeft} Left)`), () => this.bgaPerformAction('actDuelActionGamble', {})) 
             if (args.maneuversAvailable)
                 this.addActionButton(`btnManueuver`, _('Character Maneuver'), () => this.bgaPerformAction('actDuelActionChooseManeuver', {})) 
             if (args.techniqueAvailable)
-                this.addActionButton(`btnTechnique`, _('Character Technique'), () => this.bgaPerformAction('actDuelActionChooseTechnique', {})) 
-            this.addActionButton(`btnCombatCard`, _('Play Combat Card'), () => this.onChooseStockCardConfirmed());
+            {
+                this.addActionButton(`btnTechnique`, _('Technique'), () => this.bgaPerformAction('actDuelActionChooseTechnique', {})) 
+                this.addTooltipHtml( 'btnTechnique', `<div class='basic-tooltip'>${_("Add Technique from Character or Attachment")}</div>` );
+            }
+            if (args.combatCardAvailable)
+            {
+                this.addActionButton(`btnCombatCard`, _('Combat Card'), () => this.onDuelChooseCombatCardConfirmed());
+                dojo.addClass('btnCombatCard', 'disabled');
+                this.addTooltipHtml( 'btnCombatCard', `<div class='basic-tooltip'>${_("Play Combat card. Choose Maneuvers on card.")}</div>` );
+            }
+
             this.addActionButton(`btnDone`, _('End Round'), () => this.bgaPerformAction('actDuelChooseActionEndRound', {})) 
-            this.addActionButton(`btnEndDuel`, _('Quit Duel'), () => this.bgaPerformAction('actDuelChooseActionEndDuel', {})) 
-            dojo.addClass('btnCombatCard', 'disabled');
+            
         },
 
         'duelChooseTechnique': () => {
@@ -370,7 +379,12 @@ onUpdateActionButtons: function( stateName, args )
         'duelActionResolveTechnique_01013': () => {
             this.addActionButton(`btnParry`, _('+1 Parry'), () => this.bgaPerformAction('actDuelActionResolveTechnique_01013', { useThrust: false}));
             this.addActionButton(`btnThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actDuelActionResolveTechnique_01013', { useThrust: true}));
-        }
+        },
+
+        'duelChooseGambleCard': () => {
+            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
+        },
     };
 
     if( methods[stateName] )

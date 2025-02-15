@@ -353,20 +353,29 @@ trait ArgumentsTrait
 
     public function argsChooseDuelAction(): array
     {
+        $this->theah->buildCity();
         $duelId = $this->globals->get(Game::DUEL_ID);
         $round = $this->globals->get(Game::DUEL_ROUND);
+        
+        //How many times has the player gambled this duel?
+        $sql = "SELECT count(gambled) FROM duel_round where duel_id = $duelId and player_id = {$this->getActivePlayerId()}";
+        $gamblesCount = $this->getUniqueValueFromDB($sql);
+
         $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
         $round = $this->getObjectListFromDB($sql)[0];
 
-        $actorId = $round['actor_id'];
-        $actor = $this->theah->getCharacterById($actorId);
+        $actor = $this->theah->getCharacterById($round['actor_id']);
+        $gamblesLeft = $actor->ModifiedFinesse - $gamblesCount;
 
         $maneuevers = $this->theah->getAvailableCharacterManeuvers($actor);
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
 
         return [
             "maneuverAvailable" => count($maneuevers) > 0 && $round['maneuver_id'] == null,
-            "techniqueAvailable" => count($techniques) > 0 && $round['technique_id'] == null
+            "techniqueAvailable" => count($techniques) > 0 && $round['technique_id'] == null,
+            "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $round['combat_card_id'] == null,
+            "gamblesLeft" => $gamblesLeft,
+            "combatCardAvailable" => $round['combat_card_id'] == null
         ];
     }
 
@@ -384,6 +393,22 @@ trait ArgumentsTrait
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
         return [
             "techniques" => $techniques
+        ];
+
+    }
+
+    public function argsDuelChooseGambleCard(): array
+    {
+        $deckName = $this->getPlayerFactionDeckName($this->getActivePlayerId());
+        $deckCards = $this->cards->getCardsOnTop(2, $deckName);
+        $cards = [];
+        foreach ($deckCards as $deckCard) {
+            $card = $this->getCardObjectFromDb($deckCard['id']);
+            $cards[] = $card->getPropertyArray();
+        }
+
+        return [
+            "cards" => $cards
         ];
 
     }

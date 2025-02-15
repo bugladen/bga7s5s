@@ -38,7 +38,8 @@ trait UtilitiesTrait
         $duelId = $this->globals->get(Game::DUEL_ID);
         $sql = "
         SELECT 
-            round as round, 
+            round as round,
+            player_id as playerId,
             actor_id as actorId, 
             d.challenger_id as challengerId,
             challenger_threat as startingChallengerThreat,
@@ -67,6 +68,7 @@ trait UtilitiesTrait
         {
             $row = [];
             $row['round'] = $round['round'];
+            $row['playerId'] = $round['playerId'];
             $row['challengerId'] = $round['challengerId'];
             $row['defenderId'] = $round['defenderId'];
             $row['actorId'] = $round['actorId'];
@@ -223,6 +225,18 @@ trait UtilitiesTrait
         $card = new $className();
 
         return $card;
+    }
+
+    public function handContainsCard(int $playerId)
+    {
+        $hand = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+        foreach ($hand as $handCard) {
+            $card = $this->getCardObjectFromDb($handCard['id']);
+            if ($card instanceof Attachment) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function handHasAttachments(int $playerId)

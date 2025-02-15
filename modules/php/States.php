@@ -107,6 +107,11 @@ class States
         const DUEL_CHOOSE_TECHNIQUE = 521;
             const DUEL_CHOOSE_TECHNIQUE_EVENTS = 5210;
             const DUEL_CHOOSE_TECHNIQUE_EVENTS_01013 = 52101013;
+        const DUEL_USE_MANEUVER_FROM_COMBAT_CARD = 522;
+        const DUEL_APPLY_COMBAT_CARD_STATS = 523;
+            const DUEL_APPLY_COMBAT_CARD_STATS_EVENTS = 5230;
+        const DUEL_CHOOSE_GAMBLE_CARD = 524;
+            const DUEL_CHOOSE_GAMBLE_CARD_EVENTS = 5240;
     const DUEL_NEXT_PLAYER = 60;
         
     const NEXT_PLAYER = 70;

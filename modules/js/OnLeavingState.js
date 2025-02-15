@@ -328,8 +328,13 @@ onLeavingState: function( stateName )
             if (this.isCurrentPlayerActive()) {
                 this.factionHand.setSelectionMode(0);
             }
-        }
+        },
 
+        'duelChooseGambleCard': () => {
+            dojo.addClass('choose_container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+        }
 
     };
 

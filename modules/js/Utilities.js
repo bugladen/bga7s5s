@@ -505,14 +505,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
     displayDuelRow: function(row)
     {
         const headerRow = $('duel_header_row');
-
+        
+        
         dojo.place( this.format_block( 'jstpl_duel_round', {
             round: row.round,
             challengerName: row.challengerName,
             startingChallengerThreat: row.startingChallengerThreat,
             defenderName: row.defenderName,
             startingDefenderThreat: row.startingDefenderThreat,
-            combatCard: row.combatCard ?? 'Not Chosen',
             combatRiposte: row.combatRiposte ?? 0,
             combatParry: row.combatParry ?? 0,
             combatThrust: row.combatThrust ?? 0,
@@ -528,10 +528,23 @@ return declare('seventhseacityoffivesails.utilities', null, {
             endingDefenderThreat: row.endingDefenderThreat,
         }),  headerRow, 'after');
 
-        if (!row.combatCard)
+        const combatCard = row.combatCardId ? this.gamedatas.players[row.playerId].discard.find((card) => card.id == row.combatCardId) : null;
+        if (combatCard)
         {
-            dojo.addClass(`duel_round_${row.round}_combat_card`, 'ability-not-chosen');
-            dojo.addClass(`duel_round_${row.round}_combat_card_stats`, 'ability-not-chosen');
+            const divId = `duel_round_${row.round}_combat`;
+            $(divId).innerHTML = this.format_block('jstpl_row_combat_card', { 
+                round: row.round,
+                id: combatCard.id,
+                image: g_gamethemeurl + combatCard.image 
+            });
+            this.addTooltipHtml(divId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+        }
+
+
+        if (!row.combatCardId)
+        {
+            dojo.addClass(`duel_round_${row.round}_combat`, 'ability-not-chosen');
+            dojo.addClass(`duel_round_${row.round}_combat_stats`, 'ability-not-chosen');
         }
         if (!row.techniqueName)
         {

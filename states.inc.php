@@ -954,10 +954,15 @@ $machinestates = [
             "type" => "activeplayer",
             "args" => "argsChooseDuelAction",
             "possibleactions" => [
+                "actDuelActionGamble",
+                "actDuelActionChooseCombatCard",
                 "actDuelActionChooseTechnique"
             ],
             "transitions" => [
-                "chooseTechnique" => States::DUEL_CHOOSE_TECHNIQUE
+                "chooseTechnique" => States::DUEL_CHOOSE_TECHNIQUE,
+                "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
+                "chooseGambleCard" => States::DUEL_CHOOSE_GAMBLE_CARD,
+                "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS
             ]
         ],
             States::DUEL_CHOOSE_TECHNIQUE => [
@@ -997,6 +1002,59 @@ $machinestates = [
                         "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
                     ]
                 ],
+            States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD => [
+                "name" => "duelUseManeuverFromCombatCard",
+                "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+                "descriptionmyturn" => clienttranslate('${you} must choose to use Maneuver from chosen combat card:'),
+                "type" => "activeplayer",
+                "args" => "argsEmpty",
+                "possibleactions" => [
+                    "actManueverChosen",
+                    "actBack"
+                ],
+                "transitions" => [
+                    "techniqueChosen" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+                    "back" => States::DUEL_CHOOSE_ACTION
+                ]
+            ],
+            States::DUEL_APPLY_COMBAT_CARD_STATS => [
+                "name" => "duelApplyCombatCardStats",
+                "type" => "game",
+                "action" => "stApplyCombatCardStats",
+                "transitions" => [
+                    "" => States::DUEL_APPLY_COMBAT_CARD_STATS_EVENTS
+                ]
+            ],
+                States::DUEL_APPLY_COMBAT_CARD_STATS_EVENTS => [
+                    "name" => "duelApplyCombatCardStatsEvents",
+                    "type" => "game",
+                    "action" => "stRunEvents",
+                    "transitions" => [
+                        "endOfEvents" => States::DUEL_CHOOSE_ACTION
+                    ]
+                ],
+            States::DUEL_CHOOSE_GAMBLE_CARD =>[
+                "name" => "duelChooseGambleCard",
+                "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+                "descriptionmyturn" => clienttranslate('${you} must choose to a card to Gamble with:'),
+                "type" => "activeplayer",
+                "args" => "argsDuelChooseGambleCard",
+                "possibleactions" => [
+                    "actGambleCardChosen"
+                ],
+                "transitions" => [
+                    "" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS
+                ]
+            ],
+                States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS => [
+                    "name" => "duelChooseGambleCardEvents",
+                    "type" => "game",
+                    "action" => "stRunEvents",
+                    "transitions" => [
+                        "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS
+                    ]
+                ],
+
             
     States::NEXT_PLAYER => [
         "name" => "nextPlayer",

@@ -950,3 +950,10 @@ body {
   opacity: 1.0;
 }
 
+.duel-row-combat-card {
+    background-image: var(--card_image);
+    background-size: 72px 98px;
+    background-position: 0px 0px;
+    width: 72px;
+    height: 98px;
+}

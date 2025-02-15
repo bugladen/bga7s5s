@@ -712,6 +712,19 @@ onEnteringState: function( stateName, args )
             if (this.isCurrentPlayerActive()) {
                 this.factionHand.setSelectionMode(1);
             }
+        },
+
+        'duelChooseGambleCard': () => {
+            if (this.isCurrentPlayerActive()) {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = _('Gamble Cards');
+
+                args.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+                this.chooseList.setSelectionMode(1);
+            }
         }
     };
     

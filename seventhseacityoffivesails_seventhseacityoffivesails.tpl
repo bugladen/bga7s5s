@@ -154,11 +154,11 @@ var jstpl_duel_table = `
 <tr id="duel_header_row">
     <th>Duel Round</th>
     <th>Actor</th>
-    <th>Starting Threat</th>
-    <th colspan="2">Combat</th>
+    <th>Starting Threat Pool</th>
+    <th colspan="2">Combat Card</th>
     <th colspan="2">Technique</th>
     <th colspan="2">Maneuver</th>
-    <th>Ending Threat</th>
+    <th>Ending Threat Pool</th>
 </tr>
 </table>
 </div>
@@ -180,8 +180,8 @@ var jstpl_duel_round = `
         </tr>
     </table>
     </td>
-    <td id="duel_round_\${round}_combat_card">\${combatCard}</td>
-    <td id="duel_round_\${round}_combat_card_stats">
+    <td id="duel_round_\${round}_combat">Not Chosen</td>
+    <td id="duel_round_\${round}_combat_stats">
         <table class="ability-table">
             <tr><td><div class="combat-chip riposte-chip"><span id="duel_round_\${round}_combat_riposte" class="chip-value">\${combatRiposte}</span></div></td></tr>
             <tr><td><div class="combat-chip parry-chip"><span id="duel_round_\${round}_combat_parry" class="chip-value">\${combatParry}</span></div></td></tr>
@@ -217,6 +217,11 @@ var jstpl_duel_round = `
     </table>
     </td>
 </tr>
+`;
+
+var jstpl_row_combat_card = `
+<div id="duel_round_\${round}_combat_card_\${id}" class="duel-row-combat-card" style="--card_image:url('\${image}')">
+</div>
 `;
 
 </script>  

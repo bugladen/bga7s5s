@@ -37,7 +37,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['challengeIssued', 500],
             ['duelStarted', 500],
             ['newDuelRound', 500],
-            ['updateRoundWithTechnique', 500],
+            ['updateRoundWithCombatStats', 500],
         ];
 
         notifs.forEach((notif) => {
@@ -540,28 +540,45 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     },
 
-    notif_updateRoundWithTechnique: function( notif )
+    notif_updateRoundWithCombatStats: function( notif )
     {
-        debug( 'notif_updateRoundWithTechnique' );
+        debug( 'notif_updateRoundWithCombatStats' );
         debug( notif );
 
         const args = notif.args;
-        
-        $(`duel_round_${args.round}_technique`).innerHTML = args.technique_name;
-        $(`duel_round_${args.round}_technique_riposte`).innerHTML = args.riposte;
-        $(`duel_round_${args.round}_technique_parry`).innerHTML = args.parry;
-        $(`duel_round_${args.round}_technique_thrust`).innerHTML = args.thrust;
+
+        if (args.mode == 'combat')
+        {
+            const combatCard = this.gamedatas.players[args.playerId].discard.find((card) => card.id == args.combatCardId);
+            const divId = `duel_round_${args.round}_combat`;
+            $(divId).innerHTML = this.format_block('jstpl_row_combat_card', { 
+                round: args.round,
+                id: combatCard.id,
+                image: g_gamethemeurl + combatCard.image 
+            });
+            this.addTooltipHtml(divId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+        }
+        else        
+            $(`duel_round_${args.round}_${args.mode}`).innerHTML = args.effect_name;
+
+        $(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML = args.riposte;
+        $(`duel_round_${args.round}_${args.mode}_parry`).innerHTML = args.parry;
+        $(`duel_round_${args.round}_${args.mode}_thrust`).innerHTML = args.thrust;
         $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML = args.endingChallengerThreatAfter;
         $(`duel_round_${args.round}_ending_defender_threat`).innerHTML = args.endingDefenderThreatAfter;
 
         if (args.endingChallengerThreatAfter > 0)
-            dojo.addClass(`duel_round_${args.round}_starting_challenger_threat`, 'threat-chip-threatened');
+            dojo.addClass(`duel_round_${args.round}_ending_challenger_threat`, 'threat-chip-threatened');
         else
-            dojo.removeClass(`duel_round_${args.round}_starting_challenger_threat`, 'threat-chip-threatened');
+            dojo.removeClass(`duel_round_${args.round}_ending_challenger_threat`, 'threat-chip-threatened');
 
-        dojo.removeClass(`duel_round_${args.round}_technique`, 'ability-not-chosen');
-        dojo.removeClass(`duel_round_${args.round}_technique_stats`, 'ability-not-chosen');
+        if (args.endingDefenderThreatAfter > 0)
+            dojo.addClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');
+        else
+            dojo.removeClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');
 
-    }
+        dojo.removeClass(`duel_round_${args.round}_${args.mode}`, 'ability-not-chosen');
+        dojo.removeClass(`duel_round_${args.round}_${args.mode}_stats`, 'ability-not-chosen');
+    }    
 })
 });

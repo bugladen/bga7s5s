@@ -54,6 +54,8 @@ class Events
     const DuelStarted = 'EventDuelStarted';
     const DuelNewRound = 'EventDuelNewRound';
     const DuelCalculateTechniqueValues = 'EventDuelCalculateTechniqueValues';
+    const DuelCalculateCombatCardStats = 'EventDuelCalculateCombatCardStats';
+    const DuelPlayerGambled = 'EventDuelPlayerGambled';
 
     const CharacterWounded = 'EventCharacterWounded';
     

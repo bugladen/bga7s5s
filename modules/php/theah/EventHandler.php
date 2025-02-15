@@ -18,7 +18,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
@@ -120,7 +122,7 @@ trait EventHandler
                 $this->game->notifyAllPlayers('cardDiscardedFromHand',
                     clienttranslate('${player_name} discarded ${card_name}.'), [
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "card_name" => $event->card->Name,
+                    "card_name" => "<strong>{$event->card->Name}</strong>",
                     "playerId" => $event->playerId,
                     "card" => $event->card->getPropertyArray(),
                 ]);
@@ -393,19 +395,60 @@ trait EventHandler
                         $theah->game->notifyAllPlayers("message", clienttranslate($explanation));
                     }
 
-                    $results = $theah->getDBObject()->updateRoundWithTechnique($duelId, $round, $event);
+                    $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "technique", $event->riposte, $event->parry, $event->thrust);
                     $effects = "";
-                    if ($results["parry"] > 0) $effects .= "Parry +{$results["parry"]}, ";
-                    if ($results["riposte"] > 0) $effects .= "Riposte +{$results["riposte"]}, ";
-                    if ($results["thrust"] > 0) $effects .= "Thrust +{$results["thrust"]}, ";
-                    $effects = rtrim($effects, ", ") . ". ";
+                    if ($results["parry"] > 0) $effects .= "<p>Parry +{$results["parry"]}";
+                    if ($results["riposte"] > 0) $effects .= "<p>Riposte +{$results["riposte"]}";
+                    if ($results["thrust"] > 0) $effects .= "<p>Thrust +{$results["thrust"]}";
                     $effects .= "<p>Challenger Threat went from {$results["endingChallengerThreatBefore"]} to {$results["endingChallengerThreatAfter"]}. ";
                     $effects .= "<p>Defender Threat went from {$results["endingDefenderThreatBefore"]} to {$results["endingDefenderThreatAfter"]}. ";
-                    $theah->game->notifyAllPlayers("updateRoundWithTechnique", clienttranslate('${character_name} has activated the Technique [${technique_name}] 
+                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${character_name} has activated the Technique ${strong_effect_name} 
                     with the following effects: ${effects}'), [
                         "round" => $round,
+                        "mode" => "technique",
                         "character_name" => $actor->Name,
-                        "technique_name" => $technique->Name,
+                        "strong_effect_name" => "<strong>{$technique->Name}</strong>",
+                        "effect_name" => $technique->Name,
+                        "effects" => $effects,
+                        "riposte" => $results["riposte"],
+                        "parry" => $results["parry"],
+                        "thrust" => $results["thrust"],
+                        "endingChallengerThreatBefore"  => $results["endingChallengerThreatBefore"],
+                        "endingDefenderThreatBefore"  => $results["endingDefenderThreatBefore"],
+                        "endingChallengerThreatAfter"  => $results["endingChallengerThreatAfter"],
+                        "endingDefenderThreatAfter"  => $results["endingDefenderThreatAfter"],
+                    ]);                    
+                };    
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventDuelCalculateCombatCardStats:
+                $handler = function ($theah, EventDuelCalculateCombatCardStats $event)
+                {
+                    $duelId = $theah->game->globals->get(Game::DUEL_ID);
+                    $round = $theah->game->globals->get(Game::DUEL_ROUND);
+                    $card = $theah->cards[$event->combatCardId];
+                    $playerId = $card->ControllerId;
+                    $playerName = $theah->game->getPlayerNameById($playerId);
+
+                    foreach ($event->explanations as $explanation) {
+                        $theah->game->notifyAllPlayers("message", clienttranslate($explanation));
+                    }
+
+                    $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "combat", $event->riposte, $event->parry, $event->thrust);
+                    $effects = "<p>Parry +{$results["parry"]}";
+                    $effects .= "<p>Riposte +{$results["riposte"]}";
+                    $effects .= "<p>Thrust +{$results["thrust"]}";
+                    $effects .= "<p>Challenger Threat went from {$results["endingChallengerThreatBefore"]} to {$results["endingChallengerThreatAfter"]}. ";
+                    $effects .= "<p>Defender Threat went from {$results["endingDefenderThreatBefore"]} to {$results["endingDefenderThreatAfter"]}. ";
+                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${player_name} has played ${effect_name} as their Combat Card 
+                    with the following effects: ${effects}'), [
+                        "round" => $round,
+                        "mode" => "combat",
+                        "player_name" => $playerName,
+                        "playerId" => $playerId,
+                        "effect_name" => "<strong>{$card->Name}</strong>",
+                        "combatCardId" => $card->Id,
                         "effects" => $effects,
                         "riposte" => $results["riposte"],
                         "parry" => $results["parry"],
@@ -415,12 +458,21 @@ trait EventHandler
                         "endingChallengerThreatAfter"  => $results["endingChallengerThreatAfter"],
                         "endingDefenderThreatAfter"  => $results["endingDefenderThreatAfter"],
                     ]);
-                    
-                };    
+                };
                 $handler($this, $event);
                 break;
 
-
+            case $event instanceof EventDuelPlayerGambled:
+                $handler = function($theah, EventDuelPlayerGambled $event) {
+                    $card = $theah->game->getCardObjectFromDb($event->chosenCardId);
+                    $theah->cards[$event->chosenCardId] = $card;
+                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has gambled with ${card_name}.'), [
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "card_name" => "<strong>{$card->Name}</strong>",
+                    ]);
+                };
+                $handler($this, $event);
+                break;
         }
     }
 }

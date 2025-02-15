@@ -87,6 +87,7 @@ class _01150 extends Scheme
             $game->notifyAllPlayers("message", clienttranslate('${card_name}: ${player_name} ${hasHave} added Reknown to The Forums and may intervene this turn.'), [
                 "card_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $playerName,
+                "hasHave" => $hasHave,
             ]);
 
         }

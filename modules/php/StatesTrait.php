@@ -14,6 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
@@ -753,6 +754,40 @@ trait StatesTrait
         //Change to the active player based on the round number
         $this->gamestate->changeActivePlayer($playerId);
 
+        $this->gamestate->nextState();
+    }
+
+    public function stApplyCombatCardStats(): void
+    {
+        $playerId = $this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $round = $this->globals->get(Game::DUEL_ROUND);
+
+        $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
+        $result = $this->getObjectListFromDB($sql)[0];
+
+        $actorId = $result['actor_id'];
+        $adversaryId = $this->getDuelOpponentId($actorId);
+
+        $cardId = $this->globals->get(GAME::CHOSEN_CARD);
+        $card = $this->getCardObjectFromDb($cardId);
+
+        $sql = "UPDATE duel_round SET combat_card_id = {$card->Id} WHERE duel_id = $duelId AND round = $round";
+        $this->DbQuery($sql);    
+
+        $event = $this->theah->createEvent(Events::DuelCalculateCombatCardStats);
+        if ($event instanceof EventDuelCalculateCombatCardStats)
+        {
+            $event->actorId = $actorId;
+            $event->adversaryId = $adversaryId;
+            $event->combatCardId = $cardId;
+            $event->riposte = $card->Riposte;
+            $event->parry = $card->Parry;
+            $event->thrust = $card->Thrust;
+        }
+        $this->theah->queueEvent($event);
         $this->gamestate->nextState();
     }
 
