@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver_01061;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 
@@ -29,6 +30,10 @@ class _01061 extends Risk implements IHasManeuvers
             'Flourish',
             'Prepared',
             'Drexel',
+        ];
+
+        $this->Maneuvers = [
+            new Maneuver_01061(),
         ];
     }
 }

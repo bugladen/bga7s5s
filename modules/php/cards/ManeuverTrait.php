@@ -8,10 +8,24 @@ trait ManeuverTrait
 {
     protected Array $Maneuvers = [];
 
+    public function getManeuvers(): Array
+    {
+        return $this->Maneuvers;
+    }
+
     public function addManeuverProperties(&$properties)
     {
         //Add maneuver specific properties
         $properties['numberofManeuvers'] = count($this->Maneuvers);
+    }
+
+    public function getManeuverById($id): ?Maneuver
+    {
+        foreach ($this->Maneuvers as $maneuver) {
+            if ($maneuver->Id == $id)
+                return $maneuver;
+        }
+        return null;
     }
 
     public function getManeuversArray(bool $mustBeActive = false): Array
@@ -27,4 +41,10 @@ trait ManeuverTrait
         return $array;
     }
 
+    public function updateManeuverOwnerIds($id)
+    {
+        foreach ($this->Maneuvers as $maneuver) {
+            $maneuver->setOwnerId($id);
+        }
+    }
 }

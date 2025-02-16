@@ -8,6 +8,11 @@ trait TechniqueTrait
 {
     protected Array $Techniques = [];
 
+    public function getTechniques(): Array
+    {
+        return $this->Techniques;
+    }
+
     public function addTechniqueProperties(&$properties)
     {
         //Add technique specific properties
@@ -56,7 +61,7 @@ trait TechniqueTrait
         return null;
     }
 
-    public function updateTechniqeOwnerIds($id)
+    public function updateTechniqueOwnerIds($id)
     {
         foreach ($this->Techniques as $technique) {
             $technique->setOwnerId($id);

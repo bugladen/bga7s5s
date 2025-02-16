@@ -6,6 +6,7 @@ use ArrayAccess;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 
 trait UtilitiesTrait
 {
@@ -24,6 +25,19 @@ trait UtilitiesTrait
             }
         }
         return $attachments;
+    }
+
+    public function getManeuversInHand(int $playerId)
+    {
+        $hand = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+        $maneuvers = [];
+        foreach ($hand as $handCard) {
+            $card = $this->getCardObjectFromDb($handCard['id']);
+            if ($card instanceof IHasManeuvers) {
+                $maneuvers[] = $card;
+            }
+        }
+        return $maneuvers;
     }
 
     public function getCardObjectFromDb($cardId) : Card {

@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver_01155;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01155;
 
 
@@ -43,6 +44,10 @@ class _01155 extends FactionAttachment implements IHasManeuvers, IHasTechniques
 
         $this->Techniques = [
             new Technique_01155(),
+        ];
+
+        $this->Maneuvers = [
+            new Maneuver_01155(),
         ];
     }
 }

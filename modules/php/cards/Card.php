@@ -43,16 +43,23 @@ abstract class Card
     {
         $this->Id = $id;
         if ($this instanceof IHasTechniques) {
-            $this->updateTechniqeOwnerIds($id);
+            $this->updateTechniqueOwnerIds($id);
+        }
+        if ($this instanceof IHasManeuvers) {
+            $this->updateManeuverOwnerIds($id);
         }
     }
 
     public function eventCheck($event)
     {
         if ($this instanceof IHasTechniques) {
-            /** @disregard P1012 */
-            foreach ($this->Techniques as $technique) {
+            foreach ($this->getTechniques() as $technique) {
                 $technique->eventCheck($event);
+            }
+        }
+        if ($this instanceof IHasManeuvers) {
+            foreach ($this->getManeuvers() as $maneuver) {
+                $maneuver->eventCheck($event);
             }
         }
     }
@@ -60,9 +67,13 @@ abstract class Card
     public function handleEvent($event)
     {
         if ($this instanceof IHasTechniques) {
-            /** @disregard P1012 */
-            foreach ($this->Techniques as $technique) {
+            foreach ($this->getTechniques() as $technique) {
                 $technique->handleEvent($event);
+            }
+        }
+        if ($this instanceof IHasManeuvers) {
+            foreach ($this->getManeuvers() as $maneuver) {
+                $maneuver->handleEvent($event);
             }
         }
     }
