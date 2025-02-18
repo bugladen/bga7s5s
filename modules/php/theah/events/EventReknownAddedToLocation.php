@@ -2,8 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event; 
-
 class EventReknownAddedToLocation extends Event
 {
     public int $playerId;

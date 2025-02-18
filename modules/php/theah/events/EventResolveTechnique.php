@@ -2,8 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-
 class EventResolveTechnique extends Event
 {
     public int $playerId;

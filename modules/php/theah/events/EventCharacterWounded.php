@@ -3,7 +3,6 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class EventCharacterWounded extends Event
 {
