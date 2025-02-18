@@ -24,7 +24,7 @@ class Theah
     private DB $db;
     private bool $cityBuilt;
 
-    use EventHandler;
+    use EventHub;
 
     public function __construct($game)
     {
