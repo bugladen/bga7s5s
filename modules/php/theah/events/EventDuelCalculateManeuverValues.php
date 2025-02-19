@@ -2,15 +2,16 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventDuelCalculateCombatCardStats extends Event
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+
+class EventDuelCalculateManeuverValues extends Event
 {
     public int $actorId;
     public int $adversaryId;
-    public int $combatCardId;
+    public string $maneuverId;
     public int $riposte;
     public int $parry;
     public int $thrust;
-    public bool $gambled;
     public Array $explanations;
 
     public function __construct()
@@ -20,11 +21,10 @@ class EventDuelCalculateCombatCardStats extends Event
 
         $this->actorId = 0;
         $this->adversaryId = 0;
-        $this->combatCardId = 0;
+        $this->maneuverId = "";
         $this->riposte = 0;
         $this->parry = 0;
         $this->thrust = 0;
-        $this->gambled = false;
         $this->explanations = [];
         $this->runHandlerAfterCards = true;
     }

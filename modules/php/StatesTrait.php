@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
@@ -760,7 +761,6 @@ trait StatesTrait
     public function stApplyCombatCardStats(): void
     {
         $playerId = $this->getActivePlayerId();
-        $this->theah->buildCity();
 
         $duelId = $this->globals->get(Game::DUEL_ID);
         $round = $this->globals->get(Game::DUEL_ROUND);
@@ -775,7 +775,10 @@ trait StatesTrait
         $card = $this->getCardObjectFromDb($cardId);
 
         $sql = "UPDATE duel_round SET combat_card_id = {$card->Id} WHERE duel_id = $duelId AND round = $round";
-        $this->DbQuery($sql);    
+        $this->DbQuery($sql);
+
+        $sql = "SELECT gambled from duel_round where duel_id = $duelId AND round = $round";
+        $gambled = $this->getUniqueValueFromDB($sql);
 
         $event = $this->theah->createEvent(Events::DuelCalculateCombatCardStats);
         if ($event instanceof EventDuelCalculateCombatCardStats)
@@ -786,8 +789,39 @@ trait StatesTrait
             $event->riposte = $card->Riposte;
             $event->parry = $card->Parry;
             $event->thrust = $card->Thrust;
+            $event->gambled = $gambled == 1;
         }
         $this->theah->queueEvent($event);
+        $this->gamestate->nextState();
+    }
+
+    public function stDuelGetManeuverFromCombatCardCost(): void
+    {
+        $cardId = $this->globals->get(GAME::CHOSEN_CARD);
+        $card = $this->getCardObjectFromDb($cardId);
+        $cost = $card->WealthCost;
+
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $round = $this->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
+        $result = $this->getObjectListFromDB($sql)[0];
+
+        $actorId = $result['actor_id'];
+        $adversaryId = $this->getDuelOpponentId($actorId);
+
+        $maneuverId = $this->globals->get(GAME::CHOSEN_MANEUVER);
+
+        $event = $this->theah->createEvent(Events::DuelGetCostForManeuverFromHand);
+        if ($event instanceof EventDuelGetCostForManeuverFromHand)
+        {
+            $event->actorId = $actorId;
+            $event->adversaryId = $adversaryId;
+            $event->combatCardId = $cardId;
+            $event->maneuverId = $maneuverId;
+            $event->cost = $cost;
+        }
+        $this->theah->queueEvent($event);
+
         $this->gamestate->nextState();
     }
 
@@ -799,6 +833,7 @@ trait StatesTrait
 
         // Clear the player action globals
         $this->globals->delete(GAME::CHOSEN_CARD);
+        $this->globals->delete(GAME::CHOSEN_CARD_COST);
         $this->globals->delete(GAME::CHOSEN_LOCATION);
         $this->globals->delete(GAME::CHOSEN_PERFORMER);
         $this->globals->delete(GAME::CHOSEN_TARGET);

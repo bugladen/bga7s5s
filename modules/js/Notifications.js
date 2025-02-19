@@ -549,7 +549,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         if (args.mode == 'combat')
         {
-            const combatCard = this.gamedatas.players[args.playerId].discard.find((card) => card.id == args.combatCardId);
+            const combatCard = args.combatCard;
             const divId = `duel_round_${args.round}_combat`;
             $(divId).innerHTML = this.format_block('jstpl_row_combat_card', { 
                 round: args.round,
@@ -557,6 +557,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
                 image: g_gamethemeurl + combatCard.image 
             });
             this.addTooltipHtml(divId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+    
+            if (args.gambled)
+            {
+                const imageDiv = `duel_round_${args.round}_combat_card_${combatCard.id}`
+                dojo.addClass(imageDiv, 'engaged');
+                dojo.addClass(imageDiv, 'duel-row-combat-card-gambled');
+            }
+
         }
         else        
             $(`duel_round_${args.round}_${args.mode}`).innerHTML = args.effect_name;

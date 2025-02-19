@@ -242,10 +242,21 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
+    onCombatCardPaymentConfirmed: function()
+    {
+        var items = this.factionHand.getSelectedItems();
+        items = items.map((item) => item.id);
+
+        this.bgaPerformAction('actDuelPayForManeuverFromCombatCard', { 
+            'payWithCards': JSON.stringify(items),
+        }).catch(() =>  {
+        });        
+    },
+
     onConfirmPass: function()
     {
         this.confirmationDialog(_("Are you sure you want to pass?"),
-        () => {this.passConfirmed();}
+        () => {this.onPass();}
         );
     },
 
@@ -255,7 +266,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
-    passConfirmed: function()
+    onPass: function()
     {
         const actionArray = {
             'highDramaPlayerTurn': 'actPassWithPass',

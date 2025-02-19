@@ -48,7 +48,7 @@ abstract class CardAbility
 
     public function handleEvent(Event $event)
     {
-        //Does nothing by default
+
     }
 
     public function isActive(): bool

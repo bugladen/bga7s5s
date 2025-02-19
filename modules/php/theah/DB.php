@@ -166,7 +166,7 @@ class DB extends \APP_DbObject
 
         $results['endingChallengerThreatAfter'] = $endingChallengerThreat;
         $results['endingDefenderThreatAfter'] = $endingDefenderThreat;
-        
+
         $sql = "UPDATE duel_round SET 
             {$mode}_riposte = {$eventRiposte}, 
             {$mode}_parry = {$eventParry}, 

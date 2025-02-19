@@ -20,11 +20,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerF
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
@@ -616,6 +619,10 @@ trait ActionsTrait
         $totalWealth = 0;
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
+
+            if ($card == null)
+                throw new \BgaUserException("Card $cardId not found.");
+
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
         }
@@ -950,7 +957,10 @@ trait ActionsTrait
         $totalWealth = 0;
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
-            //If $card has wealth in its traits, add it to the total wealth
+            if ($card == null)
+                throw new \BgaUserException("Card $cardId not found.");
+
+                //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
         }
         if ($totalWealth != $cost) {
@@ -1377,54 +1387,170 @@ trait ActionsTrait
 
         $this->globals->set(Game::CHOSEN_CARD, $card->Id);
 
-        //Remove card from hand
-        $this->cards->moveCard($card->Id, $this->getPlayerDiscardDeckName($playerId));
-
-        $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
-        if ($event instanceof EventCardDiscardedFromHand) {
-            $event->playerId = $playerId;
-            $event->card = $card;
-        }
-        //No check needed
-        $this->theah->queueEvent($event);
-
         if ($card instanceof IHasManeuvers)
         {
             $this->gamestate->nextState("useManeuver");
         }
         else
         {
+            //Remove card from hand
+            $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
+
             $this->gamestate->nextState("applyCombatCardStats");
         }   
+    }
+
+    public function actDuelUseManeuverFromCombatCard(string $maneuverId)
+    {
+        $this->theah->buildCity();
+
+        $maneuver = $this->theah->getManeuverById($maneuverId);
+        if ($maneuver == null) {
+            throw new \BgaUserException("Maneuver not found.");
+        }
+        
+        $cardId = $this->globals->get(Game::CHOSEN_CARD);
+        $card = $this->theah->getCardById($cardId);
+
+        if ($maneuver->OwnerId != $card->Id) {
+            throw new \BgaUserException("Maneuver does not belong to chosen combat card.");
+        }
+
+        $this->globals->set(Game::CHOSEN_MANEUVER, $maneuverId);
+
+        $this->gamestate->nextState("maneuverChosen");
+    }
+
+    public function actDuelUseManeuverFromCombatCardDeclined()
+    {
+        $playerId = $this->getActivePlayerId();
+        $cardId = $this->globals->get(Game::CHOSEN_CARD);
+        $card = $this->theah->game->getCardObjectFromDb($cardId);
+
+        //Remove card from hand
+        $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
+
+        $this->gamestate->nextState("maneuverDeclined");
+    }
+
+    public function actDuelPayForManeuverFromCombatCard(string $payWithCards)
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+        
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $round = $this->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
+        $result = $this->getObjectListFromDB($sql)[0];
+
+        $actorId = $result['actor_id'];
+        $actor = $this->theah->getCharacterById($actorId);
+
+        $maneuverId = $this->globals->get(Game::CHOSEN_MANEUVER);
+        $maneuver = $this->theah->getManeuverById($maneuverId);
+        
+        $cardId = $this->globals->get(Game::CHOSEN_CARD);
+        $card = $this->theah->getCardById($cardId);
+
+        $discount = $this->globals->get(Game::DISCOUNT);        
+
+        $cost = $card->WealthCost - $discount;
+        if ($cost < 0) $cost = 0;
+
+        $cardIds = json_decode($payWithCards, true);
+        
+        //Total up the wealth of the cards to see if player paid correctly
+        $totalWealth = 0;
+        foreach ($cardIds as $cardId) {
+            $payCard = $this->getCardObjectFromDb($cardId);
+
+            if ($payCard == null)
+                throw new \BgaUserException("Card $cardId not found.");
+
+            //If $card has wealth in its traits, add it to the total wealth
+            $totalWealth += in_array("Wealth", $payCard->Traits) ? 2 : 1;
+        }
+        if ($totalWealth != $cost) {
+            throw new \BgaUserException("Cost of Card is {$cost}. You selected {$totalWealth} Wealth of cards.");
+        }
+
+        //Move the cards used to pay to the player's discard pile
+        foreach ($cardIds as $cardId) {
+            $payCard = $this->getCardObjectFromDb($cardId);
+            $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
+
+            $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
+            if ($event instanceof EventCardDiscardedFromHand) {
+                $event->playerId = $playerId;
+                $event->card = $payCard;
+            }
+            //No check needed
+            $this->theah->queueEvent($event);
+        }
+
+        $activateEvent = $this->theah->createEvent(Events::ManeuverActivated);
+        if ($activateEvent instanceof EventManeuverActivated)
+        {
+            $activateEvent->playerId = $playerId;
+            $activateEvent->maneuverId = $maneuver->Id;
+        }
+        $this->theah->eventCheck($activateEvent);
+        $this->theah->queueEvent($activateEvent);
+
+        $adversaryId = $this->getDuelOpponentId($actorId);
+        $adversary = $this->theah->getCharacterById($adversaryId);
+
+        $resolveEvent = $this->theah->createEvent(Events::ResolveManeuver);
+        if ($resolveEvent instanceof EventResolveManeuver)
+        {
+            $resolveEvent->playerId = $playerId;
+            $resolveEvent->adversaryId = $adversary->Id;
+            $resolveEvent->maneuverId = $maneuver->Id;
+        }
+        $this->theah->eventCheck($resolveEvent);
+        $this->theah->queueEvent($resolveEvent);
+
+        $threatEvent = $this->theah->createEvent(Events::DuelCalculateManeuverValues);
+        if ($threatEvent instanceof EventDuelCalculateManeuverValues)
+        {
+            $threatEvent->actorId = $actor->Id;
+            $threatEvent->adversaryId = $adversary->Id;
+            $threatEvent->maneuverId = $maneuver->Id;
+        }
+        $this->theah->eventCheck($threatEvent);
+        $this->theah->queueEvent($threatEvent);
+
+        //Remove card from hand
+        $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
+
+        $this->gamestate->nextState("maneuverPaidFor");
     }
 
     public function actGambleCardChosen(int $id)
     {
         $playerId = $this->getActivePlayerId();
         $deckName = $this->getPlayerFactionDeckName($playerId);
+
+        $deckCard = $this->cards->getCard($id);
+        if ($deckCard == null) {
+            throw new \BgaUserException("Card not found.");
+        }
+
+        $card = $this->getCardObjectFromDb($id);
+        if ($card->Location != $deckName) {
+            throw new \BgaUserException("Card is not in your faction deck.");
+        }
+
         $cards = $this->cards->getCardsOnTop(2, $deckName);
-
-        $cardId = 0;
-        foreach ($cards as $card) {
-            if ($card['id'] == $id) 
-                $cardId = $card['id'];
-            else
-                //Sink the card not chosen
-                $this->cards->insertCardOnExtremePosition($card['id'], $deckName, false);
-
+        if ($cards[0]['id'] != $id && $cards[1]['id'] != $id) {
+            throw new \BgaUserException("Chosen card is not one of the two on top.");
         }
 
-        $this->globals->set(Game::CHOSEN_CARD, $cardId);
+        //Get the card not chosen from cards array
+        $notChosenCard = $cards[0]['id'] == $id ? $cards[1] : $cards[0];
+        $this->cards->insertCardOnExtremePosition($notChosenCard['id'], $deckName, false);
 
-        $card = $this->getCardObjectFromDb($cardId);
-        $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
-        $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
-        if ($event instanceof EventCardDiscardedFromHand) {
-            $event->playerId = $playerId;
-            $event->card = $card;
-        }
-        //No check needed
-        $this->theah->queueEvent($event);
+        $this->globals->set(Game::CHOSEN_CARD, $id);
 
         $duelId = $this->globals->get(Game::DUEL_ID);
         $round = $this->globals->get(Game::DUEL_ROUND);
@@ -1445,10 +1571,13 @@ trait ActionsTrait
             $event->playerId = $playerId;
             $event->actorId = $actorId;
             $event->adversaryId = $adversaryId;
-            $event->chosenCardId = $cardId;
+            $event->chosenCardId = $id;
         }
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);        
+
+        $card = $this->getCardObjectFromDb($id);
+        $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
 
         $this->gamestate->nextState();
     }

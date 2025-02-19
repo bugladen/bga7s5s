@@ -32,9 +32,8 @@ trait ManeuverTrait
     {
         $array = [];
         foreach ($this->Maneuvers as $maneuver) {
-            if ($mustBeActive && !$maneuver->IsActive) {
+            if ($mustBeActive && !$maneuver->IsActive)
                 continue;
-            }
             $array[] = ["id" => $maneuver->Id, "name" => $maneuver->Name];
         }
 

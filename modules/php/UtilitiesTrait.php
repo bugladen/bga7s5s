@@ -40,7 +40,8 @@ trait UtilitiesTrait
         return $maneuvers;
     }
 
-    public function getCardObjectFromDb($cardId) : Card {
+    public function getCardObjectFromDb($cardId) : Card 
+    {
         $data = $this->getObjectFromDB("SELECT card_serialized FROM card WHERE card_id = $cardId");
         $card = unserialize($data['card_serialized']);
         return $card;
@@ -60,10 +61,12 @@ trait UtilitiesTrait
             d.defender_id as defenderId,
             defender_threat as startingDefenderThreat,
             technique_id as techniqueId,
+            technique_name as techniqueName,
             technique_riposte as techniqueRiposte,
             technique_parry as techniqueParry,
             technique_thrust as techniqueThrust,
             maneuver_id as maneuverId,
+            maneuver_name as maneuverName,
             maneuver_riposte as maneuverRiposte,
             maneuver_parry as maneuverParry,
             maneuver_thrust as maneuverThrust,
@@ -71,6 +74,7 @@ trait UtilitiesTrait
             combat_riposte as combatRiposte,
             combat_parry as combatParry,
             combat_thrust as combatThrust,
+            gambled,
             ending_challenger_threat as endingChallengerThreat,
             ending_defender_threat as endingDefenderThreat
             FROM duel_round r
@@ -95,28 +99,28 @@ trait UtilitiesTrait
             $row['defenderName'] = $defender->Name;
             $row['startingDefenderThreat'] = $round['startingDefenderThreat'];
 
-            $row['techniqueName'] = null;
-            if ($round['techniqueId'] != null) {
-                $technique = $this->theah->getTechniqueById($round['techniqueId']);
-                $row['techniqueName'] = $technique->Name;
-            }
+            $row['techniqueName'] = $round['techniqueName'];
             $row['techniqueRiposte'] = $round['techniqueRiposte'];
             $row['techniqueParry'] = $round['techniqueParry'];
             $row['techniqueThrust'] = $round['techniqueThrust'];
 
-            $row['maneuverName'] = null;
-            if ($round['maneuverId'] != null) {
-                $maneuver = $this->theah->getManeuverById($round['maneuverId']);
-                $row['maneuverName'] = $maneuver->Name;
-            }
+            $row['maneuverName'] = $round['maneuverName'];
             $row['maneuverRiposte'] = $round['maneuverRiposte'];
             $row['maneuverParry'] = $round['maneuverParry'];
             $row['maneuverThrust'] = $round['maneuverThrust'];
 
-            $row['combatCardId'] = $round['combatCardId'];
+            if ($round['combatCardId'] == null)
+                $row['combatCard'] = null;
+            else 
+            {
+                $combatCard = $this->getCardObjectFromDb($round['combatCardId']);
+                $row['combatCard'] = $combatCard->getPropertyArray();
+            }
             $row['combatRiposte'] = $round['combatRiposte'];
             $row['combatParry'] = $round['combatParry'];
             $row['combatThrust'] = $round['combatThrust'];
+
+            $row['gambled'] = $round['gambled'];
 
             $row['endingChallengerThreat'] = $round['endingChallengerThreat'];
             $row['endingDefenderThreat'] = $round['endingDefenderThreat'];

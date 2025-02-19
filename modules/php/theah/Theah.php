@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -54,6 +55,7 @@ class Theah
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_FORUM);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_BAZAAR);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
+        $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_PURGATORY);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_HAND, $this->game->getActivePlayerId());
 
         $this->cityBuilt = true;
@@ -435,6 +437,54 @@ class Theah
             if ($attachment instanceof IHasTechniques)
             {
                 if ($attachment->getTechniqueById($technique->Id))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    function getManeuverById($id): ?Maneuver
+    {
+        foreach ($this->cards as $card) {
+
+            if ($card instanceof IHasManeuvers)
+            {
+                $maneuver = $card->getManeuverById($id);
+                if ($maneuver)
+                    return $maneuver;
+            }
+
+            if ($card instanceof Character) 
+                foreach ($card->Attachments as $attachmentId) 
+                {
+                    $attachment = $this->getCardById($attachmentId);
+                    if ($attachment instanceof IHasManeuvers)
+                    {
+                        $maneuver = $attachment->getManeuverById($id);
+                        if ($maneuver)
+                            return $maneuver;
+                    }
+                }
+        }
+
+        return null;
+    }
+
+    function isManeuverOwnedByCharacter(Maneuver $maenuver, Character $character): bool
+    {
+        if ($character instanceof IHasManeuvers)
+        {
+            if ($character->getManeuverById($maenuver->Id))
+                return true;
+        }
+
+        foreach ($character->Attachments as $attachmentId) 
+        {
+            $attachment = $this->getCardById($attachmentId);
+            if ($attachment instanceof IHasManeuvers)
+            {
+                if ($attachment->getManeuverById($maenuver->Id))
                     return true;
             }
         }

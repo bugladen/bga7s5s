@@ -334,6 +334,26 @@ onLeavingState: function( stateName )
             dojo.addClass('choose_container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
+        },
+
+        'duelUseManeuverFromCombatCard' : () => {
+            var items = this.factionHand.getSelectedItems();
+            const types = {};
+            items.forEach((item) => {
+                this.factionHand.unselectItem(item.id);
+            });
+        },
+
+        'duelPayForManeuverFromCombatCard' : () => {
+            this.factionHand.getAllItems().forEach((card, index) => {
+                let div = this.factionHand.getItemDivId(card.id);
+                if (dojo.hasClass(div, 'unselectable')) {
+                    dojo.removeClass(div, 'unselectable');
+                    dojo.destroy(`${div}_wealth_cost`);
+                }
+            });
+            this.factionHand.setSelectionMode(0);
+            $('faction_hand_info').innerHTML = '';
         }
 
     };

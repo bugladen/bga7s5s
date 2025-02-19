@@ -21,6 +21,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocatio
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
@@ -388,6 +389,7 @@ trait EventHub
                 break;
                 
             case $event instanceof EventDuelCalculateTechniqueValues:
+                //This is a post-handling event
                 $handler = function ($theah, EventDuelCalculateTechniqueValues $event)
                 {
                     $duelId = $theah->game->globals->get(Game::DUEL_ID);
@@ -428,6 +430,21 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventDuelGetCostForManeuverFromHand:
+                //This is a post-handling event, so after any chance of cost modification, 
+                //we can set the cost in the globals to set up for argsDuelPayForManeuverFromCombatCard
+                $handler = function (Theah $theah, EventDuelGetCostForManeuverFromHand $event)
+                {
+                    foreach ($event->explanations as $explanation) {
+                        $theah->game->notifyAllPlayers("message", clienttranslate($explanation), []);
+                    }
+
+                    $theah->game->globals->set(Game::CHOSEN_CARD_COST, $event->cost);
+                    $theah->game->globals->set(Game::DISCOUNT, $event->discount);
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventManeuverActivated:
                 $handler = function (Theah $theah, EventManeuverActivated $event)
                 {
@@ -455,6 +472,7 @@ trait EventHub
                 break;
 
             case $event instanceof EventDuelCalculateManeuverValues:
+                //This is a post-handling event
                 $handler = function ($theah, EventDuelCalculateManeuverValues $event)
                 {
                     $duelId = $theah->game->globals->get(Game::DUEL_ID);
@@ -500,7 +518,7 @@ trait EventHub
                 {
                     $duelId = $theah->game->globals->get(Game::DUEL_ID);
                     $round = $theah->game->globals->get(Game::DUEL_ROUND);
-                    $card = $theah->cards[$event->combatCardId];
+                    $card = $theah->game->getCardObjectFromDb($event->combatCardId);
                     $playerId = $card->ControllerId;
                     $playerName = $theah->game->getPlayerNameById($playerId);
 
@@ -523,11 +541,12 @@ trait EventHub
                         "player_name" => $playerName,
                         "playerId" => $playerId,
                         "effect_name" => "<strong>{$card->Name}</strong>",
-                        "combatCardId" => $card->Id,
+                        "combatCard" => $card->getPropertyArray(),
                         "effects" => $effects,
                         "riposte" => $results["riposte"],
                         "parry" => $results["parry"],
                         "thrust" => $results["thrust"],
+                        "gambled" => $event->gambled,
                         "endingChallengerThreatBefore"  => $results["endingChallengerThreatBefore"],
                         "endingDefenderThreatBefore"  => $results["endingDefenderThreatBefore"],
                         "endingChallengerThreatAfter"  => $results["endingChallengerThreatAfter"],

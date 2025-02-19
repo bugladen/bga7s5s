@@ -968,7 +968,7 @@ $machinestates = [
             States::DUEL_CHOOSE_TECHNIQUE => [
                 "name" => "duelChooseTechnique",
                 "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
-                "descriptionmyturn" => clienttranslate('${you} must choose a Technique for this Round:'),
+                "descriptionmyturn" => clienttranslate('${you} may choose a Technique to use this Round:'),
                 "type" => "activeplayer",
                 "args" => "argsChooseDuelTechnique",
                 "possibleactions" => [
@@ -1005,18 +1005,59 @@ $machinestates = [
             States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD => [
                 "name" => "duelUseManeuverFromCombatCard",
                 "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
-                "descriptionmyturn" => clienttranslate('${you} must choose to use Maneuver from chosen combat card:'),
+                "descriptionmyturn" => clienttranslate('${you} may choose to use any Maneuvers from the chosen combat card:'),
                 "type" => "activeplayer",
-                "args" => "argsEmpty",
+                "args" => "argsDuelUseManeuverFromCombatCard",
                 "possibleactions" => [
-                    "actManueverChosen",
-                    "actBack"
+                    "actDuelUseManeuverFromCombatCard",
+                    "actBack",
+                    "actDuelUseManeuverFromCombatCardDeclined"
                 ],
                 "transitions" => [
-                    "techniqueChosen" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+                    "maneuverChosen" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST,
+                    "maneuverDeclined" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "back" => States::DUEL_CHOOSE_ACTION
                 ]
             ],
+            States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST => [
+                "name" => "duelGetManeuverFromCombatCardCost",
+                "type" => "game",
+                "action" => "stDuelGetManeuverFromCombatCardCost",
+                "transitions" => [
+                    "" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_EVENTS
+                    ]
+            ],
+                States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_EVENTS => [
+                    "name" => "duelGetManeuverFromCombatCardCostEvents",
+                    "type" => "game",
+                    "action" => "stRunEvents",
+                    "transitions" => [
+                        "endOfEvents" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD
+                        ]
+                ],
+            States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD => [
+                "name" => "duelPayForManeuverFromCombatCard",
+                "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+                "descriptionmyturn" => clienttranslate('${you} must choose how to pay for chosen combat card by selecting cards in your hand:'),
+                "type" => "activeplayer",
+                "args" => "argsDuelPayForManeuverFromCombatCard",
+                "possibleactions" => [
+                    "actDuelPayForManeuverFromCombatCard",
+                    "actBack"
+                ],
+                "transitions" => [
+                    "maneuverPaidFor" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+                    "back" => States::DUEL_CHOOSE_ACTION
+                ]
+            ],
+                States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS => [
+                    "name" => "duelUseManeuverFromCombatCardEvents",
+                    "type" => "game",
+                    "action" => "stRunEvents",
+                    "transitions" => [
+                        "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS
+                        ]
+                ],
             States::DUEL_APPLY_COMBAT_CARD_STATS => [
                 "name" => "duelApplyCombatCardStats",
                 "type" => "game",

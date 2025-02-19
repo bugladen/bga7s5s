@@ -332,7 +332,7 @@ onUpdateActionButtons: function( stateName, args )
         'highDramaChallengeActionActivateTechnique': () => {
             if (this.isCurrentPlayerActive()) {
                 this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
+                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
                 args.techniques.forEach((technique) => { 
                     this.addActionButton(
                         `actChooseTechnique${technique.id}-btn`, _(technique.name), () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 
@@ -352,7 +352,7 @@ onUpdateActionButtons: function( stateName, args )
                 this.addActionButton(`btnGamble`, _(`Gamble (${args.gamblesLeft} Left)`), () => this.bgaPerformAction('actDuelActionGamble', {})) 
             if (args.maneuversAvailable)
                 this.addActionButton(`btnManueuver`, _('Character Maneuver'), () => this.bgaPerformAction('actDuelActionChooseManeuver', {})) 
-            if (args.techniqueAvailable)
+            if (args.techniquesAvailable)
             {
                 this.addActionButton(`btnTechnique`, _('Technique'), () => this.bgaPerformAction('actDuelActionChooseTechnique', {})) 
                 this.addTooltipHtml( 'btnTechnique', `<div class='basic-tooltip'>${_("Add Technique from Character or Attachment")}</div>` );
@@ -372,13 +372,27 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
             args.techniques.forEach((technique) => { 
                 this.addActionButton(
-                    `btnChooseTechnique${technique.id}-btn`, _(technique.name), () => this.bgaPerformAction('actDuelTechniqueChosen', { techniqueId: technique.id})) 
+                    `btnChooseTechnique_${technique.id}`, _(technique.name), () => this.bgaPerformAction('actDuelTechniqueChosen', { techniqueId: technique.id})) 
             });
         },
 
         'duelActionResolveTechnique_01013': () => {
             this.addActionButton(`btnParry`, _('+1 Parry'), () => this.bgaPerformAction('actDuelActionResolveTechnique_01013', { useThrust: false}));
             this.addActionButton(`btnThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actDuelActionResolveTechnique_01013', { useThrust: true}));
+        },
+
+        'duelUseManeuverFromCombatCard': () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            args.maneuvers.forEach((maneuver) => { 
+                this.addActionButton(
+                    `btnChooseManeuver_${maneuver.id}`, _(maneuver.name), () => this.bgaPerformAction('actDuelUseManeuverFromCombatCard', { maneuverId: maneuver.id})) 
+            });
+            this.addActionButton(`btnDecline`, _('Decline'), () => this.bgaPerformAction('actDuelUseManeuverFromCombatCardDeclined', {}));
+        },
+
+        'duelPayForManeuverFromCombatCard': () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onCombatCardPaymentConfirmed());
         },
 
         'duelChooseGambleCard': () => {

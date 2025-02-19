@@ -2,6 +2,8 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
+
 trait ArgumentsTrait
 {
     /**
@@ -354,11 +356,12 @@ trait ArgumentsTrait
     public function argsChooseDuelAction(): array
     {
         $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
         $duelId = $this->globals->get(Game::DUEL_ID);
         $round = $this->globals->get(Game::DUEL_ROUND);
         
         //How many times has the player gambled this duel?
-        $sql = "SELECT count(gambled) FROM duel_round where duel_id = $duelId and player_id = {$this->getActivePlayerId()}";
+        $sql = "SELECT count(gambled) FROM duel_round where duel_id = $duelId and player_id = {$playerId}";
         $gamblesCount = $this->getUniqueValueFromDB($sql);
 
         $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
@@ -367,12 +370,12 @@ trait ArgumentsTrait
         $actor = $this->theah->getCharacterById($round['actor_id']);
         $gamblesLeft = $actor->ModifiedFinesse - $gamblesCount;
 
-        $maneuevers = $this->theah->getAvailableCharacterManeuvers($actor);
+        $characterManeuevers = $this->theah->getAvailableCharacterManeuvers($actor);
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
 
         return [
-            "maneuverAvailable" => count($maneuevers) > 0 && $round['maneuver_id'] == null,
-            "techniqueAvailable" => count($techniques) > 0 && $round['technique_id'] == null,
+            "maneuversAvailable" => (count($characterManeuevers) > 0) && $round['maneuver_id'] == null,
+            "techniquesAvailable" => count($techniques) > 0 && $round['technique_id'] == null,
             "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $round['combat_card_id'] == null,
             "gamblesLeft" => $gamblesLeft,
             "combatCardAvailable" => $round['combat_card_id'] == null
@@ -395,6 +398,26 @@ trait ArgumentsTrait
             "techniques" => $techniques
         ];
 
+    }
+
+    public function argsDuelUseManeuverFromCombatCard(): array
+    {
+        $cardId =$this->globals->get(Game::CHOSEN_CARD);
+        $card = $this->getCardObjectFromDb($cardId);
+        if ($card instanceof IHasManeuvers) {
+            return [
+                "cardId" => $cardId,
+                "maneuvers" => $card->getManeuversArray()
+            ];
+        }
+    }
+
+    public function argsDuelPayForManeuverFromCombatCard(): array {
+        return [
+            "combatCardId" => $this->globals->get(Game::CHOSEN_CARD),
+            "cost" => $this->globals->get(Game::CHOSEN_CARD_COST),
+            "discount" => $this->globals->get(Game::DISCOUNT)
+        ];
     }
 
     public function argsDuelChooseGambleCard(): array

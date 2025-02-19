@@ -42,25 +42,26 @@ class Game extends \Table
     //Global variable names
     final const PLAYER_COUNT = "playerCount";
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
-    final const CHALLENGE_THREAT = "challengeThreat";
-    final const CHALLENGE_ACCEPTED = "challengeAccepted";
-    final const DISCOUNT = "discount";
     final const CATS_EMBARGO = "catsEmbargo";
 
     //Player action global variables
     //Delete these in stNextPlayer
+    final const DISCOUNT = "discount";
     final const CHOSEN_CARD = "chosenCard";
+    final const CHOSEN_CARD_COST = "chosenCardCost";
     final const CHOSEN_LOCATION = "chosenLocation";
     final const CHOSEN_PERFORMER = "chosenPerformer";
     final const CHOSEN_TARGET = "chosenTarget";
     final const CHOSEN_TECHNIQUE = "chosenTechnique";
     final const CHOSEN_MANEUVER = "chosenManeuver";
+    final const CHALLENGE_THREAT = "challengeThreat";
+    final const CHALLENGE_ACCEPTED = "challengeAccepted";
 
     //Duel global variables
     //Duel Names
+    //Delete these at the end of the duel
     final const DUEL_CHALLENGER = "Challenger";
     final const DUEL_DEFENDER = "Defender";
-    //Delete these at the end of the duel
     final const IN_DUEL = "inDuel";
     final const DUEL_ID = "duelId";
     final const DUEL_ROUND = "duelRound";

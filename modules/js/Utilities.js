@@ -520,7 +520,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             techniqueRiposte: row.techniqueRiposte ?? 0,
             techniqueParry: row.techniqueParry ?? 0,
             techniqueThrust: row.techniqueThrust ?? 0,
-            maneuver: row.maneuver ?? 'Not Chosen',
+            maneuver: row.maneuverName ?? 'Not Chosen',
             maneuverRiposte: row.maneuverRiposte ?? 0,
             maneuverParry: row.maneuverParry ?? 0,
             maneuverThrust: row.maneuverThrust ?? 0,
@@ -528,7 +528,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             endingDefenderThreat: row.endingDefenderThreat,
         }),  headerRow, 'after');
 
-        const combatCard = row.combatCardId ? this.gamedatas.players[row.playerId].discard.find((card) => card.id == row.combatCardId) : null;
+        const combatCard = row.combatCard;
         if (combatCard)
         {
             const divId = `duel_round_${row.round}_combat`;
@@ -538,10 +538,17 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 image: g_gamethemeurl + combatCard.image 
             });
             this.addTooltipHtml(divId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+
+            if (row.gambled)
+            {
+                const imageDiv = `duel_round_${row.round}_combat_card_${combatCard.id}`
+                dojo.addClass(imageDiv, 'engaged');
+                dojo.addClass(imageDiv, 'duel-row-combat-card-gambled');
+            }
         }
 
 
-        if (!row.combatCardId)
+        if (!row.combatCard)
         {
             dojo.addClass(`duel_round_${row.round}_combat`, 'ability-not-chosen');
             dojo.addClass(`duel_round_${row.round}_combat_stats`, 'ability-not-chosen');
@@ -551,7 +558,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.addClass(`duel_round_${row.round}_technique`, 'ability-not-chosen');
             dojo.addClass(`duel_round_${row.round}_technique_stats`, 'ability-not-chosen');
         }
-        if (!row.maneuver)
+        if (!row.maneuverName)
         {
             dojo.addClass(`duel_round_${row.round}_maneuver`, 'ability-not-chosen');
             dojo.addClass(`duel_round_${row.round}_maneuver_stats`, 'ability-not-chosen');
