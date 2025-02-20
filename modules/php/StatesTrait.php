@@ -10,11 +10,13 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
@@ -979,12 +981,31 @@ trait StatesTrait
         $sql = "SELECT challenging_player_id, defending_player_id, challenger_id, defender_id FROM duel where duel_id = $duelId";
         $result = $this->getObjectListFromDB($sql)[0];
 
-        $this->notifyAllPlayers("duelEnd", clienttranslate('The Duel has ended.'), [
-            "challengerId" => $result['challenger_id'],
-            "defenderId" => $result['defender_id'],
-            "challengingPlayerId" => $result['challenging_player_id'],
-            "defendingPlayerId" => $result['defending_player_id']
-        ]);
+        $event = $this->theah->createEvent(Events::DuelEnd);
+        if ($event instanceof EventDuelEnd)
+        {
+            $event->challengingPlayerId = $result['challenging_player_id'];
+            $event->defendingPlayerId = $result['defending_player_id'];
+            $event->challengerId = $result['challenger_id'];
+            $event->defenderId = $result['defender_id'];
+        }
+        $this->theah->queueEvent($event);
+
+        //Get all the cards in purgatory and move them to the discard pile
+        $cards = $this->cards->getCardsInLocation(Game::LOCATION_PURGATORY);
+        foreach ($cards as $purgatoryCard)
+        {
+            $card = $this->getCardObjectFromDb($purgatoryCard['id']);
+            $playerId = $card->ControllerId;
+            $this->cards->moveCard($purgatoryCard['id'], $this->getPlayerDiscardDeckName($playerId));
+
+            $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
+            if ($event instanceof EventCardDiscardedFromHand) {
+                $event->playerId = $playerId;
+                $event->card = $card;
+            }
+            $this->theah->queueEvent($event);
+        }
 
         $this->gamestate->changeActivePlayer($result['challenging_player_id']);
         $this->gamestate->nextState();

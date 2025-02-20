@@ -21,6 +21,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocatio
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
@@ -566,6 +567,19 @@ trait EventHub
                     $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has gambled with ${card_name}.'), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "card_name" => "<strong>{$card->Name}</strong>",
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventDuelEnd:
+                $handler = function ($theah, EventDuelEnd $event)
+                {
+                    $theah->game->notifyAllPlayers("duelEnd", clienttranslate('The Duel has ended.'), [
+                        "challengerId" => $event->challengerId,
+                        "defenderId" => $event->defenderId,
+                        "challengingPlayerId" => $event->challengingPlayerId,
+                        "defendingPlayerId" => $event->defendingPlayerId
                     ]);
                 };
                 $handler($this, $event);

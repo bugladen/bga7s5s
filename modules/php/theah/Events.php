@@ -60,6 +60,7 @@ class Events
     const DuelGetCostForManeuverFromHand = 'EventDuelGetCostForManeuverFromHand';
     const DuelCalculateCombatCardStats = 'EventDuelCalculateCombatCardStats';
     const DuelPlayerGambled = 'EventDuelPlayerGambled';
+    const DuelEnd = 'EventDuelEnd';
 
     const CharacterWounded = 'EventCharacterWounded';
     
