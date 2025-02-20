@@ -57,9 +57,9 @@ trait UtilitiesTrait
             player_id as playerId,
             actor_id as actorId, 
             d.challenger_id as challengerId,
-            challenger_threat as startingChallengerThreat,
+            starting_challenger_threat as startingChallengerThreat,
             d.defender_id as defenderId,
-            defender_threat as startingDefenderThreat,
+            starting_defender_threat as startingDefenderThreat,
             technique_id as techniqueId,
             technique_name as techniqueName,
             technique_riposte as techniqueRiposte,
@@ -76,7 +76,8 @@ trait UtilitiesTrait
             combat_thrust as combatThrust,
             gambled,
             ending_challenger_threat as endingChallengerThreat,
-            ending_defender_threat as endingDefenderThreat
+            ending_defender_threat as endingDefenderThreat,
+            wounds_taken as wounds
             FROM duel_round r
             INNER JOIN duel d ON d.duel_id = r.duel_id
             WHERE r.duel_id = $duelId";
@@ -124,6 +125,7 @@ trait UtilitiesTrait
 
             $row['endingChallengerThreat'] = $round['endingChallengerThreat'];
             $row['endingDefenderThreat'] = $round['endingDefenderThreat'];
+            $row['wounds'] = $round['wounds'];
 
             $rounds[] = $row;
         }

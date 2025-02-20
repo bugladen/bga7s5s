@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 
@@ -95,8 +96,21 @@ abstract class Character extends Card
 
         if ($event instanceof EventGenerateChallengeThreat && $event->actorId == $this->Id)
         {
-            $event->threat += $this->ModifiedCombat;
-            $event->explanations[] = clienttranslate("{$this->Name} adds {$this->ModifiedCombat} Threat from their Combat Stat.");
+            switch ($event->statUsed)
+            {
+                case Game::CHALLENGE_STAT_COMBAT:
+                    $event->threat += $this->ModifiedCombat;
+                    $event->explanations[] = clienttranslate("{$this->Name} adds {$this->ModifiedCombat} Threat from their Combat Stat.");
+                    break;
+                case Game::CHALLENGE_STAT_FINESSE:
+                    $event->threat += $this->ModifiedFinesse;
+                    $event->explanations[] = clienttranslate("{$this->Name} adds {$this->ModifiedFinesse} Threat from their Finesse Stat.");
+                    break;
+                case Game::CHALLENGE_STAT_INFLUENCE:
+                    $event->threat += $this->ModifiedInfluence;
+                    $event->explanations[] = clienttranslate("{$this->Name} adds {$this->ModifiedInfluence} Threat from their Influence Stat.");
+                    break;
+            }
         }
 
         if ($event instanceof EventCharacterWounded && $event->character->Id == $this->Id)

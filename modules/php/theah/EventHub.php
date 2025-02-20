@@ -403,8 +403,8 @@ trait EventHub
 
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "technique", $event->riposte, $event->parry, $event->thrust);
                     $effects = "";
-                    if ($results["parry"] > 0) $effects .= "<p>Parry +{$results["parry"]}";
                     if ($results["riposte"] > 0) $effects .= "<p>Riposte +{$results["riposte"]}";
+                    if ($results["parry"] > 0) $effects .= "<p>Parry +{$results["parry"]}";
                     if ($results["thrust"] > 0) $effects .= "<p>Thrust +{$results["thrust"]}";
                     if ($results["endingChallengerThreatBefore"] != $results["endingChallengerThreatAfter"])
                         $effects .= "<p>Challenger Threat went from {$results["endingChallengerThreatBefore"]} to {$results["endingChallengerThreatAfter"]}. ";
@@ -425,6 +425,7 @@ trait EventHub
                         "endingDefenderThreatBefore"  => $results["endingDefenderThreatBefore"],
                         "endingChallengerThreatAfter"  => $results["endingChallengerThreatAfter"],
                         "endingDefenderThreatAfter"  => $results["endingDefenderThreatAfter"],
+                        "wounds" => $results["wounds"],
                     ]);                    
                 };    
                 $handler($this, $event);
@@ -486,8 +487,8 @@ trait EventHub
 
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "maneuver", $event->riposte, $event->parry, $event->thrust);
                     $effects = "";
-                    if ($results["parry"] > 0) $effects .= "<p>Parry +{$results["parry"]}";
                     if ($results["riposte"] > 0) $effects .= "<p>Riposte +{$results["riposte"]}";
+                    if ($results["parry"] > 0) $effects .= "<p>Parry +{$results["parry"]}";
                     if ($results["thrust"] > 0) $effects .= "<p>Thrust +{$results["thrust"]}";
                     if ($results["endingChallengerThreatBefore"] != $results["endingChallengerThreatAfter"])
                         $effects .= "<p>Challenger Threat went from {$results["endingChallengerThreatBefore"]} to {$results["endingChallengerThreatAfter"]}. ";
@@ -508,6 +509,7 @@ trait EventHub
                         "endingDefenderThreatBefore"  => $results["endingDefenderThreatBefore"],
                         "endingChallengerThreatAfter"  => $results["endingChallengerThreatAfter"],
                         "endingDefenderThreatAfter"  => $results["endingDefenderThreatAfter"],
+                        "wounds" => $results["wounds"],
                     ]);                    
                 };    
                 $handler($this, $event);
@@ -527,8 +529,8 @@ trait EventHub
                     }
 
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "combat", $event->riposte, $event->parry, $event->thrust);
-                    $effects = "<p>Parry +{$results["parry"]}";
-                    $effects .= "<p>Riposte +{$results["riposte"]}";
+                    $effects = "<p>Riposte +{$results["riposte"]}";
+                    $effects .= "<p>Parry +{$results["parry"]}";
                     $effects .= "<p>Thrust +{$results["thrust"]}";
                     if ($results["endingChallengerThreatBefore"] != $results["endingChallengerThreatAfter"])
                         $effects .= "<p>Challenger Threat went from {$results["endingChallengerThreatBefore"]} to {$results["endingChallengerThreatAfter"]}. ";
@@ -551,6 +553,7 @@ trait EventHub
                         "endingDefenderThreatBefore"  => $results["endingDefenderThreatBefore"],
                         "endingChallengerThreatAfter"  => $results["endingChallengerThreatAfter"],
                         "endingDefenderThreatAfter"  => $results["endingDefenderThreatAfter"],
+                        "wounds" => $results["wounds"],
                     ]);
                 };
                 $handler($this, $event);

@@ -1021,6 +1021,9 @@ trait ActionsTrait
             throw new \BgaUserException("Challenge Action is not allowed right now.");
         }
 
+        //High Drama Challenge action defaults to Combat stat
+        $this->globals->set(Game::CHALLENGE_STAT, Game::CHALLENGE_STAT_COMBAT);
+
         $this->gamestate->nextState("challengeActionStart");
     }
 
@@ -1581,4 +1584,24 @@ trait ActionsTrait
 
         $this->gamestate->nextState();
     }
+
+    public function actDuelDoneRound()
+    {
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $round = $this->globals->get(Game::DUEL_ROUND);    
+
+        $sql = "SELECT combat_card_id FROM duel_round where duel_id = $duelId AND round = $round";
+        $cardId = $this->getUniqueValueFromDB($sql);
+
+        if ($round == 1)
+        {
+            //Check to see if a combat card was played
+            if ($cardId == null)
+            {
+                throw new \BgaUserException("For the first round, you must either gamble or a combat card must be played.");
+            }
+        }
+
+        $this->gamestate->nextState("doneWithRound");
+   }
 }

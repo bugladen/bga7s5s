@@ -561,6 +561,21 @@ body {
     color: yellow;
 }
 
+.duel-wound-chip {
+    background-image: url('img/boardResources.jpg');
+    background-size: calc(var(--jpg-board-resource-width) * .5) calc(var(--jpg-board-resource-height) * .5);
+    background-position: -106px 0px;
+    width: 39px;
+    height: 39px;
+    line-height: 39px;
+    border-radius: 50%;
+    font-family: "Pirata One", system-ui;
+    font-size:20pt;
+    text-align:center;
+    color: #EE4B38;
+    display: inline-block;
+}
+
 .card-wealth-cost {
     position: relative;
     background-image: url('img/boardResources.png');
@@ -876,7 +891,7 @@ body {
     font-family: "Pirata One", system-ui;
     font-size: 12pt;
     text-align: center;
-    color: red;
+    color: #EE4B38;;
 }
 
 #duel_table {
@@ -899,11 +914,11 @@ body {
 #duel_table {
     border: 1px solid black;
 }
-#duel_table>tbody>tr:nth-child(1)>th {
+#duel_table>tbody>tr {
     border-bottom: 1px solid black;
 }
 
-#duel_table>tbody>tr>td:not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(8)):not(:nth-child(10)) {
+#duel_table>tbody>tr>td:not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(8)) {
     border-right: 1px solid black;
 }
 

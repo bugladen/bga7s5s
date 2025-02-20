@@ -43,6 +43,9 @@ class Game extends \Table
     final const PLAYER_COUNT = "playerCount";
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
     final const CATS_EMBARGO = "catsEmbargo";
+    final const CHALLENGE_STAT_COMBAT = "COMBAT";
+    final const CHALLENGE_STAT_FINESSE = "FINESSE";
+    final const CHALLENGE_STAT_INFLUENCE = "INFLUENCE";
 
     //Player action global variables
     //Delete these in stNextPlayer
@@ -60,6 +63,7 @@ class Game extends \Table
     //Duel global variables
     //Duel Names
     //Delete these at the end of the duel
+    final const CHALLENGE_STAT = "ChallengeStat";
     final const DUEL_CHALLENGER = "Challenger";
     final const DUEL_DEFENDER = "Defender";
     final const IN_DUEL = "inDuel";

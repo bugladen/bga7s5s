@@ -956,13 +956,15 @@ $machinestates = [
             "possibleactions" => [
                 "actDuelActionGamble",
                 "actDuelActionChooseCombatCard",
-                "actDuelActionChooseTechnique"
+                "actDuelActionChooseTechnique",
+                "actDuelDoneRound"
             ],
             "transitions" => [
                 "chooseTechnique" => States::DUEL_CHOOSE_TECHNIQUE,
                 "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                 "chooseGambleCard" => States::DUEL_CHOOSE_GAMBLE_CARD,
-                "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS
+                "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
+                "doneWithRound" => States::DUEL_END_OF_ROUND
             ]
         ],
             States::DUEL_CHOOSE_TECHNIQUE => [
@@ -1095,11 +1097,53 @@ $machinestates = [
                         "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS
                     ]
                 ],
-
-            
+            States::DUEL_END_OF_ROUND => [
+                "name" => "duelEndOfRound",
+                "type" => "game",
+                "action" => "stDuelEndOfRound",
+                "transitions" => [
+                    "" => States::DUEL_END_OF_ROUND_EVENTS
+                ]
+            ],
+                States::DUEL_END_OF_ROUND_EVENTS => [
+                    "name" => "duelEndOfRoundEvents",
+                    "type" => "game",
+                    "action" => "stRunEvents",
+                    "transitions" => [
+                        "endOfEvents" => States::DUEL_NEXT_PLAYER
+                    ]
+                ],
+            States::DUEL_NEXT_PLAYER => [
+                "name" => "duelNextPlayer",
+                "type" => "game",
+                "action" => "stDuelNextPlayer",
+                "updateGameProgression" => true,
+                "transitions" => [
+                    "endOfGame" => States::END_GAME, 
+                    "endOfDuel" => States::DUEL_END, 
+                    "newRound" => States::DUEL_NEW_ROUND
+                ]
+            ],
+            States::DUEL_END => [
+                "name" => "duelEnd",
+                "type" => "game",
+                "action" => "stDuelEnd",
+                "updateGameProgression" => true,
+                "transitions" => [
+                    "" => States::DUEL_END_EVENTS
+                ]
+            ],
+                States::DUEL_END_EVENTS => [
+                    "name" => "duelEnd",
+                    "type" => "game",
+                    "action" => "stRunEvents",
+                    "transitions" => [
+                        "endOfEvents" => States::NEXT_PLAYER
+                    ]
+                ],
+        
     States::NEXT_PLAYER => [
         "name" => "nextPlayer",
-        "description" => '',
         "type" => "game",
         "action" => "stNextPlayer",
         "updateGameProgression" => true,

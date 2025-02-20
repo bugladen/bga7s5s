@@ -38,6 +38,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['duelStarted', 500],
             ['newDuelRound', 500],
             ['updateRoundWithCombatStats', 500],
+            ['duelEnd', 500],
         ];
 
         notifs.forEach((notif) => {
@@ -574,6 +575,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         $(`duel_round_${args.round}_${args.mode}_thrust`).innerHTML = args.thrust;
         $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML = args.endingChallengerThreatAfter;
         $(`duel_round_${args.round}_ending_defender_threat`).innerHTML = args.endingDefenderThreatAfter;
+        $(`duel_round_${args.round}_wounds`).innerHTML = args.wounds;
 
         if (args.endingChallengerThreatAfter > 0)
             dojo.addClass(`duel_round_${args.round}_ending_challenger_threat`, 'threat-chip-threatened');
@@ -587,6 +589,34 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         dojo.removeClass(`duel_round_${args.round}_${args.mode}`, 'ability-not-chosen');
         dojo.removeClass(`duel_round_${args.round}_${args.mode}_stats`, 'ability-not-chosen');
-    }    
+    },
+
+    notif_duelEnd: function( notif )
+    {
+        debug( 'notif_duelEnd' );
+        debug( notif );
+
+        const args = notif.args;
+
+        this.inDuel = false;
+        dojo.destroy('duel');
+
+        const challenger = this.cardProperties[args.challengerId];
+        challenger.conditions = challenger.conditions.filter(condition => condition !== this.CHALLENGER);
+        console.log(challenger.conditions);
+        const challengerChipId = `${challenger.divId}_challenger`;
+        console.log(challengerChipId);
+        dojo.destroy(challengerChipId);
+
+        const defender = this.cardProperties[args.defenderId];
+        defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
+        const defenderChipId = `${defender.divId}_defender`;
+        dojo.destroy(defenderChipId);
+
+        if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)
+        {
+            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+        }
+    },
 })
 });

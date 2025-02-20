@@ -566,6 +566,7 @@ trait StatesTrait
         {
             $event->actorId = $challenger->Id;
             $event->adversaryId = $defender->Id;
+            $event->statUsed = $this->globals->get(GAME::CHALLENGE_STAT);
         }
         $this->theah->queueEvent($event);
 
@@ -587,14 +588,34 @@ trait StatesTrait
             $target = $this->getCardObjectFromDb($targetId);
 
             $threat = $this->globals->get(GAME::CHALLENGE_THREAT);
-            $combat = $performer->ModifiedCombat;
-            $wounds = $threat;
-            $reason = "Challenge was Rejected. Generated Threat was {$threat}.";
-            if ($threat > $combat)
+
+            $combatStatUsed = $this->globals->get(GAME::CHALLENGE_STAT);
+
+            $stat = $performer->ModifiedCombat;
+            $reason = "<p>";
+            switch ($combatStatUsed)
             {
-                $wounds = $combat;
-                $reduction = $threat - $combat;
-                $reason .= "  Threat reduced by {$reduction} due to Restricted Hostilities (Combat value of {$combat}). ";
+                case GAME::CHALLENGE_STAT_COMBAT:
+                    $stat = $performer->ModifiedCombat;
+                    $reason .= "Stat Used for Challenge was Combat.";
+                    break;
+                case GAME::CHALLENGE_STAT_FINESSE:
+                    $stat = $performer->ModifiedFinesse;
+                    $reason .= "Stat Used for Challenge was Finesse.";
+                    break;
+                case GAME::CHALLENGE_STAT_INFLUENCE:
+                    $stat = $performer->ModifiedInfluence;
+                    $reason .= "Stat Used for Challenge was Influence.";
+                    break;
+            }
+
+            $wounds = $threat;
+            $reason .= "<p>Challenge was Rejected. Generated Threat was {$threat}.";
+            if ($threat > $stat)
+            {
+                $wounds = $stat;
+                $reduction = $threat - $stat;
+                $reason .= "<p>Threat was reduced by {$reduction} due to Restricted Hostilities (Stat value of {$stat}). ";
             }
 
             $event = $this->theah->createEvent(Events::CharacterWounded);
@@ -672,9 +693,6 @@ trait StatesTrait
             $this->globals->set(GAME::DUEL_ROUND, $round);
         }
 
-        $this->globals->delete(GAME::CHOSEN_TECHNIQUE);
-        $this->globals->delete(GAME::CHOSEN_MANEUVER);
-
         $sql = "SELECT challenging_player_id, challenger_id, challenger_threat, defending_player_id, defender_id, defender_threat FROM duel WHERE duel_id = {$duelId}";
         $result = $this->getObjectListFromDb($sql)[0];
         $challengingPlayerId = $result['challenging_player_id'];
@@ -687,7 +705,7 @@ trait StatesTrait
         
         $challenger = $this->getCardObjectFromDb($challengerId);
         $defender = $this->getCardObjectFromDb($defenderId);
-
+        $wounds = $defenderThreat;
 
         //If the first round, then the defender is the active player
         $actorId = 0;
@@ -702,24 +720,31 @@ trait StatesTrait
         else
         {
             //Get the actor from the previous round
-            $sql = "SELECT actor_id FROM duel_round WHERE duel_id = {$duelId} AND round = " . ($round - 1);
-            $lastActorId = $this->getUniqueValueFromDB($sql);
+            $sql = "SELECT actor_id, ending_challenger_threat, ending_defender_threat FROM duel_round WHERE duel_id = {$duelId} AND round = " . ($round - 1);
+            $result = $this->getObjectListFromDB($sql)[0];
+            $lastActorId = $result['actor_id'];
             if ($lastActorId == $challengerId)
             {
                 $actorId = $defenderId;
                 $actor = $defender;
                 $playerId = $defendingPlayerId;
+                $challengerThreat = 0;
+                $defenderThreat = $result['ending_defender_threat'];
+                $wounds = $defenderThreat;
             }
             else
             {
                 $actorId = $challengerId;
                 $actor = $challenger;
                 $playerId = $challengingPlayerId;
+                $challengerThreat = $result['ending_challenger_threat'];
+                $defenderThreat = 0;
+                $wounds = $challengerThreat;
             }
         }
 
-        $sql = "INSERT INTO duel_round (duel_id, round, player_id, actor_id, starting_challenger_threat, starting_defender_threat, ending_challenger_threat, ending_defender_threat) 
-        VALUES ($duelId, $round, $playerId, $actorId, $challengerThreat, $defenderThreat, $challengerThreat, $defenderThreat)";
+        $sql = "INSERT INTO duel_round (duel_id, round, player_id, actor_id, starting_challenger_threat, starting_defender_threat, ending_challenger_threat, ending_defender_threat, wounds_taken) 
+        VALUES ($duelId, $round, $playerId, $actorId, $challengerThreat, $defenderThreat, $challengerThreat, $defenderThreat, $wounds)";
         $this->DbQuery($sql);
 
         $event = $this->theah->createEvent(Events::DuelNewRound);
@@ -749,7 +774,8 @@ trait StatesTrait
             "startingChallengerThreat" => $challengerThreat,
             "startingDefenderThreat" => $defenderThreat,
             "endingChallengerThreat" => $challengerThreat,
-            "endingDefenderThreat" => $defenderThreat
+            "endingDefenderThreat" => $defenderThreat,
+            "wounds" => $wounds
             ]);    
 
         //Change to the active player based on the round number
@@ -822,6 +848,145 @@ trait StatesTrait
         }
         $this->theah->queueEvent($event);
 
+        $this->gamestate->nextState();
+    }
+
+    public function stDuelEndOfRound(): void
+    {
+        $this->theah->buildCity();
+
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $round = $this->globals->get(Game::DUEL_ROUND);    
+
+        $sql = "SELECT challenger_id, defender_id FROM duel where duel_id = $duelId";
+        $result = $this->getObjectListFromDB($sql)[0];
+        $challengerId = $result['challenger_id'];
+        $defenderId = $result['defender_id'];
+
+        $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
+        $values = $this->getObjectListFromDB($sql)[0];
+
+        $actorId = $values['actor_id'];
+        $actor = $this->theah->getCharacterById($actorId);
+        
+        $adversaryId = $this->getDuelOpponentId($actorId);
+        $adversary = $this->theah->getCharacterById($adversaryId);
+        
+        //Any threat remaining is applied to the actor
+        $threat = 0;
+        $field = "";
+        if ($actorId == $challengerId)
+        {
+            $threat = $values['ending_challenger_threat'];
+            $field = "ending_challenger_threat";
+        }
+        else
+        {
+            $threat = $values['ending_defender_threat'];
+            $field = "ending_defender_threat";
+        }
+        $sql = "UPDATE duel_round SET $field = 0 WHERE duel_id = $duelId AND round = $round";
+        $this->DbQuery($sql);
+
+        if ($threat > 0)
+        {
+            $combatStatUsed = $this->globals->get(GAME::CHALLENGE_STAT);
+
+            $stat = $adversary->ModifiedCombat;
+            $reason = "<p>$threat Threat was left over in their Pool.";
+
+            $wounds = $threat;
+            if ($threat > $stat)
+            {
+                switch ($combatStatUsed)
+                {
+                    case GAME::CHALLENGE_STAT_COMBAT:
+                        $stat = $adversary->ModifiedCombat;
+                        $reason .= "<p>Stat Used for Duel is Combat.";
+                        break;
+                    case GAME::CHALLENGE_STAT_FINESSE:
+                        $stat = $adversary->ModifiedFinesse;
+                        $reason .= "<p>Stat Used for Duel is Finesse.";
+                        break;
+                    case GAME::CHALLENGE_STAT_INFLUENCE:
+                        $stat = $adversary->ModifiedInfluence;
+                        $reason .= "<p>Stat Used for Duel is Influence.";
+                        break;
+                }
+                $wounds = $stat;
+                $reduction = $threat - $stat;
+                $reason .= "<p>Wounds were reduced by {$reduction} due to Restricted Hostilities (Stat value of {$stat}). ";
+            }
+
+            $event = $this->theah->createEvent(Events::CharacterWounded);
+            if ($event instanceof EventCharacterWounded)
+            {
+                $event->character = $actor;
+                $event->wounds = $wounds;
+                $event->reason = $reason;
+            }
+            $this->theah->eventCheck($event);
+            $this->theah->queueEvent($event);
+        }
+
+        $this->globals->delete(GAME::CHOSEN_TECHNIQUE);
+        $this->globals->delete(GAME::CHOSEN_MANEUVER);
+        $this->globals->delete(GAME::CHOSEN_CARD);
+        $this->globals->delete(GAME::CHOSEN_CARD_COST);
+        $this->globals->delete(GAME::DISCOUNT);
+
+        $this->gamestate->nextState();
+    }
+
+    public function stDuelNextPlayer(): void
+    {
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $round = $this->globals->get(Game::DUEL_ROUND);    
+
+        $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
+        $values = $this->getObjectListFromDB($sql)[0];
+        $actorId = $values['actor_id'];
+        $endingChallengerThreat = $values['ending_challenger_threat'];
+        $endingDefenderThreat = $values['ending_defender_threat'];
+
+        if ($endingChallengerThreat == 0 && $endingDefenderThreat == 0)
+        {
+            $this->gamestate->nextState("endOfDuel");
+            return;
+        }
+
+        $sql = "SELECT challenging_player_id, challenger_id, defending_player_id, defender_id FROM duel where duel_id = $duelId";
+        $result = $this->getObjectListFromDB($sql)[0];
+        $challengingPlayerId = $result['challenging_player_id'];
+        $challengerId = $result['challenger_id'];
+        $defendingPlayerId = $result['defending_player_id'];
+
+        // Change to the next player in the duel
+        if ($actorId == $challengerId)
+            $this->gamestate->changeActivePlayer($defendingPlayerId);
+        else
+            $this->gamestate->changeActivePlayer($challengingPlayerId);
+
+        $this->gamestate->nextState("newRound");
+
+    }
+
+    public function stDuelEnd(): void
+    {
+        $duelId = $this->globals->get(Game::DUEL_ID);
+        $this->globals->set(GAME::IN_DUEL, false);
+
+        $sql = "SELECT challenging_player_id, defending_player_id, challenger_id, defender_id FROM duel where duel_id = $duelId";
+        $result = $this->getObjectListFromDB($sql)[0];
+
+        $this->notifyAllPlayers("duelEnd", clienttranslate('The Duel has ended.'), [
+            "challengerId" => $result['challenger_id'],
+            "defenderId" => $result['defender_id'],
+            "challengingPlayerId" => $result['challenging_player_id'],
+            "defendingPlayerId" => $result['defending_player_id']
+        ]);
+
+        $this->gamestate->changeActivePlayer($result['challenging_player_id']);
         $this->gamestate->nextState();
     }
 

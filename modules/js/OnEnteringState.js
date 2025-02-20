@@ -759,7 +759,6 @@ onEnteringState: function( stateName, args )
                 this.chooseList.setSelectionMode(1);
             }
         },
-
     };
     
     if (methods[stateName]) {

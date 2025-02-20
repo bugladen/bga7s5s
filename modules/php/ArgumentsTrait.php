@@ -433,7 +433,6 @@ trait ArgumentsTrait
         return [
             "cards" => $cards
         ];
-
     }
 
 }

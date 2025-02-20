@@ -332,11 +332,11 @@ onUpdateActionButtons: function( stateName, args )
         'highDramaChallengeActionActivateTechnique': () => {
             if (this.isCurrentPlayerActive()) {
                 this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
                 args.techniques.forEach((technique) => { 
                     this.addActionButton(
                         `actChooseTechnique${technique.id}-btn`, _(technique.name), () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 
-                });
+                    });
+                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             }
         },
         
@@ -364,7 +364,7 @@ onUpdateActionButtons: function( stateName, args )
                 this.addTooltipHtml( 'btnCombatCard', `<div class='basic-tooltip'>${_("Play Combat card. Choose Maneuvers on card.")}</div>` );
             }
 
-            this.addActionButton(`btnDone`, _('End Round'), () => this.bgaPerformAction('actDuelChooseActionEndRound', {})) 
+            this.addActionButton(`btnDone`, _('End Round'), () => this.bgaPerformAction('actDuelDoneRound', {})) 
             
         },
 

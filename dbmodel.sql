@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS `duel_round` (
   `combat_thrust` tinyint NULL,
   `ending_challenger_threat` tinyint NULL,
   `ending_defender_threat` tinyint NULL,
+  `wounds_taken` tinyint NULL,
   PRIMARY KEY (`duel_round_id`),
   FOREIGN KEY (`duel_id`) REFERENCES `duel` (`duel_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;

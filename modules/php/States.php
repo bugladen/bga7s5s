@@ -116,7 +116,11 @@ class States
             const DUEL_APPLY_COMBAT_CARD_STATS_EVENTS = 5250;
         const DUEL_CHOOSE_GAMBLE_CARD = 526;
             const DUEL_CHOOSE_GAMBLE_CARD_EVENTS = 5260;
-    const DUEL_NEXT_PLAYER = 60;
+        const DUEL_END_OF_ROUND = 527;
+            const DUEL_END_OF_ROUND_EVENTS = 5270;
+    const DUEL_NEXT_PLAYER = 53;
+    const DUEL_END = 54;
+        const DUEL_END_EVENTS = 540;
         
     const NEXT_PLAYER = 70;
 

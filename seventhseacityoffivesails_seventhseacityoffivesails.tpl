@@ -159,6 +159,7 @@ var jstpl_duel_table = `
     <th colspan="2">Technique</th>
     <th colspan="2">Maneuver</th>
     <th>Ending Threat Pool</th>
+    <th>Wounds</th>
 </tr>
 </table>
 </div>
@@ -216,6 +217,7 @@ var jstpl_duel_round = `
         </tr>
     </table>
     </td>
+    <td><div id="duel_round_\${round}_wounds" class="duel-wound-chip">\${wounds}</div></td>
 </tr>
 `;
 

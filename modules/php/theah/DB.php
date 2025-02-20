@@ -120,6 +120,7 @@ class DB extends \APP_DbObject
         $defenderId = $result['defender_id'];
         $endingChallengerThreat = $result['ending_challenger_threat'];
         $endingDefenderThreat = $result['ending_defender_threat'];
+        $wounds = 0;
 
         $results = [];
         $results['endingChallengerThreatBefore'] = $endingChallengerThreat;
@@ -143,6 +144,8 @@ class DB extends \APP_DbObject
             //Thrust adds threat
             $endingDefenderThreat += $eventThrust;
             $results['thrust'] = $eventThrust;
+
+            $wounds = $endingChallengerThreat;
         }
         else if ($actorId == $defenderId)
         {
@@ -162,17 +165,21 @@ class DB extends \APP_DbObject
             //Thrust adds threat
             $endingChallengerThreat += $eventThrust;
             $results['thrust'] = $eventThrust;
+
+            $wounds = $endingDefenderThreat;
         }
 
         $results['endingChallengerThreatAfter'] = $endingChallengerThreat;
         $results['endingDefenderThreatAfter'] = $endingDefenderThreat;
+        $results['wounds'] = $wounds;
 
         $sql = "UPDATE duel_round SET 
             {$mode}_riposte = {$eventRiposte}, 
             {$mode}_parry = {$eventParry}, 
             {$mode}_thrust = {$eventThrust},
             ending_challenger_threat = $endingChallengerThreat,
-            ending_defender_threat = $endingDefenderThreat 
+            ending_defender_threat = $endingDefenderThreat,
+            wounds_taken = $wounds 
             WHERE duel_id = $duelId AND round = $round";
 
         $this->executeSql($sql);

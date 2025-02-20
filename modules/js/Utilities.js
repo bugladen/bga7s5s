@@ -95,8 +95,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
         //Set the divId of the card
         character.divId = divId;
 
-        //Add to the card properties cache
-        this.cardProperties[character.id] = character;
+        //Add to the card properties cache if not in duel - these are temporary copies of the character cards
+        if (!inDuel)
+            this.cardProperties[character.id] = character;
 
         const wealthCost = character.wealthCost ? character.wealthCost : '';
         const influence = character.modifiedInfluence >= 0 ? character.modifiedInfluence  : '-';
@@ -405,8 +406,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 return card.controllerId ? `${card.controllerId}-${card.id}` : `bazaar-${card.id}`;
             case this.LOCATION_CITY_GOVERNORS_GARDEN:
                 return card.controllerId ? `${card.controllerId}-${card.id}` : `garden-${card.id}`;
-            case this.IN_DUEL:
-                return `duel-${card.id}`;
             case this.LOCATION_PLAYER_HOME:
                 return `${card.controllerId}-${card.id}`;
         }
@@ -497,7 +496,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     displayDuelTable: function() {
         const city = $('city');
-        const id = 'duelTable';
         dojo.place( this.format_block( 'jstpl_duel_table', {
         }),  city, 'before');
     },
@@ -505,7 +503,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
     displayDuelRow: function(row)
     {
         const headerRow = $('duel_header_row');
-        
         
         dojo.place( this.format_block( 'jstpl_duel_round', {
             round: row.round,
@@ -526,7 +523,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
             maneuverThrust: row.maneuverThrust ?? 0,
             endingChallengerThreat: row.endingChallengerThreat,
             endingDefenderThreat: row.endingDefenderThreat,
+            wounds: row.wounds,
         }),  headerRow, 'after');
+
+        //Create a copy of the card main card to display temporary copy in the duel row
+        const card = this.cardProperties[row.actorId];
+        const rowCard = Object.assign({}, card);
+        this.createCard(`duel_${row.round}_${card.id}`, rowCard, `duel_round_${row.round}_actor`, true);
 
         const combatCard = row.combatCard;
         if (combatCard)
@@ -546,7 +549,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 dojo.addClass(imageDiv, 'duel-row-combat-card-gambled');
             }
         }
-
 
         if (!row.combatCard)
         {
@@ -585,9 +587,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.addClass(`duel_round_${row.round}_ending_defender_threat_row`, 'duel-acting-character');
         }
 
-        const card = this.cardProperties[row.actorId];
-        const divId = this.createCardId(card, this.LOCATION_DUEL);
-        this.createCard(divId, card, `duel_round_${row.round}_actor`, true);
+        this.addTooltipHtml(`duel_round_${row.round}_wounds`, `<div class='basic-tooltip'>${_("The amount of wounds you took, or will take, for this round")}</div>` );        
     },
 
 })
