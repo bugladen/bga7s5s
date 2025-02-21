@@ -873,8 +873,25 @@ trait StatesTrait
         
         $adversaryId = $this->getDuelOpponentId($actorId);
         $adversary = $this->theah->getCharacterById($adversaryId);
+
+        //If the adversary is not in the same location as the actor, then any adversary threat is nullified
+        if ($actor->Location != $adversary->Location)
+        {
+            $field = "";
+            if ($actorId == $challengerId)
+                $field = "ending_defender_threat";
+            else
+                $field = "ending_challenger_threat";
+            $sql = "UPDATE duel_round SET $field = 0 WHERE duel_id = $duelId AND round = $round";
+            $this->DbQuery($sql);
+
+            $this->notifyAllPlayers("message", clienttranslate('Due to the challenger and defender not sharing the same location, any threat from ${actor_name} to ${adversary_name} is nullified.'), [
+                "actor_name" => $actor->Name,
+                "adversary_name" => $adversary->Name
+            ]);
+        }
         
-        //Any threat remaining is applied to the actor
+        //Any threat remaining for the actor is applied
         $threat = 0;
         $field = "";
         if ($actorId == $challengerId)
