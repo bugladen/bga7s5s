@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
@@ -567,6 +568,16 @@ trait EventHub
                     $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has gambled with ${card_name}.'), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "card_name" => "<strong>{$card->Name}</strong>",
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventDuelActionsDone:
+                $handler = function ($theah, EventDuelActionsDone $event)
+                {
+                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} is done with their actions for the round.'), [
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
                     ]);
                 };
                 $handler($this, $event);

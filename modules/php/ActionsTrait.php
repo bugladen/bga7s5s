@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerF
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
@@ -1590,8 +1591,10 @@ trait ActionsTrait
         $duelId = $this->globals->get(Game::DUEL_ID);
         $round = $this->globals->get(Game::DUEL_ROUND);    
 
-        $sql = "SELECT combat_card_id FROM duel_round where duel_id = $duelId AND round = $round";
-        $cardId = $this->getUniqueValueFromDB($sql);
+        $sql = "SELECT actor_id, combat_card_id FROM duel_round where duel_id = $duelId AND round = $round";
+        $round = $this->getObjectListFromDB($sql)[0];
+        $actorId = $round['actor_id'];
+        $cardId = $round['combat_card_id'];
 
         if ($round == 1)
         {
@@ -1601,7 +1604,16 @@ trait ActionsTrait
                 throw new \BgaUserException("For the first round, you must either gamble or a combat card must be played.");
             }
         }
-
+        
+        $event = $this->theah->createEvent(Events::DuelActionsDone);
+        if ($event instanceof EventDuelActionsDone)
+        {
+            $event->playerId = $this->getActivePlayerId();
+            $event->actorId = $actorId;
+            $event->adversaryId = $this->getDuelOpponentId($actorId);
+        }
+        $this->theah->queueEvent($event);
+        
         $this->gamestate->nextState("doneWithRound");
    }
 }
