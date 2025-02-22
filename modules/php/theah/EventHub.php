@@ -27,7 +27,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuver
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
@@ -35,7 +34,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 
 trait EventHub
 {
@@ -364,21 +362,12 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
-            case $event instanceof EventTechniqueActivated:
-                $handler = function ($theah, EventTechniqueActivated $event)
-                {
-                    $technique = $theah->getTechniqueById($event->techniqueId);
-                    $technique->setActive($theah, true);
-                    $technique->setUsed($theah, true);
-                };
-                $handler($this, $event);
-                break;
-
             case $event instanceof EventResolveTechnique:
                 $handler = function ($theah, EventResolveTechnique $event)
                 {
                     $technique = $theah->getTechniqueById($event->techniqueId);
-                    if ($technique->Active && $event->inDuel)
+                    $technique->setUsed($theah, true);
+                    if ($event->inDuel)
                     {
                         $duelId = $theah->game->globals->get(Game::DUEL_ID);
                         $round = $theah->game->globals->get(Game::DUEL_ROUND);
@@ -448,29 +437,17 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
-            case $event instanceof EventManeuverActivated:
-                $handler = function (Theah $theah, EventManeuverActivated $event)
-                {
-                    $maneuver = $theah->getManeuverById($event->maneuverId);
-                    $maneuver->setActive($theah, true);
-                    $maneuver->setUsed($theah, true);
-                };
-                $handler($this, $event);
-                break;
-
             case $event instanceof EventResolveManeuver:
                 $handler = function (Theah $theah, EventResolveManeuver $event)
                 {
                     $maneuver = $theah->getManeuverById($event->maneuverId);
-                    if ($maneuver->Active)
-                    {
-                        $duelId = $theah->game->globals->get(Game::DUEL_ID);
-                        $round = $theah->game->globals->get(Game::DUEL_ROUND);
-                        $name = substr(addslashes($maneuver->Name), 0, 500);
-                        $sql = "UPDATE duel_round SET maneuver_id = '{$event->maneuverId}', maneuver_name = '$name' WHERE duel_id = $duelId AND round = $round";
-                        $event->theah->game->DbQuery($sql);    
-                    }
-                };
+                    $maneuver->setUsed($theah, true);
+                    $duelId = $theah->game->globals->get(Game::DUEL_ID);
+                    $round = $theah->game->globals->get(Game::DUEL_ROUND);
+                    $name = substr(addslashes($maneuver->Name), 0, 500);
+                    $sql = "UPDATE duel_round SET maneuver_id = '{$event->maneuverId}', maneuver_name = '$name' WHERE duel_id = $duelId AND round = $round";
+                    $event->theah->game->DbQuery($sql);    
+            };
                 $handler($this, $event);
                 break;
 

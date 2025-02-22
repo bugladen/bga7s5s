@@ -25,13 +25,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverV
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 
 trait ActionsTrait
 {
@@ -1102,19 +1100,6 @@ trait ActionsTrait
 
         $this->globals->set(GAME::CHOSEN_TECHNIQUE, $technique->Id);
 
-        $owner = $this->theah->getCharacterById($technique->OwnerId);
-
-        $techniqueEvent = $this->theah->createEvent(Events::TechniqueActivated);
-        if ($techniqueEvent instanceof EventTechniqueActivated)
-        {
-            $techniqueEvent->playerId = $playerId;
-            $techniqueEvent->techniqueId = $technique->Id;
-            $techniqueEvent->inDuel = false;
-        }
-
-        $this->theah->eventCheck($techniqueEvent);
-        $this->theah->queueEvent($techniqueEvent);
-
         $this->gamestate->nextState("techniqueActivated");
     }
 
@@ -1316,15 +1301,6 @@ trait ActionsTrait
             throw new \BgaUserException("Technique does not belong to the Actor.");
         }
 
-        $activateEvent = $this->theah->createEvent(Events::TechniqueActivated);
-        if ($activateEvent instanceof EventTechniqueActivated)
-        {
-            $activateEvent->playerId = $playerId;
-            $activateEvent->techniqueId = $technique->Id;
-        }
-        $this->theah->eventCheck($activateEvent);
-        $this->theah->queueEvent($activateEvent);
-
         $adversaryId = $this->getDuelOpponentId($actorId);
         $adversary = $this->theah->getCharacterById($adversaryId);
 
@@ -1491,15 +1467,6 @@ trait ActionsTrait
             //No check needed
             $this->theah->queueEvent($event);
         }
-
-        $activateEvent = $this->theah->createEvent(Events::ManeuverActivated);
-        if ($activateEvent instanceof EventManeuverActivated)
-        {
-            $activateEvent->playerId = $playerId;
-            $activateEvent->maneuverId = $maneuver->Id;
-        }
-        $this->theah->eventCheck($activateEvent);
-        $this->theah->queueEvent($activateEvent);
 
         $adversaryId = $this->getDuelOpponentId($actorId);
         $adversary = $this->theah->getCharacterById($adversaryId);

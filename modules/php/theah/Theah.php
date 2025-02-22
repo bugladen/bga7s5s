@@ -259,6 +259,10 @@ class Theah
         return $techniques;
     }
 
+    function resetAvailableDuelTechniques()
+    {
+    }
+
     function getAvailableCharacterManeuvers($character)
     {
         $maneuvers = [];

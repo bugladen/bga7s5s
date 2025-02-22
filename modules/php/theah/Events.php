@@ -51,10 +51,8 @@ class Events
     //Duel Events
     const DuelStarted = 'EventDuelStarted';
     const DuelNewRound = 'EventDuelNewRound';
-    const TechniqueActivated = 'EventTechniqueActivated';
     const ResolveTechnique = 'EventResolveTechnique';
     const DuelCalculateTechniqueValues = 'EventDuelCalculateTechniqueValues';
-    const ManeuverActivated = 'EventManeuverActivated';
     const ResolveManeuver = 'EventResolveManeuver';
     const DuelCalculateManeuverValues = 'EventDuelCalculateManeuverValues';
     const DuelGetCostForManeuverFromHand = 'EventDuelGetCostForManeuverFromHand';

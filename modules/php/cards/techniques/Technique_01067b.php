@@ -23,8 +23,7 @@ class Technique_01067b extends Technique
     {
         parent::handleEvent($event);
         
-        //When activated, if there is more than one Musketeer as owner location, 
-        //switch to state where player can choose one to gain +1 Thrust or +1 Riposte.
+        //If there is more than one Musketeer as owner location, switch to state where player can choose one to gain +1 Thrust or +1 Riposte.
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $owner = $event->theah->getCharacterById($this->OwnerId);
