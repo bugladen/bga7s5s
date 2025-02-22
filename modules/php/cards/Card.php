@@ -81,14 +81,19 @@ abstract class Card
     public function addCondition($condition)
     {
         $this->Conditions[] = $condition;
+        $this->IsUpdated = true;
+    }
+
+    public function clearConditions()
+    {
+        $this->Conditions = [];
+        $this->IsUpdated = true;
     }
 
     public function removeCondition($condition)
     {
-        $index = array_search($condition, $this->Conditions);
-        if ($index !== false) {
-            unset($this->conditions[$index]);
-        }
+        $this->Conditions = array_filter($this->Conditions, fn($c) => $c != $condition );
+        $this->IsUpdated = true;
     }
     
     public function getPropertyArray()

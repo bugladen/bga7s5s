@@ -3,6 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 
@@ -113,7 +115,7 @@ abstract class Character extends Card
             }
         }
 
-        if ($event instanceof EventCharacterWounded && $event->character->Id == $this->Id)
+        if ($event instanceof EventCharacterWounded && $event->characterId == $this->Id)
         {
             $this->ModifiedResolve -= $event->wounds;    
             $this->Wounds += $event->wounds;
@@ -125,13 +127,25 @@ abstract class Character extends Card
 
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_name} has received ${wounds} wound(s) due to: ${reason} ${target_name}\'s new Resolve: ${resolve}'), [
-                "target_name" => "<strong>{$event->character->Name}</strong>",
-                "characterId" => $event->character->Id,
+            $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_name} has received ${wounds} wound(s) due to: ${reason} 
+            <p>${target_name}\'s new Resolve: ${resolve}'), [
+                "target_name" => "<strong>{$this->Name}</strong>",
+                "characterId" => $this->Id,
                 "wounds" => $event->wounds,
                 "reason" => $event->reason,
                 'resolve' => $this->ModifiedResolve
             ]);
+
+            if ($this->ModifiedResolve == 0)
+            {
+                $destroyEvent = $event->theah->createEvent(Events::CharacterDestroyed);
+                if ($destroyEvent instanceof EventCharacterDestroyed)
+                {
+                    $destroyEvent->characterId = $this->Id;
+                    $destroyEvent->reason = $event->reason;
+                }
+                $event->theah->queueEvent($destroyEvent);
+            }
         }
     }
 

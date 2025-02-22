@@ -65,6 +65,8 @@ function (dojo, declare) {
             this.LOCATION_CITY_OLES_INN = "Ole's Inn";
             this.LOCATION_CITY_GOVERNORS_GARDEN = "Governor's Garden";
             this.LOCATION_PLAYER_HOME = 'Player Home';
+            this.LOCATION_PLAYER_DISCARD = 'Player Discard';
+            this.LOCATION_PLAYER_LOCKER = 'Player Locker';
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 100;

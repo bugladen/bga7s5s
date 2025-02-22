@@ -19,6 +19,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardDiscardedFromHand', 500],
             ['cardEngaged', 1000],
             ['cardMoved', 1000],
+            ['characterDestroyed', 1000],
             ['characterRecruited', 1000],
             ['characterWounded', 1000],
             ['drawCard', 2000],
@@ -221,18 +222,13 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
-        let card = null;
+        let card = args.card;
+        this.cardProperties[card.id] = card;
 
         if (notif.args.playerId == this.player_id)
         {
-            card = this.cardProperties[args.card.id];
             this.factionHand.removeFromStockById(card.id);
             $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
-        }
-        else
-        {
-            card = args.card;
-            this.cardProperties[card.id] = card;
         }
 
         card.location = this.LOCATION_PLAYER_DISCARD;
@@ -295,8 +291,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         const card = this.cardProperties[args.characterId];
-        noWounds = args.wounds == 0;
-        if (noWounds == 0)
+        if (args.wounds == 0)
         {
             const characterImage = $(`${card.divId}_image`);
             const woundChip = `${card.divId}_wounds`;
@@ -306,6 +301,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }),  characterImage, 'last');
             this.addTooltipHtml( woundChip, `<div class='basic-tooltip'>${_("Wounds")}</div>` );
         }
+        
         card.wounds += args.wounds;
         card.modifiedResolve -= args.wounds;
 
@@ -316,6 +312,26 @@ return declare('seventhseacityoffivesails.notifications', null, {
         element.innerHTML = card.modifiedResolve;
         if (card.modifiedResolve != card.resolve)
             dojo.addClass(element, 'modified-stat-value');
+    },
+
+    notif_characterDestroyed: function( notif )
+    {
+        debug( 'notif_characterDestroyed' );
+        debug( notif );
+
+        const args = notif.args;        
+        const card = this.cardProperties[args.character.id];
+        if (card)
+        {
+            card.location = this.LOCATION_PLAYER_LOCKER;
+            card.engaged = false;
+
+            dojo.destroy(card.divId);
+            card.divId = null;
+        }
+
+        const player = this.gamedatas.players[args.playerId];
+        player.locker.push(args.character);
     },
 
     notif_newDay: function( notif )
@@ -564,6 +580,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
                 const imageDiv = `duel_round_${args.round}_combat_card_${combatCard.id}`
                 dojo.addClass(imageDiv, 'engaged');
                 dojo.addClass(imageDiv, 'duel-row-combat-card-gambled');
+            }
+            else if (this.player_id == combatCard.controllerId)
+            {
+                this.factionHand.removeFromStockById(combatCard.id);
+                $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
             }
 
         }

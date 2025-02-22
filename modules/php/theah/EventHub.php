@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
@@ -311,11 +312,9 @@ trait EventHub
                 {
                     $challenger = $this->cards[$event->challenger->Id];
                     $challenger->addCondition(GAME::DUEL_CHALLENGER);
-                    $challenger->IsUpdated = true;
                     
                     $defender = $this->cards[$event->defender->Id];
                     $defender->addCondition(GAME::DUEL_DEFENDER);
-                    $defender->IsUpdated = true;
                     
                     $message = '${player_name} has chosen to have ${challenger_name} Challenge ${defender_name}. ';
                     if ($event->activatedTechnique) $message .= '${player_name} will activate Technique ${technique_name}. for the Challenge.';
@@ -563,6 +562,12 @@ trait EventHub
             case $event instanceof EventDuelEnd:
                 $handler = function ($theah, EventDuelEnd $event)
                 {
+                    $challenger = $this->cards[$event->challengerId];
+                    $challenger->removeCondition(GAME::DUEL_CHALLENGER);
+                    
+                    $defender = $this->cards[$event->defenderId];
+                    $defender->removeCondition(GAME::DUEL_DEFENDER);
+
                     $theah->game->notifyAllPlayers("duelEnd", clienttranslate('The Duel has ended.'), [
                         "challengerId" => $event->challengerId,
                         "defenderId" => $event->defenderId,
@@ -570,6 +575,26 @@ trait EventHub
                         "defendingPlayerId" => $event->defendingPlayerId
                     ]);
                 };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCharacterDestroyed:
+                $handler = function ($theah, EventCharacterDestroyed $event)
+                {
+                    $character = $theah->cards[$event->characterId];
+                    $locker = $theah->game->getPlayerLockerName($character->ControllerId);
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->moveCard($event->characterId, $locker);
+                    $character->Location = $locker;
+                    $character->clearConditions();
+
+                    $theah->game->notifyAllPlayers("characterDestroyed", clienttranslate('${target_name} has been destroyed and sent to the locker due to: ${reason} '), [
+                        "playerId" => $character->ControllerId,
+                        "target_name" => "<strong>{$character->Name}</strong>",
+                        "character" => $character->getPropertyArray(),
+                        "reason" => $event->reason,
+                    ]);
+                        };
                 $handler($this, $event);
                 break;
         }

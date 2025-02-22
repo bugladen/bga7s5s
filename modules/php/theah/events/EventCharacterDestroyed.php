@@ -2,10 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventCharacterWounded extends Event
+class EventCharacterDestroyed extends Event
 {
     public int $characterId;
-    public int $wounds;
     public string $reason;
 
     public function __construct()
@@ -13,6 +12,5 @@ class EventCharacterWounded extends Event
         parent::__construct();
 
         $this->characterId = 0;
-        $this->wounds = 0;
     }
 }

@@ -62,11 +62,13 @@ class Events
     const DuelEnd = 'EventDuelEnd';
 
     const CharacterWounded = 'EventCharacterWounded';
+    const CharacterDestroyed = 'EventCharacterDestroyed';
     
     const CardMoved = 'EventCardMoved';
     const CardDrawn = 'EventCardDrawn';
     const CardEngaged = 'EventCardEngaged';
     
+    //Game Flow events
     const Transition = 'EventTransition';
     const ChangeActivePlayer = 'EventChangeActivePlayer';
 }

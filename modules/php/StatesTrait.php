@@ -623,7 +623,7 @@ trait StatesTrait
             $event = $this->theah->createEvent(Events::CharacterWounded);
             if ($event instanceof EventCharacterWounded)
             {
-                $event->character = $target;
+                $event->characterId = $target->Id;
                 $event->wounds = $wounds;
                 $event->reason = $reason;
             }
@@ -940,7 +940,7 @@ trait StatesTrait
             $event = $this->theah->createEvent(Events::CharacterWounded);
             if ($event instanceof EventCharacterWounded)
             {
-                $event->character = $actor;
+                $event->characterId = $actor->Id;
                 $event->wounds = $wounds;
                 $event->reason = $reason;
             }
