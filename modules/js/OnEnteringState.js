@@ -490,16 +490,16 @@ onEnteringState: function( stateName, args )
 
         'highDramaRecruitActionChooseMercenary': () => {
             if (this.isCurrentPlayerActive()) {
-                card = this.cardProperties[args.args.performerId];
-                this.clientStateArgs.performerId = card.id;
-                const image = $(`${card.divId}_image`);
+                const performer = this.cardProperties[args.args.performerId];
+                this.clientStateArgs.performerId = performer.id;
+                const image = $(`${performer.divId}_image`);
                 dojo.addClass(image, 'chosen');
 
                 this.numberOfCardsSelectable = 1;
                 this.clientStateArgs.discount = args.args.discount;
                 for( const cardId in this.cardProperties ) {
                     card = this.cardProperties[cardId];
-                    if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) ) {
+                    if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) && card.location == performer.location ) {
                         const image = $(`${card.divId}_image`);
                         this.clearCardAsSelectable(image);
                         this.makeCardSelectable(image);

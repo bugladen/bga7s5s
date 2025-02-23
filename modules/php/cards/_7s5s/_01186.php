@@ -26,7 +26,8 @@ class _01186 extends CityCharacter implements IHasTechniques
         $this->Resolve = 5;
         $this->Combat = 4;
         $this->Finesse = 3;
-        $this->Influence = -1;
+        $this->Influence = 0;
+        $this->DashedInfluence = true;
 
         $this->resetModifiedCharacterStats();
 

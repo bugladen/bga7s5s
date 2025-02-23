@@ -100,7 +100,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
             this.cardProperties[character.id] = character;
 
         const wealthCost = character.wealthCost ? character.wealthCost : '';
-        const influence = character.modifiedInfluence >= 0 ? character.modifiedInfluence  : '-';
+        const combat = character.dashedCombat ? '-' : character.modifiedCombat;
+        const finesse = character.dashedFinesse ? '-' : character.modifiedFinesse;
+        const influence = character.dashedInfluence ? '-' : character.modifiedInfluence;
 
         const placement = inDuel ? 'first' : 'before';
 
@@ -111,8 +113,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
             image: character.image,
             player_color: color,
             resolve: character.modifiedResolve,
-            combat: character.modifiedCombat,
-            finesse: character.modifiedFinesse,
+            combat: combat,
+            finesse: finesse,
             influence: influence,
             cost: wealthCost,
         }), targetDiv, placement );

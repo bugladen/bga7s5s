@@ -21,6 +21,10 @@ abstract class Character extends Card
     public int $Influence;
     public int $ModifiedInfluence;
 
+    public bool $DashedCombat;
+    public bool $DashedFinesse;
+    public bool $DashedInfluence;
+
     public int $ModifiedEquipDiscount;
 
     public Array $Attachments = [];
@@ -39,6 +43,10 @@ abstract class Character extends Card
         $this->Influence = 0;
         $this->ModifiedInfluence = 0;
         $this->ModifiedEquipDiscount = 0;
+
+        $this->DashedCombat = false;
+        $this->DashedFinesse = false;
+        $this->DashedInfluence = false;
     }
 
     public function resetModifiedCharacterStats()
@@ -147,6 +155,14 @@ abstract class Character extends Card
                 $event->theah->queueEvent($destroyEvent);
             }
         }
+
+        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
+        {
+            $this->clearConditions();
+            $this->resetModifiedCharacterStats();
+            $this->Wounds = 0;
+            $this->IsUpdated = true;
+        }
     }
 
     public function getPropertyArray(): array
@@ -165,6 +181,10 @@ abstract class Character extends Card
         $properties['influence'] = $this->Influence;
         $properties['modifiedInfluence'] = $this->ModifiedInfluence;
         $properties['modifiedEquipDiscount'] = $this->ModifiedEquipDiscount;
+
+        $properties['dashedCombat'] = $this->DashedCombat;
+        $properties['dashedFinesse'] = $this->DashedFinesse;
+        $properties['dashedInfluence'] = $this->DashedInfluence;
 
         $properties['attachments'] = $this->Attachments;
 

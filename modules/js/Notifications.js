@@ -291,7 +291,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         const card = this.cardProperties[args.characterId];
-        if (args.wounds == 0)
+        if (card.wounds == 0)
         {
             const characterImage = $(`${card.divId}_image`);
             const woundChip = `${card.divId}_wounds`;

@@ -23,6 +23,7 @@ class _01020 extends FactionCharacter
         $this->Combat = 2;
         $this->Finesse = 2;
         $this->Influence = 0;
+        $this->DashedInfluence = true;
 
         $this->resetModifiedCharacterStats();
 

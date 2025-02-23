@@ -265,6 +265,12 @@ trait ArgumentsTrait
         //Filter out those characters that are not in the city
         $characters = array_values(array_filter($characters, fn($character) => $this->theah->cardInCity($character) ));
 
+        //Filter out those characters that are engaged
+        $characters = array_values(array_filter($characters, fn($character) => !$character->Engaged ));
+
+        //Filter out those characters that have a dashed Influence
+        $characters = array_values(array_filter($characters, fn($character) => !$character->DashedInfluence));
+
         //Select the Ids of the characters
         $characterIds = array_map(function($character) { return $character->Id; }, $characters);
 

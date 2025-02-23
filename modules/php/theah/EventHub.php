@@ -586,7 +586,6 @@ trait EventHub
                     $deck = $theah->game->getGameDeckObject();
                     $deck->moveCard($event->characterId, $locker);
                     $character->Location = $locker;
-                    $character->clearConditions();
 
                     $theah->game->notifyAllPlayers("characterDestroyed", clienttranslate('${target_name} has been destroyed and sent to the locker due to: ${reason} '), [
                         "playerId" => $character->ControllerId,

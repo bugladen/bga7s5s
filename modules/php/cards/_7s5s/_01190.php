@@ -21,7 +21,8 @@ class _01190 extends CityCharacter
         $this->Resolve = 5;
         $this->Combat = 2;
         $this->Finesse = 3;
-        $this->Influence = -1;
+        $this->Influence = 0;
+        $this->DashedInfluence = true;
 
         $this->resetModifiedCharacterStats();
 
