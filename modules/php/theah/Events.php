@@ -43,6 +43,7 @@ class Events
     const ChallengeIssued = 'EventChallengeIssued';
     const CharacterRecruited = 'EventCharacterRecruited';
     const AttachmentEquipped = 'EventAttachmentEquipped';
+    const HighDramaPhaseEnd = 'EventHighDramaPhaseEnd';
     
     //Challenge Events
     const CharacterIntervened = 'EventCharacterIntervened';
@@ -63,6 +64,10 @@ class Events
 
     const CharacterWounded = 'EventCharacterWounded';
     const CharacterDestroyed = 'EventCharacterDestroyed';
+
+    //Plunder Phase events
+    const PlunderPhaseBegin = 'EventPlunderPhaseBegin';
+
     
     const CardMoved = 'EventCardMoved';
     const CardDrawn = 'EventCardDrawn';

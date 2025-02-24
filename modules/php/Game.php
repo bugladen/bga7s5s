@@ -40,12 +40,14 @@ class Game extends \Table
     final const LOCATION_PURGATORY = 'Purgatory';
 
     //Global variable names
+    final const TURN_PHASE = "turnPhase";
     final const PLAYER_COUNT = "playerCount";
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
     final const CATS_EMBARGO = "catsEmbargo";
     final const CHALLENGE_STAT_COMBAT = "COMBAT";
     final const CHALLENGE_STAT_FINESSE = "FINESSE";
     final const CHALLENGE_STAT_INFLUENCE = "INFLUENCE";
+    final const PASS_COUNT = "passCount";
 
     //Player action global variables
     //Delete these in stNextPlayer
@@ -97,7 +99,7 @@ class Game extends \Table
 
         $this->initGameStateLabels([
             "day" => 10,
-            "turnPhase" => 11,
+            Game::TURN_PHASE => 11,
         ]);
 
         $this->cards = $this->getNew( "module.common.deck" );
@@ -200,7 +202,7 @@ class Game extends \Table
         $result["players"] = $players;
 
         $result["day"] = $this->getGameStateValue("day");
-        $result["turnPhase"] = (int) $this->getGameStateValue("turnPhase");
+        $result["turnPhase"] = (int) $this->getGameStateValue(Game::TURN_PHASE);
 
         if ($this->globals->has("firstPlayer")) {
             $result["firstPlayer"] = $this->globals->get("firstPlayer");
@@ -287,7 +289,7 @@ class Game extends \Table
         // Init global values with their initial values.
 
         $this->setGameStateInitialValue("day", 0);
-        $this->setGameStateInitialValue("turnPhase", Game::SETUP_PHASE);
+        $this->setGameStateInitialValue(Game::TURN_PHASE, Game::SETUP_PHASE);
 
         $playerCount = count($players);
         $this->globals->set(Game::PLAYER_COUNT, $playerCount);

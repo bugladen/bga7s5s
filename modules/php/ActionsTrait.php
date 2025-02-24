@@ -36,11 +36,11 @@ trait ActionsTrait
     public function actPass(string $transition = ""): void
     {
         // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
+        $playerId = $this->getActivePlayerId();
 
         // Notify all players about the choice to pass.
         $this->notifyAllPlayers("message", clienttranslate('${player_name} passes.'), [
-            "player_id" => $player_id,
+            "player_id" => $playerId,
             "player_name" => $this->getActivePlayerName(),
         ]);
 
@@ -51,6 +51,26 @@ trait ActionsTrait
     public function actPassWithPass(): void
     {
         $this->actPass("pass");
+    }
+
+    public function actHighDramaPass(): void
+    {
+        $playerId = $this->getActivePlayerId();
+
+        // Notify all players about the choice to pass.
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} passes.'), [
+            "player_id" => $playerId,
+            "player_name" => $this->getActivePlayerName(),
+        ]);
+
+        $passCount = $this->globals->get(GAME::PASS_COUNT, 0);
+        $passCount++;        
+        $this->globals->set(GAME::PASS_COUNT, $passCount);
+
+        if ($passCount >= $this->globals->get(GAME::PLAYER_COUNT)) 
+            $this->gamestate->nextState("end");
+        else
+            $this->gamestate->nextState("pass");
     }
 
     public function actBack(): void
@@ -729,6 +749,8 @@ trait ActionsTrait
         $location = json_decode($locations, true)[0];
         $playerName = $this->getActivePlayerName();
 
+        $this->globals->set(GAME::PASS_COUNT, 0);
+
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
         $card = $this->getCardObjectFromDb($cardId);       
         $this->cards->moveCard($cardId, $location, $card->ControllerId);
@@ -831,6 +853,8 @@ trait ActionsTrait
             throw new \BgaUserException("Chosen character is not a Mercenary at the Performer's Location.");
         }        
 
+        $this->globals->set(GAME::PASS_COUNT, 0);
+
         $this->notifyAllPlayers("message", clienttranslate('${player_name} chose ${card_name} to perform a Recruit Action.'), [
             "player_name" => $playerName,
             "card_name" => "<strong>{$performer->Name}</strong>",
@@ -912,7 +936,6 @@ trait ActionsTrait
     {
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
-        $playerName = $this->getActivePlayerName();
 
         $performerId = $this->globals->get(GAME::CHOSEN_CARD);
         $performer = $this->theah->getCharacterById($performerId);
@@ -966,6 +989,8 @@ trait ActionsTrait
             throw new \BgaUserException("Cost of Attachment is {$cost}. You selected {$totalWealth} Wealth of cards.");
         }
 
+        $this->globals->set(GAME::PASS_COUNT, 0);
+
         $playerId = $this->getActivePlayerId();
 
         //Equip the attachment
@@ -1009,6 +1034,92 @@ trait ActionsTrait
         }
 
         $this->gamestate->nextState("claimActionStart");
+    }
+
+    public function actHighDramaClaimActionPerformerChosen(string $ids)
+    {
+        $id = json_decode($ids, true)[0];
+        $activePlayerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $performer = $this->theah->getCharacterById($id);
+        if ($performer->Engaged) {
+            throw new \BgaUserException("Performer cannot Claim because it is engaged.");
+        }
+
+        $characters = $this->theah->getCharactersInPlayByPlayerId($activePlayerId);
+        
+        //Filter out those characters that are not in the city
+        $charactersInCity = array_filter($characters, fn($character) => $this->theah->cardInCity($character) );  
+
+        //Select the Ids of the characters
+        $characterIds = array_map(function($character) { return $character->Id; }, $charactersInCity);
+
+        if (!in_array($id, $characterIds)) {
+            throw new \BgaUserException("Performer is not in the City.");
+        }
+
+        //Get an array of players to keep track of their influence at the location 
+        $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player ORDER BY player_score DESC");
+        foreach ($playerInfluences as $playerId => $player) {
+            $player["influence"] = 0;
+            $playerInfluences[$playerId] = $player;
+        }
+
+        //Get the total influence of the characters at the location
+        $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
+        foreach ($charactersAtLocation as $character) 
+        {
+            if (!$character->ControllerId) continue;
+
+            $player = $playerInfluences[$character->ControllerId];
+            $player['influence'] += $character->getPressureInfluenceValue();
+            $playerInfluences[$character->ControllerId] = $player;
+        }
+
+        //Get the player with the most influence
+        $maxInfluence = 0;
+        $maxPlayerId = 0;
+        $totals = "";
+        foreach ($playerInfluences as $playerId => $player) {
+            $totals .= "{$this->getPlayerNameById($playerId)}:({$player['influence']}) ";
+            if ($player['influence'] > $maxInfluence) {
+                $maxInfluence = $player['influence'];
+                $maxPlayerId = $playerId;
+            }
+        }
+
+        if ($activePlayerId != $maxPlayerId) {
+            throw new \BgaUserException("You do not have the most influence at the location. Totals: {$totals}");
+        }
+
+        $this->setControllerForLocation($performer->Location, $activePlayerId);
+
+        $this->globals->set(GAME::PASS_COUNT, 0);
+
+        $engageEvent = $this->theah->createEvent(Events::CardEngaged);
+        if ($engageEvent instanceof EventCardEngaged)
+        {
+            $engageEvent->card = $performer;
+            $engageEvent->playerId = $activePlayerId;
+        }
+        $this->theah->eventCheck($engageEvent);
+
+        $claimEvent = $this->theah->createEvent(Events::LocationClaimed);
+        if ($claimEvent instanceof EventLocationClaimed)
+        {
+            $claimEvent->performer = $performer;
+            $claimEvent->location = $performer->Location;
+            $claimEvent->playerId = $activePlayerId;
+            $claimEvent->totalsExplanation = $totals;
+        }    
+
+        $this->theah->eventCheck($claimEvent);
+
+        $this->theah->queueEvent($engageEvent);
+        $this->theah->queueEvent($claimEvent);
+
+        $this->gamestate->nextState("performerChosen");
     }
 
     public function actHighDramaChallengeActionStart()
@@ -1175,90 +1286,6 @@ trait ActionsTrait
 
         $this->gamestate->nextState("");
     }    
-
-    public function actHighDramaClaimActionPerformerChosen(string $ids)
-    {
-        $id = json_decode($ids, true)[0];
-        $activePlayerId = (int)$this->getActivePlayerId();
-        $this->theah->buildCity();
-
-        $performer = $this->theah->getCharacterById($id);
-        if ($performer->Engaged) {
-            throw new \BgaUserException("Performer cannot Claim because it is engaged.");
-        }
-
-        $characters = $this->theah->getCharactersInPlayByPlayerId($activePlayerId);
-        
-        //Filter out those characters that are not in the city
-        $charactersInCity = array_filter($characters, fn($character) => $this->theah->cardInCity($character) );  
-
-        //Select the Ids of the characters
-        $characterIds = array_map(function($character) { return $character->Id; }, $charactersInCity);
-
-        if (!in_array($id, $characterIds)) {
-            throw new \BgaUserException("Performer is not in the City.");
-        }
-
-        //Get an array of players to keep track of their influence at the location 
-        $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player ORDER BY player_score DESC");
-        foreach ($playerInfluences as $playerId => $player) {
-            $player["influence"] = 0;
-            $playerInfluences[$playerId] = $player;
-        }
-
-        //Get the total influence of the characters at the location
-        $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
-        foreach ($charactersAtLocation as $character) 
-        {
-            if (!$character->ControllerId) continue;
-
-            $player = $playerInfluences[$character->ControllerId];
-            $player['influence'] += $character->getPressureInfluenceValue();
-            $playerInfluences[$character->ControllerId] = $player;
-        }
-
-        //Get the player with the most influence
-        $maxInfluence = 0;
-        $maxPlayerId = 0;
-        $totals = "";
-        foreach ($playerInfluences as $playerId => $player) {
-            $totals .= "{$this->getPlayerNameById($playerId)}:({$player['influence']}) ";
-            if ($player['influence'] > $maxInfluence) {
-                $maxInfluence = $player['influence'];
-                $maxPlayerId = $playerId;
-            }
-        }
-
-        if ($activePlayerId != $maxPlayerId) {
-            throw new \BgaUserException("You do not have the most influence at the location. Totals: {$totals}");
-        }
-
-        $this->setControllerForLocation($performer->Location, $activePlayerId);
-
-        $engageEvent = $this->theah->createEvent(Events::CardEngaged);
-        if ($engageEvent instanceof EventCardEngaged)
-        {
-            $engageEvent->card = $performer;
-            $engageEvent->playerId = $activePlayerId;
-        }
-        $this->theah->eventCheck($engageEvent);
-
-        $claimEvent = $this->theah->createEvent(Events::LocationClaimed);
-        if ($claimEvent instanceof EventLocationClaimed)
-        {
-            $claimEvent->performer = $performer;
-            $claimEvent->location = $performer->Location;
-            $claimEvent->playerId = $activePlayerId;
-            $claimEvent->totalsExplanation = $totals;
-        }    
-
-        $this->theah->eventCheck($claimEvent);
-
-        $this->theah->queueEvent($engageEvent);
-        $this->theah->queueEvent($claimEvent);
-
-        $this->gamestate->nextState("performerChosen");
-    }
 
     public function actDuelActionChooseTechnique()
     {

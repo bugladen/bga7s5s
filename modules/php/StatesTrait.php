@@ -61,8 +61,7 @@ trait StatesTrait
 
     public function stDawnBeginning() {
         //Set the phase to morning
-        $turnPhase = Game::DAWN;
-        $this->setGameStateValue("turnPhase", $turnPhase);
+        $this->setGameStateValue(Game::TURN_PHASE, Game::DAWN);
 
         //Notify players that it is dawn beginning
         $this->notifyAllPlayers("dawnBeginning", clienttranslate('<span style="font-weight:bold">DAWN BEGINNING PHASE</span>.'), []);
@@ -138,8 +137,7 @@ trait StatesTrait
     public function stPlanningPhaseBeginning()
     {
         //Set the phase to planning
-        $turnPhase = Game::PLANNING;
-        $this->setGameStateValue("turnPhase", $turnPhase);
+        $this->setGameStateValue(Game::TURN_PHASE, Game::PLANNING);
 
         //Notify players that it is planning phase
         $this->notifyAllPlayers("planningPhase", clienttranslate('<span style="font-weight:bold">PLANNING PHASE</span>.'), []);
@@ -409,7 +407,8 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
-    public function stPlanningPhaseEnd() {
+    public function stPlanningPhaseEnd() 
+    {
         //Notify players that it is planning phase end
         $this->notifyAllPlayers("message", clienttranslate('<span style="font-weight:bold">PLANNING PHASE END</span>.'), []);
 
@@ -420,10 +419,12 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
-    public function stHighDramaBeginning() {
+    public function stHighDramaBeginning() 
+    {
         //Set the phase to high drama
-        $turnPhase = Game::HIGH_DRAMA;
-        $this->setGameStateValue("turnPhase", $turnPhase);
+        $this->setGameStateValue(Game::TURN_PHASE, Game::HIGH_DRAMA);
+
+        $this->globals->set(Game::PASS_COUNT, 0);
 
         //Notify players that it is high drama phase
         $this->notifyAllPlayers("message", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), []);
@@ -577,6 +578,8 @@ trait StatesTrait
 
     public function stHighDramaChallengeActionResolution()
     {
+        $this->globals->set(GAME::PASS_COUNT, 0);
+
         if ($this->globals->get(GAME::CHALLENGE_ACCEPTED))
         {
             $this->gamestate->nextState("accepted");
@@ -995,6 +998,14 @@ trait StatesTrait
         $duelId = $this->globals->get(Game::DUEL_ID);
         $this->globals->set(GAME::IN_DUEL, false);
 
+        $this->globals->delete(Game::CHALLENGE_STAT);
+        $this->globals->delete(Game::CHALLENGE_THREAT);
+        $this->globals->delete(Game::CHALLENGE_ACCEPTED);
+        $this->globals->delete(Game::DUEL_ID);
+        $this->globals->delete(Game::DUEL_ROUND);
+        $this->globals->delete(Game::DUEL_CHALLENGER);
+        $this->globals->delete(Game::DUEL_DEFENDER);
+
         $sql = "SELECT challenging_player_id, defending_player_id, challenger_id, defender_id FROM duel where duel_id = $duelId";
         $result = $this->getObjectListFromDB($sql)[0];
 
@@ -1046,5 +1057,24 @@ trait StatesTrait
         $this->activeNextPlayer();
 
         $this->gamestate->nextState("nextPlayer");
+    }
+
+    public function stHighDramaEnd(): void
+    {
+        $event = $this->theah->createEvent(Events::HighDramaPhaseEnd);
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState();
+    }
+
+    public function stPlunderPhaseBegin(): void
+    {
+         //Set the phase
+         $this->setGameStateValue(Game::TURN_PHASE, Game::PLUNDER);
+
+         $event = $this->theah->createEvent(Events::PlunderPhaseBegin);
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState();
     }
 }

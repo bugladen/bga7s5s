@@ -121,8 +121,14 @@ class States
     const DUEL_NEXT_PLAYER = 53;
     const DUEL_END = 54;
         const DUEL_END_EVENTS = 540;
-        
-    const NEXT_PLAYER = 70;
+    
+    const NEXT_PLAYER = 59;
+    
+    const HIGH_DRAMA_END = 60;
+        const HIGH_DRAMA_END_EVENTS = 600;
+
+    const PLUNDER_PHASE_BEGIN = 70;
+        const PLUNDER_PHASE_BEGIN_EVENTS = 700;
 
     const END_GAME = 99;   
 }

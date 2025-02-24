@@ -27,8 +27,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlunderPhaseBegin;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
@@ -596,6 +598,22 @@ trait EventHub
                         };
                 $handler($this, $event);
                 break;
-        }
+
+            case $event instanceof EventHighDramaPhaseEnd:
+                $handler = function ($theah, EventHighDramaPhaseEnd $event)
+                {
+                    $theah->game->notifyAllPlayers("highDramaPhaseEnd", clienttranslate('END OF HIGH DRAMA PHASE.'), []);
+                };
+                $handler($this, $event);
+                break;
+
+                case $event instanceof EventPlunderPhaseBegin:
+                $handler = function ($theah, EventPlunderPhaseBegin $event)
+                {
+                    $theah->game->notifyAllPlayers("plunderPhaseBegin", clienttranslate('BEGINNING OF PLUNDER PHASE.'), []);
+                };
+                $handler($this, $event);
+                break;
+            }
     }
 }

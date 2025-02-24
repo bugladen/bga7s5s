@@ -173,7 +173,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         notif.args.cards.forEach((card) => {
             this.addCardToDeck(this.factionHand, card);
-        });            
+        });
+
+        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
     },
 
     notif_cardAddedToHand: function( notif )

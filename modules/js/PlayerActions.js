@@ -269,7 +269,7 @@ return declare('seventhseacityoffivesails.actions', null, {
     onPass: function()
     {
         const actionArray = {
-            'highDramaPlayerTurn': 'actPassWithPass',
+            'highDramaPlayerTurn': 'actHighDramaPass',
             'planningPhaseResolveSchemes_01016_2': 'actPassWithPass',
             'planningPhaseResolveSchemes_01125': 'actPlanningPhase_01125_Pass',
             'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2_Pass',

@@ -591,7 +591,7 @@ $machinestates = [
             "actHighDramaEquipActionStart",
             "actHighDramaMoveActionStart", 
             "actHighDramaRecruitActionStart",
-            "actPassWithPass",
+            "actHighDramaPass",
         ],
         "transitions" => [
             "challengeActionStart" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_PERFORMER,
@@ -599,7 +599,8 @@ $machinestates = [
             "equipActionStart" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER,
             "moveActionStart" => States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_PERFORMER, 
             "recruitActionStart" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER,
-            "pass" => States::NEXT_PLAYER
+            "pass" => States::NEXT_PLAYER,
+            "end" => States::HIGH_DRAMA_END
         ]
     ],
         States::HIGH_DRAMA_PLAYER_TURN_EVENTS => [
@@ -1150,9 +1151,38 @@ $machinestates = [
         "transitions" => [
             "endGame" => States::END_GAME, 
             "nextPlayer" => States::HIGH_DRAMA_PLAYER_TURN
-        ]
+            ]
+        ],
+        
+    States::HIGH_DRAMA_END => [
+        "name" => "highDramaEnd",
+        "type" => "game",
+        "action" => "stHighDramaEnd",
+        "transitions" => ["" => States::HIGH_DRAMA_END_EVENTS]
     ],
-
+        States::HIGH_DRAMA_END_EVENTS => [
+            "name" => "highDramaEndEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "endOfEvents" => States::PLUNDER_PHASE_BEGIN
+            ]
+        ],
+    States::PLUNDER_PHASE_BEGIN => [
+        "name" => "plunderPhaseBegin",
+        "type" => "game",
+        "action" => "stPlunderPhaseBegin",
+        "transitions" => ["" => States::PLUNDER_PHASE_BEGIN_EVENTS]
+    ],
+        States::PLUNDER_PHASE_BEGIN_EVENTS => [
+            "name" => "plunderPhaseBeginEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "endOfEvents" => States::NEXT_PLAYER
+            ]
+        ],
+                        
     // Final state.
     // Please do not modify (and do not overload action/args methods).
     States::END_GAME => [
