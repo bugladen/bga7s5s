@@ -36,6 +36,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['yevgeniAdversaryChosen', 500],
             ['01126_2_scheme_moved', 500],
             ['challengeIssued', 500],
+            ['characterIntervened', 500],
             ['duelStarted', 500],
             ['newDuelRound', 500],
             ['updateRoundWithCombatStats', 500],
@@ -526,6 +527,29 @@ return declare('seventhseacityoffivesails.notifications', null, {
         defender.conditions.push(this.DEFENDER);
         const defenderImage = $(`${defender.divId}_image`);
         const defenderChipId = `${defender.divId}_defender`;
+        dojo.place( this.format_block( 'jstpl_generic_chip', {
+            id: defenderChipId,
+            class: 'defender-chip',
+        }),  defenderImage, 'last');
+        this.addTooltipHtml( defenderChipId, `<div class='basic-tooltip'>${_("Duel Defender")}</div>` );
+    },
+
+    notif_characterIntervened: function( notif )
+    {
+        debug( 'notif_characterIntervened' );
+        debug( notif );
+
+        const args = notif.args;
+
+        const oldTarget = this.cardProperties[args.oldTargetId];
+        oldTarget.conditions = oldTarget.conditions.filter(condition => condition !== this.DEFENDER);
+        const oldDefenderChipId = `${oldTarget.divId}_defender`;
+        dojo.destroy(oldDefenderChipId);
+
+        const newTarget = this.cardProperties[args.newTargetId];
+        newTarget.conditions.push(this.DEFENDER);
+        const defenderImage = $(`${newTarget.divId}_image`);
+        const defenderChipId = `${newTarget.divId}_defender`;
         dojo.place( this.format_block( 'jstpl_generic_chip', {
             id: defenderChipId,
             class: 'defender-chip',

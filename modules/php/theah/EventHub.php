@@ -305,21 +305,21 @@ trait EventHub
 
                 break;
 
-        case $event instanceof EventSchemeMovedToCity:
-            $event->scheme->Location = $event->location;
-            $event->scheme->IsUpdated = true;
-            
-            //Card is now in city
-            $this->cards[$event->scheme->Id] = $event->scheme;
-            break;
+            case $event instanceof EventSchemeMovedToCity:
+                $event->scheme->Location = $event->location;
+                $event->scheme->IsUpdated = true;
+                
+                //Card is now in city
+                $this->cards[$event->scheme->Id] = $event->scheme;
+                break;
 
             case $event instanceof EventChallengeIssued:
                 $handler = function ($theah, EventChallengeIssued $event)
                 {
-                    $challenger = $this->cards[$event->challenger->Id];
+                    $challenger = $theah->cards[$event->challenger->Id];
                     $challenger->addCondition(GAME::DUEL_CHALLENGER);
                     
-                    $defender = $this->cards[$event->defender->Id];
+                    $defender = $theah->cards[$event->defender->Id];
                     $defender->addCondition(GAME::DUEL_DEFENDER);
                     
                     $message = '${player_name} has chosen to have ${challenger_name} Challenge ${defender_name}. ';
@@ -340,10 +340,14 @@ trait EventHub
             case $event instanceof EventCharacterIntervened:
                 $handler = function ($theah, EventCharacterIntervened $event)
                 {
-                    $this->game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to have ${intervener_name} INTERVENE in the Challenge in place of ${target_name}.'), [
+                    $oldTarget = $theah->cards[$event->oldTargetId];
+                    $newTarget = $theah->cards[$event->newTargetId];
+                    $this->game->notifyAllPlayers("characterIntervened", clienttranslate('${player_name} has chosen to have ${intervener_name} INTERVENE in the Challenge in place of ${target_name}.'), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "intervener_name" => "<strong>{$event->newTarget->Name}</strong>",
-                        "target_name" => "<strong>{$event->oldTarget->Name}</strong>",
+                        "intervener_name" => "<strong>{$newTarget->Name}</strong>",
+                        "target_name" => "<strong>{$oldTarget->Name}</strong>",
+                        "oldTargetId" => $oldTarget->Id,
+                        "newTargetId" => $newTarget->Id,
                     ]);
                 };
                 $handler($this, $event);

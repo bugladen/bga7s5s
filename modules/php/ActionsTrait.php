@@ -1258,8 +1258,11 @@ trait ActionsTrait
 
         if($character->Engaged) {
             throw new \BgaUserException("Character is engaged. Cannot Intervene.");
-        }    
+        }
 
+        //Reset the conditions for defender
+        $target->removeCondition(Game::DUEL_DEFENDER);
+        $character->addCondition(Game::DUEL_DEFENDER);
         $this->globals->set(Game::CHOSEN_TARGET, $character->Id);
 
         $engageEvent = $this->theah->createEvent(Events::CardEngaged);
@@ -1274,8 +1277,8 @@ trait ActionsTrait
         if ($interveneEvent instanceof EventCharacterIntervened)
         {
             $interveneEvent->playerId = $playerId;
-            $interveneEvent->oldTarget = $target;
-            $interveneEvent->newTarget = $character;
+            $interveneEvent->oldTargetId = $target->Id;
+            $interveneEvent->newTargetId = $character->Id;
         }    
         $this->theah->eventCheck($interveneEvent);
 
