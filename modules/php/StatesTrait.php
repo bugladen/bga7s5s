@@ -1077,4 +1077,9 @@ trait StatesTrait
 
         $this->gamestate->nextState();
     }
+
+    public function stEndGame(): void
+    {
+
+    }
 }

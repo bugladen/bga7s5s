@@ -234,21 +234,25 @@ trait EventHub
                 }
     
             case $event instanceof EventPlayerLosesReknown:
-                $playerId = $event->playerId;
-                $reknown = $this->db->getPlayerReknown($playerId);
-                if ($reknown > 0) 
+                $handler = function (Theah $theah, EventPlayerLosesReknown $event)
                 {
-                    $reknown -= $event->amount;
-                    $this->db->setPlayerReknown($playerId, $reknown);
+                    $playerId = $event->playerId;
+                    $db = $theah->getDBObject();
+                    $reknown = $db->getPlayerReknown($playerId);
+                    if ($reknown > 0) 
+                    {
+                        $reknown -= $event->amount;
+                        $db->setPlayerReknown($playerId, $reknown);
 
-                    // Notify players that the player has lost reknown
-                    $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} loses ${amount} reknown.'), [
-                        "player_id" => $event->playerId,
-                        "player_name" => $this->game->getPlayerNameById($playerId),
-                        "amount" => $event->amount,
-                    ]);
-                }   
-
+                        // Notify players that the player has lost reknown
+                        $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} loses ${amount} reknown.'), [
+                            "player_id" => $event->playerId,
+                            "player_name" => $this->game->getPlayerNameById($playerId),
+                            "amount" => $event->amount,
+                        ]);
+                    }   
+                };
+                $handler($this, $event);
                 break;
 
             case $event instanceof EventReknownAddedToLocation:
@@ -595,7 +599,7 @@ trait EventHub
                         "character" => $character->getPropertyArray(),
                         "reason" => $event->reason,
                     ]);
-                        };
+                };
                 $handler($this, $event);
                 break;
 

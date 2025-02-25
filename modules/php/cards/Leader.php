@@ -2,7 +2,12 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 abstract class Leader extends Character
 {
@@ -37,6 +42,43 @@ abstract class Leader extends Character
                     "playerId" => $this->ControllerId,
                     "leader" => $this->getPropertyArray(),
                 ]);
+            }
+        }
+
+        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
+        {
+            if ($event->theah->game->globals->get(Game::PLAYER_COUNT) == 2)
+            {
+                $db = $event->theah->getDBObject();
+                $db->setPlayerReknown($this->ControllerId, -1);
+                $transition = $event->theah->createEvent(Events::Transition);
+                if ($transition instanceof EventTransition)
+                {
+                    $transition->playerId = $this->ControllerId;
+                    $transition->transition = "endOfGame";
+                }
+                $event->theah->queueEvent($transition);
+            }
+            else
+            {
+                $db = $event->theah->getDBObject();
+                $current = $db->getPlayerReknown($this->ControllerId);
+
+                //Modify current by half, rounded up
+                $new = ceil($current / 2);
+
+                $event->theah->game->notifyAllPlayers("message", clienttranslate('${player_name} will lose half of their reknown (${old_reknown} to ${new_reknown}).'), [
+                    "player_name" => $event->theah->game->getPlayerNameById($this->ControllerId),
+                    "old_reknown" => $current,
+                    "new_reknown" => $new,
+                ]);
+
+                $reknown = $event->theah->createEvent(Events::PlayerLosesReknown);
+                if ($reknown instanceof EventPlayerLosesReknown) {
+                    $reknown->playerId = $this->ControllerId;
+                    $reknown->amount = $current - $new;
+                }
+                $event->theah->queueEvent($reknown);
             }
         }
     }

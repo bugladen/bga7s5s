@@ -60,7 +60,10 @@ $machinestates = [
             "description" => clienttranslate("Resolving Events for the New Day..."),
             "type" => "game",
             "action" => "stRunEvents",
-            "transitions" => ["endOfEvents" => States::DAWN_BEGINNING]
+            "transitions" => [
+                "endOfEvents" => States::DAWN_BEGINNING,
+                "endOfGame" => States::END_GAME
+            ]
         ],
 
     States::DAWN_BEGINNING => [
@@ -75,7 +78,10 @@ $machinestates = [
             "description" => clienttranslate("Resolving Events for the Beginning of the Dawn..."),
             "type" => "game",
             "action" => "stRunEvents",
-            "transitions" => ["endOfEvents" => States::DAWN_CITY_CARDS]
+            "transitions" => [
+                "endOfEvents" => States::DAWN_CITY_CARDS,
+                "endOfGame" => States::END_GAME
+            ]
         ],
 
     States::DAWN_CITY_CARDS => [
@@ -91,7 +97,8 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
-                "endOfEvents" => States::DAWN_ENDING]
+                "endOfEvents" => States::DAWN_ENDING,
+                "endOfGame" => States::END_GAME]
         ],
 
     States::DAWN_ENDING => [
@@ -106,7 +113,10 @@ $machinestates = [
             "description" => clienttranslate("Resolving Events for the End of the Dawn..."),
             "type" => "game",
             "action" => "stRunEvents",
-            "transitions" => ["endOfEvents" => States::PLANNING_PHASE_BEGINNING]
+            "transitions" => [
+                "endOfEvents" => States::PLANNING_PHASE_BEGINNING,
+                "endOfGame" => States::END_GAME
+            ]
         ],
 
     States::PLANNING_PHASE_BEGINNING => [
@@ -121,7 +131,10 @@ $machinestates = [
             "description" => clienttranslate("Resolving Events for the Beginning of the Planning Phase..."),
             "type" => "game",
             "action" => "stRunEvents",
-            "transitions" => ["endOfEvents" => States::PLANNING_PHASE]
+            "transitions" => [
+                "endOfEvents" => States::PLANNING_PHASE,
+                "endOfGame" => States::END_GAME
+            ]
         ],
 
     States::PLANNING_PHASE => [
@@ -149,7 +162,10 @@ $machinestates = [
             "description" => clienttranslate("Resolving Events for Approach Cards Played..."),
             "type" => "game",
             "action" => "stRunEvents",
-            "transitions" => ["endOfEvents" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER]
+            "transitions" => [
+                "endOfEvents" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER,
+                "endOfGame" => States::END_GAME
+            ]
         ],
 
     States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER => [
@@ -164,7 +180,10 @@ $machinestates = [
             "description" => clienttranslate("Resolving Events for Determining the First Player..."),
             "type" => "game",
             "action" => "stRunEvents",
-            "transitions" => ["endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS]
+            "transitions" => [
+                "endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS,
+                "endOfGame" => States::END_GAME
+            ]
         ],
 
     States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS => [
@@ -179,7 +198,10 @@ $machinestates = [
             "description" => clienttranslate("Resolving Events for When Revealed Cards..."),
             "type" => "game",
             "action" => "stRunEvents",
-            "transitions" => ["endOfEvents" => States::PLANNING_PHASE_MUSTER]
+            "transitions" => [
+                "endOfEvents" => States::PLANNING_PHASE_MUSTER,
+                "endOfGame" => States::END_GAME
+            ]
         ],
 
     States::PLANNING_PHASE_MUSTER 
@@ -195,7 +217,10 @@ $machinestates = [
             "description" => '',
             "type" => "game",
             "action" => "stRunEvents",
-            "transitions" => ["endOfEvents" => States::PLANNING_PHASE_RESOLVE_SCHEMES]
+            "transitions" => [
+                "endOfEvents" => States::PLANNING_PHASE_RESOLVE_SCHEMES,
+                "endOfGame" => States::END_GAME
+            ]
         ],
 
     States::PLANNING_PHASE_RESOLVE_SCHEMES => [
@@ -224,7 +249,8 @@ $machinestates = [
                 "01145" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145,
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
                 "01152" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152,
-                "endOfEvents" => States::PLANNING_PHASE_DRAW
+                "endOfEvents" => States::PLANNING_PHASE_DRAW,
+                "endOfGame" => States::END_GAME
             ]
         ],
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01016 => [
@@ -512,7 +538,8 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "01098" => States::PLANNING_PHASE_END_01098,
-                "endOfEvents" => States::HIGH_DRAMA_BEGINNING
+                "endOfEvents" => States::HIGH_DRAMA_BEGINNING,
+                "endOfGame" => States::END_GAME
             ]
         ],
         States::PLANNING_PHASE_END_01098 => [
@@ -554,7 +581,8 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "01144" => States::HIGH_DRAMA_BEGINNING_01144,
-                "endOfEvents" => States::HIGH_DRAMA_PHASE
+                "endOfEvents" => States::HIGH_DRAMA_PHASE,
+                "endOfGame" => States::END_GAME
                 ]
         ],
 
@@ -609,7 +637,8 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
-                "endOfEvents" => States::NEXT_PLAYER
+                "endOfEvents" => States::NEXT_PLAYER,
+                "endOfGame" => States::END_GAME
                 ]
         ],
 
@@ -674,7 +703,8 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE
+                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE,
+                    "endOfGame" => States::END_GAME
                     ]
             ],
     
@@ -692,7 +722,8 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE
+                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE,
+                    "endOfGame" => States::END_GAME
                 ]
             ],
     States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE => [
@@ -724,7 +755,8 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "01067b" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS_01067b,
-                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT
+                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
+                    "endOfGame" => States::END_GAME
                     ]
             ],
                 States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS_01067b => [
@@ -753,7 +785,8 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION
+                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION,
+                    "endOfGame" => States::END_GAME
                     ]
             ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION => [
@@ -770,7 +803,8 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "endOfEvents" => States::HIGH_DRAMA_PLAYER_TURN
+                    "endOfEvents" => States::HIGH_DRAMA_PLAYER_TURN,
+                    "endOfGame" => States::END_GAME
                     ]
             ],
             States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS => [
@@ -778,7 +812,8 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "endOfEvents" => States::DUEL_STARTED
+                    "endOfEvents" => States::DUEL_STARTED,
+                    "endOfGame" => States::END_GAME
                     ]
             ],
         States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER => [
@@ -929,7 +964,8 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "endOfEvents" => States::DUEL_NEW_ROUND
+                    "endOfEvents" => States::DUEL_NEW_ROUND,
+                    "endOfGame" => States::END_GAME
                     ]
             ],
         States::DUEL_NEW_ROUND => [
@@ -945,7 +981,8 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "endOfEvents" => States::DUEL_CHOOSE_ACTION
+                    "endOfEvents" => States::DUEL_CHOOSE_ACTION,
+                    "endOfGame" => States::END_GAME
                     ]
             ],
         States::DUEL_CHOOSE_ACTION => [
@@ -989,7 +1026,8 @@ $machinestates = [
                     "action" => "stRunEvents",
                     "transitions" => [
                         "01013" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS_01013,
-                        "endOfEvents" => States::DUEL_CHOOSE_ACTION
+                        "endOfEvents" => States::DUEL_CHOOSE_ACTION,
+                        "endOfGame" => States::END_GAME
                         ]
                 ],
                 States::DUEL_CHOOSE_TECHNIQUE_EVENTS_01013 => [
@@ -1035,7 +1073,8 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
-                        "endOfEvents" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD
+                        "endOfEvents" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD,
+                        "endOfGame" => States::END_GAME
                         ]
                 ],
             States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD => [
@@ -1058,7 +1097,8 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
-                        "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS
+                        "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS,
+                        "endOfGame" => States::END_GAME
                         ]
                 ],
             States::DUEL_APPLY_COMBAT_CARD_STATS => [
@@ -1074,7 +1114,8 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
-                        "endOfEvents" => States::DUEL_CHOOSE_ACTION
+                        "endOfEvents" => States::DUEL_CHOOSE_ACTION,
+                        "endOfGame" => States::END_GAME
                     ]
                 ],
             States::DUEL_CHOOSE_GAMBLE_CARD =>[
@@ -1095,7 +1136,8 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
-                        "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS
+                        "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS,
+                        "endOfGame" => States::END_GAME
                     ]
                 ],
             States::DUEL_END_OF_ROUND => [
@@ -1111,7 +1153,8 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
-                        "endOfEvents" => States::DUEL_NEXT_PLAYER
+                        "endOfEvents" => States::DUEL_NEXT_PLAYER,
+                        "endOfGame" => States::END_GAME
                     ]
                 ],
             States::DUEL_NEXT_PLAYER => [
@@ -1139,7 +1182,8 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
-                        "endOfEvents" => States::NEXT_PLAYER
+                        "endOfEvents" => States::NEXT_PLAYER,
+                        "endOfGame" => States::END_GAME
                     ]
                 ],
         
@@ -1149,8 +1193,8 @@ $machinestates = [
         "action" => "stNextPlayer",
         "updateGameProgression" => true,
         "transitions" => [
-            "endGame" => States::END_GAME, 
-            "nextPlayer" => States::HIGH_DRAMA_PLAYER_TURN
+            "nextPlayer" => States::HIGH_DRAMA_PLAYER_TURN,
+            "endOfGame" => States::END_GAME
             ]
         ],
         
@@ -1165,7 +1209,8 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
-                "endOfEvents" => States::PLUNDER_PHASE_BEGIN
+                "endOfEvents" => States::PLUNDER_PHASE_BEGIN,
+                "endOfGame" => States::END_GAME
             ]
         ],
     States::PLUNDER_PHASE_BEGIN => [
@@ -1179,7 +1224,8 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
-                "endOfEvents" => States::NEXT_PLAYER
+                "endOfEvents" => States::NEXT_PLAYER,
+                "endOfGame" => States::END_GAME
             ]
         ],
                         
@@ -1194,6 +1240,3 @@ $machinestates = [
     ],
 
 ];
-
-
-
