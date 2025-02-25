@@ -528,10 +528,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             wounds: row.wounds,
         }),  headerRow, 'after');
 
-        //Create a copy of the card main card to display temporary copy in the duel row
-        const card = this.cardProperties[row.actorId];
-        const rowCard = Object.assign({}, card);
-        this.createCard(`duel_${row.round}_${card.id}`, rowCard, `duel_round_${row.round}_actor`, true);
+        this.createCard(`duel_${row.round}_${row.actor.id}`, row.actor, `duel_round_${row.round}_actor`, true);
 
         const combatCard = row.combatCard;
         if (combatCard)

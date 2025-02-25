@@ -748,8 +748,9 @@ trait StatesTrait
             }
         }
 
-        $sql = "INSERT INTO duel_round (duel_id, round, player_id, actor_id, starting_challenger_threat, starting_defender_threat, ending_challenger_threat, ending_defender_threat, wounds_taken) 
-        VALUES ($duelId, $round, $playerId, $actorId, $challengerThreat, $defenderThreat, $challengerThreat, $defenderThreat, $wounds)";
+        $serialized = addslashes(serialize($actor));
+        $sql = "INSERT INTO duel_round (duel_id, round, player_id, actor_id, actor_serialized, starting_challenger_threat, starting_defender_threat, ending_challenger_threat, ending_defender_threat, wounds_taken) 
+        VALUES ($duelId, $round, $playerId, $actorId, '$serialized', $challengerThreat, $defenderThreat, $challengerThreat, $defenderThreat, $wounds)";
         $this->DbQuery($sql);
 
         $event = $this->theah->createEvent(Events::DuelNewRound);
@@ -774,6 +775,7 @@ trait StatesTrait
             "challengerId" => $challengerId,
             "defenderId" => $defenderId,
             "actorId" => $actorId,
+            "actor" => $actor->getPropertyArray(),
             "challengerName" => $challenger->Name,
             "defenderName" => $defender->Name,
             "startingChallengerThreat" => $challengerThreat,

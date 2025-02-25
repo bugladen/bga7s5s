@@ -56,6 +56,7 @@ trait UtilitiesTrait
             round as round,
             player_id as playerId,
             actor_id as actorId, 
+            actor_serialized as actorSerialized,
             d.challenger_id as challengerId,
             starting_challenger_threat as startingChallengerThreat,
             d.defender_id as defenderId,
@@ -92,11 +93,14 @@ trait UtilitiesTrait
             $row['defenderId'] = $round['defenderId'];
             $row['actorId'] = $round['actorId'];
 
-            $challenger = $this->getCardObjectFromDb($round['challengerId']);
+            $actor = unserialize($round['actorSerialized']);
+            $row['actor'] = $actor->getPropertyArray();
+
+            $challenger = $this->theah->getCardById($round['challengerId']);
             $row['challengerName'] = $challenger->Name;
             $row['startingChallengerThreat'] = $round['startingChallengerThreat'];
 
-            $defender = $this->getCardObjectFromDb($round['defenderId']);
+            $defender = $this->theah->getCardById($round['defenderId']);
             $row['defenderName'] = $defender->Name;
             $row['startingDefenderThreat'] = $round['startingDefenderThreat'];
 
