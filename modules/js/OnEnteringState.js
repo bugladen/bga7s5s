@@ -759,6 +759,10 @@ onEnteringState: function( stateName, args )
                 this.chooseList.setSelectionMode(1);
             }
         },
+
+        'plunderPhaseBegin': () => {
+            $('city-day-phase').innerHTML = _('Plunder');
+        },
     };
     
     if (methods[stateName]) {

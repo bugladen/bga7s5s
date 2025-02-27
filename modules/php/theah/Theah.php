@@ -259,10 +259,6 @@ class Theah
         return $techniques;
     }
 
-    function resetAvailableDuelTechniques()
-    {
-    }
-
     function getAvailableCharacterManeuvers($character)
     {
         $maneuvers = [];
@@ -281,8 +277,7 @@ class Theah
         }
 
         return $maneuvers;
-    }
-    
+    }    
 
     public function getCardPropertiesAtLocation($location, $playerId = null)
     {
@@ -316,6 +311,11 @@ class Theah
     public function getCityLocation(string $name): CityLocation
     {
         return $this->cityLocations[$name];
+    }
+
+    public function getCityLocations(): array
+    {
+        return $this->cityLocations;
     }
 
     public function getCityLocationReknown()
@@ -425,6 +425,16 @@ class Theah
         }
 
         return null;
+    }
+
+    function getTotalPlayerInfluence($playerId): int
+    {
+        $influence = 0;
+        $characters = $this->getCharactersInPlayByPlayerId($playerId);
+        foreach ($characters as $character) {
+            $influence += $character->Influence;
+        }
+        return $influence;
     }
 
     function isTechniqueOwnedByCharacter($technique, $character): bool

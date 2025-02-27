@@ -28,6 +28,7 @@ class Events
 
     //Reknown Events
     const PlayerLosesReknown = 'EventPlayerLosesReknown';
+    const PlayerGainsReknown = 'EventPlayerGainsReknown';
     const ReknownAddedToCard = 'EventReknownAddedToCard';
     const ReknownAddedToLocation = 'EventReknownAddedToLocation';
     const ReknownRemovedFromLocation = 'EventReknownRemovedFromLocation';
@@ -67,7 +68,9 @@ class Events
 
     //Plunder Phase events
     const PlunderPhaseBegin = 'EventPlunderPhaseBegin';
-
+    const PlunderPhaseEnd = 'EventPlunderPhaseEnd';
+    const PlayerTakeReknownForControlledLocation = 'EventPlayerTakeReknownForControlledLocation';
+    const PlunderPhaseAdditionalReknownEvent = 'EventPlunderPhaseAdditionalReknownEvent';
     
     const CardMoved = 'EventCardMoved';
     const CardDrawn = 'EventCardDrawn';

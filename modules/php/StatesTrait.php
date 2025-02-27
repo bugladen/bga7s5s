@@ -21,6 +21,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuver
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTakeReknownForControlledLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 
@@ -1075,6 +1077,347 @@ trait StatesTrait
          $this->setGameStateValue(Game::TURN_PHASE, Game::PLUNDER);
 
          $event = $this->theah->createEvent(Events::PlunderPhaseBegin);
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState();
+    }
+
+    public function stPlunderCheckDominanceVictory(): void
+    {
+        //Check for dominance victory
+        $controllerForDocks = $this->getControllerForLocation(Game::LOCATION_CITY_DOCKS);
+        $controllerForForum = $this->getControllerForLocation(Game::LOCATION_CITY_FORUM);
+        $controllerForBazaar = $this->getControllerForLocation(Game::LOCATION_CITY_BAZAAR);
+
+        //If all the same player controls all three locations, then they win
+        if ($controllerForDocks != 0 && $controllerForDocks == $controllerForForum && $controllerForForum == $controllerForBazaar)
+        {
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} has achieved a DOMINANCE VICTORY by controlling all three core locations.'), [
+                "player_name" => $this->getPlayerNameById($controllerForDocks)
+            ]);
+
+            $players = $this->loadPlayersBasicInfos();
+            foreach ($players as $playerId => $player)
+            {
+                if ($playerId != $controllerForDocks)
+                    $this->setPlayerReknown($playerId, -1);               
+            }
+            
+            $this->gamestate->nextState("endOfGame");
+        }
+
+        $this->notifyAllPlayers("message", clienttranslate('No player has achieved a DOMINANCE VICTORY by controlling all three core locations.'), []);
+        $this->gamestate->nextState("next");
+    }
+
+    public function stPlunderGainReknown(): void
+    {
+        $this->theah->buildCity();
+
+        //Get locations that have a controller
+        $locations = array_filter($this->theah->getCityLocations(), fn($location) => $location->Controller != 0);
+
+        foreach ($locations as $location)
+        {
+            $event = $this->theah->createEvent(Events::PlayerTakeReknownForControlledLocation);
+            if ($event instanceof EventPlayerTakeReknownForControlledLocation)
+            {
+                $event->playerId = $location->Controller;
+                $event->location = $location->Name;
+                $event->reknown = $location->Reknown;
+            }
+            $this->theah->queueEvent($event);
+
+            $event = $this->theah->createEvent(Events::PlayerGainsReknown);
+            if ($event instanceof EventPlayerGainsReknown)
+            {
+                $event->playerId = $location->Controller;
+                $event->amount = $location->Reknown;
+            }
+            $this->theah->queueEvent($event);
+        }
+
+        $event = $this->theah->createEvent(Events::PlunderPhaseAdditionalReknownEvent);
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState();
+    }
+
+    public function stPlunderCheckEconomicVictory(): void
+    {
+        $players = $this->loadPlayersBasicInfos();
+        $winners = [];        
+        foreach ($players as $playerId => $player)
+        {
+            $reknown = $this->getPlayerReknown($playerId);
+            if ($reknown >= 7)
+            {
+                $winners[] = $playerId;
+            }
+        }
+
+        if (count($winners) == 0)
+        {
+            $this->notifyAllPlayers("message", clienttranslate('No player has achieved an ECONOMIC VICTORY by gaining 7 or more reknown.'), []);
+        }
+        else if (count($winners) == 1)
+        {
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} has achieved an ECONOMIC VICTORY by gaining 7 or more reknown.'), [
+                "player_name" => $this->getPlayerNameById($winners[0])
+            ]);
+
+            $this->gamestate->nextState("endOfGame");
+            return;
+        }
+        else if (count($winners) > 1)
+        {
+            $day = $this->getGameStateValue("day");
+            if ($day < 5)
+            {
+                $this->notifyAllPlayers("message", clienttranslate('Multiple players have achieved an ECONOMIC VICTORY by gaining 7 or more reknown. Another day will be played.'), []);
+                $this->gamestate->nextState("endOfGame");
+                return;
+            }
+        }
+
+        $this->gamestate->nextState("next");
+    }
+
+    public function stPlunderCheckFifthDayVictory(): void
+    {
+        $this->theah->buildCity();
+        $day = $this->getGameStateValue("day");
+        if ($day == 5)
+        {
+            $this->notifyAllPlayers("message", clienttranslate('IT IS THE END OF THE FIFTH DAY.'), []);
+
+            $players = $this->loadPlayersBasicInfos();
+            $highestReknown = -1;
+            $highestReknownPlayer = 0;
+            foreach ($players as $playerId => $player)
+            {
+                $reknown = $this->getPlayerReknown($playerId);
+                if ($reknown > $highestReknown)
+                {
+                    $highestReknown = $reknown;
+                    $highestReknownPlayer = $playerId;
+                }
+            }
+
+            //How check to see if there are any ties
+            $reknownWinners = [];        
+            foreach ($players as $playerId => $player)
+            {
+                $reknown = $this->getPlayerReknown($playerId);
+                if ($reknown == $highestReknown)
+                {
+                    $reknownWinners[] = $playerId;
+                }
+            }
+
+            if (count($reknownWinners) == 1)
+            {
+                $this->notifyAllPlayers("message", clienttranslate('${player_name} has achieved a VICTORY by having the most reknown.'), [
+                    "player_name" => $this->getPlayerNameById($highestReknownPlayer)
+                ]);
+
+                $this->gamestate->nextState("endOfGame");
+                return;
+            }
+
+            $playerList = "";
+            foreach ($reknownWinners as $playerId)
+                $playerList .= "<p>" . $this->getPlayerNameById($playerId);
+            $this->notifyAllPlayers("message", clienttranslate('There is a tie amongst the players with the most Reknown of ${reknown}. Tied players: ${tied_players}
+            <p>Number of controlled locations will now be counted to break the tie.'), [
+                "reknown" => $highestReknown,
+                "tied_players" => $playerList
+            ]);
+
+            //We are in a tie situation.  Check to see who controls the most locations
+            $locations = array_filter($this->theah->getCityLocations(), fn($location) => $location->Controller != 0);
+            $locationCounts = [];
+            foreach ($locations as $location)
+            {
+                if (array_key_exists($location->Controller, $locationCounts))
+                    $locationCounts[$location->Controller]++;
+                else
+                    $locationCounts[$location->Controller] = 1;
+            }
+
+            $highestCount = 0;
+            $highestCountPlayer = 0;
+            //Go through the winners array, which contains the playerIds of the players with the highest reknown, 
+            //and see who controls the most locations
+            foreach ($reknownWinners as $playerId)
+            {
+                if (array_key_exists($playerId, $locationCounts))
+                {
+                    $count = $locationCounts[$playerId];
+
+                    $this->notifyAllPlayers("message", clienttranslate('${player_name} controls ${count} locations.'), [
+                        "player_name" => $this->getPlayerNameById($playerId),
+                        "count" => $count
+                    ]);
+
+                    //Formula for auxiliary score (to break ties) is 1000 * number of locations controlled
+                    $auxScore = $this->dbGetAuxScore($playerId);
+                    $auxScore += $count * 1000;
+                    $this->dbSetAuxScore($playerId, $auxScore);
+                }
+                else
+                {
+                    $count = 0;
+                    $this->notifyAllPlayers("message", clienttranslate('${player_name} controls NO locations.'), [
+                        "player_name" => $this->getPlayerNameById($playerId),
+                    ]);
+                }
+
+                if ($count > $highestCount)
+                {
+                    $highestCount = $count;
+                    $highestCountPlayer = $playerId;
+                }
+            }
+
+            //See if there are any ties in the location count
+            $locationWinners = [];
+            foreach ($reknownWinners as $playerId)
+            {
+                if (array_key_exists($playerId, $locationCounts) && $locationCounts[$playerId] == $highestCount)
+                {
+                    $locationWinners[] = $playerId;
+                }
+            }
+
+            if (count($locationWinners) == 1)
+            {
+                $this->notifyAllPlayers("message", clienttranslate('${player_name} has achieved a VICTORY by controlling the most locations.'), [
+                    "player_name" => $this->getPlayerNameById($highestCountPlayer)
+                ]);
+
+                $this->gamestate->nextState("endOfGame");
+                return;
+            }
+
+            //Just in case there were no locations controlled by any of the players we will re-use the renown winners
+            if (count($locationWinners) == 0)
+                $locationWinners = $reknownWinners;
+            
+            $playerList = "";
+            foreach ($locationWinners as $playerId)
+                $playerList .= "<p>" . $this->getPlayerNameById($playerId);
+            $this->notifyAllPlayers("message", clienttranslate('There is a tie amongst the players controlling the most locations (${locations}). Tied players: ${tied_players}
+            <p>The player with the most Influence will be used to break the tie.'), [
+                "locations" => $highestCount,
+                "tied_players" => $playerList
+            ]);
+
+            //We still have a tie.  Now find the player with the most influence
+            $highestInfluence = -1;
+            $highestInfluencePlayer = 0;
+            foreach ($locationWinners as $playerId)
+            {
+                $influence = $this->theah->getTotalPlayerInfluence($playerId);
+
+                $this->notifyAllPlayers("message", clienttranslate('${player_name} controls ${influence} Influence.'), [
+                    "player_name" => $this->getPlayerNameById($playerId),
+                    "influence" => $influence
+                ]);
+
+                //Formula for auxiliary score (to break ties) is 100 * total influence
+                $auxScore = $this->dbGetAuxScore($playerId);
+                $auxScore += $influence * 100;
+                $this->dbSetAuxScore($playerId, $auxScore);
+
+                if ($influence > $highestInfluence)
+                {
+                    $highestInfluence = $influence;
+                    $highestInfluencePlayer = $playerId;
+                }
+            }
+
+            $influenceWinners = [];
+            foreach ($locationWinners as $playerId)
+            {
+                $influence = $this->theah->getTotalPlayerInfluence($playerId);
+                if ($influence == $highestInfluence)
+                {
+                    $influenceWinners[] = $playerId;
+                }
+            }
+
+            if (count($influenceWinners) == 1)
+            {
+                $this->notifyAllPlayers("message", clienttranslate('${player_name} has achieved a VICTORY by controlling the most Influence.'), [
+                    "player_name" => $this->getPlayerNameById($highestInfluencePlayer)
+                ]);
+
+                $this->gamestate->nextState("endOfGame");
+                return;
+            }
+
+            $playerList = "";
+            foreach ($influenceWinners as $playerId)
+                $playerList .= "<p>" . $this->getPlayerNameById($playerId);
+            $this->notifyAllPlayers("message", clienttranslate('There is a tie amongst the players with highest total Influence (${influence}). Tied players: ${tied_players}
+            <p>The Leader with the least wounds will be used to break the tie.'), [
+                "influence" => $highestInfluence,
+                "tied_players" => $playerList
+            ]);
+
+            //We still have a tie. The leader with the least wounds breaks the tie
+            $lowestWounds = 1000;
+            $lowestWoundsPlayer = 0;
+
+            foreach ($influenceWinners as $playerId)
+            {
+                $leader = $this->theah->getLeaderByPlayerId($playerId);
+
+                $this->notifyAllPlayers("message", clienttranslate('${player_name}:${leader_name} has ${wounds} Wounds.'), [
+                    "player_name" => $this->getPlayerNameById($playerId),
+                    "leader_name" => "<strong>$leader->Name</strong>",
+                    "wounds" => $leader->Wounds
+                ]);
+
+                //Formula for auxiliary score (to break ties) is 20 - wounds
+                $auxScore = $this->dbGetAuxScore($playerId);
+                $auxScore += 20 - $leader->Wounds;
+                $this->dbSetAuxScore($playerId, $auxScore);
+
+                if ($leader->Wounds < $lowestWounds)
+                {
+                    $lowestWounds = $leader->Wounds;
+                    $lowestWoundsPlayer = $playerId;
+                }
+            }
+
+            $woundsWinners = [];
+            foreach ($influenceWinners as $playerId)
+            {
+                $leader = $this->theah->getLeaderByPlayerId($playerId);
+                if ($leader->Wounds == $lowestWounds)
+                {
+                    $woundsWinners[] = $playerId;
+                }
+            }
+
+            if (count($woundsWinners) == 1)
+            {
+                $this->notifyAllPlayers("message", clienttranslate('${player_name} has achieved a VICTORY by having their Leader have the least Wounds.'), [
+                    "player_name" => $this->getPlayerNameById($lowestWoundsPlayer)
+                ]);
+            }            
+
+            $this->gamestate->nextState("endOfGame");
+        }
+
+        $this->gamestate->nextState("next");
+    }
+
+    public function stPlunderPhaseEnd(): void
+    {
+        $event = $this->theah->createEvent(Events::PlunderPhaseEnd);
         $this->theah->queueEvent($event);
 
         $this->gamestate->nextState();

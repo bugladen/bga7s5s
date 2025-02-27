@@ -29,8 +29,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTakeReknownForControlledLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlunderPhaseBegin;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlunderPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
@@ -255,8 +258,26 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
-            case $event instanceof EventReknownAddedToLocation:
+            case $event instanceof EventPlayerGainsReknown:
+                $handler = function (Theah $theah, EventPlayerGainsReknown $event)
+                {
+                    $playerId = $event->playerId;
+                    $db = $theah->getDBObject();
+                    $reknown = $db->getPlayerReknown($playerId);
+                    $reknown += $event->amount;
+                    $db->setPlayerReknown($playerId, $reknown);
 
+                    // Notify players that the player has gained reknown
+                    $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} gains ${amount} reknown.'), [
+                        "player_id" => $event->playerId,
+                        "player_name" => $this->game->getPlayerNameById($playerId),
+                        "amount" => $event->amount,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventReknownAddedToLocation:
                 //Update the reknown for the location in the database
                 $reknown = $this->game->getReknownForLocation($event->location) + $event->amount;
                 $this->game->setReknownForLocation($event->location, $reknown);
@@ -615,13 +636,35 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
-                case $event instanceof EventPlunderPhaseBegin:
+            case $event instanceof EventPlunderPhaseBegin:
                 $handler = function ($theah, EventPlunderPhaseBegin $event)
                 {
                     $theah->game->notifyAllPlayers("plunderPhaseBegin", clienttranslate('BEGINNING OF PLUNDER PHASE.'), []);
                 };
                 $handler($this, $event);
                 break;
-            }
+
+            case $event instanceof EventPlayerTakeReknownForControlledLocation:
+                $handler = function ($theah, EventPlayerTakeReknownForControlledLocation $event)
+                {
+                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} controls ${location_name} and will receive ${reknown} Reknown.'), [
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "location_name" => $event->location,
+                        "reknown" => $event->reknown,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventPlunderPhaseEnd:
+                $handler = function ($theah, EventPlunderPhaseEnd $event)
+                {
+                    $theah->game->notifyAllPlayers("plunderPhaseEnd", clienttranslate('END OF PLUNDER PHASE.'), []);
+                };
+                $handler($this, $event);
+                break;
+    
+        }
+
     }
 }

@@ -1224,11 +1224,67 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "endOfEvents" => States::PLUNDER_CHECK_DOMINANCE_VICTORY,
+                "endOfGame" => States::END_GAME
+            ]
+        ],
+    States::PLUNDER_CHECK_DOMINANCE_VICTORY => [
+        "name" => "plunderCheckDominanceVictory",
+        "type" => "game",
+        "action" => "stPlunderCheckDominanceVictory",
+        "transitions" => [
+            "next" => States::PLUNDER_GAIN_REKNOWN,
+            "endOfGame" => States::END_GAME
+        ]
+    ],
+    States::PLUNDER_GAIN_REKNOWN => [
+        "name" => "plunderGainReknown",
+        "type" => "game",
+        "action" => "stPlunderGainReknown",
+        "transitions" => ["" => States::PLUNDER_GAIN_REKNOWN_EVENTS]
+    ],
+        States::PLUNDER_GAIN_REKNOWN_EVENTS => [
+            "name" => "plunderGainReknownEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "endOfEvents" => States::PLUNDER_CHECK_ECONOMIC_VICTORY,
+                "endOfGame" => States::END_GAME]
+        ],
+    States::PLUNDER_CHECK_ECONOMIC_VICTORY => [
+        "name" => "plunderCheckEconomicVictory",
+        "type" => "game",
+        "action" => "stPlunderCheckEconomicVictory",
+        "transitions" => [
+            "next" => States::PLUNDER_CHECK_FIFTH_DAY_VICTORY,
+            "endOfGame" => States::END_GAME
+        ]
+    ],
+    States::PLUNDER_CHECK_FIFTH_DAY_VICTORY => [
+        "name" => "plunderCheckFifthDayVictory",
+        "type" => "game",
+        "action" => "stPlunderCheckFifthDayVictory",
+        "transitions" => [
+            "next" => States::PLUNDER_PHASE_END,
+            "endOfGame" => States::END_GAME
+        ]
+    ],
+    States::PLUNDER_PHASE_END => [
+        "name" => "plunderPhaseEnd",
+        "type" => "game",
+        "action" => "stPlunderPhaseEnd",
+        "transitions" => ["" => States::PLUNDER_PHASE_END_EVENTS]
+    ],
+        States::PLUNDER_PHASE_END_EVENTS => [
+            "name" => "plunderPhaseEndEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
                 "endOfEvents" => States::NEXT_PLAYER,
                 "endOfGame" => States::END_GAME
             ]
         ],
-                        
+                            
     // Final state.
     // Please do not modify (and do not overload action/args methods).
     States::END_GAME => [

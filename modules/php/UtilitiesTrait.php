@@ -10,8 +10,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 
 trait UtilitiesTrait
 {
-    function dbSetAuxScore($player_id, $score) {
-        $this->DbQuery("UPDATE player SET player_score_aux=$score WHERE player_id='$player_id'");
+    function dbGetAuxScore($player_id) 
+    {
+        return $this->getUniqueValueFromDB("SELECT player_score_aux FROM player WHERE player_id = $player_id");
+    }
+    
+    function dbSetAuxScore($player_id, $score) 
+    {
+        $this->DbQuery("UPDATE player SET player_score_aux = $score WHERE player_id = $player_id");
     }
 
     public function getAttachmentsInHand(int $playerId)

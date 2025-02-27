@@ -46,4 +46,9 @@ trait DebugTrait
     {
         $this->setReknownForLocation($location, $amount);
     }
+
+    public function debug_SetDay(int $day)
+    {
+        $this->setGameStateValue("day", $day);
+    }
 }
