@@ -2,11 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
-
 class EventCardAddedToCityDiscardPile extends Event
 {
-    public Card $card;
+    public int $cardId;
     public string $fromLocation;
     public int $playerId;
 
@@ -14,5 +12,7 @@ class EventCardAddedToCityDiscardPile extends Event
     {
         parent::__construct();
         $this->priority = Event::MEDIUM_PRIORITY;
+
+        $this->playerId = 0;
     }
 }

@@ -115,7 +115,7 @@ class _01126 extends Scheme
                     $discard = $event->theah->createEvent(Events::CardAddedToCityDiscardPile);
                     if ($discard instanceof EventCardAddedToCityDiscardPile)
                     {
-                        $discard->card = $card;
+                        $discard->cardId = $card->Id;
                         $discard->fromLocation = $this->chosenLocation;
                         $discard->playerId = $playerId;
                     }

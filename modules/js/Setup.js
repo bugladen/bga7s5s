@@ -251,6 +251,12 @@ return declare('seventhseacityoffivesails.setup', null, {
             });
         }
 
+        if (this.isSpectator)
+        {
+            dojo.addClass('approachDeck-container', 'hidden');
+            dojo.addClass('factionHand-container', 'hidden');
+        }
+
         // Setup game notifications to handle (see "setupNotifications" method below)
         this.setupNotifications();
 

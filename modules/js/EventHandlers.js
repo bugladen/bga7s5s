@@ -34,7 +34,6 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
     onFactionCardClicked: function( control_name, item_id )
     {
-
         const methods = {
 
             'highDramaBeginning_01144_client': () => {
@@ -135,6 +134,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 });
                 $('faction_hand_info').innerHTML = `(${wealth} Wealth worth of cards selected)`;
             },
+
+            'duskPhaseDiscard': () => {
+                if (this.factionHand.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseDiscardCards', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCards', 'disabled');
+                }
+            }
 
         };
 

@@ -18,6 +18,9 @@ onUpdateActionButtons: function( stateName, args )
         'planningPhase': () => {
             this.addActionButton(`actEndPlanningPhase`, _('Confirm Approach Cards'), () => this.onPlanningCardsSelected());
             dojo.addClass('actEndPlanningPhase', 'disabled');
+
+            //Enable the approach deck.  Here because onEnteringState can't be used to multiactive client states
+            this.approachDeck.setSelectionMode(2);
         },
 
         'planningPhaseResolveSchemes_01016': () => {
@@ -399,6 +402,23 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
+
+        'duskPhaseDiscard': () => {
+            this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardsChosenForDiscard());
+            dojo.addClass('actChooseDiscardCards', 'disabled');
+
+            //Code here instead of onEnteringState because multiactive client states are ready at that point
+            dojo.place('factionHand-container', 'city', 'before');
+    
+            const player = this.gamedatas.players[this.player_id];
+            const leader = player.leader;
+            const panache = leader.panache;
+            const count = this.factionHand.count();
+
+            $('faction_hand_info').innerHTML = `(${count - panache} cards to discard)`;
+            this.factionHand.setSelectionMode(2);
+
+        }
     };
 
     if( methods[stateName] )

@@ -357,6 +357,17 @@ class Theah
         return null;
     }
 
+    function getCharactersInPlay(): array
+    {
+        $characters = [];
+        foreach ($this->cards as $card) {
+            if ($card instanceof Character && $card->Location != Game::LOCATION_HAND) {
+                $characters[] = $card;
+            }
+        }
+        return $characters;
+    }   
+
     function getCharactersInPlayByPlayerId($playerId): array
     {
         $characters = [];

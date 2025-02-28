@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
@@ -26,6 +27,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechnique
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseBegin;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
@@ -40,6 +44,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeSentToLocker;
 
 trait EventHub
 {
@@ -57,7 +62,7 @@ trait EventHub
                 $this->game->notifyAllPlayers("approachCharacterPlayed", clienttranslate('${player_name} plays ${character_name} as their Approach Character.'), [
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "character_name" => "<span style='font-weight:bold'>{$event->character->Name}</span>",
+                    "character_name" => "<strong>{$event->character->Name}</strong>",
                     "character" => $event->character->getPropertyArray(),
                 ]);
                 break;
@@ -121,11 +126,16 @@ trait EventHub
                 break;
 
             case $event instanceof EventCardAddedToCityDiscardPile:
-                $this->game->notifyAllPlayers("cardAddedToCityDiscardPile", clienttranslate('${card_name} added to City Discard pile from ${location}.'), [
-                    "card_name" => $event->card->Name,
-                    "cardId" => $event->card->Id,
-                    "location" => $event->fromLocation,
-                ]);
+                $handler = function (Theah $theah, EventCardAddedToCityDiscardPile $event)
+                {
+                    $card = $this->cards[$event->cardId];
+                    $this->game->notifyAllPlayers("cardAddedToCityDiscardPile", clienttranslate('${card_name} added to City Discard pile from ${location}.'), [
+                        "card_name" => $card->Name,
+                        "cardId" => $card->Id,
+                        "location" => $event->fromLocation,
+                    ]);
+                };
+                $handler($this, $event);
                 break;
 
             case $event instanceof EventCardDiscardedFromHand:
@@ -139,15 +149,31 @@ trait EventHub
                 break;
 
             case $event instanceof EventCardEngaged:
-                $card = $this->cards[$event->card->Id];
+                $card = $this->cards[$event->cardId];
                 $card->Engaged = true;
                 $card->IsUpdated = true;
 
                 $this->game->notifyAllPlayers("cardEngaged", clienttranslate('${player_name} Engages ${card_name}.'), [
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "card_name" => "<strong>{$event->card->Name}</strong>",
-                    "cardId" => $event->card->Id,
+                    "card_name" => "<strong>{$card->Name}</strong>",
+                    "cardId" => $card->Id,
                 ]);
+                break;                
+
+            case $event instanceof EventCardEngarded:
+                $handler = function ($theat, EventCardEngarded $event)
+                {
+                    $card = $this->cards[$event->cardId];
+                    $card->Engaged = false;
+                    $card->IsUpdated = true;
+    
+                    $this->game->notifyAllPlayers("cardEngarded", clienttranslate('${player_name} En gardes ${card_name}.'), [
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
+                        "card_name" => "<strong>{$card->Name}</strong>",
+                        "cardId" => $card->Id,
+                    ]);
+                };
+                $handler($this, $event);
                 break;                
 
             case $event instanceof EventCardMoved:
@@ -628,10 +654,26 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventSchemeSentToLocker:
+                $handler = function ($theah, EventSchemeSentToLocker $event)
+                {
+                    $scheme = $theah->cards[$event->schemeId];
+                    $locker = $theah->game->getPlayerLockerName($scheme->ControllerId);
+                    $scheme->Location = $locker;
+
+                    $theah->game->notifyAllPlayers("schemeSentToLocker", clienttranslate('${scheme_name} has been sent to the locker.'), [
+                        "playerId" => $scheme->ControllerId,
+                        "scheme_name" => "<strong>{$scheme->Name}</strong>",
+                        "scheme" => $scheme->getPropertyArray(),
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventHighDramaPhaseEnd:
                 $handler = function ($theah, EventHighDramaPhaseEnd $event)
                 {
-                    $theah->game->notifyAllPlayers("highDramaPhaseEnd", clienttranslate('END OF HIGH DRAMA PHASE.'), []);
+                    $theah->game->notifyAllPlayers("highDramaPhaseEnd", clienttranslate('<strong>END OF HIGH DRAMA PHASE</strong>'), []);
                 };
                 $handler($this, $event);
                 break;
@@ -639,7 +681,7 @@ trait EventHub
             case $event instanceof EventPlunderPhaseBegin:
                 $handler = function ($theah, EventPlunderPhaseBegin $event)
                 {
-                    $theah->game->notifyAllPlayers("plunderPhaseBegin", clienttranslate('BEGINNING OF PLUNDER PHASE.'), []);
+                    $theah->game->notifyAllPlayers("plunderPhaseBegin", clienttranslate('<strong>BEGINNING OF PLUNDER PHASE</strong>'), []);
                 };
                 $handler($this, $event);
                 break;
@@ -659,7 +701,31 @@ trait EventHub
             case $event instanceof EventPlunderPhaseEnd:
                 $handler = function ($theah, EventPlunderPhaseEnd $event)
                 {
-                    $theah->game->notifyAllPlayers("plunderPhaseEnd", clienttranslate('END OF PLUNDER PHASE.'), []);
+                    $theah->game->notifyAllPlayers("plunderPhaseEnd", clienttranslate('<strong>END OF PLUNDER PHASE</strong>'), []);
+                };
+                $handler($this, $event);
+                break;
+    
+            case $event instanceof EventDuskPhaseBegin:
+                $handler = function ($theah, EventDuskPhaseBegin $event)
+                {
+                    $theah->game->notifyAllPlayers("duskPhaseBegin", clienttranslate('<strong>BEGINNING OF DUSK PHASE</strong>'), []);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventDuskPhaseEnd:
+                $handler = function ($theah, EventDuskPhaseEnd $event)
+                {
+                    $theah->game->notifyAllPlayers("duskPhaseEnd", clienttranslate('<strong>END OF DUSK PHASE</strong>'), []);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventDuskEndOfDay:
+                $handler = function ($theah, EventDuskEndOfDay $event)
+                {
+                    $theah->game->notifyAllPlayers("duskEndOfDay", clienttranslate('<strong>END OF DAY</strong>'), []);
                 };
                 $handler($this, $event);
                 break;

@@ -145,7 +145,7 @@ var jstpl_discard_card = `
 `;
 
 var jstpl_location_control_chip = `
-<div id="\${id}-location-control-chip" style="--player-color:#\${player_color}" class="location-controller-player-color"></div>
+<div id="\${id}-location-control-chip" style="--player-color:#\${player_color}" class="location-control-chip location-controller-player-color"></div>
 `;
 
 var jstpl_duel_table = `
@@ -301,7 +301,7 @@ var jstpl_row_combat_card = `
 </div>
 
 <div id="factionHand-container" class="whiteblock hand">
-    <div><span><b>Your Faction Hand</b></span> <span id="faction_hand_info"</span></div>
+    <div><span><b>Your Faction Hand</b></span> <span id="faction_hand_info"></span></div>
     <div id="factionHand">
     </div>
 </div>

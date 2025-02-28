@@ -13,8 +13,6 @@ onEnteringState: function( stateName, args )
 
         'planningPhase': () => {
             $('city-day-phase').innerHTML = _('Planning');
-            //Enable the approach deck
-            this.approachDeck.setSelectionMode(2);
         },
 
         'planningPhaseResolveSchemes_01016': () => {
@@ -762,6 +760,17 @@ onEnteringState: function( stateName, args )
 
         'plunderPhaseBegin': () => {
             $('city-day-phase').innerHTML = _('Plunder');
+        },
+
+        'duskPhaseBegin': () => {
+            $('city-day-phase').innerHTML = _('Dusk');
+        },
+
+        'duskPhaseCleanup': () => {
+            //Remove all control chips from locations
+            dojo.query('.location-control-chip').forEach((element) => {
+                element.remove();
+            });
         },
     };
     

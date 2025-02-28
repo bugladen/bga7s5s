@@ -136,6 +136,17 @@ class States
     const PLUNDER_CHECK_FIFTH_DAY_VICTORY = 74;
     const PLUNDER_PHASE_END = 75;
         const PLUNDER_PHASE_END_EVENTS = 750;
+
+    const DUSK_PHASE_BEGIN = 80;
+        const DUSK_PHASE_BEGIN_EVENTS = 800;
+    const DUSK_PHASE_CLEANUP = 81;
+        const DUSK_PHASE_CLEANUP_EVENTS = 810;
+    const DUSK_PHASE_DISCARD = 82;
+        const DUSK_PHASE_DISCARD_EVENTS = 820;
+    const DUSK_PHASE_END = 83;
+        const DUSK_PHASE_END_EVENTS = 830;
+    const DUSK_END_OF_DAY = 84;
+        const DUSK_END_OF_DAY_EVENTS = 840;
     
     const END_GAME = 99;   
 }

@@ -104,7 +104,7 @@ trait ActionsTrait
         $this->cards->moveCard($scheme, Game::LOCATION_PURGATORY);
         $this->cards->moveCard($character, Game::LOCATION_PURGATORY);
 
-        $this->gamestate->setPlayerNonMultiactive($playerId, 'dayPlanned'); // deactivate player; if none left, transition to 'deckPicked' state
+        $this->gamestate->setPlayerNonMultiactive($playerId, 'dayPlanned'); // deactivate player; if none left, transition to 'dayPlanned' state
     }
 
     public function actCityLocationsForReknownSelected(string $locations)
@@ -438,7 +438,7 @@ trait ActionsTrait
                 $discard = $this->theah->createEvent(Events::CardAddedToCityDiscardPile);
                 if ($discard instanceof EventCardAddedToCityDiscardPile)
                 {
-                    $discard->card = $card;
+                    $discard->cardId = $card->Id;
                     $discard->fromLocation = $location;
                     $discard->playerId = $playerId;
                 }
@@ -869,7 +869,7 @@ trait ActionsTrait
             
             $removeEvent = $this->theah->createEvent(Events::CardEngaged);
             if ($removeEvent instanceof EventCardEngaged) {
-                $removeEvent->card = $performer;
+                $removeEvent->cardId = $performer->Id;
                 $removeEvent->playerId = $playerId;
             }
             $this->theah->eventCheck($removeEvent);
@@ -1100,7 +1100,7 @@ trait ActionsTrait
         $engageEvent = $this->theah->createEvent(Events::CardEngaged);
         if ($engageEvent instanceof EventCardEngaged)
         {
-            $engageEvent->card = $performer;
+            $engageEvent->cardId = $performer->Id;
             $engageEvent->playerId = $activePlayerId;
         }
         $this->theah->eventCheck($engageEvent);
@@ -1268,7 +1268,7 @@ trait ActionsTrait
         $engageEvent = $this->theah->createEvent(Events::CardEngaged);
         if ($engageEvent instanceof EventCardEngaged)
         {
-            $engageEvent->card = $character;
+            $engageEvent->cardId = $character->Id;
             $engageEvent->playerId = $playerId;
         }    
         $this->theah->eventCheck($engageEvent);
@@ -1582,6 +1582,7 @@ trait ActionsTrait
 
         $this->gamestate->nextState();
     }
+    
 
     public function actDuelDoneRound()
     {
@@ -1612,5 +1613,30 @@ trait ActionsTrait
         $this->theah->queueEvent($event);
         
         $this->gamestate->nextState("doneWithRound");
-   }
+    }
+
+    public function actDuskPhaseCardsDiscarded(string $ids)
+    {
+        $playerId = $this->getCurrentPlayerId();
+        $sql = "SELECT leader_card_id as leaderId FROM player WHERE player_id = $playerId";
+        $leaderId = $this->getUniqueValueFromDB($sql);
+        $leader = $this->getCardObjectFromDb($leaderId);
+
+        //Get the cards in hand
+        $cards = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+        $handSize = count($cards);
+
+        $expectedDiscard = $handSize - $leader->Panache;
+
+        $cardIds = json_decode($ids, true);
+        if ($expectedDiscard != count($cardIds))
+            throw new \BgaUserException("You must discard exactly {$expectedDiscard} cards.");
+        
+        foreach ($cardIds as $cardId) 
+        {
+            $this->cards->moveCard($cardId, Game::LOCATION_PURGATORY);
+        }
+        
+        $this->gamestate->setPlayerNonMultiactive($playerId, 'cardsDiscarded'); // deactivate player; if none left, transition to 'dayPlanned' state
+    }
 }

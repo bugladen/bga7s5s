@@ -253,6 +253,19 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
+    onCardsChosenForDiscard: function()
+    {
+        let items = this.factionHand.getSelectedItems();
+        items = items.map((item) => item.id);
+    
+        this.bgaPerformAction('actDuskPhaseCardsDiscarded', { 
+            'ids': JSON.stringify(items),
+        }).catch(() =>  {
+        }).success(() =>  {
+            if (success) items.forEach((item) => this.factionHand.removeFromStockById(item));
+        });        
+    },
+
     onConfirmPass: function()
     {
         this.confirmationDialog(_("Are you sure you want to pass?"),

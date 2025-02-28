@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
@@ -10,8 +11,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
@@ -23,8 +27,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTakeReknownForControlledLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeSentToLocker;
 
 trait StatesTrait
 {
@@ -48,7 +54,7 @@ trait StatesTrait
         $this->setGameStateValue("day", $day);
 
         //Notify players that it is Dawn, New Day
-        $this->notifyAllPlayers("newDay", clienttranslate('It is the start of <span style="font-weight:bold">DAY #${day}</span> in the city of Theah.'), [
+        $this->notifyAllPlayers("newDay", clienttranslate('It is the start of <strong>DAY #${day}</strong> in the city of Theah.'), [
             "day" => $day,
         ]);
 
@@ -66,7 +72,7 @@ trait StatesTrait
         $this->setGameStateValue(Game::TURN_PHASE, Game::DAWN);
 
         //Notify players that it is dawn beginning
-        $this->notifyAllPlayers("dawnBeginning", clienttranslate('<span style="font-weight:bold">DAWN BEGINNING PHASE</span>.'), []);
+        $this->notifyAllPlayers("dawnBeginning", clienttranslate('<strong>DAWN BEGINNING PHASE</strong>'), []);
 
         //Create the event
         $event = $this->theah->createEvent(Events::PhaseDawnBeginning);
@@ -128,7 +134,7 @@ trait StatesTrait
 
     public function stDawnEnding() {
         //Notify players that it is dawn beginning
-        $this->notifyAllPlayers("dawnBeginning", clienttranslate('<span style="font-weight:bold">DAWN ENDING PHASE</span>.'), []);
+        $this->notifyAllPlayers("dawnBeginning", clienttranslate('<strong>DAWN ENDING PHASE</strong>'), []);
 
         //Create the event
         $event = $this->theah->createEvent(Events::PhaseDawnEnding);
@@ -142,7 +148,7 @@ trait StatesTrait
         $this->setGameStateValue(Game::TURN_PHASE, Game::PLANNING);
 
         //Notify players that it is planning phase
-        $this->notifyAllPlayers("planningPhase", clienttranslate('<span style="font-weight:bold">PLANNING PHASE</span>.'), []);
+        $this->notifyAllPlayers("planningPhase", clienttranslate('<strong>PLANNING PHASE</strong>'), []);
 
         //Create the Planning phase event
         $event = $this->theah->createEvent(Events::PhasePlanningBeginning);
@@ -412,7 +418,7 @@ trait StatesTrait
     public function stPlanningPhaseEnd() 
     {
         //Notify players that it is planning phase end
-        $this->notifyAllPlayers("message", clienttranslate('<span style="font-weight:bold">PLANNING PHASE END</span>.'), []);
+        $this->notifyAllPlayers("message", clienttranslate('<strong>PLANNING PHASE END</strong>.'), []);
 
         //Create the Planning phase event
         $event = $this->theah->createEvent(Events::PhasePlanningEnd);
@@ -501,7 +507,7 @@ trait StatesTrait
         $engageEvent = $this->theah->createEvent(Events::CardEngaged);
         if ($engageEvent instanceof EventCardEngaged)
         {
-            $engageEvent->card = $performer;
+            $engageEvent->cardId = $performer->Id;
             $engageEvent->playerId = $playerId;
         }
         $this->theah->eventCheck($engageEvent);
@@ -1135,7 +1141,15 @@ trait StatesTrait
                 $event->amount = $location->Reknown;
             }
             $this->theah->queueEvent($event);
-        }
+
+            $event = $this->theah->createEvent(Events::ReknownRemovedFromLocation);
+            if ($event instanceof EventReknownRemovedFromLocation) {
+                $event->location = $location->Name;
+                $event->amount = $location->Reknown;
+                $event->source = "Location Claimed";
+            }
+            $this->theah->queueEvent($event);
+    }
 
         $event = $this->theah->createEvent(Events::PlunderPhaseAdditionalReknownEvent);
         $this->theah->queueEvent($event);
@@ -1418,6 +1432,172 @@ trait StatesTrait
     public function stPlunderPhaseEnd(): void
     {
         $event = $this->theah->createEvent(Events::PlunderPhaseEnd);
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState();
+    }
+
+    public function stDuskPhaseBegin(): void
+    {
+        //Set the phase
+        $this->setGameStateValue(Game::TURN_PHASE, Game::DUSK);
+
+        $event = $this->theah->createEvent(Events::DuskPhaseBegin);
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState();
+    }
+
+    public function stDuskPhaseCleanup(): void
+    {
+        $this->theah->buildCity();
+
+        //All locations reset
+        $locations = $this->theah->getCityLocations();        
+        foreach ($locations as $location)
+        {
+            $this->setControllerForLocation($location->Name, 0);
+            $location->Controller = 0;
+        }
+
+        //Get characters in play
+        $characters = $this->theah->getCharactersInPlay();
+
+        //Only use characters that are in the city
+        $characters = array_filter($characters, fn($character) => $this->theah->cardInCity($character));
+
+        //Only use characters that are controlled (i.e. not mercenaries)
+        $characters = array_filter($characters, fn($character) => $character->ControllerId != 0);
+
+        foreach ($characters as $character)
+        {
+            $movedHome = $this->theah->createEvent(Events::CardMoved);
+            if ($movedHome instanceof EventCardMoved)
+            {
+                $movedHome->card = $character;
+                $movedHome->fromLocation = $character->Location;
+                $movedHome->toLocation = Game::LOCATION_PLAYER_HOME;
+                $movedHome->playerId = $character->ControllerId;
+                $movedHome->Engage = false;
+            }
+            $this->theah->queueEvent($movedHome);
+
+            if ($character->Engaged)
+            {
+                $engardeEvent = $this->theah->createEvent(Events::CardEngarded);
+                if ($engardeEvent instanceof EventCardEngarded)
+                {
+                    $engardeEvent->cardId = $character->Id;
+                    $engardeEvent->playerId = $character->ControllerId;
+                }
+                $this->theah->queueEvent($engardeEvent);                    
+            }
+        }
+
+        //Discard all city cards in the city
+        foreach ($locations as $location)
+        {
+            $cards = $this->theah->getCardObjectsAtLocation($location->Name);
+            foreach ($cards as $card)
+            {
+                if ($card instanceof ICityDeckCard)
+                {
+                    $this->cards->moveCard($card->Id, Game::LOCATION_CITY_DISCARD);
+    
+                    $discard = $this->theah->createEvent(Events::CardAddedToCityDiscardPile);
+                    if ($discard instanceof EventCardAddedToCityDiscardPile)
+                    {
+                        $discard->cardId = $card->Id;
+                        $discard->fromLocation = $location->Name;
+                    }    
+                    $this->theah->queueEvent($discard);
+                }
+            }
+        }
+
+        //Send all schemes to the locker
+        $players = $this->loadPlayersBasicInfos();
+        foreach ($players as $playerId => $player)
+        {
+            $sql = "SELECT selected_scheme_id as id FROM player where player_id = $playerId";
+            $schemeId = $this->getUniqueValueFromDB($sql);
+
+            $sql = "UPDATE player SET selected_scheme_id = NULL, selected_character_id = NULL WHERE player_id = $playerId";
+            $this->DbQuery($sql);
+
+            $locker = $this->getPlayerLockerName($playerId);
+            $this->cards->moveCard($schemeId, $locker);
+
+            $event = $this->theah->createEvent(Events::SchemeSentToLocker);
+            if ($event instanceof EventSchemeSentToLocker)
+            {
+                $event->schemeId = $schemeId;
+            }
+            $this->theah->queueEvent($event);
+
+        }
+
+        $this->gamestate->nextState();
+    }
+
+    public function stDuskPhaseDiscard(): void
+    {
+        $playersToDiscard = [];
+        $sql = "SELECT player_id, leader_card_id as leaderId FROM player";
+        $players = $this->getCollectionFromDB($sql);
+        foreach ($players as $playerId => $player)
+        {
+            $leader = $this->getCardObjectFromDb($player['leaderId']);
+            $hand = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+            if (count($hand) > $leader->Panache)
+            {
+                $playersToDiscard[] = $playerId;
+            }
+        }
+
+        if (count($playersToDiscard) == 0)
+            $this->notifyAllPlayers("message", clienttranslate('No players need to discard down to their Leader\'s Panache value.'), []);
+        else
+            $this->notifyAllPlayers("message", clienttranslate('The following players need to discard down to their Leader\'s Panache value: ${players}.'), [
+                "players" => implode(", ", array_map(fn($playerId) => $this->getPlayerNameById($playerId), $playersToDiscard))
+            ]);
+
+        $this->gamestate->setPlayersMultiactive($playersToDiscard, "cardsDiscarded");
+    }
+
+    public function stDuskPhaseDiscardEvents(): void
+    {
+        //Get all the cards in purgatory and move them to the discard pile
+        $cards = $this->cards->getCardsInLocation(Game::LOCATION_PURGATORY);
+        foreach ($cards as $purgatoryCard)
+        {
+            $card = $this->getCardObjectFromDb($purgatoryCard['id']);
+            $playerId = $card->ControllerId;
+            $this->cards->moveCard($purgatoryCard['id'], $this->getPlayerDiscardDeckName($playerId));
+
+            $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
+            if ($event instanceof EventCardDiscardedFromHand) {
+                $event->playerId = $playerId;
+                $event->card = $card;
+            }
+            $this->theah->queueEvent($event);
+        }
+
+        $this->theah->buildCity();
+        $this->theah->runEvents();
+    }
+
+    public function stDuskPhaseEnd(): void
+    {
+        $event = $this->theah->createEvent(Events::DuskPhaseEnd);
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState();
+    }
+
+    public function stDuskEndOfDay(): void
+    {
+        $event = $this->theah->createEvent(Events::DuskEndOfDay);
         $this->theah->queueEvent($event);
 
         $this->gamestate->nextState();

@@ -63,18 +63,25 @@ class Events
     const DuelActionsDone = 'EventDuelActionsDone';
     const DuelEnd = 'EventDuelEnd';
 
-    const CharacterWounded = 'EventCharacterWounded';
-    const CharacterDestroyed = 'EventCharacterDestroyed';
-
     //Plunder Phase events
     const PlunderPhaseBegin = 'EventPlunderPhaseBegin';
     const PlunderPhaseEnd = 'EventPlunderPhaseEnd';
     const PlayerTakeReknownForControlledLocation = 'EventPlayerTakeReknownForControlledLocation';
     const PlunderPhaseAdditionalReknownEvent = 'EventPlunderPhaseAdditionalReknownEvent';
     
+    //Card Manipulation events
     const CardMoved = 'EventCardMoved';
     const CardDrawn = 'EventCardDrawn';
     const CardEngaged = 'EventCardEngaged';
+    const CardEngarded = 'EventCardEngarded';
+    const CharacterWounded = 'EventCharacterWounded';
+    const CharacterDestroyed = 'EventCharacterDestroyed';
+    const SchemeSentToLocker = 'EventSchemeSentToLocker';
+
+    //Dusk Phase events
+    const DuskPhaseBegin = 'EventDuskPhaseBegin';
+    const DuskPhaseEnd = 'EventDuskPhaseEnd';
+    const DuskEndOfDay = 'EventDuskEndOfDay';
     
     //Game Flow events
     const Transition = 'EventTransition';

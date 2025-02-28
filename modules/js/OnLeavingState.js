@@ -354,7 +354,13 @@ onLeavingState: function( stateName )
             });
             this.factionHand.setSelectionMode(0);
             $('faction_hand_info').innerHTML = '';
-        }
+        },
+
+        'duskPhaseDiscard': () => {
+            this.factionHand.setSelectionMode(0);
+            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+            $('faction_hand_info').innerHTML = '';
+        },
 
     };
 

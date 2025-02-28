@@ -1280,11 +1280,92 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
-                "endOfEvents" => States::NEXT_PLAYER,
+                "endOfEvents" => States::DUSK_PHASE_BEGIN,
                 "endOfGame" => States::END_GAME
             ]
         ],
-                            
+    States::DUSK_PHASE_BEGIN => [
+        "name" => "duskPhaseBegin",
+        "type" => "game",
+        "action" => "stDuskPhaseBegin",
+        "transitions" => ["" => States::DUSK_PHASE_BEGIN_EVENTS]
+    ],
+        States::DUSK_PHASE_BEGIN_EVENTS => [
+            "name" => "duskPhaseBeginEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "endOfEvents" => States::DUSK_PHASE_CLEANUP,
+                "endOfGame" => States::END_GAME
+            ]
+        ],
+    States::DUSK_PHASE_CLEANUP => [
+        "name" => "duskPhaseCleanup",
+        "type" => "game",
+        "action" => "stDuskPhaseCleanup",
+        "transitions" => ["" => States::DUSK_PHASE_CLEANUP_EVENTS]
+    ],
+        States::DUSK_PHASE_CLEANUP_EVENTS => [
+                "name" => "duskPhaseCleanupEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "endOfEvents" => States::DUSK_PHASE_DISCARD,
+                    "endOfGame" => States::END_GAME
+                ]
+            ],
+    States::DUSK_PHASE_DISCARD => [
+        "name" => "duskPhaseDiscard",
+        "description" => clienttranslate('Your opponent(s) must discard cards down to their Leader Panache value.'),
+        "descriptionmyturn" => clienttranslate('${you} must discard cards down to your unmodified Leader Panache value:'),
+        "type" => "multipleactiveplayer",
+        "args" => "argsEmpty",
+        "action" => "stDuskPhaseDiscard",
+        "possibleactions" => [
+            "actDuskPhaseCardsDiscarded", 
+        ],
+        "transitions" => ["cardsDiscarded" => States::DUSK_PHASE_DISCARD_EVENTS]
+    ],
+        States::DUSK_PHASE_DISCARD_EVENTS => [
+            "name" => "duskPhaseDiscardEvents",
+            "type" => "game",
+            "action" => "stDuskPhaseDiscardEvents",
+            "transitions" => [
+                "endOfEvents" => States::DUSK_PHASE_END,
+                "endOfGame" => States::END_GAME
+            ]
+        ],
+    States::DUSK_PHASE_END => [
+        "name" => "duskPhaseEnd",
+        "type" => "game",
+        "action" => "stDuskPhaseEnd",
+        "transitions" => ["" => States::DUSK_PHASE_END_EVENTS]
+    ],
+        States::DUSK_PHASE_END_EVENTS => [
+            "name" => "duskPhaseEndEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "endOfEvents" => States::DUSK_END_OF_DAY,
+                "endOfGame" => States::END_GAME
+            ]
+        ],
+    States::DUSK_END_OF_DAY => [
+        "name" => "duskEndOfDay",
+        "type" => "game",
+        "action" => "stDuskEndOfDay",
+        "transitions" => ["" => States::DUSK_END_OF_DAY_EVENTS]
+    ],
+        States::DUSK_END_OF_DAY_EVENTS => [
+            "name" => "duskEndOfDayEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "endOfEvents" => States::DAWN_NEW_DAY,
+                "endOfGame" => States::END_GAME
+            ]
+        ],
+                                        
     // Final state.
     // Please do not modify (and do not overload action/args methods).
     States::END_GAME => [
