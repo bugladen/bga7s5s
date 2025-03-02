@@ -28,7 +28,7 @@ trait DebugTrait
         ]);
     }
     
-    public function debug_IncludeCityCard($className)
+    public function debug_IncludeCityCard(string $className)
     {
         $card = $this->instantiateCard($className);
         if ($card) {
@@ -36,7 +36,7 @@ trait DebugTrait
         }
     }
 
-    public function debug_SetCardInPlayerDiscardPile($playerId, $className)
+    public function debug_SetCardInPlayerDiscardPile(int $playerId, string $className)
     {
         $card = $this->instantiateCard($className);
         if ($card) {
@@ -48,7 +48,7 @@ trait DebugTrait
         }
     }
 
-    public function debug_SetCardinCityDiscardPile($className)
+    public function debug_SetCardinCityDiscardPile(string $className)
     {
         $card = $this->instantiateCard($className);
         if ($card) {
@@ -70,7 +70,7 @@ trait DebugTrait
         $this->DBQuery("UPDATE player SET player_score = $score WHERE player_id = $playerId");
     }
 
-    public function debug_SetRenownAtLocation($location, $amount)
+    public function debug_SetRenownAtLocation(string $location, int $amount)
     {
         $this->setReknownForLocation($location, $amount);
     }

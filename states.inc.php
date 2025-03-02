@@ -1295,6 +1295,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "01177" => States::DUSK_PHASE_BEGIN_01177,
                 "endOfEvents" => States::DUSK_PHASE_CLEANUP,
                 "endOfGame" => States::END_GAME
             ]
@@ -1377,3 +1378,5 @@ $machinestates = [
     ],
 
 ];
+
+include("states.7s5s.php");

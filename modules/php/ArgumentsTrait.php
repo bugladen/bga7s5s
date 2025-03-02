@@ -441,4 +441,19 @@ trait ArgumentsTrait
         ];
     }
 
+    public function argsFromCard(): array
+    {
+        $this->theah->buildCity();
+
+        switch ($this->gamestate->state_id()) 
+        {
+            case States::DUSK_PHASE_BEGIN_01177:
+                $id = $this->getCardIdByType('01177');
+                break;
+        }
+
+        $card = $this->theah->getCardById($id);
+        return $card->getGameStateArgs($this);
+    }
+
 }

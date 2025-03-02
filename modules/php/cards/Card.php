@@ -2,6 +2,8 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+
 abstract class Card
 {
     public int $Id; 
@@ -50,6 +52,10 @@ abstract class Card
         }
     }
 
+    public function getGameStateArgs(Game $game): array {return []; }
+
+    public function gameActionWithIds(Game $game, array $ids): void { }
+
     public function eventCheck($event)
     {
         if ($this instanceof IHasTechniques) {
@@ -82,6 +88,11 @@ abstract class Card
     {
         $this->Conditions[] = $condition;
         $this->IsUpdated = true;
+    }
+
+    public function hasCondition($condition)
+    {
+        return in_array($condition, $this->Conditions);
     }
 
     public function clearConditions()

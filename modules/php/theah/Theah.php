@@ -308,6 +308,17 @@ class Theah
         return null;
     }
 
+    public function getCardByType($type) : ?Card
+    {
+        foreach ($this->cards as $card) {
+            if ($card instanceof $type) {
+                return $card;
+            }
+        }
+
+        return null;
+    }
+
     public function getCityLocation(string $name): CityLocation
     {
         return $this->cityLocations[$name];

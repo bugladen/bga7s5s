@@ -14,7 +14,7 @@ trait UtilitiesTrait
     {
         return $this->getUniqueValueFromDB("SELECT player_score_aux FROM player WHERE player_id = $player_id");
     }
-    
+
     function dbSetAuxScore($player_id, $score) 
     {
         $this->DbQuery("UPDATE player SET player_score_aux = $score WHERE player_id = $player_id");
@@ -51,6 +51,12 @@ trait UtilitiesTrait
         $data = $this->getObjectFromDB("SELECT card_serialized FROM card WHERE card_id = $cardId");
         $card = unserialize($data['card_serialized']);
         return $card;
+    }
+
+    public function getCardIdByType($type) : ?int
+    {
+        $id = $this->getUniqueValueFromDB("SELECT card_id FROM card WHERE card_type = '$type'");
+        return $id;
     }
 
     public function getDuelRows() : Array

@@ -762,7 +762,7 @@ trait ActionsTrait
         $movedHome = $this->theah->createEvent(Events::CardMoved);
         if ($movedHome instanceof EventCardMoved)
         {
-            $movedHome->card = $card;
+            $movedHome->cardId = $card->Id;
             $movedHome->fromLocation = $card->Location;
             $movedHome->toLocation = $location;
             $movedHome->playerId = $card->ControllerId;
@@ -1639,4 +1639,21 @@ trait ActionsTrait
         
         $this->gamestate->setPlayerNonMultiactive($playerId, 'cardsDiscarded'); // deactivate player; if none left, transition to 'dayPlanned' state
     }
+
+    public function actGameActionOnCardWithIds(string $ids)
+    {
+        $this->theah->buildCity();
+        $ids = json_decode($ids, true);
+
+        switch ($this->gamestate->state_id())
+        {
+            case States::DUSK_PHASE_BEGIN_01177: 
+                $id = $this->getCardIdByType('01177');
+                break;
+
+        }
+        $card = $this->theah->getCardById($id);
+        $card->gameActionWithIds($this, $ids);
+}
+
 }

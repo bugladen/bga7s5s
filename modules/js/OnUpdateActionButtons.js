@@ -403,6 +403,12 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
+        'duskPhaseBegin01177': () => {
+            this.addActionButton(`actChooseCardSelected`, _('Confirm Character'), () => this.onChooseInPlayCardConfirmed());
+            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            dojo.addClass('actChooseCardSelected', 'disabled');
+        },
+
         'duskPhaseDiscard': () => {
             this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardsChosenForDiscard());
             dojo.addClass('actChooseDiscardCards', 'disabled');

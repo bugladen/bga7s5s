@@ -131,7 +131,7 @@ class _01126 extends Scheme
                     $movedHome = $event->theah->createEvent(Events::CardMoved);
                     if ($movedHome instanceof EventCardMoved)
                     {
-                        $movedHome->card = $card;
+                        $movedHome->cardId = $card->Id;
                         $movedHome->fromLocation = $this->chosenLocation;
                         $movedHome->toLocation = Game::LOCATION_PLAYER_HOME;
                         $movedHome->playerId = $this->ControllerId;

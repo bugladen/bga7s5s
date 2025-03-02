@@ -177,7 +177,7 @@ trait EventHub
                 break;                
 
             case $event instanceof EventCardMoved:
-                $card = $this->cards[$event->card->Id];
+                $card = $this->cards[$event->cardId];
                 $card->Location = $event->toLocation;
                 if ($card instanceof Character) {
                     $card->Engaged = $event->Engage;
@@ -191,8 +191,8 @@ trait EventHub
                 $card->IsUpdated = true;
 
                 $this->game->notifyAllPlayers("cardMoved", clienttranslate('${card_name} moved from ${fromLocation} to ${toLocation}.'), [
-                    "card_name" => "<strong>{$event->card->Name}</strong>",
-                    "cardId" => $event->card->Id,
+                    "card_name" => "<strong>{$card->Name}</strong>",
+                    "cardId" => $card->Id,
                     "fromLocation" => $event->fromLocation,
                     "toLocation" => $event->toLocation,
                     "engage" => $event->Engage,

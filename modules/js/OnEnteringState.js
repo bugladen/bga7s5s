@@ -766,6 +766,19 @@ onEnteringState: function( stateName, args )
             $('city-day-phase').innerHTML = _('Dusk');
         },
 
+        'duskPhaseBegin01177' : () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCardsSelectable = 1;
+                args.args.ids.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId()) {
+                        const image = $(`${card.divId}_image`);
+                        this.makeCardSelectable(image);
+                    }
+                });
+            }
+        },
+
         'duskPhaseCleanup': () => {
             //Remove all control chips from locations
             dojo.query('.location-control-chip').forEach((element) => {

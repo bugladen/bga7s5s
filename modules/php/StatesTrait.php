@@ -1474,7 +1474,7 @@ trait StatesTrait
             $movedHome = $this->theah->createEvent(Events::CardMoved);
             if ($movedHome instanceof EventCardMoved)
             {
-                $movedHome->card = $character;
+                $movedHome->cardId = $character->Id;
                 $movedHome->fromLocation = $character->Location;
                 $movedHome->toLocation = Game::LOCATION_PLAYER_HOME;
                 $movedHome->playerId = $character->ControllerId;
