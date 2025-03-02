@@ -363,22 +363,27 @@ trait EventHub
             case $event instanceof EventChallengeIssued:
                 $handler = function ($theah, EventChallengeIssued $event)
                 {
-                    $challenger = $theah->cards[$event->challenger->Id];
+                    $challenger = $theah->cards[$event->challengerId];
                     $challenger->addCondition(GAME::DUEL_CHALLENGER);
                     
-                    $defender = $theah->cards[$event->defender->Id];
+                    $defender = $theah->cards[$event->defenderId];
                     $defender->addCondition(GAME::DUEL_DEFENDER);
                     
                     $message = '${player_name} has chosen to have ${challenger_name} Challenge ${defender_name}. ';
-                    if ($event->activatedTechnique) $message .= '${player_name} will activate Technique ${technique_name}. for the Challenge.';
-                    
+                    $technique = null;
+                    if ($event->activatedTechniqueId != 0)
+                    {
+                        $message .= '${player_name} will activate Technique ${technique_name}. for the Challenge.';
+                        $technique = $theah->getTechniqueById($event->activatedTechniqueId);
+                    } 
+                                            
                     $theah->game->notifyAllPlayers("challengeIssued", clienttranslate($message), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "challenger_name" => "<strong>{$event->challenger->Name}</strong>",
-                        "defender_name" => "<strong>{$event->defender->Name}</strong>",
-                        "technique_name" => "<strong>{$event->activatedTechnique?->Name}</strong>",
-                        "challengerId" => $event->challenger->Id,
-                        "defenderId" => $event->defender->Id,
+                        "challenger_name" => "<strong>{$challenger->Name}</strong>",
+                        "defender_name" => "<strong>{$defender->Name}</strong>",
+                        "technique_name" => "<strong>{$technique?->Name}</strong>",
+                        "challengerId" => $challenger->Id,
+                        "defenderId" => $defender->Id,
                     ]);
                 };
                 $handler($this, $event);

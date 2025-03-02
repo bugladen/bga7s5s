@@ -61,7 +61,7 @@ abstract class CardAbility
         return $this->Used == false;
     }
     
-    public function getOwningCharacter(Theah $theah): ?Character
+    public function getOwningCard(Theah $theah): ?Card
     {
         if ($this->OwnerId == null) {
             return null;

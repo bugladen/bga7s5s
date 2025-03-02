@@ -3,9 +3,14 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 
 class _01178 extends CityCharacter  
 {
+    public bool $AbilityUsed;
+
     public function __construct()
     {
         parent::__construct();
@@ -34,5 +39,40 @@ class _01178 extends CityCharacter
             'Duelist',
             'Vodacce',
         ];
+
+        $this->AbilityUsed = false;
+    }
+
+    public function canChallenge(): bool
+    {
+        return ! $this->Engaged || ! $this->AbilityUsed;
+    }
+
+    public function canIntervene(): bool
+    {
+        return ! $this->Engaged || ! $this->AbilityUsed;
+    }
+
+    public function handleEvent($event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventCharacterIntervened && $event->newTargetId == $this->Id && $this->Engaged)
+        {
+            $this->AbilityUsed = true;
+            $this->IsUpdated = true;
+        }
+
+        if ($event instanceof EventChallengeIssued && $event->challengerId == $this->Id && $this->Engaged)
+        {
+            $this->AbilityUsed = true;
+            $this->IsUpdated = true;
+        }
+
+        if ($event instanceof EventDuskEndOfDay)
+        {
+            $this->AbilityUsed = false;
+            $this->IsUpdated = true;
+        }
     }
 }

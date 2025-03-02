@@ -33,6 +33,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['reknownAddedToLocation', 500],
             ['reknownRemovedFromLocation', 500],
             ['factionResolveCardDraw', 1000],
+            ['factionResolveCardDrawPublic', 500],
             ['cardRemovedFromCityDiscardPile', 500],
             ['cardRemovedFromPlayerDiscardPile', 500],
             ['yevgeniAdversaryChosen', 500],
@@ -179,6 +180,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
         });
 
         $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
+    },
+
+    notif_factionResolveCardDrawPublic: function( notif )
+    {
+        debug( 'notif_factionResolveCardDrawPublic' );
+        debug( notif );
+
+        $(`${notif.args.playerId}-score-hand-count`).innerHTML = notif.args.count;
     },
 
     notif_cardAddedToHand: function( notif )

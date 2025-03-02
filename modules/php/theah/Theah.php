@@ -379,6 +379,7 @@ class Theah
         return $characters;
     }   
 
+    
     function getCharactersInPlayByPlayerId($playerId): array
     {
         $characters = [];
@@ -588,8 +589,8 @@ class Theah
         $charactersThatCanChallenge = [];
         foreach ($characters as $character) 
         {
-            if (!$this->cardInCity($character)) continue;
-            if ($character->Engaged) continue;
+            if ( ! $this->cardInCity($character)) continue;
+            if ( ! $character->canChallenge()) continue;
 
             $otherCharacters = $this->getCharactersAtLocation($character->Location);
             $otherCharacters = array_filter($otherCharacters, fn($otherCharacter) => $otherCharacter->ControllerId && $otherCharacter->ControllerId != $playerId );

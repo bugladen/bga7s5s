@@ -57,6 +57,16 @@ abstract class Character extends Card
         $this->ModifiedInfluence = $this->Influence;
     }
 
+    public function canChallenge(): bool
+    {
+        return ! $this->Engaged;
+    }
+
+    public function canIntervene() : bool
+    {
+        return ! $this->Engaged;
+    }
+
     public function hasWhenRevealedEffect() : bool
     {
         return false;

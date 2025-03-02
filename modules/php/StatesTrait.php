@@ -388,7 +388,8 @@ trait StatesTrait
         $this->notifyAllPlayers("message", clienttranslate('All Players DRAW cards.'), []);
 
         $players = $this->loadPlayersBasicInfos();
-        foreach ( $players as $playerId => $player ) {
+        foreach ( $players as $playerId => $player ) 
+        {
             //Get the player's leader
             $leader = $this->theah->getLeaderByPlayerId($playerId);
             //Get the modified panache value for the leader
@@ -409,8 +410,15 @@ trait StatesTrait
                     "panache" => $panache,
                     "card_list" => $cardList,
                     "cards" => $cards
-                ]);
-    }
+            ]);
+
+            $this->notifyAllPlayers("factionResolveCardDrawPublic", clienttranslate('${player_name} drew ${count} card(s).'), [
+                'player_name' => $player['player_name'],
+                'playerId' => $playerId,
+                'count' => $panache
+            ]);
+
+        }
 
         $this->gamestate->nextState("");
     }
@@ -494,15 +502,9 @@ trait StatesTrait
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
 
+        $techniqueId = "";
         if ($this->globals->has(GAME::CHOSEN_TECHNIQUE))
-        {
             $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE);
-            $technique = $this->theah->getTechniqueById($techniqueId);
-        }
-        else
-        {
-            $technique = null;
-        }
 
         $engageEvent = $this->theah->createEvent(Events::CardEngaged);
         if ($engageEvent instanceof EventCardEngaged)
@@ -517,9 +519,9 @@ trait StatesTrait
         if ($challengeEvent instanceof EventChallengeIssued)
         {
             $challengeEvent->playerId = $playerId;
-            $challengeEvent->challenger = $performer;
-            $challengeEvent->defender = $target;
-            $challengeEvent->activatedTechnique = $technique;
+            $challengeEvent->challengerId = $performer->Id;
+            $challengeEvent->defenderId = $target->Id;
+            $challengeEvent->activatedTechniqueId = $techniqueId;
         }
 
         try 
@@ -1500,7 +1502,7 @@ trait StatesTrait
             $cards = $this->theah->getCardObjectsAtLocation($location->Name);
             foreach ($cards as $card)
             {
-                if ($card instanceof ICityDeckCard)
+                if ($card instanceof ICityDeckCard && $card->ControllerId == 0)
                 {
                     $this->cards->moveCard($card->Id, Game::LOCATION_CITY_DISCARD);
     

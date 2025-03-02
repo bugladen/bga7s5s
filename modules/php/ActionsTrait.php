@@ -1144,8 +1144,8 @@ trait ActionsTrait
         $this->theah->buildCity();
 
         $performer = $this->theah->getCharacterById($id);
-        if ($performer->Engaged) {
-            throw new \BgaUserException("Performer cannot Challenge because it is engaged.");
+        if ( ! $performer->canChallenge()) {
+            throw new \BgaUserException("Performer cannot Challenge.");
         }
 
         $characters = $this->theah->getCharactersInPlayByPlayerId($activePlayerId);

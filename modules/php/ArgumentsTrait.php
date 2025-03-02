@@ -288,7 +288,9 @@ trait ArgumentsTrait
         
         //Filter out those characters that are not in the city
         $characters = array_values(array_filter($characters, fn($character) => $this->theah->cardInCity($character) ));
-        $characters = array_values(array_filter($characters, fn($character) => !$character->Engaged ));
+
+        //Filter out those characters that can challenge
+        $characters = array_values(array_filter($characters, fn($character) => $character->canChallenge() ));
 
         //Select the Ids of the characters
         $characterIds = array_map(fn($character) => $character->Id, $characters);
@@ -346,10 +348,12 @@ trait ArgumentsTrait
         //Characters must be controlled by the player and not be the target
         $charactersAtLocation = array_filter($charactersAtLocation, 
             fn($character) => $character->ControllerId && $character->ControllerId == $playerId && $character->Id != $targetId);
-        //Characters must not be engaged
-        $charactersAtLocation = array_values(array_filter($charactersAtLocation, fn($character) => $character->Engaged == false));
+        
+        //Get characters that can intervene
+        $charactersCanIntervene = array_filter($charactersAtLocation, fn($character) => $character->canIntervene());
 
-        $ids = array_map(fn($character) => $character->Id, $charactersAtLocation);
+        $charactersCanIntervene = array_values($charactersCanIntervene);
+        $ids = array_map(fn($character) => $character->Id, $charactersCanIntervene);
 
         return [
             "performerId" => $performerId,
@@ -416,6 +420,8 @@ trait ArgumentsTrait
                 "maneuvers" => $card->getManeuversArray()
             ];
         }
+
+        return [];
     }
 
     public function argsDuelPayForManeuverFromCombatCard(): array {

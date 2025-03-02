@@ -2,20 +2,22 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
-
 class EventChallengeIssued extends Event
 {
     public int $playerId;
-    public Character $challenger;
-    public Character $defender;
-    public ?Technique $activatedTechnique;
+    public int $challengerId;
+    public int $defenderId;
+    public string $activatedTechniqueId;
 
     public function __construct()
     {
         parent::__construct();
         $this->priority = Event::MEDIUM_PRIORITY;
+
+        $this->playerId = 0;
+        $this->challengerId = 0;
+        $this->defenderId = 0;
+        $this->activatedTechniqueId = 0;
     }
  
 }

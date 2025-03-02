@@ -60,6 +60,28 @@ trait DebugTrait
         }
     }
 
+    public function dbgSetCardController(int $cardId, int $playerId)
+    {
+        $this->theah->buildCity();
+        $card = $this->theah->getCardById($cardId);
+        if ($card == null)
+            throw new \BgaUserException("Card not found");
+
+        $card->ControllerId = $playerId;
+        $this->updateCardObjectInDb($card);
+    }
+
+    public function dbgEngageCard(int $cardId)
+    {
+        $this->theah->buildCity();
+        $card = $this->theah->getCardById($cardId);
+        if ($card == null)
+            throw new \BgaUserException("Card not found");
+
+        $card->Engaged = true;
+        $this->updateCardObjectInDb($card);
+    }
+
     public function debug_SetDay(int $day)
     {
         $this->setGameStateValue("day", $day);
