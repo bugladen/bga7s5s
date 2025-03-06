@@ -250,6 +250,7 @@ onLeavingState: function( stateName )
                 let div = this.factionHand.getItemDivId(cardId);
                 dojo.removeClass(div, 'selectable');
             });
+            dojo.place('factionHand-container', 'approachDeck-container', 'after');
             this.factionHand.setSelectionMode(0);
         },
 
@@ -270,6 +271,7 @@ onLeavingState: function( stateName )
             });
             this.factionHand.setSelectionMode(0);
             $('faction_hand_info').innerHTML = '';
+            dojo.place('factionHand-container', 'approachDeck-container', 'after');
 
             let performer = this.cardProperties[this.clientStateArgs.performerId];
             dojo.removeClass(`${performer.divId}_image`, 'chosen');
@@ -282,6 +284,7 @@ onLeavingState: function( stateName )
             });
             this.factionHand.setSelectionMode(0);
             $('faction_hand_info').innerHTML = '';
+            dojo.place('factionHand-container', 'approachDeck-container', 'after');
 
             let performer = this.cardProperties[this.clientStateArgs.performerId];
             dojo.removeClass(`${performer.divId}_image`, 'chosen');

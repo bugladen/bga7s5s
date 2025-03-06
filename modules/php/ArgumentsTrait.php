@@ -53,7 +53,11 @@ trait ArgumentsTrait
             }            
 
             return [
-                "thugs" => $thugs
+                "_private" => [
+                    "active" => [
+                        "thugs" => $thugs
+                    ]
+                ]
             ];
         }
 
@@ -233,7 +237,11 @@ trait ArgumentsTrait
         $characterIds = array_map(function($character) { return $character->Id; }, $charactersThatCanEquip);
 
         return [
-            "ids" => $characterIds
+            "_private" => [
+                "active" => [
+                    "ids" => $characterIds
+                ]
+            ],
         ];
     }
 
@@ -253,10 +261,14 @@ trait ArgumentsTrait
         }
         
         return [
-            "performerId" => $performerId,
-            "discount" => $discount,
-            "attachmentsInHand" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInHand),
-            "attachmentsInPlay" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInPlay),
+            "_private" => [
+                "active" => [
+                    "performerId" => $performerId,
+                    "discount" => $discount,
+                    "attachmentsInHand" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInHand),
+                    "attachmentsInPlay" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInPlay),
+                ]
+            ],
         ];
     }
 
@@ -419,11 +431,15 @@ trait ArgumentsTrait
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
 
         return [
-            "maneuversAvailable" => (count($characterManeuevers) > 0) && $round['maneuver_id'] == null,
-            "techniquesAvailable" => count($techniques) > 0 && $round['technique_id'] == null,
-            "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $round['combat_card_id'] == null,
-            "gamblesLeft" => $gamblesLeft,
-            "combatCardAvailable" => $round['combat_card_id'] == null
+            "_private" => [
+                "active" => [
+                    "maneuversAvailable" => (count($characterManeuevers) > 0) && $round['maneuver_id'] == null,
+                    "techniquesAvailable" => count($techniques) > 0 && $round['technique_id'] == null,
+                    "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $round['combat_card_id'] == null,
+                    "gamblesLeft" => $gamblesLeft,
+                    "combatCardAvailable" => $round['combat_card_id'] == null
+                ]
+            ],
         ];
     }
 
@@ -451,8 +467,12 @@ trait ArgumentsTrait
         $card = $this->getCardObjectFromDb($cardId);
         if ($card instanceof IHasManeuvers) {
             return [
-                "cardId" => $cardId,
-                "maneuvers" => $card->getManeuversArray()
+                "_private" => [
+                    "active" => [
+                        "cardId" => $cardId,
+                        "maneuvers" => $card->getManeuversArray()
+                    ]
+                ]
             ];
         }
 
@@ -461,9 +481,13 @@ trait ArgumentsTrait
 
     public function argsDuelPayForManeuverFromCombatCard(): array {
         return [
-            "combatCardId" => $this->globals->get(Game::CHOSEN_CARD),
-            "cost" => $this->globals->get(Game::CHOSEN_CARD_COST),
-            "discount" => $this->globals->get(Game::DISCOUNT)
+            "_private" => [
+                "active" => [
+                    "combatCardId" => $this->globals->get(Game::CHOSEN_CARD),
+                    "cost" => $this->globals->get(Game::CHOSEN_CARD_COST),
+                    "discount" => $this->globals->get(Game::DISCOUNT)
+                ]
+            ]
         ];
     }
 
@@ -478,7 +502,11 @@ trait ArgumentsTrait
         }
 
         return [
-            "cards" => $cards
+            "_private" => [
+                "active" => [
+                    "cards" => $cards
+                ]
+            ]
         ];
     }
 
@@ -494,7 +522,14 @@ trait ArgumentsTrait
         }
 
         $card = $this->theah->getCardById($id);
-        return $card->getGameStateArgs($this);
+        return [
+            "_private" => [
+                "active" => [
+                    "args" => $card->getGameStateArgs($this)
+                ]
+            ]
+        ];       
+        
     }
 
 }

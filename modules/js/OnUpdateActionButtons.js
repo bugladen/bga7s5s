@@ -273,14 +273,14 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaEquipActionChooseAttachmentLocation': () => {
             this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
-            if (args.attachmentsInHand.length > 0) {
+            if (args._private.attachmentsInHand.length > 0) {
                 this.addActionButton(`actChooseFromHand`, _('Equip from Hand'), () => {
                     this.setClientState('highDramaEquipActionChooseAttachmentFromHand_client', {
                         'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment to equip from Your Hand:"),
                     })
                 });
             }
-            if (args.attachmentsInPlay.length > 0) {
+            if (args._private.attachmentsInPlay.length > 0) {
                 this.addActionButton(`actChooseFromPlay`, _('Equip from Play'), () => {
                     this.setClientState('highDramaEquipActionChooseAttachmentFromPlay_client', {
                         'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment to equip from play:"),
@@ -370,16 +370,16 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelChooseAction': () => {
-            if (args.combatCardAvailable)
-                this.addActionButton(`btnGamble`, _(`Gamble (${args.gamblesLeft} Left)`), () => this.bgaPerformAction('actDuelActionGamble', {})) 
-            if (args.maneuversAvailable)
+            if (args._private.combatCardAvailable)
+                this.addActionButton(`btnGamble`, _(`Gamble (${args._private.gamblesLeft} Left)`), () => this.bgaPerformAction('actDuelActionGamble', {})) 
+            if (args._private.maneuversAvailable)
                 this.addActionButton(`btnManueuver`, _('Character Maneuver'), () => this.bgaPerformAction('actDuelActionChooseManeuver', {})) 
-            if (args.techniquesAvailable)
+            if (args._private.techniquesAvailable)
             {
                 this.addActionButton(`btnTechnique`, _('Technique'), () => this.bgaPerformAction('actDuelActionChooseTechnique', {})) 
                 this.addTooltipHtml( 'btnTechnique', `<div class='basic-tooltip'>${_("Add Technique from Character or Attachment")}</div>` );
             }
-            if (args.combatCardAvailable)
+            if (args._private.combatCardAvailable)
             {
                 this.addActionButton(`btnCombatCard`, _('Combat Card'), () => this.onDuelChooseCombatCardConfirmed());
                 dojo.addClass('btnCombatCard', 'disabled');
@@ -405,7 +405,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'duelUseManeuverFromCombatCard': () => {
             this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
-            args.maneuvers.forEach((maneuver) => { 
+            args._private.maneuvers.forEach((maneuver) => { 
                 this.addActionButton(
                     `btnChooseManeuver_${maneuver.id}`, _(maneuver.name), () => this.bgaPerformAction('actDuelUseManeuverFromCombatCard', { maneuverId: maneuver.id})) 
             });

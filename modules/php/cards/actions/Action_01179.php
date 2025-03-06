@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -19,6 +20,14 @@ class Action_01179 extends EventCityAction
         parent::__construct();
 
         $this->Name = "Siren's Scream: Take a Reknown";
+    }
+
+    public function getCharactersForAction(int $playerId, Theah $theah): array
+    {
+        $characters = parent::getCharactersForAction($playerId, $theah);
+        $characters = array_filter($characters, fn($character) => !$character->Engaged);
+
+        return $characters;
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
@@ -88,6 +97,14 @@ class Action_01179 extends EventCityAction
                 $reknownEvent->amount = 1;
             }
             $event->theah->queueEvent($reknownEvent);
+
+            $playerEvent = $event->theah->createEvent(Events::PlayerGainsReknown);
+            if ($playerEvent instanceof EventPlayerGainsReknown)
+            {
+                $playerEvent->playerId = $event->playerId;
+                $playerEvent->amount = 1;
+            }
+            $event->theah->queueEvent($playerEvent);
         }
     }
 

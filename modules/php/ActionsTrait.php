@@ -1640,9 +1640,9 @@ trait ActionsTrait
         $round = $this->globals->get(Game::DUEL_ROUND);    
 
         $sql = "SELECT actor_id, combat_card_id FROM duel_round where duel_id = $duelId AND round = $round";
-        $round = $this->getObjectListFromDB($sql)[0];
-        $actorId = $round['actor_id'];
-        $cardId = $round['combat_card_id'];
+        $roundInfo = $this->getObjectListFromDB($sql)[0];
+        $actorId = $roundInfo['actor_id'];
+        $cardId = $roundInfo['combat_card_id'];
 
         if ($round == 1)
         {

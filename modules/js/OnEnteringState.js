@@ -36,7 +36,7 @@ onEnteringState: function( stateName, args )
                 $('choose_container_name').innerHTML = _('Red Hand Thugs in Your Faction Deck');
 
                 // For each Red Hand Thug card in the players deck, create a stock item
-                args.args.thugs.forEach((card) => {
+                args.args._private.thugs.forEach((card) => {
                     this.addCardToDeck(this.chooseList, card);
                 });
                 this.chooseList.setSelectionMode(1);
@@ -545,7 +545,7 @@ onEnteringState: function( stateName, args )
         'highDramaEquipActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
                 this.numberOfCardsSelectable = 1;
-                args.args.ids.forEach((cardId) => {
+                args.args._private.ids.forEach((cardId) => {
                     card = this.cardProperties[cardId];
                     const image = $(`${card.divId}_image`);
                     this.clearCardAsSelectable(image);
@@ -556,12 +556,12 @@ onEnteringState: function( stateName, args )
 
         'highDramaEquipActionChooseAttachmentLocation': () => {
             if (this.isCurrentPlayerActive()) {
-                card = this.cardProperties[args.args.performerId];
+                card = this.cardProperties[args.args._private.performerId];
                 const image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
                 dojo.addClass(image, 'chosen');
 
-                this.clientStateArgs = args.args;
+                this.clientStateArgs = args.args._private;
             }
         },
 
@@ -575,6 +575,7 @@ onEnteringState: function( stateName, args )
                 let div = this.factionHand.getItemDivId(cardId);
                 dojo.addClass(div, 'selectable');
             });
+            dojo.place('factionHand-container', 'city', 'before');
             this.factionHand.setSelectionMode(2);
         },
 
@@ -616,6 +617,7 @@ onEnteringState: function( stateName, args )
             }
 
             $('faction_hand_info').innerHTML = `(0 Wealth worth of cards selected)`;
+            dojo.place('factionHand-container', 'city', 'before');
             this.factionHand.setSelectionMode(2);
         },
 
@@ -637,6 +639,7 @@ onEnteringState: function( stateName, args )
             }
     
             $('faction_hand_info').innerHTML = `(0 Wealth worth of cards selected)`;
+            dojo.place('factionHand-container', 'city', 'before');
             this.factionHand.setSelectionMode(2);
         },
 
@@ -726,25 +729,25 @@ onEnteringState: function( stateName, args )
 
         'duelUseManeuverFromCombatCard': () => {
             if (this.isCurrentPlayerActive()) {
-                this.factionHand.selectItem(args.args.cardId);
+                this.factionHand.selectItem(args.args._private.cardId);
             }
         },
 
         'duelPayForManeuverFromCombatCard' : () => {
             if (this.isCurrentPlayerActive()) {
-                const cardId = args.args.combatCardId;
+                const cardId = args.args._private.combatCardId;
                 const card = this.cardProperties[cardId];
                 let div = this.factionHand.getItemDivId(cardId);
                 dojo.addClass(div, 'unselectable');
     
                 dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
                     id: div,
-                    cost: args.args.cost,
+                    cost: args.args._private.cost,
                 }), div, "first" );    
     
                 const costDiv = $(`${div}_wealth_cost`);
                 const cost = parseInt(costDiv.innerHTML);
-                let discountedCost = cost - args.args.discount;
+                let discountedCost = cost - args.args._private.discount;
                 discountedCost = discountedCost < 0 ? 0 : discountedCost;
                 if (discountedCost !== cost)
                 {
@@ -763,7 +766,7 @@ onEnteringState: function( stateName, args )
                 dojo.removeClass('chooseList', 'hidden');
                 $('choose_container_name').innerHTML = _('Gamble Cards');
 
-                args.args.cards.forEach((card) => {
+                args.args._private.cards.forEach((card) => {
                     this.addCardToDeck(this.chooseList, card);
                 });
                 this.chooseList.setSelectionMode(1);
@@ -781,7 +784,7 @@ onEnteringState: function( stateName, args )
         'duskPhaseBegin01177' : () => {
             if (this.isCurrentPlayerActive()) {
                 this.numberOfCardsSelectable = 1;
-                args.args.ids.forEach((cardId) => {
+                args.args._private.args.ids.forEach((cardId) => {
                     card = this.cardProperties[cardId];
                     if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId()) {
                         const image = $(`${card.divId}_image`);

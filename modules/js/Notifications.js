@@ -405,7 +405,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
-        $(`${args.player_id}-score-reknown`).innerHTML = args.amount;
+        $(`${args.player_id}-score-reknown`).innerHTML = args.total;
     },
 
     notif_reknownUpdatedOnCard: function( notif )
@@ -422,10 +422,13 @@ return declare('seventhseacityoffivesails.notifications', null, {
             dojo.destroy(divId);
         } 
 
-        dojo.place( this.format_block( 'jstpl_reknown_chip', {
-            id: divId,
-            amount: args.total,
-        }),  card.divId, 'last');
+        if (args.total > 0)
+        {
+            dojo.place( this.format_block( 'jstpl_reknown_chip', {
+                id: divId,
+                amount: args.total,
+            }),  card.divId, 'last');
+        }
     },
 
     notif_reknownAddedToLocation: function( notif )

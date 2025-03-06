@@ -334,10 +334,11 @@ trait EventHub
                         $db->setPlayerReknown($playerId, $reknown);
 
                         // Notify players that the player has lost reknown
-                        $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} loses ${amount} reknown.'), [
+                        $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} loses ${amount} reknown (now at ${total}).'), [
                             "player_id" => $event->playerId,
                             "player_name" => $this->game->getPlayerNameById($playerId),
                             "amount" => $event->amount,
+                            "total" => $reknown,
                         ]);
                     }   
                 };
@@ -354,10 +355,11 @@ trait EventHub
                     $db->setPlayerReknown($playerId, $reknown);
 
                     // Notify players that the player has gained reknown
-                    $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} gains ${amount} reknown.'), [
+                    $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} gains ${amount} reknown (now at ${total}).'), [
                         "player_id" => $event->playerId,
                         "player_name" => $this->game->getPlayerNameById($playerId),
                         "amount" => $event->amount,
+                        "total" => $reknown,
                     ]);
                 };
                 $handler($this, $event);

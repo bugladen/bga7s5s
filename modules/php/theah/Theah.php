@@ -152,16 +152,15 @@ class Theah
                 $this->handleEvent($event);
 
             //Run the event for all cards in play
-            foreach ($this->cards as $card) 
-            {
+            $inPlayCards = array_filter($this->cards, fn($card) => $card->Location != Game::LOCATION_HAND);
+            foreach ($inPlayCards as $card) 
                 $card->handleEvent($event);
-            }
             
             // Run the event handler for Theah for cleanup
             if ($event->runHandlerAfterCards)
                 $this->handleEvent($event);
 
-            foreach ($this->cards as $card) {
+            foreach ($inPlayCards as $card) {
             // If any cards were updated, update them in the database
                 if ($card->IsUpdated) {
                     $card->IsUpdated = false;
