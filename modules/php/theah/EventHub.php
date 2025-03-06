@@ -237,8 +237,7 @@ trait EventHub
             case $event instanceof EventActionTriggered:
                 $handler = function (Theah $theah, $event)
                 {
-                    $cards = $theah->getInPlayCards();
-                    $performer = $cards[$event->performerId];
+                    $performer = $theah->getCardById($event->performerId);
                     $action = $theah->getInPlayActionById($event->actionId);
 
                     $theah->game->notifyAllPlayers("message", clienttranslate('${card_name} is performing Action: ${action}.'), [
@@ -253,11 +252,9 @@ trait EventHub
                 $handler = function (Theah $theah, EventCityCardAddedToLocation $event)
                 {
                     $card = $theah->game->getCardObjectFromDb($event->cardId);
-                    $cards = $theah->getInPlayCards();
-                    $cards[$event->cardId] = $card;
-    
                     $card->Location = $event->location;
                     $card->IsUpdated = true;
+                    $theah->upsertCard($card);
                     
                     // Notify players that card has been played
                     $theah->game->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_name} added to ${location} from the city deck'), [
@@ -288,8 +285,7 @@ trait EventHub
             case $event instanceof EventReknownAddedToCard:
                 $handler = function (Theah $theah, EventReknownAddedToCard $event)
                 {
-                    $cards = $theah->getInPlayCards();
-                    $card = $cards[$event->cardId];
+                    $card = $theah->getCardById($event->cardId);
                     $card->Reknown += $event->amount;
                     $card->IsUpdated = true;
 
@@ -308,8 +304,7 @@ trait EventHub
             case $event instanceof EventReknownRemovedFromCard:
                 $handler = function (Theah $theah, EventReknownRemovedFromCard $event)
                 {
-                    $cards = $theah->getInPlayCards();
-                    $card = $cards[$event->cardId];
+                    $card = $theah->getCardById($event->cardId);
                     $card->Reknown -= $event->amount;
                     if ($card->Reknown < 0)
                         $card->Reknown = 0;

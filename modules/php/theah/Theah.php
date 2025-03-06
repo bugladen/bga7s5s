@@ -43,11 +43,6 @@ class Theah
         return $this->db;
     }
 
-    public function getInPlayCards()
-    {
-        return $this->cards;
-    }
-
     public function buildCity()
     {
         if ($this->cityBuilt) return;
@@ -691,4 +686,10 @@ class Theah
 
         return count($actionCards) > 0;
     }
+
+    public function upsertCard(Card $card)
+    {
+        $this->cards[$card->Id] = $card;
+    }
+
 }
