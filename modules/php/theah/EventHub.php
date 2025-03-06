@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
@@ -38,7 +39,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTakeReknownForControlledLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlunderPhaseBegin;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlunderPhaseEnd;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
@@ -231,19 +234,39 @@ trait EventHub
                 ]);
                 break;
 
-            case $event instanceof EventCityCardAddedToLocation:
-                // Add the card to the world
-                $this->cards[$event->card->Id] = $event->card;
+            case $event instanceof EventActionTriggered:
+                $handler = function (Theah $theah, $event)
+                {
+                    $cards = $theah->getInPlayCards();
+                    $performer = $cards[$event->performerId];
+                    $action = $theah->getInPlayActionById($event->actionId);
 
-                $event->card->Location = $event->location;
-                $event->card->IsUpdated = true;
-                
-                // Notify players that card has been played
-                $this->game->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_name} added to ${location} from the city deck'), [
-                    "card_name" => "<span style='font-weight:bold'>{$event->card->Name}</span>",
-                    "location" => $event->location,
-                    "card" => $event->card->getPropertyArray()
-                ]);
+                    $theah->game->notifyAllPlayers("message", clienttranslate('${card_name} is performing Action: ${action}.'), [
+                        "card_name" => "<strong>{$performer->Name}</strong>",
+                        "action" => $action->Name
+                    ]);    
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCityCardAddedToLocation:
+                $handler = function (Theah $theah, EventCityCardAddedToLocation $event)
+                {
+                    $card = $theah->game->getCardObjectFromDb($event->cardId);
+                    $cards = $theah->getInPlayCards();
+                    $cards[$event->cardId] = $card;
+    
+                    $card->Location = $event->location;
+                    $card->IsUpdated = true;
+                    
+                    // Notify players that card has been played
+                    $theah->game->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_name} added to ${location} from the city deck'), [
+                        "card_name" => "<span style='font-weight:bold'>{$card->Name}</span>",
+                        "location" => $event->location,
+                        "card" => $card->getPropertyArray()
+                    ]);
+                };
+                $handler($this, $event);
                 break;
 
             case $event instanceof EventLocationClaimed:
@@ -261,6 +284,48 @@ trait EventHub
             
                     break;
                 }
+
+            case $event instanceof EventReknownAddedToCard:
+                $handler = function (Theah $theah, EventReknownAddedToCard $event)
+                {
+                    $cards = $theah->getInPlayCards();
+                    $card = $cards[$event->cardId];
+                    $card->Reknown += $event->amount;
+                    $card->IsUpdated = true;
+
+                    // Notify players that the player has lost reknown
+                    $theah->game->notifyAllPlayers("reknownUpdatedOnCard", clienttranslate('${player_name} added ${amount} Reknown to ${card_name} (${total} now on card).'), [
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
+                        "cardId" => $card->Id,
+                        "card_name" => $card->Name,
+                        "amount" => $event->amount,
+                        "total" => $card->Reknown
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventReknownRemovedFromCard:
+                $handler = function (Theah $theah, EventReknownRemovedFromCard $event)
+                {
+                    $cards = $theah->getInPlayCards();
+                    $card = $cards[$event->cardId];
+                    $card->Reknown -= $event->amount;
+                    if ($card->Reknown < 0)
+                        $card->Reknown = 0;
+                    $card->IsUpdated = true;
+
+                    // Notify players that the player has lost reknown
+                    $theah->game->notifyAllPlayers("reknownUpdatedOnCard", clienttranslate('${player_name} removed ${amount} Reknown from ${card_name} (${total} now on card).'), [
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
+                        "cardId" => $card->Id,
+                        "card_name" => $card->Name,
+                        "amount" => $event->amount,
+                        "total" => $card->Reknown
+                    ]);
+                };
+                $handler($this, $event);
+                break;
     
             case $event instanceof EventPlayerLosesReknown:
                 $handler = function (Theah $theah, EventPlayerLosesReknown $event)

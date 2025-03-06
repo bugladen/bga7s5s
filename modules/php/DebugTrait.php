@@ -82,12 +82,23 @@ trait DebugTrait
         $this->updateCardObjectInDb($card);
     }
 
+    public function dbgSetReknownOnCard(int $cardId, int $reknown)
+    {
+        $this->theah->buildCity();
+        $card = $this->theah->getCardById($cardId);
+        if ($card == null)
+            throw new \BgaUserException("Card not found");
+
+        $card->Reknown = $reknown;
+        $this->updateCardObjectInDb($card);
+    }
+
     public function debug_SetDay(int $day)
     {
         $this->setGameStateValue("day", $day);
     }
 
-    public function debug_SetPlayerReknown($playerId, $score)
+    public function debug_SetPlayerReknown(int $playerId, int $score)
     {
         $this->DBQuery("UPDATE player SET player_score = $score WHERE player_id = $playerId");
     }

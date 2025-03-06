@@ -2,17 +2,20 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventCityCardAddedToLocation extends Event
+class EventReknownRemovedFromCard extends Event
 {
     public int $cardId;
-    public string $location;
+    public int $playerId;
+    public int $amount;
 
     public function __construct()
     {
         parent::__construct();
-
-        $this->location = "";
         $this->priority = Event::MEDIUM_PRIORITY;
-    }
 
+        $this->cardId = 0;
+        $this->playerId = 0;
+        $this->amount = 0;
+    }
+ 
 }

@@ -2,15 +2,21 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01179;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityEventCard;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
 
-class _01179 extends CityEventCard
+class _01179 extends CityEventCard implements IHasActions
 {
+    use ActionTrait;
+
+    public int $Reknown;
     public function __construct()
     {
         parent::__construct();
@@ -22,13 +28,27 @@ class _01179 extends CityEventCard
         $this->CardNumber = 179;
 
         $this->CityCardNumber = 3;
+
+        $this->Reknown = 0;
+
+        $this->Actions = [
+            new Action_01179(),
+        ];
+    }
+
+    public function eventCheck($event)
+    {
+        parent::eventCheck($event);
+
+        if ($event instanceof EventCardAddedToCityDiscardPile && $event->cardId == $this->Id && $this->Reknown > 0)
+            throw new \BgaUserException(_("Siren's Scream will not be discarded while it has Reknown on it."));
     }
 
     public function handleEvent($event)
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCityCardAddedToLocation && $event->card->Id == $this->Id) {
+        if ($event instanceof EventCityCardAddedToLocation && $event->cardId == $this->Id) {
             $theah = $event->theah;
             $game = $theah->game;
 
@@ -54,23 +74,13 @@ class _01179 extends CityEventCard
                     // Add it to this card
                     $reknown = $theah->createEvent(Events::ReknownAddedToCard);
                     if ($reknown instanceof EventReknownAddedToCard) {
+                        $reknown->playerId = $playerId;
                         $reknown->cardId = $this->Id;
                         $reknown->amount = 1;
                     }
                     $theah->queueEvent($reknown);
                 }
             }
-        }
-
-        if ($event instanceof EventReknownAddedToCard && $event->cardId == $this->Id) {
-            $this->Reknown += $event->amount;
-            $this->IsUpdated = true;
-
-            $event->theah->game->notifyAllPlayers("reknownUpdatedOnCard", clienttranslate('${cardName} has ${amount} Reknown placed on it from effect.'), [
-                "cardId" => $this->Id,
-                "cardName" => $this->Name,
-                "amount" => $this->Reknown,
-            ]);
         }
     }
 }

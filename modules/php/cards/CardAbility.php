@@ -68,17 +68,13 @@ abstract class CardAbility
         }
 
         $owner = $theah->getCardById($this->OwnerId);
-        if ($owner instanceof Character) {
-            return $owner;
-        }
 
         if ($owner instanceof Attachment) {
             $id = $owner->AttachedToId;
             $owner = $theah->getCardById($id);
-            return $owner;
         }
 
-        return null;
+        return $owner;
     }
 
     public function setActive(Theah $theah, bool $active)

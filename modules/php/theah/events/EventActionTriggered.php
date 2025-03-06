@@ -2,11 +2,11 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventReknownAddedToCard extends Event
+class EventActionTriggered extends Event
 {
     public int $playerId;
-    public int $cardId;
-    public int $amount;
+    public int $performerId;
+    public string $actionId;
 
     public function __construct()
     {
@@ -14,7 +14,8 @@ class EventReknownAddedToCard extends Event
         $this->priority = Event::MEDIUM_PRIORITY;
 
         $this->playerId = 0;
-        $this->cardId = 0;
-        $this->amount = 0;
+        $this->performerId = 0;
+        $this->actionId = "";
     }
+ 
 }

@@ -182,17 +182,22 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaPlayerTurn': () => {
             if (this.isCurrentPlayerActive()) {
-                if (args.canChallenge)
+                if (args._private.canChallenge)
                     this.addActionButton(`actChallengeAction`, _('Challenge'), () => this.bgaPerformAction('actHighDramaChallengeActionStart', {}));
-                if (args.canClaim)
+                if (args._private.canClaim)
                     this.addActionButton(`actClaimAction`, _('Claim'), () => this.bgaPerformAction('actHighDramaClaimActionStart', {}));
-                if (args.canEquip)
+                if (args._private.canEquip)
                     this.addActionButton(`actEquipAction`, _('Equip'), () => this.bgaPerformAction('actHighDramaEquipActionStart', {}));
-                if (args.canMove)
+                if (args._private.canMove)
                     this.addActionButton(`actMoveAction`, _('Move'), () => this.bgaPerformAction('actHighDramaMoveActionStart', {}));
-                if (args.canRecruit)
+                if (args._private.canRecruit)
                     this.addActionButton(`actRecruitAction`, _('Recruit'), () => this.bgaPerformAction('actHighDramaRecruitActionStart', {}));
-                
+                if (args._private.hasInPlayActions)
+                {
+                    this.addActionButton(`btnInPlayAction`, _('In-Play Action'), () => this.bgaPerformAction('actHighDramaChooseInPlayActionStart', {})) 
+                    this.addTooltipHtml( 'btnInPlayAction', `<div class='basic-tooltip'>${_("Use an In-Play Action")}</div>` );
+                }
+                        
                 this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             }
         },
@@ -242,6 +247,20 @@ onUpdateActionButtons: function( stateName, args )
                         'descriptionmyturn' : _("${you} are performing a Recruit Action.  Choose a Mercenary to recruit:"),
                     }));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onRecruitCharacterConfirmed());
+        },
+
+        'highDramaInPlayActionChooseAction'  : () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            args._private.actions.forEach((action, index) => { 
+                this.addActionButton(
+                    `btnChooseTechnique_${action.id}`, _(action.name), () => this.bgaPerformAction('actHighDramaInPlayActionChosen', { actionId: action.id})) 
+            });
+        },
+
+        'highDramaInPlayActionChoosePerformer'  : () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaEquipActionChoosePerformer': () => {
@@ -413,7 +432,7 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardsChosenForDiscard());
             dojo.addClass('actChooseDiscardCards', 'disabled');
 
-            //Code here instead of onEnteringState because multiactive client states are ready at that point
+            //Code here instead of onEnteringState because multiactive client states are not ready at that point
             dojo.place('factionHand-container', 'city', 'before');
     
             const player = this.gamedatas.players[this.player_id];

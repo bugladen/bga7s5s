@@ -122,7 +122,7 @@ trait StatesTrait
             //Create the event
             $event = $this->theah->createEvent(Events::CityCardAddedToLocation);
             if ($event instanceof EventCityCardAddedToLocation) {
-                $event->card = $card;
+                $event->cardId = $card->Id;
                 $event->location = $location;
             }
             $this->theah->queueEvent($event);
@@ -512,7 +512,6 @@ trait StatesTrait
             $engageEvent->cardId = $performer->Id;
             $engageEvent->playerId = $playerId;
         }
-        $this->theah->eventCheck($engageEvent);
         $this->theah->queueEvent($engageEvent);
 
         $challengeEvent = $this->theah->createEvent(Events::ChallengeIssued);
@@ -640,7 +639,6 @@ trait StatesTrait
                 $event->wounds = $wounds;
                 $event->reason = $reason;
             }
-            $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
 
             //Find out who the next player is in order
@@ -959,7 +957,6 @@ trait StatesTrait
                 $event->wounds = $wounds;
                 $event->reason = $reason;
             }
-            $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
         }
 
@@ -1062,6 +1059,7 @@ trait StatesTrait
         $this->globals->delete(GAME::CHOSEN_CARD_COST);
         $this->globals->delete(GAME::CHOSEN_LOCATION);
         $this->globals->delete(GAME::CHOSEN_PERFORMER);
+        $this->globals->delete(GAME::CHOSEN_ACTION);
         $this->globals->delete(GAME::CHOSEN_TARGET);
         $this->globals->delete(GAME::CHOSEN_TECHNIQUE);
         $this->globals->delete(GAME::CHOSEN_MANEUVER);
@@ -1496,7 +1494,7 @@ trait StatesTrait
             }
         }
 
-        //Discard all city cards in the city
+        //Discard all city cards in the city that are not controlled
         foreach ($locations as $location)
         {
             $cards = $this->theah->getCardObjectsAtLocation($location->Name);

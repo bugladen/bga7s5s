@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\DB;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -9,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
@@ -39,6 +41,11 @@ class Theah
     public function getDBObject()
     {
         return $this->db;
+    }
+
+    public function getInPlayCards()
+    {
+        return $this->cards;
     }
 
     public function buildCity()
@@ -413,12 +420,58 @@ class Theah
         return $characters;
     }
 
+    function getInPlayActionsAvailableToPlayer($playerId)
+    {
+        $actionsArray = [];
+        foreach ($this->cards as $card)
+        {
+            if ($card instanceof IHasActions)
+            {
+                $actions = $card->getActions();
+                foreach ($actions as $action)
+                {
+                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    {
+                        $actionsArray += $card->getActionsArray();
+                    }
+                }
+            }
+        }
+
+        return $actionsArray;
+    }
+
     function getLeaderByPlayerId($playerId)
     {
         foreach ($this->cards as $card) {
             if ($card->ControllerId == $playerId && $card instanceof Leader) {
                 return $card;
             }
+        }
+        return null;
+    }
+
+    function getInPlayActionById($id): ?Action
+    {
+        foreach ($this->cards as $card) {
+            if ($card instanceof IHasActions) {
+                $action = $card->getActionById($id);
+                if ($action) {
+                    return $action;
+                }
+            }
+            
+            if ($card instanceof Character) 
+                foreach ($card->Attachments as $attachmentId) 
+                {
+                    $attachment = $this->getCardById($attachmentId);
+                    if ($attachment instanceof IHasActions)
+                    {
+                        $action = $attachment->getActionById($id);
+                        if ($action)
+                            return $action;
+                    }
+                }
         }
         return null;
     }
@@ -616,5 +669,26 @@ class Theah
         }
         
         return count($charactersThatCanClaim) > 0;
+    }
+
+    public function playerHasInPlayActions($playerId): bool
+    {
+        $actionCards = [];
+        foreach ($this->cards as $card)
+        {
+            if ($card instanceof IHasActions)
+            {
+                $actions = $card->getActions();
+                foreach ($actions as $action)
+                {
+                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    {
+                        $actionCards[] = $card;
+                    }
+                }
+            }
+        }
+
+        return count($actionCards) > 0;
     }
 }

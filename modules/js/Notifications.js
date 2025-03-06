@@ -424,7 +424,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         dojo.place( this.format_block( 'jstpl_reknown_chip', {
             id: divId,
-            amount: args.amount,
+            amount: args.total,
         }),  card.divId, 'last');
     },
 
@@ -688,9 +688,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const challenger = this.cardProperties[args.challengerId];
         challenger.conditions = challenger.conditions.filter(condition => condition !== this.CHALLENGER);
-        console.log(challenger.conditions);
         const challengerChipId = `${challenger.divId}_challenger`;
-        console.log(challengerChipId);
         dojo.destroy(challengerChipId);
 
         const defender = this.cardProperties[args.defenderId];

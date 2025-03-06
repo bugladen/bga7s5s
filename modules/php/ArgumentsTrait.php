@@ -107,15 +107,20 @@ trait ArgumentsTrait
 
     public function argPlayerTurn(): array
     {
-        $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
+        $playerId = (int)$this->getActivePlayerId();
 
         return [
-            "canChallenge" => $this->theah->playerCanChallenge($playerId),
-            "canClaim" => $this->theah->playerCanClaim($playerId),
-            "canEquip" => $this->theah->playerCanEquip($playerId),
-            "canMove" => $this->theah->playerCanMove($playerId),
-            "canRecruit" => $this->theah->playerCanRecruit($playerId),
+            '_private' => [
+                'active' => [
+                    "canChallenge" => $this->theah->playerCanChallenge($playerId),
+                    "canClaim" => $this->theah->playerCanClaim($playerId),
+                    "canEquip" => $this->theah->playerCanEquip($playerId),
+                    "canMove" => $this->theah->playerCanMove($playerId),
+                    "canRecruit" => $this->theah->playerCanRecruit($playerId),
+                    "hasInPlayActions" => $this->theah->playerHasInPlayActions($playerId),
+                ]
+            ]
         ];
     }
 
@@ -271,6 +276,36 @@ trait ArgumentsTrait
         //Filter out those characters that have a dashed Influence
         $characters = array_values(array_filter($characters, fn($character) => !$character->DashedInfluence));
 
+        //Select the Ids of the characters
+        $characterIds = array_map(function($character) { return $character->Id; }, $characters);
+
+        return [
+            "ids" => $characterIds
+        ];
+    }
+
+    public function argsHighDramaInPlayActionChooseAction(): array
+    {
+        return [
+            "_private" => [
+                "active" => [
+                    "actions" => $this->theah->getInPlayActionsAvailableToPlayer($this->getActivePlayerId())
+                ]
+            ]
+        ];
+
+    }
+
+    public function argsHighDramaInPlayActionChoosePerformer(): array
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION);
+        $action = $this->theah->getInPlayActionById($actionId);
+        
+        $characters = $action->getCharactersForAction($playerId, $this->theah);
+        
         //Select the Ids of the characters
         $characterIds = array_map(function($character) { return $character->Id; }, $characters);
 

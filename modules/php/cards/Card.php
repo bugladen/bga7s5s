@@ -50,6 +50,9 @@ abstract class Card
         if ($this instanceof IHasManeuvers) {
             $this->updateManeuverOwnerIds($id);
         }
+        if ($this instanceof IHasActions) {
+            $this->updateActionOwnerIds($id);
+        }
     }
 
     public function getGameStateArgs(Game $game): array {return []; }
@@ -68,6 +71,11 @@ abstract class Card
                 $maneuver->eventCheck($event);
             }
         }
+        if ($this instanceof IHasActions) {
+            foreach ($this->getActions() as $action) {
+                $action->eventCheck($event);
+            }
+        }
     }
     
     public function handleEvent($event)
@@ -77,9 +85,16 @@ abstract class Card
                 $technique->handleEvent($event);
             }
         }
+        
         if ($this instanceof IHasManeuvers) {
             foreach ($this->getManeuvers() as $maneuver) {
                 $maneuver->handleEvent($event);
+            }
+        }
+
+        if ($this instanceof IHasActions) {
+            foreach ($this->getActions() as $action) {
+                $action->handleEvent($event);
             }
         }
     }
@@ -130,6 +145,7 @@ abstract class Card
         if ($this instanceof IFactionCard) $this->addFactionProperties($properties);
         if ($this instanceof IHasTechniques) $this->addTechniqueProperties($properties);
         if ($this instanceof IHasManeuvers) $this->addManeuverProperties($properties);
+        if ($this instanceof IHasActions) $this->addActionProperties($properties);
 
         return $properties;
     }

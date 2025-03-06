@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
@@ -749,8 +750,6 @@ trait ActionsTrait
         $location = json_decode($locations, true)[0];
         $playerName = $this->getActivePlayerName();
 
-        $this->globals->set(GAME::PASS_COUNT, 0);
-
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
         $card = $this->getCardObjectFromDb($cardId);       
         $this->cards->moveCard($cardId, $location, $card->ControllerId);
@@ -771,6 +770,7 @@ trait ActionsTrait
         $this->theah->eventCheck($movedHome);
         $this->theah->queueEvent($movedHome);
 
+        $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("destinationChosen");
     }
 
@@ -853,8 +853,6 @@ trait ActionsTrait
             throw new \BgaUserException("Chosen character is not a Mercenary at the Performer's Location.");
         }        
 
-        $this->globals->set(GAME::PASS_COUNT, 0);
-
         $this->notifyAllPlayers("message", clienttranslate('${player_name} chose ${card_name} to perform a Recruit Action.'), [
             "player_name" => $playerName,
             "card_name" => "<strong>{$performer->Name}</strong>",
@@ -877,6 +875,7 @@ trait ActionsTrait
         }
 
         $this->actRecruitMercenary($recruitId, $payWithCards);
+        $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("mercenaryChosen");
     }
 
@@ -989,8 +988,6 @@ trait ActionsTrait
             throw new \BgaUserException("Cost of Attachment is {$cost}. You selected {$totalWealth} Wealth of cards.");
         }
 
-        $this->globals->set(GAME::PASS_COUNT, 0);
-
         $playerId = $this->getActivePlayerId();
 
         //Equip the attachment
@@ -1021,6 +1018,7 @@ trait ActionsTrait
         $this->cards->moveCard($attachment->Id, $performer->Location, $attachment->ControllerId);
         $this->theah->queueEvent($equipAttachmentEvent);
 
+        $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("attachmentEquipped");
     }
 
@@ -1095,8 +1093,6 @@ trait ActionsTrait
 
         $this->setControllerForLocation($performer->Location, $activePlayerId);
 
-        $this->globals->set(GAME::PASS_COUNT, 0);
-
         $engageEvent = $this->theah->createEvent(Events::CardEngaged);
         if ($engageEvent instanceof EventCardEngaged)
         {
@@ -1119,7 +1115,61 @@ trait ActionsTrait
         $this->theah->queueEvent($engageEvent);
         $this->theah->queueEvent($claimEvent);
 
+        $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("performerChosen");
+    }
+
+    public function actHighDramaChooseInPlayActionStart()
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+        if ($this->theah->playerHasInPlayActions($player_id) == false) {
+            throw new \BgaUserException("In-Play Action is not allowed right now.");
+        }
+
+        $this->gamestate->nextState("inPlayActionStart");
+    }
+
+    public function actHighDramaInPlayActionChosen(string $actionId)
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+        $action = $this->theah->getInPlayActionById($actionId);
+        if ($action == null) {
+            throw new \BgaUserException("Action not found.");
+        }
+
+        if ( ! $action->isAvailabletoPlayer($player_id, $this->theah)) {
+            throw new \BgaUserException("Action is not available to player.");
+        }
+
+        $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
+
+        $this->gamestate->nextState("inPlayActionChosen");
+    }
+
+    public function actHighDramaInPlayActionPerformerChosen(string $ids)
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $id = json_decode($ids, true)[0];
+        $performer = $this->getCardObjectFromDb($id);
+
+        $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+
+        $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
+
+        $event = $this->theah->createEvent(Events::ActionTriggered);
+        if ($event instanceof EventActionTriggered) 
+        {
+            $event->playerId = $playerId;
+            $event->performerId = $performer->Id;
+            $event->actionId = $actionId;
+        }
+        $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);
+
+        $this->globals->set(GAME::PASS_COUNT, 0);
+        $this->gamestate->nextState("inPlayActionPerformerChosen");
     }
 
     public function actHighDramaChallengeActionStart()

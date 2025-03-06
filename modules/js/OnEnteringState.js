@@ -530,6 +530,18 @@ onEnteringState: function( stateName, args )
             this.factionHand.setSelectionMode(2);
         },    
 
+        'highDramaInPlayActionChoosePerformer' : () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCardsSelectable = 1;
+                args.args.ids.forEach((id) => { 
+                    const card = this.cardProperties[id];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+            }
+        },
+
         'highDramaEquipActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
                 this.numberOfCardsSelectable = 1;

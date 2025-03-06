@@ -81,7 +81,7 @@ class _01147 extends Scheme
                     //Create the event
                     $newCard = $event->theah->createEvent(Events::CityCardAddedToLocation);
                     if ($newCard instanceof EventCityCardAddedToLocation) {
-                        $newCard->card = $card;
+                        $newCard->cardId = $card->Id;
                         $newCard->location = Game::LOCATION_CITY_BAZAAR;
                     }
                     $event->theah->queueEvent($newCard);

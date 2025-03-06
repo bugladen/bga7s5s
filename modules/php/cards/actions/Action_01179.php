@@ -1,0 +1,94 @@
+<?php
+
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
+
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\EventCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+
+class Action_01179 extends EventCityAction
+{
+    private array $playersUsed = [];
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->Name = "Siren's Scream: Take a Reknown";
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        $available = parent::isAvailableToPlayer($playerId, $theah);
+        if (!$available)
+        {
+            return false;
+        }
+
+        $card = $this->getOwningCard($theah);
+        if ($card->Reknown == 0)
+        {
+            return false;
+        }
+
+        // Check if player has used this Action today
+        if (in_array($playerId, $this->playersUsed))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function eventCheck(Event $event)
+    {
+        parent::eventCheck($event);
+
+        if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
+        {
+            if (in_array($event->playerId, $this->playersUsed))
+            {
+                throw new \BgaUserException(_("You have already used this Action today."));
+            }
+        }
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventDuskEndOfDay)
+        {
+            $this->playersUsed = [];
+            $card = $this->getOwningCard($event->theah);
+            $card->IsUpdated = true;
+        }
+
+        if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
+        {
+            $this->playersUsed[] = $event->playerId;
+
+            $engageEvent = $event->theah->createEvent(Events::CardEngaged);
+            if ($engageEvent instanceof EventCardEngaged)
+            {
+                $engageEvent->playerId = $event->playerId;
+                $engageEvent->cardId = $event->performerId;
+            }
+            $event->theah->queueEvent($engageEvent);
+
+            $reknownEvent = $event->theah->createEvent(Events::ReknownRemovedFromCard);
+            if ($reknownEvent instanceof EventReknownRemovedFromCard)
+            {
+                $reknownEvent->playerId = $event->playerId;
+                $reknownEvent->cardId = $this->OwnerId;
+                $reknownEvent->amount = 1;
+            }
+            $event->theah->queueEvent($reknownEvent);
+        }
+    }
+
+}

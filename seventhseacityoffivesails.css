@@ -180,8 +180,9 @@ body {
 }
 .card-reknown-chip {
     position: relative;
-    left:50px;
-    bottom:75px;
+    left: 60px;
+    bottom: 75px;
+    z-index: 20;
 }
 .city-reknown-chip {
     position:absolute;    
@@ -410,7 +411,7 @@ body {
     border-radius: 50%;
     top: 30px;
     left: 53px;
-    z-index:10;
+    z-index: 10;
     border: 2px solid lightgray;
 }
 .first-player-score {

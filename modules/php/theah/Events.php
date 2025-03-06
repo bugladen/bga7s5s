@@ -30,6 +30,7 @@ class Events
     const PlayerLosesReknown = 'EventPlayerLosesReknown';
     const PlayerGainsReknown = 'EventPlayerGainsReknown';
     const ReknownAddedToCard = 'EventReknownAddedToCard';
+    const ReknownRemovedFromCard = 'EventReknownRemovedFromCard';
     const ReknownAddedToLocation = 'EventReknownAddedToLocation';
     const ReknownRemovedFromLocation = 'EventReknownRemovedFromLocation';
 
@@ -86,4 +87,6 @@ class Events
     //Game Flow events
     const Transition = 'EventTransition';
     const ChangeActivePlayer = 'EventChangeActivePlayer';
+
+    const ActionTriggered = 'EventActionTriggered';
 }

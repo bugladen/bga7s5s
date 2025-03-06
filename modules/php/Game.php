@@ -55,6 +55,7 @@ class Game extends \Table
     final const CHOSEN_CARD = "chosenCard";
     final const CHOSEN_CARD_COST = "chosenCardCost";
     final const CHOSEN_LOCATION = "chosenLocation";
+    final const CHOSEN_ACTION = "chosenAction";
     final const CHOSEN_PERFORMER = "chosenPerformer";
     final const CHOSEN_TARGET = "chosenTarget";
     final const CHOSEN_TECHNIQUE = "chosenTechnique";
