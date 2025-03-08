@@ -176,6 +176,10 @@ class Theah
                 if($event->getPlayerId()) {
                     $this->game->gamestate->changeActivePlayer($event->getPlayerId());
                 }
+                if ($event->sourceId) {
+                    $this->game->globals->set(Game::TRANSITION_SOURCE_ID, $event->sourceId);
+                }
+
                 $this->game->gamestate->nextState($event->transition);
                 return;
             }

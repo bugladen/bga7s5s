@@ -816,6 +816,11 @@ body {
 .hand {
     clear:left;
 }
+.hand-label {
+    font-family: "Pirata One", system-ui;
+    font-size: 16pt;
+    margin-bottom: 5px;
+}
 
 .selectable {
     box-shadow: 0 0 2px 2px yellow;
@@ -975,4 +980,21 @@ body {
 }
 .duel-row-combat-card-gambled {
     padding-left: 5px;
+}
+
+.number-order-chip {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    color: white;
+    font-family: "Pirata One", system-ui;
+    font-size: 14pt;
+    text-align: center;
+    line-height: 20px;
+    z-index: 100;
+    border-radius: 5px;
+    top: 0px;
+    right: 0px;
+    pointer-events: none
 }

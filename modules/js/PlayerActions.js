@@ -113,7 +113,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaChallengeActionChoosePerformer'               : 'actHighDramaChallengeActionPerformerChosen',
             'highDramaChallengeActionChooseTarget'                  : 'actHighDramaChallengeActionTargetChosen',
             'highDramaChallengeActionAcceptChallenge'               : 'actHighDramaChallengeActionIntervene', 
-            'duskPhaseBegin01177'                                   : 'actGameActionOnCardWithIds',
+            'duskPhaseBegin01177'                                   : 'actFromCardWithIds',
         };
 
         const clientMessages = {
@@ -268,6 +268,26 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
+    onCardsChosen_01177_2: function()
+    {
+        let cards = [];
+        this.chooseList.getSelectedItems().forEach((item) => {
+            const div = this.chooseList.getItemDivId(item.id);
+            const order = parseInt($(div).getAttribute('order'));
+            cards.push({order: order, id: item.id});
+        });
+
+        //Sort cards by descending order (they will be added to the top of the deck in this order)
+        cards.sort((a, b) => b.order - a.order);        
+        const ids = cards.map((card) => card.id);
+
+        this.bgaPerformAction('actFromCardWithIds', { 
+            'ids': JSON.stringify(ids),
+        }).catch(() =>  {
+        }).success(() =>  {
+        });        
+    },
+
     onConfirmPass: function()
     {
         this.confirmationDialog(_("Are you sure you want to pass?"),
@@ -294,6 +314,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01152': 'actPassWithPass',
             'planningPhaseResolveSchemes_01152_2': 'actPassWithPass',
             'highDramaChallengeActionActivateTechnique': 'actHighDramaChallengeActionActivateTechnique_Pass',
+            'duskPhaseBegin01177': 'actPassWithPass',
         };
 
         //If the current game state is in actionArray set the action to the value in the array

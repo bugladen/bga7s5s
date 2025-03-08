@@ -428,6 +428,11 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
+        'duskPhaseBegin01177_2': () => {
+            this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onCardsChosen_01177_2());
+            dojo.addClass('actChooseCardSelected', 'disabled');
+        },
+
         'duskPhaseDiscard': () => {
             this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardsChosenForDiscard());
             dojo.addClass('actChooseDiscardCards', 'disabled');

@@ -148,6 +148,10 @@ var jstpl_location_control_chip = `
 <div id="\${id}-location-control-chip" style="--player-color:#\${player_color}" class="location-control-chip location-controller-player-color"></div>
 `;
 
+var jstpl_number_order_chip = `
+<div id="\${id}-number_order_chip" class="number-order-chip">\${id}</div>
+`;
+
 var jstpl_duel_table = `
 <div id="duel">
 <table id="duel_table" class="duel">
@@ -229,7 +233,7 @@ var jstpl_row_combat_card = `
 </script>  
 
 <div id="choose_container" class="whiteblock hand hidden">
-    <div><b><span id="choose_container_name"></span></b></div>
+    <div class="hand-label"><b><span id="choose_container_name"></span></b></div>
     <div id="chooseList" class="hidden">
     </div>
 </div>
@@ -295,13 +299,13 @@ var jstpl_row_combat_card = `
 <div id="home_anchor"></div>
 
 <div id="approachDeck-container" class="whiteblock hand">
-    <div><b>Your Approach Deck</b></div>
+    <div class="hand-label"><b>Your Approach Deck</b></div>
     <div id="approachDeck">
     </div>
 </div>
 
 <div id="factionHand-container" class="whiteblock hand">
-    <div><span><b>Your Faction Hand</b></span> <span id="faction_hand_info"></span></div>
+    <div class="hand-label"><span><b>Your Faction Hand</b></span> <span id="faction_hand_info"></span></div>
     <div id="factionHand">
     </div>
 </div>

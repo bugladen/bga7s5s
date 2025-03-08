@@ -55,9 +55,9 @@ abstract class Card
         }
     }
 
-    public function getGameStateArgs(Game $game): array {return []; }
+    public function argsFromCard(Game $game, int $state): array {return []; }
 
-    public function gameActionWithIds(Game $game, array $ids): void { }
+    public function actFromCardWithIds(Game $game, int $state, array $ids): void { }
 
     public function eventCheck($event)
     {

@@ -382,6 +382,12 @@ onLeavingState: function( stateName )
             }
         },
 
+        'duskPhaseBegin01177_2': () => {
+            dojo.addClass('choose_container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+        },
+
         'duskPhaseDiscard': () => {
             this.factionHand.setSelectionMode(0);
             dojo.place('factionHand-container', 'approachDeck-container', 'after');

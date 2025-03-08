@@ -514,18 +514,13 @@ trait ArgumentsTrait
     {
         $this->theah->buildCity();
 
-        switch ($this->gamestate->state_id()) 
-        {
-            case States::DUSK_PHASE_BEGIN_01177:
-                $id = $this->getCardIdByType('01177');
-                break;
-        }
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $card = $this->theah->getCardById($sourceId);
 
-        $card = $this->theah->getCardById($id);
         return [
             "_private" => [
                 "active" => [
-                    "args" => $card->getGameStateArgs($this)
+                    "args" => $card->argsFromCard($this, $this->gamestate->state_id())
                 ]
             ]
         ];       

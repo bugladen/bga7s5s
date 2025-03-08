@@ -23,12 +23,56 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         }
     },
 
-    onChooseCardClicked: function()
+    onChooseCardClicked: function(control_name, item_id) 
     {
-        if (this.chooseList.getSelectedItems().length === 1) {
-            dojo.removeClass('actChooseCardSelected', 'disabled');
-        } else {
-            dojo.addClass('actChooseCardSelected', 'disabled');
+        const methods = {
+            'duskPhaseBegin01177_2': () => {
+                // Declare static var named order
+                if (typeof this.onChooseCardClicked.order === 'undefined') {
+                    this.onChooseCardClicked.order = 0;
+                }
+
+                if (this.chooseList.isSelected(item_id) && this.onChooseCardClicked.order < 3) 
+                {                    
+                    const div = this.chooseList.getItemDivId(item_id);
+
+                    //Set the data element to the order of the card
+                    $(div).setAttribute('order', ++this.onChooseCardClicked.order);
+
+                    // Create a small red square html element to show that the card is selected
+                    dojo.place(this.format_block('jstpl_number_order_chip', {
+                        id: this.onChooseCardClicked.order,
+                    }), div, 'last');
+                } else {
+                    this.onChooseCardClicked.order = 0;
+                    this.chooseList.unselectAll();
+
+                    // Remove all the red square html elements
+                    dojo.query('.number-order-chip').forEach((element) => {
+                        //Delete the data element named order on the parent div
+                        element.parentNode.removeAttribute('order');                        
+                        
+                        dojo.destroy(element);
+                    });
+                }
+
+                if (this.chooseList.getSelectedItems().length === 3) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            }
+        };
+
+        if (methods[this.gamedatas.gamestate.name])
+            methods[this.gamedatas.gamestate.name]();
+        else
+        {
+            if (this.chooseList.getSelectedItems().length === 1) {
+                dojo.removeClass('actChooseCardSelected', 'disabled');
+            } else {
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
         }
     },
 

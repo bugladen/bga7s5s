@@ -26,10 +26,9 @@ class _01177 extends CityEventCard
         $this->CityCardNumber = 1;
     }
 
-    public function getGameStateArgs(Game $game): array 
+    public function argsFromCard(Game $game, int $state): array 
     {
-        $args = parent::getGameStateArgs($game);
-        $state = $game->gamestate->state_id();
+        $args = parent::argsFromCard($game, $state);
 
         if ($state == States::DUSK_PHASE_BEGIN_01177)
         {
@@ -43,23 +42,67 @@ class _01177 extends CityEventCard
             $args['ids'] = array_map(fn($character) => $character->Id, $characters);
         }
 
+        if ($state == States::DUSK_PHASE_BEGIN_01177_2)
+        {
+            $deck = $game->getGameDeckObject();
+            $deckCards = $deck->getCardsOnTop(3, Game::LOCATION_CITY_DECK);
+            $cards = [];
+            foreach ($deckCards as $deckCard) {
+                $card = $game->getCardObjectFromDb($deckCard['id']);
+                $cards[] = $card->getPropertyArray();
+            }
+    
+            return [
+                "cards" => $cards
+            ];
+            }
+
         return $args;        
     }
 
-    public function gameActionWithIds(Game $game, array $ids): void
+    public function actFromCardWithIds(Game $game, int $state, array $ids): void
     {
-        parent::gameActionWithIds($game, $ids);
+        parent::actFromCardWithIds($game, $state, $ids);
 
-        $selectedCharacter = $game->theah->getCharacterById($ids[0]);
-        $selectedCharacter->Conditions[] = "Helped By Penya";
-        $game->updateCardObjectInDb($selectedCharacter);
+        if ($state == States::DUSK_PHASE_BEGIN_01177)
+        {
+            $selectedCharacter = $game->theah->getCharacterById($ids[0]);
+            $selectedCharacter->Conditions[] = "Helped By Penya";
+            $game->updateCardObjectInDb($selectedCharacter);
+    
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen ${character_name} to follow Penya. 
+            They will now choose the order of the top 3 cards in the City Deck.'), [
+                "player_name" => $game->getActivePlayerName(),
+                "character_name" => "<strong>$selectedCharacter->Name</strong>",
+            ]);
+    
+            $game->gamestate->nextState("pickCards");
+        }
 
-        $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen ${character_name} to follow Penya.'), [
-            "player_name" => $game->getActivePlayerName(),
-            "character_name" => "<strong>$selectedCharacter->Name</strong>",
-        ]);
+        if ($state == States::DUSK_PHASE_BEGIN_01177_2)
+        {
+            $deck = $game->getGameDeckObject();
+            $top3Cards = $deck->getCardsOnTop(3, Game::LOCATION_CITY_DECK);
+            $top3Ids = array_map(fn($deckCard) => $deckCard['id'], $top3Cards);
 
-        $game->gamestate->nextState();
+            foreach ($ids as $id) 
+            {
+                if (!in_array($id, $top3Ids))
+                {
+                    throw new \BgaUserException("Card $id is not in the top 3 cards.");
+                }
+
+                //Move card to top of City Deck
+                $deck->insertCardOnExtremePosition((int)$id, Game::LOCATION_CITY_DECK, true);                
+            }
+
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen the order of the top 3 cards in the City Deck.'), [
+                "player_name" => $game->getActivePlayerName(),
+            ]);
+
+            $game->gamestate->nextState();
+        }
+
     }
 
     public function eventCheck($event)
@@ -105,6 +148,7 @@ class _01177 extends CityEventCard
                     {
                         $transition->transition = "01177";
                         $transition->playerId = $location->Controller;
+                        $transition->sourceId = $this->Id;
                     }
                     $event->theah->queueEvent($transition);
                 }

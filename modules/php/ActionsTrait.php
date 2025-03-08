@@ -1690,20 +1690,14 @@ trait ActionsTrait
         $this->gamestate->setPlayerNonMultiactive($playerId, 'cardsDiscarded'); // deactivate player; if none left, transition to 'dayPlanned' state
     }
 
-    public function actGameActionOnCardWithIds(string $ids)
+    public function actFromCardWithIds(string $ids)
     {
         $this->theah->buildCity();
         $ids = json_decode($ids, true);
 
-        switch ($this->gamestate->state_id())
-        {
-            case States::DUSK_PHASE_BEGIN_01177: 
-                $id = $this->getCardIdByType('01177');
-                break;
-
-        }
-        $card = $this->theah->getCardById($id);
-        $card->gameActionWithIds($this, $ids);
-}
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $card = $this->theah->getCardById($sourceId);
+        $card->actFromCardWithIds($this, $this->gamestate->state_id(), $ids);
+    }
 
 }

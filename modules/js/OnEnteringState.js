@@ -794,6 +794,19 @@ onEnteringState: function( stateName, args )
             }
         },
 
+        'duskPhaseBegin01177_2': () => {
+            if (this.isCurrentPlayerActive()) {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = _('Penya Shows the Way');
+
+                args.args._private.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+                this.chooseList.setSelectionMode(2);
+            }
+        },
+
         'duskPhaseCleanup': () => {
             //Remove all control chips from locations
             dojo.query('.location-control-chip').forEach((element) => {

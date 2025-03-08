@@ -1014,6 +1014,7 @@ trait StatesTrait
         $this->globals->delete(Game::DUEL_ROUND);
         $this->globals->delete(Game::DUEL_CHALLENGER);
         $this->globals->delete(Game::DUEL_DEFENDER);
+        $this->globals->delete(Game::TRANSITION_SOURCE_ID);
 
         $sql = "SELECT challenging_player_id, defending_player_id, challenger_id, defender_id FROM duel where duel_id = $duelId";
         $result = $this->getObjectListFromDB($sql)[0];
