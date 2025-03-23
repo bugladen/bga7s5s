@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class EventCityAction extends Action
+abstract class EventCityAction extends Action
 {
     public function __construct()
     {
@@ -14,6 +14,11 @@ class EventCityAction extends Action
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
     {
+        if (!parent::isAvailableToPlayer($playerId, $theah))
+        {
+            return false;
+        }
+        
         $card = $this->getOwningCard($theah);
         $location = $card->Location;
         $characters = $theah->getCharactersInPlayByPlayerId($playerId);

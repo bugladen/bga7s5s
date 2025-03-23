@@ -214,12 +214,17 @@ onLeavingState: function( stateName )
             }
         },
 
-        'highDramaRecruitActionChooseMercenary_client': () => {
+        'highDramaRecruitActionPayForMercenary_client': () => {
+            dojo.place('factionHand-container', 'approachDeck-container', 'after');
             this.factionHand.setSelectionMode(0);
             const card = this.cardProperties[this.clientStateArgs.performerId];
             const image = $(`${card.divId}_image`);
             this.clearCardAsSelectable(image)
             $('faction_hand_info').innerHTML = '';
+
+            const cost = $(`${card.divId}_wealth_cost`);
+            cost.innerHTML = card.wealthCost;
+            dojo.removeClass(cost, 'discounted-wealth-cost');
         },
 
         'highDramaInPlayActionChoosePerformer' : () => {
@@ -334,6 +339,45 @@ onLeavingState: function( stateName )
             for( const cardId in this.cardProperties ) {
                 card = this.cardProperties[cardId];
                 if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                }
+            }
+        },
+
+        'highDramaPhase01180' : () => {
+            dojo.addClass('choose_container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+            this.chooseList.setSelectionMode(0);
+        },
+
+        'highDramaPhase01180_2' : () => {
+            dojo.addClass('choose_container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+            this.chooseList.setSelectionMode(0);
+
+            for( const cardId in this.cardProperties ) {
+                card = this.cardProperties[cardId];
+                if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                }
+            }
+        },
+
+        'highDramaPhase01180_3' : () => {
+            dojo.addClass('choose_container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+            this.chooseList.setSelectionMode(0);
+
+            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+            this.factionHand.setSelectionMode(0);
+            for( const cardId in this.cardProperties ) {
+                card = this.cardProperties[cardId];
+                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
                     const image = $(`${card.divId}_image`);
                     this.clearCardAsSelectable(image);
                 }

@@ -26,6 +26,26 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
     onChooseCardClicked: function(control_name, item_id) 
     {
         const methods = {
+            'highDramaPhase01180': () => {
+                if (item_id === undefined) return;
+                var items = this.chooseList.getSelectedItems();
+                items.forEach((item) => {
+                    if (item.id != item_id) {
+                        this.chooseList.unselectItem(item.id);
+                    }
+                });
+                const card = this.cardProperties[item_id];
+                if ( ! card.traits.includes('Artifact')) {
+                    this.chooseList.unselectItem(item_id);
+                }
+
+                if (this.chooseList.getSelectedItems().length === 1) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
             'duskPhaseBegin01177_2': () => {
                 // Declare static var named order
                 if (typeof this.onChooseCardClicked.order === 'undefined') {
@@ -91,7 +111,18 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 $('faction_hand_info').innerHTML = items.length > 0 ? `(${wealth} Wealth worth of cards selected)` : '';
             },
 
-            'highDramaRecruitActionChooseMercenary_client': () => {
+            'highDramaPhase01180_3': () => {
+                var items = this.factionHand.getSelectedItems();
+                let wealth = 0;
+                items.forEach((item) => {
+                    const card = this.cardProperties[item.type];
+                    wealth += card.traits.includes('Wealth') ? 2 : 1;
+                    
+                });
+                $('faction_hand_info').innerHTML = `(${wealth} Wealth worth of cards selected)`;
+            },
+
+            'highDramaRecruitActionPayForMercenary_client': () => {
                 var items = this.factionHand.getSelectedItems();
                 let wealth = 0;
                 items.forEach((item) => {

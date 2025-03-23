@@ -51,9 +51,10 @@ class _01074 extends FactionAttachment implements IHasTechniques
     {
         parent::eventCheck($event);
 
-        if ($event instanceof EventAttachmentEquipped && $event->attachment->Id == $this->Id) 
+        if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id) 
         {
-            if (!in_array("Duelist", $event->performer->Traits))
+            $performer = $event->theah->getCardById($event->performerId);
+            if (!in_array("Duelist", $performer->Traits))
                 throw new \BgaUserException(_("Mastercrafted Rapier can only be equipped to Duelists."));
         }
     }

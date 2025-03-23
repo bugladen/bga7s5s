@@ -11,7 +11,6 @@ abstract class CardAbility
     protected string $ClassId;
     public int $OwnerId;
     public string $Name;
-    public bool $Active;
     public bool $Used;
 
     public function __construct()
@@ -25,7 +24,6 @@ abstract class CardAbility
         $this->ClassId = $this->Id;
 
         $this->Name = "";
-        $this->Active = false;
         $this->Used = false;
     }
 
@@ -51,11 +49,6 @@ abstract class CardAbility
 
     }
 
-    public function isActive(): bool
-    {
-        return $this->Active;
-    }
-
     public function isAvailable(): bool
     {
         return $this->Used == false;
@@ -77,18 +70,6 @@ abstract class CardAbility
         return $owner;
     }
 
-    public function setActive(Theah $theah, bool $active)
-    {
-        $this->Active = $active;
-
-        if ($this->OwnerId == null) {
-            return;
-        }
-
-        $owner = $theah->getCardById($this->OwnerId);
-        $owner->IsUpdated = true;
-    }
-
     public function setUsed(Theah $theah, bool $used)
     {
         $this->Used = $used;
@@ -99,11 +80,5 @@ abstract class CardAbility
 
         $owner = $theah->getCardById($this->OwnerId);
         $owner->IsUpdated = true;
-    }
-
-    public function cleanup()
-    {
-        $this->Active = false;
-        $this->Used = false;
     }
 }

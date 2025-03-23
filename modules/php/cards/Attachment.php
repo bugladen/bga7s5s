@@ -24,6 +24,11 @@ abstract class Attachment extends Card implements IWealthCost
         $this->AttachedToId = 0;
     }
 
+    public function getEquipDiscount(Character $performer, Attachment $attachment): int
+    {
+        return 0;
+    }
+
     public function getPropertyArray(): array
     {
         $properties = parent::getPropertyArray();

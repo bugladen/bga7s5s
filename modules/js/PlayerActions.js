@@ -103,10 +103,11 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01125_4'                   : 'actPlanningPhase_01125_4',
             'planningPhaseEnd_01098'                                : 'actPlanningPhaseEnd_01098',
             'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
+            'highDramaPhase01180_2'                                 : 'actFromCardWithIds',
             'highDramaMoveActionChoosePerformer'                    : 'actHighDramaMoveActionPerformerChosen',
             'highDramaInPlayActionChoosePerformer'                  : 'actHighDramaInPlayActionPerformerChosen',  
             'highDramaRecruitActionChoosePerformer'                 : 'actHighDramaRecruitActionPerformerChosen',
-            'highDramaRecruitActionChooseMercenary'                 : 'highDramaRecruitActionChooseMercenary_client',
+            'highDramaRecruitActionChooseMercenary'                 : 'highDramaRecruitActionPayForMercenary_client',
             'highDramaEquipActionChoosePerformer'                   : 'actHighDramaEquipActionPerformerChosen',
             'highDramaEquipActionChooseAttachmentFromPlay_client'   : 'highDramaEquipActionPayForAttachmentFromPlay_client',
             'highDramaClaimActionChoosePerformer'                   : 'actHighDramaClaimActionPerformerChosen',
@@ -118,7 +119,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const clientMessages = {
             'highDramaBeginning_01144_client'                       : "${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
-            'highDramaRecruitActionChooseMercenary_client'          : "${you} are performing a Recruit Action. ${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
+            'highDramaRecruitActionPayForMercenary_client'          : "${you} are performing a Recruit Action. Choose cards from your Faction Hand to pay for selected Mercenary:",
             'highDramaEquipActionPayForAttachmentFromPlay_client'   : "${you} are performing an Equip Action. Choose cards from your Faction Hand to pay for selected Attachment:",
         };
 
@@ -185,21 +186,16 @@ return declare('seventhseacityoffivesails.actions', null, {
     {
         var items = this.chooseList.getSelectedItems();
         const card = Object.values(items)[0];
-        let action = '';
-        switch (this.gamedatas.gamestate.name) {
-            case 'planningPhaseResolveSchemes_01016_2':
-                action = 'actPlanningPhase_01016_2';
-                break;
-            case 'planningPhaseResolveSchemes_01044':
-                action = 'actPlanningPhase_01044';
-                break;
-            case 'planningPhaseResolveSchemes_01045':
-                action = 'actPlanningPhase_01045';
-                break;
-            case 'duelChooseGambleCard':
-                action = 'actGambleCardChosen';
-                break;
-        }
+
+        const actions = {
+            'planningPhaseResolveSchemes_01016_2'   : 'actPlanningPhase_01016_2',
+            'planningPhaseResolveSchemes_01044'     : 'actPlanningPhase_01044',
+            'planningPhaseResolveSchemes_01045'     : 'actPlanningPhase_01045',
+            'highDramaPhase01180'                   : 'actFromCardWithId',
+            'duelChooseGambleCard'                  : 'actGambleCardChosen',
+        };
+
+        const action = actions[this.gamedatas.gamestate.name];
 
         this.bgaPerformAction(action, { 
             'id' : card.id
@@ -214,8 +210,8 @@ return declare('seventhseacityoffivesails.actions', null, {
         items = items.map((item) => item.id);
 
         const actionArray = {
-            'highDramaBeginning_01144_client': 'actHighDramaBeginning_01144',
-            'highDramaRecruitActionChooseMercenary_client': 'actHighDramaRecruitActionMercenaryChosen',
+            'highDramaBeginning_01144_client'               : 'actHighDramaBeginning_01144',
+            'highDramaRecruitActionPayForMercenary_client'  : 'actHighDramaRecruitActionMercenaryChosen',
         };
 
         const action = actionArray[this.gamedatas.gamestate.name];
@@ -240,6 +236,23 @@ return declare('seventhseacityoffivesails.actions', null, {
             'performerId': this.clientStateArgs.performerId,
             'attachmentId': this.clientStateArgs.chosenAttachmentId,
             'payWithCards': JSON.stringify(items),
+        }).catch(() =>  {
+        });        
+    },
+
+    onAttachmentPaymentConfirmedFromCard: function()
+    {
+        var items = this.factionHand.getSelectedItems();
+        items = items.map((item) => item.id);
+
+        const actionArray = {
+            'highDramaPhase01180_3'               : 'actFromCardWithIds',
+        };
+
+        const action = actionArray[this.gamedatas.gamestate.name];
+
+        this.bgaPerformAction(action, { 
+            'ids': JSON.stringify(items),
         }).catch(() =>  {
         });        
     },
@@ -304,17 +317,18 @@ return declare('seventhseacityoffivesails.actions', null, {
     onPass: function()
     {
         const actionArray = {
-            'highDramaPlayerTurn': 'actHighDramaPass',
-            'planningPhaseResolveSchemes_01016_2': 'actPassWithPass',
-            'planningPhaseResolveSchemes_01125': 'actPlanningPhase_01125_Pass',
-            'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2_Pass',
-            'planningPhaseResolveSchemes_01125_4': 'actPlanningPhase_01125_4_Pass',
-            'planningPhaseResolveSchemes_01145': 'actPlanningPhase_01145_Pass',            
+            'highDramaPlayerTurn'                       : 'actHighDramaPass',
+            'highDramaPhase01180'                       : 'actPassWithPass',
+            'planningPhaseResolveSchemes_01016_2'       : 'actPassWithPass',
+            'planningPhaseResolveSchemes_01125'         : 'actPlanningPhase_01125_Pass',
+            'planningPhaseResolveSchemes_01125_2'       : 'actPlanningPhase_01125_2_Pass',
+            'planningPhaseResolveSchemes_01125_4'       : 'actPlanningPhase_01125_4_Pass',
+            'planningPhaseResolveSchemes_01145'         : 'actPlanningPhase_01145_Pass',            
             'planningPhaseResolveSchemes_01145_2_client': 'actPlanningPhase_01145_Pass',            
-            'planningPhaseResolveSchemes_01152': 'actPassWithPass',
-            'planningPhaseResolveSchemes_01152_2': 'actPassWithPass',
-            'highDramaChallengeActionActivateTechnique': 'actHighDramaChallengeActionActivateTechnique_Pass',
-            'duskPhaseBegin01177': 'actPassWithPass',
+            'planningPhaseResolveSchemes_01152'         : 'actPassWithPass',
+            'planningPhaseResolveSchemes_01152_2'       : 'actPassWithPass',
+            'highDramaChallengeActionActivateTechnique' : 'actHighDramaChallengeActionActivateTechnique_Pass',
+            'duskPhaseBegin01177'                       : 'actPassWithPass',
         };
 
         //If the current game state is in actionArray set the action to the value in the array

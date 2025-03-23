@@ -515,7 +515,7 @@ onEnteringState: function( stateName, args )
             }
         },
 
-        'highDramaRecruitActionChooseMercenary_client': () => {
+        'highDramaRecruitActionPayForMercenary_client': () => {
             const card = this.cardProperties[this.clientStateArgs.selectedCards[0]];
             const image = $(`${card.divId}_image`);
             dojo.addClass(image, 'chosen');
@@ -527,6 +527,7 @@ onEnteringState: function( stateName, args )
             cost.innerHTML = parseInt(discountedCost);
             dojo.addClass(cost, 'discounted-wealth-cost');
 
+            dojo.place('factionHand-container', 'city', 'before');
             this.factionHand.setSelectionMode(2);
         },    
 
@@ -721,6 +722,93 @@ onEnteringState: function( stateName, args )
             }
         },
 
+        'highDramaPhase01180' : () => {
+            dojo.removeClass('choose_container', 'hidden');
+            dojo.removeClass('chooseList', 'hidden');
+            
+            let count = 0;
+            args.args.args.cards.forEach((card) => {
+                this.addCardToDeck(this.chooseList, card);
+                if (card.traits.includes('Artifact')) 
+                    count++;
+                else
+                {
+                    let div = this.chooseList.getItemDivId(card.id);
+                    dojo.addClass(div, 'unselectable');        
+                }
+
+                this.cardProperties[card.id] = card;                
+            });
+            $('choose_container_name').innerHTML = _(`Kaj Kousei Artifacts ( ${count} Found )`);
+            this.chooseList.setSelectionMode(0);
+            if (this.isCurrentPlayerActive()) {
+                if (count > 0)
+                    this.chooseList.setSelectionMode(1);
+            }
+        },
+
+        'highDramaPhase01180_2' : () => {
+            if (this.isCurrentPlayerActive()) {
+                //Wait a second for stock object to catch up?
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                setTimeout(() => {
+                    this.addCardToDeck(this.chooseList, args.args.args.chosenCard);
+                }, 500);
+                $('choose_container_name').innerHTML = _(`Chosen Artifact to Equip`);
+                this.chooseList.setSelectionMode(0);
+    
+                this.numberOfCardsSelectable = 1;
+
+                args.args.args.ids.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+            }
+        },
+
+        'highDramaPhase01180_3': () => {
+            if (this.isCurrentPlayerActive()) {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                setTimeout(() => {
+                    this.addCardToDeck(this.chooseList, args.args.args.chosenAttachment);
+                    const card = args.args.args.chosenAttachment;
+                    const chosenAttachmentId = card.id;
+                    let div = this.chooseList.getItemDivId(chosenAttachmentId);
+        
+                    dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                        id: div,
+                        cost: card.wealthCost,
+                    }), div, "first" );    
+        
+                    const costDiv = $(`${div}_wealth_cost`);
+                    const cost = parseInt(costDiv.innerHTML);
+                    let discountedCost = cost - args.args.args.discount;
+                    discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                    if (discountedCost !== cost)
+                    {
+                        costDiv.innerHTML = parseInt(discountedCost);
+                        dojo.addClass(costDiv, 'discounted-wealth-cost');
+                    }
+
+                }, 500);
+
+                card = this.cardProperties[args.args.args.performerId];
+                const image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+
+                $('choose_container_name').innerHTML = _(`Chosen Artifact to Equip`);
+                this.chooseList.setSelectionMode(0);
+    
+                $('faction_hand_info').innerHTML = `(0 Wealth worth of cards selected)`;
+                dojo.place('factionHand-container', 'city', 'before');
+                this.factionHand.setSelectionMode(2);
+            }
+        },
+
         'duelChooseAction': () => {
             if (this.isCurrentPlayerActive()) {
                 this.factionHand.setSelectionMode(1);
@@ -784,7 +872,7 @@ onEnteringState: function( stateName, args )
         'duskPhaseBegin01177' : () => {
             if (this.isCurrentPlayerActive()) {
                 this.numberOfCardsSelectable = 1;
-                args.args._private.args.ids.forEach((cardId) => {
+                args.args.args.ids.forEach((cardId) => {
                     card = this.cardProperties[cardId];
                     if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId()) {
                         const image = $(`${card.divId}_image`);

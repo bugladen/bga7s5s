@@ -12,7 +12,7 @@ interface IHasManeuvers
 
     public function getManeuverById($id): ?Maneuver;
 
-    public function getManeuversArray(): Array;
+    public function getManeuversArray(bool $mustBeAvailable = false): Array;
 
     public function updateManeuverOwnerIds($id);
 }

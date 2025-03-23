@@ -55,7 +55,7 @@ class _01177 extends CityEventCard
             return [
                 "cards" => $cards
             ];
-            }
+        }
 
         return $args;        
     }

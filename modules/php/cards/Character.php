@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 abstract class Character extends Card
 {
@@ -25,8 +26,6 @@ abstract class Character extends Card
     public bool $DashedFinesse;
     public bool $DashedInfluence;
 
-    public int $ModifiedEquipDiscount;
-
     public Array $Attachments = [];
 
     public function __construct()
@@ -42,7 +41,6 @@ abstract class Character extends Card
         $this->ModifiedFinesse = 0;
         $this->Influence = 0;
         $this->ModifiedInfluence = 0;
-        $this->ModifiedEquipDiscount = 0;
 
         $this->DashedCombat = false;
         $this->DashedFinesse = false;
@@ -77,9 +75,19 @@ abstract class Character extends Card
         return $parleying ? $this->ModifiedInfluence : 0;
     }
 
-    public function getEquipDiscount() : int
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment) : int
     {
-        return $this->ModifiedEquipDiscount;
+        $discount = 0;
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getCardById($attachmentId);
+            if ($attachment instanceof Attachment)
+            {
+                $discount += $attachment->getEquipDiscount($performer, $attachment);
+            }
+        
+        }
+        return $discount;
     }
 
     public function getPressureInfluenceValue(): int
@@ -95,6 +103,7 @@ abstract class Character extends Card
         $this->ModifiedInfluence += $attachment->InfluenceModifier;
 
         $this->Attachments[] = $attachment->Id;
+        $this->IsUpdated = true;
     }
 
     public function removeAttachment(Attachment $attachment)
@@ -107,7 +116,7 @@ abstract class Character extends Card
             $this->ModifiedInfluence -= $attachment->InfluenceModifier;
 
             unset($this->Attachments[$index]);
-        }    
+        }
     }
 
     public function handleEvent($event)
@@ -190,7 +199,6 @@ abstract class Character extends Card
         $properties['modifiedFinesse'] = $this->ModifiedFinesse;
         $properties['influence'] = $this->Influence;
         $properties['modifiedInfluence'] = $this->ModifiedInfluence;
-        $properties['modifiedEquipDiscount'] = $this->ModifiedEquipDiscount;
 
         $properties['dashedCombat'] = $this->DashedCombat;
         $properties['dashedFinesse'] = $this->DashedFinesse;

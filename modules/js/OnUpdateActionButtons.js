@@ -240,7 +240,7 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
-        'highDramaRecruitActionChooseMercenary_client': () => {
+        'highDramaRecruitActionPayForMercenary_client': () => {
             this.addActionButton(`actBack`, _('<'), () => 
                 this.setClientState('highDramaRecruitActionChooseMercenary',
                     {
@@ -367,6 +367,29 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`btnReject`, _('Reject'), () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
             this.addActionButton(`actChooseCardSelected`, _('Intervene'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
+        },
+
+        'highDramaPhase01180': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {})) 
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
+        },
+
+        'highDramaPhase01180_2': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
+        },
+
+        'highDramaPhase01180_3': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmedFromCard());
+            }
         },
 
         'duelChooseAction': () => {

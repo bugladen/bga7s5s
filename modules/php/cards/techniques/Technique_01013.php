@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -63,7 +64,7 @@ class Technique_01013 extends Technique
                 $handler($event);
                 break;
 
-            case $event instanceof EventGenerateChallengeThreat && $this->Active && $this->AllowEffect:
+            case $event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id && $this->AllowEffect:
                 $handler = function(EventGenerateChallengeThreat $event) {
                     if ($this->UseThrust)
                     {
@@ -89,13 +90,16 @@ class Technique_01013 extends Technique
                 };
                 $handler($event);
                 break;
-        }
-    }
 
-    public function cleanup()
-    {
-        parent::cleanup();
-        $this->UseThrust = false;
-        $this->AllowEffect = false;
+            case $event instanceof EventDuelEnd && $this->ResetOnDuelEnd:
+                $handler = function(EventDuelEnd $event) {
+                    $this->UseThrust = false;
+                    $this->AllowEffect = false;
+                    $card = $this->getOwningCard($event->theah);
+                    $card->IsUpdated = true;
+                };
+                $handler($event);
+                break;
+        }
     }
 }

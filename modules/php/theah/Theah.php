@@ -38,6 +38,11 @@ class Theah
         $this->cityBuilt = false;
     }
 
+    public function addCardToWorld(Card $card)
+    {
+        $this->cards[$card->Id] = $card;
+    }
+
     public function getDBObject()
     {
         return $this->db;
@@ -416,6 +421,16 @@ class Theah
             }
         }
         return $characters;
+    }
+
+    function getEquipDiscount(Character $performer, Attachment $attachment): int
+    {
+        $characters = $this->getCharactersInPlay();
+        $discount = 0;
+        foreach ($characters as $character) {
+            $discount += $character->getEquipDiscount($this, $performer, $attachment);
+        }
+        return $discount;
     }
 
     function getInPlayActionsAvailableToPlayer($playerId)

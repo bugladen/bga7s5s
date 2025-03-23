@@ -578,6 +578,7 @@ trait StatesTrait
         {
             $event->actorId = $challenger->Id;
             $event->adversaryId = $defender->Id;
+            $event->techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE, 0);
             $event->statUsed = $this->globals->get(GAME::CHALLENGE_STAT);
         }
         $this->theah->queueEvent($event);

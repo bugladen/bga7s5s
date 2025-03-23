@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
@@ -71,29 +72,41 @@ trait EventHub
                 break;
 
             case $event instanceof EventAttachmentEquipped:
-                $performer = $this->cards[$event->performer->Id];
-                $attachment = $this->cards[$event->attachment->Id];
+                $handler = function (Theah $theah, EventAttachmentEquipped $event)
+                {
+                    $performer = $theah->getCardById($event->performerId);                    
+                    $attachment = $theah->getCardById($event->attachmentId);
+                    // If the attachment is not in the world (came from the City Deck), add it
+                    if ($attachment == null)
+                    {
+                        $attachment = $theah->game->getCardObjectFromDb($event->attachmentId);
+                        $theah->addCardToWorld($attachment);
+                    }
 
-                $performer->addAttachment($attachment);
-                $performer->IsUpdated = true;
+                    if ($performer instanceof Character) {
+                        $performer->addAttachment($attachment);
+                    }
 
-                $attachment->ControllerId = $event->playerId;
-                $attachment->AttachedToId = $performer->Id;
-                $attachment->Location = $performer->Location;
-                $attachment->IsUpdated = true;
-                
-                // Notify players of recruited character
-                $this->game->notifyAllPlayers("attachmentEquipped", clienttranslate('${player_name} equipped ${attachment_name} to ${performer_name} at a discount of ${discount} for a cost of ${cost} Wealth.'), [
-                    "player_id" => $event->playerId,
-                    "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "attachment_name" => "<span style='font-weight:bold'>{$attachment->Name}</span>",
-                    "performer_name" => "<span style='font-weight:bold'>{$performer->Name}</span>",
-                    "attachment" => $attachment->getPropertyArray(),
-                    "performerId" => $performer->Id,
-                    "discount" => $event->discount,
-                    "cost" => $event->cost,
-                ]);
-
+                    if ($attachment instanceof Attachment) {                        
+                        $attachment->ControllerId = $event->playerId;
+                        $attachment->AttachedToId = $performer->Id;
+                        $attachment->Location = $performer->Location;
+                        $attachment->IsUpdated = true;
+                    }
+                    
+                    // Notify players of recruited character
+                    $theah->game->notifyAllPlayers("attachmentEquipped", clienttranslate('${player_name} equipped ${attachment_name} to ${performer_name} at a discount of ${discount} for a cost of ${cost} Wealth.'), [
+                        "player_id" => $event->playerId,
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "attachment_name" => "<span style='font-weight:bold'>{$attachment->Name}</span>",
+                        "performer_name" => "<span style='font-weight:bold'>{$performer->Name}</span>",
+                        "attachment" => $attachment->getPropertyArray(),
+                        "performerId" => $performer->Id,
+                        "discount" => $event->discount,
+                        "cost" => $event->cost,
+                    ]);
+                };
+                $handler($this, $event);
                 break;
 
 

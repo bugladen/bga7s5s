@@ -28,11 +28,11 @@ trait ManeuverTrait
         return null;
     }
 
-    public function getManeuversArray(bool $mustBeActive = false): Array
+    public function getManeuversArray(bool $mustBeAvailable = false): Array
     {
         $array = [];
         foreach ($this->Maneuvers as $maneuver) {
-            if ($mustBeActive && !$maneuver->IsActive)
+            if ($mustBeAvailable && !$maneuver->Used)
                 continue;
             $array[] = ["id" => $maneuver->Id, "name" => $maneuver->Name];
         }

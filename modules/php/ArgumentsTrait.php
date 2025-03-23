@@ -202,9 +202,11 @@ trait ArgumentsTrait
     public function argsHighDramaRecruitActionChooseMercenary(): array
     {
         $performerId = $this->globals->get(GAME::CHOSEN_CARD);
+        $discount = $this->globals->get(GAME::DISCOUNT);
 
         return [
-            "discount" => $this->globals->get(GAME::DISCOUNT),
+            "discount" => $discount,
+            "withWithout" => $discount > 0 ? "WITH" : "WITHOUT",
             "performerId" => $performerId,
         ];
     }
@@ -518,6 +520,19 @@ trait ArgumentsTrait
         $card = $this->theah->getCardById($sourceId);
 
         return [
+            "args" => $card->argsFromCard($this, $this->gamestate->state_id())
+        ];       
+        
+    }
+
+    public function argsFromCardPrivate(): array
+    {
+        $this->theah->buildCity();
+
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $card = $this->theah->getCardById($sourceId);
+
+        return [
             "_private" => [
                 "active" => [
                     "args" => $card->argsFromCard($this, $this->gamestate->state_id())
@@ -526,5 +541,4 @@ trait ArgumentsTrait
         ];       
         
     }
-
 }

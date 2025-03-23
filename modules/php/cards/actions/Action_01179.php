@@ -32,8 +32,7 @@ class Action_01179 extends EventCityAction
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
     {
-        $available = parent::isAvailableToPlayer($playerId, $theah);
-        if (!$available)
+        if (!parent::isAvailableToPlayer($playerId, $theah))
         {
             return false;
         }

@@ -28,11 +28,28 @@ trait DebugTrait
         ]);
     }
     
-    public function debug_IncludeCityCard(string $className)
+    public function debug_IncludeCityCardInSetup(string $className)
     {
         $card = $this->instantiateCard($className);
         if ($card) {
             $this->globals->set(Game::DEBUG_INCLUDE_CITY_CARD, $className);
+        }
+    }
+
+    public function debug_AddCityCardToTopOfDeck(string $className)
+    {
+        $card = $this->instantiateCard($className);
+        if ($card) 
+        {
+            $location = Game::LOCATION_CITY_DECK;
+            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$className}', 0, '{$location}', 0)";
+            $this->DbQuery($sql);
+
+            //Store the card Id in the object, and serialize the card object to the db
+            $id = $this->DbGetLastId();
+            $card->setId($id);
+            $this->updateCardObjectInDb($card);
+            $this->cards->insertCardOnExtremePosition($card->Id, Game::LOCATION_CITY_DECK, true);
         }
     }
 
@@ -60,7 +77,7 @@ trait DebugTrait
         }
     }
 
-    public function dbgSetCardController(int $cardId, int $playerId)
+    public function debug_SetCardController(int $cardId, int $playerId)
     {
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);

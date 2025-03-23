@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
@@ -923,7 +924,7 @@ trait ActionsTrait
         }
 
         //Set the discount for equipping.
-        $discount = $performer->getEquipDiscount(true);
+        $discount = $this->theah->getEquipDiscount($performer);
         $this->globals->set(Game::DISCOUNT, $discount);
 
         $this->globals->set(GAME::CHOSEN_CARD, $performer->Id);
@@ -993,8 +994,8 @@ trait ActionsTrait
         //Equip the attachment
         $equipAttachmentEvent = $this->theah->createEvent(Events::AttachmentEquipped);
         if ($equipAttachmentEvent instanceof EventAttachmentEquipped) {
-            $equipAttachmentEvent->attachment = $attachment;
-            $equipAttachmentEvent->performer = $performer;
+            $equipAttachmentEvent->attachmentId = $attachment->Id;
+            $equipAttachmentEvent->performerId = $performer->Id;
             $equipAttachmentEvent->playerId = $playerId;
             $equipAttachmentEvent->discount = $discount;
             $equipAttachmentEvent->cost = $cost;
@@ -1145,7 +1146,26 @@ trait ActionsTrait
 
         $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
 
-        $this->gamestate->nextState("inPlayActionChosen");
+        // A character action does not need to choose a performer, as the performer is built into the action
+        if ($action instanceof CharacterAction)
+        {
+            $this->globals->set(GAME::CHOSEN_PERFORMER, $action->OwnerId);
+
+            $event = $this->theah->createEvent(Events::ActionTriggered);
+            if ($event instanceof EventActionTriggered) 
+            {
+                $event->playerId = $player_id;
+                $event->performerId = $action->OwnerId;
+                $event->actionId = $actionId;
+            }
+            $this->theah->eventCheck($event);
+            $this->theah->queueEvent($event);
+    
+            $this->globals->set(GAME::PASS_COUNT, 0);
+            $this->gamestate->nextState("inPlayActionPerformerChosen");
+        }
+        else
+            $this->gamestate->nextState("inPlayActionChosen");
     }
 
     public function actHighDramaInPlayActionPerformerChosen(string $ids)
@@ -1688,6 +1708,23 @@ trait ActionsTrait
         }
         
         $this->gamestate->setPlayerNonMultiactive($playerId, 'cardsDiscarded'); // deactivate player; if none left, transition to 'dayPlanned' state
+    }
+
+    public function actFromCardPass()
+    {
+        $this->theah->buildCity();
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $card = $this->theah->getCardById($sourceId);
+        $card->actFromCardPass($this, $this->gamestate->state_id());
+    }
+
+    public function actFromCardWithId(int $id)
+    {
+        $this->theah->buildCity();
+
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $card = $this->theah->getCardById($sourceId);
+        $card->actFromCardWithId($this, $this->gamestate->state_id(), $id);
     }
 
     public function actFromCardWithIds(string $ids)

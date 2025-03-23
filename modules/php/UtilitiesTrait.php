@@ -275,6 +275,22 @@ trait UtilitiesTrait
         return false;
     }
 
+    public function handWealthCount(int $playerId)
+    {
+        $hand = $this->cards->getCardsInLocation('hand', $playerId);
+        $wealth = 0;
+        foreach ($hand as $handCard) {
+            $card = $this->getCardObjectFromDb($handCard['id']);
+            //Does card have the wealth trait?  Count as 2 if it does.
+            if (in_array('Wealth', $card->Traits))
+                $wealth += 2;
+            else
+                $wealth += 1;
+        }
+
+        return $wealth;
+    }
+
     public function handHasAttachments(int $playerId)
     {
         $hand = $this->cards->getCardsInLocation('hand', $playerId);

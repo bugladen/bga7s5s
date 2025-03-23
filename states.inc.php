@@ -639,6 +639,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
                 "endOfEvents" => States::NEXT_PLAYER,
                 "endOfGame" => States::END_GAME
                 ]
@@ -728,7 +729,7 @@ $machinestates = [
                     "endOfGame" => States::END_GAME
                 ]
             ],
-        States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE => [
+    States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE => [
             "name" => "highDramaChallengeActionAcceptChallenge",
             "description" => clienttranslate('${actplayer} is choosing to accept Challenge.'),
             "descriptionmyturn" => clienttranslate('${you} must choose to accept Challenge, or Intervene:'),
@@ -880,109 +881,95 @@ $machinestates = [
                 "back" => States::HIGH_DRAMA_PLAYER_TURN
             ]
         ],
-        States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_DESTINATION => [
-            "name" => "highDramaMoveActionChooseLocation",
-            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            "descriptionmyturn" => clienttranslate('${you} are performing a Move Action.  Choose a destination location for your Perfomer:'),
-            "type" => "activeplayer",
-            "args" => "argsHighDramaMoveActionChooseDestination",
-            "possibleactions" => [
-                "actHighDramaMoveActionDestinationChosen", 
-                "actBack",
+            States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_DESTINATION => [
+                "name" => "highDramaMoveActionChooseLocation",
+                "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+                "descriptionmyturn" => clienttranslate('${you} are performing a Move Action.  Choose a destination location for your Perfomer:'),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaMoveActionChooseDestination",
+                "possibleactions" => [
+                    "actHighDramaMoveActionDestinationChosen", 
+                    "actBack",
+                ],
+                "transitions" => [
+                    "destinationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
+                    "back" => States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_PERFORMER
+                ]
             ],
-            "transitions" => [
-                "destinationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
-                "back" => States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_PERFORMER
-            ]
-        ],
 
-        States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER => [
-            "name" => "highDramaRecruitActionChoosePerformer",
-            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            "descriptionmyturn" => clienttranslate('${you} are performing a Recruit Action.  Choose a Performer that will recruit:'),
-            "type" => "activeplayer",
-            "args" => "argsHighDramaRecruitActionChoosePerformer",
-            "possibleactions" => [
-                "actHighDramaRecruitActionPerformerChosen", 
-                "actBack",
+            States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER => [
+                "name" => "highDramaRecruitActionChoosePerformer",
+                "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+                "descriptionmyturn" => clienttranslate('${you} are performing a Recruit Action.  Choose a Performer that will recruit:'),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaRecruitActionChoosePerformer",
+                "possibleactions" => [
+                    "actHighDramaRecruitActionPerformerChosen", 
+                    "actBack",
+                ],
+                "transitions" => [
+                    "performerChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_PARLEYABLE, 
+                    "back" => States::HIGH_DRAMA_PLAYER_TURN
+                ]
             ],
-            "transitions" => [
-                "performerChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_PARLEYABLE, 
-                "back" => States::HIGH_DRAMA_PLAYER_TURN
-            ]
-        ],
-        States::HIGH_DRAMA_RECRUIT_ACTION_PARLEYABLE => [
-            "name" => "highDramaRecruitActionParleyable",
-            "type" => "game",
-            "action" => "stHighDramaRecruitActionParleyable",
-            "updateGameProgression" => false,
-            "transitions" => [
-                "parleyable" => States::HIGH_DRAMA_RECRUIT_ACTION_PARLEY, 
-                "notParleyable" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY
-            ]
-        ],
-        States::HIGH_DRAMA_RECRUIT_ACTION_PARLEY => [
-            "name" => "highDramaRecruitActionParley",
-            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            "descriptionmyturn" => clienttranslate('${you} are performing a Recruit Action.  Choose if your Performer will Parley:'),
-            "type" => "activeplayer",
-            "args" => "argsHighDramaRecruitActionParley",
-            "possibleactions" => [
-                "actHighDramaRecruitActionParleyYes", 
-                "actHighDramaRecruitActionParleyNo", 
-                "actBack",
+            States::HIGH_DRAMA_RECRUIT_ACTION_PARLEYABLE => [
+                "name" => "highDramaRecruitActionParleyable",
+                "type" => "game",
+                "action" => "stHighDramaRecruitActionParleyable",
+                "updateGameProgression" => false,
+                "transitions" => [
+                    "parleyable" => States::HIGH_DRAMA_RECRUIT_ACTION_PARLEY, 
+                    "notParleyable" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY
+                ]
             ],
-            "transitions" => [
-                "parleyChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY, 
-                "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
-            ]
-        ],
-        States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY => [
-            "name" => "highDramaRecruitActionChooseMercenary",
-            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            "descriptionmyturn" => clienttranslate('${you} are performing a Recruit Action.  Choose a Mercenary to recruit:'),
-            "type" => "activeplayer",
-            "args" => "argsHighDramaRecruitActionChooseMercenary",
-            "possibleactions" => [
-                "actHighDramaRecruitActionMercenaryChosen", 
-                "actBack",
+            States::HIGH_DRAMA_RECRUIT_ACTION_PARLEY => [
+                "name" => "highDramaRecruitActionParley",
+                "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+                "descriptionmyturn" => clienttranslate('${you} are performing a Recruit Action.  Choose if your Performer will Parley:'),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaRecruitActionParley",
+                "possibleactions" => [
+                    "actHighDramaRecruitActionParleyYes", 
+                    "actHighDramaRecruitActionParleyNo", 
+                    "actBack",
+                ],
+                "transitions" => [
+                    "parleyChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY, 
+                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
+                ]
             ],
-            "transitions" => [
-                "mercenaryChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
-                "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
-            ]
-        ],
-        States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION => [
-            "name" => "highDramaInPlayActionChooseAction",
-            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            "descriptionmyturn" => clienttranslate('${you} are performing an in-play Action.  Choose an Action:'),
-            "type" => "activeplayer",
-            "args" => "argsHighDramaInPlayActionChooseAction",
-            "possibleactions" => [
-                "actHighDramaInPlayActionChosen", 
-                "actBack",
+            States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY => [
+                "name" => "highDramaRecruitActionChooseMercenary",
+                "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+                "descriptionmyturn" => clienttranslate('${you} are performing a Recruit Action.  Choose a Mercenary to recruit:'),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaRecruitActionChooseMercenary",
+                "possibleactions" => [
+                    "actHighDramaRecruitActionMercenaryChosen", 
+                    "actBack",
+                ],
+                "transitions" => [
+                    "mercenaryChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
+                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
+                ]
             ],
-            "transitions" => [
-                "inPlayActionChosen" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER, 
-                "back" => States::HIGH_DRAMA_PLAYER_TURN
-            ]
-        ],
-        States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER => [
-            "name" => "highDramaInPlayActionChoosePerformer",
-            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            "descriptionmyturn" => clienttranslate('${you} are performing an in-play Action.  Choose a Performer:'),
-            "type" => "activeplayer",
-            "args" => "argsHighDramaInPlayActionChoosePerformer",
-            "possibleactions" => [
-                "actHighDramaInPlayActionPerformerChosen", 
-                "actBack",
-            ],
-            "transitions" => [
-                "inPlayActionPerformerChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
-                "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION
-            ]
-        ],
 
+            States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION => [
+                "name" => "highDramaInPlayActionChooseAction",
+                "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+                "descriptionmyturn" => clienttranslate('${you} are choosing an In-Play Action.  Choose an Action:'),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaInPlayActionChooseAction",
+                "possibleactions" => [
+                    "actHighDramaInPlayActionChosen", 
+                    "actBack",
+                ],
+                "transitions" => [
+                    "inPlayActionPerformerChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                    "back" => States::HIGH_DRAMA_PLAYER_TURN
+                ]
+            ],
+    
         States::DUEL_STARTED => [
             "name" => "duelStarted",
             "type" => "game",

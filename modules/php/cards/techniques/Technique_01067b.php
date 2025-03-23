@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -42,7 +43,7 @@ class Technique_01067b extends Technique
             }
         }
 
-        if ($event instanceof EventGenerateChallengeThreat && $this->Active)
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
             $owner = $event->theah->getCharacterById($this->OwnerId);
             if ($owner && $owner->Id == $event->actorId)
@@ -57,11 +58,12 @@ class Technique_01067b extends Technique
                 }
             }
         }
-    }
 
-    public function cleanup()
-    {
-        parent::cleanup();
-        $this->UseParryInstead = false;
+        if ($event instanceof EventDuelEnd)
+        {
+            $this->UseParryInstead = false;
+            $card = $this->getOwningCard($event->theah);
+            $card->IsUpdated = true;
+        }
     }
 }

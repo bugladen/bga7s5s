@@ -18,7 +18,7 @@ class Technique_01123 extends Technique
     { 
         parent::handleEvent($event);
 
-        if ($event instanceof EventGenerateChallengeThreat && $this->Active)
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
             $actor = $event->theah->getCharacterById($event->actorId);
             $adversary = $event->theah->getCharacterById($event->adversaryId);

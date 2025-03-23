@@ -18,7 +18,7 @@ class Technique_PlusOneThrust extends Technique
     { 
         parent::handleEvent($event);
 
-        if ($event instanceof EventGenerateChallengeThreat && $this->Active) 
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id) 
         {
             $event->threat += 1;
             $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Threat.");
