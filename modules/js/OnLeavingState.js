@@ -250,25 +250,28 @@ onLeavingState: function( stateName )
             }
         },
 
-        'highDramaEquipActionChooseAttachmentFromHand_client': () => {
-            this.clientStateArgs.attachmentsInHand.forEach((cardId) => {
-                let div = this.factionHand.getItemDivId(cardId);
+        'highDramaEquipActionChooseAttachmentFromHand': () => {
+            this.factionHand.getAllItems().forEach((card, index) => {
+                let div = this.factionHand.getItemDivId(card.id);
                 dojo.removeClass(div, 'selectable');
             });
             dojo.place('factionHand-container', 'approachDeck-container', 'after');
             this.factionHand.setSelectionMode(0);
         },
 
-        'highDramaEquipActionChooseAttachmentFromPlay_client': () => {
-            this.clientStateArgs.attachmentsInPlay.forEach((cardId) => {
-                let div = this.cardProperties[cardId].divId;
-                this.clearCardAsSelectable(`${div}_image`);
-            });
+        'highDramaEquipActionChooseAttachmentFromPlay': () => {
+            for ( const cardId in this.cardProperties ) {
+                card = this.cardProperties[cardId];
+                if (card.type === 'Attachment' && ! card.controllerId && this.isCardInPlay(card.id)) {
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                }
+            }
         },
 
-        'highDramaEquipActionPayForAttachmentFromHand_client': () => {
-            this.clientStateArgs.attachmentsInHand.forEach((cardId) => {
-                let div = this.factionHand.getItemDivId(cardId);
+        'highDramaEquipActionPayForAttachmentFromHand': () => {
+            this.factionHand.getAllItems().forEach((card, index) => {
+                let div = this.factionHand.getItemDivId(card.id);
                 if (dojo.hasClass(div, 'unselectable')) {
                     dojo.removeClass(div, 'unselectable');
                     dojo.destroy(`${div}_wealth_cost`);
@@ -278,21 +281,30 @@ onLeavingState: function( stateName )
             $('faction_hand_info').innerHTML = '';
             dojo.place('factionHand-container', 'approachDeck-container', 'after');
 
-            let performer = this.cardProperties[this.clientStateArgs.performerId];
-            dojo.removeClass(`${performer.divId}_image`, 'chosen');
+            for ( const cardId in this.cardProperties ) {
+                card = this.cardProperties[cardId];
+                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                }
+            }
         },
 
-        'highDramaEquipActionPayForAttachmentFromPlay_client': () => {
-            this.clientStateArgs.attachmentsInPlay.forEach((cardId) => {
-                let div = this.cardProperties[cardId].divId;
-                this.clearCardAsSelectable(`${div}_image`);
-            });
+        'highDramaEquipActionPayForAttachmentFromPlay': () => {
+            for ( const cardId in this.cardProperties ) {
+                card = this.cardProperties[cardId];
+                if (card.type === 'Attachment' && ! card.controllerId && this.isCardInPlay(card.id)) {
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                }
+                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                }
+            }
             this.factionHand.setSelectionMode(0);
             $('faction_hand_info').innerHTML = '';
             dojo.place('factionHand-container', 'approachDeck-container', 'after');
-
-            let performer = this.cardProperties[this.clientStateArgs.performerId];
-            dojo.removeClass(`${performer.divId}_image`, 'chosen');
         },
 
         'highDramaClaimActionChoosePerformer': () => {

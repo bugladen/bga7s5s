@@ -923,23 +923,74 @@ trait ActionsTrait
             throw new \BgaUserException("Character cannot equip attachments.");
         }
 
-        //Set the discount for equipping.
-        $discount = $this->theah->getEquipDiscount($performer);
-        $this->globals->set(Game::DISCOUNT, $discount);
-
-        $this->globals->set(GAME::CHOSEN_CARD, $performer->Id);
+        $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
         $this->gamestate->nextState("performerChosen");
     }
 
-    public function actHighDramaEquipAttachment(int $attachmentId, string $payWithCards)
+    public function actSimpleTransition(string $transition)
+    {
+        $this->gamestate->nextState($transition);
+    }
+
+    public function actHighDramaEquipActionAttachmentFromHandSelected(int $attachmentId)
     {
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
 
-        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
+        //Get the chosen player's hand
+        $handCard = $this->cards->getCard($attachmentId);
+        $card = $this->getCardObjectFromDb($handCard['id']);
+        if ($card->Location != Game::LOCATION_HAND || $card->ControllerId != $playerId) {
+            throw new \BgaUserException("Attachment is not in Player's Hand.");
+        }
+
+        $attachment = $this->getCardObjectFromDb($attachmentId);
+        $this->globals->set(GAME::CHOSEN_CARD, $attachmentId);
+
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
-        
+
+        $discount = $this->theah->getEquipDiscount($performer, $attachment);
+        $this->globals->set(Game::DISCOUNT, $discount);
+
+        $this->gamestate->nextState("attachmentSelected");
+    }
+
+    public function actHighDramaEquipActionAttachmentFromPlaySelected(string $ids)
+    {
+        $this->theah->buildCity();
+        $attachmentId = json_decode($ids, true)[0];
+
+        $attachment = $this->theah->getCardById($attachmentId);
+        if ($attachment == null) {
+            throw new \BgaUserException("Attachment not found.");
+        }
+
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->theah->getCharacterById($performerId);
+
+        if ($attachment->Location != $performer->Location) {
+            throw new \BgaUserException("Attachment is not at Performer's Location.");
+        }
+
+        $this->globals->set(GAME::CHOSEN_CARD, $attachmentId);
+
+        $discount = $this->theah->getEquipDiscount($performer, $attachment);
+        $this->globals->set(Game::DISCOUNT, $discount);
+
+        $this->gamestate->nextState("attachmentSelected");
+    }
+
+    public function actHighDramaEquipAttachment(string $payWithCards)
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->theah->getCharacterById($performerId);
+
+        $attachmentId = $this->globals->get(GAME::CHOSEN_CARD);        
         $attachment = $this->getCardObjectFromDb($attachmentId);
 
         //Sanity checks

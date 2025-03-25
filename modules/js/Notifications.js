@@ -142,11 +142,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const performer = this.cardProperties[args.performerId];
 
         //See if the card came from the hand
-        if (this.factionHand.getItemById(attachment.id) !== undefined)
+        if (this.factionHand.getItemById(attachment.id) != undefined)
         {
             this.factionHand.removeFromStockById(attachment.id);
         }
-        else if (this.cardProperties[attachment.id] !== undefined)
+        else if (this.cardProperties[attachment.id] != undefined)
         {
             const oldCard = this.cardProperties[attachment.id];
 
@@ -155,6 +155,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
 
         this.attachCard(performer, attachment);
+        this.cardProperties[attachment.id] = attachment;
 
         //Create a placeholder html element in front of the performer
         const placeholderId = "equip-placeholder";

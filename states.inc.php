@@ -857,12 +857,74 @@ $machinestates = [
             "type" => "activeplayer",
             "args" => "argsHighDramaEquipActionChooseAttachmentLocation",
             "possibleactions" => [
+                "actSimpleTransition", 
+                "actBack",
+            ],
+            "transitions" => [
+                "equipFromHand" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND, 
+                "equipFromPlay" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY, 
+                "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER
+            ]
+        ],
+        States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND => [
+            "name" => "highDramaEquipActionChooseAttachmentFromHand",
+            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            "descriptionmyturn" => clienttranslate('${you} are performing an Equip Action.  Choose an Attachment to equip from Your Hand:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaEquipActionChooseAttachmentFromHand",
+            "possibleactions" => [
+                "actHighDramaEquipActionAttachmentFromHandSelected", 
+                "actBack",
+            ],
+            "transitions" => [
+                "attachmentSelected" => States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_HAND, 
+                "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION
+            ]
+        ],
+        States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_HAND => [
+            "name" => "highDramaEquipActionPayForAttachmentFromHand",
+            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            "descriptionmyturn" => clienttranslate('${you} are performing an Equip Action.  Choose cards to pay for selected Attachment:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaEquipActionPayForAttachmentFromHand",
+            "possibleactions" => [
                 "actHighDramaEquipAttachment", 
                 "actBack",
             ],
             "transitions" => [
                 "attachmentEquipped" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
-                "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER
+                "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND
+            ]
+        ],
+
+        States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY => [
+            "name" => "highDramaEquipActionChooseAttachmentFromPlay",
+            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            "descriptionmyturn" => clienttranslate('${you} are performing an Equip Action.  Choose an Attachment to equip from play:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaEquipActionChooseAttachmentFromPlay",
+            "possibleactions" => [
+                "actHighDramaEquipActionAttachmentFromPlaySelected", 
+                "actBack",
+            ],
+            "transitions" => [
+                "attachmentSelected" => States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_PLAY, 
+                "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION
+            ]
+        ],
+        States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_PLAY => [
+            "name" => "highDramaEquipActionPayForAttachmentFromPlay",
+            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            "descriptionmyturn" => clienttranslate('${you} are performing an Equip Action.  Choose cards to pay for selected Attachment:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaEquipActionPayForAttachmentFromPlay",
+            "possibleactions" => [
+                "actHighDramaEquipAttachment", 
+                "actBack",
+            ],
+            "transitions" => [
+                "attachmentEquipped" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
+                "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY
             ]
         ],
 

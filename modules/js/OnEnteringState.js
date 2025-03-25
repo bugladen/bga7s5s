@@ -561,18 +561,16 @@ onEnteringState: function( stateName, args )
                 const image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
                 dojo.addClass(image, 'chosen');
-
-                this.clientStateArgs = args.args._private;
             }
         },
 
-        'highDramaEquipActionChooseAttachmentFromHand_client': () => {
-            card = this.cardProperties[this.clientStateArgs.performerId];
+        'highDramaEquipActionChooseAttachmentFromHand': () => {
+            card = this.cardProperties[args.args._private.performerId];
             const image = $(`${card.divId}_image`);
             this.clearCardAsSelectable(image);
             dojo.addClass(image, 'chosen');
 
-            this.clientStateArgs.attachmentsInHand.forEach((cardId) => {
+            args.args._private.attachmentsInHand.forEach((cardId) => {
                 let div = this.factionHand.getItemDivId(cardId);
                 dojo.addClass(div, 'selectable');
             });
@@ -580,14 +578,14 @@ onEnteringState: function( stateName, args )
             this.factionHand.setSelectionMode(2);
         },
 
-        'highDramaEquipActionChooseAttachmentFromPlay_client': () => {
+        'highDramaEquipActionChooseAttachmentFromPlay': () => {
             this.numberOfCardsSelectable = 1;
-            card = this.cardProperties[this.clientStateArgs.performerId];
+            card = this.cardProperties[args.args.performerId];
             const image = $(`${card.divId}_image`);
             this.clearCardAsSelectable(image);
             dojo.addClass(image, 'chosen');
 
-            this.clientStateArgs.attachmentsInPlay.forEach((cardId) => {
+            args.args.attachmentsInPlay.forEach((cardId) => {
                 card = this.cardProperties[cardId];
                 const image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
@@ -595,46 +593,59 @@ onEnteringState: function( stateName, args )
             });
         },
 
-        'highDramaEquipActionPayForAttachmentFromHand_client': () => {
-            const chosenAttachmentId = this.clientStateArgs.chosenAttachmentId;
-            const card = this.cardProperties[chosenAttachmentId];
-            let div = this.factionHand.getItemDivId(chosenAttachmentId);
-            dojo.addClass(div, 'unselectable');
+        'highDramaEquipActionPayForAttachmentFromHand': () => {
+            if (this.isCurrentPlayerActive()) {
+                performer = this.cardProperties[args.args._private.performerId];
+                const image = $(`${performer.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'chosen');
 
-            dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
-                id: div,
-                cost: card.wealthCost,
-            }), div, "first" );    
+                const chosenAttachmentId = args.args._private.chosenAttachmentId;
+                const card = args.args._private.chosenAttachment;
 
-            const costDiv = $(`${div}_wealth_cost`);
-            const cost = parseInt(costDiv.innerHTML);
-            let discountedCost = cost - this.clientStateArgs.discount;
-            discountedCost = discountedCost < 0 ? 0 : discountedCost;
-            if (discountedCost !== cost)
-            {
-                this.clientStateArgs.discountedCost = discountedCost;
-                costDiv.innerHTML = parseInt(discountedCost);
-                dojo.addClass(costDiv, 'discounted-wealth-cost');
+                let items = this.factionHand.getAllItems();
+
+                let div = this.factionHand.getItemDivId(chosenAttachmentId);
+                dojo.addClass(div, 'unselectable');
+
+                dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                    id: div,
+                    cost: card.wealthCost,
+                }), div, "first" );    
+    
+                const costDiv = $(`${div}_wealth_cost`);
+                const cost = parseInt(costDiv.innerHTML);
+                let discountedCost = cost - args.args._private.discount;
+                discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                if (discountedCost !== cost)
+                {
+                    this.clientStateArgs.discountedCost = discountedCost;
+                    costDiv.innerHTML = parseInt(discountedCost);
+                    dojo.addClass(costDiv, 'discounted-wealth-cost');
+                }
+    
+                $('faction_hand_info').innerHTML = `(0 Wealth worth of cards selected)`;
+                dojo.place('factionHand-container', 'city', 'before');
+                this.factionHand.setSelectionMode(2);
             }
-
-            $('faction_hand_info').innerHTML = `(0 Wealth worth of cards selected)`;
-            dojo.place('factionHand-container', 'city', 'before');
-            this.factionHand.setSelectionMode(2);
         },
 
-        'highDramaEquipActionPayForAttachmentFromPlay_client': () => {
-            this.clientStateArgs.chosenAttachmentId = this.clientStateArgs.selectedCards[0];
-            const card = this.cardProperties[this.clientStateArgs.chosenAttachmentId];
-            const image = $(`${card.divId}_image`);
+        'highDramaEquipActionPayForAttachmentFromPlay': () => {
+            const performer = this.cardProperties[args.args._private.performerId];
+            let image = $(`${performer.divId}_image`);
+            this.clearCardAsSelectable(image);
+            dojo.addClass(image, 'chosen');
+
+            const card = this.cardProperties[args.args._private.chosenAttachmentId];
+            image = $(`${card.divId}_image`);
             dojo.addClass(image, 'chosen');
 
             const costDiv = $(`${card.divId}_wealth_cost`);
             const cost = parseInt(costDiv.innerHTML);
-            let discountedCost = cost - this.clientStateArgs.discount;
+            let discountedCost = cost - args.args._private.discount;
             discountedCost = discountedCost < 0 ? 0 : discountedCost;
             if (discountedCost !== cost)
             {
-                this.clientStateArgs.discountedCost = discountedCost;
                 cost.innerHTML = parseInt(discountedCost);
                 dojo.addClass(costDiv, 'discounted-wealth-cost');
             }

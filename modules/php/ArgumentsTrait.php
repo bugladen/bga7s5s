@@ -247,13 +247,81 @@ trait ArgumentsTrait
         ];
     }
 
+    public function argsHighDramaEquipActionChooseAttachmentFromHand(): array
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $attachmentsInHand = $this->getAttachmentsInHand($playerId);
+
+        return [
+            "_private" => [
+                "active" => [
+                    "performerId" => $performerId,
+                    "attachmentsInHand" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInHand),
+                ]
+            ],
+        ];
+    }
+
+    public function argsHighDramaEquipActionPayForAttachmentFromHand(): array
+    {
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        
+        $attachmentId = $this->globals->get(GAME::CHOSEN_CARD);
+        $attachment = $this->getCardObjectFromDb($attachmentId);
+
+        return [
+            "_private" => [
+                "active" => [
+                    "performerId" => $performerId,
+                    "chosenAttachmentId" => $attachmentId,
+                    "chosenAttachment" => $attachment->getPropertyArray(),
+                    "discount" => $this->globals->get(GAME::DISCOUNT)
+                ]
+            ],
+        ];
+    }
+
+    public function argsHighDramaEquipActionChooseAttachmentFromPlay(): array
+    {
+        $this->theah->buildCity();
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->theah->getCharacterById($performerId);
+
+        $attachmentsInPlay = [];
+        if ($performer->Location != Game::LOCATION_PLAYER_HOME) 
+        {
+            $attachmentsInPlay = $this->theah->getAvailableAttachmentsAtLocation($performer->Location);
+        }
+
+        return [
+            "performerId" => $performerId,
+            "attachmentsInPlay" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInPlay),
+        ];
+    }
+
+    public function argsHighDramaEquipActionPayForAttachmentFromPlay(): array
+    {
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $attachmentId = $this->globals->get(GAME::CHOSEN_CARD);
+
+        return [
+            "_private" => [
+                "active" => [
+                    "performerId" => $performerId,
+                    "chosenAttachmentId" => $attachmentId,
+                    "discount" => $this->globals->get(GAME::DISCOUNT)
+                ]
+            ],
+        ];
+    }
+
     public function argsHighDramaEquipActionChooseAttachmentLocation(): array
     {
         $this->theah->buildCity();
         $playerId = (int)$this->getActivePlayerId();
-        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
-        $discount = $this->globals->get(GAME::DISCOUNT);
 
         $attachmentsInHand = $this->getAttachmentsInHand($playerId);
         $attachmentsInPlay = [];
@@ -266,7 +334,6 @@ trait ArgumentsTrait
             "_private" => [
                 "active" => [
                     "performerId" => $performerId,
-                    "discount" => $discount,
                     "attachmentsInHand" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInHand),
                     "attachmentsInPlay" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInPlay),
                 ]

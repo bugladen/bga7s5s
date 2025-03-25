@@ -274,56 +274,32 @@ onUpdateActionButtons: function( stateName, args )
         'highDramaEquipActionChooseAttachmentLocation': () => {
             this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
             if (args._private.attachmentsInHand.length > 0) {
-                this.addActionButton(`actChooseFromHand`, _('Equip from Hand'), () => {
-                    this.setClientState('highDramaEquipActionChooseAttachmentFromHand_client', {
-                        'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment to equip from Your Hand:"),
-                    })
-                });
+                this.addActionButton(`actChooseFromHand`, _('Equip from Hand'), () => this.bgaPerformAction('actSimpleTransition', {transition: 'equipFromHand'}));
             }
             if (args._private.attachmentsInPlay.length > 0) {
-                this.addActionButton(`actChooseFromPlay`, _('Equip from Play'), () => {
-                    this.setClientState('highDramaEquipActionChooseAttachmentFromPlay_client', {
-                        'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment to equip from play:"),
-                    })
-            });
+                this.addActionButton(`actChooseFromPlay`, _('Equip from Play'), () => this.bgaPerformAction('actSimpleTransition', {transition: 'equipFromPlay'}));
             }
         },
 
-        'highDramaEquipActionChooseAttachmentFromHand_client': () => {
-            this.addActionButton(`actBack`, _('<'), () => {
-                this.setClientState('highDramaEquipActionChooseAttachmentLocation', {
-                    'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment Location to equip from:"),
-                })
-            });
+        'highDramaEquipActionChooseAttachmentFromHand': () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onChooseHandAttachmentConfirmed());
             dojo.addClass('actFactionCardsSelected', 'disabled');
         },
 
-        'highDramaEquipActionChooseAttachmentFromPlay_client': () => {
-            this.addActionButton(`actBack`, _('<'), () => {
-                this.setClientState('highDramaEquipActionChooseAttachmentLocation', {
-                    'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment Location to equip from:"),
-                })
-            });
+        'highDramaEquipActionChooseAttachmentFromPlay': () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
-        'highDramaEquipActionPayForAttachmentFromHand_client': () => {
-            this.addActionButton(`actBack`, _('<'), () => {
-                this.setClientState('highDramaEquipActionChooseAttachmentFromHand_client', {
-                    'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment to equip from Your Hand:"),
-                })
-            });
+        'highDramaEquipActionPayForAttachmentFromHand': () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
         },
 
-        'highDramaEquipActionPayForAttachmentFromPlay_client': () => {
-            this.addActionButton(`actBack`, _('<'), () => {
-                this.setClientState('highDramaEquipActionChooseAttachmentFromPlay_client', {
-                    'descriptionmyturn' : _("${you} are performing an Equip Action.  Choose an Attachment to equip from play:"),
-                })
-            });
+        'highDramaEquipActionPayForAttachmentFromPlay': () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
         },
 

@@ -133,7 +133,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 $('faction_hand_info').innerHTML = items.length > 0 ? `(${wealth} Wealth worth of cards selected)` : '';
             },
 
-            'highDramaEquipActionChooseAttachmentFromHand_client': () => {
+            'highDramaEquipActionChooseAttachmentFromHand': () => {
                 var items = this.factionHand.getSelectedItems();
                 const types = {};
                 items.forEach((item) => {
@@ -158,7 +158,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
-            'highDramaEquipActionPayForAttachmentFromHand_client': () => {
+            'highDramaEquipActionPayForAttachmentFromHand': () => {
                 var items = this.factionHand.getSelectedItems();
                 let wealth = 0;
                 const div = this.factionHand.getItemDivId(item_id);                
@@ -174,7 +174,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 $('faction_hand_info').innerHTML = `(${wealth} Wealth worth of cards selected)`;
             },
 
-            'highDramaEquipActionPayForAttachmentFromPlay_client': () => {
+            'highDramaEquipActionPayForAttachmentFromPlay': () => {
                 var items = this.factionHand.getSelectedItems();
                 let wealth = 0;
                 items.forEach((item) => {

@@ -109,7 +109,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaRecruitActionChoosePerformer'                 : 'actHighDramaRecruitActionPerformerChosen',
             'highDramaRecruitActionChooseMercenary'                 : 'highDramaRecruitActionPayForMercenary_client',
             'highDramaEquipActionChoosePerformer'                   : 'actHighDramaEquipActionPerformerChosen',
-            'highDramaEquipActionChooseAttachmentFromPlay_client'   : 'highDramaEquipActionPayForAttachmentFromPlay_client',
+            'highDramaEquipActionChooseAttachmentFromPlay'          : 'actHighDramaEquipActionAttachmentFromPlaySelected',
             'highDramaClaimActionChoosePerformer'                   : 'actHighDramaClaimActionPerformerChosen',
             'highDramaChallengeActionChoosePerformer'               : 'actHighDramaChallengeActionPerformerChosen',
             'highDramaChallengeActionChooseTarget'                  : 'actHighDramaChallengeActionTargetChosen',
@@ -120,7 +120,6 @@ return declare('seventhseacityoffivesails.actions', null, {
         const clientMessages = {
             'highDramaBeginning_01144_client'                       : "${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
             'highDramaRecruitActionPayForMercenary_client'          : "${you} are performing a Recruit Action. Choose cards from your Faction Hand to pay for selected Mercenary:",
-            'highDramaEquipActionPayForAttachmentFromPlay_client'   : "${you} are performing an Equip Action. Choose cards from your Faction Hand to pay for selected Attachment:",
         };
 
         const action = actions[this.gamedatas.gamestate.name];
@@ -166,10 +165,14 @@ return declare('seventhseacityoffivesails.actions', null, {
     onChooseHandAttachmentConfirmed: function()
     {
         var items = this.factionHand.getSelectedItems();
-        this.clientStateArgs.chosenAttachmentId = Object.values(items)[0].id;
-        this.setClientState('highDramaEquipActionPayForAttachmentFromHand_client', {
-            'descriptionmyturn' : _("${you} are performing an Equip Action. Choose cards from your Faction Hand to pay for selected Attachment:"),
-        });
+        let id = Object.values(items)[0].id;
+
+        this.bgaPerformAction("actHighDramaEquipActionAttachmentFromHandSelected", { 
+            'attachmentId' : id, 
+        }).then(() =>  {                
+            // What to do after the server call if it succeeded
+        });        
+
     },
 
     onDuelChooseCombatCardConfirmed: function()
@@ -233,8 +236,6 @@ return declare('seventhseacityoffivesails.actions', null, {
         items = items.map((item) => item.id);
 
         this.bgaPerformAction('actHighDramaEquipAttachment', { 
-            'performerId': this.clientStateArgs.performerId,
-            'attachmentId': this.clientStateArgs.chosenAttachmentId,
             'payWithCards': JSON.stringify(items),
         }).catch(() =>  {
         });        
