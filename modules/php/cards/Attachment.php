@@ -44,4 +44,9 @@ abstract class Attachment extends Card implements IWealthCost
         return $properties;
     }
 
+    public function isAttached(): bool
+    {
+        return $this->AttachedToId > 0;
+    }
+
 }

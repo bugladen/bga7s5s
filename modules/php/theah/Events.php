@@ -2,6 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
+
 class Events
 {
     //Phase Events
@@ -45,6 +48,7 @@ class Events
     const ChallengeIssued = 'EventChallengeIssued';
     const CharacterRecruited = 'EventCharacterRecruited';
     const AttachmentEquipped = 'EventAttachmentEquipped';
+    const HighDramaPhasePlayerPassed = 'EventHighDramaPhasePlayerPassed';
     const HighDramaPhaseEnd = 'EventHighDramaPhaseEnd';
     
     //Challenge Events
@@ -76,6 +80,7 @@ class Events
     const CardEngaged = 'EventCardEngaged';
     const CardEngarded = 'EventCardEngarded';
     const CharacterWounded = 'EventCharacterWounded';
+    const CharacterHealed = 'EventCharacterHealed';
     const CharacterDestroyed = 'EventCharacterDestroyed';
     const SchemeSentToLocker = 'EventSchemeSentToLocker';
 

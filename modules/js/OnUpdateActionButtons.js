@@ -368,6 +368,14 @@ onUpdateActionButtons: function( stateName, args )
             }
         },
 
+        'highDramaPlayerTurnReactions': () => {
+            if (this.isCurrentPlayerActive()) {
+                args._private.args.buttons.forEach((button, index) => {
+                    this.addActionButton(`actReaction-${index}`, _(button.text), () => this.bgaPerformAction('actReactionFromCard', {reaction: button.reaction}));
+                });
+            }
+        },
+
         'duelChooseAction': () => {
             if (args._private.combatCardAvailable)
                 this.addActionButton(`btnGamble`, _(`Gamble (${args._private.gamblesLeft} Left)`), () => this.bgaPerformAction('actDuelActionGamble', {})) 
@@ -444,7 +452,7 @@ onUpdateActionButtons: function( stateName, args )
             const panache = leader.panache;
             const count = this.factionHand.count();
 
-            $('faction_hand_info').innerHTML = `(${count - panache} cards to discard)`;
+            $('faction_hand_info').innerHTML = _(`(${count - panache} cards to discard)`);
             this.factionHand.setSelectionMode(2);
 
         }

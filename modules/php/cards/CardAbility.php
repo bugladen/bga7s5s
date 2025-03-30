@@ -39,15 +39,9 @@ abstract class CardAbility
         $this->Id = "{$id}_{$this->ClassId}";
     }
 
-    public function eventCheck(Event $event)
-    {
-        
-    }
+    public function eventCheck(Event $event) { }
 
-    public function handleEvent(Event $event)
-    {
-
-    }
+    public function handleEvent(Event $event) { }
 
     public function isAvailable(): bool
     {
@@ -61,13 +55,24 @@ abstract class CardAbility
         }
 
         $owner = $theah->getCardById($this->OwnerId);
+        return $owner;
+    }
 
-        if ($owner instanceof Attachment) {
-            $id = $owner->AttachedToId;
-            $owner = $theah->getCardById($id);
+    public function getOwningCharacter(Theah $theah): ?Card
+    {
+        if ($this->OwnerId == null) {
+            return null;
         }
 
-        return $owner;
+        $owner = $theah->getCardById($this->OwnerId);
+
+        if ($owner instanceof Attachment and $owner->isAttached()) {
+            $id = $owner->AttachedToId;
+            $owner = $theah->getCardById($id);
+            return $owner;
+        }
+        else
+            return null;
     }
 
     public function setUsed(Theah $theah, bool $used)

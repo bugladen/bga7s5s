@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventCharacterWounded extends Event
+class EventCharacterHealed extends Event
 {
     public int $characterId;
     public int $sourceId;

@@ -181,9 +181,8 @@ class Theah
                 if($event->getPlayerId()) {
                     $this->game->gamestate->changeActivePlayer($event->getPlayerId());
                 }
-                if ($event->sourceId) {
-                    $this->game->globals->set(Game::TRANSITION_SOURCE_ID, $event->sourceId);
-                }
+                $this->game->globals->set(Game::TRANSITION_SOURCE_ID, $event->sourceId);
+                $this->game->globals->set(Game::TRANSITION_INTERNAL_ID, $event->internalId);
 
                 $this->game->gamestate->nextState($event->transition);
                 return;
@@ -242,7 +241,7 @@ class Theah
     {
         $attachments = [];
         foreach ($this->cards as $card) {
-            if ($card instanceof Attachment && $card->Location == $location && $card->AttachedToId == 0) {
+            if ($card instanceof Attachment && $card->Location == $location && ! $card->isAttached()) {
                 $attachments[] = $card;
             }
         }

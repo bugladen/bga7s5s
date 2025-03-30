@@ -26,6 +26,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
@@ -59,11 +60,11 @@ trait ActionsTrait
     {
         $playerId = $this->getActivePlayerId();
 
-        // Notify all players about the choice to pass.
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} passes.'), [
-            "player_id" => $playerId,
-            "player_name" => $this->getActivePlayerName(),
-        ]);
+        $event = $this->theah->createEvent(Events::HighDramaPhasePlayerPassed);
+        if ($event instanceof EventHighDramaPhasePlayerPassed) {
+            $event->playerId = $playerId;
+        }
+        $this->theah->queueEvent($event);
 
         $passCount = $this->globals->get(GAME::PASS_COUNT, 0);
         $passCount++;        
@@ -1765,8 +1766,9 @@ trait ActionsTrait
     {
         $this->theah->buildCity();
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $card = $this->theah->getCardById($sourceId);
-        $card->actFromCardPass($this, $this->gamestate->state_id());
+        $card->actFromCardPass($this, $this->gamestate->state_id(), $internalId);
     }
 
     public function actFromCardWithId(int $id)
@@ -1774,8 +1776,9 @@ trait ActionsTrait
         $this->theah->buildCity();
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $card = $this->theah->getCardById($sourceId);
-        $card->actFromCardWithId($this, $this->gamestate->state_id(), $id);
+        $card->actFromCardWithId($this, $this->gamestate->state_id(), $id, $internalId);
     }
 
     public function actFromCardWithIds(string $ids)
@@ -1784,8 +1787,20 @@ trait ActionsTrait
         $ids = json_decode($ids, true);
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $card = $this->theah->getCardById($sourceId);
-        $card->actFromCardWithIds($this, $this->gamestate->state_id(), $ids);
+        $card->actFromCardWithIds($this, $this->gamestate->state_id(), $internalId, $ids);
+    }
+
+    public function actReactionFromCard(string $reaction)
+    {
+        $this->theah->buildCity();
+
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
+        $card = $this->theah->getCardById($sourceId);
+
+        $card->reactionFromCard($this, $reaction, $internalId);
     }
 
 }

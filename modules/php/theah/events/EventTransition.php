@@ -7,6 +7,7 @@ class EventTransition extends Event
     public string $transition;
     public int $playerId;
     public int $sourceId;
+    public string $internalId;
 
     public function __construct()
     {
@@ -15,7 +16,8 @@ class EventTransition extends Event
         $this->transition = '';
         $this->playerId = 0;
         $this->sourceId = 0;
-        $this->priority = Event::MEDIUM_PRIORITY;
+        $this->internalId = '';
+        $this->priority = Event::LOW_PRIORITY;
     }
 
     public function getPlayerId(): ?int

@@ -53,13 +53,17 @@ abstract class Card
         if ($this instanceof IHasActions) {
             $this->updateActionOwnerIds($id);
         }
+        if ($this instanceof IHasReactions) {
+            $this->updateReactionOwnerIds($id);
+        }
     }
 
-    public function argsFromCard(Game $game, int $state): array {return []; }
+    public function argsFromCard(Game $game, int $state, string $internalId): array {return []; }
 
-    public function actFromCardPass(Game $game, int $state): void { }
-    public function actFromCardWithId(Game $game, int $state, int $id): void { }
-    public function actFromCardWithIds(Game $game, int $state, array $ids): void { }
+    public function actFromCardPass(Game $game, int $state, string $internalId): void { }
+    public function actFromCardWithId(Game $game, int $state, string $internalId, int $id): void { }
+    public function actFromCardWithIds(Game $game, int $state, string $internalId, array $ids): void { }
+    public function reactionFromCard(Game $game, string $reaction, string $internalId): void { }
 
     public function eventCheck($event)
     {
@@ -76,6 +80,11 @@ abstract class Card
         if ($this instanceof IHasActions) {
             foreach ($this->getActions() as $action) {
                 $action->eventCheck($event);
+            }
+        }
+        if ($this instanceof IHasReactions) {
+            foreach ($this->getReactions() as $reaction) {
+                $reaction->eventCheck($event);
             }
         }
     }
@@ -97,6 +106,11 @@ abstract class Card
         if ($this instanceof IHasActions) {
             foreach ($this->getActions() as $action) {
                 $action->handleEvent($event);
+            }
+        }
+        if ($this instanceof IHasReactions) {
+            foreach ($this->getReactions() as $reaction) {
+                $reaction->handleEvent($event);
             }
         }
     }
@@ -148,6 +162,7 @@ abstract class Card
         if ($this instanceof IHasTechniques) $this->addTechniqueProperties($properties);
         if ($this instanceof IHasManeuvers) $this->addManeuverProperties($properties);
         if ($this instanceof IHasActions) $this->addActionProperties($properties);
+        if ($this instanceof IHasReactions) $this->addReactionProperties($properties);
 
         return $properties;
     }

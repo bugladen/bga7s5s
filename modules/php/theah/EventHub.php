@@ -34,6 +34,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseBegin;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhaseEnd;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
@@ -745,6 +746,18 @@ trait EventHub
                         "playerId" => $scheme->ControllerId,
                         "scheme_name" => "<strong>{$scheme->Name}</strong>",
                         "scheme" => $scheme->getPropertyArray(),
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventHighDramaPhasePlayerPassed:
+                $handler = function ($theah, EventHighDramaPhasePlayerPassed $event)
+                {
+                    // Notify all players about the choice to pass.
+                    $this->game->notifyAllPlayers("message", clienttranslate('${player_name} has passed for their High Drama Action.'), [
+                        "player_id" => $event->playerId,
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
                     ]);
                 };
                 $handler($this, $event);

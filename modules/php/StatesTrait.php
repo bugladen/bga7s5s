@@ -637,6 +637,7 @@ trait StatesTrait
             if ($event instanceof EventCharacterWounded)
             {
                 $event->characterId = $target->Id;
+                $event->sourceId = $performer->Id;
                 $event->wounds = $wounds;
                 $event->reason = $reason;
             }
@@ -955,6 +956,7 @@ trait StatesTrait
             if ($event instanceof EventCharacterWounded)
             {
                 $event->characterId = $actor->Id;
+                $event->sourceId = $adversary->Id;
                 $event->wounds = $wounds;
                 $event->reason = $reason;
             }
@@ -1015,7 +1017,6 @@ trait StatesTrait
         $this->globals->delete(Game::DUEL_ROUND);
         $this->globals->delete(Game::DUEL_CHALLENGER);
         $this->globals->delete(Game::DUEL_DEFENDER);
-        $this->globals->delete(Game::TRANSITION_SOURCE_ID);
 
         $sql = "SELECT challenging_player_id, defending_player_id, challenger_id, defender_id FROM duel where duel_id = $duelId";
         $result = $this->getObjectListFromDB($sql)[0];
@@ -1065,6 +1066,8 @@ trait StatesTrait
         $this->globals->delete(GAME::CHOSEN_TARGET);
         $this->globals->delete(GAME::CHOSEN_TECHNIQUE);
         $this->globals->delete(GAME::CHOSEN_MANEUVER);
+        $this->globals->delete(Game::TRANSITION_SOURCE_ID);
+        $this->globals->delete(Game::TRANSITION_INTERNAL_ID);
 
         $this->activeNextPlayer();
 

@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 
 trait DebugTrait
 {
@@ -123,5 +123,18 @@ trait DebugTrait
     public function debug_SetRenownAtLocation(string $location, int $amount)
     {
         $this->setReknownForLocation($location, $amount);
+    }
+
+    public function dbgWoundCharacter(int $characterId, int $sourceId)
+    {
+        $event = $this->theah->createEvent(Events::CharacterWounded);
+        if ($event instanceof EventCharacterWounded)
+        {
+            $event->characterId = $characterId;
+            $event->sourceId = $sourceId;
+            $event->wounds = 1;
+            $event->reason = 'Debug Wound';
+        }
+        $this->theah->queueEvent($event);
     }
 }

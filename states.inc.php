@@ -629,7 +629,7 @@ $machinestates = [
             "moveActionStart" => States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_PERFORMER, 
             "recruitActionStart" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER,
             "inPlayActionStart" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
-            "pass" => States::NEXT_PLAYER,
+            "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "end" => States::HIGH_DRAMA_END
         ]
     ],
@@ -640,9 +640,37 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
+                "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
                 "endOfEvents" => States::NEXT_PLAYER,
                 "endOfGame" => States::END_GAME
                 ]
+        ],
+        States::HIGH_DRAMA_PLAYER_TURN_REACTIONS => [
+            "name" => "highDramaPlayerTurnReactions",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
+                "pay" => States::HIGH_DRAMA_PLAYER_TURN_PAY_FOR_REACTION,
+            ]
+        ],
+        States::HIGH_DRAMA_PLAYER_TURN_PAY_FOR_REACTION => [
+            "name" => "highDramaPlayerTurnPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
+            ]
         ],
 
         States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_PERFORMER => [

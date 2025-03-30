@@ -584,10 +584,11 @@ trait ArgumentsTrait
         $this->theah->buildCity();
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $card = $this->theah->getCardById($sourceId);
 
         return [
-            "args" => $card->argsFromCard($this, $this->gamestate->state_id())
+            "args" => $card->argsFromCard($this, $this->gamestate->state_id(), $internalId)
         ];       
         
     }
@@ -597,12 +598,13 @@ trait ArgumentsTrait
         $this->theah->buildCity();
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $card = $this->theah->getCardById($sourceId);
 
         return [
             "_private" => [
                 "active" => [
-                    "args" => $card->argsFromCard($this, $this->gamestate->state_id())
+                    "args" => $card->argsFromCard($this, $this->gamestate->state_id(), $internalId)
                 ]
             ]
         ];       

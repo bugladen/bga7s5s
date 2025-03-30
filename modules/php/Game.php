@@ -63,6 +63,7 @@ class Game extends \Table
     final const CHALLENGE_THREAT = "challengeThreat";
     final const CHALLENGE_ACCEPTED = "challengeAccepted";
     final const TRANSITION_SOURCE_ID = "transitionSourceId";
+    final const TRANSITION_INTERNAL_ID = "transitionInternalId";
 
     //Duel global variables
     //Duel Names

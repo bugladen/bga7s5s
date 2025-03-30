@@ -346,4 +346,12 @@ trait UtilitiesTrait
         $this->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
     }
 
+    function isInReactionState(int $state) : bool
+    {
+        $array = [
+            States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
+        ];
+        return in_array($state, $array);
+    }
+
 }

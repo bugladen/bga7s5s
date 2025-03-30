@@ -66,9 +66,9 @@ class _01180 extends CityCharacter implements IHasActions
         return $discount;
     }
 
-    public function argsFromCard(Game $game, int $state): array
+    public function argsFromCard(Game $game, int $state, string $internalId): array
     {
-        $args = parent::argsFromCard($game, $state);
+        $args = parent::argsFromCard($game, $state, $internalId);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
         {
@@ -115,9 +115,9 @@ class _01180 extends CityCharacter implements IHasActions
         return $args;
     }
 
-    public function actFromCardPass(Game $game, int $state): void
+    public function actFromCardPass(Game $game, int $state, string $internalId): void
     {
-        parent::actFromCardPass($game, $state);
+        parent::actFromCardPass($game, $state, $internalId);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
         {
@@ -144,9 +144,9 @@ class _01180 extends CityCharacter implements IHasActions
         }
     }
 
-    public function actFromCardWithId(Game $game, int $state, int $id): void
+    public function actFromCardWithId(Game $game, int $state, string $internalId, int $id): void
     {
-        parent::actFromCardWithId($game, $state, $id);
+        parent::actFromCardWithId($game, $state, $internalId, $id);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
         {
@@ -181,9 +181,9 @@ class _01180 extends CityCharacter implements IHasActions
         }
     }
 
-    public function actFromCardWithIds(Game $game, int $state, array $ids): void
+    public function actFromCardWithIds(Game $game, int $state, string $internalId, array $ids): void
     {
-        parent::actFromCardWithIds($game, $state, $ids);
+        parent::actFromCardWithIds($game, $state, $internalId, $ids);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_2)
         {

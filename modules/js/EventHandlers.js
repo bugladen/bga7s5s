@@ -108,7 +108,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = items.length > 0 ? `(${wealth} Wealth worth of cards selected)` : '';
+                $('faction_hand_info').innerHTML = items.length > 0 ? _(`(${wealth} Wealth worth of cards selected)`) : '';
             },
 
             'highDramaPhase01180_3': () => {
@@ -119,7 +119,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = `(${wealth} Wealth worth of cards selected)`;
+                $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
             },
 
             'highDramaRecruitActionPayForMercenary_client': () => {
@@ -130,7 +130,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = items.length > 0 ? `(${wealth} Wealth worth of cards selected)` : '';
+                $('faction_hand_info').innerHTML = items.length > 0 ? _(`(${wealth} Wealth worth of cards selected)`) : '';
             },
 
             'highDramaEquipActionChooseAttachmentFromHand': () => {
@@ -171,7 +171,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = `(${wealth} Wealth worth of cards selected)`;
+                $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
             },
 
             'highDramaEquipActionPayForAttachmentFromPlay': () => {
@@ -182,7 +182,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = `(${wealth} Wealth worth of cards selected)`;
+                $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
             },
             
             'duelChooseAction': () => {
@@ -207,7 +207,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = `(${wealth} Wealth worth of cards selected)`;
+                $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
             },
 
             'duskPhaseDiscard': () => {

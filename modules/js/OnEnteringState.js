@@ -624,35 +624,38 @@ onEnteringState: function( stateName, args )
                     dojo.addClass(costDiv, 'discounted-wealth-cost');
                 }
     
-                $('faction_hand_info').innerHTML = `(0 Wealth worth of cards selected)`;
+                $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
                 dojo.place('factionHand-container', 'city', 'before');
                 this.factionHand.setSelectionMode(2);
             }
         },
 
         'highDramaEquipActionPayForAttachmentFromPlay': () => {
-            const performer = this.cardProperties[args.args._private.performerId];
-            let image = $(`${performer.divId}_image`);
-            this.clearCardAsSelectable(image);
-            dojo.addClass(image, 'chosen');
-
-            const card = this.cardProperties[args.args._private.chosenAttachmentId];
-            image = $(`${card.divId}_image`);
-            dojo.addClass(image, 'chosen');
-
-            const costDiv = $(`${card.divId}_wealth_cost`);
-            const cost = parseInt(costDiv.innerHTML);
-            let discountedCost = cost - args.args._private.discount;
-            discountedCost = discountedCost < 0 ? 0 : discountedCost;
-            if (discountedCost !== cost)
+            if (this.isCurrentPlayerActive()) 
             {
-                cost.innerHTML = parseInt(discountedCost);
-                dojo.addClass(costDiv, 'discounted-wealth-cost');
-            }
+                const performer = this.cardProperties[args.args._private.performerId];
+                let image = $(`${performer.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'chosen');
     
-            $('faction_hand_info').innerHTML = `(0 Wealth worth of cards selected)`;
-            dojo.place('factionHand-container', 'city', 'before');
-            this.factionHand.setSelectionMode(2);
+                const card = this.cardProperties[args.args._private.chosenAttachmentId];
+                image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+    
+                const costDiv = $(`${card.divId}_wealth_cost`);
+                const cost = parseInt(costDiv.innerHTML);
+                let discountedCost = cost - args.args._private.discount;
+                discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                if (discountedCost !== cost)
+                {
+                    cost.innerHTML = parseInt(discountedCost);
+                    dojo.addClass(costDiv, 'discounted-wealth-cost');
+                }
+        
+                $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
+                dojo.place('factionHand-container', 'city', 'before');
+                this.factionHand.setSelectionMode(2);
+            }
         },
 
         'highDramaClaimActionChoosePerformer': () => {
@@ -814,9 +817,16 @@ onEnteringState: function( stateName, args )
                 $('choose_container_name').innerHTML = _(`Chosen Artifact to Equip`);
                 this.chooseList.setSelectionMode(0);
     
-                $('faction_hand_info').innerHTML = `(0 Wealth worth of cards selected)`;
+                $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
                 dojo.place('factionHand-container', 'city', 'before');
                 this.factionHand.setSelectionMode(2);
+            }
+        },
+
+        'highDramaPlayerTurnReactions': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.gamedatas.gamestate.descriptionmyturn = _(args.args._private.args.descriptionmyturn);
+                this.updatePageTitle();
             }
         },
 
@@ -854,7 +864,7 @@ onEnteringState: function( stateName, args )
                     dojo.addClass(costDiv, 'discounted-wealth-cost');
                 }
     
-                $('faction_hand_info').innerHTML = `(0 Wealth worth of cards selected)`;
+                $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
                 this.factionHand.setSelectionMode(2);
             }
         },

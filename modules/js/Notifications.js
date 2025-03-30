@@ -23,6 +23,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['characterDestroyed', 1000],
             ['schemeSentToLocker', 1000],
             ['characterRecruited', 1000],
+            ['characterHealed', 1000],
             ['characterWounded', 1000],
             ['drawCard', 2000],
             ['firstPlayer', 1500],
@@ -338,6 +339,34 @@ return declare('seventhseacityoffivesails.notifications', null, {
         element.innerHTML = card.modifiedResolve;
         if (card.modifiedResolve != card.resolve)
             dojo.addClass(element, 'modified-stat-value');
+    },
+
+    notif_characterHealed: function( notif )
+    {
+        debug( 'notif_characterHealed' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+
+        card.wounds -= args.wounds;
+        if (card.wounds < 0)
+            card.wounds = 0;
+        
+        if (card.wounds == 0)
+        {
+            const woundChip = $(`${card.divId}_wounds`);
+            dojo.destroy(woundChip);
+        }
+
+        card.modifiedResolve += args.wounds;
+        if (card.modifiedResolve > card.resolve)
+            card.modifiedResolve = card.resolve;
+
+        const element = $(`${card.divId}_resolve_value`);
+        element.innerHTML = card.modifiedResolve;
+        if (card.modifiedResolve == card.resolve)
+            dojo.removeClass(element, 'modified-stat-value');
     },
 
     notif_characterDestroyed: function( notif )

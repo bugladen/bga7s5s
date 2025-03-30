@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -144,9 +145,9 @@ abstract class Character extends Card
 
         if ($event instanceof EventCharacterWounded && $event->characterId == $this->Id)
         {
-            $this->ModifiedResolve -= $event->wounds;    
             $this->Wounds += $event->wounds;
-
+            
+            $this->ModifiedResolve -= $event->wounds;    
             if ($this->ModifiedResolve < 0) 
             {
                 $this->ModifiedResolve = 0;
@@ -173,6 +174,34 @@ abstract class Character extends Card
                 }
                 $event->theah->queueEvent($destroyEvent);
             }
+        }
+
+        if ($event instanceof EventCharacterHealed && $event->characterId == $this->Id)
+        {
+            $this->ModifiedResolve += $event->wounds;
+            if ($this->ModifiedResolve > $this->Resolve) 
+            {
+                $this->ModifiedResolve = $this->Resolve;
+            }
+            
+            $this->Wounds -= $event->wounds;
+            $actualHealed = $event->wounds;
+            if ($this->Wounds < 0) 
+            {
+                $actualHealed = $event->wounds - abs($this->Wounds);
+                $this->Wounds = 0;
+            }
+
+            $this->IsUpdated = true;
+
+            $event->theah->game->notifyAllPlayers("characterHealed", clienttranslate('${target_name} has healed ${wounds} wound(s) due to: ${reason} 
+            <p>${target_name}\'s new Resolve: ${resolve}'), [
+                "target_name" => "<strong>{$this->Name}</strong>",
+                "characterId" => $this->Id,
+                "wounds" => $actualHealed,
+                "reason" => $event->reason,
+                'resolve' => $this->ModifiedResolve
+            ]);
         }
 
         if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
