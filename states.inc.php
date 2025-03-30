@@ -152,7 +152,7 @@ $machinestates = [
 
     States::PLANNING_PHASE_APPROACH_CARDS_PLAYED => [
         "name" => "planningPhaseApproachCardsPlayed",
-        "description" => clienttranslate("Approach Cards Played"),
+        "description" => clienttranslate("Approach Cards Played..."),
         "type" => "game",
         "action" => "stPlanningPhaseApproachCardsPlayed",
         "transitions" => ["" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS]
@@ -170,7 +170,7 @@ $machinestates = [
 
     States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER => [
         "name" => "planningPhaseDetermineFirstPlayer",
-        "description" => clienttranslate("Determining the First Player"),
+        "description" => clienttranslate("Determining the First Player..."),
         "type" => "game",
         "action" => "stPlanningPhaseDetermineFirstPlayer",
         "transitions" => ["" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_EVENTS]
@@ -188,7 +188,7 @@ $machinestates = [
 
     States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS => [
         "name" => "planningPhaseResolveWhenRevealedCards",
-        "description" => clienttranslate("Resolving When Revealed Cards"),
+        "description" => clienttranslate("Resolving When Revealed Cards..."),
         "type" => "game",
         "action" => "stPlanningPhaseResolveWhenRevealedCards",
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS]
@@ -207,14 +207,14 @@ $machinestates = [
     States::PLANNING_PHASE_MUSTER 
     => [
         "name" => "planningPhaseMuster",
-        "description" => clienttranslate('Characters Mustered.'),
+        "description" => clienttranslate('Characters Mustered...'),
         "type" => "game",
         "action" => "stplanningPhaseMuster",
         "transitions" => ["" => States::PLANNING_PHASE_MUSTER_EVENTS]
     ],
         States::PLANNING_PHASE_MUSTER_EVENTS => [
             "name" => "planningPhaseMusterEvents",
-            "description" => '',
+            "description" => clienttranslate("Resolving Events for Mustering Cards..."),
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
@@ -518,7 +518,7 @@ $machinestates = [
                 ],
     States::PLANNING_PHASE_DRAW => [
         "name" => "planningPhaseDraw",
-        "description" => '',
+        "description" => clienttranslate('Drawing Cards...'),
         "type" => "game",
         "action" => "stPlanningPhaseDraw",
         "transitions" => ["" => States::PLANNING_PHASE_END]
@@ -669,7 +669,8 @@ $machinestates = [
                 "actReactionFromCard", 
             ],
             "transitions" => [
-                "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
+                "back" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS, 
+                "paid" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
             ]
         ],
 
@@ -705,6 +706,7 @@ $machinestates = [
         ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE => [
             "name" => "highDramaChallengeActionTechniqueAvailable",
+            "description" => clienttranslate('Determining if any techniques are available...'),
             "type" => "game",
             "action" => "stTechniqueAvailable",
             "transitions" => [

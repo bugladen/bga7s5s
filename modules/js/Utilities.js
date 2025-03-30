@@ -286,6 +286,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.addClass(`${divId}_wealth_cost`, 'hidden');
         } 
 
+        if (attachment.engaged) 
+            dojo.addClass(`${divId}_image`, 'engaged');
+
         this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + attachment.image}" />`, this.CARD_TOOLTIP_DELAY);
     },
 
