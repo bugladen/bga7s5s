@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01181;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
@@ -58,16 +59,7 @@ class Reaction_01181 extends AttachmentReaction
                     $attachment->IsUpdated = true;
                 }
 
-                $transition = $event->theah->createEvent(Events::Transition);
-                if ($transition instanceof EventTransition)
-                {
-                    $transition->transition = 'reaction';
-                    $transition->playerId = $attachment->ControllerId;
-                    $transition->sourceId = $attachment->Id;
-                    $transition->internalId = $this->Id;
-                    $transition->priority = Event::LOWEST_PRIORITY;
-
-                }
+                $transition = EventFactory::createReactionTransitionEvent($attachment->ControllerId, $attachment->Id, $this->Id);
                 $event->theah->queueEvent($transition);
             }   
         }
