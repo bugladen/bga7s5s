@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01181;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -48,10 +49,14 @@ class Reaction_01181 extends AttachmentReaction
         $attachment = $this->getOwningCard($event->theah);
         if ($event instanceof EventCharacterWounded && $this->ownerIsAttached($event->theah) && $this->isAvailable() && ! $attachment->Engaged)
         {
-            $source = $event->theah->getCardById($event->sourceId);
-            if ($source->Location == $attachment->Location) {
-                $this->Used = true;
-                $attachment->IsUpdated = true;
+            $character = $event->theah->getCardById($event->characterId);
+            if ($character->Location == $attachment->Location) 
+            {
+                if ($attachment instanceof _01181) //Cast
+                {
+                    $attachment->HealTargetId =  $event->characterId;
+                    $attachment->IsUpdated = true;
+                }
 
                 $transition = $event->theah->createEvent(Events::Transition);
                 if ($transition instanceof EventTransition)

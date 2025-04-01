@@ -15,6 +15,8 @@ class _01181 extends CityAttachment implements IHasReactions
 {
     use ReactionTrait;
 
+    public int $HealTargetId;
+
     public function __construct()
     {
         parent::__construct();
@@ -41,6 +43,8 @@ class _01181 extends CityAttachment implements IHasReactions
         $this->Reactions = [
             new Reaction_01181()
         ];
+
+        $this->HealTargetId = 0;
     }
 
     public function argsFromCard(Game $game, int $state, string $internalId): array 
@@ -98,7 +102,7 @@ class _01181 extends CityAttachment implements IHasReactions
         $event = $game->theah->createEvent(Events::CharacterHealed);
         if ($event instanceof EventCharacterHealed)
         {
-            $event->characterId = $owner->Id;
+            $event->characterId = $this->HealTargetId;
             $event->sourceId = $this->Id;
             $event->wounds = $wounds;
             $event->reason = 'Sorte Deck';
