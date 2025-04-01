@@ -290,6 +290,7 @@ class _01180 extends CityCharacter implements IHasActions
                 $equipAttachmentEvent->cost = $cost;
             }
             $game->theah->eventCheck($equipAttachmentEvent);
+            $game->theah->queueEvent($equipAttachmentEvent);
     
             //Move the cards used to pay to the player's discard pile
             foreach ($ids as $cardId) {
@@ -306,7 +307,6 @@ class _01180 extends CityCharacter implements IHasActions
             }
     
             $deck->moveCard($attachment->Id, $performer->Location, $attachment->ControllerId);
-            $game->theah->queueEvent($equipAttachmentEvent);
     
             $game->gamestate->nextState("artifactEquipped");
         }

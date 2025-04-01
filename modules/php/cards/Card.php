@@ -63,7 +63,7 @@ abstract class Card
     public function actFromCardPass(Game $game, int $state, string $internalId): void { }
     public function actFromCardWithId(Game $game, int $state, string $internalId, int $id): void { }
     public function actFromCardWithIds(Game $game, int $state, string $internalId, array $ids): void { }
-    public function reactionFromCard(Game $game, string $reaction, string $internalId): void { }
+    public function reactionFromCard(Game $game, int $state, string $reaction, string $internalId): void { }
 
     public function eventCheck($event)
     {

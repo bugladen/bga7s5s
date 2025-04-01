@@ -1800,7 +1800,7 @@ trait ActionsTrait
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $card = $this->theah->getCardById($sourceId);
 
-        $card->reactionFromCard($this, $reaction, $internalId);
+        $card->reactionFromCard($this, $this->gamestate->state_id(), $reaction, $internalId);
     }
 
 }

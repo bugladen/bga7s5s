@@ -61,9 +61,9 @@ class _01181 extends CityAttachment implements IHasReactions
         return $args; 
     }
 
-    public function reactionFromCard(Game $game, string $reaction, string $internalId): void
+    public function reactionFromCard(Game $game, int $state, string $reaction, string $internalId): void
     {
-        parent::reactionFromCard($game, $reaction, $internalId);
+        parent::reactionFromCard($game, $state, $reaction, $internalId);
 
         if ($reaction == "pass")
         {
