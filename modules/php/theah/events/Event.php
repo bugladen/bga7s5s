@@ -5,6 +5,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 abstract class Event
 {
+    const CHANGE_ACTIVE_PLAYER_PRIORITY = 7;
+    const TRANSITION_PRIORITY = 6;
     const LOWEST_PRIORITY = 5;
     const LOW_PRIORITY = 4;
     const MEDIUM_PRIORITY = 3;

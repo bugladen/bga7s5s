@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -64,6 +65,13 @@ class Theah
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_PURGATORY);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_HAND, $this->game->getActivePlayerId());
+
+        $playerIds = $this->db->getPlayerIds();
+        foreach ($playerIds as $playerId) 
+        {
+            $discardDeckName = $this->game->getPlayerDiscardDeckName($playerId["id"]);
+            $this->cards += $this->db->getCardObjectsAtLocation($discardDeckName);
+        }
 
         $this->cityBuilt = true;
     }
@@ -156,15 +164,15 @@ class Theah
             if ( ! $event->runHandlerAfterCards)
                 $this->handleEvent($event);
 
-            //Run the event for all cards in play
-            $inPlayCards = array_filter($this->cards, fn($card) => $card->Location != Game::LOCATION_HAND);
-            foreach ($inPlayCards as $card) 
+            //Run the event for all cards in play, including hands
+            foreach ($this->cards as $card) 
                 $card->handleEvent($event);
             
             // Run the event handler for Theah for cleanup
             if ($event->runHandlerAfterCards)
                 $this->handleEvent($event);
 
+            $inPlayCards = array_filter($this->cards, fn($card) => $card->Location != Game::LOCATION_HAND);
             foreach ($inPlayCards as $card) {
             // If any cards were updated, update them in the database
                 if ($card->IsUpdated) {
@@ -486,6 +494,15 @@ class Theah
                 }
         }
         return null;
+    }
+
+    function getReactionFromHandDiscount(Reaction $reaction): int
+    {
+        $discount = 0;
+        foreach ($this->cards as $card) {
+            $discount += $card->getReactionFromHandDiscount($this, $reaction);
+        }
+        return $discount;
     }
 
     function getTechniqueById($id): ?Technique

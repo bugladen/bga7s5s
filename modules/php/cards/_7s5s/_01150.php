@@ -69,7 +69,8 @@ class _01150 extends Scheme
             }
         }
 
-        if ($event instanceof EventReknownAddedToLocation && $event->location == Game::LOCATION_CITY_FORUM) {
+        if ($event instanceof EventReknownAddedToLocation && $this->Location == Game::LOCATION_PLAYER_HOME && $event->location == Game::LOCATION_CITY_FORUM) 
+        {
             $game = $event->theah->game;
             if ( $event->playerId != 0 && ! in_array($event->playerId, $this->interveneList)) {
                 $this->interveneList[] = $event->playerId;

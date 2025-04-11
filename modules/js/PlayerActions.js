@@ -269,6 +269,17 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
+    onReactionPaymentConfirmed: function()
+    {
+        var items = this.factionHand.getSelectedItems();
+        items = items.map((item) => item.id);
+
+        this.bgaPerformAction('actPayForReaction', { 
+            'payWithCards': JSON.stringify(items),
+        }).catch(() =>  {
+        });        
+    },
+
     onCardsChosenForDiscard: function()
     {
         let items = this.factionHand.getSelectedItems();

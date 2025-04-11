@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -31,12 +32,17 @@ abstract class Reaction extends CardAbility
         return ! $this->Used;
     }
 
-    public function getStateDescription(Theah $theah): string
+    public function getReactionDescription(Theah $theah): string
     {
         return '';
     }
 
-    public function getButtonProperties(Theah $theah): array
+    public function getReactionPayForDescription(Theah $theah): string
+    {
+        return '${you} must now select cards to pay for ' . $this->Name . ': ';
+    }
+
+    public function getReactionButtonProperties(Theah $theah): array
     {
         return [];
     }
@@ -48,4 +54,13 @@ abstract class Reaction extends CardAbility
             'reaction' => $reaction,
         ];
     }
+
+    public function getReactionAnnouncement(Game $game, int $state, string $internalId, string $reactionId): string 
+    {
+        return '';
+    }
+
+    public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void {}
+    
+    public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void {}
 }

@@ -2,6 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+
 abstract class Attachment extends Card implements IWealthCost
 {
     use WealthCostTrait;
@@ -24,10 +27,16 @@ abstract class Attachment extends Card implements IWealthCost
         $this->AttachedToId = 0;
     }
 
-    public function getEquipDiscount(Character $performer, Attachment $attachment): int
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment): int
     {
         return 0;
     }
+
+    public function getReactionFromHandDiscount(Theah $theah, Reaction $reaction): int
+    {
+        return parent::getReactionFromHandDiscount($theah, $reaction);
+    }
+
 
     public function getPropertyArray(): array
     {

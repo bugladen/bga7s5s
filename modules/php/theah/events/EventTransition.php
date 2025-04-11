@@ -17,7 +17,7 @@ class EventTransition extends Event
         $this->playerId = 0;
         $this->sourceId = 0;
         $this->internalId = '';
-        $this->priority = Event::LOW_PRIORITY;
+        $this->priority = Event::TRANSITION_PRIORITY;
     }
 
     public function getPlayerId(): ?int

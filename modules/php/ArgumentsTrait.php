@@ -586,9 +586,10 @@ trait ArgumentsTrait
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $card = $this->theah->getCardById($sourceId);
+        $stateName = $this->gamestate->state()['name'];
 
         return [
-            "args" => $card->argsFromCard($this, $this->gamestate->state_id(), $internalId)
+            "args" => $card->argsFromCard($this, $this->gamestate->state_id(), $stateName, $internalId)
         ];       
         
     }
@@ -600,11 +601,12 @@ trait ArgumentsTrait
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $card = $this->theah->getCardById($sourceId);
+        $stateName = $this->gamestate->state()['name'];
 
         return [
             "_private" => [
                 "active" => [
-                    "args" => $card->argsFromCard($this, $this->gamestate->state_id(), $internalId)
+                    "args" => $card->argsFromCard($this, $this->gamestate->state_id(), $stateName, $internalId)
                 ]
             ]
         ];       

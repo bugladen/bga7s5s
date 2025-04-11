@@ -45,13 +45,13 @@ class Events
 
     //High Drama Events
     const LocationClaimed = 'EventLocationClaimed';
-    const ChallengeIssued = 'EventChallengeIssued';
     const CharacterRecruited = 'EventCharacterRecruited';
     const AttachmentEquipped = 'EventAttachmentEquipped';
     const HighDramaPhasePlayerPassed = 'EventHighDramaPhasePlayerPassed';
     const HighDramaPhaseEnd = 'EventHighDramaPhaseEnd';
     
     //Challenge Events
+    const ChallengeIssued = 'EventChallengeIssued';
     const CharacterIntervened = 'EventCharacterIntervened';
     const GenerateChallengeThreat = 'EventGenerateChallengeThreat';
 

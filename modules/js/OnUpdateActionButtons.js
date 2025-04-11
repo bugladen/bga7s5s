@@ -368,11 +368,18 @@ onUpdateActionButtons: function( stateName, args )
             }
         },
 
-        'highDramaPlayerTurnReactions': () => {
+        'playerReaction': () => {
             if (this.isCurrentPlayerActive()) {
                 args._private.args.buttons.forEach((button, index) => {
-                    this.addActionButton(`actReaction-${index}`, _(button.text), () => this.bgaPerformAction('actReactionFromCard', {reaction: button.reaction}));
+                    this.addActionButton(`actReaction-${index}`, _(button.text), () => this.bgaPerformAction('actReactionFromCard', {reactionId: button.reaction}));
                 });
+            }
+        },
+
+        'playerPayForReaction': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onReactionPaymentConfirmed());
             }
         },
 

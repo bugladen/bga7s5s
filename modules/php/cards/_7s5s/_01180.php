@@ -8,11 +8,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01180 extends CityCharacter implements IHasActions
@@ -66,9 +66,9 @@ class _01180 extends CityCharacter implements IHasActions
         return $discount;
     }
 
-    public function argsFromCard(Game $game, int $state, string $internalId): array
+    public function argsFromCard(Game $game, int $state, string $stateName, string $internalId): array
     {
-        $args = parent::argsFromCard($game, $state, $internalId);
+        $args = parent::argsFromCard($game, $state, $stateName, $internalId);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
         {
@@ -297,12 +297,7 @@ class _01180 extends CityCharacter implements IHasActions
                 $card = $game->getCardObjectFromDb($cardId);
                 $deck->moveCard($cardId, $game->getPlayerDiscardDeckName($playerId));
     
-                $event = $game->theah->createEvent(Events::CardDiscardedFromHand);
-                if ($event instanceof EventCardDiscardedFromHand) {
-                    $event->playerId = $playerId;
-                    $event->card = $card;
-                }
-                //No check needed
+                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
                 $game->theah->queueEvent($event);
             }
     

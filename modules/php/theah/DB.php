@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
-/** @disregard P1012 */
+/** @disregard */
 class DB extends \APP_DbObject
 {
     public function queueEvent(Event $event)
@@ -13,14 +13,14 @@ class DB extends \APP_DbObject
         $priority = $event->priority;
         $serialized = addslashes(serialize($event));
         $sql = "INSERT INTO events (event_priority, event_serialized) values ($priority, '{$serialized}')";
-        /** @disregard P1012 */
+        /** @disregard P1013 */
         $this->DbQuery($sql);
     }
 
     public function getNextEvent()
     {
         $sql = "SELECT event_id as id, event_serialized as json FROM events ORDER BY event_priority LIMIT 1";
-        /** @disregard P1012 */
+        /** @disregard P1013 */
         $data = $this->getObjectFromDB($sql);
 
         if (!$data) {
@@ -28,7 +28,7 @@ class DB extends \APP_DbObject
         }
         
         $sql = "DELETE FROM events WHERE event_id = {$data['id']}";
-        /** @disregard P1012 */
+        /** @disregard P1013 */
         $this->DbQuery($sql);
 
         $event = unserialize($data['json']);
@@ -37,19 +37,19 @@ class DB extends \APP_DbObject
 
     public function getCollection(string $sql): array
     {
-        /** @disregard P1012 */
+        /** @disregard P1013 */
         return $this->getCollectionFromDB($sql);
     }
 
     public function getObjectList(string $sql): array
     {
-        /** @disregard P1012 */
+        /** @disregard P1013 */
         return $this->getObjectListFromDB($sql);
     }
 
     public function executeSql(string $sql)
     {
-        /** @disregard P1012 */
+        /** @disregard P1013 */
         $this->DbQuery($sql);
     }
 
@@ -64,7 +64,7 @@ class DB extends \APP_DbObject
         if ($playerId) {
             $sql .= " AND card_location_arg = $playerId";
         }
-        /** @disregard P1012 */
+        /** @disregard P1013 */
         $data = $this->getObjectListFromDB($sql);
 
         $cards = [];
@@ -76,7 +76,7 @@ class DB extends \APP_DbObject
     }
 
     public function getCardObject($cardId) : Card {
-        /** @disregard P1012 */
+        /** @disregard P1013 */
         $data = $this->getObjectFromDB("SELECT card_serialized FROM card WHERE card_id = $cardId");
         $card = unserialize($data['card_serialized']);
         return $card;
@@ -85,18 +85,24 @@ class DB extends \APP_DbObject
     public function updateCardObject($card) {
         $serialized = addslashes(serialize($card));
         $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $card->Id";
-        /** @disregard P1012 */
+        /** @disregard P1013 */
         $this->DbQuery($sql);
+    }
+
+    public function getPlayerIds() {
+        $sql = "SELECT player_id as id FROM player";
+        /** @disregard P1013 */
+        return $this->getObjectListFromDB($sql);
     }
 
     public function getPlayerReknown($playerId) {
         $sql = "SELECT player_score FROM player WHERE player_id = $playerId";
-        /** @disregard P1012 */
+        /** @disregard P1013 */
         return $this->getUniqueValueFromDB($sql);
     }
 
     function setPlayerReknown($playerId, $reknown) {
-        /** @disregard P1012 */
+        /** @disregard P1013 */
         $this->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
     }
 

@@ -33,7 +33,7 @@ class Technique_01123 extends Technique
             }
         }
 
-        if ($event instanceof EventDuelCalculateTechniqueValues)
+        if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
             $actor = $event->theah->getCharacterById($event->actorId);
             $adversary = $event->theah->getCharacterById($event->adversaryId);

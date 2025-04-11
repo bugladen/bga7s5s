@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 trait ReactionTrait
 {
@@ -74,6 +75,27 @@ trait ReactionTrait
         }
 
         return $array;
+    }
+
+    public function reactionFromCard(Game $game, int $state, string $internalId, string $reactionId): void
+    {
+        $reaction = $this->getReactionById($internalId);
+        $reaction->performReaction($game, $state, $internalId, $reactionId);
+    }
+
+    public function updateArgsFromReaction(Game $game, Array &$args, int $state, string $stateName, string $internalId): void
+    {
+        $reaction = $this->getReactionById($internalId);
+        $args['buttons'] = $reaction->getReactionButtonProperties($game->theah);
+        $args['descriptionmyturn'] = $reaction->getReactionDescription($game->theah);
+    }
+
+    public function updatePayForArgsFromReaction(Game $game, Array &$args, int $state, string $stateName, string $internalId): void
+    {
+        $reaction = $this->getReactionById($internalId);
+        $args['descriptionmyturn'] = $reaction->getReactionPayForDescription($game->theah);
+        $args['reactionId'] = $this->Id;
+        $args['discount'] = $game->theah->getReactionFromHandDiscount($reaction);
     }
 
     public function updateReactionOwnerIds($id)

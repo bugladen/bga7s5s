@@ -11,7 +11,7 @@ class EventChangeActivePlayer extends Event
         parent::__construct();
 
         $this->playerId = 0;
-        $this->priority = Event::LOW_PRIORITY;
+        $this->priority = Event::CHANGE_ACTIVE_PLAYER_PRIORITY;
     }
 }
 

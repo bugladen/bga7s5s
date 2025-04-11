@@ -156,13 +156,22 @@ trait EventHub
                 break;
 
             case $event instanceof EventCardDiscardedFromHand:
-                $this->game->notifyAllPlayers('cardDiscardedFromHand',
-                    clienttranslate('${player_name} discarded ${card_name}.'), [
-                    "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "card_name" => "<strong>{$event->card->Name}</strong>",
-                    "playerId" => $event->playerId,
-                    "card" => $event->card->getPropertyArray(),
-                ]);
+                $handler = function (Theah $theah, EventCardDiscardedFromHand $event)
+                {
+                    $card = $theah->getCardById($event->cardId);
+                    $discardPileName = $theah->game->getPlayerDiscardDeckName($event->playerId);
+                    $card->Location = $discardPileName;
+                    $card->IsUpdated = true;
+
+                    // Notify players that card has been discarded from hand
+                    $theah->game->notifyAllPlayers("cardDiscardedFromHand", clienttranslate('${player_name} discarded ${card_name}.'), [
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "card_name" => "<strong>{$card->Name}</strong>",
+                        "playerId" => $event->playerId,
+                        "card" => $card->getPropertyArray(),
+                    ]);
+                };
+                $handler($this, $event);
                 break;
 
             case $event instanceof EventCardEngaged:
@@ -447,9 +456,9 @@ trait EventHub
                     
                     $message = '${player_name} has chosen to have ${challenger_name} Challenge ${defender_name}. ';
                     $technique = null;
-                    if ($event->activatedTechniqueId != 0)
+                    if ($event->activatedTechniqueId)
                     {
-                        $message .= '${player_name} will activate Technique ${technique_name}. for the Challenge.';
+                        $message .= '${player_name} will activate Technique ${technique_name} for the Challenge.';
                         $technique = $theah->getTechniqueById($event->activatedTechniqueId);
                     } 
                                             

@@ -61,8 +61,38 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::DAWN_NEW_DAY_REACTIONS,
                 "endOfEvents" => States::DAWN_BEGINNING,
                 "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::DAWN_NEW_DAY_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::DAWN_NEW_DAY_EVENTS, 
+                "pay" => States::DAWN_NEW_DAY_PAY_FOR_REACTION,
+            ]
+        ],
+        States::DAWN_NEW_DAY_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::DAWN_NEW_DAY_REACTIONS, 
+                "paid" => States::DAWN_NEW_DAY_EVENTS, 
             ]
         ],
 
@@ -79,8 +109,38 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::DAWN_BEGINNING_REACTIONS,
                 "endOfEvents" => States::DAWN_CITY_CARDS,
                 "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::DAWN_BEGINNING_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::DAWN_BEGINNING_EVENTS, 
+                "pay" => States::DAWN_BEGINNING_PAY_FOR_REACTION,
+            ]
+        ],
+        States::DAWN_BEGINNING_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::DAWN_BEGINNING_REACTIONS, 
+                "paid" => States::DAWN_BEGINNING_EVENTS, 
             ]
         ],
 
@@ -97,8 +157,38 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::DAWN_CITY_CARDS_REACTIONS,
                 "endOfEvents" => States::DAWN_ENDING,
                 "endOfGame" => States::END_GAME]
+        ],
+        States::DAWN_CITY_CARDS_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::DAWN_CITY_CARDS_EVENTS, 
+                "pay" => States::DAWN_CITY_CARDS_PAY_FOR_REACTION,
+            ]
+        ],
+        States::DAWN_CITY_CARDS_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::DAWN_CITY_CARDS_REACTIONS, 
+                "paid" => States::DAWN_CITY_CARDS_EVENTS, 
+            ]
         ],
 
     States::DAWN_ENDING => [
@@ -114,8 +204,38 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::DAWN_ENDING_REACTIONS,
                 "endOfEvents" => States::PLANNING_PHASE_BEGINNING,
                 "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::DAWN_ENDING_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::DAWN_ENDING_EVENTS, 
+                "pay" => States::DAWN_ENDING_PAY_FOR_REACTION,
+            ]
+        ],
+        States::DAWN_ENDING_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::DAWN_ENDING_REACTIONS, 
+                "paid" => States::DAWN_ENDING_EVENTS, 
             ]
         ],
 
@@ -132,8 +252,38 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::PLANNING_PHASE_BEGINNING_REACTIONS,
                 "endOfEvents" => States::PLANNING_PHASE,
                 "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::PLANNING_PHASE_BEGINNING_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::PLANNING_PHASE_BEGINNING_EVENTS, 
+                "pay" => States::PLANNING_PHASE_BEGINNING_PAY_FOR_REACTION,
+            ]
+        ],
+        States::PLANNING_PHASE_BEGINNING_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_BEGINNING_REACTIONS, 
+                "paid" => States::PLANNING_PHASE_BEGINNING_EVENTS, 
             ]
         ],
 
@@ -163,8 +313,38 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_REACTIONS,
                 "endOfEvents" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER,
                 "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS, 
+                "pay" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_PAY_FOR_REACTION,
+            ]
+        ],
+        States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_REACTIONS, 
+                "paid" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS, 
             ]
         ],
 
@@ -181,8 +361,38 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_REACTIONS,
                 "endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS,
                 "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_EVENTS, 
+                "pay" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_PAY_FOR_REACTION,
+            ]
+        ],
+        States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_REACTIONS, 
+                "paid" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_EVENTS, 
             ]
         ],
 
@@ -199,8 +409,38 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_REACTIONS,
                 "endOfEvents" => States::PLANNING_PHASE_MUSTER,
                 "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS, 
+                "pay" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_PAY_FOR_REACTION,
+            ]
+        ],
+        States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_REACTIONS, 
+                "paid" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS, 
             ]
         ],
 
@@ -218,8 +458,38 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::PLANNING_PHASE_MUSTER_REACTIONS,
                 "endOfEvents" => States::PLANNING_PHASE_RESOLVE_SCHEMES,
                 "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::PLANNING_PHASE_MUSTER_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::PLANNING_PHASE_MUSTER_EVENTS, 
+                "pay" => States::PLANNING_PHASE_MUSTER_PAY_FOR_REACTION,
+            ]
+        ],
+        States::PLANNING_PHASE_MUSTER_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_MUSTER_REACTIONS, 
+                "paid" => States::PLANNING_PHASE_MUSTER_EVENTS, 
             ]
         ],
 
@@ -249,8 +519,38 @@ $machinestates = [
                 "01145" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145,
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
                 "01152" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152,
+                "reaction" => States::PLANNING_PHASE_RESOLVE_SCHEMES_REACTIONS,
                 "endOfEvents" => States::PLANNING_PHASE_DRAW,
                 "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS, 
+                "pay" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PAY_FOR_REACTION,
+            ]
+        ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_RESOLVE_SCHEMES_REACTIONS, 
+                "paid" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS, 
             ]
         ],
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01016 => [
@@ -538,8 +838,38 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "01098" => States::PLANNING_PHASE_END_01098,
+                "reaction" => States::PLANNING_PHASE_END_REACTIONS,
                 "endOfEvents" => States::HIGH_DRAMA_BEGINNING,
                 "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::PLANNING_PHASE_END_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::PLANNING_PHASE_END_EVENTS, 
+                "pay" => States::PLANNING_PHASE_END_PAY_FOR_REACTION,
+            ]
+        ],
+        States::PLANNING_PHASE_END_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_END_REACTIONS, 
+                "paid" => States::PLANNING_PHASE_END_EVENTS, 
             ]
         ],
         States::PLANNING_PHASE_END_01098 => [
@@ -581,11 +911,40 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "01144" => States::HIGH_DRAMA_BEGINNING_01144,
+                "reaction" => States::HIGH_DRAMA_BEGINNING_REACTIONS,
                 "endOfEvents" => States::HIGH_DRAMA_PHASE,
                 "endOfGame" => States::END_GAME
                 ]
         ],
-
+        States::HIGH_DRAMA_BEGINNING_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::HIGH_DRAMA_BEGINNING_EVENTS, 
+                "pay" => States::HIGH_DRAMA_BEGINNING_PAY_FOR_REACTION,
+            ]
+        ],
+        States::HIGH_DRAMA_BEGINNING_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::HIGH_DRAMA_BEGINNING_REACTIONS, 
+                "paid" => States::HIGH_DRAMA_BEGINNING_EVENTS, 
+            ]
+        ],
         States::HIGH_DRAMA_BEGINNING_01144 => [
             "name" => "highDramaBeginning_01144",
             "description" => clienttranslate('Filling The Ranks: ${actplayer} may choose a Mercenary from a City Location to recruit to their home'),
@@ -646,7 +1005,7 @@ $machinestates = [
                 ]
         ],
         States::HIGH_DRAMA_PLAYER_TURN_REACTIONS => [
-            "name" => "highDramaPlayerTurnReactions",
+            "name" => "playerReaction",
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
@@ -660,13 +1019,14 @@ $machinestates = [
             ]
         ],
         States::HIGH_DRAMA_PLAYER_TURN_PAY_FOR_REACTION => [
-            "name" => "highDramaPlayerTurnPayForReaction",
+            "name" => "playerPayForReaction",
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
             "args" => "argsFromCardPrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actBack",
+                "actPayForReaction", 
             ],
             "transitions" => [
                 "back" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS, 
@@ -711,7 +1071,7 @@ $machinestates = [
             "action" => "stTechniqueAvailable",
             "transitions" => [
                 "hasTechique" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE,
-                "noTechnique" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE
+                "noTechnique" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE
             ]
         ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE => [
@@ -736,9 +1096,39 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+                    "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_REACTIONS,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE,
                     "endOfGame" => States::END_GAME
                     ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actReactionFromCard", 
+                ],
+                "transitions" => [
+                    "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS, 
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_PAY_FOR_REACTION,
+                ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actBack",
+                    "actPayForReaction", 
+                ],
+                "transitions" => [
+                    "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_REACTIONS, 
+                    "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS, 
+                ]
             ],
     
         States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE => [
@@ -755,11 +1145,42 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+                    "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_REACTIONS,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE,
                     "endOfGame" => States::END_GAME
                 ]
             ],
-    States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE => [
+            States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actReactionFromCard", 
+                ],
+                "transitions" => [
+                    "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_EVENTS, 
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_PAY_FOR_REACTION,
+                ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actBack",
+                    "actPayForReaction", 
+                ],
+                "transitions" => [
+                    "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_REACTIONS, 
+                    "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_EVENTS, 
+                ]
+            ],
+    
+        States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE => [
             "name" => "highDramaChallengeActionAcceptChallenge",
             "description" => clienttranslate('${actplayer} is choosing to accept Challenge.'),
             "descriptionmyturn" => clienttranslate('${you} must choose to accept Challenge, or Intervene:'),
@@ -788,23 +1209,53 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "01067b" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS_01067b,
+                    "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_REACTIONS,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
                     "endOfGame" => States::END_GAME
                     ]
             ],
-                States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS_01067b => [
-                    "name" => "highDramaChallengeActionResolveTechnique_01067b",
-                    "description" => clienttranslate('${actplayer} is choosing options to resolve Jean Urbain\'s Technique.'),
-                    "descriptionmyturn" => clienttranslate('Jean Urbain: +1 Thrust or Riposte: ${you} may choose Thrust or Riposte:'),
-                    "type" => "activeplayer",
-                    "args" => "argsEmpty",
-                    "possibleactions" => [
-                        "actHighDramaChallengeActionResolveTechnique_01067b", 
-                    ],
-                    "transitions" => [
-                        "" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS,
-                    ]
+            States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actReactionFromCard", 
                 ],
+                "transitions" => [
+                    "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS, 
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_PAY_FOR_REACTION,
+                ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actBack",
+                    "actPayForReaction", 
+                ],
+                "transitions" => [
+                    "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_REACTIONS, 
+                    "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS, 
+                ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS_01067b => [
+            "name" => "highDramaChallengeActionResolveTechnique_01067b",
+            "description" => clienttranslate('${actplayer} is choosing options to resolve Jean Urbain\'s Technique.'),
+            "descriptionmyturn" => clienttranslate('Jean Urbain: +1 Thrust or Riposte: ${you} may choose Thrust or Riposte:'),
+            "type" => "activeplayer",
+            "args" => "argsEmpty",
+            "possibleactions" => [
+                "actHighDramaChallengeActionResolveTechnique_01067b", 
+            ],
+            "transitions" => [
+                "" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS,
+            ]
+        ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT => [
             "name" => "highDramaChallengeActionGenerateThreat",
             "type" => "game",
@@ -818,9 +1269,39 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+                    "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_REACTIONS,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION,
                     "endOfGame" => States::END_GAME
                     ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actReactionFromCard", 
+                ],
+                "transitions" => [
+                    "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_EVENTS, 
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_PAY_FOR_REACTION,
+                ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actBack",
+                    "actPayForReaction", 
+                ],
+                "transitions" => [
+                    "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_REACTIONS, 
+                    "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_EVENTS, 
+                ]
             ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION => [
             "name" => "highDramaChallengeActionResolution",
@@ -836,18 +1317,78 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+                    "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_REACTIONS,
                     "endOfEvents" => States::HIGH_DRAMA_PLAYER_TURN,
                     "endOfGame" => States::END_GAME
                     ]
             ],
-            States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS => [
+            States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actReactionFromCard", 
+                ],
+                "transitions" => [
+                    "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_EVENTS, 
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_PAY_FOR_REACTION,
+                ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actBack",
+                    "actPayForReaction", 
+                ],
+                "transitions" => [
+                    "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_REACTIONS, 
+                    "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_EVENTS, 
+                ]
+            ],
+                States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS => [
                 "name" => "highDramaChallengeActionAcceptEvents",
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+                    "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_REACTIONS,
                     "endOfEvents" => States::DUEL_STARTED,
                     "endOfGame" => States::END_GAME
                     ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actReactionFromCard", 
+                ],
+                "transitions" => [
+                    "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS, 
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_PAY_FOR_REACTION,
+                ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actBack",
+                    "actPayForReaction", 
+                ],
+                "transitions" => [
+                    "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_REACTIONS, 
+                    "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS, 
+                ]
             ],
         States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER => [
             "name" => "highDramaClaimActionChoosePerformer",
@@ -1045,7 +1586,6 @@ $machinestates = [
                     "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
                 ]
             ],
-
             States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION => [
                 "name" => "highDramaInPlayActionChooseAction",
                 "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -1075,9 +1615,39 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+                    "reaction" => States::DUEL_STARTED_REACTIONS,
                     "endOfEvents" => States::DUEL_NEW_ROUND,
                     "endOfGame" => States::END_GAME
                     ]
+            ],
+            States::DUEL_STARTED_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actReactionFromCard", 
+                ],
+                "transitions" => [
+                    "done" => States::DUEL_STARTED_EVENTS, 
+                    "pay" => States::DUEL_STARTED_PAY_FOR_REACTION,
+                ]
+            ],
+            States::DUEL_STARTED_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actBack",
+                    "actPayForReaction", 
+                ],
+                "transitions" => [
+                    "back" => States::DUEL_STARTED_REACTIONS, 
+                    "paid" => States::DUEL_STARTED_EVENTS, 
+                ]
             ],
         States::DUEL_NEW_ROUND => [
             "name" => "duelNewRound",
@@ -1092,9 +1662,39 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+                    "reaction" => States::DUEL_NEW_ROUND_REACTIONS,
                     "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                     "endOfGame" => States::END_GAME
                     ]
+            ],
+            States::DUEL_NEW_ROUND_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actReactionFromCard", 
+                ],
+                "transitions" => [
+                    "done" => States::DUEL_NEW_ROUND_EVENTS, 
+                    "pay" => States::DUEL_NEW_ROUND_PAY_FOR_REACTION,
+                ]
+            ],
+            States::DUEL_NEW_ROUND_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsFromCardPrivate",
+                "possibleactions" => [
+                    "actBack",
+                    "actPayForReaction", 
+                ],
+                "transitions" => [
+                    "back" => States::DUEL_NEW_ROUND_REACTIONS, 
+                    "paid" => States::DUEL_NEW_ROUND_EVENTS, 
+                ]
             ],
         States::DUEL_CHOOSE_ACTION => [
             "name" => "duelChooseAction",
@@ -1136,10 +1736,40 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "reaction" => States::DUEL_CHOOSE_TECHNIQUE_REACTIONS,
                         "01013" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS_01013,
                         "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                         "endOfGame" => States::END_GAME
                         ]
+                ],
+                States::DUEL_CHOOSE_TECHNIQUE_REACTIONS => [
+                    "name" => "playerReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsFromCardPrivate",
+                    "possibleactions" => [
+                        "actReactionFromCard", 
+                    ],
+                    "transitions" => [
+                        "done" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS, 
+                        "pay" => States::DUEL_CHOOSE_TECHNIQUE_PAY_FOR_REACTION,
+                    ]
+                ],
+                States::DUEL_CHOOSE_TECHNIQUE_PAY_FOR_REACTION => [
+                    "name" => "playerPayForReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsFromCardPrivate",
+                    "possibleactions" => [
+                        "actBack",
+                        "actPayForReaction", 
+                    ],
+                    "transitions" => [
+                        "back" => States::DUEL_CHOOSE_TECHNIQUE_REACTIONS, 
+                        "paid" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS, 
+                    ]
                 ],
                 States::DUEL_CHOOSE_TECHNIQUE_EVENTS_01013 => [
                     "name" => "duelActionResolveTechnique_01013",
@@ -1208,9 +1838,39 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "reaction" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_REACTIONS,
                         "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                         "endOfGame" => States::END_GAME
                         ]
+                ],
+                States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_REACTIONS => [
+                    "name" => "playerReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsFromCardPrivate",
+                    "possibleactions" => [
+                        "actReactionFromCard", 
+                    ],
+                    "transitions" => [
+                        "done" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS, 
+                        "pay" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_PAY_FOR_REACTION,
+                    ]
+                ],
+                States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_PAY_FOR_REACTION => [
+                    "name" => "playerPayForReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsFromCardPrivate",
+                    "possibleactions" => [
+                        "actBack",
+                        "actPayForReaction", 
+                    ],
+                    "transitions" => [
+                        "back" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_REACTIONS, 
+                        "paid" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS, 
+                    ]
                 ],
             States::DUEL_APPLY_COMBAT_CARD_STATS => [
                 "name" => "duelApplyCombatCardStats",
@@ -1225,8 +1885,38 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "reaction" => States::DUEL_APPLY_COMBAT_CARD_STATS_REACTIONS,
                         "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                         "endOfGame" => States::END_GAME
+                    ]
+                ],
+                States::DUEL_APPLY_COMBAT_CARD_STATS_REACTIONS => [
+                    "name" => "playerReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsFromCardPrivate",
+                    "possibleactions" => [
+                        "actReactionFromCard", 
+                    ],
+                    "transitions" => [
+                        "done" => States::DUEL_APPLY_COMBAT_CARD_STATS_EVENTS, 
+                        "pay" => States::DUEL_APPLY_COMBAT_CARD_STATS_PAY_FOR_REACTION,
+                    ]
+                ],
+                States::DUEL_APPLY_COMBAT_CARD_STATS_PAY_FOR_REACTION => [
+                    "name" => "playerPayForReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsFromCardPrivate",
+                    "possibleactions" => [
+                        "actBack",
+                        "actPayForReaction", 
+                    ],
+                    "transitions" => [
+                        "back" => States::DUEL_APPLY_COMBAT_CARD_STATS_REACTIONS, 
+                        "paid" => States::DUEL_APPLY_COMBAT_CARD_STATS_EVENTS, 
                     ]
                 ],
             States::DUEL_CHOOSE_GAMBLE_CARD =>[
@@ -1247,8 +1937,38 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "reaction" => States::DUEL_CHOOSE_GAMBLE_CARD_REACTIONS,
                         "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                         "endOfGame" => States::END_GAME
+                    ]
+                ],
+                States::DUEL_CHOOSE_GAMBLE_CARD_REACTIONS => [
+                    "name" => "playerReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsFromCardPrivate",
+                    "possibleactions" => [
+                        "actReactionFromCard", 
+                    ],
+                    "transitions" => [
+                        "done" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS, 
+                        "pay" => States::DUEL_CHOOSE_GAMBLE_CARD_PAY_FOR_REACTION,
+                    ]
+                ],
+                States::DUEL_CHOOSE_GAMBLE_CARD_PAY_FOR_REACTION => [
+                    "name" => "playerPayForReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsFromCardPrivate",
+                    "possibleactions" => [
+                        "actBack",
+                        "actPayForReaction", 
+                    ],
+                    "transitions" => [
+                        "back" => States::DUEL_CHOOSE_GAMBLE_CARD_REACTIONS, 
+                        "paid" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS, 
                     ]
                 ],
             States::DUEL_END_OF_ROUND => [
@@ -1264,8 +1984,38 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "reaction" => States::DUEL_END_OF_ROUND_REACTIONS,
                         "endOfEvents" => States::DUEL_NEXT_PLAYER,
                         "endOfGame" => States::END_GAME
+                    ]
+                ],
+                States::DUEL_END_OF_ROUND_REACTIONS => [
+                    "name" => "playerReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsFromCardPrivate",
+                    "possibleactions" => [
+                        "actReactionFromCard", 
+                    ],
+                    "transitions" => [
+                        "done" => States::DUEL_END_OF_ROUND_EVENTS, 
+                        "pay" => States::DUEL_END_OF_ROUND_PAY_FOR_REACTION,
+                    ]
+                ],
+                States::DUEL_END_OF_ROUND_PAY_FOR_REACTION => [
+                    "name" => "playerPayForReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsFromCardPrivate",
+                    "possibleactions" => [
+                        "actBack",
+                        "actPayForReaction", 
+                    ],
+                    "transitions" => [
+                        "back" => States::DUEL_END_OF_ROUND_REACTIONS, 
+                        "paid" => States::DUEL_END_OF_ROUND_EVENTS, 
                     ]
                 ],
             States::DUEL_NEXT_PLAYER => [
@@ -1293,11 +2043,41 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                    "reaction" => States::DUEL_END_REACTIONS,
                         "endOfEvents" => States::NEXT_PLAYER,
                         "endOfGame" => States::END_GAME
                     ]
                 ],
-        
+                States::DUEL_END_REACTIONS => [
+                    "name" => "playerReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsFromCardPrivate",
+                    "possibleactions" => [
+                        "actReactionFromCard", 
+                    ],
+                    "transitions" => [
+                        "done" => States::DUEL_END_EVENTS, 
+                        "pay" => States::DUEL_END_PAY_FOR_REACTION,
+                    ]
+                ],
+                States::DUEL_END_PAY_FOR_REACTION => [
+                    "name" => "playerPayForReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsFromCardPrivate",
+                    "possibleactions" => [
+                        "actBack",
+                        "actPayForReaction", 
+                    ],
+                    "transitions" => [
+                        "back" => States::DUEL_END_REACTIONS, 
+                        "paid" => States::DUEL_END_EVENTS, 
+                    ]
+                ],
+                
     States::NEXT_PLAYER => [
         "name" => "nextPlayer",
         "type" => "game",
@@ -1320,10 +2100,41 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::HIGH_DRAMA_END_REACTIONS,
                 "endOfEvents" => States::PLUNDER_PHASE_BEGIN,
                 "endOfGame" => States::END_GAME
             ]
         ],
+        States::HIGH_DRAMA_END_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::HIGH_DRAMA_END_EVENTS, 
+                "pay" => States::HIGH_DRAMA_END_PAY_FOR_REACTION,
+            ]
+        ],
+        States::HIGH_DRAMA_END_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::HIGH_DRAMA_END_REACTIONS, 
+                "paid" => States::HIGH_DRAMA_END_EVENTS, 
+            ]
+        ],
+
     States::PLUNDER_PHASE_BEGIN => [
         "name" => "plunderPhaseBegin",
         "type" => "game",
@@ -1335,10 +2146,41 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::PLUNDER_PHASE_BEGIN_REACTIONS,
                 "endOfEvents" => States::PLUNDER_CHECK_DOMINANCE_VICTORY,
                 "endOfGame" => States::END_GAME
             ]
         ],
+        States::PLUNDER_PHASE_BEGIN_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::PLUNDER_PHASE_BEGIN_EVENTS, 
+                "pay" => States::PLUNDER_PHASE_BEGIN_PAY_FOR_REACTION,
+            ]
+        ],
+        States::PLUNDER_PHASE_BEGIN_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::PLUNDER_PHASE_BEGIN_REACTIONS, 
+                "paid" => States::PLUNDER_PHASE_BEGIN_EVENTS, 
+            ]
+        ],
+
     States::PLUNDER_CHECK_DOMINANCE_VICTORY => [
         "name" => "plunderCheckDominanceVictory",
         "type" => "game",
@@ -1359,9 +2201,40 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::PLUNDER_GAIN_REKNOWN_REACTIONS,
                 "endOfEvents" => States::PLUNDER_CHECK_ECONOMIC_VICTORY,
                 "endOfGame" => States::END_GAME]
         ],
+        States::PLUNDER_GAIN_REKNOWN_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::PLUNDER_GAIN_REKNOWN_EVENTS, 
+                "pay" => States::PLUNDER_GAIN_REKNOWN_PAY_FOR_REACTION,
+            ]
+        ],
+        States::PLUNDER_GAIN_REKNOWN_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::PLUNDER_GAIN_REKNOWN_REACTIONS, 
+                "paid" => States::PLUNDER_GAIN_REKNOWN_EVENTS, 
+            ]
+        ],
+
     States::PLUNDER_CHECK_ECONOMIC_VICTORY => [
         "name" => "plunderCheckEconomicVictory",
         "type" => "game",
@@ -1391,10 +2264,41 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::PLUNDER_PHASE_END_REACTIONS,
                 "endOfEvents" => States::DUSK_PHASE_BEGIN,
                 "endOfGame" => States::END_GAME
             ]
         ],
+        States::PLUNDER_PHASE_END_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::PLUNDER_PHASE_END_EVENTS, 
+                "pay" => States::PLUNDER_PHASE_END_PAY_FOR_REACTION,
+            ]
+        ],
+        States::PLUNDER_PHASE_END_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::PLUNDER_PHASE_END_REACTIONS, 
+                "paid" => States::PLUNDER_PHASE_END_EVENTS, 
+            ]
+        ],
+
     States::DUSK_PHASE_BEGIN => [
         "name" => "duskPhaseBegin",
         "type" => "game",
@@ -1407,10 +2311,41 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "01177" => States::DUSK_PHASE_BEGIN_01177,
+                "reaction" => States::DUSK_PHASE_BEGIN_REACTIONS,
                 "endOfEvents" => States::DUSK_PHASE_CLEANUP,
                 "endOfGame" => States::END_GAME
             ]
         ],
+        States::DUSK_PHASE_BEGIN_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::DUSK_PHASE_BEGIN_EVENTS, 
+                "pay" => States::DUSK_PHASE_BEGIN_PAY_FOR_REACTION,
+            ]
+        ],
+        States::DUSK_PHASE_BEGIN_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::DUSK_PHASE_BEGIN_REACTIONS, 
+                "paid" => States::DUSK_PHASE_BEGIN_EVENTS, 
+            ]
+        ],
+
     States::DUSK_PHASE_CLEANUP => [
         "name" => "duskPhaseCleanup",
         "type" => "game",
@@ -1422,10 +2357,41 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+                    "reaction" => States::DUSK_PHASE_CLEANUP_REACTIONS,
                     "endOfEvents" => States::DUSK_PHASE_DISCARD,
                     "endOfGame" => States::END_GAME
                 ]
             ],
+        States::DUSK_PHASE_CLEANUP_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::DUSK_PHASE_CLEANUP_EVENTS, 
+                "pay" => States::DUSK_PHASE_CLEANUP_PAY_FOR_REACTION,
+            ]
+        ],
+        States::DUSK_PHASE_CLEANUP_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::DUSK_PHASE_CLEANUP_REACTIONS, 
+                "paid" => States::DUSK_PHASE_CLEANUP_EVENTS, 
+            ]
+        ],
+
     States::DUSK_PHASE_DISCARD => [
         "name" => "duskPhaseDiscard",
         "description" => clienttranslate('Your opponent(s) must discard cards down to their Leader Panache value.'),
@@ -1443,10 +2409,41 @@ $machinestates = [
             "type" => "game",
             "action" => "stDuskPhaseDiscardEvents",
             "transitions" => [
+                "reaction" => States::DUSK_PHASE_DISCARD_REACTIONS,
                 "endOfEvents" => States::DUSK_PHASE_END,
                 "endOfGame" => States::END_GAME
             ]
         ],
+        States::DUSK_PHASE_DISCARD_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::DUSK_PHASE_DISCARD_EVENTS, 
+                "pay" => States::DUSK_PHASE_DISCARD_PAY_FOR_REACTION,
+            ]
+        ],
+        States::DUSK_PHASE_DISCARD_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::DUSK_PHASE_DISCARD_REACTIONS, 
+                "paid" => States::DUSK_PHASE_DISCARD_EVENTS, 
+            ]
+        ],
+
     States::DUSK_PHASE_END => [
         "name" => "duskPhaseEnd",
         "type" => "game",
@@ -1458,10 +2455,41 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::DUSK_PHASE_END_REACTIONS,
                 "endOfEvents" => States::DUSK_END_OF_DAY,
                 "endOfGame" => States::END_GAME
             ]
         ],
+        States::DUSK_PHASE_END_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::DUSK_PHASE_END_EVENTS, 
+                "pay" => States::DUSK_PHASE_END_PAY_FOR_REACTION,
+            ]
+        ],
+        States::DUSK_PHASE_END_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::DUSK_PHASE_END_REACTIONS, 
+                "paid" => States::DUSK_PHASE_END_EVENTS, 
+            ]
+        ],
+
     States::DUSK_END_OF_DAY => [
         "name" => "duskEndOfDay",
         "type" => "game",
@@ -1473,8 +2501,38 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "reaction" => States::DUSK_END_OF_DAY_REACTIONS,
                 "endOfEvents" => States::DAWN_NEW_DAY,
                 "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::DUSK_END_OF_DAY_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actReactionFromCard", 
+            ],
+            "transitions" => [
+                "done" => States::DUSK_END_OF_DAY_EVENTS, 
+                "pay" => States::DUSK_END_OF_DAY_PAY_FOR_REACTION,
+            ]
+        ],
+        States::DUSK_END_OF_DAY_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsFromCardPrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::DUSK_END_OF_DAY_REACTIONS, 
+                "paid" => States::DUSK_END_OF_DAY_EVENTS, 
             ]
         ],
                                         

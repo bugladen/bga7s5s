@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
@@ -84,7 +85,7 @@ abstract class Character extends Card
             $attachment = $theah->getCardById($attachmentId);
             if ($attachment instanceof Attachment)
             {
-                $discount += $attachment->getEquipDiscount($performer, $attachment);
+                $discount += $attachment->getEquipDiscount($theah, $performer, $attachment);
             }
         
         }
@@ -94,6 +95,22 @@ abstract class Character extends Card
     public function getPressureInfluenceValue(): int
     {
         return $this->ModifiedInfluence;
+    }
+
+    public function getReactionFromHandDiscount(Theah $theah, Reaction $reaction) : int
+    {
+        $discount = parent::getReactionFromHandDiscount($theah, $reaction);
+        
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getCardById($attachmentId);
+            if ($attachment instanceof Attachment)
+            {
+                $discount += $attachment->getReactionFromHandDiscount($theah, $reaction);
+            }
+        
+        }
+        return $discount;
     }
 
     public function addAttachment(Attachment $attachment)

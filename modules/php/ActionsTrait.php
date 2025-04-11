@@ -13,8 +13,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
@@ -670,11 +668,7 @@ trait ActionsTrait
             $card = $this->getCardObjectFromDb($cardId);
             $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
 
-            $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
-            if ($event instanceof EventCardDiscardedFromHand) {
-                $event->playerId = $playerId;
-                $event->card = $card;
-            }
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
             //No check needed
             $this->theah->queueEvent($event);
         }
@@ -867,13 +861,9 @@ trait ActionsTrait
                 "card_name" => "<strong>{$performer->Name}</strong>",
             ]);
             
-            $removeEvent = $this->theah->createEvent(Events::CardEngaged);
-            if ($removeEvent instanceof EventCardEngaged) {
-                $removeEvent->cardId = $performer->Id;
-                $removeEvent->playerId = $playerId;
-            }
-            $this->theah->eventCheck($removeEvent);
-            $this->theah->queueEvent($removeEvent);
+            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
+            $this->theah->eventCheck($engageEvent);
+            $this->theah->queueEvent($engageEvent);
         }
 
         $this->actRecruitMercenary($recruitId, $payWithCards);
@@ -1059,11 +1049,7 @@ trait ActionsTrait
             $card = $this->getCardObjectFromDb($cardId);
             $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
 
-            $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
-            if ($event instanceof EventCardDiscardedFromHand) {
-                $event->playerId = $playerId;
-                $event->card = $card;
-            }
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
             //No check needed
             $this->theah->queueEvent($event);
         }
@@ -1146,12 +1132,7 @@ trait ActionsTrait
 
         $this->setControllerForLocation($performer->Location, $activePlayerId);
 
-        $engageEvent = $this->theah->createEvent(Events::CardEngaged);
-        if ($engageEvent instanceof EventCardEngaged)
-        {
-            $engageEvent->cardId = $performer->Id;
-            $engageEvent->playerId = $activePlayerId;
-        }
+        $engageEvent = EventFactory::createCardEngagedEvent($activePlayerId, $performer->Id);
         $this->theah->eventCheck($engageEvent);
 
         $claimEvent = $this->theah->createEvent(Events::LocationClaimed);
@@ -1307,11 +1288,6 @@ trait ActionsTrait
 
         $this->globals->set(GAME::CHOSEN_TARGET, $target->Id);
 
-        $this->notifyPlayer($performer->ControllerId, "message", clienttranslate('You have chosen to have ${performer_name} challenge ${target_name}.'), [
-            "performer_name" => "<strong>{$performer->Name}</strong>",
-            "target_name" => "<strong>{$target->Name}</strong>",
-        ]);
-
         $this->gamestate->nextState("targetChosen");
     }
 
@@ -1339,7 +1315,6 @@ trait ActionsTrait
     public function actHighDramaChallengeActionActivateTechnique_Pass()
     {
         $this->gamestate->nextState("pass");
-
     }
 
     public function actHighDramaChallengeActionAccept()
@@ -1387,12 +1362,7 @@ trait ActionsTrait
         $character->addCondition(Game::DUEL_DEFENDER);
         $this->globals->set(Game::CHOSEN_TARGET, $character->Id);
 
-        $engageEvent = $this->theah->createEvent(Events::CardEngaged);
-        if ($engageEvent instanceof EventCardEngaged)
-        {
-            $engageEvent->cardId = $character->Id;
-            $engageEvent->playerId = $playerId;
-        }    
+        $engageEvent = EventFactory::createCardEngagedEvent($playerId, $character->Id);
         $this->theah->eventCheck($engageEvent);
         
         $interveneEvent = $this->theah->createEvent(Events::CharacterIntervened);
@@ -1611,11 +1581,7 @@ trait ActionsTrait
             $payCard = $this->getCardObjectFromDb($cardId);
             $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
 
-            $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
-            if ($event instanceof EventCardDiscardedFromHand) {
-                $event->playerId = $playerId;
-                $event->card = $payCard;
-            }
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $payCard->Id);
             //No check needed
             $this->theah->queueEvent($event);
         }
@@ -1792,7 +1758,7 @@ trait ActionsTrait
         $card->actFromCardWithIds($this, $this->gamestate->state_id(), $internalId, $ids);
     }
 
-    public function actReactionFromCard(string $reaction)
+    public function actReactionFromCard(string $reactionId)
     {
         $this->theah->buildCity();
 
@@ -1800,7 +1766,72 @@ trait ActionsTrait
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $card = $this->theah->getCardById($sourceId);
 
-        $card->reactionFromCard($this, $this->gamestate->state_id(), $reaction, $internalId);
+        $this->globals->set(Game::REACTION_ID, $reactionId);
+
+        $card->reactionFromCard($this, $this->gamestate->state_id(), $internalId, $reactionId);
     }
+
+    public function actPayForReaction(string $payWithCards)
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+        
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $card = $this->theah->getCardById($sourceId);
+
+        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
+        $reaction = $card->getReactionById($internalId);
+
+        $reactionId = $this->globals->get(Game::REACTION_ID);
+
+        $discount = $this->theah->getReactionFromHandDiscount($reaction);
+
+        $cost = $card->WealthCost - $discount;
+        if ($cost < 0) $cost = 0;
+
+        $cardIds = json_decode($payWithCards, true);
+        
+        //Total up the wealth of the cards to see if player paid correctly
+        $totalWealth = 0;
+        foreach ($cardIds as $cardId) {
+            $payCard = $this->getCardObjectFromDb($cardId);
+
+            if ($payCard == null)
+                throw new \BgaUserException("Card $cardId not found.");
+
+            //If $card has wealth in its traits, add it to the total wealth
+            $totalWealth += in_array("Wealth", $payCard->Traits) ? 2 : 1;
+        }
+        if ($totalWealth != $cost) {
+            throw new \BgaUserException("Cost of Card is {$cost}. You selected {$totalWealth} Wealth of cards.");
+        }
+
+        //Move the cards used to pay to the player's discard pile
+        foreach ($cardIds as $cardId) {
+            $payCard = $this->getCardObjectFromDb($cardId);
+            $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
+
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $payCard->Id);
+            //No check needed
+            $this->theah->queueEvent($event);
+        }
+
+        $announcement = $reaction->getReactionAnnouncement($this, $this->gamestate->state_id(), $internalId, $reactionId);
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} ${announcement}'), [
+            "player_name" => $this->getActivePlayerName(),
+            "announcement" => $announcement,
+        ]);
+
+        //Remove card from hand and place in discard pile
+        $this->cards->moveCard($card->Id, $this->getPlayerDiscardDeckName($playerId));
+
+        $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
+        //No check needed
+        $this->theah->queueEvent($event);
+
+        $reaction->reactionPaidFor($this, $this->gamestate->state_id(), $internalId, $reactionId);
+
+        $this->gamestate->nextState("paid");
+   }
 
 }

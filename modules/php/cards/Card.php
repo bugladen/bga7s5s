@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 abstract class Card
 {
@@ -58,12 +60,22 @@ abstract class Card
         }
     }
 
-    public function argsFromCard(Game $game, int $state, string $internalId): array {return []; }
+    public function argsFromCard(Game $game, int $state, string $stateName, string $internalId): array 
+    {
+        $args = [];
+
+        if ($stateName == "playerReaction" && $this instanceof IHasReactions) 
+            $this->updateArgsFromReaction($game, $args, $state, $stateName, $internalId);
+
+        if ($stateName == "playerPayForReaction" && $this instanceof IHasReactions) 
+            $this->updatePayForArgsFromReaction($game, $args, $state, $stateName, $internalId);
+
+        return $args; 
+    }
 
     public function actFromCardPass(Game $game, int $state, string $internalId): void { }
     public function actFromCardWithId(Game $game, int $state, string $internalId, int $id): void { }
     public function actFromCardWithIds(Game $game, int $state, string $internalId, array $ids): void { }
-    public function reactionFromCard(Game $game, int $state, string $reaction, string $internalId): void { }
 
     public function eventCheck($event)
     {
@@ -165,5 +177,10 @@ abstract class Card
         if ($this instanceof IHasReactions) $this->addReactionProperties($properties);
 
         return $properties;
+    }
+
+    public function getReactionFromHandDiscount(Theah $theah, Reaction $reaction): int
+    {
+        return 0;
     }
 }

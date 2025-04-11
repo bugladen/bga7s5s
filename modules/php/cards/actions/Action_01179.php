@@ -3,10 +3,10 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\EventCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
@@ -81,11 +81,7 @@ class Action_01179 extends EventCityAction
             $this->playersUsed[] = $event->playerId;
 
             $engageEvent = $event->theah->createEvent(Events::CardEngaged);
-            if ($engageEvent instanceof EventCardEngaged)
-            {
-                $engageEvent->playerId = $event->playerId;
-                $engageEvent->cardId = $event->performerId;
-            }
+            $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $event->performerId);
             $event->theah->queueEvent($engageEvent);
 
             $reknownEvent = $event->theah->createEvent(Events::ReknownRemovedFromCard);

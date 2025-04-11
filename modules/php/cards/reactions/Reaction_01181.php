@@ -5,24 +5,28 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01181;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01181 extends AttachmentReaction
 {
+    public int $HealTargetId;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->Id = 'Reaction_01181';
+        $this->Name = 'Heal Wounds';
+
+        $this->HealTargetId = 0;
     }
 
-    public function getButtonProperties(Theah $theah): array
+    public function getReactionButtonProperties(Theah $theah): array
     {
-        $array = [];
+        $array = parent::getReactionButtonProperties($theah);
         $array[] = $this->createButtonProperty('Heal 1 Wound', 'heal1Wound');
 
         $owner = $this->getOwningCharacter($theah);
@@ -37,10 +41,9 @@ class Reaction_01181 extends AttachmentReaction
         return $array;
     }
 
-    public function getStateDescription(Theah $theah): string
+    public function getReactionDescription(Theah $theah): string
     {
-        $owner = $this->getOwningCharacter($theah);
-        return $owner->Name . ' > Sorte Deck > Reaction: ${you} may choose to Heal Wounds: ';
+        return parent::getReactionDescription($theah) . 'Reaction: ${you} may choose to Heal Wounds: ';
     }
 
     public function handleEvent(Event $event)
@@ -55,7 +58,7 @@ class Reaction_01181 extends AttachmentReaction
             {
                 if ($attachment instanceof _01181) //Cast
                 {
-                    $attachment->HealTargetId =  $event->characterId;
+                    $this->HealTargetId =  $event->characterId;
                     $attachment->IsUpdated = true;
                 }
 
@@ -64,5 +67,36 @@ class Reaction_01181 extends AttachmentReaction
             }   
         }
 
+    }
+
+    public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
+    {
+        parent::performReaction($game, $state, $internalId, $reactionId);
+
+        if ($reactionId == "heal1Wound")
+        {
+            $this->healWound($game, 1);
+        }
+
+        if ($reactionId == "heal2Wounds")
+        {
+            $this->healWound($game, 2);
+        }
+
+        $game->gamestate->nextState("done");
+    }
+    
+    private function healWound(Game $game, int $wounds): void
+    {
+        $this->Used = true;
+
+        $attachment = $this->getOwningCard($game->theah);
+        $attachment->IsUpdated = true;
+
+        $engageEvent = EventFactory::createCardEngagedEvent($attachment->ControllerId, $attachment->Id);
+        $game->theah->queueEvent($engageEvent);
+
+        $healedEvent = EventFactory::createCharacterHealedEvent($this->HealTargetId, $attachment->Id, $wounds, 'Sorte Deck');
+        $game->theah->queueEvent($healedEvent);
     }
 }

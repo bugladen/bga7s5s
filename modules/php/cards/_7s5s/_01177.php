@@ -26,9 +26,9 @@ class _01177 extends CityEventCard
         $this->CityCardNumber = 1;
     }
 
-    public function argsFromCard(Game $game, int $state, string $internalId): array 
+    public function argsFromCard(Game $game, int $state, string $stateName, string $internalId): array 
     {
-        $args = parent::argsFromCard($game, $state, $internalId);
+        $args = parent::argsFromCard($game, $state, $stateName, $internalId);
 
         if ($state == States::DUSK_PHASE_BEGIN_01177)
         {
@@ -124,7 +124,7 @@ class _01177 extends CityEventCard
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventDuskPhaseBegin) 
+        if ($event instanceof EventDuskPhaseBegin && $event->theah->cardInCity($this)) 
         {
             $locationName = $this->Location;
             $location = $event->theah->getCityLocation($locationName);

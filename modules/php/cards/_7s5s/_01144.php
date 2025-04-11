@@ -52,7 +52,7 @@ class _01144 extends Scheme
             $event->theah->queueEvent($transition);
         }
 
-        if ($event instanceof EventPhaseHighDrama) 
+        if ($event instanceof EventPhaseHighDrama && $this->Location == Game::LOCATION_PLAYER_HOME) 
         {
             list($playerIdWithLeastCharacters, $lowestCount) = $event->theah->game->getPlayerControllingFewestCharacters();
 

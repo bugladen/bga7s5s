@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPhasePlanningEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
@@ -53,7 +54,7 @@ class _01098 extends Scheme
             $event->theah->queueEvent($transition);
         }
 
-        if ($event instanceof EventPhasePlanningEnd) 
+        if ($event instanceof EventPhasePlanningEnd && $this->Location == Game::LOCATION_PLAYER_HOME) 
         {
             $playerName = $event->theah->game->getPlayerNameById($this->ControllerId);
 

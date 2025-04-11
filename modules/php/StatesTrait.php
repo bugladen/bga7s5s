@@ -12,12 +12,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocatio
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
@@ -502,16 +499,14 @@ trait StatesTrait
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
 
+        //Set the location of the challenge
+        $this->globals->set(GAME::CHOSEN_LOCATION, $performer->Location);
+
         $techniqueId = "";
         if ($this->globals->has(GAME::CHOSEN_TECHNIQUE))
             $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE);
 
-        $engageEvent = $this->theah->createEvent(Events::CardEngaged);
-        if ($engageEvent instanceof EventCardEngaged)
-        {
-            $engageEvent->cardId = $performer->Id;
-            $engageEvent->playerId = $playerId;
-        }
+        $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
         $this->theah->queueEvent($engageEvent);
 
         $challengeEvent = $this->theah->createEvent(Events::ChallengeIssued);
@@ -534,7 +529,8 @@ trait StatesTrait
         }
 
         $this->theah->queueEvent($challengeEvent);
-        $this->gamestate->changeActivePlayer($target->ControllerId);
+        $changeEvent = EventFactory::createChangeActivePlayerEvent($target->ControllerId);
+        $this->theah->queueEvent($changeEvent);
         $this->gamestate->nextState("challengeSetUp");
     }
 
@@ -647,11 +643,7 @@ trait StatesTrait
             $table = $this->getNextPlayerTable();
             $nextPlayerId = $table[$performer->ControllerId];
 
-            $nextPlayerEvent = $this->theah->createEvent(Events::ChangeActivePlayer);
-            if ($nextPlayerEvent instanceof EventChangeActivePlayer)
-            {
-                $nextPlayerEvent->playerId = $nextPlayerId;
-            }
+            $nextPlayerEvent = EventFactory::createChangeActivePlayerEvent($nextPlayerId);
             $this->theah->queueEvent($nextPlayerEvent);
 
             $this->gamestate->nextState("rejected");
@@ -796,7 +788,8 @@ trait StatesTrait
             ]);    
 
         //Change to the active player based on the round number
-        $this->gamestate->changeActivePlayer($playerId);
+        $changeEvent = EventFactory::createChangeActivePlayerEvent($playerId);
+        $this->theah->queueEvent($changeEvent);
 
         $this->gamestate->nextState();
     }
@@ -1039,15 +1032,13 @@ trait StatesTrait
             $playerId = $card->ControllerId;
             $this->cards->moveCard($purgatoryCard['id'], $this->getPlayerDiscardDeckName($playerId));
 
-            $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
-            if ($event instanceof EventCardDiscardedFromHand) {
-                $event->playerId = $playerId;
-                $event->card = $card;
-            }
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
             $this->theah->queueEvent($event);
         }
 
-        $this->gamestate->changeActivePlayer($result['challenging_player_id']);
+        $changeEvent = EventFactory::createChangeActivePlayerEvent($result['challenging_player_id']);
+        $this->theah->queueEvent($changeEvent);
+
         $this->gamestate->nextState();
     }
 
@@ -1068,6 +1059,7 @@ trait StatesTrait
         $this->globals->delete(GAME::CHOSEN_MANEUVER);
         $this->globals->delete(Game::TRANSITION_SOURCE_ID);
         $this->globals->delete(Game::TRANSITION_INTERNAL_ID);
+        $this->globals->delete(Game::REACTION_ID);
 
         $this->activeNextPlayer();
 
@@ -1580,11 +1572,7 @@ trait StatesTrait
             $playerId = $card->ControllerId;
             $this->cards->moveCard($purgatoryCard['id'], $this->getPlayerDiscardDeckName($playerId));
 
-            $event = $this->theah->createEvent(Events::CardDiscardedFromHand);
-            if ($event instanceof EventCardDiscardedFromHand) {
-                $event->playerId = $playerId;
-                $event->card = $card;
-            }
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
             $this->theah->queueEvent($event);
         }
 
