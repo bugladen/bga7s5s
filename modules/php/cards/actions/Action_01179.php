@@ -56,6 +56,7 @@ class Action_01179 extends EventCityAction
     {
         parent::eventCheck($event);
 
+        //Check to see if player has already used this Action today
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             if (in_array($event->playerId, $this->playersUsed))

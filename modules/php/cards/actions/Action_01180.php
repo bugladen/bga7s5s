@@ -9,7 +9,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -186,14 +185,7 @@ class Action_01180 extends CharacterAction
             }
 
             //Equip the attachment
-            $equipAttachmentEvent = $game->theah->createEvent(Events::AttachmentEquipped);
-            if ($equipAttachmentEvent instanceof EventAttachmentEquipped) {
-                $equipAttachmentEvent->attachmentId = $attachment->Id;
-                $equipAttachmentEvent->performerId = $performer->Id;
-                $equipAttachmentEvent->playerId = $playerId;
-                $equipAttachmentEvent->discount = $discount;
-                $equipAttachmentEvent->cost = $cost;
-            }
+            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $attachmentId, $performerId, $discount, $cost);
             $game->theah->eventCheck($equipAttachmentEvent);
             $game->theah->queueEvent($equipAttachmentEvent);
     

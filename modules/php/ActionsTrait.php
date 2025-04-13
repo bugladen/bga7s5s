@@ -18,7 +18,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDis
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
@@ -1034,14 +1033,7 @@ trait ActionsTrait
         $playerId = $this->getActivePlayerId();
 
         //Equip the attachment
-        $equipAttachmentEvent = $this->theah->createEvent(Events::AttachmentEquipped);
-        if ($equipAttachmentEvent instanceof EventAttachmentEquipped) {
-            $equipAttachmentEvent->attachmentId = $attachment->Id;
-            $equipAttachmentEvent->performerId = $performer->Id;
-            $equipAttachmentEvent->playerId = $playerId;
-            $equipAttachmentEvent->discount = $discount;
-            $equipAttachmentEvent->cost = $cost;
-        }
+        $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $attachmentId, $performerId, $attachment->Location, $discount, $cost);
         $this->theah->eventCheck($equipAttachmentEvent);
 
         //Move the cards used to pay to the player's discard pile

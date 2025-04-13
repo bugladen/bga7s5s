@@ -48,6 +48,7 @@ class _01179 extends CityEventCard implements IHasActions
     {
         parent::handleEvent($event);
 
+        // Card played to city
         if ($event instanceof EventCityCardAddedToLocation && $event->cardId == $this->Id) {
             $theah = $event->theah;
             $game = $theah->game;
