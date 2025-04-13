@@ -2,24 +2,25 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-abstract class Action extends CardAbility
+abstract class Action 
 {
+    use CardAbilityTrait;
 
     public function __construct()
     {
-        parent::__construct();
+        $this->initializeAbility();
     }
+
+    public function eventCheck(Event $event) {}
 
     public function handleEvent(Event $event)
     {
-        parent::handleEvent($event);
-
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $this->Used = true;

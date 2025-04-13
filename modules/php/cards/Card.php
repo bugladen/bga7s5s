@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -179,7 +179,7 @@ abstract class Card
         return $properties;
     }
 
-    public function getReactionFromHandDiscount(Theah $theah, Reaction $reaction): int
+    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction): int
     {
         return 0;
     }

@@ -40,7 +40,7 @@ class Reaction_01023 extends RiskReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . 'Reaction: ${you} may choose to Prevent Intervention: ';
+        return parent::getReactionDescription($theah) . '${you} may choose to Prevent Intervention: ';
     }
 
     public function eventCheck(Event $event)

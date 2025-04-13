@@ -15,7 +15,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions\Reaction_CrewCapLimit;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -28,6 +29,8 @@ class Theah
     private DB $db;
     private bool $cityBuilt;
 
+    private Array $Reactions;
+
     use EventHub;
 
     public function __construct($game)
@@ -37,12 +40,28 @@ class Theah
         $this->cityLocations = [];
         $this->db = new DB();
         $this->cityBuilt = false;
+
+        $this->Reactions = [
+            new Reaction_CrewCapLimit(),
+        ];
     }
 
     public function addCardToWorld(Card $card)
     {
         $this->cards[$card->Id] = $card;
     }
+
+    public function argsFromReaction(int $state, string $stateName, string $internalId): array 
+    {
+        $args = [];
+
+        $reaction = $this->getReactionById($internalId);
+        $args['buttons'] = $reaction->getReactionButtonProperties($this);
+        $args['descriptionmyturn'] = $reaction->getReactionDescription($this);
+
+        return $args; 
+    }
+
 
     public function getDBObject()
     {
@@ -167,6 +186,10 @@ class Theah
             //Run the event for all cards in play, including hands
             foreach ($this->cards as $card) 
                 $card->handleEvent($event);
+
+            //Run the event for theah reactions
+            foreach ($this->Reactions as $reaction) 
+                $reaction->handleEvent($event);
             
             // Run the event handler for Theah for cleanup
             if ($event->runHandlerAfterCards)
@@ -496,7 +519,19 @@ class Theah
         return null;
     }
 
-    function getReactionFromHandDiscount(Reaction $reaction): int
+    public function getReactionById($id): ?Reaction
+    {
+        foreach ($this->Reactions as $reaction)
+        {
+            if ($reaction->Id == $id)
+            {
+                return $reaction;
+            }
+        }
+        return null;
+    }
+
+    function getReactionFromHandDiscount(CardReaction $reaction): int
     {
         $discount = 0;
         foreach ($this->cards as $card) {

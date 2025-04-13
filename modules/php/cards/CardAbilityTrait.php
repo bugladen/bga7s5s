@@ -2,10 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-abstract class CardAbility
+trait CardAbilityTrait
 {
     public string $Id;
     protected string $ClassId;
@@ -13,7 +12,7 @@ abstract class CardAbility
     public string $Name;
     public bool $Used;
 
-    public function __construct()
+    public function initializeAbility()
     {
         $classname = get_class($this);
         $pos = strrpos($classname, '\\');        
@@ -38,10 +37,6 @@ abstract class CardAbility
         $this->OwnerId = $id;
         $this->Id = "{$id}_{$this->ClassId}";
     }
-
-    public function eventCheck(Event $event) { }
-
-    public function handleEvent(Event $event) { }
 
     public function isAvailable(): bool
     {

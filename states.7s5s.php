@@ -9,7 +9,7 @@ $machinestates += [
         "description" => clienttranslate('${actplayer} is choosing to Equip an Artifact from the top 4 cards of the City Deck.'),
         "descriptionmyturn" => clienttranslate('${you} may choose to Equip an Artifact from the top 4 cards of the City Deck:'),
         "type" => "activeplayer",
-        "args" => "argsFromCard",
+        "args" => "argsForState",
         "possibleactions" => [
             "actFromCardWithId",
             "actFromCardPass"
@@ -24,7 +24,7 @@ $machinestates += [
         "description" => clienttranslate('${actplayer} must choose a Performer to Equip Artifact'),
         "descriptionmyturn" => clienttranslate('${you} must choose a Performer to Equip Artifact:'),
         "type" => "activeplayer",
-        "args" => "argsFromCard",
+        "args" => "argsForState",
         "possibleactions" => [
             "actFromCardWithIds",
             "actBack"
@@ -39,7 +39,7 @@ $machinestates += [
         "description" => clienttranslate('${actplayer} is Equipping an Artifact from the City Deck.'),
         "descriptionmyturn" => clienttranslate('${you} must choose cards from Your Hand to pay for chosen Artifact:'),
         "type" => "activeplayer",
-        "args" => "argsFromCard",
+        "args" => "argsForState",
         "possibleactions" => [
             "actFromCardWithIds",
             "actBack"
@@ -55,7 +55,7 @@ $machinestates += [
         "description" => clienttranslate('${actplayer} is choosing one of their characters to follow Penya.'),
         "descriptionmyturn" => clienttranslate('${you} may choose a character to follow Penya:'),
         "type" => "activeplayer",
-        "args" => "argsFromCard",
+        "args" => "argsForState",
         "possibleactions" => [
             "actFromCardWithIds",
             "actPassWithPass"
@@ -69,7 +69,7 @@ $machinestates += [
         "description" => clienttranslate('${actplayer} is choosing a new order for the top 3 cards of the City Deck.'),
         "descriptionmyturn" => clienttranslate('${you} must choose the order to replace the top 3 cards of the City Deck:'),
         "type" => "activeplayer",
-        "args" => "argsFromCardPrivate",
+        "args" => "argsForStatePrivate",
         "possibleactions" => [
             "actFromCardWithIds",
             "actPass"

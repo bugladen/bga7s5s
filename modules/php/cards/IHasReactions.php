@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 interface IHasReactions
@@ -13,7 +13,7 @@ interface IHasReactions
 
     public function anyReactionsAvailable(): bool;
 
-    public function getReactionById($id): ?Reaction;
+    public function getReactionById($id): ?CardReaction;
 
     public function getReactionNames($includeAvailable = false): Array;
 

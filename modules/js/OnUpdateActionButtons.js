@@ -371,7 +371,7 @@ onUpdateActionButtons: function( stateName, args )
         'playerReaction': () => {
             if (this.isCurrentPlayerActive()) {
                 args._private.args.buttons.forEach((button, index) => {
-                    this.addActionButton(`actReaction-${index}`, _(button.text), () => this.bgaPerformAction('actReactionFromCard', {reactionId: button.reaction}));
+                    this.addActionButton(`actReaction-${index}`, _(button.text), () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}));
                 });
             }
         },

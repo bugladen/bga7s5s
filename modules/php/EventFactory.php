@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -49,6 +50,19 @@ class EventFactory
         if ($event instanceof EventChangeActivePlayer)
         {
             $event->playerId = $playerId;
+        }
+
+        return $event;
+    }
+
+    public static function createCharacterDestroyedEvent(int $playerId, int $characterId, string $reason): EventCharacterDestroyed
+    {
+        $event = self::createEvent(Events::CharacterDestroyed);
+        if ($event instanceof EventCharacterDestroyed)
+        {
+            $event->playerId = $playerId;
+            $event->characterId = $characterId;
+            $event->reason = $reason;
         }
 
         return $event;

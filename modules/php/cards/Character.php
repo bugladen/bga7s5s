@@ -2,9 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
@@ -97,7 +97,7 @@ abstract class Character extends Card
         return $this->ModifiedInfluence;
     }
 
-    public function getReactionFromHandDiscount(Theah $theah, Reaction $reaction) : int
+    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction) : int
     {
         $discount = parent::getReactionFromHandDiscount($theah, $reaction);
         
@@ -183,12 +183,7 @@ abstract class Character extends Card
 
             if ($this->ModifiedResolve == 0)
             {
-                $destroyEvent = $event->theah->createEvent(Events::CharacterDestroyed);
-                if ($destroyEvent instanceof EventCharacterDestroyed)
-                {
-                    $destroyEvent->characterId = $this->Id;
-                    $destroyEvent->reason = $event->reason;
-                }
+                $destroyEvent = EventFactory::createCharacterDestroyedEvent($this->ControllerId, $this->Id, $event->reason);
                 $event->theah->queueEvent($destroyEvent);
             }
         }

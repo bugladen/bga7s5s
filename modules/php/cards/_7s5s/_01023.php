@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction_01023;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
@@ -43,7 +43,7 @@ class _01023 extends Risk implements IHasReactions
 
     }
 
-    public function getReactionFromHandDiscount(Theah $theah, Reaction $reaction) : int
+    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction) : int
     {
         $discount = parent::getReactionFromHandDiscount($theah, $reaction);
 

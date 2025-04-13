@@ -43,7 +43,7 @@ class Reaction_01181 extends AttachmentReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . 'Reaction: ${you} may choose to Heal Wounds: ';
+        return parent::getReactionDescription($theah) . '${you} may choose to Heal Wounds: ';
     }
 
     public function handleEvent(Event $event)

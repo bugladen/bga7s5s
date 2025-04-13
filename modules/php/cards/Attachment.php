@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 abstract class Attachment extends Card implements IWealthCost
@@ -32,7 +32,7 @@ abstract class Attachment extends Card implements IWealthCost
         return 0;
     }
 
-    public function getReactionFromHandDiscount(Theah $theah, Reaction $reaction): int
+    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction): int
     {
         return parent::getReactionFromHandDiscount($theah, $reaction);
     }

@@ -579,34 +579,54 @@ trait ArgumentsTrait
         ];
     }
 
-    public function argsFromCard(): array
+    public function argsForState(): array
     {
         $this->theah->buildCity();
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
-        $card = $this->theah->getCardById($sourceId);
+        $state = $this->gamestate->state_id();
         $stateName = $this->gamestate->state()['name'];
 
+        if ($sourceId == Game::THEAH_ID)
+        {
+            $args = $this->theah->argsFromReaction($state, $stateName, $internalId);
+        }
+        else
+        {
+            $card = $this->theah->getCardById($sourceId);
+            $args = $card->argsFromCard($this, $state, $stateName, $internalId);
+        }        
+
         return [
-            "args" => $card->argsFromCard($this, $this->gamestate->state_id(), $stateName, $internalId)
+            "args" => $args
         ];       
         
     }
 
-    public function argsFromCardPrivate(): array
+    public function argsForStatePrivate(): array
     {
         $this->theah->buildCity();
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
-        $card = $this->theah->getCardById($sourceId);
+        $state = $this->gamestate->state_id();
         $stateName = $this->gamestate->state()['name'];
+
+        if ($sourceId == Game::THEAH_ID)
+        {
+            $args = $this->theah->argsFromReaction($state, $stateName, $internalId);
+        }
+        else
+        {
+            $card = $this->theah->getCardById($sourceId);
+            $args = $card->argsFromCard($this, $state, $stateName, $internalId);
+        }        
 
         return [
             "_private" => [
                 "active" => [
-                    "args" => $card->argsFromCard($this, $this->gamestate->state_id(), $stateName, $internalId)
+                    "args" => $args
                 ]
             ]
         ];       

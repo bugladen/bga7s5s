@@ -2,27 +2,29 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 
-abstract class Technique extends CardAbility
+abstract class Technique 
 {
+    use CardAbilityTrait;
+
     public bool $ResetOnDuelEnd;
     public bool $ResetOnDayEnd;
 
     public function __construct()
     {
-        parent::__construct();
+        $this->initializeAbility();
         $this->ResetOnDuelEnd = true;
         $this->ResetOnDayEnd = false;
     }
 
+    public function eventCheck(Event $event) {}
+
     public function handleEvent(Event $event)
     {
-        parent::handleEvent($event);
-
         if ($event instanceof EventDuskEndOfDay && $this->ResetOnDayEnd)
         {
             $this->Used = false;

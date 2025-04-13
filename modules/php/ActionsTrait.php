@@ -1758,17 +1758,26 @@ trait ActionsTrait
         $card->actFromCardWithIds($this, $this->gamestate->state_id(), $internalId, $ids);
     }
 
-    public function actReactionFromCard(string $reactionId)
+    public function actReactionForState(string $reactionId)
     {
         $this->theah->buildCity();
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
-        $card = $this->theah->getCardById($sourceId);
+        $state = $this->gamestate->state_id();
+
+        if ($sourceId = Game::THEAH_ID)
+        {
+            $reaction = $this->theah->getReactionById($internalId);
+            $reaction->performReaction($this, $state, $internalId, $reactionId);    
+        }
+        else
+        {
+            $card = $this->theah->getCardById($sourceId);
+            $card->reactionFromCard($this, $state, $internalId, $reactionId);
+        }
 
         $this->globals->set(Game::REACTION_ID, $reactionId);
-
-        $card->reactionFromCard($this, $this->gamestate->state_id(), $internalId, $reactionId);
     }
 
     public function actPayForReaction(string $payWithCards)

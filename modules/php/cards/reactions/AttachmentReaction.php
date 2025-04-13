@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-abstract class AttachmentReaction extends Reaction
+abstract class AttachmentReaction extends CardReaction
 {
     public function __construct()
     {
@@ -15,7 +15,7 @@ abstract class AttachmentReaction extends Reaction
     public function getReactionDescription(Theah $theah): string
     {
         $owner = $this->getOwningCard($theah);
-        return parent::getReactionDescription($theah) . $owner->Name  . " > ";
+        return parent::getReactionDescription($theah) . $owner->Name  . " > Reaction: ";
     }
 
 

@@ -71,9 +71,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::DAWN_NEW_DAY_EVENTS, 
@@ -85,7 +85,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -119,9 +119,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::DAWN_BEGINNING_EVENTS, 
@@ -133,7 +133,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -166,9 +166,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::DAWN_CITY_CARDS_EVENTS, 
@@ -180,7 +180,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -214,9 +214,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::DAWN_ENDING_EVENTS, 
@@ -228,7 +228,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -262,9 +262,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_BEGINNING_EVENTS, 
@@ -276,7 +276,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -323,9 +323,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS, 
@@ -337,7 +337,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -371,9 +371,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_EVENTS, 
@@ -385,7 +385,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -419,9 +419,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS, 
@@ -433,7 +433,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -468,9 +468,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_MUSTER_EVENTS, 
@@ -482,7 +482,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -529,9 +529,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS, 
@@ -543,7 +543,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -848,9 +848,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actactReactionForState", 
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_END_EVENTS, 
@@ -862,7 +862,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -921,9 +921,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::HIGH_DRAMA_BEGINNING_EVENTS, 
@@ -935,7 +935,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -1009,9 +1009,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
@@ -1023,7 +1023,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -1106,9 +1106,9 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
-                    "actReactionFromCard", 
+                    "actReactionForState", 
                 ],
                 "transitions" => [
                     "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS, 
@@ -1120,7 +1120,7 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
                     "actBack",
                     "actPayForReaction", 
@@ -1155,9 +1155,9 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
-                    "actReactionFromCard", 
+                    "actReactionForState", 
                 ],
                 "transitions" => [
                     "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_EVENTS, 
@@ -1169,7 +1169,7 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
                     "actBack",
                     "actPayForReaction", 
@@ -1219,9 +1219,9 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
-                    "actReactionFromCard", 
+                    "actReactionForState", 
                 ],
                 "transitions" => [
                     "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS, 
@@ -1233,7 +1233,7 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
                     "actBack",
                     "actPayForReaction", 
@@ -1279,9 +1279,9 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
-                    "actReactionFromCard", 
+                    "actReactionForState", 
                 ],
                 "transitions" => [
                     "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_EVENTS, 
@@ -1293,7 +1293,7 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
                     "actBack",
                     "actPayForReaction", 
@@ -1327,9 +1327,9 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
-                    "actReactionFromCard", 
+                    "actReactionForState", 
                 ],
                 "transitions" => [
                     "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_EVENTS, 
@@ -1341,7 +1341,7 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
                     "actBack",
                     "actPayForReaction", 
@@ -1366,9 +1366,9 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
-                    "actReactionFromCard", 
+                    "actReactionForState", 
                 ],
                 "transitions" => [
                     "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS, 
@@ -1380,7 +1380,7 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
                     "actBack",
                     "actPayForReaction", 
@@ -1625,9 +1625,9 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
-                    "actReactionFromCard", 
+                    "actReactionForState", 
                 ],
                 "transitions" => [
                     "done" => States::DUEL_STARTED_EVENTS, 
@@ -1639,7 +1639,7 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
                     "actBack",
                     "actPayForReaction", 
@@ -1672,9 +1672,9 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
-                    "actReactionFromCard", 
+                    "actReactionForState", 
                 ],
                 "transitions" => [
                     "done" => States::DUEL_NEW_ROUND_EVENTS, 
@@ -1686,7 +1686,7 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsFromCardPrivate",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
                     "actBack",
                     "actPayForReaction", 
@@ -1747,9 +1747,9 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
                     "type" => "activeplayer",
-                    "args" => "argsFromCardPrivate",
+                    "args" => "argsForStatePrivate",
                     "possibleactions" => [
-                        "actReactionFromCard", 
+                        "actReactionForState", 
                     ],
                     "transitions" => [
                         "done" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS, 
@@ -1761,7 +1761,7 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
                     "type" => "activeplayer",
-                    "args" => "argsFromCardPrivate",
+                    "args" => "argsForStatePrivate",
                     "possibleactions" => [
                         "actBack",
                         "actPayForReaction", 
@@ -1848,9 +1848,9 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
                     "type" => "activeplayer",
-                    "args" => "argsFromCardPrivate",
+                    "args" => "argsForStatePrivate",
                     "possibleactions" => [
-                        "actReactionFromCard", 
+                        "actReactionForState", 
                     ],
                     "transitions" => [
                         "done" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS, 
@@ -1862,7 +1862,7 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
                     "type" => "activeplayer",
-                    "args" => "argsFromCardPrivate",
+                    "args" => "argsForStatePrivate",
                     "possibleactions" => [
                         "actBack",
                         "actPayForReaction", 
@@ -1895,9 +1895,9 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
                     "type" => "activeplayer",
-                    "args" => "argsFromCardPrivate",
+                    "args" => "argsForStatePrivate",
                     "possibleactions" => [
-                        "actReactionFromCard", 
+                        "actReactionForState", 
                     ],
                     "transitions" => [
                         "done" => States::DUEL_APPLY_COMBAT_CARD_STATS_EVENTS, 
@@ -1909,7 +1909,7 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
                     "type" => "activeplayer",
-                    "args" => "argsFromCardPrivate",
+                    "args" => "argsForStatePrivate",
                     "possibleactions" => [
                         "actBack",
                         "actPayForReaction", 
@@ -1947,9 +1947,9 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
                     "type" => "activeplayer",
-                    "args" => "argsFromCardPrivate",
+                    "args" => "argsForStatePrivate",
                     "possibleactions" => [
-                        "actReactionFromCard", 
+                        "actReactionForState", 
                     ],
                     "transitions" => [
                         "done" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS, 
@@ -1961,7 +1961,7 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
                     "type" => "activeplayer",
-                    "args" => "argsFromCardPrivate",
+                    "args" => "argsForStatePrivate",
                     "possibleactions" => [
                         "actBack",
                         "actPayForReaction", 
@@ -1994,9 +1994,9 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
                     "type" => "activeplayer",
-                    "args" => "argsFromCardPrivate",
+                    "args" => "argsForStatePrivate",
                     "possibleactions" => [
-                        "actReactionFromCard", 
+                        "actReactionForState", 
                     ],
                     "transitions" => [
                         "done" => States::DUEL_END_OF_ROUND_EVENTS, 
@@ -2008,7 +2008,7 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
                     "type" => "activeplayer",
-                    "args" => "argsFromCardPrivate",
+                    "args" => "argsForStatePrivate",
                     "possibleactions" => [
                         "actBack",
                         "actPayForReaction", 
@@ -2053,9 +2053,9 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
                     "type" => "activeplayer",
-                    "args" => "argsFromCardPrivate",
+                    "args" => "argsForStatePrivate",
                     "possibleactions" => [
-                        "actReactionFromCard", 
+                        "actReactionForState", 
                     ],
                     "transitions" => [
                         "done" => States::DUEL_END_EVENTS, 
@@ -2067,7 +2067,7 @@ $machinestates = [
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
                     "type" => "activeplayer",
-                    "args" => "argsFromCardPrivate",
+                    "args" => "argsForStatePrivate",
                     "possibleactions" => [
                         "actBack",
                         "actPayForReaction", 
@@ -2110,9 +2110,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::HIGH_DRAMA_END_EVENTS, 
@@ -2124,7 +2124,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -2156,9 +2156,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::PLUNDER_PHASE_BEGIN_EVENTS, 
@@ -2170,7 +2170,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -2210,9 +2210,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::PLUNDER_GAIN_REKNOWN_EVENTS, 
@@ -2224,7 +2224,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -2274,9 +2274,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::PLUNDER_PHASE_END_EVENTS, 
@@ -2288,7 +2288,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -2321,9 +2321,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::DUSK_PHASE_BEGIN_EVENTS, 
@@ -2335,7 +2335,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -2367,9 +2367,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::DUSK_PHASE_CLEANUP_EVENTS, 
@@ -2381,7 +2381,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -2419,9 +2419,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::DUSK_PHASE_DISCARD_EVENTS, 
@@ -2433,7 +2433,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -2465,9 +2465,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::DUSK_PHASE_END_EVENTS, 
@@ -2479,7 +2479,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 
@@ -2511,9 +2511,9 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actReactionFromCard", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::DUSK_END_OF_DAY_EVENTS, 
@@ -2525,7 +2525,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsFromCardPrivate",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBack",
                 "actPayForReaction", 

@@ -26,6 +26,8 @@ class Game extends \Table
     final const PLUNDER = 4;
     final const DUSK = 5;
 
+    final const THEAH_ID = 777777;
+
     //Card locations
     final const LOCATION_CITY_DECK = 'City Deck';
     final const LOCATION_CITY_DISCARD = 'City Discard';
@@ -359,11 +361,17 @@ class Game extends \Table
 
         if ($state["type"] === "activeplayer") {
             switch ($state_name) {
-                case "highDramaPlayerTurn":
+               case "highDramaPlayerTurn":
                 {
-                    $this->gamestate->nextState("pass");
+                    $this->actHighDramaPass();
                     break;
                 }
+                case "highDramaChallengeActionAcceptChallenge":
+                {
+                    $this->actHighDramaChallengeActionReject();
+                    break;
+                }
+                
                 default:
                 {
                     throw new \feException("Zombie mode not supported at this game state: \"{$state_name}\".");
