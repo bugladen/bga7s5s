@@ -60,9 +60,9 @@ class _01177 extends CityEventCard
         return $args;        
     }
 
-    public function actFromCardWithIds(Game $game, int $state, string $internalId, array $ids): void
+    public function actFromCardWithIds(Game $game, int $state, string $stateName, string $actionId, array $ids): void
     {
-        parent::actFromCardWithIds($game, $state, $internalId, $ids);
+        parent::actFromCardWithIds($game, $state, $stateName, $actionId, $ids);
 
         if ($state == States::DUSK_PHASE_BEGIN_01177)
         {

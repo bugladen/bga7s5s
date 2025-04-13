@@ -70,12 +70,56 @@ abstract class Card
         if ($stateName == "playerPayForReaction" && $this instanceof IHasReactions) 
             $this->updatePayForArgsFromReaction($game, $args, $state, $stateName, $internalId);
 
+        if ($this instanceof IHasActions) 
+        {
+            $actionId = $game->globals->get(Game::CHOSEN_ACTION);
+            $action = $this->getActionById($actionId);
+            if ($action)
+            {
+                $args += $action->getArgsFromAction($game, $state, $stateName);
+            }
+        }
+
         return $args; 
     }
 
-    public function actFromCardPass(Game $game, int $state, string $internalId): void { }
-    public function actFromCardWithId(Game $game, int $state, string $internalId, int $id): void { }
-    public function actFromCardWithIds(Game $game, int $state, string $internalId, array $ids): void { }
+    public function actFromCardPass(Game $game, int $state, string $stateName, string $actionId): void 
+    { 
+        if ($this instanceof IHasActions)
+        {
+            $action = $this->getActionById($actionId);
+            if ($action)
+            {
+                $action->actFromActionPass($game, $state, $stateName);
+            }
+        }
+    }
+
+    public function actFromCardWithId(Game $game, int $state, string $stateName, string $actionId, int $id): void 
+    { 
+        if ($this instanceof IHasActions)
+        {
+            $action = $this->getActionById($actionId);
+            if ($action)
+            {
+                $action->actFromActionWithId($game, $state, $stateName, $id);
+            }
+        }
+    }
+
+    public function actFromCardWithIds(Game $game, int $state, string $stateName, string $actionId, array $ids): void 
+    { 
+
+        if ($this instanceof IHasActions)
+        {
+            $actionId = $game->globals->get(Game::CHOSEN_ACTION);
+            $action = $this->getActionById($actionId);
+            if ($action)
+            {
+                $action->actFromActionWithIds($game, $state, $stateName, $ids);
+            }
+        }
+    }
 
     public function eventCheck($event)
     {

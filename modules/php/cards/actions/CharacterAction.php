@@ -25,6 +25,6 @@ abstract class CharacterAction extends Action
     public function getCharactersForAction(int $playerId, Theah $theah): array
     {
         $card = $this->getOwningCard($theah);
-        return [0 => $card];
+        return [$card];
      }
 }
