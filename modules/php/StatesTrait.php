@@ -204,7 +204,7 @@ trait StatesTrait
         $highInitiative = 0;
         $highPlayerId = 0;
         $tiedInitiative = false;
-        $currentFirstPlayerExists = $this->globals->has("firstPlayer");
+        $currentFirstPlayerExists = $this->globals->has(Game::FIRST_PLAYER);
 
         //Grab the schemes by each player and determine the highest initiative
         foreach ( $players as $playerId => $player ) {
@@ -223,7 +223,8 @@ trait StatesTrait
 
         // If we have a clear winner with no ties, set the first player and move on.
         if (! $tiedInitiative || count($players) == 1) {
-            $this->globals->set("firstPlayer", $highPlayerId);
+            $this->globals->set(Game::FIRST_PLAYER, $highPlayerId);
+            $this->globals->set(Game::CURRENT_PLAYER, $highPlayerId);
             $this->setNewPlayerOrder($highPlayerId);
 
             // Notify all players of the first player.
@@ -243,13 +244,14 @@ trait StatesTrait
         // If we have a tie for initiative. If first player exists, then simply move to the next player.
         if ($currentFirstPlayerExists) {
             //Get the current first player
-            $firstPlayerId = $this->globals->get("firstPlayer");
+            $firstPlayerId = $this->globals->get(Game::FIRST_PLAYER);
 
             //Find out who the next player is in order
             $table = $this->getNextPlayerTable();
             $nextPlayerId = $table[$firstPlayerId];
 
-            $this->globals->set("firstPlayer", $nextPlayerId);
+            $this->globals->set(Game::FIRST_PLAYER, $nextPlayerId);
+            $this->globals->set(Game::CURRENT_PLAYER, $nextPlayerId);
             $this->setNewPlayerOrder($nextPlayerId);
 
             // Notify all players of the first player.
@@ -272,7 +274,8 @@ trait StatesTrait
         $rand = random_int(0, $size - 1);
         $slice = array_slice($players, $rand, 1, true);
         $firstPlayerId = key($slice);
-        $this->globals->set("firstPlayer", $firstPlayerId);
+        $this->globals->set(Game::FIRST_PLAYER, $firstPlayerId);
+        $this->globals->set(Game::CURRENT_PLAYER, $firstPlayerId);
         $this->setNewPlayerOrder($firstPlayerId);
 
         // Notify all players of the first player.
@@ -449,7 +452,7 @@ trait StatesTrait
     }
 
     public function stHighDramaPhase() {
-        $this->gamestate->changeActivePlayer($this->globals->get("firstPlayer"));
+        $this->gamestate->changeActivePlayer($this->globals->get(Game::FIRST_PLAYER));
         $this->gamestate->nextState("");
     }
 
@@ -1061,8 +1064,11 @@ trait StatesTrait
         $this->globals->delete(Game::TRANSITION_INTERNAL_ID);
         $this->globals->delete(Game::REACTION_ID);
 
-        $this->activeNextPlayer();
-
+        $currentPlayerId = $this->globals->get(Game::CURRENT_PLAYER);
+        $nextPlayerId = $this->getPlayerAfter($currentPlayerId);
+        $this->gamestate->changeActivePlayer($nextPlayerId);
+        $this->globals->set(Game::CURRENT_PLAYER, $nextPlayerId);
+        
         $this->gamestate->nextState("nextPlayer");
     }
 

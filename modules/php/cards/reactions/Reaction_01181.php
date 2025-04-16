@@ -2,7 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01181;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -24,6 +23,11 @@ class Reaction_01181 extends AttachmentReaction
         $this->HealTargetId = 0;
     }
 
+    public function getReactionDescription(Theah $theah): string
+    {
+        return parent::getReactionDescription($theah) . '${you} may choose to Heal Wounds: ';
+    }
+
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
@@ -41,11 +45,6 @@ class Reaction_01181 extends AttachmentReaction
         return $array;
     }
 
-    public function getReactionDescription(Theah $theah): string
-    {
-        return parent::getReactionDescription($theah) . '${you} may choose to Heal Wounds: ';
-    }
-
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -56,11 +55,8 @@ class Reaction_01181 extends AttachmentReaction
             $character = $event->theah->getCardById($event->characterId);
             if ($character->Location == $attachment->Location) 
             {
-                if ($attachment instanceof _01181) //Cast
-                {
-                    $this->HealTargetId =  $event->characterId;
-                    $attachment->IsUpdated = true;
-                }
+                $this->HealTargetId =  $event->characterId;
+                $attachment->IsUpdated = true;
 
                 $transition = EventFactory::createReactionTransitionEvent($attachment->ControllerId, $attachment->Id, $this->Id);
                 $event->theah->queueEvent($transition);
@@ -88,7 +84,7 @@ class Reaction_01181 extends AttachmentReaction
     
     private function healWound(Game $game, int $wounds): void
     {
-        $this->Used = true;
+        $this->setUsed($game->theah);
 
         $attachment = $this->getOwningCard($game->theah);
         $attachment->IsUpdated = true;

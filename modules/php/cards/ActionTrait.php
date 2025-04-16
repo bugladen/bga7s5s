@@ -10,15 +10,7 @@ trait ActionTrait
 
     public function getActions(): Array
     {
-        $actions = [];
-        foreach ($this->Actions as $action)
-        {
-            if ($action->IsAvailable())
-            {
-                $actions[] = $action;
-            }
-        }
-        return $actions;
+        return $this->Actions;
     }
 
     public function addActionProperties(&$properties)

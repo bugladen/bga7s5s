@@ -3,9 +3,14 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction_01182;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 
-class _01182 extends CityCharacter
+class _01182 extends CityCharacter implements IHasReactions
 {
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -33,6 +38,10 @@ class _01182 extends CityCharacter
             'Mercenary',
             'Pirate',
             'Maghreb',
+        ];
+
+        $this->Reactions = [
+            new Reaction_01182()
         ];
     }
 }

@@ -261,6 +261,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const card = this.cardProperties[args.cardId];
         card.engaged = args.engage;
+        card.location = args.toLocation;
 
         //Destroy the old card element
         dojo.destroy(card.divId);

@@ -42,6 +42,8 @@ class Game extends \Table
     final const LOCATION_PURGATORY = 'Purgatory';
 
     //Global variable names
+    final const FIRST_PLAYER = "firstPlayer";
+    final const CURRENT_PLAYER = "currentPlayer";
     final const TURN_PHASE = "turnPhase";
     final const PLAYER_COUNT = "playerCount";
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
@@ -209,11 +211,7 @@ class Game extends \Table
 
         $result["day"] = $this->getGameStateValue("day");
         $result["turnPhase"] = (int) $this->getGameStateValue(Game::TURN_PHASE);
-
-        if ($this->globals->has("firstPlayer")) {
-            $result["firstPlayer"] = $this->globals->get("firstPlayer");
-        }
-
+        $result["firstPlayer"] = $this->globals->get(Game::FIRST_PLAYER, 0);
         $result["homeCards"] = $this->theah->getCardPropertiesAtLocation(Game::LOCATION_PLAYER_HOME);
         $result["oleCards"] = $this->theah->getCardPropertiesAtLocation(Game::LOCATION_CITY_OLES_INN);
         $result["dockCards"] = $this->theah->getCardPropertiesAtLocation(Game::LOCATION_CITY_DOCKS);

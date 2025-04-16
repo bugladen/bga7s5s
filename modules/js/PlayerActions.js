@@ -288,8 +288,8 @@ return declare('seventhseacityoffivesails.actions', null, {
         this.bgaPerformAction('actDuskPhaseCardsDiscarded', { 
             'ids': JSON.stringify(items),
         }).catch(() =>  {
-        }).success(() =>  {
-            if (success) items.forEach((item) => this.factionHand.removeFromStockById(item));
+        }).then(() =>  {
+            items.forEach((item) => this.factionHand.removeFromStockById(item));
         });        
     },
 
@@ -309,7 +309,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         this.bgaPerformAction('actFromCardWithIds', { 
             'ids': JSON.stringify(ids),
         }).catch(() =>  {
-        }).success(() =>  {
+        }).then(() =>  {
         });        
     },
 

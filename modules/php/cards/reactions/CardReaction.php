@@ -31,11 +31,27 @@ abstract class CardReaction extends Reaction
         }
     }
 
+    public function getReactionDescription(Theah $theah): string
+    {
+        $owner = $this->getOwningCard($theah);
+        return parent::getReactionDescription($theah) . $owner->Name  . " > Reaction: ";
+    }
+
     public function getReactionPayForDescription(Theah $theah): string
     {
         return '${you} must now select cards to pay for ' . $this->Name . ': ';
     }
     
-    public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void {}
+    public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void 
+    {
+        $this->setUsed($game->theah);
+    }
+
+    public function setUsed(Theah $theah): void
+    {
+        $this->Used = true;
+        $owner = $this->getOwningCard($theah);
+        $owner->IsUpdated = true;
+    }
 
 }

@@ -70,6 +70,7 @@ class Action_01179 extends EventCityAction
     {
         parent::handleEvent($event);
 
+        //Clear players used list at the end of the day
         if ($event instanceof EventDuskEndOfDay)
         {
             $this->playersUsed = [];
@@ -77,6 +78,7 @@ class Action_01179 extends EventCityAction
             $card->IsUpdated = true;
         }
 
+        // Take Reknown action
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $this->playersUsed[] = $event->playerId;

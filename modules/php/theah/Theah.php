@@ -660,7 +660,7 @@ class Theah
     {
         $characters = $this->getCharactersInPlayByPlayerId($playerId);
         $enGardeCharacters = array_filter($characters, function($character) { return $character->Engaged == false; });
-        return $enGardeCharacters > 0;
+        return count($enGardeCharacters) > 0;
     }
 
     public function playerCanRecruit($playerId): bool

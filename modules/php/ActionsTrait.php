@@ -1758,7 +1758,7 @@ trait ActionsTrait
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $state = $this->gamestate->state_id();
 
-        if ($sourceId = Game::THEAH_ID)
+        if ($sourceId == Game::THEAH_ID)
         {
             $reaction = $this->theah->getReactionById($internalId);
             $reaction->performReaction($this, $state, $internalId, $reactionId);    

@@ -12,13 +12,6 @@ abstract class AttachmentReaction extends CardReaction
         parent::__construct();
     }
 
-    public function getReactionDescription(Theah $theah): string
-    {
-        $owner = $this->getOwningCard($theah);
-        return parent::getReactionDescription($theah) . $owner->Name  . " > Reaction: ";
-    }
-
-
     public function ownerIsAttached(Theah $theah): bool
     {
         $owner = $this->getOwningCard($theah);

@@ -30,6 +30,7 @@ class _01177 extends CityEventCard
     {
         $args = parent::argsFromCard($game, $state, $stateName, $internalId);
 
+        //Get a list of characters that can be shown the way
         if ($state == States::DUSK_PHASE_BEGIN_01177)
         {
             //Get the characters at the same location
@@ -42,6 +43,7 @@ class _01177 extends CityEventCard
             $args['ids'] = array_map(fn($character) => $character->Id, $characters);
         }
 
+        // Get the top 3 cards of the City Deck
         if ($state == States::DUSK_PHASE_BEGIN_01177_2)
         {
             $deck = $game->getGameDeckObject();
@@ -64,6 +66,7 @@ class _01177 extends CityEventCard
     {
         parent::actFromCardWithIds($game, $state, $stateName, $actionId, $ids);
 
+        //Set the character that will be shown the way
         if ($state == States::DUSK_PHASE_BEGIN_01177)
         {
             $selectedCharacter = $game->theah->getCharacterById($ids[0]);
@@ -79,6 +82,7 @@ class _01177 extends CityEventCard
             $game->gamestate->nextState("pickCards");
         }
 
+        //Set the order of the top 3 cards in the City Deck
         if ($state == States::DUSK_PHASE_BEGIN_01177_2)
         {
             $deck = $game->getGameDeckObject();
@@ -109,6 +113,7 @@ class _01177 extends CityEventCard
     {
         parent::eventCheck($event);
 
+        //Stop characters from going home if they have been helped by Penya
         if ($event instanceof EventCardMoved && $event->theah->game->gamestate->state_id() == States::DUSK_PHASE_CLEANUP)
         {
             $card = $event->theah->getCardById($event->cardId);
@@ -124,6 +129,7 @@ class _01177 extends CityEventCard
     {
         parent::handleEvent($event);
 
+        //If Penya is in the city, show the way to a character
         if ($event instanceof EventDuskPhaseBegin && $event->theah->cardInCity($this)) 
         {
             $locationName = $this->Location;

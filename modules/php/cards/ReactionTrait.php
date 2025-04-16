@@ -36,15 +36,7 @@ trait ReactionTrait
 
     public function getReactions(): Array
     {
-        $reactions = [];
-        foreach ($this->Reactions as $reaction)
-        {
-            if ($reaction->IsAvailable())
-            {
-                $reactions[] = $reaction;
-            }
-        }
-        return $reactions;
+        return $this->Reactions;
     }
 
     public function addReactionProperties(&$properties)
