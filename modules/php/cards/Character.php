@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
@@ -92,7 +93,17 @@ abstract class Character extends Card
         return $discount;
     }
 
-    public function getPressureInfluenceValue(): int
+    public function getCombatPressureValue(): int
+    {
+        return $this->ModifiedCombat;
+    }
+
+    public function getFinessePressureValue(): int
+    {
+        return $this->ModifiedFinesse;
+    }
+
+    public function getInfluencePressureValue(): int
     {
         return $this->ModifiedInfluence;
     }
@@ -137,7 +148,7 @@ abstract class Character extends Card
         }
     }
 
-    public function handleEvent($event)
+    public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
 
@@ -145,15 +156,15 @@ abstract class Character extends Card
         {
             switch ($event->statUsed)
             {
-                case Game::CHALLENGE_STAT_COMBAT:
+                case Game::STAT_COMBAT:
                     $event->threat += $this->ModifiedCombat;
                     $event->explanations[] = clienttranslate("{$this->Name} adds {$this->ModifiedCombat} Threat from their Combat Stat.");
                     break;
-                case Game::CHALLENGE_STAT_FINESSE:
+                case Game::STAT_FINESSE:
                     $event->threat += $this->ModifiedFinesse;
                     $event->explanations[] = clienttranslate("{$this->Name} adds {$this->ModifiedFinesse} Threat from their Finesse Stat.");
                     break;
-                case Game::CHALLENGE_STAT_INFLUENCE:
+                case Game::STAT_INFLUENCE:
                     $event->threat += $this->ModifiedInfluence;
                     $event->explanations[] = clienttranslate("{$this->Name} adds {$this->ModifiedInfluence} Threat from their Influence Stat.");
                     break;

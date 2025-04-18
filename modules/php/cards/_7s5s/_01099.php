@@ -31,7 +31,7 @@ class _01099 extends Scheme
         ];
     }
 
-    public function handleEvent($event)
+    public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
 

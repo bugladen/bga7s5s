@@ -48,9 +48,9 @@ class Game extends \Table
     final const PLAYER_COUNT = "playerCount";
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
     final const CATS_EMBARGO = "catsEmbargo";
-    final const CHALLENGE_STAT_COMBAT = "COMBAT";
-    final const CHALLENGE_STAT_FINESSE = "FINESSE";
-    final const CHALLENGE_STAT_INFLUENCE = "INFLUENCE";
+    final const STAT_COMBAT = "Combat";
+    final const STAT_FINESSE = "Finesse";
+    final const STAT_INFLUENCE = "Influence";
     final const PASS_COUNT = "passCount";
 
     //Player action global variables

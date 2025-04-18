@@ -290,20 +290,24 @@ trait EventHub
                 break;
 
             case $event instanceof EventLocationClaimed:
+                $handler = function (Theah $theah, EventLocationClaimed $event)
                 {
                     $this->cityLocations[$event->location]->Controller = $event->playerId;
 
-                    $this->game->notifyAllPlayers("locationClaimed", clienttranslate('${player_name} chose ${card_name} to Claim ${location_name}. Influence Totals: ${totals}'), [
+                    $this->game->notifyAllPlayers("locationClaimed", clienttranslate('${player_name} chose ${card_name} to Claim ${location_name}.
+                    <br>Pressure Types: ${pressureTypes}
+                    <br>Influence Totals: ${totals}'), [
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
                         "card_name" => "<strong>{$event->performer->Name}</strong>",
                         "location_name" => "<strong>{$event->performer->Location}</strong>",
                         "totals" => $event->totalsExplanation,
+                        "pressureTypes" => $event->pressureTypes,
                         "playerId" => $event->playerId,
                         "location" => $event->performer->Location,
                     ]);
-            
-                    break;
-                }
+                };
+                $handler($this, $event);
+                break;
 
             case $event instanceof EventReknownAddedToCard:
                 $handler = function (Theah $theah, EventReknownAddedToCard $event)

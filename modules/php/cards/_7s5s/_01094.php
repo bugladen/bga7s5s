@@ -31,9 +31,8 @@ class _01094 extends Character
         ];
     }
 
-    public function getPressureInfluenceValue(): int
+    public function getInfluencePressureValue(): int
     {
-        return parent::getPressureInfluenceValue() + 2;
-        
+        return parent::getInfluencePressureValue() + 2;        
     }
 }

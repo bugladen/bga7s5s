@@ -577,7 +577,7 @@ trait StatesTrait
         {
             $event->actorId = $challenger->Id;
             $event->adversaryId = $defender->Id;
-            $event->techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE, 0);
+            $event->techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE, "");
             $event->statUsed = $this->globals->get(GAME::CHALLENGE_STAT);
         }
         $this->theah->queueEvent($event);
@@ -609,15 +609,15 @@ trait StatesTrait
             $reason = "<p>";
             switch ($combatStatUsed)
             {
-                case GAME::CHALLENGE_STAT_COMBAT:
+                case GAME::STAT_COMBAT:
                     $stat = $performer->ModifiedCombat;
                     $reason .= "Stat Used for Challenge was Combat.";
                     break;
-                case GAME::CHALLENGE_STAT_FINESSE:
+                case GAME::STAT_FINESSE:
                     $stat = $performer->ModifiedFinesse;
                     $reason .= "Stat Used for Challenge was Finesse.";
                     break;
-                case GAME::CHALLENGE_STAT_INFLUENCE:
+                case GAME::STAT_INFLUENCE:
                     $stat = $performer->ModifiedInfluence;
                     $reason .= "Stat Used for Challenge was Influence.";
                     break;
@@ -930,15 +930,15 @@ trait StatesTrait
             {
                 switch ($combatStatUsed)
                 {
-                    case GAME::CHALLENGE_STAT_COMBAT:
+                    case GAME::STAT_COMBAT:
                         $stat = $adversary->ModifiedCombat;
                         $reason .= "<p>Stat Used for Duel is Combat.";
                         break;
-                    case GAME::CHALLENGE_STAT_FINESSE:
+                    case GAME::STAT_FINESSE:
                         $stat = $adversary->ModifiedFinesse;
                         $reason .= "<p>Stat Used for Duel is Finesse.";
                         break;
-                    case GAME::CHALLENGE_STAT_INFLUENCE:
+                    case GAME::STAT_INFLUENCE:
                         $stat = $adversary->ModifiedInfluence;
                         $reason .= "<p>Stat Used for Duel is Influence.";
                         break;

@@ -519,6 +519,17 @@ class Theah
         return null;
     }
 
+    function getPressureTypesForClaim(Character $performer): Array
+    {        
+        $pressureTypes = [Game::STAT_INFLUENCE];
+        $cardsInPlay = array_filter($this->cards, fn($card) => $this->cardInCity($card) || $card->Location == Game::LOCATION_PLAYER_HOME);
+        foreach ($cardsInPlay as $card) {
+            $card->getPressureTypesForClaim($this, $performer, $pressureTypes);
+        }
+        $pressureTypes = array_unique($pressureTypes);
+        return $pressureTypes;
+    }
+
     public function getReactionById($id): ?Reaction
     {
         foreach ($this->Reactions as $reaction)
@@ -646,7 +657,7 @@ class Theah
         return false;
     }
 
-    function cardInCity($card): bool
+    function cardInCity(Card $card): bool
     {
         return 
          $card->Location == Game::LOCATION_CITY_OLES_INN ||

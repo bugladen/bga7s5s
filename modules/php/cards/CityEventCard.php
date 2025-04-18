@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 
 abstract class CityEventCard extends Card implements ICityDeckCard
@@ -17,7 +18,7 @@ abstract class CityEventCard extends Card implements ICityDeckCard
         $this->playersThatUsedMeToday = [];
     }
 
-    public function handleEvent($event)
+    public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
         

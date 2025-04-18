@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 abstract class Card
@@ -145,7 +146,7 @@ abstract class Card
         }
     }
     
-    public function handleEvent($event)
+    public function handleEvent(Event $event)
     {
         if ($this instanceof IHasTechniques) {
             foreach ($this->getTechniques() as $technique) {
@@ -193,6 +194,13 @@ abstract class Card
         $this->Conditions = array_filter($this->Conditions, fn($c) => $c != $condition );
         $this->IsUpdated = true;
     }
+
+    public function getParryModification(Theah $theah): int
+    {
+        return 0;
+    }
+
+    public function getPressureTypesForClaim(Theah $theah, Character $performer, Array &$pressureTypes): void {}
     
     public function getPropertyArray()
     {

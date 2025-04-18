@@ -1095,15 +1095,31 @@ trait ActionsTrait
             $playerInfluences[$playerId] = $player;
         }
 
+        $pressureTypes = $this->theah->getPressureTypesForClaim($performer);
+
         //Get the total influence of the characters at the location
         $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
-        foreach ($charactersAtLocation as $character) 
-        {
-            if (!$character->ControllerId) continue;
 
-            $player = $playerInfluences[$character->ControllerId];
-            $player['influence'] += $character->getPressureInfluenceValue();
-            $playerInfluences[$character->ControllerId] = $player;
+        foreach ($pressureTypes as $pressureType) 
+        {
+            foreach ($charactersAtLocation as $character) 
+            {
+                if (!$character->ControllerId) continue;
+    
+                $player = $playerInfluences[$character->ControllerId];
+                switch ($pressureType) {
+                    case Game::STAT_COMBAT:
+                        $player['influence'] += $character->getCombatPressureValue();
+                        break;
+                    case Game::STAT_FINESSE:
+                        $player['influence'] += $character->getFinessePressureValue();
+                        break;
+                    case Game::STAT_INFLUENCE:
+                        $player['influence'] += $character->getInfluencePressureValue();
+                        break;
+                }
+                $playerInfluences[$character->ControllerId] = $player;
+            }
         }
 
         //Get the player with the most influence
@@ -1118,7 +1134,10 @@ trait ActionsTrait
             }
         }
 
-        if ($activePlayerId != $maxPlayerId) {
+        //Check for ties
+        $ties = array_filter($playerInfluences, fn($player) => $player['influence'] == $maxInfluence);
+
+        if (count($ties) > 1 || $activePlayerId != $maxPlayerId) {
             throw new \BgaUserException("You do not have the most influence at the location. Totals: {$totals}");
         }
 
@@ -1133,6 +1152,7 @@ trait ActionsTrait
             $claimEvent->performer = $performer;
             $claimEvent->location = $performer->Location;
             $claimEvent->playerId = $activePlayerId;
+            $claimEvent->pressureTypes = implode(", ", $pressureTypes);
             $claimEvent->totalsExplanation = $totals;
         }    
 
@@ -1227,7 +1247,7 @@ trait ActionsTrait
         }
 
         //High Drama Challenge action defaults to Combat stat
-        $this->globals->set(Game::CHALLENGE_STAT, Game::CHALLENGE_STAT_COMBAT);
+        $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
 
         $this->gamestate->nextState("challengeActionStart");
     }
