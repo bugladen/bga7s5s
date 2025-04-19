@@ -1390,6 +1390,7 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS, 
                 ]
             ],
+
         States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER => [
             "name" => "highDramaClaimActionChoosePerformer",
             "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -1401,9 +1402,58 @@ $machinestates = [
                 "actBack",
             ],
             "transitions" => [
-                "performerChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
+                "performerChosen" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_EVENTS, 
                 "back" => States::HIGH_DRAMA_PLAYER_TURN
             ]
+        ],
+        States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_EVENTS => [
+            "name" => "highDramaClaimActionChoosePerformerEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "reaction" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_REACTIONS,
+                "endOfEvents" => States::HIGH_DRAMA_CLAIM_ACTION,
+                "endOfGame" => States::END_GAME
+                ]
+        ],
+        States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actReactionForState", 
+            ],
+            "transitions" => [
+                "done" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_EVENTS, 
+                "pay" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_PAY_FOR_REACTION,
+            ]
+        ],
+        States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_REACTIONS, 
+                "paid" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_EVENTS, 
+            ]
+        ],
+
+        States::HIGH_DRAMA_CLAIM_ACTION => [
+            "name" => "highDramaClaimAction",
+            "type" => "game",
+            "action" => "stHighDramaClaim",
+            "transitions" => [
+                "success" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "failure" => States::HIGH_DRAMA_PLAYER_TURN,
+                ]
         ],
 
         States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER => [

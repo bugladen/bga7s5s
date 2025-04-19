@@ -354,4 +354,79 @@ trait UtilitiesTrait
         return in_array($state, $array);
     }
 
+    function canPlayerClaim(int $attemptingPlayerId, Character $performer): Array
+    {
+        //Get an array of players to keep track of their influence at the location 
+        $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player ORDER BY player_score DESC");
+        foreach ($playerInfluences as $playerId => $player) {
+            $player["influence"] = 0;
+            $playerInfluences[$playerId] = $player;
+        }
+
+        $pressureTypes = $this->theah->getPressureTypesForClaim($performer);
+
+        //Get the total influence of the characters at the location
+        $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
+
+        $claimType = $this->globals->get(Game::CLAIM_TYPE);
+        if ($claimType == Game::CLAUDE_CLAIM_TYPE)
+            $this->notifyAllPlayers('message', clienttranslate('Claude de la Roche\'s Reaction is in effect. '), []);
+
+        foreach ($pressureTypes as $pressureType) 
+        {
+            foreach ($charactersAtLocation as $character) 
+            {
+                if (!$character->ControllerId) continue;
+
+                //If Claude reaction has been activated, and claim is at Claude's location,
+                //then we only want to count the performer and en garde characters
+                if ($claimType == Game::CLAUDE_CLAIM_TYPE)
+                {
+                    $claude = $this->theah->getCardById($this->globals->get(Game::CLAUD_ID));
+                    //If this claim is at Claude's location, and the character is not the performer or engaged then ignore it
+                    if ($claude->Location == $performer->Location && 
+                        $character->Id != $performer->Id && 
+                        $character->Engaged)
+                        continue;                    
+                }
+    
+                $player = $playerInfluences[$character->ControllerId];
+
+                switch ($pressureType) {
+                    case Game::STAT_COMBAT:
+                        $player['influence'] += $character->getCombatPressureValue();
+                        break;
+                    case Game::STAT_FINESSE:
+                        $player['influence'] += $character->getFinessePressureValue();
+                        break;
+                    case Game::STAT_INFLUENCE:
+                        $player['influence'] += $character->getInfluencePressureValue();
+                        break;
+                }
+                $playerInfluences[$character->ControllerId] = $player;
+            }
+        }
+
+        //Get the player with the most influence
+        $maxInfluence = 0;
+        $maxPlayerId = 0;
+        $totals = "";
+        foreach ($playerInfluences as $playerId => $player) 
+        {
+            $totals .= "{$this->getPlayerNameById($playerId)}:({$player['influence']}) ";
+            if ($player['influence'] > $maxInfluence) {
+                $maxInfluence = $player['influence'];
+                $maxPlayerId = $playerId;
+            }
+        }
+
+        //Check for ties
+        $ties = array_filter($playerInfluences, fn($player) => $player['influence'] == $maxInfluence);
+
+        if (count($ties) > 1 || $attemptingPlayerId != $maxPlayerId) 
+            return [false, $totals];
+
+        return [true, $totals];
+    }
+
 }

@@ -44,14 +44,7 @@ abstract class CardReaction extends Reaction
     
     public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void 
     {
-        $this->setUsed($game->theah);
-    }
-
-    public function setUsed(Theah $theah): void
-    {
-        $this->Used = true;
-        $owner = $this->getOwningCard($theah);
-        $owner->IsUpdated = true;
+        $this->setUsed($game->theah, true);
     }
 
 }

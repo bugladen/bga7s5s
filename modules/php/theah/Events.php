@@ -44,6 +44,7 @@ class Events
     const CardRemovedFromPlayerFactionDeck = 'EventCardRemovedFromPlayerFactionDeck';
 
     //High Drama Events
+    const ClaimOccuring = 'EventClaimOccuring';
     const LocationClaimed = 'EventLocationClaimed';
     const CharacterRecruited = 'EventCharacterRecruited';
     const AttachmentEquipped = 'EventAttachmentEquipped';

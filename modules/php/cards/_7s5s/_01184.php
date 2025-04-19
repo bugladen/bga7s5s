@@ -3,9 +3,14 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction_01184;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 
-class _01184 extends CityCharacter
+class _01184 extends CityCharacter implements IHasReactions
 {
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -34,5 +39,15 @@ class _01184 extends CityCharacter
             'Diplomat',
             'Montaigne',
         ];
+
+        $this->Reactions = [
+            new Reaction_01184()
+        ];
+    }
+
+    public function getInfluencePressureValue(): int
+    {
+        $value = parent::getInfluencePressureValue();
+        return $value + 1;
     }
 }

@@ -53,6 +53,13 @@ class Game extends \Table
     final const STAT_INFLUENCE = "Influence";
     final const PASS_COUNT = "passCount";
 
+    //Claim global variables
+    final const CLAIMING_PLAYER = "claimingPlayer";
+    final const CLAIM_TYPE = "claimType";
+    final const CLAUD_ID = "claudeId"; //When Claude is in play, this is the ID of the card that caused the claim type
+    final const NORMAL_CLAIM_TYPE = 0;
+    final const CLAUDE_CLAIM_TYPE = 1;
+
     //Player action global variables
     //Delete these in stNextPlayer
     final const DISCOUNT = "discount";

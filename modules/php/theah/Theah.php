@@ -348,6 +348,17 @@ class Theah
         return null;
     }
 
+    public function getCardByName($name) : ?Card
+    {
+        foreach ($this->cards as $card) {
+            if ($card->Name == $name) {
+                return $card;
+            }
+        }
+
+        return null;
+    }
+
     public function getCardByType($type) : ?Card
     {
         foreach ($this->cards as $card) {

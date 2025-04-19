@@ -19,12 +19,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerD
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventClaimOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
@@ -1068,7 +1068,7 @@ trait ActionsTrait
     public function actHighDramaClaimActionPerformerChosen(string $ids)
     {
         $id = json_decode($ids, true)[0];
-        $activePlayerId = (int)$this->getActivePlayerId();
+        $activePlayerId = $this->getActivePlayerId();
         $this->theah->buildCity();
 
         $performer = $this->theah->getCharacterById($id);
@@ -1088,80 +1088,20 @@ trait ActionsTrait
             throw new \BgaUserException("Performer is not in the City.");
         }
 
-        //Get an array of players to keep track of their influence at the location 
-        $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player ORDER BY player_score DESC");
-        foreach ($playerInfluences as $playerId => $player) {
-            $player["influence"] = 0;
-            $playerInfluences[$playerId] = $player;
-        }
+        $this->globals->set(Game::CLAIMING_PLAYER, $activePlayerId);
+        $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
-        $pressureTypes = $this->theah->getPressureTypesForClaim($performer);
-
-        //Get the total influence of the characters at the location
-        $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
-
-        foreach ($pressureTypes as $pressureType) 
+        $claimEvent = $this->theah->createEvent(Events::ClaimOccuring);
+        if ($claimEvent instanceof EventClaimOccuring)
         {
-            foreach ($charactersAtLocation as $character) 
-            {
-                if (!$character->ControllerId) continue;
-    
-                $player = $playerInfluences[$character->ControllerId];
-                switch ($pressureType) {
-                    case Game::STAT_COMBAT:
-                        $player['influence'] += $character->getCombatPressureValue();
-                        break;
-                    case Game::STAT_FINESSE:
-                        $player['influence'] += $character->getFinessePressureValue();
-                        break;
-                    case Game::STAT_INFLUENCE:
-                        $player['influence'] += $character->getInfluencePressureValue();
-                        break;
-                }
-                $playerInfluences[$character->ControllerId] = $player;
-            }
-        }
-
-        //Get the player with the most influence
-        $maxInfluence = 0;
-        $maxPlayerId = 0;
-        $totals = "";
-        foreach ($playerInfluences as $playerId => $player) {
-            $totals .= "{$this->getPlayerNameById($playerId)}:({$player['influence']}) ";
-            if ($player['influence'] > $maxInfluence) {
-                $maxInfluence = $player['influence'];
-                $maxPlayerId = $playerId;
-            }
-        }
-
-        //Check for ties
-        $ties = array_filter($playerInfluences, fn($player) => $player['influence'] == $maxInfluence);
-
-        if (count($ties) > 1 || $activePlayerId != $maxPlayerId) {
-            throw new \BgaUserException("You do not have the most influence at the location. Totals: {$totals}");
-        }
-
-        $this->setControllerForLocation($performer->Location, $activePlayerId);
-
-        $engageEvent = EventFactory::createCardEngagedEvent($activePlayerId, $performer->Id);
-        $this->theah->eventCheck($engageEvent);
-
-        $claimEvent = $this->theah->createEvent(Events::LocationClaimed);
-        if ($claimEvent instanceof EventLocationClaimed)
-        {
-            $claimEvent->performer = $performer;
+            $claimEvent->performerId = $performer->Id;
             $claimEvent->location = $performer->Location;
-            $claimEvent->playerId = $activePlayerId;
-            $claimEvent->pressureTypes = implode(", ", $pressureTypes);
-            $claimEvent->totalsExplanation = $totals;
-        }    
-
+            $claimEvent->playerId = $this->getActivePlayerId();
+            $claimEvent->pressureTypes = $this->theah->getPressureTypesForClaim($performer);
+        }
         $this->theah->eventCheck($claimEvent);
-
-        $this->theah->queueEvent($engageEvent);
         $this->theah->queueEvent($claimEvent);
 
-        $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("performerChosen");
     }
 

@@ -50,7 +50,7 @@ class Reaction_01182 extends CardReaction
                 $ekko->Location == $event->fromLocation)
             {
                 $this->TargetCharacterId = $event->cardId;
-                $this->setUsed($event->theah);
+                $this->setUsed($event->theah, true);
                 $transition = EventFactory::createReactionTransitionEvent($ekko->ControllerId, $ekko->Id, $this->Id);
                 $event->theah->queueEvent($transition);
             }
@@ -68,7 +68,7 @@ class Reaction_01182 extends CardReaction
             $game->theah->queueEvent($woundEvent);
     
             $this->TargetCharacterId = 0;
-            $this->setUsed($game->theah);
+            $this->setUsed($game->theah, true);
         }
 
         $game->gamestate->nextState("done");        

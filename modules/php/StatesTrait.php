@@ -22,6 +22,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuver
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTakeReknownForControlledLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
@@ -451,9 +452,55 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
+
     public function stHighDramaPhase() {
         $this->gamestate->changeActivePlayer($this->globals->get(Game::FIRST_PLAYER));
+        $this->globals->set(Game::CLAIM_TYPE, Game::NORMAL_CLAIM_TYPE);
         $this->gamestate->nextState("");
+    }
+
+
+    public function stHighDramaClaim() 
+    {
+        $claimingPlayerId = $this->globals->get(GAME::CLAIMING_PLAYER);
+        $this->gamestate->changeActivePlayer($claimingPlayerId);        
+        $this->theah->buildCity();
+
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->getCardObjectFromDb($performerId);
+        
+        list($canClaim, $totals) = $this->canPlayerClaim($claimingPlayerId, $performer);
+        if ( ! $canClaim) 
+        {
+            $this->notifyPlayer($claimingPlayerId, "message", clienttranslate('You cannot claim the location.  You do not have the most influence. Totals: ${totals}'), [
+                "totals" => $totals
+            ]);
+            $this->gamestate->nextState("failure");
+            return;
+        }
+
+        $pressureTypes = $this->theah->getPressureTypesForClaim($performer);
+        $this->setControllerForLocation($performer->Location, $claimingPlayerId);
+
+        $engageEvent = EventFactory::createCardEngagedEvent($claimingPlayerId, $performer->Id);
+        $this->theah->eventCheck($engageEvent);
+
+        $claimEvent = $this->theah->createEvent(Events::LocationClaimed);
+        if ($claimEvent instanceof EventLocationClaimed)
+        {
+            $claimEvent->performer = $performer;
+            $claimEvent->location = $performer->Location;
+            $claimEvent->playerId = $claimingPlayerId;
+            $claimEvent->pressureTypes = implode(", ", $pressureTypes);
+            $claimEvent->totalsExplanation = $totals;
+        }        
+        $this->theah->eventCheck($claimEvent);
+
+        $this->theah->queueEvent($engageEvent);
+        $this->theah->queueEvent($claimEvent);    
+
+        $this->globals->set(GAME::PASS_COUNT, 0);
+        $this->gamestate->nextState("success");
     }
 
     public function stHighDramaRecruitActionParleyable()
@@ -1063,6 +1110,7 @@ trait StatesTrait
         $this->globals->delete(Game::TRANSITION_SOURCE_ID);
         $this->globals->delete(Game::TRANSITION_INTERNAL_ID);
         $this->globals->delete(Game::REACTION_ID);
+        $this->globals->set(Game::CLAIM_TYPE, Game::NORMAL_CLAIM_TYPE);
 
         $currentPlayerId = $this->globals->get(Game::CURRENT_PLAYER);
         $nextPlayerId = $this->getPlayerAfter($currentPlayerId);
