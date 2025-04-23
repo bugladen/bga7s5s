@@ -368,6 +368,14 @@ onUpdateActionButtons: function( stateName, args )
             }
         },
 
+        'highDramaPhase01185': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardsDiscarded_01185());
+                dojo.addClass('actChooseDiscardCards', 'disabled');
+            }
+        },
+
         'playerReaction': () => {
             if (this.isCurrentPlayerActive()) {
                 args._private.args.buttons.forEach((button, index) => {

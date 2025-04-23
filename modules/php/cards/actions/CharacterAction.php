@@ -4,7 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-abstract class CharacterAction extends Action
+abstract class CharacterAction extends CardAction
 {
     public function __construct()
     {
@@ -18,8 +18,8 @@ abstract class CharacterAction extends Action
             return false;
         }
         
-       $card = $this->getOwningCard($theah);
-       return $card?->ControllerId == $playerId;
+        $card = $this->getOwningCard($theah);
+        return $card->ControllerId == $playerId;
     }
 
     public function getCharactersForAction(int $playerId, Theah $theah): array

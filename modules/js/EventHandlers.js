@@ -185,6 +185,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
             },
             
+            'highDramaPhase01185': () => {
+                if (this.factionHand.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseDiscardCards', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCards', 'disabled');
+                }
+            },
+
             'duelChooseAction': () => {
                 const items = this.factionHand.getSelectedItems();
                 if (items.length === 1) {
@@ -217,6 +225,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     dojo.addClass('actChooseDiscardCards', 'disabled');
                 }
             },
+
             'playerPayForReaction': () => {
                 var items = this.factionHand.getSelectedItems();
                 let wealth = 0;

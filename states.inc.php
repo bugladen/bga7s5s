@@ -999,6 +999,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
+                "01185" => States::HIGH_DRAMA_PLAYER_TURN_01185,
                 "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
                 "endOfEvents" => States::NEXT_PLAYER,
                 "endOfGame" => States::END_GAME
@@ -1647,10 +1648,28 @@ $machinestates = [
                     "actBack",
                 ],
                 "transitions" => [
-                    "inPlayActionPerformerChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                    "inPlayActionChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                    "requiresPerformer" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
                     "back" => States::HIGH_DRAMA_PLAYER_TURN
                 ]
             ],
+            States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER => [
+                "name" => "highDramaInPlayActionChoosePerformer",
+                "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+                "descriptionmyturn" => clienttranslate('${you} are choosing a performer to perform an In-Play Action.  Choose an Performer:'),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaInPlayActionChoosePerformer",
+                "possibleactions" => [
+                    "actHighDramaInPlayActionPerformerChosen", 
+                    "actBack",
+                ],
+                "transitions" => [
+                    "inPlayActionPerformerChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                    "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION
+                ]
+            ],
+
+
     
         States::DUEL_STARTED => [
             "name" => "duelStarted",

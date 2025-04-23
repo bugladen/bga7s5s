@@ -532,7 +532,15 @@ onEnteringState: function( stateName, args )
         },    
 
         'highDramaInPlayActionChoosePerformer' : () => {
-            if (this.isCurrentPlayerActive()) {
+            if (this.isCurrentPlayerActive()) 
+            {
+                if (args.args.actionCardId) 
+                {
+                    const card = this.cardProperties[args.args.actionCardId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, 'chosen');
+                }
+
                 this.numberOfCardsSelectable = 1;
                 args.args.ids.forEach((id) => { 
                     const card = this.cardProperties[id];
@@ -820,6 +828,19 @@ onEnteringState: function( stateName, args )
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
                 dojo.place('factionHand-container', 'city', 'before');
                 this.factionHand.setSelectionMode(2);
+            }
+        },
+
+        'highDramaPhase01185': () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                dojo.place('factionHand-container', 'city', 'before');            
+                $('faction_hand_info').innerHTML = _(`(2 cards to discard)`);
+                this.factionHand.setSelectionMode(2);
+
+                card = this.cardProperties[args.args.args.id];
+                const image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
             }
         },
 

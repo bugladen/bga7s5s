@@ -232,7 +232,7 @@ onLeavingState: function( stateName )
             {
                 for ( const cardId in this.cardProperties ) {
                     card = this.cardProperties[cardId];
-                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                    if (this.isCardInCity(card.id)) {
                         const image = $(`${card.divId}_image`);
                         this.clearCardAsSelectable(image);
                     }
@@ -390,6 +390,20 @@ onLeavingState: function( stateName )
             for( const cardId in this.cardProperties ) {
                 card = this.cardProperties[cardId];
                 if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                }
+            }
+        },
+
+        'highDramaPhase01185': () => {
+            this.factionHand.setSelectionMode(0);
+            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+            $('faction_hand_info').innerHTML = '';
+
+            for( const cardId in this.cardProperties ) {
+                card = this.cardProperties[cardId];
+                if (card.type === 'Event' && this.isCardInCity(card.id)) {
                     const image = $(`${card.divId}_image`);
                     this.clearCardAsSelectable(image);
                 }

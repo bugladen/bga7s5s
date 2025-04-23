@@ -23,7 +23,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTakeReknownForControlledLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
@@ -1185,12 +1184,7 @@ trait StatesTrait
             }
             $this->theah->queueEvent($event);
 
-            $event = $this->theah->createEvent(Events::PlayerGainsReknown);
-            if ($event instanceof EventPlayerGainsReknown)
-            {
-                $event->playerId = $location->Controller;
-                $event->amount = $location->Reknown;
-            }
+            $event = EventFactory::createPlayerGainsReknownEvent($location->Controller, $location->Reknown);
             $this->theah->queueEvent($event);
 
             $event = $this->theah->createEvent(Events::ReknownRemovedFromLocation);

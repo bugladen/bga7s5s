@@ -1,0 +1,40 @@
+<?php
+
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
+
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+
+abstract class CardAction extends Action
+{
+    use CardAbilityTrait;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->initializeAbility();
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        {
+            return false;
+        }
+
+        return ! $this->Used;
+    }
+
+
+    public function handleEvent(Event $event)
+    {
+        if ($event instanceof EventDuskEndOfDay)
+        {
+            $this->Used = false;
+            $card = $this->getOwningCard($event->theah);
+            $card->IsUpdated = true;
+        }
+    }
+}

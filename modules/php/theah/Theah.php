@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\DB;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -505,7 +505,7 @@ class Theah
         return null;
     }
 
-    function getInPlayActionById($id): ?Action
+    function getInPlayActionById($id): ?CardAction
     {
         foreach ($this->cards as $card) {
             if ($card instanceof IHasActions) {

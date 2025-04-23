@@ -4,8 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
 class EventReknownRemovedFromCard extends Event
 {
-    public int $cardId;
     public int $playerId;
+    public int $cardId;
     public int $amount;
 
     public function __construct()
@@ -13,8 +13,8 @@ class EventReknownRemovedFromCard extends Event
         parent::__construct();
         $this->priority = Event::MEDIUM_PRIORITY;
 
-        $this->cardId = 0;
         $this->playerId = 0;
+        $this->cardId = 0;
         $this->amount = 0;
     }
  

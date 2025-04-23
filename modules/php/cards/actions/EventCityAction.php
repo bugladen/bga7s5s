@@ -2,10 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-abstract class EventCityAction extends Action
+abstract class EventCityAction extends CardAction
 {
     public function __construct()
     {
@@ -37,6 +36,7 @@ abstract class EventCityAction extends Action
     {
         $characters = parent::getCharactersForAction($playerId, $theah);
 
+        //Get characters in play owned by playerId
         $characters += $theah->getCharactersInPlayByPlayerId($playerId);
         $characters = array_values(array_filter($characters, fn($character) => $character->Location == $this->getOwningCard($theah)->Location));
 

@@ -9,7 +9,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
@@ -1131,26 +1130,24 @@ trait ActionsTrait
 
         $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
 
-        // A character action does not need to choose a performer, as the performer is built into the action
+        // If a character action, the default performer is the owner of the action.
+        // This can of course be overrident by the specific card
         if ($action instanceof CharacterAction)
-        {
             $this->globals->set(GAME::CHOSEN_PERFORMER, $action->OwnerId);
 
-            $event = $this->theah->createEvent(Events::ActionTriggered);
-            if ($event instanceof EventActionTriggered) 
-            {
-                $event->playerId = $player_id;
-                $event->performerId = $action->OwnerId;
-                $event->actionId = $actionId;
-            }
+        if ($action->RequiresPerformer)
+        {
+            $this->gamestate->nextState("requiresPerformer");
+        }
+        else
+        {
+            $event = EventFactory::createActionTriggeredEvent($player_id, $action->OwnerId, $actionId);
             $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
     
             $this->globals->set(GAME::PASS_COUNT, 0);
-            $this->gamestate->nextState("inPlayActionPerformerChosen");
-        }
-        else
             $this->gamestate->nextState("inPlayActionChosen");
+        }
     }
 
     public function actHighDramaInPlayActionPerformerChosen(string $ids)
@@ -1163,13 +1160,7 @@ trait ActionsTrait
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
-        $event = $this->theah->createEvent(Events::ActionTriggered);
-        if ($event instanceof EventActionTriggered) 
-        {
-            $event->playerId = $playerId;
-            $event->performerId = $performer->Id;
-            $event->actionId = $actionId;
-        }
+        $event = EventFactory::createActionTriggeredEvent($playerId, $performer->Id, $actionId);
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 

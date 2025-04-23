@@ -79,7 +79,6 @@ trait CardAbilityTrait
         }
 
         $owner = $theah->getCardById($this->OwnerId);
-        $owner->IsUpdated = true;
         $theah->game->updateCardObjectInDb($owner);
     }
 }

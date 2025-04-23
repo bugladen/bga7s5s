@@ -200,11 +200,14 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const action = actions[this.gamedatas.gamestate.name];
 
+        let errors = false;
         this.bgaPerformAction(action, { 
             'id' : card.id
+        }).catch(() =>  {
+            errors = true;
         }).then(() =>  {                
-            this.chooseList.removeFromStockById(card.id);
-        });        
+            if (!errors) this.chooseList.removeFromStockById(card.id);
+        });
     },
 
     onRecruitCharacterConfirmed: function()
@@ -285,11 +288,28 @@ return declare('seventhseacityoffivesails.actions', null, {
         let items = this.factionHand.getSelectedItems();
         items = items.map((item) => item.id);
     
+        let errors = false;
         this.bgaPerformAction('actDuskPhaseCardsDiscarded', { 
             'ids': JSON.stringify(items),
         }).catch(() =>  {
+            errors = true;
         }).then(() =>  {
-            items.forEach((item) => this.factionHand.removeFromStockById(item));
+            if (!errors) items.forEach((item) => this.factionHand.removeFromStockById(item));
+        });        
+    },
+
+    onCardsDiscarded_01185: function()
+    {
+        let items = this.factionHand.getSelectedItems();
+        items = items.map((item) => item.id);
+        let errors = false;
+    
+        this.bgaPerformAction('actFromCardWithIds', { 
+            'ids': JSON.stringify(items),
+        }).catch(() =>  {
+            errors = true;
+        }).then(() =>  {
+            if (!errors) items.forEach((item) => this.factionHand.removeFromStockById(item));
         });        
     },
 

@@ -5,7 +5,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
@@ -255,20 +254,6 @@ trait EventHub
                     "discount" => $event->discount,
                     "cost" => $event->cost,
                 ]);
-                break;
-
-            case $event instanceof EventActionTriggered:
-                $handler = function (Theah $theah, $event)
-                {
-                    $performer = $theah->getCardById($event->performerId);
-                    $action = $theah->getInPlayActionById($event->actionId);
-
-                    $theah->game->notifyAllPlayers("message", clienttranslate('${card_name} is performing Action: ${action}.'), [
-                        "card_name" => "<strong>{$performer->Name}</strong>",
-                        "action" => $action->Name
-                    ]);    
-                };
-                $handler($this, $event);
                 break;
 
             case $event instanceof EventCityCardAddedToLocation:

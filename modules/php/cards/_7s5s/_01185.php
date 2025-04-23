@@ -2,10 +2,15 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01185;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityEventCard;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 
-class _01185 extends CityEventCard
+class _01185 extends CityEventCard implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -22,6 +27,10 @@ class _01185 extends CityEventCard
             'Discovery',
             "Explorer's Society",
             'Fortune',
+        ];
+
+        $this->Actions = [
+            new Action_01185(),
         ];
     }
 }

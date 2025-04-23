@@ -4,12 +4,10 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\EventCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01179 extends EventCityAction
@@ -20,11 +18,14 @@ class Action_01179 extends EventCityAction
         parent::__construct();
 
         $this->Name = "Siren's Scream: Take a Reknown";
+        $this->RequiresPerformer = true;
     }
 
     public function getCharactersForAction(int $playerId, Theah $theah): array
     {
         $characters = parent::getCharactersForAction($playerId, $theah);
+
+        //Filter out any characters that are engaged
         $characters = array_filter($characters, fn($character) => !$character->Engaged);
 
         return $characters;
@@ -81,29 +82,24 @@ class Action_01179 extends EventCityAction
         // Take Reknown action
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $this->playersUsed[] = $event->playerId;
+            $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $event->theah->getCardById($performerId);
 
-            $engageEvent = $event->theah->createEvent(Events::CardEngaged);
-            $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $event->performerId);
+            $playerId = $performer->ControllerId;
+            $this->playersUsed[] = $playerId;
+    
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${player_name} is using Siren\'s Scream to take a Reknown.'), [
+                "player_name" => $event->theah->game->getPlayerNameById($playerId),
+            ]);    
+    
+            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performerId);
             $event->theah->queueEvent($engageEvent);
-
-            $reknownEvent = $event->theah->createEvent(Events::ReknownRemovedFromCard);
-            if ($reknownEvent instanceof EventReknownRemovedFromCard)
-            {
-                $reknownEvent->playerId = $event->playerId;
-                $reknownEvent->cardId = $this->OwnerId;
-                $reknownEvent->amount = 1;
-            }
+    
+            $reknownEvent = EventFactory::createReknownRemovedFromCardEvent($playerId, $this->OwnerId, 1);
             $event->theah->queueEvent($reknownEvent);
-
-            $playerEvent = $event->theah->createEvent(Events::PlayerGainsReknown);
-            if ($playerEvent instanceof EventPlayerGainsReknown)
-            {
-                $playerEvent->playerId = $event->playerId;
-                $playerEvent->amount = 1;
-            }
+            
+            $playerEvent = EventFactory::createPlayerGainsReknownEvent($playerId, 1);
             $event->theah->queueEvent($playerEvent);
         }
     }
-
 }

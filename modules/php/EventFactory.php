@@ -4,13 +4,18 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class EventFactory
@@ -19,6 +24,19 @@ class EventFactory
     {
         $className = "\Bga\Games\SeventhSeaCityOfFiveSails\\theah\\events\\$eventName";
         $event = new $className();
+        return $event;
+    }
+
+    public static function createActionTriggeredEvent(int $playerId, int $performerId, string $actionId): EventActionTriggered
+    {
+        $event = self::createEvent(Events::ActionTriggered);
+        if ($event instanceof EventActionTriggered)
+        {
+            $event->playerId = $playerId;
+            $event->performerId = $performerId;
+            $event->actionId = $actionId;
+        }
+
         return $event;
     }
 
@@ -34,6 +52,18 @@ class EventFactory
             $event->cost = $cost;
         }
 
+        return $event;
+    }
+
+    public static function createCardAddedToCityDiscardPileEvent(int $playerId, int $cardId, string $location): EventCardAddedToCityDiscardPile
+    {
+        $event = self::createEvent(Events::CardAddedToCityDiscardPile);
+        if ($event instanceof EventCardAddedToCityDiscardPile)
+        {
+            $event->cardId = $cardId;
+            $event->fromLocation = $location;
+            $event->playerId = $playerId;
+        }
         return $event;
     }
 
@@ -113,6 +143,18 @@ class EventFactory
         return $event;
     }
 
+    public static function createPlayerGainsReknownEvent(int $playerId, int $amount): EventPlayerGainsReknown
+    {
+        $event = self::createEvent(Events::PlayerGainsReknown);
+        if ($event instanceof EventPlayerGainsReknown)
+        {
+            $event->playerId = $playerId;
+            $event->amount = $amount;
+        }
+
+        return $event;
+    }
+
     public static function createReactionTransitionEvent(int $playerId, int $sourceId, string $internalId): EventTransition
     {
         $transition = self::createEvent(Events::Transition);
@@ -125,6 +167,32 @@ class EventFactory
         }
 
         return $transition;
+    }
+
+    public static function createReknownAddedToLocationEvent(int $playerId, string $location, int $amount, string $playerName)
+    {
+        $addEvent = self::createEvent(Events::ReknownAddedToLocation);
+        if ($addEvent instanceof EventReknownAddedToLocation) 
+        {
+            $addEvent->playerId = $playerId;
+            $addEvent->location = $location;
+            $addEvent->amount = $amount;
+            $addEvent->source = $playerName;
+        }
+        return $addEvent;
+    }
+
+    public static function createReknownRemovedFromCardEvent(int $playerId, int $cardId, int $amount): EventReknownRemovedFromCard
+    {
+        $reknownEvent = self::createEvent(Events::ReknownRemovedFromCard);
+        if ($reknownEvent instanceof EventReknownRemovedFromCard)
+        {
+            $reknownEvent->playerId = $playerId;
+            $reknownEvent->cardId = $cardId;
+            $reknownEvent->amount = $amount;
+        }
+
+        return $reknownEvent;
     }
 
     public static function createTransitionEvent(int $playerId, int $sourceId, string $internalId, string $transitionName): EventTransition

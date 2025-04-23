@@ -278,6 +278,8 @@ class Action_01180 extends CharacterAction
                 'names' => implode(', ', $names)
             ]);
 
+            $this->setUsed($event->theah, true);
+
             $transition = $event->theah->createEvent(Events::Transition);
             if ($transition instanceof EventTransition)
             {
