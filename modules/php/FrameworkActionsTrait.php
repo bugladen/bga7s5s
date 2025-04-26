@@ -30,7 +30,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 
-trait ActionsTrait
+trait FrameworkActionsTrait
 {
     public function actPass(string $transition = ""): void
     {

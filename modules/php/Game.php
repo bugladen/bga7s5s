@@ -89,7 +89,7 @@ class Game extends \Table
 
     use DeckTrait;
     use StatesTrait;
-    use ActionsTrait;
+    use FrameworkActionsTrait;
     use ArgumentsTrait;
     use DebugTrait;
     use UtilitiesTrait;
