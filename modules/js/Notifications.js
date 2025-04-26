@@ -721,14 +721,20 @@ return declare('seventhseacityoffivesails.notifications', null, {
         dojo.destroy('duel');
 
         const challenger = this.cardProperties[args.challengerId];
-        challenger.conditions = challenger.conditions.filter(condition => condition !== this.CHALLENGER);
-        const challengerChipId = `${challenger.divId}_challenger`;
-        dojo.destroy(challengerChipId);
+        if (challenger)
+        {
+            challenger.conditions = challenger.conditions.filter(condition => condition !== this.CHALLENGER);
+            const challengerChipId = `${challenger.divId}_challenger`;
+            dojo.destroy(challengerChipId);
+        }
 
         const defender = this.cardProperties[args.defenderId];
-        defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
-        const defenderChipId = `${defender.divId}_defender`;
-        dojo.destroy(defenderChipId);
+        if (defender)
+        {
+            defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
+            const defenderChipId = `${defender.divId}_defender`;
+            dojo.destroy(defenderChipId);
+        }
 
         if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)
         {

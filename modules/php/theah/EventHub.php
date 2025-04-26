@@ -698,11 +698,19 @@ trait EventHub
             case $event instanceof EventDuelEnd:
                 $handler = function ($theah, EventDuelEnd $event)
                 {
-                    $challenger = $this->cards[$event->challengerId];
-                    $challenger->removeCondition(GAME::DUEL_CHALLENGER);
+                    //Cards are going to be read from the database, as they may be in the locker and not available to Theah
                     
-                    $defender = $this->cards[$event->defenderId];
+                    $challenger = $theah->getCardById($event->challengerId);
+                    if ( ! $challenger)
+                        $challenger = $this->game->getCardObjectFromDb($event->challengerId);
+                    $challenger->removeCondition(GAME::DUEL_CHALLENGER);
+                    $this->game->updateCardObjectInDb($challenger);
+                    
+                    $defender = $theah->getCardById($event->defenderId);
+                    if ( ! $defender)
+                        $defender = $this->game->getCardObjectFromDb($event->defenderId);                    
                     $defender->removeCondition(GAME::DUEL_DEFENDER);
+                    $this->game->updateCardObjectInDb($defender);
 
                     $theah->game->notifyAllPlayers("duelEnd", clienttranslate('The Duel has ended.'), [
                         "challengerId" => $event->challengerId,

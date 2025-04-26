@@ -915,7 +915,7 @@ trait StatesTrait
         $this->theah->buildCity();
 
         $duelId = $this->globals->get(Game::DUEL_ID);
-        $round = $this->globals->get(Game::DUEL_ROUND);    
+        $round = $this->globals->get(Game::DUEL_ROUND);
 
         $sql = "SELECT challenger_id, defender_id FROM duel where duel_id = $duelId";
         $result = $this->getObjectListFromDB($sql)[0];
@@ -930,8 +930,10 @@ trait StatesTrait
         
         $adversaryId = $this->getDuelOpponentId($actorId);
         $adversary = $this->theah->getCharacterById($adversaryId);
+        if (!$adversary)
+            $adversary = $this->getCardObjectFromDb($adversaryId);
 
-        //If the adversary is not in the same location as the actor, then any adversary threat is nullified
+        //If the adversary is dead or not in the same location as the actor, then any adversary threat is nullified
         if ($actor->Location != $adversary->Location)
         {
             $field = "";
@@ -941,6 +943,9 @@ trait StatesTrait
                 $field = "ending_challenger_threat";
             $sql = "UPDATE duel_round SET $field = 0 WHERE duel_id = $duelId AND round = $round";
             $this->DbQuery($sql);
+
+            //Also make sure the threat read from the database is 0
+            $values[$field] = 0;
 
             $this->notifyAllPlayers("message", clienttranslate('Due to the challenger and defender not sharing the same location, any threat from ${actor_name} to ${adversary_name} is nullified.'), [
                 "actor_name" => $actor->Name,

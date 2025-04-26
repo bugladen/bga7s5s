@@ -109,10 +109,16 @@ trait UtilitiesTrait
             $row['actor'] = $actor->getPropertyArray();
 
             $challenger = $this->theah->getCardById($round['challengerId']);
+            if ( ! $challenger)
+                $challenger = $this->getCardObjectFromDb($round['challengerId']);
+
             $row['challengerName'] = $challenger->Name;
             $row['startingChallengerThreat'] = $round['startingChallengerThreat'];
 
             $defender = $this->theah->getCardById($round['defenderId']);
+            if ( ! $defender)
+                $defender = $this->getCardObjectFromDb($round['defenderId']);
+            
             $row['defenderName'] = $defender->Name;
             $row['startingDefenderThreat'] = $round['startingDefenderThreat'];
 
