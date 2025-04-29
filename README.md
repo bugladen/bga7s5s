@@ -4,16 +4,22 @@ Board Game Arena adaptation of 7th Sea: City of Five Sails
 ## Prerequisites
 Knowledge of the BGA Framework is imperative. I recommend you complete the tutorials described in BGA Studio and learn the fundamentals. Once you have completed the Reversi and Hearts tutorials you will have a firm grasp of the framework and will have a great chance of understanding the code is this project.
 
+PHP is used for backend development.
+
+JavaScript is used for the front end. jQuery is rolled into the BGA Framework, so is available for you to use.
+
 ## Environment Setup
 - VS Code
-- SFTP
-- Elephense (recommended)
+- SFTP Plugin
+- Elephense Plugin (recommended)
 
-Create your own game in BGA Studio. I recommend something like 7s5s_<username>
+Create your own game in BGA Studio. I recommend something like 7s5s_[username].
 
-This is so you can run your own version of the game without restrictions.
+This creates your own sandbox for the game. You can run your own changes without restrictions.
 
 git checkout the project into your local SFTP directory structure.
+
+SFTP Upload the entire project directory up into the BGA server.
 
 ## State of the Project 
 
@@ -27,9 +33,9 @@ git checkout the project into your local SFTP directory structure.
 - Core (In Progress)
 
 ## Going Forward 
-The wiki in this project will have more details on how to implement specific cards.
+Since The core framework for The game is complete, only cards will need to be implemented. The wiki in this project will have more details on how to implement specific cards.
 
-Since the BGA Framework is completely state-based, every single step of every card needs to be programmed. 
+The BGA Framework is completely state-based. Therefore every single step of every card needs to be programmed in order to be integrated into the game 
 
 The upside to this is that the game is completely automated.
 
