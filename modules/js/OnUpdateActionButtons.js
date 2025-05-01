@@ -270,7 +270,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaInHandActionChooseAction'  : () => {
             this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
-            args._private.actions.forEach((action, index) => { 
+            args._private.actions.forEach((action) => { 
                 this.addActionButton(
                     `btnChooseAction_${action.id}`, _(action.name), () => this.bgaPerformAction('actHighDramaInHandActionChosen', { actionId: action.id})) 
             });

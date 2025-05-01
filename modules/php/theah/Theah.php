@@ -496,7 +496,7 @@ class Theah
                 {
                     if ($action->isAvailableToPlayer($playerId, $this, $this->game))
                     {
-                        $actionsArray += $card->getActionsArray();
+                        $actionsArray = array_merge($actionsArray, $card->getActionsArray());
                     }
                 }
             }
@@ -518,14 +518,11 @@ class Theah
                 {
                     if ($action->isAvailableToPlayer($playerId, $this, $this->game))
                     {
-                        $actionsArray += $card->getActionsArray();
+                        $actionsArray = array_merge($actionsArray, $card->getActionsArray());
                     }
                 }
             }
         }
-
-        //Filter out any duplicates
-        $actionsArray = array_unique($actionsArray, SORT_REGULAR);
 
         return $actionsArray;
     }

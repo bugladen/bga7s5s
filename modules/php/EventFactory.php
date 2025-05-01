@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
@@ -79,13 +80,30 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardEngagedEvent(int $playerId, int $cardId): EventCardEngaged
+    public static function createCardEngagedEvent(int $playerId, int $cardId, int $sourceId = 0): EventCardEngaged
     {
         $event = self::createEvent(Events::CardEngaged);
         if ($event instanceof EventCardEngaged)
         {
             $event->playerId = $playerId;
             $event->cardId = $cardId;
+            $event->sourceId = $sourceId;
+        }
+
+        return $event;
+    }
+
+    public static function createCardMovedEvent(int $playerId, int $cardId, string $fromLocation, string $toLocation, bool $engage = true, int $sourceId = 0): EventCardMoved
+    {
+        $event = self::createEvent(Events::CardMoved);
+        if ($event instanceof EventCardMoved)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+            $event->fromLocation = $fromLocation;
+            $event->toLocation = $toLocation;
+            $event->engage = $engage;
+            $event->sourceId = $sourceId;
         }
 
         return $event;

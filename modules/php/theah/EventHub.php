@@ -54,6 +54,9 @@ trait EventHub
 {
     public function handleEvent($event)
     {
+        if ($event->canceled)
+            return;
+
         switch (true) {
 
             case $event instanceof EventApproachCharacterPlayed:
@@ -178,22 +181,26 @@ trait EventHub
                 break;
 
             case $event instanceof EventCardEngaged:
-                $card = $this->cards[$event->cardId];
-                $card->Engaged = true;
-                $card->IsUpdated = true;
+                $handler = function (Theah $theah, EventCardEngaged $event)
+                {
+                    $card = $theah->getCardById($event->cardId);
+                    $card->Engaged = true;
+                    $card->IsUpdated = true;
 
                 $this->game->notifyAllPlayers("cardEngaged", clienttranslate('${player_name} Engages ${card_name}.'), [
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
                     "card_name" => "<strong>{$card->Name}</strong>",
-                    "cardId" => $card->Id,
-                ]);
+                        "cardId" => $card->Id,
+                    ]);
+                };
+                $handler($this, $event);
                 break;                
 
             case $event instanceof EventCardEngarded:
-                $handler = function ($theat, EventCardEngarded $event)
-                {
-                    $card = $this->cards[$event->cardId];
-                    $card->Engaged = false;
+                $handler = function (Theah $theah, EventCardEngarded $event)
+                {   
+                    $card = $theah->getCardById($event->cardId);
+                        $card->Engaged = false;
                     $card->IsUpdated = true;
     
                     $this->game->notifyAllPlayers("cardEngarded", clienttranslate('${player_name} En gardes ${card_name}.'), [
@@ -206,26 +213,31 @@ trait EventHub
                 break;                
 
             case $event instanceof EventCardMoved:
-                $card = $this->cards[$event->cardId];
-                $card->Location = $event->toLocation;
-                if ($card instanceof Character) {
-                    $card->Engaged = $event->Engage;
+                $handler = function (Theah $theah, EventCardMoved $event)
+                {
+                    $card = $theah->getCardById($event->cardId);
+                    $card->Location = $event->toLocation;
+                    $card->IsUpdated = true;
+                    if ($card instanceof Character) 
+                    {
+                        $card->Engaged = $event->engage;
 
-                    foreach ($card->Attachments as $attachmentId) {
-                        $attachment = $this->cards[$attachmentId];
-                        $attachment->Location = $event->toLocation;
-                        $attachment->IsUpdated = true;
+                        foreach ($card->Attachments as $attachmentId) {
+                            $attachment = $theah->getCardById($attachmentId);
+                            $attachment->Location = $event->toLocation;
+                            $attachment->IsUpdated = true;
+                        }
                     }
-                }
-                $card->IsUpdated = true;
 
-                $this->game->notifyAllPlayers("cardMoved", clienttranslate('${card_name} moved from ${fromLocation} to ${toLocation}.'), [
-                    "card_name" => "<strong>{$card->Name}</strong>",
-                    "cardId" => $card->Id,
-                    "fromLocation" => $event->fromLocation,
-                    "toLocation" => $event->toLocation,
-                    "engage" => $event->Engage,
-                ]);
+                    $this->game->notifyAllPlayers("cardMoved", clienttranslate('${card_name} moved from ${fromLocation} to ${toLocation}.'), [
+                        "card_name" => "<strong>{$card->Name}</strong>",
+                        "cardId" => $card->Id,
+                        "fromLocation" => $event->fromLocation,
+                        "toLocation" => $event->toLocation,
+                        "engage" => $event->engage
+                    ]);
+                };
+                $handler($this, $event);    
                 break;
 
             case $event instanceof EventCardRemovedFromCityDiscardPile:

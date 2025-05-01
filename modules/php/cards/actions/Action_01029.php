@@ -129,8 +129,10 @@ class Action_01029 extends RiskAction
             throw new \BgaUserException("Invalid character selected");
         }
 
+        $owner = $this->getOwningCard($game->theah);
+
         $target = $game->theah->getCardById($id);
-        $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $target->Id);
+        $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $target->Id, $owner->Id);
         $game->theah->queueEvent($event);
 
         $game->gamestate->nextState("cardChosen");

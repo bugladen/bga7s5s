@@ -12,7 +12,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
@@ -751,14 +750,7 @@ trait FrameworkActionsTrait
         ]);
 
         $movedHome = $this->theah->createEvent(Events::CardMoved);
-        if ($movedHome instanceof EventCardMoved)
-        {
-            $movedHome->cardId = $card->Id;
-            $movedHome->fromLocation = $card->Location;
-            $movedHome->toLocation = $location;
-            $movedHome->playerId = $card->ControllerId;
-            $movedHome->Engage = $card->Location != Game::LOCATION_PLAYER_HOME;
-        }
+        $movedHome = EventFactory::createCardMovedEvent($card->ControllerId, $card->Id, $card->Location, $location, $card->Location != Game::LOCATION_PLAYER_HOME);
         $this->theah->eventCheck($movedHome);
         $this->theah->queueEvent($movedHome);
 

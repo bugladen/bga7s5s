@@ -266,6 +266,7 @@ onLeavingState: function( stateName )
                         this.clearCardAsSelectable(image);
                     }
                 }
+                this.clientStateArgs = {};
             }
         },
 
@@ -411,12 +412,15 @@ onLeavingState: function( stateName )
         },
 
         'highDramaPhase01029': () => {
-            this.clientStateArgs.ids.forEach((cardId) => {
-                card = this.cardProperties[cardId];
-                const image = $(`${card.divId}_image`);
-                this.clearCardAsSelectable(image);
-            });
-            this.clientStateArgs = {};
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.clientStateArgs.ids.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                });
+                this.clientStateArgs = {};
+            }
         },
 
         'highDramaPhase01180' : () => {

@@ -13,7 +13,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
@@ -1519,15 +1518,7 @@ trait StatesTrait
 
         foreach ($characters as $character)
         {
-            $movedHome = $this->theah->createEvent(Events::CardMoved);
-            if ($movedHome instanceof EventCardMoved)
-            {
-                $movedHome->cardId = $character->Id;
-                $movedHome->fromLocation = $character->Location;
-                $movedHome->toLocation = Game::LOCATION_PLAYER_HOME;
-                $movedHome->playerId = $character->ControllerId;
-                $movedHome->Engage = false;
-            }
+            $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false);
             $this->theah->queueEvent($movedHome);
 
             if ($character->Engaged)

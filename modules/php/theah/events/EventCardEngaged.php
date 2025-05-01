@@ -6,11 +6,15 @@ class EventCardEngaged extends Event
 {
     public int $cardId;
     public int $playerId;
+    public int $sourceId;
 
     public function __construct()
     {
         parent::__construct();
         $this->priority = Event::MEDIUM_PRIORITY;
+        $this->sourceId = 0;
+        
+        $this->runHandlerAfterCards = true;
     }
 
 }

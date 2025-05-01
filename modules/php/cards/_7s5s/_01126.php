@@ -6,10 +6,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
@@ -129,15 +129,7 @@ class _01126 extends Scheme
                 {
                     $deck->moveCard($card->Id, Game::LOCATION_PLAYER_HOME, $card->ControllerId);;
 
-                    $movedHome = $event->theah->createEvent(Events::CardMoved);
-                    if ($movedHome instanceof EventCardMoved)
-                    {
-                        $movedHome->cardId = $card->Id;
-                        $movedHome->fromLocation = $this->chosenLocation;
-                        $movedHome->toLocation = Game::LOCATION_PLAYER_HOME;
-                        $movedHome->playerId = $this->ControllerId;
-                    }
-
+                    $movedHome = EventFactory::createCardMovedEvent($this->ControllerId, $card->Id, $this->chosenLocation, Game::LOCATION_PLAYER_HOME, false);
                     $event->theah->queueEvent($movedHome);
                 }
             }
