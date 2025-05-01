@@ -201,7 +201,7 @@ class Game extends \Table
             if ($player['leader_card_id'] != null)
             {
                 $card = $this->theah->getCardById($player['leader_card_id']);
-                $player['leader'] = $card->getPropertyArray();
+                $player['leader'] = $card->getPropertyArray($this);
             }
             $location = $this->getPlayerDiscardDeckName($player_id);
             $player['discard'] = $this->getCardPropertiesInLocation($location);
@@ -400,5 +400,10 @@ class Game extends \Table
         }
 
         throw new \feException("Zombie mode not supported at this game state: \"{$state_name}\".");
+    }
+
+    public function translate($text) 
+    {
+        return self::_($text);
     }
 }

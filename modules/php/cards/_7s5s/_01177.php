@@ -52,7 +52,7 @@ class _01177 extends CityEventCard
             $cards = [];
             foreach ($deckCards as $deckCard) {
                 $card = $game->getCardObjectFromDb($deckCard['id']);
-                $cards[] = $card->getPropertyArray();
+                $cards[] = $card->getPropertyArray($game);
             }
     
             return [
@@ -76,6 +76,7 @@ class _01177 extends CityEventCard
     
             $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen ${character_name} to follow Penya. 
             They will now choose the order of the top 3 cards in the City Deck.'), [
+                'i18n' => ['character_name'],
                 "player_name" => $game->getActivePlayerName(),
                 "character_name" => "<strong>$selectedCharacter->Name</strong>",
             ]);
@@ -94,7 +95,7 @@ class _01177 extends CityEventCard
             {
                 if (!in_array($id, $top3Ids))
                 {
-                    throw new \BgaUserException("Card $id is not in the top 3 cards.");
+                    throw new \BgaUserException($game->translate("Card $id is not in the top 3 cards."));
                 }
 
                 //Move card to top of City Deck
@@ -121,7 +122,7 @@ class _01177 extends CityEventCard
             if ($card instanceof Character && $card->hasCondition("Helped By Penya"))
             {
                 $card->removeCondition("Helped By Penya");
-                throw new \BgaUserException("Penya has helped {$card->Name} so they don't go home.");
+                throw new \BgaUserException($event->theah->game->translate("Penya has helped {$card->Name} so they don't go home."));
             }
         }
     }
@@ -146,6 +147,7 @@ class _01177 extends CityEventCard
                 if (count($characters) > 0)
                 {
                     $event->theah->game->notifyAllPlayers("message", clienttranslate('${card_name} triggers.  ${player_name} may choose to have one of their characters follow Penya.'), [
+                        'i18n' => ['card_name'],
                         "card_name" => "<strong>$this->Name</strong>",
                         "player_name" => $event->theah->game->getActivePlayerName(),
                     ]);

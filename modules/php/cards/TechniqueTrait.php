@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 trait TechniqueTrait
 {
@@ -29,12 +30,12 @@ trait TechniqueTrait
         return false;
     }
 
-    public function getTechniqueNames($includeAvailable = false): Array
+    public function getTechniqueNames(Game $game, $includeAvailable = false): Array
     {
         $names = [];
         foreach ($this->Techniques as $technique) {
             if ($technique->isAvailable())
-                $names[] = $technique->name;
+                $names[] = $game->translate($technique->name);
         }
         return $names;
     }

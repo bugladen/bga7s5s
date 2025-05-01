@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 trait ActionTrait
 {
@@ -13,9 +14,9 @@ trait ActionTrait
         return $this->Actions;
     }
 
-    public function addActionProperties(&$properties)
+    public function addActionProperties(Game $game, &$properties)
     {
-        $properties['actions'] = $this->getActionsArray();
+        $properties['actions'] = $this->getActionsArray($game);
     }
 
     public function anyActionsAvailable(): bool
@@ -55,14 +56,14 @@ trait ActionTrait
         return $names;
     }
 
-    public function getActionsArray(bool $mustBeAvailable = false): Array
+    public function getActionsArray(Game $game, bool $mustBeAvailable = false): Array
     {
         $array = [];
         foreach ($this->Actions as $action) {
             if ($mustBeAvailable && !$action->isAvailable()) {
-                continue;
+                continue;   
             }
-            $array[] = ["id" => $action->Id, "name" => $action->Name];
+            $array[] = ["id" => $action->Id, "name" => $game->translate($action->Name)];
         }
 
         return $array;

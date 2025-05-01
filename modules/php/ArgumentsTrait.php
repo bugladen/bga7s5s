@@ -49,7 +49,7 @@ trait ArgumentsTrait
                 $card = $this->getCardObjectFromDb($deckCard['id']);
                 if (in_array("Red Hand", $card->Traits) && in_array("Thug", $card->Traits)) 
                 {
-                    $thugs[] = $card->getPropertyArray();
+                    $thugs[] = $card->getPropertyArray($this);
                 }
             }            
 
@@ -70,7 +70,7 @@ trait ArgumentsTrait
         $id = $this->globals->get(GAME::CHOSEN_CARD);
         $card = $this->getCardObjectFromDb($id);
         return [
-            "card" => $card->getPropertyArray()
+            "card" => $card->getPropertyArray($this)
         ];
     }
 
@@ -93,7 +93,7 @@ trait ArgumentsTrait
         $id = $this->globals->get(GAME::CATS_EMBARGO);
         $card = $this->getCardObjectFromDb($id);
         return [
-            "card" => $card->getPropertyArray()
+            "card" => $card->getPropertyArray($this)
         ];
     }
 
@@ -277,7 +277,7 @@ trait ArgumentsTrait
                 "active" => [
                     "performerId" => $performerId,
                     "chosenAttachmentId" => $attachmentId,
-                    "chosenAttachment" => $attachment->getPropertyArray(),
+                    "chosenAttachment" => $attachment->getPropertyArray($this),
                     "discount" => $this->globals->get(GAME::DISCOUNT)
                 ]
             ],
@@ -611,7 +611,7 @@ trait ArgumentsTrait
                 "_private" => [
                     "active" => [
                         "cardId" => $cardId,
-                        "maneuvers" => $card->getManeuversArray()
+                        "maneuvers" => $card->getManeuversArray($this)
                     ]
                 ]
             ];
@@ -639,7 +639,7 @@ trait ArgumentsTrait
         $cards = [];
         foreach ($deckCards as $deckCard) {
             $card = $this->getCardObjectFromDb($deckCard['id']);
-            $cards[] = $card->getPropertyArray();
+            $cards[] = $card->getPropertyArray($this);
         }
 
         return [

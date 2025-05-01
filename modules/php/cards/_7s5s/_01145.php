@@ -42,12 +42,14 @@ class _01145 extends Scheme
         {
             $event->theah->game->notifyAllPlayers("message", clienttranslate('The first part of ${scheme_name} now resolves. ${player_name} must move a Reknown from one location to another.
             Then, Reknown will be added to all locations that have none.'), [
+                'i18n' => ['scheme_name'],
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $event->playerName,
             ]);
 
             $event->theah->game->notifyAllPlayers("message", clienttranslate('The second part of ${scheme_name} will happen after. Each player draws a card.
             Then, the player with the least Reknown draw a card  Then the player with the fewest characters will draw a card.'), [
+                'i18n' => ['scheme_name'],
                 "scheme_name" => "<span style='font-weight:bold'>Inspire Generosity</span>",
             ]);
     
@@ -78,7 +80,7 @@ class _01145 extends Scheme
         {
             if ($game->getReknownForLocation($fromLocation) == 0)
             {
-                throw new \BgaUserException("{$fromLocation} does not have any reknown to move.");
+                throw new \BgaUserException($game->translate("{$fromLocation} does not have any reknown to move."));
             }
    
             $playerAdded = $game->theah->createEvent(Events::ReknownRemovedFromLocation);

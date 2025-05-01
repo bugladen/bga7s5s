@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 abstract class Attachment extends Card implements IWealthCost
@@ -43,9 +44,9 @@ abstract class Attachment extends Card implements IWealthCost
     }
 
 
-    public function getPropertyArray(): array
+    public function getPropertyArray(Game $game): array
     {
-        $properties = parent::getPropertyArray();
+        $properties = parent::getPropertyArray($game);
         
         $properties['resolveModifier'] = $this->ResolveModifier;
         $properties['combatModifier'] = $this->CombatModifier;

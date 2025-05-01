@@ -42,7 +42,7 @@ class _01179 extends CityEventCard implements IHasActions
         parent::eventCheck($event);
 
         if ($event instanceof EventCardAddedToCityDiscardPile && $event->cardId == $this->Id && $this->Reknown > 0)
-            throw new \BgaUserException(_("Siren's Scream will not be discarded while it has Reknown on it."));
+            throw new \BgaUserException($event->theah->game->translate("Siren's Scream will not be discarded while it has Reknown on it."));
     }
 
     public function handleEvent(Event $event)

@@ -29,8 +29,8 @@ class Reaction_01182 extends CardReaction
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty('Wound Character', 'woundCharacter');
-        $array[] = $this->createButtonProperty('Pass', 'pass');
+        $array[] = $this->createButtonProperty($theah->game, 'Wound Character', 'woundCharacter');
+        $array[] = $this->createButtonProperty($theah->game, 'Pass', 'pass');
 
         return $array;
     }

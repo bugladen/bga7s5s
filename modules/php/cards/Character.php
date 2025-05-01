@@ -200,6 +200,7 @@ abstract class Character extends Card
 
             $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_name} has received ${wounds} wound(s) due to: ${reason} 
             <p>${target_name}\'s new Resolve: ${resolve}'), [
+                'i18n' => ['target_name', 'reason'],
                 "target_name" => "<strong>{$this->Name}</strong>",
                 "characterId" => $this->Id,
                 "wounds" => $event->wounds,
@@ -234,6 +235,7 @@ abstract class Character extends Card
 
             $event->theah->game->notifyAllPlayers("characterHealed", clienttranslate('${target_name} has healed ${wounds} wound(s) due to: ${reason} 
             <p>${target_name}\'s new Resolve: ${resolve}'), [
+                'i18n' => ['target_name', 'reason'],
                 "target_name" => "<strong>{$this->Name}</strong>",
                 "characterId" => $this->Id,
                 "wounds" => $actualHealed,
@@ -251,9 +253,9 @@ abstract class Character extends Card
         }
     }
 
-    public function getPropertyArray(): array
+    public function getPropertyArray(Game $game): array
     {
-        $properties = parent::getPropertyArray();
+        $properties = parent::getPropertyArray($game);
 
         //Add character specific properties
         $properties['title'] = $this->Title;

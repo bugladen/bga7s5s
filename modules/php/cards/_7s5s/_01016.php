@@ -39,6 +39,7 @@ class _01016 extends Scheme
 
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves. ${player_name} must choose two city locations to place reknown onto. 
             Then they must search their deck for a Red Hand Thug, reaveal it, and put it in their hand.'), [
+                'i18n' => ['scheme_name'],
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $event->playerName,
             ]);

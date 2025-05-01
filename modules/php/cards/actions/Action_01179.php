@@ -62,7 +62,7 @@ class Action_01179 extends EventCityAction
         {
             if (in_array($event->playerId, $this->playersUsed))
             {
-                throw new \BgaUserException(_("You have already used this Action today."));
+                throw new \BgaUserException($event->theah->game->translate("You have already used this Action today."));
             }
         }
     }

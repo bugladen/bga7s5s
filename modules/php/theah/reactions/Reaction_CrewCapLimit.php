@@ -50,7 +50,7 @@ class Reaction_CrewCapLimit extends GameReaction
         $characters = array_filter($characters, fn($character) => ! $character instanceof Leader);
         foreach ($characters as $character)
         {
-            $array[] = $this->createButtonProperty('Sink ' . $character->Name, 'sinkCharacter_' . $character->Id);
+            $array[] = $this->createButtonProperty($theah->game, 'Sink ' . $character->Name, 'sinkCharacter_' . $character->Id);
         }
 
         return $array;
@@ -67,7 +67,7 @@ class Reaction_CrewCapLimit extends GameReaction
         $character = $game->theah->getCardById($characterId);
         if ( ! $character instanceof Character)
         {
-            throw new \BgaUserException("Reaction_CrewCapLimit: Not a character.");
+            throw new \BgaUserException($game->translate("Reaction_CrewCapLimit: Not a character."));
         }
 
         $event = EventFactory::createCharacterDestroyedEvent($game->getActivePlayerId(), $character->Id, 'Chosen to sink for Crew Cap Limit');

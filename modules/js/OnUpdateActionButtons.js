@@ -209,7 +209,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaMoveActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }
@@ -217,7 +217,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaMoveActionChooseLocation': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             }
@@ -225,7 +225,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaRecruitActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }
@@ -233,20 +233,20 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaRecruitActionParley': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseYes`, _('Yes'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyYes', {}));
                 this.addActionButton(`actChooseNo`, _('No'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyNo', {}));
             }
         },
 
         'highDramaRecruitActionChooseMercenary': () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaRecruitActionPayForMercenary_client': () => {
-            this.addActionButton(`actBack`, _('<'), () => 
+            this.addActionButton(`actBack`, '<', () => 
                 this.setClientState('highDramaRecruitActionChooseMercenary',
                     {
                         'descriptionmyturn' : _("${you} are performing a Recruit Action.  Choose a Mercenary to recruit:"),
@@ -255,7 +255,7 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaInPlayActionChooseAction'  : () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args._private.actions.forEach((action, index) => { 
                 this.addActionButton(
                     `btnChooseAction_${action.id}`, _(action.name), () => this.bgaPerformAction('actHighDramaInPlayActionChosen', { actionId: action.id})) 
@@ -263,13 +263,13 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaInPlayActionChoosePerformer'  : () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaInHandActionChooseAction'  : () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args._private.actions.forEach((action) => { 
                 this.addActionButton(
                     `btnChooseAction_${action.id}`, _(action.name), () => this.bgaPerformAction('actHighDramaInHandActionChosen', { actionId: action.id})) 
@@ -277,26 +277,26 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaInHandActionChoosePerformer'  : () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaInHandActionPay': () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onActionCardFromHandPaymentConfirmed());
         },
 
         'highDramaEquipActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }
         },
 
         'highDramaEquipActionChooseAttachmentLocation': () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             if (args._private.attachmentsInHand.length > 0) {
                 this.addActionButton(`actChooseFromHand`, _('Equip from Hand'), () => this.bgaPerformAction('actSimpleTransition', {transition: 'equipFromHand'}));
             }
@@ -306,30 +306,30 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaEquipActionChooseAttachmentFromHand': () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onChooseHandAttachmentConfirmed());
             dojo.addClass('actFactionCardsSelected', 'disabled');
         },
 
         'highDramaEquipActionChooseAttachmentFromPlay': () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaEquipActionPayForAttachmentFromHand': () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
         },
 
         'highDramaEquipActionPayForAttachmentFromPlay': () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
         },
 
         'highDramaClaimActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }
@@ -337,7 +337,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaChallengeActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }
@@ -345,7 +345,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaChallengeActionChooseTarget': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }
@@ -353,7 +353,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaChallengeActionActivateTechnique': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 args.techniques.forEach((technique) => { 
                     this.addActionButton(
                         `actChooseTechnique${technique.id}-btn`, _(technique.name), () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 
@@ -386,7 +386,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaPhase01180_2': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }
@@ -394,14 +394,14 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaPhase01180_3': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmedFromCard());
             }
         },
 
         'highDramaPhase01185': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardsDiscarded_01185());
                 dojo.addClass('actChooseDiscardCards', 'disabled');
             }
@@ -417,7 +417,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'playerPayForReaction': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onReactionPaymentConfirmed());
             }
         },
@@ -444,7 +444,7 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelChooseTechnique': () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args.techniques.forEach((technique) => { 
                 this.addActionButton(
                     `btnChooseTechnique_${technique.id}`, _(technique.name), () => this.bgaPerformAction('actDuelTechniqueChosen', { techniqueId: technique.id})) 
@@ -457,7 +457,7 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelUseManeuverFromCombatCard': () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args._private.maneuvers.forEach((maneuver) => { 
                 this.addActionButton(
                     `btnChooseManeuver_${maneuver.id}`, _(maneuver.name), () => this.bgaPerformAction('actDuelUseManeuverFromCombatCard', { maneuverId: maneuver.id})) 
@@ -466,7 +466,7 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelPayForManeuverFromCombatCard': () => {
-            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onCombatCardPaymentConfirmed());
         },
 

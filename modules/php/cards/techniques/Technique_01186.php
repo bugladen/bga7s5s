@@ -55,7 +55,7 @@ class Technique_01186 extends Technique
     {
         if ($event instanceof EventResolveManeuver && $this->CancelOpponentManeuvers)
         {
-            throw new \BgaUserException("Technique of Maryam Benu Pleroma is active. Opponent Maneuvers are prevented this round.");
+            throw new \BgaUserException($event->theah->game->translate("Technique of Maryam Benu Pleroma is active. Opponent Maneuvers are prevented this round."));
         }
     }
 }

@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 interface IHasTechniques
 {
@@ -14,7 +15,7 @@ interface IHasTechniques
 
     public function getTechniqueById($id): ?Technique;
 
-    public function getTechniqueNames($includeAvailable = false): Array;
+    public function getTechniqueNames(Game $game, $includeAvailable = false): Array;
 
     public function getTechniquesArray(): Array;
 

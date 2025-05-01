@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 trait ManeuverTrait
 {
@@ -28,13 +29,13 @@ trait ManeuverTrait
         return null;
     }
 
-    public function getManeuversArray(bool $mustBeAvailable = false): Array
+    public function getManeuversArray(Game $game, bool $mustBeAvailable = false): Array
     {
         $array = [];
         foreach ($this->Maneuvers as $maneuver) {
             if ($mustBeAvailable && !$maneuver->Used)
                 continue;
-            $array[] = ["id" => $maneuver->Id, "name" => $maneuver->Name];
+            $array[] = ["id" => $maneuver->Id, "name" => $game->translate($maneuver->Name)];
         }
 
         return $array;

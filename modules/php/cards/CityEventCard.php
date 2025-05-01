@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 
@@ -27,9 +28,9 @@ abstract class CityEventCard extends Card implements ICityDeckCard
         }
     }
 
-    public function getPropertyArray() : array
+    public function getPropertyArray(Game $game) : array
     {
-        $properties = parent::getPropertyArray();
+        $properties = parent::getPropertyArray($game);
 
         $properties['type'] = 'Event';
 

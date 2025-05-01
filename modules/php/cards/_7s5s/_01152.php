@@ -39,6 +39,7 @@ class _01152 extends Scheme
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves. 
             ${player_name} may choose a city location to place reknown onto. 
             If they choose not to, they may move a Reknown from a city location to an adjacent location.'), [
+                'i18n' => ['scheme_name'],
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $event->playerName,
             ]);

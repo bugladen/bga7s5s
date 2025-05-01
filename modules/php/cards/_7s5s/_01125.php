@@ -40,6 +40,7 @@ class _01125 extends Scheme
             ${player_name} may first choose a city location to place reknown onto. 
             If they choose not to, they may move a Reknown from a city location to an adjacent location. 
             Lastly, they will choose an enemy character.'), [
+                'i18n' => ['scheme_name'],
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $event->playerName,
             ]);

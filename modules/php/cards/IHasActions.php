@@ -3,12 +3,13 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 interface IHasActions
 {
     public function getActions(): Array;
 
-    public function addActionProperties(&$properties);
+    public function addActionProperties(Game $game, &$properties);
 
     public function anyActionsAvailable(): bool;
 
@@ -16,7 +17,7 @@ interface IHasActions
 
     public function getActionNames($includeAvailable = false): Array;
 
-    public function getActionsArray(): Array;
+    public function getActionsArray(Game $game): Array;
 
     public function updateActionOwnerIds($id);    
 }

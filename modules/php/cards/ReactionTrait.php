@@ -21,14 +21,14 @@ trait ReactionTrait
         return false;
     }
 
-    public function getReactionNames($includeAvailable = false): Array
+    public function getReactionNames(Game $game, $includeAvailable = false): Array
     {
         $names = [];
         foreach ($this->Reactions as $reaction)
         {
             if ($includeAvailable || $reaction->IsAvailable())
             {
-                $names[] = $reaction->Name;
+                $names[] = $game->translate($reaction->Name);
             }
         }
         return $names;

@@ -531,16 +531,20 @@ onLeavingState: function( stateName )
         },
 
         'playerPayForReaction': () => {
-            this.factionHand.getAllItems().forEach((card, index) => {
-                let div = this.factionHand.getItemDivId(card.id);
-                if (dojo.hasClass(div, 'unselectable')) {
-                    dojo.removeClass(div, 'unselectable');
-                    dojo.destroy(`${div}_wealth_cost`);
-                }
-            });
-            this.factionHand.setSelectionMode(0);
-            $('faction_hand_info').innerHTML = '';
-            this.showHandAtBottom();
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.factionHand.getAllItems().forEach((card, index) => {
+                    let div = this.factionHand.getItemDivId(card.id);
+                    if (dojo.hasClass(div, 'unselectable')) 
+                        {
+                        dojo.removeClass(div, 'unselectable');
+                        dojo.destroy(`${div}_wealth_cost`);
+                    }
+                });
+                this.factionHand.setSelectionMode(0);
+                $('faction_hand_info').innerHTML = '';
+                    this.showHandAtBottom();
+            }
         }
     };
 

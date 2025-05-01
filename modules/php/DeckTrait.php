@@ -78,12 +78,13 @@ trait DeckTrait
 
                 //Notify players about the leaders
                 $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} plays ${player_faction} Faction and ${leader_name} as their leader.'), [
+                    'i18n' => ['player_faction', 'leader_name'],
                     "player_name" => $player['player_name'],
                     "player_faction" => "<span style='font-weight:bold'>{$card->Faction}</span>",
                     "leader_name" => "<span style='font-weight:bold'>{$card->Name}</span>",
                     "player_id" => $playerId,
                     "player_color" => $player['player_color'],
-                    "leader" => $card->getPropertyArray(),
+                    "leader" => $card->getPropertyArray($this),
                 ]);
             }
 
@@ -104,10 +105,10 @@ trait DeckTrait
                 $card->Location = $location;
                 $this->updateCardObjectInDb($card);
 
-                $cards[] = $card->getPropertyArray();
+                $cards[] = $card->getPropertyArray($this);
             }
 
-            $cardList = implode(", ", array_map(function($card) { return $card['name']; }, $cards));
+            $cardList = implode(", ", array_map(function($card) { return self::_($card['name']); }, $cards));
             $this->notifyPlayer($playerId, "approachCardsReceived", 
                 clienttranslate('You received your Approach Deck containing: ${card_list}'), [
                     "card_list" => $cardList,
@@ -132,7 +133,7 @@ trait DeckTrait
                     $card->Location = $location;
                     $this->updateCardObjectInDb($card);
 
-                    $cards[] = $card->getPropertyArray();
+                    $cards[] = $card->getPropertyArray($this);
 
                 }
             }
@@ -152,7 +153,7 @@ trait DeckTrait
                 continue;
             }
 
-            $cards[] = $card->getPropertyArray();
+            $cards[] = $card->getPropertyArray($this);
             unset($card);
         }
        

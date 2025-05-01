@@ -32,8 +32,8 @@ class Reaction_01023 extends RiskReaction
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty('Prevent Intervention', 'preventIntervention');
-        $array[] = $this->createButtonProperty('Pass', 'pass');
+        $array[] = $this->createButtonProperty($theah->game, 'Prevent Intervention', 'preventIntervention');
+        $array[] = $this->createButtonProperty($theah->game, 'Pass', 'pass');
 
         return $array;
     }
@@ -53,7 +53,7 @@ class Reaction_01023 extends RiskReaction
             $discardDeckName = $event->theah->game->getPlayerDiscardDeckName($risk->ControllerId);
             if ($risk->Location == $discardDeckName && $this->PreventIntervention)
             {
-                throw new \BgaUserException("Ambush: No characters may intervene in this Challenge.");
+                throw new \BgaUserException($event->theah->game->translate("Ambush: No characters may intervene in this Challenge."));
             }
         }
     }

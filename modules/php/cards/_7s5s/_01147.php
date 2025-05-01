@@ -41,6 +41,7 @@ class _01147 extends Scheme
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves.  
             Reknown will be added to The Forum and The Grand Bazaar. 
             Cards will be revealed from the City Deck until an Attachment is revealed, then added to The Grand Bazaar.'), [
+                'i18n' => ['scheme_name'],
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
             ]);
 
@@ -76,6 +77,7 @@ class _01147 extends Scheme
                     $deck->moveCard($cityCard['id'], Game::LOCATION_CITY_BAZAAR);
         
                     $event->theah->game->notifyAllPlayers("message", clienttranslate('${card_name} was found as the top Attachment card in the City Deck.  The cards above it will be sunk.'), [
+                        'i18n' => ['card_name'],
                         "card_name" => $card->Name,
                     ]);
 

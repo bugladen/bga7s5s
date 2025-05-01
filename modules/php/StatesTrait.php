@@ -399,11 +399,11 @@ trait StatesTrait
             $cards = [];
             for ($i = 0; $i < $panache; $i++) {
                 $card = $this->playerDrawCard($playerId);
-                $cards[] = $card->getPropertyArray();
+                $cards[] = $card->getPropertyArray($this);
                 unset($card);
             }
 
-            $cardList = implode(", ", array_map(function($card) { return $card['name']; }, $cards));
+            $cardList = implode(", ", array_map(function($card) { return self::_($card['name']); }, $cards));
             $this->notifyPlayer($playerId, "factionResolveCardDraw", 
                 clienttranslate('Your panache value is: ${panache}.  As your draw you received: ${card_list}'), [
                     "panache" => $panache,
@@ -817,6 +817,7 @@ trait StatesTrait
 
         $playerName = $this->getPlayerNameById($playerId);
         $this->notifyAllPlayers("newDuelRound", clienttranslate('DUEL ROUND #${round} HAS STARTED for ${player_name} and their ${role} character ${character_name}.'), [
+            'i18n' => ['role', 'character_name', 'challengerName', 'defenderName'],
             "player_name" => $playerName,
             "role" => $round % 2 == 1 ? "Defending" : "Challenging",
             "character_name" => "<strong>{$actor->Name}</strong>",
@@ -825,7 +826,7 @@ trait StatesTrait
             "challengerId" => $challengerId,
             "defenderId" => $defenderId,
             "actorId" => $actorId,
-            "actor" => $actor->getPropertyArray(),
+            "actor" => $actor->getPropertyArray($this),
             "challengerName" => $challenger->Name,
             "defenderName" => $defender->Name,
             "startingChallengerThreat" => $challengerThreat,
@@ -947,6 +948,7 @@ trait StatesTrait
             $values[$field] = 0;
 
             $this->notifyAllPlayers("message", clienttranslate('Due to the challenger and defender not sharing the same location, any threat from ${actor_name} to ${adversary_name} is nullified.'), [
+                'i18n' => ['actor_name', 'adversary_name'],
                 "actor_name" => $actor->Name,
                 "adversary_name" => $adversary->Name
             ]);

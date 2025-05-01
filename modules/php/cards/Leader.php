@@ -37,11 +37,12 @@ abstract class Leader extends Character
                 $this->IsUpdated = true;
 
                 $event->theah->game->notifyAllPlayers("panacheModified", clienttranslate('${leader_name}: Panache modified to ${panache} by ${scheme_name}'), [
+                    'i18n' => ['leader_name', 'scheme_name'],
                     "leader_name" => "<span style='font-weight:bold'>$this->Name</span>",
                     "panache" => $this->ModifiedPanache,
                     "scheme_name" => $event->scheme->Name,
                     "playerId" => $this->ControllerId,
-                    "leader" => $this->getPropertyArray(),
+                    "leader" => $this->getPropertyArray($event->theah->game),
                 ]);
             }
         }
@@ -84,9 +85,9 @@ abstract class Leader extends Character
         }
     }
 
-    public function getPropertyArray(): array
+    public function getPropertyArray(Game $game): array
     {
-        $properties = parent::getPropertyArray();
+        $properties = parent::getPropertyArray($game);
 
         //Add leader specific properties
         $properties['crewCap'] = $this->CrewCap;

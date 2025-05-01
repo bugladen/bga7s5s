@@ -31,16 +31,16 @@ class Reaction_01181 extends AttachmentReaction
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty('Heal 1 Wound', 'heal1Wound');
+        $array[] = $this->createButtonProperty($theah->game, 'Heal 1 Wound', 'heal1Wound');
 
         $owner = $this->getOwningCharacter($theah);
         if ($owner instanceof Character)
         {
             if ($owner && in_array("Strega", $owner->Traits) && $owner->Wounds > 1)
-                $array[] = $this->createButtonProperty('Heal 2 Wounds', 'heal2Wounds');    
+                $array[] = $this->createButtonProperty($theah->game, 'Heal 2 Wounds', 'heal2Wounds');    
         }
 
-        $array[] = $this->createButtonProperty('Pass', 'pass');
+        $array[] = $this->createButtonProperty($theah->game, 'Pass', 'pass');
 
         return $array;
     }
@@ -84,7 +84,7 @@ class Reaction_01181 extends AttachmentReaction
     
     private function healWound(Game $game, int $wounds): void
     {
-        $this->setUsed($game->theah);
+        $this->setUsed($game->theah, true);
 
         $attachment = $this->getOwningCard($game->theah);
         $attachment->IsUpdated = true;

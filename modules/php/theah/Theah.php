@@ -317,12 +317,12 @@ class Theah
             return $maneuvers;
         }
 
-        $maneuvers += $character->getManeuversArray($mustBeAvailable = true);
+        $maneuvers += $character->getManeuversArray($this->game, $mustBeAvailable = true);
 
         foreach($character->Attachments as $attachment) {
             $attachmentCard = $this->getCardById($attachment);
             if ($attachmentCard instanceof IHasManeuvers) {
-                $maneuvers += $attachmentCard->getManeuversArray($mustBeAvailable = true);
+                $maneuvers += $attachmentCard->getManeuversArray($this->game, $mustBeAvailable = true);
             }
         }
 
@@ -337,7 +337,7 @@ class Theah
                 if ($playerId !== null && $card->ControllerId != $playerId) {
                     continue;
                 }
-                $cards[] = $card->getPropertyArray();
+                $cards[] = $card->getPropertyArray($this->game);
                 unset($card);
             }
         }
@@ -496,7 +496,7 @@ class Theah
                 {
                     if ($action->isAvailableToPlayer($playerId, $this, $this->game))
                     {
-                        $actionsArray = array_merge($actionsArray, $card->getActionsArray());
+                        $actionsArray = array_merge($actionsArray, $card->getActionsArray($this->game));
                     }
                 }
             }
@@ -518,7 +518,7 @@ class Theah
                 {
                     if ($action->isAvailableToPlayer($playerId, $this, $this->game))
                     {
-                        $actionsArray = array_merge($actionsArray, $card->getActionsArray());
+                        $actionsArray = array_merge($actionsArray, $card->getActionsArray($this->game));
                     }
                 }
             }

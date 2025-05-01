@@ -69,7 +69,7 @@ class Action_01185 extends EventCityAction
         {
             if (count($ids) != 2)
             {
-                throw new \BgaUserException("Invalid number of cards selected for action: " . count($ids));
+                throw new \BgaUserException($game->translate("Invalid number of cards selected for action: " . count($ids)));
             }
 
             $playerName = $game->getActivePlayerName();

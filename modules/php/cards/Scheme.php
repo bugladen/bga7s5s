@@ -2,6 +2,8 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+
 abstract class Scheme extends Card
 {
     public int $Initiative;
@@ -20,9 +22,9 @@ abstract class Scheme extends Card
         return false;
     }
 
-    public function getPropertyArray()
+    public function getPropertyArray(Game $game)
     {
-        $properties = parent::getPropertyArray();
+        $properties = parent::getPropertyArray($game);
 
         //Add scheme specific properties
         $properties['initiative'] = $this->Initiative;

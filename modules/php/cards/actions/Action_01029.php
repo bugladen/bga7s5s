@@ -126,7 +126,7 @@ class Action_01029 extends RiskAction
         $id = $ids[0];
         if ( ! in_array($id, $character_ids))
         {
-            throw new \BgaUserException("Invalid character selected");
+            throw new \BgaUserException($game->translate("Invalid character selected"));
         }
 
         $owner = $this->getOwningCard($game->theah);

@@ -40,6 +40,7 @@ class Action_01180 extends CharacterAction
                 $deck->insertCardOnExtremePosition($card->Id, Game::LOCATION_CITY_DECK, false);
 
                 $game->notifyAllPlayers("message", clienttranslate('${card_name} has been sunk to the City Pile.'), [
+                    'i18n' => ['card_name'],
                     "card_name" => "<strong>{$card->Name}</strong>",
                 ]);
         }
@@ -69,14 +70,14 @@ class Action_01180 extends CharacterAction
 
             if (!$found)
             {
-                throw new \BgaUserException("Card $id is not in the top 4 cards.");
+                throw new \BgaUserException($game->translate("Card $id is not in the top 4 cards."));
             }
 
             $chosenCard = $game->getCardObjectFromDb($id);
 
             if (! $chosenCard instanceof Attachment && ! in_array('Artifact', $chosenCard->Traits))
             {
-                throw new \BgaUserException("Card $id is not an Artifact.");
+                throw new \BgaUserException($game->translate("Card $id is not an Artifact."));
             }
         
             $game->globals->set(Game::CHOSEN_CARD, $id);
@@ -101,13 +102,13 @@ class Action_01180 extends CharacterAction
             $ids = array_map(fn($character) => $character->Id, $characters);
             if ( ! in_array($id, $ids))
             {
-                throw new \BgaUserException("Character Id #$id is not in play at the same location as {$owner->Name}.");
+                throw new \BgaUserException($game->translate("Character Id #$id is not in play at the same location as {$owner->Name}."));
             }
 
             $performer = $game->getCardObjectFromDb($id);
             if ($owner->ControllerId != $performer->ControllerId)
             {
-                throw new \BgaUserException("Character Id #$id is not controlled by the same player as {$owner->Name}.");
+                throw new \BgaUserException($game->translate("Character Id #$id is not controlled by the same player as {$owner->Name}."));
             }
 
             $chosenAttachmentId = $game->globals->get(Game::CHOSEN_CARD);
@@ -125,7 +126,7 @@ class Action_01180 extends CharacterAction
 
             if ($cost > $wealth - $discount)
             {
-                throw new \BgaUserException("You do not have enough Wealth to equip this card (with a discount of $discount).");
+                throw new \BgaUserException($game->translate("You do not have enough Wealth to equip this card (with a discount of $discount)."));
             }        
         
             $game->globals->set(Game::CHOSEN_PERFORMER, $id);
@@ -152,18 +153,19 @@ class Action_01180 extends CharacterAction
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
                 if ($card == null)
-                    throw new \BgaUserException("Card $cardId not found.");
+                    throw new \BgaUserException($game->translate("Card $cardId not found."));
     
                     //If $card has wealth in its traits, add it to the total wealth
                 $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
             }
             if ($totalWealth != $cost) {
-                throw new \BgaUserException("Cost of Attachment is {$cost}. You selected {$totalWealth} Wealth of cards.");
+                throw new \BgaUserException($game->translate("Cost of Attachment is {$cost}. You selected {$totalWealth} Wealth of cards."));
             }
     
             $playerId = $game->getActivePlayerId();
     
             $game->notifyAllPlayers('message', clienttranslate('${player_name} has chosen to Equip ${card_name} from the top 4 cards of the City Deck.'), [
+                'i18n' => ['card_name'],
                 'player_name' => $game->getActivePlayerName(),
                 'card_name' => "<strong>{$attachment->Name}</strong>",
             ]);
@@ -180,6 +182,7 @@ class Action_01180 extends CharacterAction
                 $deck->insertCardOnExtremePosition($card->Id, Game::LOCATION_CITY_DECK, false);
 
                 $game->notifyAllPlayers("message", clienttranslate('${card_name} has been sunk to the City Discard Pile.'), [
+                    'i18n' => ['card_name'],
                     "card_name" => "<strong>{$card->Name}</strong>",
                 ]);
             }
@@ -213,7 +216,7 @@ class Action_01180 extends CharacterAction
             $cards = [];
             foreach ($deckCards as $deckCard) {
                 $card = $game->getCardObjectFromDb($deckCard['id']);
-                $cards[] = $card->getPropertyArray();
+                $cards[] = $card->getPropertyArray($game);
             }
 
             $args["cards"] = $cards;
@@ -230,7 +233,7 @@ class Action_01180 extends CharacterAction
             $characters = array_filter($characters, fn($character) => $character->ControllerId == $owningCard->ControllerId);
             $ids = array_map(fn($character) => $character->Id, $characters);
 
-            $args['chosenCard'] = $chosenCard->getPropertyArray();
+            $args['chosenCard'] = $chosenCard->getPropertyArray($game);
             $args['card_name'] = $chosenCard->Name;
             $args['ids'] = $ids;
         }
@@ -239,7 +242,7 @@ class Action_01180 extends CharacterAction
         {
             $chosenAttachmentId = $game->globals->get(Game::CHOSEN_CARD);
             $chosenAttachment = $game->getCardObjectFromDb($chosenAttachmentId);
-            $args['chosenAttachment'] = $chosenAttachment->getPropertyArray();
+            $args['chosenAttachment'] = $chosenAttachment->getPropertyArray($game);
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->getCardObjectFromDb($performerId);
@@ -265,12 +268,13 @@ class Action_01180 extends CharacterAction
             $count = 0;
             foreach ($deckCards as $deckCard) {
                 $card = $event->theah->game->getCardObjectFromDb($deckCard['id']);
-                $names[] = $card->Name;
+                $names[] = $event->theah->game->translate($card->Name);
                 if (in_array('Artifact', $card->Traits))
                     $count++;
             }
 
             $event->theah->game->notifyAllPlayers('message', clienttranslate('${card_name} found ${count} Artifacts in the top 4 cards of the City Deck. (${names})'), [
+                'i18n' => ['card_name'],
                 'card_name' => "<strong>{$this->Name}</strong>",
                 'count' => $count,
                 'names' => implode(', ', $names)

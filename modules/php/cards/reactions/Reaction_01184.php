@@ -26,8 +26,8 @@ class Reaction_01184 extends CardReaction
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty('Count only Performer and En Garde Characters', 'specialCount');
-        $array[] = $this->createButtonProperty('Pass', 'pass');
+        $array[] = $this->createButtonProperty($theah->game, 'Count only Performer and En Garde Characters', 'specialCount');
+        $array[] = $this->createButtonProperty($theah->game, 'Pass', 'pass');
 
         return $array;
     }
@@ -56,6 +56,7 @@ class Reaction_01184 extends CardReaction
             $game->globals->set(Game::CLAUD_ID, $claude->Id);
 
             $game->notifyAllPlayers('message', clienttranslate('${player_name} is choosing to use ${card_name}\'s Reaction to count only the Performer and En Garde Characters for Claims at his location for the rest of the turn.'), [
+                'i18n' => ['card_name'],
                 'player_name' => $game->getActivePlayerName(),
                 'card_name' => $claude->Name,
             ]);

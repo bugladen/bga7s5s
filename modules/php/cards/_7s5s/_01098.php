@@ -42,6 +42,7 @@ class _01098 extends Scheme
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves. ${player_name} must choose two city locations to place reknown onto.'), [
+                'i18n' => ['scheme_name'],
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $event->playerName,
             ]);
@@ -61,6 +62,7 @@ class _01098 extends Scheme
 
             //Pick an opponent. That opponent will reveal a random card from their hand.
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} triggers a Forced Reaction for the End of Planning Phase.  ${player_name} must choose an opponent (via their leader) to reveal a random card from their hand.'), [
+                'i18n' => ['scheme_name'],
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $playerName,
             ]);

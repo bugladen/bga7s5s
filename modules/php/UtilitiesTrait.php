@@ -106,7 +106,7 @@ trait UtilitiesTrait
             $row['actorId'] = $round['actorId'];
 
             $actor = unserialize($round['actorSerialized']);
-            $row['actor'] = $actor->getPropertyArray();
+            $row['actor'] = $actor->getPropertyArray($this);
 
             $challenger = $this->theah->getCardById($round['challengerId']);
             if ( ! $challenger)
@@ -137,7 +137,7 @@ trait UtilitiesTrait
             else 
             {
                 $combatCard = $this->getCardObjectFromDb($round['combatCardId']);
-                $row['combatCard'] = $combatCard->getPropertyArray();
+                $row['combatCard'] = $combatCard->getPropertyArray($this);
             }
             $row['combatRiposte'] = $round['combatRiposte'];
             $row['combatParry'] = $round['combatParry'];

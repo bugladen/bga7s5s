@@ -26,11 +26,11 @@ abstract class Reaction
         return [];
     }
 
-    public function createButtonProperty(string $text, string $reaction): array
+    public function createButtonProperty(Game $game, string $text, string $reactionId): array
     {
         return [
-            'text' => $text,
-            'reaction' => $reaction,
+            'text' => $game->translate($text),
+            'reaction' => $reactionId,
         ];
     }
 

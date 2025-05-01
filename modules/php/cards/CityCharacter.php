@@ -2,6 +2,8 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+
 abstract class CityCharacter extends Character implements ICityDeckCard, IWealthCost
 {
     use CityDeckCardTrait;
@@ -16,9 +18,9 @@ abstract class CityCharacter extends Character implements ICityDeckCard, IWealth
         $this->Negotiable = false;
     }
 
-    public function getPropertyArray(): array
+    public function getPropertyArray(Game $game): array
     {
-        $properties = parent::getPropertyArray();
+        $properties = parent::getPropertyArray($game);
 
         $properties['negotiable'] = $this->Negotiable;
 

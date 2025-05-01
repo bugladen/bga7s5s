@@ -42,6 +42,7 @@ class _01150 extends Scheme
             $game = $event->theah->game;
 
             $game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves. A Reknown will be added to the The Forum.  Opponents MAY then choose a city location. One Reknown will move from chosen location to The Forum.'), [
+                'i18n' => ['scheme_name'],
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
             ]);
 
@@ -82,13 +83,12 @@ class _01150 extends Scheme
                     $playerName = $game->getUniqueValueFromDB("SELECT player_name from player where player_id = {$playerId}");
                     $playerNames[] = $playerName;
             }
-            $hasHave = count($playerNames) > 1 ? "have" : "has";
             $playerName = implode(", ", $playerNames);
 
-            $game->notifyAllPlayers("message", clienttranslate('${card_name}: ${player_name} ${hasHave} added Reknown to The Forums and may intervene this turn.'), [
+            $game->notifyAllPlayers("message", clienttranslate('${card_name}: ${player_name} has/have added Reknown to The Forums and may intervene this turn.'), [
+                'i18n' => ['card_name'],
                 "card_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
-                "player_name" => $playerName,
-                "hasHave" => $hasHave,
+                "player_name" => $playerName
             ]);
 
         }

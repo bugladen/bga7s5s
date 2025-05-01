@@ -41,7 +41,7 @@ class _01073 extends FactionAttachment
         {
             $performer = $event->theah->getCardById($event->performerId);
             if (!in_array("Duelist", $performer->Traits))
-                throw new \BgaUserException(_("Cavalier Hat can only be equipped to Duelists."));
+                throw new \BgaUserException($event->theah->game->translate(("Cavalier Hat can only be equipped to Duelists.")));
         }
     }
 

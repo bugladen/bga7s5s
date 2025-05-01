@@ -41,9 +41,9 @@ class _01126 extends Scheme
         ];
     }
 
-    public function getPropertyArray(): array
+    public function getPropertyArray(Game $game): array
     {
-        $properties = parent::getPropertyArray();
+        $properties = parent::getPropertyArray($game);
         $properties['chosenLocation'] = $this->chosenLocation;
         return $properties;
     }
@@ -55,19 +55,19 @@ class _01126 extends Scheme
         if ($event instanceof EventReknownAddedToLocation) 
         {
             if ($event->location == $this->chosenLocation)
-                throw new \BgaUserException(_("Leshiye of the Wood does not allow Reknown to be placed at its location."));    
+                throw new \BgaUserException($event->theah->game->translate(("Leshiye of the Wood does not allow Reknown to be placed at its location.")));    
         }
 
         //We have to allow the reknown to be removed by the scheme itself
         if ($event instanceof EventReknownRemovedFromLocation && $event->source != $this->Name) 
         {
             if ($event->location == $this->chosenLocation)
-                throw new \BgaUserException(_("Leshiye of the Wood does not allow Reknown to be removed from its location."));    
+                throw new \BgaUserException($event->theah->game->translate(("Leshiye of the Wood does not allow Reknown to be removed from its location.")));    
         }
 
         if ($event instanceof EventLocationClaimed && $event->location == $this->chosenLocation)
         {
-            throw new \BgaUserException(_("Leshiye of the Wood does not allow locations to be claimed at its location."));    
+            throw new \BgaUserException($event->theah->game->translate(("Leshiye of the Wood does not allow locations to be claimed at its location.")));    
         }
     }
 
@@ -79,6 +79,7 @@ class _01126 extends Scheme
         {
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves. 
             ${player_name} may first choose an outermost city location. Then they will choose two locations to place reknown onto. '), [
+                'i18n' => ['scheme_name'],
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $event->playerName,
             ]);
@@ -99,6 +100,7 @@ class _01126 extends Scheme
 
             $event->theah->game->notifyAllPlayers('01126_2_scheme_moved', 
                 clienttranslate('${card_name} moves to ${location}'), [
+                    'i18n' => ['card_name', 'location'],
                     "cardId" => $this->Id,
                     "card_name" => '<strong>Leshiye of the Wood</strong>',
                     "location" => $event->location,

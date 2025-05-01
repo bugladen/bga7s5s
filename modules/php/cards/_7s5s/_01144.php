@@ -40,6 +40,7 @@ class _01144 extends Scheme
         {
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves. ${player_name} must choose a city location to place reknown onto.
             Then if they have the fewest Reknown, they may add a Reknown to a different location.'), [
+                'i18n' => ['scheme_name'],
                 "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
                 "player_name" => $event->playerName,
             ]);
@@ -62,6 +63,7 @@ class _01144 extends Scheme
                 $player_name = $event->theah->game->getPlayerNameById($this->ControllerId);
 
                 $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} Leader Reaction: ${player_name} DOES NOT have the least (non-tied) amount of characters in play.'), [
+                    'i18n' => ['scheme_name'],
                     "scheme_name" => "<strong>{$this->Name}</strong>",
                     "player_name" => $player_name,
                 ]);
@@ -80,6 +82,7 @@ class _01144 extends Scheme
 
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} Leader Reaction: ${player_name} has the least (non-tied) amount of characters in play (${amount}).
             They may now Recruit a mercenary at a discount of their Leader\'s highest stat.'), [
+                'i18n' => ['scheme_name'],
                 "scheme_name" => "<strong>{$this->Name}</strong>",
                 "amount" => $lowestCount,
                 "player_name" => $players[$this->ControllerId]['player_name'],

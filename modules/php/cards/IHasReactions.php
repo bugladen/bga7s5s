@@ -15,7 +15,7 @@ interface IHasReactions
 
     public function getReactionById($id): ?CardReaction;
 
-    public function getReactionNames($includeAvailable = false): Array;
+    public function getReactionNames(Game $game, $includeAvailable = false): Array;
 
     public function getReactionsArray(): Array;
 

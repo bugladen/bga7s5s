@@ -24,7 +24,8 @@ trait DebugTrait
         $this->updateCardObjectInDb($card);
 
         $this->notifyPlayer($playerId, "drawCard", 'Debug Draw', [
-            "card" => $card->getPropertyArray(),
+            'i18n' => ['card'],
+            "card" => $card->getPropertyArray($this),
         ]);
     }
     
@@ -82,7 +83,7 @@ trait DebugTrait
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
-            throw new \BgaUserException("Card not found");
+            throw new \BgaUserException(self::_("Card not found"));
 
         $card->ControllerId = $playerId;
         $this->updateCardObjectInDb($card);
@@ -93,7 +94,7 @@ trait DebugTrait
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
-            throw new \BgaUserException("Card not found");
+            throw new \BgaUserException(self::_("Card not found"));
 
         $card->Engaged = true;
         $this->updateCardObjectInDb($card);
@@ -104,7 +105,7 @@ trait DebugTrait
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
-            throw new \BgaUserException("Card not found");
+            throw new \BgaUserException(self::_("Card not found"));
 
         $card->Reknown = $reknown;
         $this->updateCardObjectInDb($card);

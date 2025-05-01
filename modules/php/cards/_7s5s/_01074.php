@@ -55,7 +55,7 @@ class _01074 extends FactionAttachment implements IHasTechniques
         {
             $performer = $event->theah->getCardById($event->performerId);
             if (!in_array("Duelist", $performer->Traits))
-                throw new \BgaUserException(_("Mastercrafted Rapier can only be equipped to Duelists."));
+                throw new \BgaUserException($event->theah->game->translate(("Mastercrafted Rapier can only be equipped to Duelists.")));
         }
     }
 }

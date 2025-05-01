@@ -202,7 +202,7 @@ abstract class Card
 
     public function getPressureTypesForClaim(Theah $theah, Character $performer, Array &$pressureTypes): void {}
     
-    public function getPropertyArray()
+    public function getPropertyArray(Game $game)
     {
         $properties = [
             'id' => $this->Id,
@@ -225,7 +225,7 @@ abstract class Card
         if ($this instanceof IFactionCard) $this->addFactionProperties($properties);
         if ($this instanceof IHasTechniques) $this->addTechniqueProperties($properties);
         if ($this instanceof IHasManeuvers) $this->addManeuverProperties($properties);
-        if ($this instanceof IHasActions) $this->addActionProperties($properties);
+        if ($this instanceof IHasActions) $this->addActionProperties($game, $properties);
         if ($this instanceof IHasReactions) $this->addReactionProperties($properties);
 
         return $properties;
