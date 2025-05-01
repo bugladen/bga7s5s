@@ -215,7 +215,7 @@ onLeavingState: function( stateName )
         },
 
         'highDramaRecruitActionPayForMercenary_client': () => {
-            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+            this.showHandAtBottom();
             this.factionHand.setSelectionMode(0);
             const card = this.cardProperties[this.clientStateArgs.performerId];
             const image = $(`${card.divId}_image`);
@@ -240,6 +240,59 @@ onLeavingState: function( stateName )
             }
         },
 
+        'highDramaInHandActionChooseAction': () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.factionHand.getAllItems().forEach((card, index) => {
+                    let div = this.factionHand.getItemDivId(card.id);
+                    if (dojo.hasClass(div, 'selectable')) {
+                        dojo.removeClass(div, 'selectable');
+                    }
+                });
+                this.showHandAtBottom();
+            }
+        },
+
+        'highDramaInHandActionChoosePerformer' : () => {
+            if (this.isCurrentPlayerActive()) 
+            {                
+                let div = this.factionHand.getItemDivId(this.clientStateArgs.actionCardId);
+                dojo.removeClass(div, 'selected');
+
+                for ( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (this.isCardInCity(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
+                }
+            }
+        },
+
+        'highDramaInHandActionPay': () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.factionHand.getAllItems().forEach((card, index) => {
+                    let div = this.factionHand.getItemDivId(card.id);
+                    if (dojo.hasClass(div, 'unselectable')) {
+                        dojo.removeClass(div, 'unselectable');
+                        dojo.destroy(`${div}_wealth_cost`);
+                    }
+                });
+                this.factionHand.setSelectionMode(0);
+                $('faction_hand_info').innerHTML = '';
+                this.showHandAtBottom();
+    
+                for ( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
+                }
+            }
+        },
+
         'highDramaEquipActionChoosePerformer': () => {
             for ( const cardId in this.cardProperties ) {
                 card = this.cardProperties[cardId];
@@ -255,7 +308,7 @@ onLeavingState: function( stateName )
                 let div = this.factionHand.getItemDivId(card.id);
                 dojo.removeClass(div, 'selectable');
             });
-            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+            this.showHandAtBottom();
             this.factionHand.setSelectionMode(0);
         },
 
@@ -279,7 +332,7 @@ onLeavingState: function( stateName )
             });
             this.factionHand.setSelectionMode(0);
             $('faction_hand_info').innerHTML = '';
-            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+            this.showHandAtBottom();
 
             for ( const cardId in this.cardProperties ) {
                 card = this.cardProperties[cardId];
@@ -304,7 +357,7 @@ onLeavingState: function( stateName )
             }
             this.factionHand.setSelectionMode(0);
             $('faction_hand_info').innerHTML = '';
-            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+            this.showHandAtBottom();
         },
 
         'highDramaClaimActionChoosePerformer': () => {
@@ -357,6 +410,15 @@ onLeavingState: function( stateName )
             }
         },
 
+        'highDramaPhase01029': () => {
+            this.clientStateArgs.ids.forEach((cardId) => {
+                card = this.cardProperties[cardId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+            });
+            this.clientStateArgs = {};
+        },
+
         'highDramaPhase01180' : () => {
             dojo.addClass('choose_container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
@@ -385,7 +447,7 @@ onLeavingState: function( stateName )
             this.chooseList.removeAll();
             this.chooseList.setSelectionMode(0);
 
-            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+            this.showHandAtBottom();
             this.factionHand.setSelectionMode(0);
             for( const cardId in this.cardProperties ) {
                 card = this.cardProperties[cardId];
@@ -398,7 +460,7 @@ onLeavingState: function( stateName )
 
         'highDramaPhase01185': () => {
             this.factionHand.setSelectionMode(0);
-            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+            this.showHandAtBottom();
             $('faction_hand_info').innerHTML = '';
 
             for( const cardId in this.cardProperties ) {
@@ -460,7 +522,7 @@ onLeavingState: function( stateName )
 
         'duskPhaseDiscard': () => {
             this.factionHand.setSelectionMode(0);
-            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+            this.showHandAtBottom();
             $('faction_hand_info').innerHTML = '';
         },
 
@@ -474,7 +536,7 @@ onLeavingState: function( stateName )
             });
             this.factionHand.setSelectionMode(0);
             $('faction_hand_info').innerHTML = '';
-            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+            this.showHandAtBottom();
         }
     };
 

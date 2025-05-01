@@ -78,6 +78,21 @@ abstract class Character extends Card
         return $parleying ? $this->ModifiedInfluence : 0;
     }
 
+    public function getActionFromHandDiscount(Theah $theah, Character $performer): int
+    {
+        $discount = 0;
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getCardById($attachmentId);
+            if ($attachment instanceof Attachment)
+            {
+                $discount += $attachment->getActionFromHandDiscount($theah, $performer);
+            }
+        
+        }
+        return $discount;
+    }
+
     public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment) : int
     {
         $discount = 0;

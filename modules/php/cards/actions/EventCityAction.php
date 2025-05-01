@@ -32,14 +32,14 @@ abstract class EventCityAction extends CardAction
         return false;
     }
 
-    public function getCharactersForAction(int $playerId, Theah $theah): array
+    public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        $characters = parent::getCharactersForAction($playerId, $theah);
+        $performers = parent::getPerformersForAction($playerId, $theah);
 
         //Get characters in play owned by playerId
-        $characters += $theah->getCharactersInPlayByPlayerId($playerId);
-        $characters = array_values(array_filter($characters, fn($character) => $character->Location == $this->getOwningCard($theah)->Location));
+        $performers += $theah->getCharactersInPlayByPlayerId($playerId);
+        $performers = array_values(array_filter($performers, fn($character) => $character->Location == $this->getOwningCard($theah)->Location));
 
-        return $characters;
+        return $performers;
     }
 }

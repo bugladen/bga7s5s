@@ -8,11 +8,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 abstract class Action 
 {
-    public bool $RequiresPerformer;
+    public bool $RequiresPerformerSelected;
 
     public function __construct()
     {
-        $this->RequiresPerformer = false;
+        $this->RequiresPerformerSelected = false;
     }
 
     public function actFromActionPass(Game $game, int $state): void { }
@@ -35,7 +35,7 @@ abstract class Action
         return [];
     }
 
-    public function getCharactersForAction(int $playerId, Theah $theah): array
+    public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         return [];
     }

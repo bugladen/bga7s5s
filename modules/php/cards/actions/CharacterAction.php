@@ -22,7 +22,7 @@ abstract class CharacterAction extends CardAction
         return $card->ControllerId == $playerId;
     }
 
-    public function getCharactersForAction(int $playerId, Theah $theah): array
+    public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $card = $this->getOwningCard($theah);
         return [$card];

@@ -143,7 +143,7 @@ class Theah
     ///
     /// Call this directly only when you need to queue up several events in one method.
     /// In that case call this for each event before queueing them up.
-    /// See examples in ActionsTrait.php
+    /// See examples in FrameworkActionsTrait.php
     ///
     /// Otherwise, if you have only one event, call queueEvent() to queue up the event intead, 
     /// which will call this method.
@@ -266,6 +266,16 @@ class Theah
         }
 
         return $locations;
+    }
+
+    function getActionFromHandDiscount(Character $performer): int
+    {
+        $characters = $this->getCharactersInPlay();
+        $discount = 0;
+        foreach ($characters as $character) {
+            $discount += $character->getActionFromHandDiscount($this, $performer);
+        }
+        return $discount;
     }
 
     function getAvailableAttachmentsAtLocation($location)
@@ -479,6 +489,28 @@ class Theah
         $actionsArray = [];
         foreach ($this->cards as $card)
         {
+            if ($card instanceof IHasActions && $card->Location != Game::LOCATION_HAND)
+            {
+                $actions = $card->getActions();
+                foreach ($actions as $action)
+                {
+                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    {
+                        $actionsArray += $card->getActionsArray();
+                    }
+                }
+            }
+        }
+
+        return $actionsArray;
+    }
+
+    function getInHandActionIdsAvailableToPlayer($playerId): array
+    {
+        $actionsArray = [];
+        $cards = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
+        foreach ($cards as $card)
+        {
             if ($card instanceof IHasActions)
             {
                 $actions = $card->getActions();
@@ -491,6 +523,34 @@ class Theah
                 }
             }
         }
+
+        //Filter out any duplicates
+        $actionsArray = array_unique($actionsArray, SORT_REGULAR);
+
+        return $actionsArray;
+    }
+
+    function getInHandActionCardIdsAvailableToPlayer($playerId): array
+    {
+        $actionsArray = [];
+        $cards = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
+        foreach ($cards as $card)
+        {
+            if ($card instanceof IHasActions)
+            {
+                $actions = $card->getActions();
+                foreach ($actions as $action)
+                {
+                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    {
+                        $actionsArray[] = $card->Id;
+                    }
+                }
+            }
+        }
+
+        //Filter out any duplicates
+        $actionsArray = array_unique($actionsArray, SORT_REGULAR);
 
         return $actionsArray;
     }
@@ -526,6 +586,20 @@ class Theah
                             return $action;
                     }
                 }
+        }
+        return null;
+    }
+
+    function getInHandActionById($id): ?CardAction
+    {
+        $cards = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $this->game->getActivePlayerId());
+        foreach ($cards as $card) {
+            if ($card instanceof IHasActions) {
+                $action = $card->getActionById($id);
+                if ($action) {
+                    return $action;
+                }
+            }
         }
         return null;
     }
@@ -691,11 +765,11 @@ class Theah
 
         //Get all characters that are in the city that have mercenaries at their location
         $charactersThatCanReruit = [];
-        $charactersInCity = array_filter($characters, function($character) { return $this->cardInCity($character); });
+        $charactersInCity = array_filter($characters, fn($character) => $this->cardInCity($character));
 
         foreach ($charactersInCity as $character) {
             $charactersAtLocation = $this->getCharactersAtLocation($character->Location);
-            $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return in_array("Mercenary", $character->Traits); });
+            $mercenariesAtLocation = array_filter($charactersAtLocation, fn($character) => ! $character->ControllerId && in_array("Mercenary", $character->Traits));
             if (count($mercenariesAtLocation) > 0) {
                 $charactersThatCanReruit[] = $character;
             }
@@ -761,6 +835,28 @@ class Theah
     {
         $actionCards = [];
         foreach ($this->cards as $card)
+        {
+            if ($card instanceof IHasActions && $card->Location != Game::LOCATION_HAND)            
+            {
+                $actions = $card->getActions();
+                foreach ($actions as $action)
+                {
+                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    {
+                        $actionCards[] = $card;
+                    }
+                }
+            }
+        }
+
+        return count($actionCards) > 0;
+    }
+
+    public function playerHasInHandActions($playerId): bool
+    {
+        $actionCards = [];
+        $cards = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
+        foreach ($cards as $card)
         {
             if ($card instanceof IHasActions)
             {

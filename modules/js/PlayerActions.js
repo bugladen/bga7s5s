@@ -103,9 +103,11 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01125_4'                   : 'actPlanningPhase_01125_4',
             'planningPhaseEnd_01098'                                : 'actPlanningPhaseEnd_01098',
             'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
+            'highDramaPhase01029'                                   : 'actFromCardWithIds',
             'highDramaPhase01180_2'                                 : 'actFromCardWithIds',
             'highDramaMoveActionChoosePerformer'                    : 'actHighDramaMoveActionPerformerChosen',
             'highDramaInPlayActionChoosePerformer'                  : 'actHighDramaInPlayActionPerformerChosen',  
+            'highDramaInHandActionChoosePerformer'                  : 'actHighDramaInHandActionPerformerChosen',  
             'highDramaRecruitActionChoosePerformer'                 : 'actHighDramaRecruitActionPerformerChosen',
             'highDramaRecruitActionChooseMercenary'                 : 'highDramaRecruitActionPayForMercenary_client',
             'highDramaEquipActionChoosePerformer'                   : 'actHighDramaEquipActionPerformerChosen',
@@ -230,6 +232,17 @@ return declare('seventhseacityoffivesails.actions', null, {
                     {
                         'descriptionmyturn' : _("${you} may choose a Mercenary from a City Location to recruit to your home:"),
                     })
+        });        
+    },
+
+    onActionCardFromHandPaymentConfirmed: function()
+    {
+        var items = this.factionHand.getSelectedItems();
+        items = items.map((item) => item.id);
+
+        this.bgaPerformAction('actPayForInHandAction', { 
+            'payWithCards': JSON.stringify(items),
+        }).catch(() =>  {
         });        
     },
 

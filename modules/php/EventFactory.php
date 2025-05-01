@@ -195,15 +195,15 @@ class EventFactory
         return $reknownEvent;
     }
 
-    public static function createTransitionEvent(int $playerId, int $sourceId, string $internalId, string $transitionName): EventTransition
+    public static function createTransitionEvent(int $playerId, int $sourceId, string $transitionName, string $internalId = ""): EventTransition
     {
         $transition = self::createEvent(Events::Transition);
         if ($transition instanceof EventTransition)
         {
             $transition->playerId = $playerId;
             $transition->sourceId = $sourceId;
-            $transition->internalId = $internalId;
             $transition->transition = $transitionName;
+            $transition->internalId = $internalId;
         }
 
         return $transition;

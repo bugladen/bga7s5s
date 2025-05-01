@@ -979,6 +979,7 @@ $machinestates = [
             "actHighDramaMoveActionStart", 
             "actHighDramaRecruitActionStart",
             "actHighDramaChooseInPlayActionStart",
+            "actHighDramaChooseInHandActionStart",
             "actHighDramaPass",
         ],
         "transitions" => [
@@ -988,6 +989,7 @@ $machinestates = [
             "moveActionStart" => States::HIGH_DRAMA_MOVE_ACTION_CHOOSE_PERFORMER, 
             "recruitActionStart" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER,
             "inPlayActionStart" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "inHandActionStart" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_ACTION,
             "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "end" => States::HIGH_DRAMA_END
         ]
@@ -998,6 +1000,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "01029" => States::HIGH_DRAMA_PLAYER_TURN_01029,
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
                 "01185" => States::HIGH_DRAMA_PLAYER_TURN_01185,
                 "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
@@ -1649,14 +1652,14 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "inPlayActionChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-                    "requiresPerformer" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
+                    "requiresPerformerSelected" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
                     "back" => States::HIGH_DRAMA_PLAYER_TURN
                 ]
             ],
             States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER => [
                 "name" => "highDramaInPlayActionChoosePerformer",
                 "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-                "descriptionmyturn" => clienttranslate('${you} are choosing a performer to perform an In-Play Action.  Choose an Performer:'),
+                "descriptionmyturn" => clienttranslate('${you} must choose a performer to perform an In-Play Action:'),
                 "type" => "activeplayer",
                 "args" => "argsHighDramaInPlayActionChoosePerformer",
                 "possibleactions" => [
@@ -1668,8 +1671,52 @@ $machinestates = [
                     "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION
                 ]
             ],
-
-
+            States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_ACTION => [
+                "name" => "highDramaInHandActionChooseAction",
+                "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+                "descriptionmyturn" => clienttranslate('${you} must choose an In-Hand Action:'),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaInHandActionChooseAction",
+                "possibleactions" => [
+                    "actHighDramaInHandActionChosen",
+                    "actBack",
+                ],
+                "transitions" => [
+                    "inHandActionChosen" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
+                    "requiresPerformerSelected" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
+                    "back" => States::HIGH_DRAMA_PLAYER_TURN
+                ]
+            ],
+            States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER => [
+                "name" => "highDramaInHandActionChoosePerformer",
+                "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+                "descriptionmyturn" => clienttranslate('${you} must choose a performer for chosen In-Hand Action:'),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaInHandActionChoosePerformer",
+                "possibleactions" => [
+                    "actHighDramaInHandActionPerformerChosen", 
+                    "actBack",
+                ],
+                "transitions" => [
+                    "inHandActionPerformerChosen" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
+                    "back" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_ACTION
+                ]
+            ],
+            States::HIGH_DRAMA_IN_HAND_ACTION_PAY => [
+                "name" => "highDramaInHandActionPay",
+                "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+                "descriptionmyturn" => clienttranslate('${you} must pay for the In-Hand Action:'),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaInHandActionPay",
+                "possibleactions" => [
+                    "actPayForInHandAction", 
+                    "actBack",
+                ],
+                "transitions" => [
+                    "actionPaidFor" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                    "back" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER
+                ]
+            ],
     
         States::DUEL_STARTED => [
             "name" => "duelStarted",

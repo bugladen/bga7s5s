@@ -197,7 +197,12 @@ onUpdateActionButtons: function( stateName, args )
                     this.addActionButton(`btnInPlayAction`, _('In-Play Action'), () => this.bgaPerformAction('actHighDramaChooseInPlayActionStart', {})) 
                     this.addTooltipHtml( 'btnInPlayAction', `<div class='basic-tooltip'>${_("Use an In-Play Action")}</div>` );
                 }
-                        
+                if (args._private.hasInHandActions)
+                    {
+                        this.addActionButton(`btnInHandAction`, _('In-Hand Action'), () => this.bgaPerformAction('actHighDramaChooseInHandActionStart', {})) 
+                        this.addTooltipHtml( 'btnInHandAction', `<div class='basic-tooltip'>${_("Use an In-Hand Action")}</div>` );
+                    }
+                            
                 this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
             }
         },
@@ -253,7 +258,7 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
             args._private.actions.forEach((action, index) => { 
                 this.addActionButton(
-                    `btnChooseTechnique_${action.id}`, _(action.name), () => this.bgaPerformAction('actHighDramaInPlayActionChosen', { actionId: action.id})) 
+                    `btnChooseAction_${action.id}`, _(action.name), () => this.bgaPerformAction('actHighDramaInPlayActionChosen', { actionId: action.id})) 
             });
         },
 
@@ -261,6 +266,25 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
+        },
+
+        'highDramaInHandActionChooseAction'  : () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            args._private.actions.forEach((action, index) => { 
+                this.addActionButton(
+                    `btnChooseAction_${action.id}`, _(action.name), () => this.bgaPerformAction('actHighDramaInHandActionChosen', { actionId: action.id})) 
+            });
+        },
+
+        'highDramaInHandActionChoosePerformer'  : () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
+        },
+
+        'highDramaInHandActionPay': () => {
+            this.addActionButton(`actBack`, _('<'), () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onActionCardFromHandPaymentConfirmed());
         },
 
         'highDramaEquipActionChoosePerformer': () => {
@@ -343,6 +367,13 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`btnReject`, _('Reject'), () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
             this.addActionButton(`actChooseCardSelected`, _('Intervene'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
+        },
+
+        'highDramaPhase01029': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
         },
 
         'highDramaPhase01180': () => {
@@ -460,7 +491,7 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actChooseDiscardCards', 'disabled');
 
             //Code here instead of onEnteringState because multiactive client states are not ready at that point
-            dojo.place('factionHand-container', 'city', 'before');
+            this.showHandAtTop();
     
             const player = this.gamedatas.players[this.player_id];
             const leader = player.leader;

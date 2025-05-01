@@ -50,6 +50,9 @@ trait CardAbilityTrait
         }
 
         $owner = $theah->getCardById($this->OwnerId);
+        if ( ! $owner)
+            $owner = $theah->game->getCardObjectFromDb($this->OwnerId);
+
         return $owner;
     }
 

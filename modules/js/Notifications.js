@@ -26,7 +26,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['characterHealed', 1000],
             ['characterWounded', 1000],
             ['drawCard', 2000],
-            ['firstPlayer', 1500],
+            ['firstPlayer', 2000],
             ['locationClaimed', 500],
             ['panacheModified', 1000],
             ['playerReknownUpdated', 500],
@@ -738,7 +738,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)
         {
-            dojo.place('factionHand-container', 'approachDeck-container', 'after');
+            this.showHandAtBottom();
         }
     },
 })

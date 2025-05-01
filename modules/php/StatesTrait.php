@@ -1084,8 +1084,6 @@ trait StatesTrait
         {
             $card = $this->getCardObjectFromDb($purgatoryCard['id']);
             $playerId = $card->ControllerId;
-            $this->cards->moveCard($purgatoryCard['id'], $this->getPlayerDiscardDeckName($playerId));
-
             $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
             $this->theah->queueEvent($event);
         }
@@ -1623,8 +1621,6 @@ trait StatesTrait
         {
             $card = $this->getCardObjectFromDb($purgatoryCard['id']);
             $playerId = $card->ControllerId;
-            $this->cards->moveCard($purgatoryCard['id'], $this->getPlayerDiscardDeckName($playerId));
-
             $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
             $this->theah->queueEvent($event);
         }

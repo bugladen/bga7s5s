@@ -185,6 +185,22 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
             },
             
+            'highDramaInHandActionPay': () => {
+                var items = this.factionHand.getSelectedItems();
+                let wealth = 0;
+                const div = this.factionHand.getItemDivId(item_id);                
+                if (item_id !== undefined && dojo.hasClass(div, 'unselectable')) {
+                    this.factionHand.unselectItem(item_id);
+                    return;
+                }
+                items.forEach((item) => {
+                    const card = this.cardProperties[item.type];
+                    wealth += card.traits.includes('Wealth') ? 2 : 1;
+                    
+                });
+                $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
+            },
+
             'highDramaPhase01185': () => {
                 if (this.factionHand.getSelectedItems().length > 0) {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');

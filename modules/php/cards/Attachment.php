@@ -27,6 +27,11 @@ abstract class Attachment extends Card implements IWealthCost
         $this->AttachedToId = 0;
     }
 
+    public function getActionFromHandDiscount(Theah $theah, Character $performer): int
+    {
+        return 0;
+    }
+
     public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment): int
     {
         return 0;

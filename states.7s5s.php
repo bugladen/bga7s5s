@@ -4,6 +4,21 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 $machinestates += [
 
+    States::HIGH_DRAMA_PLAYER_TURN_01029 => [
+        "name" => "highDramaPhase01029",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('The Pressure Is On: ${you} must choose a character to target:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithIds",
+            "actFromCardPass"
+        ],
+        "transitions" => [
+            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01180 => [
         "name" => "highDramaPhase01180",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

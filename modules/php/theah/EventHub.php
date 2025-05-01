@@ -157,10 +157,14 @@ trait EventHub
             case $event instanceof EventCardDiscardedFromHand:
                 $handler = function (Theah $theah, EventCardDiscardedFromHand $event)
                 {
-                    $card = $theah->getCardById($event->cardId);
                     $discardPileName = $theah->game->getPlayerDiscardDeckName($event->playerId);
+
+                    $card = $theah->getCardById($event->cardId);
                     $card->Location = $discardPileName;
                     $card->IsUpdated = true;
+
+                    $deckObject = $theah->game->getGameDeckObject();
+                    $deckObject->moveCard($card->Id, $discardPileName);
 
                     // Notify players that card has been discarded from hand
                     $theah->game->notifyAllPlayers("cardDiscardedFromHand", clienttranslate('${player_name} discarded ${card_name}.'), [

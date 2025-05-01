@@ -664,8 +664,6 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
-            $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
-
             $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
             //No check needed
             $this->theah->queueEvent($event);
@@ -1010,8 +1008,9 @@ trait FrameworkActionsTrait
             throw new \BgaUserException("Character cannot have more than one Weapon attachment.");
         }
 
-        $cost = $attachment->WealthCost;
         $discount = $this->globals->get(Game::DISCOUNT);
+        $cost = $attachment->WealthCost - $discount;
+        if ($cost < 0) $cost = 0;
 
         $cardIds = json_decode($payWithCards, true);
         
@@ -1038,10 +1037,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
-            $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
-
             $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
-            //No check needed
             $this->theah->queueEvent($event);
         }
 
@@ -1135,9 +1131,9 @@ trait FrameworkActionsTrait
         if ($action instanceof CharacterAction)
             $this->globals->set(GAME::CHOSEN_PERFORMER, $action->OwnerId);
 
-        if ($action->RequiresPerformer)
+        if ($action->RequiresPerformerSelected)
         {
-            $this->gamestate->nextState("requiresPerformer");
+            $this->gamestate->nextState("requiresPerformerSelected");
         }
         else
         {
@@ -1166,6 +1162,126 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("inPlayActionPerformerChosen");
+    }
+
+    public function actHighDramaChooseInHandActionStart()
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+        if ($this->theah->playerHasInHandActions($player_id) == false) {
+            throw new \BgaUserException("In-Hand Action is not allowed right now.");
+        }
+
+        $this->gamestate->nextState("inHandActionStart");
+    }
+
+    public function actHighDramaInHandActionChosen(string $actionId)
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $action = $this->theah->getInHandActionById($actionId);
+        if ($action == null) {
+            throw new \BgaUserException("Action not found.");
+        }
+
+        if ( ! $action->isAvailabletoPlayer($player_id, $this->theah)) {
+            throw new \BgaUserException("Action is not available to player.");
+        }
+
+        $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
+
+        if ($action->RequiresPerformerSelected)
+        {
+            $this->gamestate->nextState("requiresPerformerSelected");
+        }
+        else
+        {
+            $this->gamestate->nextState("inHandActionChosen");
+        }
+    }
+
+    public function actHighDramaInHandActionPerformerChosen(string $ids)
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $id = json_decode($ids, true)[0];
+        $performer = $this->getCardObjectFromDb($id);
+
+        $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+        $action = $this->theah->getInHandActionById($actionId);
+
+        $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
+
+        $discount = $this->theah->getActionFromHandDiscount($performer);
+        $this->globals->set(Game::DISCOUNT, $discount);
+
+        $this->gamestate->nextState("inHandActionPerformerChosen");
+    }
+
+    public function actPayForInHandAction(string $payWithCards)
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->theah->getCharacterById($performerId);
+
+        $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+        $action = $this->theah->getInHandActionById($actionId);
+
+        if ($action == null) {
+            throw new \BgaUserException("In-Hand Action not found.");
+        }
+
+        $risk = $this->theah->getCardById($action->OwnerId);
+
+        //Sanity checks
+        if ($risk->Location != Game::LOCATION_HAND || $risk->ControllerId != $playerId) {
+            throw new \BgaUserException("Risk is not in Player's Hand.");
+        }
+
+        $cost = $risk->WealthCost;
+        $discount = $this->globals->get(Game::DISCOUNT);
+
+        $cardIds = json_decode($payWithCards, true);
+        
+        //Total up the wealth of the cards to see if player paid correctly
+        $totalWealth = 0;
+        foreach ($cardIds as $cardId) {
+            $card = $this->getCardObjectFromDb($cardId);
+            if ($card == null)
+                throw new \BgaUserException("Card $cardId not found.");
+
+            //If $card has wealth in its traits, add it to the total wealth
+            $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+        }
+        if ($totalWealth != $cost) {
+            throw new \BgaUserException("Cost of Card is {$cost}. You selected {$totalWealth} Wealth of cards.");
+        }
+
+        //Move the cards used to pay to the player's discard pile
+        foreach ($cardIds as $cardId) {
+            $card = $this->getCardObjectFromDb($cardId);
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
+            $this->theah->queueEvent($event);
+        }
+
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} has decided to perform the In-Hand Action from ${card_name}.'), [
+            "player_name" => $this->getActivePlayerName(),
+            "card_name" => "<strong>$risk->Name</strong>",
+        ]);
+
+        $event = EventFactory::createActionTriggeredEvent($playerId, $performer->Id, $actionId);
+        $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);
+
+        $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $risk->Id);
+        $this->theah->queueEvent($event);
+
+        $this->globals->set(GAME::PASS_COUNT, 0);
+        $this->gamestate->nextState("actionPaidFor");
     }
 
     public function actHighDramaChallengeActionStart()
@@ -1522,10 +1638,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $payCard = $this->getCardObjectFromDb($cardId);
-            $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
-
             $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $payCard->Id);
-            //No check needed
             $this->theah->queueEvent($event);
         }
 
@@ -1761,10 +1874,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $payCard = $this->getCardObjectFromDb($cardId);
-            $this->cards->moveCard($cardId, $this->getPlayerDiscardDeckName($playerId));
-
             $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $payCard->Id);
-            //No check needed
             $this->theah->queueEvent($event);
         }
 
@@ -1774,11 +1884,7 @@ trait FrameworkActionsTrait
             "announcement" => $announcement,
         ]);
 
-        //Remove card from hand and place in discard pile
-        $this->cards->moveCard($card->Id, $this->getPlayerDiscardDeckName($playerId));
-
         $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
-        //No check needed
         $this->theah->queueEvent($event);
 
         $reaction->reactionPaidFor($this, $this->gamestate->state_id(), $internalId, $reactionId);

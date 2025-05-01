@@ -18,12 +18,6 @@ class Action_01185 extends EventCityAction
         $this->Name = "Risky Undertaking: Add a Reknown";
     }    
 
-    public function getCharactersForAction(int $playerId, Theah $theah): array
-    {
-        $characters = parent::getCharactersForAction($playerId, $theah);
-        return $characters;
-    }
-
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
     {
         if (!parent::isAvailableToPlayer($playerId, $theah))
@@ -48,7 +42,7 @@ class Action_01185 extends EventCityAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "", "01185");
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01185");
             $event->theah->queueEvent($transition);
         }
     }
@@ -89,8 +83,6 @@ class Action_01185 extends EventCityAction
             $playerId = $game->getActivePlayerId();
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
-                $deck->moveCard($cardId, $game->getPlayerDiscardDeckName($playerId));
-
                 $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
                 $game->theah->queueEvent($event);
             }

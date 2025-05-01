@@ -124,6 +124,7 @@ trait ArgumentsTrait
                     "canMove" => $this->theah->playerCanMove($playerId),
                     "canRecruit" => $this->theah->playerCanRecruit($playerId),
                     "hasInPlayActions" => $this->theah->playerHasInPlayActions($playerId),
+                    "hasInHandActions" => $this->theah->playerHasInHandActions($playerId),
                 ]
             ]
         ];
@@ -368,6 +369,7 @@ trait ArgumentsTrait
 
     public function argsHighDramaInPlayActionChooseAction(): array
     {
+        $this->theah->buildCity();
         return [
             "_private" => [
                 "active" => [
@@ -391,14 +393,77 @@ trait ArgumentsTrait
             $owner = $action->getOwningCard($this->theah);
         }
         
-        $characters = $action->getCharactersForAction($playerId, $this->theah);
+        $performers = $action->getPerformersForAction($playerId, $this->theah);
         
-        //Select the Ids of the characters
-        $characterIds = array_map(function($character) { return $character->Id; }, $characters);
+        //Select the Ids of the performers
+        $performerIds = array_map(function($performer) { return $performer->Id; }, $performers);
 
         return [
-            "ids" => $characterIds,
+            "ids" => $performerIds,
             "actionCardId" => $owner?->Id
+        ];
+    }
+
+    public function argsHighDramaInHandActionChooseAction(): array
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+
+        return [
+            "_private" => [
+                "active" => [
+                    "actions" => $this->theah->getInHandActionIdsAvailableToPlayer($playerId),
+                    "ids" => $this->theah->getInHandActionCardIdsAvailableToPlayer($playerId),
+                ]
+            ]
+        ];
+
+    }
+
+    public function argsHighDramaInHandActionChoosePerformer(): array
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION);
+        $action = $this->theah->getInHandActionById($actionId);
+
+        $owner = $action->getOwningCard($this->theah);
+        $performers = $action->getPerformersForAction($playerId, $this->theah);
+        
+        //Select the Ids of the performers
+        $performerIds = array_map(function($performer) { return $performer->Id; }, $performers);
+
+        return [
+            "_private" => [
+                "active" => [
+                    "ids" => $performerIds,
+                    "actionCardId" => $owner->Id
+                ]
+            ]
+        ];
+    }
+
+    public function argsHighDramaInHandActionPay(): array
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);        
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION);
+        $action = $this->theah->getInHandActionById($actionId);
+
+        $owner = $action->getOwningCard($this->theah);
+
+        return [
+            "_private" => [
+                "active" => [
+                    "performerId" => $performerId,
+                    "chosenActionId" => $actionId,
+                    "choseActionCardId" => $owner->Id,
+                    "discount" => $this->globals->get(GAME::DISCOUNT)
+                ]
+            ],
         ];
     }
 

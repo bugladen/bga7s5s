@@ -192,8 +192,6 @@ class Action_01180 extends CharacterAction
             //Move the cards used to pay to the player's discard pile
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
-                $deck->moveCard($cardId, $game->getPlayerDiscardDeckName($playerId));
-    
                 $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
                 $game->theah->queueEvent($event);
             }

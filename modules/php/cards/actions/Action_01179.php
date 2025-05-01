@@ -18,17 +18,17 @@ class Action_01179 extends EventCityAction
         parent::__construct();
 
         $this->Name = "Siren's Scream: Take a Reknown";
-        $this->RequiresPerformer = true;
+        $this->RequiresPerformerSelected = true;
     }
 
-    public function getCharactersForAction(int $playerId, Theah $theah): array
+    public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        $characters = parent::getCharactersForAction($playerId, $theah);
+        $performers = parent::getPerformersForAction($playerId, $theah);
 
-        //Filter out any characters that are engaged
-        $characters = array_filter($characters, fn($character) => !$character->Engaged);
+        //Filter out any performers that are engaged
+        $performers = array_filter($performers, fn($performer) => !$performer->Engaged);
 
-        return $characters;
+        return $performers;
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
