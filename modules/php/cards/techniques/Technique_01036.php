@@ -2,7 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 class Technique_01036 extends Technique
@@ -10,7 +9,8 @@ class Technique_01036 extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = "Daniella Dietrich: Move";
+        $this->Name = "Daniella Dietrich: Move to Adjacent Location";
+        $this->ShortName = "Move to Adjacent Location";
         $this->ResetOnDuelEnd = false;
         $this->ResetOnDayEnd = true;
     }

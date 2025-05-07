@@ -16,7 +16,7 @@ class Technique_01186 extends Technique
     {
         parent::__construct();
         $this->Name = "Marayam Benu Pleroma: No Adversary Maneuvers";
-
+        $this->ShortName = "No Adversary Maneuvers";
         $this->CancelOpponentManeuvers = false;
     }
 
@@ -29,9 +29,7 @@ class Technique_01186 extends Technique
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $this->CancelOpponentManeuvers = true;
-            $this->Used = true;
-            $maryam = $this->getOwningCard($event->theah);
-            $maryam->IsUpdated = true;
+            $this->setUsed($event->theah, true);
         }
 
         // If the event is a new round and the owning character is Maryam then reset the CancelOpponentManeuvers flag

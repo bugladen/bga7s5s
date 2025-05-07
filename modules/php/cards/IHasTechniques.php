@@ -9,15 +9,13 @@ interface IHasTechniques
 {
     public function getTechniques(): Array;
 
-    public function addTechniqueProperties(&$properties);
+    public function addTechniqueProperties(Game $game, &$properties);
 
     public function anyTechniquesAvailable(): bool;
 
     public function getTechniqueById($id): ?Technique;
 
-    public function getTechniqueNames(Game $game, $includeAvailable = false): Array;
-
-    public function getTechniquesArray(): Array;
+    public function getTechniquesArray(Game $game, bool $mustBeAvailable = false): Array;
 
     public function updateTechniqueOwnerIds($id);
 }

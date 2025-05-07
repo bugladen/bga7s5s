@@ -8,6 +8,7 @@ class Maneuver_01114 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Roll the Bones: Gamble for free";
+        $this->Name = "Roll the Bones: Gamble For Free";
+        $this->ShortName = "Gamble For Free";
     }
 }

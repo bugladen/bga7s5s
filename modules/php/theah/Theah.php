@@ -297,12 +297,12 @@ class Theah
             return $techniques;
         }
 
-        $techniques += $character->getTechniquesArray($mustBeAvailable = true);
+        $techniques = array_merge($techniques, $character->getTechniquesArray($this->game, $mustBeAvailable = true));
 
         foreach($character->Attachments as $attachment) {
             $attachmentCard = $this->getCardById($attachment);
             if ($attachmentCard instanceof IHasTechniques) {
-                $techniques += $attachmentCard->getTechniquesArray($mustBeAvailable = true);
+                $techniques = array_merge($techniques, $attachmentCard->getTechniquesArray($this->game, $mustBeAvailable = true));
             }
         }
 

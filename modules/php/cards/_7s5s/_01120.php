@@ -39,6 +39,7 @@ class _01120 extends Character implements IHasTechniques
         $technique = new Technique_PlusOneParry();
         $technique->setId("Technique_01120");
         $technique->Name = "Pavel Ivanov: +1 Parry";
+        $technique->ShortName = "+1 Parry";
         $this->Techniques = [
             $technique,
         ];

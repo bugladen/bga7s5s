@@ -11,6 +11,7 @@ class Technique_01127 extends Technique
     {
         parent::__construct();
         $this->Name = "Grandfather's Hammer: +2 Thrust";
+        $this->ShortName = "+2 Thrust";
     }
 
     public function handleEvent(Event $event)

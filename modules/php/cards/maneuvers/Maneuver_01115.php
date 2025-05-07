@@ -8,6 +8,7 @@ class Maneuver_01115 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Taunt: Adversary discards card";
+        $this->Name = "Taunt: Adversary Discards Card";
+        $this->ShortName = "Adversary Discards Card";
     }
 }

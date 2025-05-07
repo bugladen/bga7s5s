@@ -11,6 +11,7 @@ class Technique_01193 extends Technique
     {
         parent::__construct();
         $this->Name = "Burnished Cuirass: -1 Thrust";
+        $this->ShortName = "-1 Thrust";
     }
 
     public function handleEvent(Event $event)

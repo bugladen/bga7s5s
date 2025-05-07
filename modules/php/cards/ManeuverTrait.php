@@ -14,10 +14,11 @@ trait ManeuverTrait
         return $this->Maneuvers;
     }
 
-    public function addManeuverProperties(&$properties)
+    public function addManeuverProperties(Game $game, &$properties)
     {
         //Add maneuver specific properties
         $properties['numberofManeuvers'] = count($this->Maneuvers);
+        $properties['maneuvers'] = $this->getManeuversArray($game, $mustBeAvailable = false);
     }
 
     public function getManeuverById($id): ?Maneuver
@@ -33,9 +34,14 @@ trait ManeuverTrait
     {
         $array = [];
         foreach ($this->Maneuvers as $maneuver) {
-            if ($mustBeAvailable && !$maneuver->Used)
+            if ($mustBeAvailable && !$maneuver->isAvailable())
                 continue;
-            $array[] = ["id" => $maneuver->Id, "name" => $game->translate($maneuver->Name)];
+            $array[] = [
+                "id" => $maneuver->Id, 
+                "name" => $game->translate($maneuver->Name),
+                "shortName" => $game->translate($maneuver->ShortName),
+                "available" => $maneuver->isAvailable()
+            ];
         }
 
         return $array;

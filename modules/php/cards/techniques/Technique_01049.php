@@ -11,6 +11,7 @@ class Technique_01049 extends Technique
     {
         parent::__construct();
         $this->Name = "Polished Flintlock: Gain Lethal";
+        $this->ShortName = "Gain Lethal";
     }
 
     public function handleEvent(Event $event)

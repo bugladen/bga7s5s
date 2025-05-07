@@ -998,3 +998,12 @@ body {
     right: 0px;
     pointer-events: none
 }
+
+.available-card-ability {
+    position:absolute;
+    top: 350px;
+    left: 5px;
+    color:white;
+    font-size:12px;
+    font-weight:bold;
+}

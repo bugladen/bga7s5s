@@ -19,6 +19,7 @@ class Action_01180 extends CharacterAction
         parent::__construct();
 
         $this->Name = "Kaj Kousei: Equip Artifact from City Deck";
+        $this->ShortName = "Equip Artifact from City Deck";
     }
 
     public function actFromActionPass(Game $game, int $state): void

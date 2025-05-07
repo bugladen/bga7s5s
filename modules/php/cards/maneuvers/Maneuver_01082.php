@@ -9,5 +9,6 @@ class Maneuver_01082 extends Maneuver
         parent::__construct();
 
         $this->Name = "A Heroic End: Final Strike";
+        $this->ShortName = "Final Strike";
     }
 }

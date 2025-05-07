@@ -9,5 +9,6 @@ class Maneuver_01136 extends Maneuver
         parent::__construct();
 
         $this->Name = "My Fight, Alone: +1 Parry";
+        $this->ShortName = "+1 Parry";
     }
 }

@@ -95,4 +95,8 @@ class Events
     const ChangeActivePlayer = 'EventChangeActivePlayer';
 
     const ActionTriggered = 'EventActionTriggered';
+    const ActionUsed = 'EventActionUsed';
+    const ReactionUsed = 'EventReactionUsed';
+    const ManeuverUsed = 'EventManeuverUsed';
+    const TechniqueUsed = 'EventTechniqueUsed';
 }

@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
@@ -14,10 +15,13 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
 
 class EventFactory
 {
@@ -36,6 +40,20 @@ class EventFactory
             $event->playerId = $playerId;
             $event->performerId = $performerId;
             $event->actionId = $actionId;
+        }
+
+        return $event;
+    }
+
+    public static function createActionUsedEvent(int $playerId, int $ownerId, string $actionId, bool $used): EventActionUsed
+    {
+        $event = self::createEvent(Events::ActionUsed);
+        if ($event instanceof EventActionUsed)
+        {
+            $event->playerId = $playerId;
+            $event->ownerId = $ownerId;
+            $event->actionId = $actionId;
+            $event->used = $used;
         }
 
         return $event;
@@ -161,6 +179,20 @@ class EventFactory
         return $event;
     }
 
+    public static function createManeuverUsedEvent(int $playerId, int $ownerId, string $maneuverId, bool $used): EventManeuverUsed
+    {
+        $event = self::createEvent(Events::ManeuverUsed);
+        if ($event instanceof EventManeuverUsed)
+        {
+            $event->playerId = $playerId;
+            $event->ownerId = $ownerId;
+            $event->maneuverId = $maneuverId;
+            $event->used = $used;
+        }
+
+        return $event;
+    }
+
     public static function createPlayerGainsReknownEvent(int $playerId, int $amount): EventPlayerGainsReknown
     {
         $event = self::createEvent(Events::PlayerGainsReknown);
@@ -187,6 +219,20 @@ class EventFactory
         return $transition;
     }
 
+    public static function createReactionUsedEvent(int $playerId, int $ownerId, string $reactionId, bool $used): EventReactionUsed
+    {
+        $event = self::createEvent(Events::ReactionUsed);
+        if ($event instanceof EventReactionUsed)
+        {
+            $event->playerId = $playerId;
+            $event->ownerId = $ownerId;
+            $event->reactionId = $reactionId;
+            $event->used = $used;
+        }
+
+        return $event;
+    }
+
     public static function createReknownAddedToLocationEvent(int $playerId, string $location, int $amount, string $playerName)
     {
         $addEvent = self::createEvent(Events::ReknownAddedToLocation);
@@ -211,6 +257,20 @@ class EventFactory
         }
 
         return $reknownEvent;
+    }
+
+    public static function createTechniqueUsedEvent(int $playerId, int $ownerId, string $techniqueId, bool $used): EventTechniqueUsed
+    {
+        $event = self::createEvent(Events::TechniqueUsed);
+        if ($event instanceof EventTechniqueUsed)
+        {
+            $event->playerId = $playerId;
+            $event->ownerId = $ownerId;
+            $event->techniqueId = $techniqueId;
+            $event->used = $used;
+        }
+
+        return $event;
     }
 
     public static function createTransitionEvent(int $playerId, int $sourceId, string $transitionName, string $internalId = ""): EventTransition

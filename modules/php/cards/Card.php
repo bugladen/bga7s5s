@@ -223,10 +223,10 @@ abstract class Card
         if ($this instanceof IWealthCost) $this->addWealthCostProperties($properties);
         if ($this instanceof ICityDeckCard) $this->addCityProperties($properties);
         if ($this instanceof IFactionCard) $this->addFactionProperties($properties);
-        if ($this instanceof IHasTechniques) $this->addTechniqueProperties($properties);
-        if ($this instanceof IHasManeuvers) $this->addManeuverProperties($properties);
+        if ($this instanceof IHasTechniques) $this->addTechniqueProperties($game, $properties);
+        if ($this instanceof IHasManeuvers) $this->addManeuverProperties($game, $properties);
         if ($this instanceof IHasActions) $this->addActionProperties($game, $properties);
-        if ($this instanceof IHasReactions) $this->addReactionProperties($properties);
+        if ($this instanceof IHasReactions) $this->addReactionProperties($game, $properties);
 
         return $properties;
     }

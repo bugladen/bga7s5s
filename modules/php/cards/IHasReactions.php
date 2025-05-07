@@ -9,7 +9,7 @@ interface IHasReactions
 {
     public function getReactions(): Array;
 
-    public function addReactionProperties(&$properties);
+    public function addReactionProperties(Game $game, &$properties);
 
     public function anyReactionsAvailable(): bool;
 
@@ -17,7 +17,7 @@ interface IHasReactions
 
     public function getReactionNames(Game $game, $includeAvailable = false): Array;
 
-    public function getReactionsArray(): Array;
+    public function getReactionsArray(Game $game, bool $mustBeAvailable = false): Array;
 
     public function reactionFromCard(Game $game, int $state, string $internalId, string $reactionId): void;
 

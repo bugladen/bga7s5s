@@ -11,6 +11,7 @@ class Technique_01101 extends Technique
     {
         parent::__construct();
         $this->Name = "Gallegos Blade: -1 Parry";
+        $this->ShortName = "-1 Parry";
     }
 
     public function handleEvent(Event $event)

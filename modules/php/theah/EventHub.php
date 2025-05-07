@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
@@ -35,11 +36,13 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThrea
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTakeReknownForControlledLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlunderPhaseBegin;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlunderPhaseEnd;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
@@ -49,6 +52,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
 
 trait EventHub
 {
@@ -58,6 +62,18 @@ trait EventHub
             return;
 
         switch (true) {
+            case $event instanceof EventActionUsed:
+                $handler = function (Theah $theah, EventActionUsed $event)
+                {
+                    $theah->game->notifyAllPlayers("actionUsed", '', [
+                        'playerId' => $event->playerId,
+                        'ownerId' => $event->ownerId,
+                        'actionId' => $event->actionId,
+                        'used' => $event->used,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
 
             case $event instanceof EventApproachCharacterPlayed:
                 $this->cards[$event->character->Id] = $event->character;
@@ -325,6 +341,19 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventManeuverUsed:
+                $handler = function (Theah $theah, EventManeuverUsed $event)
+                {
+                    $theah->game->notifyAllPlayers('maneuverUsed', '', [
+                        "playerId" => $event->playerId,
+                        "ownerId" => $event->ownerId,
+                        "maneuverId" => $event->maneuverId,
+                        "used" => $event->used,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventReknownAddedToCard:
                 $handler = function (Theah $theah, EventReknownAddedToCard $event)
                 {
@@ -410,6 +439,19 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventReactionUsed:
+                $handler = function (Theah $theah, EventReactionUsed $event)
+                {
+                    $theah->game->notifyAllPlayers("reactionUsed", '', [
+                        "playerId" => $event->playerId,
+                        "ownerId" => $event->ownerId,
+                        "reactionId" => $event->reactionId,
+                        "used" => $event->used,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventReknownAddedToLocation:
                 //Update the reknown for the location in the database
                 $reknown = $this->game->getReknownForLocation($event->location) + $event->amount;
@@ -468,6 +510,19 @@ trait EventHub
                 
                 //Card is now in city
                 $this->cards[$event->scheme->Id] = $event->scheme;
+                break;
+
+            case $event instanceof EventTechniqueUsed:
+                $handler = function (Theah $theah, EventTechniqueUsed $event)
+                {
+                    $theah->game->notifyAllPlayers("techniqueUsed", '', [
+                        "playerId" => $event->playerId,
+                        "ownerId" => $event->ownerId,
+                        "techniqueId" => $event->techniqueId,
+                        "used" => $event->used,
+                    ]);
+                };
+                $handler($this, $event);
                 break;
 
             case $event instanceof EventChallengeIssued:

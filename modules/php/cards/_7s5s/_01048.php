@@ -40,11 +40,13 @@ class _01048 extends FactionAttachment implements IHasTechniques
         $technique = new Technique_PlusOneThrust();
         $technique->setId("Technique_01048_1");
         $technique->Name = "Langschwert: +1 Thrust";
+        $technique->ShortName = "+1 Thrust";
         $this->Techniques[] = $technique;
 
         $technique = new Technique_PlusOneThrust();
         $technique->setId("Technique_01048_2");
         $technique->Name = "Langschwert: +1 Thrust";
+        $technique->ShortName = "+1 Thrust";
         $this->Techniques[] = $technique;
     }
 }

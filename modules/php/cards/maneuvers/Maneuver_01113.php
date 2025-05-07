@@ -8,6 +8,7 @@ class Maneuver_01113 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Robbery: Take control of attachment";
+        $this->Name = "Robbery: Take Control of Attachment";
+        $this->ShortName = "Take Control of Attachment";
     }
 }

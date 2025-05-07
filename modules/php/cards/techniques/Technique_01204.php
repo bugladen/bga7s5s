@@ -11,6 +11,7 @@ class Technique_01204 extends Technique
     {
         parent::__construct();
         $this->Name = "Syrneth Hand: Wound and -2 Parry";
+        $this->ShortName = "Wound and -2 Parry";
     }
 
     public function handleEvent(Event $event)

@@ -8,6 +8,7 @@ class Maneuver_01133 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Matushka's Efficiency: Move both participants";
+        $this->Name = "Matushka's Efficiency: Move Both Participants";
+        $this->ShortName = "Move Both Participants";
     }
 }

@@ -27,16 +27,12 @@ abstract class Technique
     {
         if ($event instanceof EventDuskEndOfDay && $this->ResetOnDayEnd)
         {
-            $this->Used = false;
-            $card = $this->getOwningCard($event->theah);
-            $card->IsUpdated = true;
+            $this->setUsed($event->theah, false);
         }
 
         if ($event instanceof EventDuelEnd && $this->ResetOnDuelEnd)
         {
-            $this->Used = false;
-            $card = $this->getOwningCard($event->theah);
-            $card->IsUpdated = true;
+            $this->setUsed($event->theah, false);
         }
     }
 }

@@ -9,7 +9,8 @@ class Technique_01011 extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = "Servo Scarpa: Add Thrust";
+        $this->Name = "Servo Scarpa: +1 Thrust";
+        $this->ShortName = "+1 Thrust";
     }
 
     public function handleEvent(Event $event)

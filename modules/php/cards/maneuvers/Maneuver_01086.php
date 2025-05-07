@@ -8,6 +8,7 @@ class Maneuver_01086 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Status Matters: Engage or wound adversary";
+        $this->Name = "Status Matters: Engage or Wound Adversary";
+        $this->ShortName = "Engage or Wound Adversary";
     }
 }

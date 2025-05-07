@@ -11,6 +11,7 @@ class Technique_01039 extends Technique
     {
         parent::__construct();
         $this->Name = "Philip Hase: Wound Adversary";
+        $this->ShortName = "Wound Adversary";
     }
 
     public function handleEvent(Event $event)

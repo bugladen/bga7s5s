@@ -90,6 +90,27 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
+    createTooltipForCard: function(card)
+    {
+        if (!card.controllerId) {
+            this.addTooltipHtml(`${card.divId}_image`, `<img src="${g_gamethemeurl + card.image}" />`, this.CARD_TOOLTIP_DELAY);
+            return;
+        }
+
+        const html = `
+        <div style="position:relative;">
+            <img src="${g_gamethemeurl + card.image}" />
+            <div class="available-card-ability">
+                ${card.actions?.map((action) => `<div style="background-color:${action.available ? 'green' : 'red'};">Action: ${action.shortName}</div>`).join('') ?? ''}
+                ${card.reactions?.map((reaction) => `<div style="background-color:${reaction.available ? 'green' : 'red'};">Reaction: ${reaction.name}</div>`).join('') ?? ''}
+                ${card.maneuvers?.map((maneuver) => `<div style="background-color:${maneuver.available ? 'green' : 'red'};">Maneuver: ${maneuver.shortName}</div>`).join('') ?? ''}
+                ${card.techniques?.map((technique) => `<div style="background-color:${technique.available ? 'green' : 'red'};">Technique: ${technique.shortName}</div>`).join('') ?? ''}
+            </div>
+        </div>
+        `;
+        this.addTooltipHtml(`${card.divId}_image`, html, this.CARD_TOOLTIP_DELAY);
+    },
+
     createCharacterCard: function( divId, color, character, targetDiv, inDuel = false )
     {
         //Set the divId of the card
@@ -135,7 +156,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.style( `${divId}_wealth_cost`, 'display', 'none' );
         }
 
-        this.addTooltipHtml(`${divId}_image`, `<img src="${g_gamethemeurl + character.image}" />`, this.CARD_TOOLTIP_DELAY);
+        this.createTooltipForCard(character);
 
         //Check for any special conditions where a token has to be displayed
         if (character.conditions.includes(this.ADVERSARY_OF_YEVGENI)) {
@@ -241,14 +262,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         if (schemeInCity) {
             dojo.addClass(divId, 'scheme-container-in-city');
-            const img = $(`${divId}-image`);
+            const img = $(`${divId}_image`);
             dojo.addClass(img, 'scheme-in-city');
         }
         else {
             dojo.removeClass(`${divId}-player-color`, 'scheme-player-color');
         }
         
-        this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + scheme.image}" />`, this.CARD_TOOLTIP_DELAY);
+        this.createTooltipForCard(scheme);
     },  
 
     createAttachmentCard: function( divId, attachment, targetDiv )
@@ -289,7 +310,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         if (attachment.engaged) 
             dojo.addClass(`${divId}_image`, 'engaged');
 
-        this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + attachment.image}" />`, this.CARD_TOOLTIP_DELAY);
+        this.createTooltipForCard(attachment);
     },
 
     formatModifer: function( modifier )

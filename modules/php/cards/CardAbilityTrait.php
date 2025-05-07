@@ -2,6 +2,11 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Reaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 trait CardAbilityTrait
@@ -10,6 +15,7 @@ trait CardAbilityTrait
     protected string $ClassId;
     public int $OwnerId;
     public string $Name;
+    public string $ShortName;
     public bool $Used;
 
     public function initializeAbility()
@@ -23,6 +29,7 @@ trait CardAbilityTrait
         $this->ClassId = $this->Id;
 
         $this->Name = "";
+        $this->ShortName = "";
         $this->Used = false;
     }
 
@@ -83,5 +90,16 @@ trait CardAbilityTrait
 
         $owner = $theah->getCardById($this->OwnerId);
         $theah->game->updateCardObjectInDb($owner);
+
+        if ($this instanceof Action)
+            $event = EventFactory::createActionUsedEvent($theah->game->getActivePlayerId(), $owner->Id, $this->Id, $used);
+        else if ($this instanceof Reaction)
+            $event = EventFactory::createReactionUsedEvent($theah->game->getActivePlayerId(), $owner->Id, $this->Id, $used);
+        else if ($this instanceof Maneuver)
+            $event = EventFactory::createManeuverUsedEvent($theah->game->getActivePlayerId(), $owner->Id, $this->Id, $used);
+        else if ($this instanceof Technique)
+            $event = EventFactory::createTechniqueUsedEvent($theah->game->getActivePlayerId(), $owner->Id, $this->Id, $used);
+
+        $theah->queueEvent($event);
     }
 }

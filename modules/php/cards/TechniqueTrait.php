@@ -14,10 +14,11 @@ trait TechniqueTrait
         return $this->Techniques;
     }
 
-    public function addTechniqueProperties(&$properties)
+    public function addTechniqueProperties(Game $game, &$properties)
     {
         //Add technique specific properties
         $properties['numberofTechniques'] = count($this->Techniques);
+        $properties['techniques'] = $this->getTechniquesArray($game, $mustBeAvailable = false);
     }
 
     public function anyTechniquesAvailable(): bool
@@ -30,24 +31,19 @@ trait TechniqueTrait
         return false;
     }
 
-    public function getTechniqueNames(Game $game, $includeAvailable = false): Array
-    {
-        $names = [];
-        foreach ($this->Techniques as $technique) {
-            if ($technique->isAvailable())
-                $names[] = $game->translate($technique->name);
-        }
-        return $names;
-    }
-
-    public function getTechniquesArray(bool $mustBeAvailable = false): Array
+    public function getTechniquesArray(Game $game, bool $mustBeAvailable = false): Array
     {
         $array = [];
         foreach ($this->Techniques as $technique) {
             if ($mustBeAvailable && !$technique->isAvailable()) {
                 continue;
             }
-            $array[] = ["id" => $technique->Id, "name" => $technique->Name];
+            $array[] = [
+                "id" => $technique->Id, 
+                "name" => $game->translate($technique->Name),
+                "shortName" => $game->translate($technique->ShortName),
+                "available" => $technique->isAvailable()
+            ];
         }
 
         return $array;

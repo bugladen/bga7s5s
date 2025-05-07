@@ -25,9 +25,7 @@ abstract class CardReaction extends Reaction
 
         if ($event instanceof EventDuskEndOfDay)
         {
-            $this->Used = false;
-            $card = $this->getOwningCard($event->theah);
-            $card->IsUpdated = true;
+            $this->setUsed($event->theah, false);
         }
     }
 

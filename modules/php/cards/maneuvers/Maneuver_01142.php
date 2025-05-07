@@ -8,6 +8,7 @@ class Maneuver_01142 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Sunder: Destroy target attachment on adversary";
+        $this->Name = "Sunder: Destroy Target Attachment on Adversary";
+        $this->ShortName = "Destroy Target Attachment on Adversary";
     }
 }

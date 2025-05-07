@@ -16,6 +16,7 @@ trait ActionTrait
 
     public function addActionProperties(Game $game, &$properties)
     {
+        $properties['numberofActions'] = count($this->Actions);
         $properties['actions'] = $this->getActionsArray($game);
     }
 
@@ -63,7 +64,12 @@ trait ActionTrait
             if ($mustBeAvailable && !$action->isAvailable()) {
                 continue;   
             }
-            $array[] = ["id" => $action->Id, "name" => $game->translate($action->Name)];
+            $array[] = [
+                "id" => $action->Id, 
+                "name" => $game->translate($action->Name),
+                "shortName" => $game->translate($action->ShortName),
+                "available" => $action->isAvailable()
+            ];
         }
 
         return $array;

@@ -9,5 +9,6 @@ class Maneuver_01139 extends Maneuver
         parent::__construct();
 
         $this->Name = "Strength of Ten: +X Thrust";
+        $this->ShortName = "+X Thrust";
     }
 }

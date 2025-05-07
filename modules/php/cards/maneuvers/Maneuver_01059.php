@@ -8,6 +8,7 @@ class Maneuver_01059 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Regroup: Move participant";
+        $this->Name = "Regroup: Move Participant";
+        $this->ShortName = "Move Participant";
     }
 }

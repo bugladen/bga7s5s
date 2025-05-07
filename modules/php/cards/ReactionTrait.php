@@ -39,9 +39,10 @@ trait ReactionTrait
         return $this->Reactions;
     }
 
-    public function addReactionProperties(&$properties)
+    public function addReactionProperties(Game $game, &$properties)
     {
-        $properties['reactions'] = $this->getReactionsArray();
+        $properties['numberofReactions'] = count($this->Reactions);
+        $properties['reactions'] = $this->getReactionsArray($game);
     }
 
     public function getReactionById($id): ?CardReaction
@@ -56,14 +57,19 @@ trait ReactionTrait
         return null;
     }
 
-    public function getReactionsArray(bool $mustBeAvailable = false): Array
+    public function getReactionsArray(Game $game, bool $mustBeAvailable = false): Array
     {
         $array = [];
         foreach ($this->Reactions as $reaction) {
             if ($mustBeAvailable && !$reaction->isAvailable()) {
                 continue;
             }
-            $array[] = ["id" => $reaction->Id, "name" => $reaction->Name];
+            $array[] = [
+                "id" => $reaction->Id, 
+                "name" => $game->translate($reaction->Name),
+                "shortName" => $game->translate($reaction->ShortName),
+                "available" => $reaction->isAvailable()
+            ];
         }
 
         return $array;

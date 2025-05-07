@@ -9,7 +9,7 @@ interface IHasManeuvers
 {
     public function getManeuvers(): Array;
 
-    public function addManeuverProperties(&$properties);
+    public function addManeuverProperties(Game $game, &$properties);
 
     public function getManeuverById($id): ?Maneuver;
 

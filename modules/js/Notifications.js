@@ -8,6 +8,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
         // TODO: here, associate your game notifications with local methods
         const notifs = [
             ['playLeader', 1500],
+            ['actionUsed', 0],
+            ['maneuverUsed', 0],
+            ['reactionUsed', 0],
+            ['techniqueUsed', 0],
             ['approachCardsReceived', 1000],
             ['approachCharacterPlayed', 2000],
             ['approachSchemePlayed', 2000],
@@ -89,6 +93,66 @@ return declare('seventhseacityoffivesails.notifications', null, {
         $('pagemaintitletext').innerHTML = _(`${args.player_name} has selected <span style="font-weight:bold">${args.leader.name}</span> as their leader`);
     },
 
+    notif_actionUsed: function( notif )
+    {
+        debug( 'notif_actionUsed' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.ownerId];
+        //Get the action from the card
+        const action = card.actions.find(action => action.id === args.actionId);
+        if (action)
+        {
+            action.available = ! args.used;
+        }       
+    },
+
+    notif_maneuverUsed: function( notif )
+    {
+        debug( 'notif_maneuverUsed' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.ownerId];
+        //Get the maneuver from the card
+        const maneuver = card.maneuvers.find(maneuver => maneuver.id === args.maneuverId);
+        if (maneuver)
+        {
+            maneuver.available = ! args.used;
+        }
+    },
+
+    notif_reactionUsed: function( notif )
+    {
+        debug( 'notif_reactionUsed' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.ownerId];
+        //Get the reaction from the card
+        const reaction = card.reactions.find(reaction => reaction.id === args.reactionId);
+        if (reaction)
+        {
+            reaction.available = ! args.used;
+        }
+    },
+
+    notif_techniqueUsed: function( notif )
+    {
+        debug( 'notif_techniqueUsed' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.ownerId];
+        //Get the technique from the card
+        const technique = card.techniques.find(technique => technique.id === args.techniqueId);
+        if (technique)
+        {
+            technique.available = ! args.used;
+        }
+    },
+
     notif_approachSchemePlayed: function( notif )
     {
         debug( 'notif_approachSchemePlayed' );
@@ -101,7 +165,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         $('pagemaintitletext').innerHTML = _(`${args.player_name} has selected <span style="font-weight:bold">${args.scheme.name}</span> as their Scheme today`);
     },
 
-    notif_approachCharacterPlayed: function (notif) {
+    notif_approachCharacterPlayed: function (notif) 
+    {
         debug( 'notif_approachCharacterPlayed' );
         debug( notif );
 
