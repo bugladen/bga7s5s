@@ -17,6 +17,6 @@ abstract class GameReaction extends Reaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . "Game > Reaction: ";
+        return parent::getReactionDescription($theah) . $theah->game->translate("Game") . " > " . $theah->game->translate("Reaction") . ": ";
     }
 }

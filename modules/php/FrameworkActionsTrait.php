@@ -214,10 +214,10 @@ trait FrameworkActionsTrait
         //Move card to top of City Deck
         $this->cards->insertCardOnExtremePosition($id, Game::LOCATION_CITY_DECK, true);
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} chose ${card_name} to move from the City Discard Pile to the top of the City Deck.'), [
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} chose <strong>${card_name}</strong> to move from the City Discard Pile to the top of the City Deck.'), [
             'i18n' => ['card_name'],
             "player_name" => $playerName,
-            "card_name" => "<strong>{$card->Name}</strong>",
+            "card_name" => $card->Name,
             "player_id" => $playerId
         ]);
 
@@ -326,10 +326,10 @@ trait FrameworkActionsTrait
         $character = $this->getCardObjectFromDb($id);
 
         $this->notifyAllPlayers('yevgeniAdversaryChosen', 
-            clienttranslate('${player_name} has chosen ${character} as Yevgeni\'s Adversary.'), [
+            clienttranslate('${player_name} has chosen <strong>${character}</strong> as Yevgeni\'s Adversary.'), [
             'i18n' => ['character'],
             "player_name" => $playerName,
-            "character" => "<strong>{$character->Name}</strong>",
+            "character" => $character->Name,
             "cardId" => $character->Id,
         ]);
 
@@ -379,11 +379,11 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($schemeMoveEvent);
 
         $this->notifyAllPlayers('message', 
-            clienttranslate('${player_name} has chosen ${location} as the Chosen Location for ${card_name}'), [
+            clienttranslate('${player_name} has chosen ${location} as the Chosen Location for <strong>${card_name}</strong>.'), [
             'i18n' => ['location', 'card_name'],
             "player_name" => $playerName,
             "location" => $leshiyeLocation,
-            "card_name" => "<strong>Leshiye of the Wood</strong>",
+            "card_name" => $scheme->Name,
         ]);
 
 
@@ -708,11 +708,11 @@ trait FrameworkActionsTrait
         $this->globals->set(GAME::CATS_EMBARGO, $pickedCard->Id);
 
         $this->notifyAllPlayers('message', 
-            clienttranslate('${player_name} reveals ${picked_card} randomly from ${chosen_player_name}\'s hand.'), [
+            clienttranslate('${player_name} reveals <strong>${picked_card}</strong> randomly from <strong>${chosen_player_name}</strong>\'s hand.'), [
             'i18n' => ['picked_card'],
             "player_name" => $playerName,
-            "chosen_player_name" => "<strong>$chosenPlayerName</strong>",
-            "picked_card" => "<strong>{$pickedCard->Name}</strong>",
+            "chosen_player_name" => $chosenPlayerName,
+            "picked_card" => $pickedCard->Name,
             "card" => $pickedCard->getPropertyArray($this),
         ]);
 
@@ -842,18 +842,18 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Chosen character is not a Mercenary at the Performer's Location."));
         }        
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} chose ${card_name} to perform a Recruit Action.'), [
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} chose <strong>${card_name}</strong> to perform a Recruit Action.'), [
             'i18n' => ['card_name'],
             "player_name" => $playerName,
-            "card_name" => "<strong>{$performer->Name}</strong>",
+            "card_name" => $performer->Name,
         ]);
 
         if ($discount > 0)
         {
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} chose to Parley with ${card_name}.'), [
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} chose to Parley with <strong>${card_name}</strong>.'), [
                 'i18n' => ['card_name'],
                 "player_name" => $playerName,
-                "card_name" => "<strong>{$performer->Name}</strong>",
+                "card_name" => $performer->Name,
             ]);
             
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
@@ -1268,10 +1268,10 @@ trait FrameworkActionsTrait
             $this->theah->queueEvent($event);
         }
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} has decided to perform the In-Hand Action from ${card_name}.'), [
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} has decided to perform the In-Hand Action from <strong>${card_name}</strong>.'), [
             'i18n' => ['card_name'],
             "player_name" => $this->getActivePlayerName(),
-            "card_name" => "<strong>$risk->Name</strong>",
+            "card_name" => $risk->Name,
         ]);
 
         $event = EventFactory::createActionTriggeredEvent($playerId, $performer->Id, $actionId);
@@ -1881,7 +1881,6 @@ trait FrameworkActionsTrait
 
         $announcement = $reaction->getReactionAnnouncement($this, $this->gamestate->state_id(), $internalId, $reactionId);
         $this->notifyAllPlayers("message", clienttranslate('${player_name} ${announcement}'), [
-            'i18n' => ['announcement'],
             "player_name" => $this->getActivePlayerName(),
             "announcement" => $announcement,
         ]);

@@ -199,10 +199,10 @@ abstract class Character extends Card
 
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_name} has received ${wounds} wound(s) due to: ${reason} 
+            $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('<strong>${target_name}</strong> has received ${wounds} wound(s) due to: ${reason} 
             <p>${target_name}\'s new Resolve: ${resolve}'), [
                 'i18n' => ['target_name', 'reason'],
-                "target_name" => "<strong>{$this->Name}</strong>",
+                "target_name" => $this->Name,
                 "characterId" => $this->Id,
                 "wounds" => $event->wounds,
                 "reason" => $event->reason,
@@ -234,10 +234,10 @@ abstract class Character extends Card
 
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("characterHealed", clienttranslate('${target_name} has healed ${wounds} wound(s) due to: ${reason} 
+            $event->theah->game->notifyAllPlayers("characterHealed", clienttranslate('<strong>${target_name}</strong> has healed ${wounds} wound(s) due to: ${reason} 
             <p>${target_name}\'s new Resolve: ${resolve}'), [
                 'i18n' => ['target_name', 'reason'],
-                "target_name" => "<strong>{$this->Name}</strong>",
+                "target_name" => $this->Name,
                 "characterId" => $this->Id,
                 "wounds" => $actualHealed,
                 "reason" => $event->reason,

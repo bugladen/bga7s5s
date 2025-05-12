@@ -83,11 +83,11 @@ trait EventHub
                 $event->character->IsUpdated = true;
 
                 // Notify players of selected character
-                $this->game->notifyAllPlayers("approachCharacterPlayed", clienttranslate('${player_name} plays ${character_name} as their Approach Character.'), [
+                $this->game->notifyAllPlayers("approachCharacterPlayed", clienttranslate('${player_name} plays <strong>${character_name}</strong> as their Approach Character.'), [
                     'i18n' => ['character_name'],
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "character_name" => "<strong>{$event->character->Name}</strong>",
+                    "character_name" => $event->character->Name,
                     "character" => $event->character->getPropertyArray($this->game),
                 ]);
                 break;
@@ -243,10 +243,10 @@ trait EventHub
                     $deckObject->moveCard($card->Id, $discardPileName);
 
                     // Notify players that card has been discarded from hand
-                    $theah->game->notifyAllPlayers("cardDiscardedFromHand", clienttranslate('${player_name} discarded ${card_name}.'), [
+                    $theah->game->notifyAllPlayers("cardDiscardedFromHand", clienttranslate('${player_name} discarded <strong>${card_name}</strong>.'), [
                         'i18n' => ['card_name'],
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "card_name" => "<strong>{$card->Name}</strong>",
+                        "card_name" => $card->Name,
                         "playerId" => $event->playerId,
                         "card" => $card->getPropertyArray($theah->game),
                     ]);
@@ -261,11 +261,11 @@ trait EventHub
                     $card->Engaged = true;
                     $card->IsUpdated = true;
 
-                $this->game->notifyAllPlayers("cardEngaged", clienttranslate('${player_name} Engages ${card_name}.'), [
-                    'i18n' => ['card_name'],
-                    "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "card_name" => "<strong>{$card->Name}</strong>",
-                    "cardId" => $card->Id,
+                    $this->game->notifyAllPlayers("cardEngaged", clienttranslate('${player_name} Engages <strong>${card_name}</strong>.'), [
+                        'i18n' => ['card_name'],
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
+                        "card_name" => $card->Name,
+                        "cardId" => $card->Id,
                     ]);
                 };
                 $handler($this, $event);
@@ -278,10 +278,10 @@ trait EventHub
                         $card->Engaged = false;
                     $card->IsUpdated = true;
     
-                    $this->game->notifyAllPlayers("cardEngarded", clienttranslate('${player_name} En gardes ${card_name}.'), [
+                    $this->game->notifyAllPlayers("cardEngarded", clienttranslate('${player_name} En gardes <strong>${card_name}</strong>.'), [
                         'i18n' => ['card_name'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "card_name" => "<strong>{$card->Name}</strong>",
+                        "card_name" => $card->Name,
                         "cardId" => $card->Id,
                     ]);
                 };
@@ -305,9 +305,9 @@ trait EventHub
                         }
                     }
 
-                    $this->game->notifyAllPlayers("cardMoved", clienttranslate('${card_name} moved from ${fromLocation} to ${toLocation}.'), [
+                    $this->game->notifyAllPlayers("cardMoved", clienttranslate('<strong>${card_name}</strong> moved from ${fromLocation} to ${toLocation}.'), [
                         'i18n' => ['card_name', 'fromLocation', 'toLocation'],
-                        "card_name" => "<strong>{$card->Name}</strong>",
+                        "card_name" => $card->Name,
                         "cardId" => $card->Id,
                         "fromLocation" => $event->fromLocation,
                         "toLocation" => $event->toLocation,
@@ -376,13 +376,13 @@ trait EventHub
                 {
                     $this->cityLocations[$event->location]->Controller = $event->playerId;
 
-                    $this->game->notifyAllPlayers("locationClaimed", clienttranslate('${player_name} chose ${card_name} to Claim ${location_name}.
+                    $this->game->notifyAllPlayers("locationClaimed", clienttranslate('${player_name} chose <strong>${card_name}</strong> to Claim <strong>${location_name}</strong>.
                     <br>Pressure Types: ${pressureTypes}
                     <br>Influence Totals: ${totals}'), [
                         'i18n' => ['card_name', 'location_name'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "card_name" => "<strong>{$event->performer->Name}</strong>",
-                        "location_name" => "<strong>{$event->performer->Location}</strong>",
+                        "card_name" => $event->performer->Name,
+                        "location_name" => $event->performer->Location,
                         "totals" => $event->totalsExplanation,
                         "pressureTypes" => $event->pressureTypes,
                         "playerId" => $event->playerId,
@@ -585,20 +585,20 @@ trait EventHub
                     $defender = $theah->cards[$event->defenderId];
                     $defender->addCondition(GAME::DUEL_DEFENDER);
                     
-                    $message = '${player_name} has chosen to have ${challenger_name} Challenge ${defender_name}. ';
+                    $message = '${player_name} has chosen to have <strong>${challenger_name}</strong> Challenge <strong>${defender_name}</strong>. ';
                     $technique = null;
                     if ($event->activatedTechniqueId)
                     {
-                        $message .= '${player_name} will activate Technique ${technique_name} for the Challenge.';
+                        $message .= '${player_name} will activate Technique <strong>${technique_name}</strong> for the Challenge.';
                         $technique = $theah->getTechniqueById($event->activatedTechniqueId);
                     } 
                                             
                     $theah->game->notifyAllPlayers("challengeIssued", clienttranslate($message), [
                         'i18n' => ['challenger_name', 'defender_name', 'technique_name'],
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "challenger_name" => "<strong>{$challenger->Name}</strong>",
-                        "defender_name" => "<strong>{$defender->Name}</strong>",
-                        "technique_name" => "<strong>{$technique?->Name}</strong>",
+                        "challenger_name" => $challenger->Name,
+                        "defender_name" => $defender->Name,
+                        "technique_name" => $technique?->Name,
                         "challengerId" => $challenger->Id,
                         "defenderId" => $defender->Id,
                     ]);
@@ -611,11 +611,11 @@ trait EventHub
                 {
                     $oldTarget = $theah->cards[$event->oldTargetId];
                     $newTarget = $theah->cards[$event->newTargetId];
-                    $this->game->notifyAllPlayers("characterIntervened", clienttranslate('${player_name} has chosen to have ${intervener_name} INTERVENE in the Challenge in place of ${target_name}.'), [
+                    $this->game->notifyAllPlayers("characterIntervened", clienttranslate('${player_name} has chosen to have <strong>${intervener_name}</strong> INTERVENE in the Challenge in place of <strong>${target_name}</strong>.'), [
                         'i18n' => ['intervener_name', 'target_name'],
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "intervener_name" => "<strong>{$newTarget->Name}</strong>",
-                        "target_name" => "<strong>{$oldTarget->Name}</strong>",
+                        "intervener_name" => $newTarget->Name,
+                        "target_name" => $oldTarget->Name,
                         "oldTargetId" => $oldTarget->Id,
                         "newTargetId" => $newTarget->Id,
                     ]);
@@ -692,13 +692,12 @@ trait EventHub
                         $effects .= $theah->game->translate("<p>Challenger Threat went from {$results["endingChallengerThreatBefore"]} to {$results["endingChallengerThreatAfter"]}. ");
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
                         $effects .= $theah->game->translate("<p>Defender Threat went from {$results["endingDefenderThreatBefore"]} to {$results["endingDefenderThreatAfter"]}. ");
-                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${character_name} has activated the Technique ${strong_effect_name} 
+                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${character_name} has activated the Technique <strong>${effect_name}</strong> 
                     with the following effects: ${effects}'), [
-                        'i18n' => ['character_name', 'strong_effect_name', 'effect_name', 'effects'],
+                        'i18n' => ['character_name', 'effect_name', 'effects'],
                         "round" => $round,
                         "mode" => "technique",
                         "character_name" => $actor->Name,
-                        "strong_effect_name" => "<strong>{$technique->Name}</strong>",
                         "effect_name" => $technique->Name,
                         "effects" => $effects,
                         "riposte" => $results["riposte"],
@@ -774,16 +773,15 @@ trait EventHub
                         $effects .= "<p>{$thrustText} +{$results["thrust"]}";
                     }
                     if ($results["endingChallengerThreatBefore"] != $results["endingChallengerThreatAfter"])
-                        $effects .= $theah->game->translate("<p>Challenger Threat went from {$results["endingChallengerThreatBefore"]} to {$results["endingChallengerThreatAfter"]}. ");
+                        $effects .= "<p>" . $theah->game->translate("Challenger Threat went from ") . $results["endingChallengerThreatBefore"] . $theah->game->translate(" to ") . $results["endingChallengerThreatAfter"];
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
-                        $effects .= $theah->game->translate("<p>Defender Threat went from {$results["endingDefenderThreatBefore"]} to {$results["endingDefenderThreatAfter"]}. ");
-                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${character_name} has activated the Maneuver ${strong_effect_name} 
+                        $effects .= "<p>" . $theah->game->translate("Defender Threat went from ") . $results["endingDefenderThreatBefore"] . $theah->game->translate(" to ") . $results["endingDefenderThreatAfter"];
+                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${character_name} has activated the Maneuver <strong>${effect_name}</strong> 
                     with the following effects: ${effects}'), [
-                        'i18n' => ['character_name', 'strong_effect_name', 'effect_name', 'effects'],
+                        'i18n' => ['character_name', 'effect_name', 'effects'],
                         "round" => $round,
                         "mode" => "maneuver",
                         "character_name" => $actor->Name,
-                        "strong_effect_name" => "<strong>{$maneuver->Name}</strong>",
                         "effect_name" => $maneuver->Name,
                         "effects" => $effects,
                         "riposte" => $results["riposte"],
@@ -830,17 +828,17 @@ trait EventHub
                         $effects .= "<p>{$thrustText} +{$results["thrust"]}";
                     }
                     if ($results["endingChallengerThreatBefore"] != $results["endingChallengerThreatAfter"])
-                        $effects .= $theah->game->translate("<p>Challenger Threat went from {$results["endingChallengerThreatBefore"]} to {$results["endingChallengerThreatAfter"]}. ");
+                        $effects .= "<p>" . $theah->game->translate("Challenger Threat went from ") . $results["endingChallengerThreatBefore"] . $theah->game->translate(" to ") . $results["endingChallengerThreatAfter"];
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
-                        $effects .= $theah->game->translate("<p>Defender Threat went from {$results["endingDefenderThreatBefore"]} to {$results["endingDefenderThreatAfter"]}. ");
-                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${player_name} has played ${effect_name} as their Combat Card 
+                        $effects .= "<p>" . $theah->game->translate("Defender Threat went from ") . $results["endingDefenderThreatBefore"] . $theah->game->translate(" to ") . $results["endingDefenderThreatAfter"];
+                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${player_name} has played <strong>${effect_name}</strong> as their Combat Card 
                     with the following effects: ${effects}'), [
                         'i18n' => ['effect_name', 'effects'],
                         "round" => $round,
                         "mode" => "combat",
                         "player_name" => $playerName,
                         "playerId" => $playerId,
-                        "effect_name" => "<strong>{$card->Name}</strong>",
+                        "effect_name" => $card->Name,
                         "combatCard" => $card->getPropertyArray($theah->game),
                         "effects" => $effects,
                         "riposte" => $results["riposte"],
@@ -861,10 +859,10 @@ trait EventHub
                 $handler = function($theah, EventDuelPlayerGambled $event) {
                     $card = $theah->game->getCardObjectFromDb($event->chosenCardId);
                     $theah->cards[$event->chosenCardId] = $card;
-                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has gambled with ${card_name}.'), [
+                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has gambled with <strong>${card_name}</strong>.'), [
                         'i18n' => ['card_name'],
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "card_name" => "<strong>{$card->Name}</strong>",
+                        "card_name" => $card->Name,
                     ]);
                 };
                 $handler($this, $event);
@@ -916,10 +914,10 @@ trait EventHub
                     $deck->moveCard($event->characterId, $locker);
                     $character->Location = $locker;
 
-                    $theah->game->notifyAllPlayers("characterDestroyed", clienttranslate('${target_name} has been destroyed and sent to the locker due to: ${reason} '), [
+                    $theah->game->notifyAllPlayers("characterDestroyed", clienttranslate('<strong>${target_name}</strong> has been destroyed and sent to the locker due to: ${reason} '), [
                         'i18n' => ['target_name', 'reason'],
                         "playerId" => $character->ControllerId,
-                        "target_name" => "<strong>{$character->Name}</strong>",
+                        "target_name" => $character->Name,
                         "character" => $character->getPropertyArray($theah->game),
                         "reason" => $event->reason,
                     ]);
@@ -934,10 +932,10 @@ trait EventHub
                     $locker = $theah->game->getPlayerLockerName($scheme->ControllerId);
                     $scheme->Location = $locker;
 
-                    $theah->game->notifyAllPlayers("schemeSentToLocker", clienttranslate('${scheme_name} has been sent to the locker.'), [
+                    $theah->game->notifyAllPlayers("schemeSentToLocker", clienttranslate('<strong>${scheme_name}</strong> has been sent to the locker.'), [
                         'i18n' => ['scheme_name'],
                         "playerId" => $scheme->ControllerId,
-                        "scheme_name" => "<strong>{$scheme->Name}</strong>",
+                        "scheme_name" => $scheme->Name,
                         "scheme" => $scheme->getPropertyArray($theah->game),
                     ]);
                 };

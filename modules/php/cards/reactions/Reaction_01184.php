@@ -20,7 +20,7 @@ class Reaction_01184 extends CardReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . '${you} may choose to count only the Performer and En Garde Characters for this Claim: ';
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to count only the Performer and En Garde Characters for this Claim: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array

@@ -657,25 +657,25 @@ trait StatesTrait
             {
                 case GAME::STAT_COMBAT:
                     $stat = $performer->ModifiedCombat;
-                    $reason .= "Stat Used for Challenge was Combat.";
+                    $reason .= $this->translate("Stat Used for Challenge was Combat.");
                     break;
                 case GAME::STAT_FINESSE:
                     $stat = $performer->ModifiedFinesse;
-                    $reason .= "Stat Used for Challenge was Finesse.";
+                    $reason .= $this->translate("Stat Used for Challenge was Finesse.");
                     break;
                 case GAME::STAT_INFLUENCE:
                     $stat = $performer->ModifiedInfluence;
-                    $reason .= "Stat Used for Challenge was Influence.";
+                    $reason .= $this->translate("Stat Used for Challenge was Influence.");
                     break;
             }
 
             $wounds = $threat;
-            $reason .= "<p>Challenge was Rejected. Generated Threat was {$threat}.";
+            $reason .= "<p>" . $this->translate("Challenge was Rejected. Generated Threat was ") . $threat . ".";
             if ($threat > $stat)
             {
                 $wounds = $stat;
                 $reduction = $threat - $stat;
-                $reason .= "<p>Threat was reduced by {$reduction} due to Restricted Hostilities (Stat value of {$stat}). ";
+                $reason .= "<p>" . $this->translate("Threat was reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
             }
 
             $event = $this->theah->createEvent(Events::CharacterWounded);
@@ -817,11 +817,11 @@ trait StatesTrait
         $this->theah->queueEvent($event);
 
         $playerName = $this->getPlayerNameById($playerId);
-        $this->notifyAllPlayers("newDuelRound", clienttranslate('DUEL ROUND #${round} HAS STARTED for ${player_name} and their ${role} character ${character_name}.'), [
+        $this->notifyAllPlayers("newDuelRound", clienttranslate('DUEL ROUND #${round} HAS STARTED for ${player_name} and their ${role} character <strong>${character_name}</strong>.'), [
             'i18n' => ['role', 'character_name', 'challengerName', 'defenderName'],
             "player_name" => $playerName,
             "role" => $round % 2 == 1 ? "Defending" : "Challenging",
-            "character_name" => "<strong>{$actor->Name}</strong>",
+            "character_name" => $actor->Name,
             "round" => $round,
             "playerId" => $playerId,
             "challengerId" => $challengerId,
@@ -976,7 +976,7 @@ trait StatesTrait
             $combatStatUsed = $this->globals->get(GAME::CHALLENGE_STAT);
 
             $stat = $adversary->ModifiedCombat;
-            $reason = "<p>$threat Threat was left over in their Pool.";
+            $reason = "<p>$threat " . $this->translate("Threat was left over in their Pool.");
 
             $wounds = $threat;
             if ($threat > $stat)
@@ -985,20 +985,20 @@ trait StatesTrait
                 {
                     case GAME::STAT_COMBAT:
                         $stat = $adversary->ModifiedCombat;
-                        $reason .= "<p>Stat Used for Duel is Combat.";
+                        $reason .= "<p>" . $this->translate("Stat Used for Duel is Combat.");
                         break;
                     case GAME::STAT_FINESSE:
                         $stat = $adversary->ModifiedFinesse;
-                        $reason .= "<p>Stat Used for Duel is Finesse.";
+                        $reason .= "<p>" . $this->translate("Stat Used for Duel is Finesse.");
                         break;
                     case GAME::STAT_INFLUENCE:
                         $stat = $adversary->ModifiedInfluence;
-                        $reason .= "<p>Stat Used for Duel is Influence.";
+                        $reason .= "<p>" . $this->translate("Stat Used for Duel is Influence.");
                         break;
                 }
                 $wounds = $stat;
                 $reduction = $threat - $stat;
-                $reason .= "<p>Wounds were reduced by {$reduction} due to Restricted Hostilities (Stat value of {$stat}). ";
+                $reason .= "<p>" . $this->translate("Wounds were reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
             }
 
             $event = $this->theah->createEvent(Events::CharacterWounded);
@@ -1439,9 +1439,9 @@ trait StatesTrait
             {
                 $leader = $this->theah->getLeaderByPlayerId($playerId);
 
-                $this->notifyAllPlayers("message", clienttranslate('${player_name}:${leader_name} has ${wounds} Wounds.'), [
+                $this->notifyAllPlayers("message", clienttranslate('${player_name}:<strong>${leader_name}</strong> has ${wounds} Wounds.'), [
                     "player_name" => $this->getPlayerNameById($playerId),
-                    "leader_name" => "<strong>$leader->Name</strong>",
+                    "leader_name" => $leader->Name,
                     "wounds" => $leader->Wounds
                 ]);
 

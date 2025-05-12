@@ -99,10 +99,10 @@ class _01126 extends Scheme
             $deck = $event->theah->game->getGameDeckObject();
 
             $event->theah->game->notifyAllPlayers('01126_2_scheme_moved', 
-                clienttranslate('${card_name} moves to ${location}'), [
+                clienttranslate('<strong>${card_name}</strong> moves to ${location}'), [
                     'i18n' => ['card_name', 'location'],
                     "cardId" => $this->Id,
-                    "card_name" => '<strong>Leshiye of the Wood</strong>',
+                    "card_name" => $this->Name,
                     "location" => $event->location,
             ]);    
 
@@ -113,8 +113,6 @@ class _01126 extends Scheme
                 //Discard all city cards
                 if ($card instanceof ICityDeckCard)
                 {
-                    $deck->moveCard($card->Id, Game::LOCATION_CITY_DISCARD);
-
                     $discard = $event->theah->createEvent(Events::CardAddedToCityDiscardPile);
                     if ($discard instanceof EventCardAddedToCityDiscardPile)
                     {

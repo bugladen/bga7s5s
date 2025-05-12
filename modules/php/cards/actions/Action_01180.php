@@ -40,9 +40,9 @@ class Action_01180 extends CharacterAction
                 //Sink card to City Discard Pile
                 $deck->insertCardOnExtremePosition($card->Id, Game::LOCATION_CITY_DECK, false);
 
-                $game->notifyAllPlayers("message", clienttranslate('${card_name} has been sunk to the City Pile.'), [
+                $game->notifyAllPlayers("message", clienttranslate('<strong>${card_name}</strong> has been sunk to the City Pile.'), [
                     'i18n' => ['card_name'],
-                    "card_name" => "<strong>{$card->Name}</strong>",
+                    "card_name" => $card->Name,
                 ]);
         }
 
@@ -165,10 +165,10 @@ class Action_01180 extends CharacterAction
     
             $playerId = $game->getActivePlayerId();
     
-            $game->notifyAllPlayers('message', clienttranslate('${player_name} has chosen to Equip ${card_name} from the top 4 cards of the City Deck.'), [
+            $game->notifyAllPlayers('message', clienttranslate('${player_name} has chosen to Equip <strong>${card_name}</strong> from the top 4 cards of the City Deck.'), [
                 'i18n' => ['card_name'],
                 'player_name' => $game->getActivePlayerName(),
-                'card_name' => "<strong>{$attachment->Name}</strong>",
+                'card_name' => $attachment->Name,
             ]);
 
             $deck = $game->getGameDeckObject();
@@ -182,9 +182,9 @@ class Action_01180 extends CharacterAction
                 //Sink card to City Discard Pile
                 $deck->insertCardOnExtremePosition($card->Id, Game::LOCATION_CITY_DECK, false);
 
-                $game->notifyAllPlayers("message", clienttranslate('${card_name} has been sunk to the City Discard Pile.'), [
+                $game->notifyAllPlayers("message", clienttranslate('<strong>${card_name}</strong> has been sunk to the City Discard Pile.'), [
                     'i18n' => ['card_name'],
-                    "card_name" => "<strong>{$card->Name}</strong>",
+                    "card_name" => $card->Name,
                 ]);
             }
 
@@ -274,9 +274,9 @@ class Action_01180 extends CharacterAction
                     $count++;
             }
 
-            $event->theah->game->notifyAllPlayers('message', clienttranslate('${card_name} found ${count} Artifacts in the top 4 cards of the City Deck. (${names})'), [
+            $event->theah->game->notifyAllPlayers('message', clienttranslate('<strong>${card_name}</strong> found ${count} Artifacts in the top 4 cards of the City Deck. (${names})'), [
                 'i18n' => ['card_name'],
-                'card_name' => "<strong>{$this->Name}</strong>",
+                'card_name' => $this->Name,
                 'count' => $count,
                 'names' => implode(', ', $names)
             ]);

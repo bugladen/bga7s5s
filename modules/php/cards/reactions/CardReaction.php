@@ -32,7 +32,7 @@ abstract class CardReaction extends Reaction
     public function getReactionDescription(Theah $theah): string
     {
         $owner = $this->getOwningCard($theah);
-        return parent::getReactionDescription($theah) . $owner->Name  . " > Reaction: ";
+        return parent::getReactionDescription($theah) . $owner->Name  . " > " . $theah->game->translate("Reaction") . ": ";
     }
 
     public function getReactionPayForDescription(Theah $theah): string

@@ -26,7 +26,7 @@ class Reaction_01023 extends RiskReaction
     public function getReactionAnnouncement(Game $game, int $state, string $internalId, string $reactionId): string
     {
         $announcement = parent::getReactionAnnouncement($game, $state, $internalId, $reactionId);
-        return $announcement . "No interventions will be allowed this Challenge. ";
+        return $announcement . $game->translate("No interventions will be allowed this Challenge. ");
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -40,7 +40,7 @@ class Reaction_01023 extends RiskReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . '${you} may choose to Prevent Intervention: ';
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to Prevent Intervention: ');
     }
 
     public function eventCheck(Event $event)

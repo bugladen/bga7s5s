@@ -58,7 +58,7 @@ class Reaction_CrewCapLimit extends GameReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . '${you} are over your Crew Cap Limit and must choose to sink a character: ';
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} are over your Crew Cap Limit and must choose to sink a character: ');
     }
     
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -70,7 +70,7 @@ class Reaction_CrewCapLimit extends GameReaction
             throw new \BgaUserException($game->translate("Reaction_CrewCapLimit: Not a character."));
         }
 
-        $event = EventFactory::createCharacterDestroyedEvent($game->getActivePlayerId(), $character->Id, 'Chosen to sink for Crew Cap Limit');
+        $event = EventFactory::createCharacterDestroyedEvent($game->getActivePlayerId(), $character->Id, $game->translate('Chosen to sink for Crew Cap Limit'));
         $game->theah->queueEvent($event);
         $game->gamestate->nextState("done");
 }

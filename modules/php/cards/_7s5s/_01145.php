@@ -215,7 +215,7 @@ class _01145 extends Scheme
             if ($addEvent instanceof EventCardDrawn) {
                 $addEvent->card = $card;
                 $addEvent->playerId = $playerId;
-                $addEvent->reason = "<strong>Inspire Generosity</strong> effect";
+                $addEvent->reason = "<strong>" . $game->translate("Inspire Generosity") . "</strong> " . $game->translate("effect");
             }
             //No need for a check
             $game->theah->queueEvent($addEvent);
@@ -246,7 +246,7 @@ class _01145 extends Scheme
             if ($addEvent instanceof EventCardDrawn) {
                 $addEvent->card = $card;
                 $addEvent->playerId = $lowestPlayer;
-                $addEvent->reason = "<strong>Inspire Generosity</strong> effect - player has fewest reknown";
+                $addEvent->reason = "<strong>" . $game->translate("Inspire Generosity") . "</strong> " . $game->translate("effect") . " - " . $game->translate("player has fewest reknown");
             }
             //No need for a check
             $game->theah->queueEvent($addEvent);
@@ -262,7 +262,7 @@ class _01145 extends Scheme
             if ($addEvent instanceof EventCardDrawn) {
                 $addEvent->card = $card;
                 $addEvent->playerId = $lowestPlayer;
-                $addEvent->reason = "<strong>Inspire Generosity</strong> effect - player has fewest characters in play";
+                $addEvent->reason = "<strong>" . $game->translate("Inspire Generosity") . "</strong> " . $game->translate("effect") . " - " . $game->translate("player has fewest characters in play");
             }
             //No need for a check
             $game->theah->queueEvent($addEvent);

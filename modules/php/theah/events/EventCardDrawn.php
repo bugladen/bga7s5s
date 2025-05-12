@@ -14,7 +14,7 @@ class EventCardDrawn extends Event
     {
         parent::__construct();
 
-        $this->reason = "unknown reason";
+        $this->reason = "";
     }
 
 }

@@ -74,11 +74,11 @@ class _01177 extends CityEventCard
             $selectedCharacter->Conditions[] = "Helped By Penya";
             $game->updateCardObjectInDb($selectedCharacter);
     
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen ${character_name} to follow Penya. 
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen <strong>${character_name}</strong> to follow Penya. 
             They will now choose the order of the top 3 cards in the City Deck.'), [
                 'i18n' => ['character_name'],
                 "player_name" => $game->getActivePlayerName(),
-                "character_name" => "<strong>$selectedCharacter->Name</strong>",
+                "character_name" => $selectedCharacter->Name,
             ]);
     
             $game->gamestate->nextState("pickCards");
@@ -146,9 +146,9 @@ class _01177 extends CityEventCard
 
                 if (count($characters) > 0)
                 {
-                    $event->theah->game->notifyAllPlayers("message", clienttranslate('${card_name} triggers.  ${player_name} may choose to have one of their characters follow Penya.'), [
+                    $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${card_name}</strong> triggers.  ${player_name} may choose to have one of their characters follow Penya.'), [
                         'i18n' => ['card_name'],
-                        "card_name" => "<strong>$this->Name</strong>",
+                        "card_name" => $this->Name,
                         "player_name" => $event->theah->game->getActivePlayerName(),
                     ]);
                     

@@ -62,9 +62,9 @@ class _01144 extends Scheme
             {
                 $player_name = $event->theah->game->getPlayerNameById($this->ControllerId);
 
-                $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} Leader Reaction: ${player_name} DOES NOT have the least (non-tied) amount of characters in play.'), [
+                $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> Leader Reaction: ${player_name} DOES NOT have the least (non-tied) amount of characters in play.'), [
                     'i18n' => ['scheme_name'],
-                    "scheme_name" => "<strong>{$this->Name}</strong>",
+                    "scheme_name" => $this->Name,
                     "player_name" => $player_name,
                 ]);
 
@@ -80,10 +80,10 @@ class _01144 extends Scheme
             //Set the discount for recruiting a mercenary.
             $event->theah->game->globals->set(Game::DISCOUNT, $discount);
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} Leader Reaction: ${player_name} has the least (non-tied) amount of characters in play (${amount}).
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> Leader Reaction: ${player_name} has the least (non-tied) amount of characters in play (${amount}).
             They may now Recruit a mercenary at a discount of their Leader\'s highest stat.'), [
                 'i18n' => ['scheme_name'],
-                "scheme_name" => "<strong>{$this->Name}</strong>",
+                "scheme_name" => $this->Name,
                 "amount" => $lowestCount,
                 "player_name" => $players[$this->ControllerId]['player_name'],
             ]);

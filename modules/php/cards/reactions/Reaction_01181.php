@@ -25,7 +25,7 @@ class Reaction_01181 extends AttachmentReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . '${you} may choose to Heal Wounds: ';
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to Heal Wounds: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -92,7 +92,7 @@ class Reaction_01181 extends AttachmentReaction
         $engageEvent = EventFactory::createCardEngagedEvent($attachment->ControllerId, $attachment->Id);
         $game->theah->queueEvent($engageEvent);
 
-        $healedEvent = EventFactory::createCharacterHealedEvent($this->HealTargetId, $attachment->Id, $wounds, 'Sorte Deck');
+        $healedEvent = EventFactory::createCharacterHealedEvent($this->HealTargetId, $attachment->Id, $wounds, $game->translate("Sorte Deck"));
         $game->theah->queueEvent($healedEvent);
     }
 }

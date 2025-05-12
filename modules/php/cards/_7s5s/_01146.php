@@ -36,9 +36,9 @@ class _01146 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves.  Reknown will be added to The Docks and The Forum.'), [
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> now resolves.  Reknown will be added to The Docks and The Forum.'), [
                 'i18n' => ['scheme_name'],
-                "scheme_name" => "<strong>{$this->Name}</strong>",
+                "scheme_name" => $this->Name,
             ]);
 
             $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
