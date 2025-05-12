@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
@@ -105,6 +106,10 @@ trait EventHub
 
                     if ($performer instanceof Character) {
                         $performer->addAttachment($attachment);
+                        $modifiedResolve = $performer->ModifiedResolve;
+                        $modifiedCombat = $performer->ModifiedCombat;
+                        $modifiedFinesse = $performer->ModifiedFinesse;
+                        $modifiedInfluence = $performer->ModifiedInfluence;
                     }
 
                     if ($attachment instanceof Attachment) {                        
@@ -115,21 +120,61 @@ trait EventHub
                     }
                     
                     // Notify players of recruited character
-                    $theah->game->notifyAllPlayers("attachmentEquipped", clienttranslate('${player_name} equipped ${attachment_name} to ${performer_name} at a discount of ${discount} for a cost of ${cost} Wealth.'), [
+                    $theah->game->notifyAllPlayers("attachmentEquipped", clienttranslate('${player_name} equipped <strong>${attachment_name}</strong> to <strong>${performer_name}</strong> at a discount of ${discount} for a cost of ${cost} Wealth.'), [
                         'i18n' => ['attachment_name', 'performer_name'],
                         "player_id" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "attachment_name" => "<span style='font-weight:bold'>{$attachment->Name}</span>",
-                        "performer_name" => "<span style='font-weight:bold'>{$performer->Name}</span>",
-                        "attachment" => $attachment->getPropertyArray($theah->game),
-                        "performerId" => $performer->Id,
+                        "attachment_name" => $attachment->Name,
+                        "performer_name" => $performer->Name,
                         "discount" => $event->discount,
                         "cost" => $event->cost,
+                        "attachment" => $attachment->getPropertyArray($theah->game),
+                        "performerId" => $performer->Id,
+                        "modifiedResolve" => $modifiedResolve,
+                        "modifiedCombat" => $modifiedCombat,
+                        "modifiedFinesse" => $modifiedFinesse,
+                        "modifiedInfluence" => $modifiedInfluence,
                     ]);
                 };
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventAttachmentUnequipped:
+                $handler = function (Theah $theah, EventAttachmentUnequipped $event)
+                {
+                    $character = $theah->getCardById($event->characterId);
+                    $attachment = $theah->getCardById($event->attachmentId);
+
+                    if ($attachment instanceof Attachment) 
+                    {                        
+                        $attachment->AttachedToId = 0;
+                        $attachment->IsUpdated = true;
+                    }
+
+                    if ($character instanceof Character) {
+                        $character->removeAttachment($attachment);
+                        $modifiedResolve = $character->ModifiedResolve;
+                        $modifiedCombat = $character->ModifiedCombat;
+                        $modifiedFinesse = $character->ModifiedFinesse;
+                        $modifiedInfluence = $character->ModifiedInfluence;
+                    }
+
+                    $theah->game->notifyAllPlayers("attachmentUnequipped", clienttranslate('${player_name} unequipped <strong>${attachment_name}</strong> from <strong>${character_name}</strong>.'), [
+                        'i18n' => ['attachment_name', 'character_name'],
+                        "player_id" => $event->playerId,
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "attachment_name" => $attachment->Name,
+                        "character_name" => $character->Name,
+                        "attachmentId" => $attachment->Id,
+                        "characterId" => $character->Id,
+                        "modifiedResolve" => $modifiedResolve,
+                        "modifiedCombat" => $modifiedCombat,
+                        "modifiedFinesse" => $modifiedFinesse,
+                        "modifiedInfluence" => $modifiedInfluence,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
 
             case $event instanceof EventCardDrawn:
                 $event->card->Location = Game::LOCATION_HAND;
@@ -168,8 +213,14 @@ trait EventHub
             case $event instanceof EventCardAddedToCityDiscardPile:
                 $handler = function (Theah $theah, EventCardAddedToCityDiscardPile $event)
                 {
-                    $card = $this->cards[$event->cardId];
-                    $this->game->notifyAllPlayers("cardAddedToCityDiscardPile", clienttranslate('${card_name} added to City Discard pile from ${location}.'), [
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->moveCard($event->cardId, Game::LOCATION_CITY_DISCARD);
+
+                    $card = $theah->getCardById($event->cardId);
+                    $card->Location = Game::LOCATION_CITY_DISCARD;
+                    $card->IsUpdated = true;
+
+                    $this->game->notifyAllPlayers("cardAddedToCityDiscardPile", clienttranslate('<strong>${card_name}</strong> added to City Discard pile from ${location}.'), [
                         'i18n' => ['card_name', 'location'],
                         "card_name" => $card->Name,
                         "cardId" => $card->Id,

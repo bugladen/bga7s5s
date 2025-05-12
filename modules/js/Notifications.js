@@ -16,6 +16,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['approachCharacterPlayed', 2000],
             ['approachSchemePlayed', 2000],
             ['attachmentEquipped', 1000],
+            ['attachmentUnequipped', 1000],
             ['newDay', 1000],
             ['cityCardAddedToLocation', 1000],
             ['cardAddedToCityDiscardPile', 500],
@@ -105,6 +106,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (action)
         {
             action.available = ! args.used;
+            this.createTooltipForCard(card);
         }       
     },
 
@@ -120,6 +122,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (maneuver)
         {
             maneuver.available = ! args.used;
+            this.createTooltipForCard(card);
         }
     },
 
@@ -135,6 +138,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (reaction)
         {
             reaction.available = ! args.used;
+            this.createTooltipForCard(card);
         }
     },
 
@@ -150,6 +154,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (technique)
         {
             technique.available = ! args.used;
+            this.createTooltipForCard(card);
         }
     },
 
@@ -223,6 +228,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.attachCard(performer, attachment);
         this.cardProperties[attachment.id] = attachment;
 
+        performer.modifiedResolve = args.modifiedResolve;
+        performer.modifiedCombat = args.modifiedCombat;
+        performer.modifiedFinesse = args.modifiedFinesse;
+        performer.modifiedInfluence = args.modifiedInfluence;
+
         //Create a placeholder html element in front of the performer
         const placeholderId = "equip-placeholder";
         dojo.place(`<div id="${placeholderId}"></div>`, performer.divId, 'before');
@@ -235,6 +245,46 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         //Destroy the placeholder
         dojo.destroy(placeholderId);
+    },
+
+    notif_attachmentUnequipped: function( notif )
+    {
+        debug( 'notif_attachmentUnequipped' );
+        debug( notif );
+
+        const args = notif.args;
+        const attachment = this.cardProperties[args.attachmentId];
+        const character = this.cardProperties[args.characterId];
+
+        attachment.attachmentIndex = null;
+        attachment.attachedToId = null;
+        attachment.controllerId = 0;
+        
+        character.attachedCards = character.attachedCards.filter(card => card.id !== attachment.id);
+        character.modifiedResolve = args.modifiedResolve;
+        character.modifiedCombat = args.modifiedCombat;
+        character.modifiedFinesse = args.modifiedFinesse;
+        character.modifiedInfluence = args.modifiedInfluence;
+
+        //Create a placeholder html element in front of the performer
+        const placeholderId = "unequip-placeholder";
+        dojo.place(`<div id="${placeholderId}"></div>`, character.divId, 'before');
+
+        //Destroy attachment element
+        dojo.destroy(attachment.divId);
+
+        //Destroy old character element
+        dojo.destroy(character.divId);
+
+        //Create the new attachment element    
+        this.createCard(attachment.divId, attachment, placeholderId);
+
+        //Create the new character element    
+        this.createCard(character.divId, character, placeholderId);
+
+        //Destroy the placeholder
+        dojo.destroy(placeholderId);
+
     },
 
     notif_factionResolveCardDraw: function( notif )

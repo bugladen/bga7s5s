@@ -1002,6 +1002,7 @@ $machinestates = [
             "transitions" => [
                 "01029" => States::HIGH_DRAMA_PLAYER_TURN_01029,
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
+                "01187" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION,
                 "01185" => States::HIGH_DRAMA_PLAYER_TURN_01185,
                 "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
                 "endOfEvents" => States::NEXT_PLAYER,

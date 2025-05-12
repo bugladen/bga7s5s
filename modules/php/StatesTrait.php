@@ -454,6 +454,7 @@ trait StatesTrait
     public function stHighDramaPhase() {
         $this->gamestate->changeActivePlayer($this->globals->get(Game::FIRST_PLAYER));
         $this->globals->set(Game::CLAIM_TYPE, Game::NORMAL_CLAIM_TYPE);
+        $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->gamestate->nextState("");
     }
 
@@ -1114,6 +1115,7 @@ trait StatesTrait
         $this->globals->delete(Game::TRANSITION_INTERNAL_ID);
         $this->globals->delete(Game::REACTION_ID);
         $this->globals->set(Game::CLAIM_TYPE, Game::NORMAL_CLAIM_TYPE);
+        $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
 
         $currentPlayerId = $this->globals->get(Game::CURRENT_PLAYER);
         $nextPlayerId = $this->getPlayerAfter($currentPlayerId);
@@ -1543,8 +1545,6 @@ trait StatesTrait
             {
                 if ($card instanceof ICityDeckCard && $card->ControllerId == 0)
                 {
-                    $this->cards->moveCard($card->Id, Game::LOCATION_CITY_DISCARD);
-    
                     $discard = $this->theah->createEvent(Events::CardAddedToCityDiscardPile);
                     if ($discard instanceof EventCardAddedToCityDiscardPile)
                     {

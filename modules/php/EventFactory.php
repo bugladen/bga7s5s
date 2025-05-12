@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
@@ -69,6 +70,19 @@ class EventFactory
             $event->performerId = $characterId;
             $event->discount = $discount;
             $event->cost = $cost;
+        }
+
+        return $event;
+    }
+
+    public static function createAttachmentUnequippedEvent(int $playerId, int $characterId, int $attachmentId): EventAttachmentUnequipped
+    {
+        $event = self::createEvent(Events::AttachmentUnequipped);
+        if ($event instanceof EventAttachmentUnequipped)
+        {
+            $event->playerId = $playerId;
+            $event->characterId = $characterId;
+            $event->attachmentId = $attachmentId;
         }
 
         return $event;

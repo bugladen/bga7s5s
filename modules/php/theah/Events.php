@@ -47,7 +47,6 @@ class Events
     const ClaimOccuring = 'EventClaimOccuring';
     const LocationClaimed = 'EventLocationClaimed';
     const CharacterRecruited = 'EventCharacterRecruited';
-    const AttachmentEquipped = 'EventAttachmentEquipped';
     const HighDramaPhasePlayerPassed = 'EventHighDramaPhasePlayerPassed';
     const HighDramaPhaseEnd = 'EventHighDramaPhaseEnd';
     
@@ -76,6 +75,8 @@ class Events
     const PlunderPhaseAdditionalReknownEvent = 'EventPlunderPhaseAdditionalReknownEvent';
     
     //Card Manipulation events
+    const AttachmentEquipped = 'EventAttachmentEquipped';
+    const AttachmentUnequipped = 'EventAttachmentUnequipped';
     const CardMoved = 'EventCardMoved';
     const CardDrawn = 'EventCardDrawn';
     const CardEngaged = 'EventCardEngaged';

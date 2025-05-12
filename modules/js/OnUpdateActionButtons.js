@@ -296,7 +296,8 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaEquipActionChooseAttachmentLocation': () => {
-            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            if (args._private.equipType === 0) 
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             if (args._private.attachmentsInHand.length > 0) {
                 this.addActionButton(`actChooseFromHand`, _('Equip from Hand'), () => this.bgaPerformAction('actSimpleTransition', {transition: 'equipFromHand'}));
             }

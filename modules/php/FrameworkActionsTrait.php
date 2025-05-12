@@ -437,8 +437,6 @@ trait FrameworkActionsTrait
             //Discard all city cards
             if ($card instanceof ICityDeckCard)
             {
-                $this->cards->moveCard($card->Id, Game::LOCATION_CITY_DISCARD);
-
                 $discard = $this->theah->createEvent(Events::CardAddedToCityDiscardPile);
                 if ($discard instanceof EventCardAddedToCityDiscardPile)
                 {
@@ -877,6 +875,7 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Equipping is not allowed right now."));
         }
 
+        $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->gamestate->nextState("equipActionStart");
     }
 
@@ -1032,7 +1031,7 @@ trait FrameworkActionsTrait
         $playerId = $this->getActivePlayerId();
 
         //Equip the attachment
-        $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $attachmentId, $performerId, $attachment->Location, $discount, $cost);
+        $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $attachmentId, $performerId, $discount, $cost);
         $this->theah->eventCheck($equipAttachmentEvent);
 
         //Move the cards used to pay to the player's discard pile

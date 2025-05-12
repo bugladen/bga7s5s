@@ -160,6 +160,7 @@ abstract class Character extends Card
             $this->ModifiedInfluence -= $attachment->InfluenceModifier;
 
             unset($this->Attachments[$index]);
+            $this->IsUpdated = true;
         }
     }
 

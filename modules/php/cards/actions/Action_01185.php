@@ -95,7 +95,6 @@ class Action_01185 extends EventCityAction
             $game->theah->queueEvent($event);
 
             //Discard this card
-            $deck->moveCard($riskyUndertaking->Id, Game::LOCATION_CITY_DISCARD);
             $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $riskyUndertaking->Id, $location);
             $game->theah->queueEvent($event);
 

@@ -335,6 +335,7 @@ trait ArgumentsTrait
         return [
             "_private" => [
                 "active" => [
+                    "equipType" => $this->globals->get(Game::EQUIP_TYPE),
                     "performerId" => $performerId,
                     "attachmentsInHand" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInHand),
                     "attachmentsInPlay" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInPlay),
