@@ -89,6 +89,8 @@ class Action_01029 extends RiskAction
 
     public function handleEvent(Event $event)
     {
+        parent::handleEvent($event);
+        
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01029");

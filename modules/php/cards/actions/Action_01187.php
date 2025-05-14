@@ -34,6 +34,8 @@ class Action_01187 extends AttachmentAction
 
     public function handleEvent(Event $event)
     {
+        parent::handleEvent($event);
+        
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $performer = $this->getOwningCharacter($event->theah);

@@ -1413,8 +1413,8 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Character is not at the same location as the target."));
         }    
 
-        if($character->Engaged) {
-            throw new \BgaUserException(self::_("Character is engaged. Cannot Intervene."));
+        if( ! $character->canIntervene()) {
+            throw new \BgaUserException(self::_("Character cannot Intervene."));
         }
 
         //Reset the conditions for defender
@@ -1422,9 +1422,6 @@ trait FrameworkActionsTrait
         $character->addCondition(Game::DUEL_DEFENDER);
         $this->globals->set(Game::CHOSEN_TARGET, $character->Id);
 
-        $engageEvent = EventFactory::createCardEngagedEvent($playerId, $character->Id);
-        $this->theah->eventCheck($engageEvent);
-        
         $interveneEvent = $this->theah->createEvent(Events::CharacterIntervened);
         if ($interveneEvent instanceof EventCharacterIntervened)
         {
@@ -1434,8 +1431,11 @@ trait FrameworkActionsTrait
         }    
         $this->theah->eventCheck($interveneEvent);
 
-        $this->theah->queueEvent($engageEvent);
+        $engageEvent = EventFactory::createCardEngagedEvent($playerId, $character->Id);
+        $this->theah->eventCheck($engageEvent);
+        
         $this->theah->queueEvent($interveneEvent);
+        $this->theah->queueEvent($engageEvent);
 
         $this->globals->set(GAME::CHALLENGE_ACCEPTED, true);
 
@@ -1733,13 +1733,14 @@ trait FrameworkActionsTrait
     {
         $duelId = $this->globals->get(Game::DUEL_ID);
         $round = $this->globals->get(Game::DUEL_ROUND);    
+        $type = $this->globals->get(Game::DUEL_TYPE);
 
         $sql = "SELECT actor_id, combat_card_id FROM duel_round where duel_id = $duelId AND round = $round";
         $roundInfo = $this->getObjectListFromDB($sql)[0];
         $actorId = $roundInfo['actor_id'];
         $cardId = $roundInfo['combat_card_id'];
 
-        if ($round == 1)
+        if ($round == 1 && $type != Game::VLADISLAV_DUEL_TYPE)
         {
             //Check to see if a combat card was played
             if ($cardId == null)
@@ -1757,6 +1758,17 @@ trait FrameworkActionsTrait
         }
         $this->theah->queueEvent($event);
         
+        $this->gamestate->nextState("doneWithRound");
+    }
+
+    public function actDuelEndDuel()
+    {
+        $duelType = $this->globals->get(Game::DUEL_TYPE);
+        if ($duelType != Game::VLADISLAV_DUEL_TYPE)
+        {
+            throw new \BgaUserException(self::_("Duel is not Vladislav duel."));
+        }
+
         $this->gamestate->nextState("doneWithRound");
     }
 

@@ -8,10 +8,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
         // TODO: here, associate your game notifications with local methods
         const notifs = [
             ['playLeader', 1500],
-            ['actionUsed', 0],
-            ['maneuverUsed', 0],
-            ['reactionUsed', 0],
-            ['techniqueUsed', 0],
+            ['actionUsed', 1],
+            ['maneuverUsed', 1],
+            ['reactionUsed', 1],
+            ['techniqueUsed', 1],
             ['approachCardsReceived', 1000],
             ['approachCharacterPlayed', 2000],
             ['approachSchemePlayed', 2000],

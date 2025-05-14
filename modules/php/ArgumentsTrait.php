@@ -572,17 +572,38 @@ trait ArgumentsTrait
         $characterManeuevers = $this->theah->getAvailableCharacterManeuvers($actor);
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
 
-        return [
-            "_private" => [
-                "active" => [
-                    "maneuversAvailable" => (count($characterManeuevers) > 0) && $round['maneuver_id'] == null,
-                    "techniquesAvailable" => count($techniques) > 0 && $round['technique_id'] == null,
-                    "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $round['combat_card_id'] == null,
-                    "gamblesLeft" => $gamblesLeft,
-                    "combatCardAvailable" => $round['combat_card_id'] == null
-                ]
-            ],
-        ];
+        $duelType = $this->globals->get(Game::DUEL_TYPE);
+        if ($duelType == Game::VLADISLAV_DUEL_TYPE)
+        {
+            return [
+                "_private" => [
+                    "active" => [
+                        "maneuversAvailable" => false,
+                        "techniquesAvailable" => false,
+                        "gambleAvailable" => false,
+                        "gamblesLeft" => 0,
+                        "combatCardAvailable" => false,
+                        "endDuelAvailable" => true
+                    ]
+                ],
+            ];
+            }
+        else
+        {
+            return [
+                "_private" => [
+                    "active" => [
+                        "maneuversAvailable" => (count($characterManeuevers) > 0) && $round['maneuver_id'] == null,
+                        "techniquesAvailable" => count($techniques) > 0 && $round['technique_id'] == null,
+                        "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $round['combat_card_id'] == null,
+                        "gamblesLeft" => $gamblesLeft,
+                        "combatCardAvailable" => $round['combat_card_id'] == null,
+                        "endDuelAvailable" => false
+                    ]
+                ],
+            ];
+            }
+
     }
 
     public function argsChooseDuelTechnique(): array

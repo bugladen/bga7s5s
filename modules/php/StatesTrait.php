@@ -705,6 +705,7 @@ trait StatesTrait
         $this->globals->set(GAME::DUEL_ID, $duelId);
         
         $this->globals->set(GAME::IN_DUEL, true);
+        $this->globals->set(GAME::DUEL_TYPE, GAME::NORMAL_DUEL_TYPE);
         
         $challengerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $challenger = $this->getCardObjectFromDb($challengerId);

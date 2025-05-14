@@ -30,6 +30,8 @@ abstract class CardAction extends Action
 
     public function handleEvent(Event $event)
     {
+        parent::handleEvent($event);
+
         if ($event instanceof EventDuskEndOfDay)
         {
             $this->setUsed($event->theah, false);

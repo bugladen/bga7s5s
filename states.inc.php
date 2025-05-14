@@ -1823,14 +1823,15 @@ $machinestates = [
                 "actDuelActionGamble",
                 "actDuelActionChooseCombatCard",
                 "actDuelActionChooseTechnique",
-                "actDuelDoneRound"
+                "actDuelDoneRound",
+                "actDuelEndDuel"
             ],
             "transitions" => [
                 "chooseTechnique" => States::DUEL_CHOOSE_TECHNIQUE,
                 "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                 "chooseGambleCard" => States::DUEL_CHOOSE_GAMBLE_CARD,
                 "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
-                "doneWithRound" => States::DUEL_END_OF_ROUND
+                "doneWithRound" => States::DUEL_END_OF_ROUND,
             ]
         ],
             States::DUEL_CHOOSE_TECHNIQUE => [

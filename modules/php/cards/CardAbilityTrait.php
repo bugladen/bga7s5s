@@ -92,13 +92,13 @@ trait CardAbilityTrait
         $theah->game->updateCardObjectInDb($owner);
 
         if ($this instanceof Action)
-            $event = EventFactory::createActionUsedEvent($theah->game->getActivePlayerId(), $owner->Id, $this->Id, $used);
+            $event = EventFactory::createActionUsedEvent($owner->ControllerId, $owner->Id, $this->Id, $used);
         else if ($this instanceof Reaction)
-            $event = EventFactory::createReactionUsedEvent($theah->game->getActivePlayerId(), $owner->Id, $this->Id, $used);
+            $event = EventFactory::createReactionUsedEvent($owner->ControllerId, $owner->Id, $this->Id, $used);
         else if ($this instanceof Maneuver)
-            $event = EventFactory::createManeuverUsedEvent($theah->game->getActivePlayerId(), $owner->Id, $this->Id, $used);
+            $event = EventFactory::createManeuverUsedEvent($owner->ControllerId, $owner->Id, $this->Id, $used);
         else if ($this instanceof Technique)
-            $event = EventFactory::createTechniqueUsedEvent($theah->game->getActivePlayerId(), $owner->Id, $this->Id, $used);
+            $event = EventFactory::createTechniqueUsedEvent($owner->ControllerId, $owner->Id, $this->Id, $used);
 
         $theah->queueEvent($event);
     }

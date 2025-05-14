@@ -57,7 +57,7 @@ class Game extends \Table
     final const EQUIP_TYPE = "equipType";
     final const NORMAL_EQUIP_TYPE = 0;
     final const SMUGGLED_ITEM_EQUIP_TYPE = 1;
-
+    
     //Claim global variables
     final const CLAIMING_PLAYER = "claimingPlayer";
     final const CLAIM_TYPE = "claimType";
@@ -85,6 +85,9 @@ class Game extends \Table
     //Duel global variables
     //Duel Names
     //Delete these at the end of the duel
+    final const DUEL_TYPE = "duelType";
+    final const NORMAL_DUEL_TYPE = 0;
+    final const VLADISLAV_DUEL_TYPE = 1;
     final const CHALLENGE_STAT = "ChallengeStat";
     final const DUEL_CHALLENGER = "Challenger";
     final const DUEL_DEFENDER = "Defender";

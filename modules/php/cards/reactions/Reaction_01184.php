@@ -34,6 +34,8 @@ class Reaction_01184 extends CardReaction
 
     public function handleEvent(Event $event)
     {
+        parent::handleEvent($event);
+
         if ($event instanceof EventClaimOccuring && $this->isAvailable())
         {
             $claude = $this->getOwningCard($event->theah);

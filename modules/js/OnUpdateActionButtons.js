@@ -424,7 +424,7 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelChooseAction': () => {
-            if (args._private.combatCardAvailable)
+            if (args._private.gambleAvailable)
                 this.addActionButton(`btnGamble`, _(`Gamble (${args._private.gamblesLeft} Left)`), () => this.bgaPerformAction('actDuelActionGamble', {})) 
             if (args._private.maneuversAvailable)
                 this.addActionButton(`btnManueuver`, _('Character Maneuver'), () => this.bgaPerformAction('actDuelActionChooseManeuver', {})) 
@@ -439,9 +439,10 @@ onUpdateActionButtons: function( stateName, args )
                 dojo.addClass('btnCombatCard', 'disabled');
                 this.addTooltipHtml( 'btnCombatCard', `<div class='basic-tooltip'>${_("Play Combat card. Choose Maneuvers on card.")}</div>` );
             }
-
-            this.addActionButton(`btnDone`, _('End Round'), () => this.bgaPerformAction('actDuelDoneRound', {})) 
-            
+            if ( ! args._private.endDuelAvailable)
+                this.addActionButton(`btnDone`, _('End Round'), () => this.bgaPerformAction('actDuelDoneRound', {})) 
+            if (args._private.endDuelAvailable)
+                this.addActionButton(`btnEndDuel`, _('End Duel'), () => this.bgaPerformAction('actDuelEndDuel', {})) 
         },
 
         'duelChooseTechnique': () => {
