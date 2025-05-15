@@ -183,12 +183,6 @@ abstract class Card
         return in_array($condition, $this->Conditions);
     }
 
-    public function clearConditions()
-    {
-        $this->Conditions = [];
-        $this->IsUpdated = true;
-    }
-
     public function removeCondition($condition)
     {
         $this->Conditions = array_filter($this->Conditions, fn($c) => $c != $condition );

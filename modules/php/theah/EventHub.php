@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
@@ -253,6 +254,29 @@ trait EventHub
                 };
                 $handler($this, $event);
                 break;
+
+            case $event instanceof EventCardDiscardedFromPlay:
+                $handler = function (Theah $theah, EventCardDiscardedFromPlay $event)
+                    {
+                        $discardPileName = $theah->game->getPlayerDiscardDeckName($event->playerId);
+
+                        $deck = $theah->game->getGameDeckObject();
+                        $deck->moveCard($event->cardId, $discardPileName);
+    
+                        $card = $theah->getCardById($event->cardId);
+                        $card->Location = $discardPileName;
+                        $card->IsUpdated = true;
+    
+                    $this->game->notifyAllPlayers("cardDiscardedFromPlay", clienttranslate('<strong>${card_name}</strong> discarded from ${location}.'), [
+                        'i18n' => ['card_name', 'location'],
+                        "playerId" => $event->playerId,
+                        "card_name" => $card->Name,
+                        "cardId" => $event->cardId,
+                        "location" => $event->fromLocation,
+                    ]);
+                    };
+                    $handler($this, $event);
+                    break;
 
             case $event instanceof EventCardEngaged:
                 $handler = function (Theah $theah, EventCardEngaged $event)
@@ -908,17 +932,26 @@ trait EventHub
             case $event instanceof EventCharacterDestroyed:
                 $handler = function ($theah, EventCharacterDestroyed $event)
                 {
-                    $character = $theah->cards[$event->characterId];
+                    $character = $theah->getCardById($event->characterId);
                     $locker = $theah->game->getPlayerLockerName($character->ControllerId);
                     $deck = $theah->game->getGameDeckObject();
                     $deck->moveCard($event->characterId, $locker);
+
+                    //Card has been moved to the locker, so recreate it because it has no memory of past state
+                    $fullClassname = get_class($character);
+                    $pos = strrpos($fullClassname, '\\');
+                    $className = substr($fullClassname, $pos + 2);
+                    $character = $theah->game->instantiateCard($className);            
+                    $character->setId($event->characterId);
                     $character->Location = $locker;
+                    $character->IsUpdated = true;
+                    $theah->upsertCard($character);
 
                     $theah->game->notifyAllPlayers("characterDestroyed", clienttranslate('<strong>${target_name}</strong> has been destroyed and sent to the locker due to: ${reason} '), [
                         'i18n' => ['target_name', 'reason'],
-                        "playerId" => $character->ControllerId,
+                        "playerId" => $event->playerId,
                         "target_name" => $character->Name,
-                        "character" => $character->getPropertyArray($theah->game),
+                        "characterId" => $event->characterId,
                         "reason" => $event->reason,
                     ]);
                 };

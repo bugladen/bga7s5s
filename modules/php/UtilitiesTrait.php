@@ -250,8 +250,8 @@ trait UtilitiesTrait
         return $count;
     }
 
-    protected function instantiateCard($cardId) : Card {
-
+    public function instantiateCard($cardId) : Card 
+    {
         //Pull the first two characters of the card id to get the set
         $set = substr($cardId, 0, 2);
 

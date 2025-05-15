@@ -22,6 +22,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardAddedToCityDiscardPile', 500],
             ['cardAddedToHand', 2000],
             ['cardDiscardedFromHand', 500],
+            ['cardDiscardedFromPlay', 500],
             ['cardEngaged', 1000],
             ['cardEngarded', 1000],
             ['cardMoved', 1000],
@@ -347,6 +348,22 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.gamedatas.cityDiscard.push(card);
     },
 
+    notif_cardDiscardedFromPlay: function( notif )
+    {
+        debug( 'notif_cardDiscardedFromPlay' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        card.location = this.LOCATION_PLAYER_DISCARD;
+
+        dojo.destroy(card.divId);
+        card.divId = null;
+
+        const player = this.gamedatas.players[args.playerId];
+        player.discard.push(card);
+    },
+
     notif_cardDiscardedFromHand: function( notif )
     {
         debug( 'notif_cardDiscardedFromHand' );
@@ -491,7 +508,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;        
-        const card = this.cardProperties[args.character.id];
+        const card = this.cardProperties[args.characterId];
         if (card)
         {
             card.location = this.LOCATION_PLAYER_LOCKER;
@@ -502,7 +519,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
 
         const player = this.gamedatas.players[args.playerId];
-        player.locker.push(args.character);
+        player.locker.push(card);
     },
 
     notif_schemeSentToLocker: function( notif )

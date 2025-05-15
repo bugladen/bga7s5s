@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
@@ -109,6 +110,18 @@ class EventFactory
             $event->cardId = $cardId;
         }
 
+        return $event;
+    }
+
+    public static function createCardDiscardedFromPlayEvent(int $playerId, int $cardId, string $location): EventCardDiscardedFromPlay
+    {
+        $event = self::createEvent(Events::CardDiscardedFromPlay);
+        if ($event instanceof EventCardDiscardedFromPlay)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+            $event->fromLocation = $location;
+        }
         return $event;
     }
 

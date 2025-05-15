@@ -6,7 +6,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
@@ -211,6 +210,23 @@ abstract class Character extends Card
 
             if ($this->ModifiedResolve == 0)
             {
+                //Unequip all attachments
+                foreach ($this->Attachments as $attachmentId)
+                {
+                    $attachment = $event->theah->getCardById($attachmentId);
+
+                    $unattached = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $this->Id, $attachment->Id);
+                    $event->theah->queueEvent($unattached);
+
+                    if ($attachment instanceof CityAttachment)
+                        $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($this->ControllerId, $attachment->Id, $attachment->Location);
+                    else
+                        $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($this->ControllerId, $attachment->Id, $attachment->Location);
+
+                    $event->theah->queueEvent($discardEvent);
+                }
+
+                //Send this to the locker
                 $destroyEvent = EventFactory::createCharacterDestroyedEvent($this->ControllerId, $this->Id, $event->reason);
                 $event->theah->queueEvent($destroyEvent);
             }
@@ -243,14 +259,6 @@ abstract class Character extends Card
                 "reason" => $event->reason,
                 'resolve' => $this->ModifiedResolve
             ]);
-        }
-
-        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
-        {
-            $this->clearConditions();
-            $this->resetModifiedCharacterStats();
-            $this->Wounds = 0;
-            $this->IsUpdated = true;
         }
     }
 
