@@ -148,7 +148,7 @@ trait ArgumentsTrait
         ];
     }
 
-    public function argsHighDramaMoveActionChooseDestination(): array
+    public function argsHighDramaMoveActionChooseLocation(): array
     {
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();

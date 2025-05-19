@@ -223,7 +223,7 @@ class Theah
         $this->game->gamestate->nextState('endOfEvents');
     }
 
-    function getAdjacentCityLocations($location): array
+    function getAdjacentCityLocations($location, bool $includeHome = true): array
     {
         $playerCount = $this->game->globals->get(Game::PLAYER_COUNT);
         $locations = [];
@@ -239,30 +239,34 @@ class Theah
                 break;
 
             case Game::LOCATION_CITY_DOCKS:
-                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM];
+                $locations = [Game::LOCATION_CITY_FORUM];
                 if ($playerCount > 2) {
                     $locations[] = Game::LOCATION_CITY_OLES_INN;
                 }
                 break;
 
             case Game::LOCATION_CITY_FORUM:
-                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_BAZAAR];
+                $locations = [Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_BAZAAR];
                 break;
 
             case Game::LOCATION_CITY_BAZAAR:
-                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM];
+                $locations = [Game::LOCATION_CITY_FORUM];
                 if ($playerCount > 3) {
                     $locations[] = Game::LOCATION_CITY_GOVERNORS_GARDEN;
                 }
                 break;
 
             case Game::LOCATION_CITY_OLES_INN:
-                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_DOCKS];
+                $locations = [Game::LOCATION_CITY_DOCKS];
                 break;
 
             case Game::LOCATION_CITY_GOVERNORS_GARDEN:
-                $locations = [Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_BAZAAR];
+                $locations = [Game::LOCATION_CITY_BAZAAR];
                 break;
+        }
+
+        if ($includeHome && $location != Game::LOCATION_PLAYER_HOME) {
+            $locations[] = Game::LOCATION_PLAYER_HOME;
         }
 
         return $locations;
@@ -495,12 +499,13 @@ class Theah
         {
             if ($card instanceof IHasActions && $card->Location != Game::LOCATION_HAND)
             {
-                $actions = $card->getActions();
-                foreach ($actions as $action)
+                $actions = $card->getActionsArray($this->game);
+                foreach ($actions as $actionItem)
                 {
+                    $action = $card->getActionById($actionItem['id']);
                     if ($action->isAvailableToPlayer($playerId, $this, $this->game))
                     {
-                        $actionsArray = array_merge($actionsArray, $card->getActionsArray($this->game));
+                        $actionsArray[] = $actionItem;
                     }
                 }
             }
@@ -517,12 +522,13 @@ class Theah
         {
             if ($card instanceof IHasActions)
             {
-                $actions = $card->getActions();
-                foreach ($actions as $action)
+                $actions = $card->getActionsArray($this->game);
+                foreach ($actions as $actionItem)
                 {
+                    $action = $card->getActionById($actionItem['id']);
                     if ($action->isAvailableToPlayer($playerId, $this, $this->game))
                     {
-                        $actionsArray = array_merge($actionsArray, $card->getActionsArray($this->game));
+                        $actionsArray[] = $actionItem;
                     }
                 }
             }

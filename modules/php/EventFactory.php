@@ -22,6 +22,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
 
@@ -262,28 +263,42 @@ class EventFactory
 
     public static function createReknownAddedToLocationEvent(int $playerId, string $location, int $amount, string $playerName)
     {
-        $addEvent = self::createEvent(Events::ReknownAddedToLocation);
-        if ($addEvent instanceof EventReknownAddedToLocation) 
+        $event = self::createEvent(Events::ReknownAddedToLocation);
+        if ($event instanceof EventReknownAddedToLocation) 
         {
-            $addEvent->playerId = $playerId;
-            $addEvent->location = $location;
-            $addEvent->amount = $amount;
-            $addEvent->source = $playerName;
+            $event->playerId = $playerId;
+            $event->location = $location;
+            $event->amount = $amount;
+            $event->source = $playerName;
         }
-        return $addEvent;
+        return $event;
     }
 
     public static function createReknownRemovedFromCardEvent(int $playerId, int $cardId, int $amount): EventReknownRemovedFromCard
     {
-        $reknownEvent = self::createEvent(Events::ReknownRemovedFromCard);
-        if ($reknownEvent instanceof EventReknownRemovedFromCard)
+        $event = self::createEvent(Events::ReknownRemovedFromCard);
+        if ($event instanceof EventReknownRemovedFromCard)
         {
-            $reknownEvent->playerId = $playerId;
-            $reknownEvent->cardId = $cardId;
-            $reknownEvent->amount = $amount;
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+            $event->amount = $amount;
         }
 
-        return $reknownEvent;
+        return $event;
+    }
+
+    public static function createReknownRemovedFromLocationEvent(int $playerId, string $location, int $amount, string $source): EventReknownRemovedFromLocation
+    {
+        $event = self::createEvent(Events::ReknownRemovedFromLocation);
+        if ($event instanceof EventReknownRemovedFromLocation)
+        {
+            $event->playerId = $playerId;
+            $event->location = $location;
+            $event->amount = $amount;
+            $event->source = $source;
+        }
+
+        return $event;
     }
 
     public static function createTechniqueUsedEvent(int $playerId, int $ownerId, string $techniqueId, bool $used): EventTechniqueUsed

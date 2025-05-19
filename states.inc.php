@@ -1004,6 +1004,8 @@ $machinestates = [
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
                 "01187" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION,
                 "01185" => States::HIGH_DRAMA_PLAYER_TURN_01185,
+                "01189a" => States::HIGH_DRAMA_PLAYER_TURN_01189a,
+                "01189b" => States::HIGH_DRAMA_PLAYER_TURN_01189b,
                 "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
                 "endOfEvents" => States::NEXT_PLAYER,
                 "endOfGame" => States::END_GAME
@@ -1574,7 +1576,7 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
                 "descriptionmyturn" => clienttranslate('${you} are performing a Move Action.  Choose a destination location for your Perfomer:'),
                 "type" => "activeplayer",
-                "args" => "argsHighDramaMoveActionChooseDestination",
+                "args" => "argsHighDramaMoveActionChooseLocation",
                 "possibleactions" => [
                     "actHighDramaMoveActionDestinationChosen", 
                     "actBack",

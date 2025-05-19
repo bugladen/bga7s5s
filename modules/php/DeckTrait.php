@@ -25,7 +25,7 @@ trait DeckTrait
 
         foreach ($city->cards as $cityCard) {
             $location = Game::LOCATION_CITY_DECK;
-            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$card}', 0, '{$location}', 0)";
+            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$cityCard}', 0, '{$location}', 0)";
             $this->DbQuery($sql);
 
             //Store the card Id in the object, and serialize the card object to the db

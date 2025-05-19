@@ -24,7 +24,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechnique
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
@@ -268,12 +267,7 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("{$location} does not have any reknown to move."));
         }
         
-        $event = $this->theah->createEvent(Events::ReknownRemovedFromLocation);
-        if ($event instanceof EventReknownRemovedFromLocation) {
-            $event->location = $location;
-            $event->amount = 1;
-            $event->source = "The Boar's Guile: Moving Reknown from one Location to an adjacent location";
-        }
+        $event = EventFactory::createReknownRemovedFromLocationEvent($this->getActivePlayerId(), $location, 1, "The Boar's Guile: Moving Reknown from one Location to an adjacent location");
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
@@ -535,22 +529,12 @@ trait FrameworkActionsTrait
 
         $locations = json_decode($locations, true);
         $location = array_shift($locations);
-        $removeEvent = $this->theah->createEvent(Events::ReknownRemovedFromLocation);
-        if ($removeEvent instanceof EventReknownRemovedFromLocation) {
-            $removeEvent->playerId = $this->getActivePlayerId();
-            $removeEvent->location = $location;
-            $removeEvent->amount = 1;
-            $removeEvent->source = $playerName;
-        }
+
+        $playerId = $this->getActivePlayerId();
+        $removeEvent = EventFactory::createReknownRemovedFromLocationEvent($playerId, $location, 1, $playerName);
         $this->theah->eventCheck($removeEvent);
 
-        $addEvent = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($addEvent instanceof EventReknownAddedToLocation) {
-            $addEvent->playerId = $this->getActivePlayerId();
-            $addEvent->location = Game::LOCATION_CITY_FORUM;
-            $addEvent->amount = 1;
-            $addEvent->source = $playerName;
-        }
+        $addEvent = EventFactory::createReknownAddedToLocationEvent($playerId, Game::LOCATION_CITY_FORUM, 1, $playerName);
         $this->theah->eventCheck($addEvent);
 
         $this->theah->queueEvent($removeEvent);
@@ -585,13 +569,9 @@ trait FrameworkActionsTrait
         if ($reknown <= 0) {
             throw new \BgaUserException(self::_("{$location} does not have any reknown to move."));
         }
-        
-        $event = $this->theah->createEvent(Events::ReknownRemovedFromLocation);
-        if ($event instanceof EventReknownRemovedFromLocation) {
-            $event->location = $location;
-            $event->amount = 1;
-            $event->source = "Until Morale Improves: Moving Reknown from one Location to an adjacent location";
-        }
+
+        $playerId = $this->getActivePlayerId();
+        $event = EventFactory::createReknownRemovedFromLocationEvent($playerId, $location, 1, "Until Morale Improves: Moving Reknown from one Location to an adjacent location");
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
@@ -1825,6 +1805,17 @@ trait FrameworkActionsTrait
         $actionId = $this->globals->get(Game::CHOSEN_ACTION);
         $card = $this->theah->getCardById($sourceId);
         $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $ids);
+    }
+
+    public function actFromCardWithLocations(string $locations)
+    {
+        $this->theah->buildCity();
+        $locations = json_decode($locations, true);
+
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION);
+        $card = $this->theah->getCardById($sourceId);
+        $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $locations);
     }
 
     public function actReactionForState(string $reactionId)

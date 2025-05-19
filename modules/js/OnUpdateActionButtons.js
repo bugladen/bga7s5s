@@ -408,6 +408,22 @@ onUpdateActionButtons: function( stateName, args )
             }
         },
 
+        'highDramaPhase01189a': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            }
+        },
+
+        'highDramaPhase01189b': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            }
+        },
+
         'playerReaction': () => {
             if (this.isCurrentPlayerActive()) {
                 args._private.args.buttons.forEach((button, index) => {

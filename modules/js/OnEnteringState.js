@@ -921,6 +921,36 @@ onEnteringState: function( stateName, args )
             }
         },
 
+        'highDramaPhase01189a': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCityLocationsSelectable = 1;
+                args.args.args.locations.forEach((location) => {
+                        const selectedLocationElement = dojo.query(`[data-location="${location}"]`)[0];
+                        this.makeCityLocationSelectable(selectedLocationElement.id);
+                });
+                const performerId = args.args.args.performerId;
+                this.clientStateArgs.performerId = performerId;
+                card = this.cardProperties[performerId];
+                const image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+            }
+        },
+
+        'highDramaPhase01189b': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCityLocationsSelectable = 1;
+                args.args.args.locations.forEach((location) => {
+                        const selectedLocationElement = dojo.query(`[data-location="${location}"]`)[0];
+                        this.makeCityLocationSelectable(selectedLocationElement.id);
+                });
+                const performerId = args.args.args.performerId;
+                this.clientStateArgs.performerId = performerId;
+                card = this.cardProperties[performerId];
+                const image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+            }
+        },
+
         'playerReaction': () => {
             if (this.isCurrentPlayerActive()) {
                 this.gamedatas.gamestate.descriptionmyturn = _(args.args._private.args.descriptionmyturn);

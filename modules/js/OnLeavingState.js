@@ -476,6 +476,20 @@ onLeavingState: function( stateName )
             }
         },
 
+        'highDramaPhase01189a': () => {
+            this.resetCityLocations();
+            card = this.cardProperties[this.clientStateArgs.performerId];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+        },
+
+        'highDramaPhase01189b': () => {
+            this.resetCityLocations();
+            card = this.cardProperties[this.clientStateArgs.performerId];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+        },
+
         'duelChooseAction': () => {
             if (this.isCurrentPlayerActive()) {
                 this.factionHand.setSelectionMode(0);

@@ -81,6 +81,38 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01189a => [
+        "name" => "highDramaPhase01189a",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose a location to move a Reknown FROM:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithLocations",
+            "actBack"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01189b => [
+        "name" => "highDramaPhase01189b",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose a location to move a Reknown TO:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithLocations",
+            "actBack"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
     States::DUSK_PHASE_BEGIN_01177 => [
         "name" => "duskPhaseBegin01177",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
