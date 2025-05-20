@@ -567,20 +567,11 @@ trait StatesTrait
             $challengeEvent->activatedTechniqueId = $techniqueId;
         }
 
-        try 
-        {
-            $this->theah->eventCheck($challengeEvent);
-        }
-        catch (\Exception $e) {
-            $this->game->notifyAllPlayers("message", clienttranslate($e->getMessage()), []);
-            $this->gamestate->nextState("challengeFailed");
-            return;
-        }
-
+        $this->theah->eventCheck($challengeEvent);
         $this->theah->queueEvent($challengeEvent);
         $changeEvent = EventFactory::createChangeActivePlayerEvent($target->ControllerId);
         $this->theah->queueEvent($changeEvent);
-        $this->gamestate->nextState("challengeSetUp");
+        $this->gamestate->nextState();
     }
 
     public function stHighDramaChallengeActionResolveTechnique(): void

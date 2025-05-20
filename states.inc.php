@@ -1143,8 +1143,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stSetupChallenge",
             "transitions" => [
-                "challengeSetUp" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_EVENTS,
-                "challengeFailed" => States::HIGH_DRAMA_PLAYER_TURN
+                "" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_EVENTS,
             ]
         ],
             States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_EVENTS => [

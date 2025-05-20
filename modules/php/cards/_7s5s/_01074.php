@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_PlusOneRiposte;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 
 class _01074 extends FactionAttachment implements IHasTechniques
@@ -48,7 +49,7 @@ class _01074 extends FactionAttachment implements IHasTechniques
         ];
     }
 
-    public function eventCheck($event)
+    public function eventCheck(Event $event)
     {
         parent::eventCheck($event);
 

@@ -122,7 +122,7 @@ abstract class Card
         }
     }
 
-    public function eventCheck($event)
+    public function eventCheck(Event $event)
     {
         if ($this instanceof IHasTechniques) {
             foreach ($this->getTechniques() as $technique) {

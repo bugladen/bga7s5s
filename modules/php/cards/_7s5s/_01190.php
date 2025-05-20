@@ -2,7 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 
 class _01190 extends CityCharacter
 {
@@ -36,4 +39,36 @@ class _01190 extends CityCharacter
             'Vesten',
         ];
     }
+
+    public function canChallenge(): bool
+    {
+        return false;
+    }
+
+    public function addAttachment(Attachment $attachment)
+    {
+        parent::addAttachment($attachment);
+
+        //Reset combat stat back to original if greater than original
+        if ($this->ModifiedCombat > $this->Combat) 
+        {
+            $this->ModifiedCombat = $this->Combat;
+        }
+    }
+
+    public function eventCheck(Event $event)
+    {
+        parent::eventCheck($event);
+
+        if ($event instanceof EventChallengeIssued)
+        {
+            $defender = $event->theah->getCardById($event->defenderId);
+            //var_dump($defender);
+            if ($this->Id != $event->defenderId && $defender->Location == $this->Location && ! $this->Engaged)
+            {
+                throw new \BgaUserException($event->theah->game->translate("Sigurd Ulfsen must be the target of the challenge if he is En Garge and in the same location."));
+            }
+        }
+    }
+
 }

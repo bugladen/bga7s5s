@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 class _01073 extends FactionAttachment
 {
@@ -33,7 +34,7 @@ class _01073 extends FactionAttachment
         ];
     }
 
-    public function eventCheck($event)
+    public function eventCheck(Event $event)
     {
         parent::eventCheck($event);
 
