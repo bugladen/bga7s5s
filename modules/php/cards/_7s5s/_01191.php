@@ -2,10 +2,14 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01191;
 
-class _01191 extends CityAttachment
+class _01191 extends CityAttachment implements IHasActions
 {
+    use ActionTrait;
     public function __construct()
     {
         parent::__construct();
@@ -28,6 +32,10 @@ class _01191 extends CityAttachment
             'Weapon',
             'Ranged',
             'Pistol',
+        ];
+
+        $this->Actions = [
+            new Action_01191(),
         ];
     }
 }
