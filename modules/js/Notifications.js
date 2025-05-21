@@ -92,7 +92,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
         dojo.style(`${args.player_id}-locker`, 'cursor', 'zoom-in');
         dojo.connect($(`${args.player_id}-locker`), 'onclick', this, 'onPlayerLockerClicked');
 
-        $('pagemaintitletext').innerHTML = _(`${args.player_name} has selected <span style="font-weight:bold">${args.leader.name}</span> as their leader`);
+        var translated = dojo.string.substitute(
+            _("${player_name} has selected <strong>${leader_name}</strong> as their leader"),
+            {
+                player_name: args.player_name,
+                leader_name: args.leader.name
+            }
+        );
+        $('pagemaintitletext').innerHTML = translated;
     },
 
     notif_actionUsed: function( notif )
@@ -168,7 +175,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         this.createCard(`${args.player_id}-${args.scheme.id}`, args.scheme, `${args.player_id}-scheme-anchor`);
 
-        $('pagemaintitletext').innerHTML = _(`${args.player_name} has selected <span style="font-weight:bold">${args.scheme.name}</span> as their Scheme today`);
+        var translated = dojo.string.substitute(
+            _("${player_name} has selected <strong>${scheme_name}</strong> as their Scheme today"),
+            {
+                player_name: args.player_name,
+                scheme_name: args.scheme.name
+            }
+        );
+        $('pagemaintitletext').innerHTML = translated;
     },
 
     notif_approachCharacterPlayed: function (notif) 
@@ -181,7 +195,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         this.createCard(`${args.player_id}-${args.character.id}`, args.character, `${args.player_id}-home-anchor`);
 
-        $('pagemaintitletext').innerHTML = _(`${args.player_name} has selected <span style="font-weight:bold">${args.character.name}</span> as their Approach Character today`);
+        var translated = dojo.string.substitute(
+            _("${player_name} has selected <strong>${character_name}</strong> as their Approach Character today"),
+            {
+                player_name: args.player_name,
+                character_name: args.character.name
+            }
+        );
+        $('pagemaintitletext').innerHTML = translated;
     },
 
     notif_panacheModified: function( notif )
@@ -314,7 +335,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         debug( 'notif_cardAddedToHand' );
         debug( notif );
-        
+
         this.addCardToDeck(this.factionHand, notif.args.card);
         $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
     },
@@ -638,7 +659,13 @@ return declare('seventhseacityoffivesails.notifications', null, {
         dojo.removeClass(`${args.playerId}-score-seal-first-player`, 'first-player-hidden');
         dojo.addClass(`${args.playerId}-score-seal-first-player`, 'first-player-score');
 
-        $('pagemaintitletext').innerHTML = _(`${args.player_name} is now the First Player`);
+        var translated = dojo.string.substitute(
+            _("${player_name} is now the First Player"),
+            {
+                player_name: args.player_name
+            }
+        );
+        $('pagemaintitletext').innerHTML = translated;
     },
 
     notif_cardRemovedFromCityDiscardPile: function ( notif )

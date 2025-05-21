@@ -95,7 +95,7 @@ class _01177 extends CityEventCard
             {
                 if (!in_array($id, $top3Ids))
                 {
-                    throw new \BgaUserException($game->translate("Card $id is not in the top 3 cards."));
+                    throw new \BgaUserException(sprintf($game->translate("Card %s is not in the top 3 cards."), $id));
                 }
 
                 //Move card to top of City Deck

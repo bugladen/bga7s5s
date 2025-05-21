@@ -6,10 +6,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01180 extends CharacterAction
@@ -22,180 +20,48 @@ class Action_01180 extends CharacterAction
         $this->ShortName = "Equip Artifact from City Deck";
     }
 
-    public function actFromActionPass(Game $game, int $state): void
-    {
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {  
+        if ( ! parent::isAvailableToPlayer($playerId, $theah))
         {
-            $deck = $game->getGameDeckObject();
-            $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
-
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to Equip any Artifacts.'), [
-                "player_name" => $game->getActivePlayerName(),
-            ]);
-
-            foreach ($deckCards as $deckCard) 
-            {
-                $card = $game->getCardObjectFromDb($deckCard['id']);
-
-                //Sink card to City Discard Pile
-                $event = EventFactory::createCardAddedToCityDeckEvent($game->getActivePlayerId(), $card->Id, false);
-                $game->theah->queueEvent($event);
+            return false;
         }
 
-            $game->gamestate->nextState("pass");
-        }
+        $kaj = $this->getOwningCard($theah);
+
+        return $theah->cardInCity($kaj);
     }
-
-    public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void  
+    
+    public function handleEvent(Event $event)
     {
-        parent::actFromActionWithId($game, $state, $stateName, $id);
+        parent::handleEvent($event);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
+        if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $deck = $game->getGameDeckObject();
+            $deck = $event->theah->game->getGameDeckObject();
             $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
-
-            $found = false;
-            foreach ($deckCards as $deckCard) 
-            {
-                if ($deckCard['id'] == $id)
-                {
-                    $found = true;
-                    break;
-                }
+            $names = [];
+            $count = 0;
+            foreach ($deckCards as $deckCard) {
+                $card = $event->theah->game->getCardObjectFromDb($deckCard['id']);
+                $names[] = $event->theah->game->translate($card->Name);
+                if (in_array('Artifact', $card->Traits))
+                    $count++;
             }
 
-            if (!$found)
-            {
-                throw new \BgaUserException($game->translate("Card $id is not in the top 4 cards."));
-            }
-
-            $chosenCard = $game->getCardObjectFromDb($id);
-
-            if (! $chosenCard instanceof Attachment && ! in_array('Artifact', $chosenCard->Traits))
-            {
-                throw new \BgaUserException($game->translate("Card $id is not an Artifact."));
-            }
-        
-            $game->globals->set(Game::CHOSEN_CARD, $id);
-
-            $game->gamestate->nextState("cardChosen");
-        }
-    }
-
-    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  
-    {
-        parent::actFromActionWithIds($game, $state, $stateName, $ids);
-
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_2)
-        {
-            $playerId = $game->getActivePlayerId();
-            $owner = $this->getOwningCard($game->theah);
-            $id = $ids[0];
-
-            //Get characters in play at the same location
-            $characters = $game->theah->getCharactersAtLocation($owner->Location);
-            $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId);
-            $ids = array_map(fn($character) => $character->Id, $characters);
-            if ( ! in_array($id, $ids))
-            {
-                throw new \BgaUserException($game->translate("Character Id #$id is not in play at the same location as {$owner->Name}."));
-            }
-
-            $performer = $game->getCardObjectFromDb($id);
-            if ($owner->ControllerId != $performer->ControllerId)
-            {
-                throw new \BgaUserException($game->translate("Character Id #$id is not controlled by the same player as {$owner->Name}."));
-            }
-
-            $chosenAttachmentId = $game->globals->get(Game::CHOSEN_CARD);
-            $chosenAttachment = $game->getCardObjectFromDb($chosenAttachmentId);
-
-            //Get the wealth cost of the chosen card
-            if ($chosenAttachment instanceof Attachment)
-                $cost = $chosenAttachment->WealthCost;
-
-            //Get the hand of the player
-            $wealth = $game->handWealthCount($playerId);
-
-            //Get any discounts the player may have
-            $discount = $game->theah->getEquipDiscount($performer, $chosenAttachment);
-
-            if ($cost > $wealth - $discount)
-            {
-                throw new \BgaUserException($game->translate("You do not have enough Wealth to equip this card (with a discount of $discount)."));
-            }        
-        
-            $game->globals->set(Game::CHOSEN_PERFORMER, $id);
-
-            $game->gamestate->nextState("performerChosen");
-        }
-
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
-        {
-            $attachmentId = $game->globals->get(Game::CHOSEN_CARD);
-            $attachment = $game->getCardObjectFromDb($attachmentId);
-
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->getCardObjectFromDb($performerId);
-
-            if ($attachment instanceof Attachment)
-                $cost = $attachment->WealthCost;
-            
-            $discount = $game->theah->getEquipDiscount($performer, $attachment);
-            $cost -= $discount;
-    
-            //Total up the wealth of the cards to see if player paid correctly
-            $totalWealth = 0;
-            foreach ($ids as $cardId) {
-                $card = $game->getCardObjectFromDb($cardId);
-                if ($card == null)
-                    throw new \BgaUserException($game->translate("Card $cardId not found."));
-    
-                    //If $card has wealth in its traits, add it to the total wealth
-                $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
-            }
-            if ($totalWealth != $cost) {
-                throw new \BgaUserException($game->translate("Cost of Attachment is {$cost}. You selected {$totalWealth} Wealth of cards."));
-            }
-    
-            $playerId = $game->getActivePlayerId();
-    
-            $game->notifyAllPlayers('message', clienttranslate('${player_name} has chosen to Equip <strong>${card_name}</strong> from the top 4 cards of the City Deck.'), [
+            $event->theah->game->notifyAllPlayers('message', clienttranslate('<strong>${card_name}</strong> found ${count} Artifacts in the top 4 cards of the City Deck. (${names})'), [
                 'i18n' => ['card_name'],
-                'player_name' => $game->getActivePlayerName(),
-                'card_name' => $attachment->Name,
+                'card_name' => $this->Name,
+                'count' => $count,
+                'names' => implode(', ', $names)
             ]);
 
-            $deck = $game->getGameDeckObject();
+            $this->setUsed($event->theah, true);
 
-            $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
-            foreach ($deckCards as $deckCard) 
-            {
-                $card = $game->getCardObjectFromDb($deckCard['id']);
-                if ($deckCard['id'] == $attachment->Id) continue;
-
-                $event = EventFactory::createCardAddedToCityDeckEvent($playerId, $card->Id, false);
-                $game->theah->queueEvent($event);
-            }
-
-            //Equip the attachment
-            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $attachmentId, $performerId, $discount, $cost);
-            $game->theah->eventCheck($equipAttachmentEvent);
-            $game->theah->queueEvent($equipAttachmentEvent);
-    
-            //Move the cards used to pay to the player's discard pile
-            foreach ($ids as $cardId) {
-                $card = $game->getCardObjectFromDb($cardId);
-                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
-                $game->theah->queueEvent($event);
-            }
-    
-            $deck->moveCard($attachment->Id, $performer->Location, $attachment->ControllerId);
-    
-            $game->gamestate->nextState("artifactEquipped");
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01180");
+            $event->theah->queueEvent($transition);
         }
-     }
+    }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array 
     {
@@ -247,53 +113,180 @@ class Action_01180 extends CharacterAction
         return $args;
     }
 
-
-    public function handleEvent(Event $event)
+    public function actFromActionPass(Game $game, int $state): void
     {
-        parent::handleEvent($event);
+        parent::actFromActionPass($game, $state);
 
-        if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
         {
-            $deck = $event->theah->game->getGameDeckObject();
+            $deck = $game->getGameDeckObject();
             $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
-            $names = [];
-            $count = 0;
-            foreach ($deckCards as $deckCard) {
-                $card = $event->theah->game->getCardObjectFromDb($deckCard['id']);
-                $names[] = $event->theah->game->translate($card->Name);
-                if (in_array('Artifact', $card->Traits))
-                    $count++;
-            }
 
-            $event->theah->game->notifyAllPlayers('message', clienttranslate('<strong>${card_name}</strong> found ${count} Artifacts in the top 4 cards of the City Deck. (${names})'), [
-                'i18n' => ['card_name'],
-                'card_name' => $this->Name,
-                'count' => $count,
-                'names' => implode(', ', $names)
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to Equip any Artifacts.'), [
+                "player_name" => $game->getActivePlayerName(),
             ]);
 
-            $this->setUsed($event->theah, true);
-
-            $transition = $event->theah->createEvent(Events::Transition);
-            if ($transition instanceof EventTransition)
+            foreach ($deckCards as $deckCard) 
             {
-                $transition->playerId = $event->playerId;
-                $transition->transition = "01180";
-                $transition->sourceId = $this->OwnerId;
-            }
-            $event->theah->queueEvent($transition);
+                $card = $game->getCardObjectFromDb($deckCard['id']);
+
+                //Sink card to City Discard Pile
+                $event = EventFactory::createCardAddedToCityDeckEvent($game->getActivePlayerId(), $card->Id, false);
+                $game->theah->queueEvent($event);
+        }
+
+            $game->gamestate->nextState("pass");
         }
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
-    {  
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+    public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void  
+    {
+        parent::actFromActionWithId($game, $state, $stateName, $id);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
         {
-            return false;
+            $deck = $game->getGameDeckObject();
+            $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
+
+            $found = false;
+            foreach ($deckCards as $deckCard) 
+            {
+                if ($deckCard['id'] == $id)
+                {
+                    $found = true;
+                    break;
+                }
+            }
+
+            if (!$found)
+            {
+                throw new \BgaUserException(sprintf($game->translate("Card %s is not in the top 4 cards."), $id));
+            }
+
+            $chosenCard = $game->getCardObjectFromDb($id);
+
+            if (! $chosenCard instanceof Attachment && ! in_array('Artifact', $chosenCard->Traits))
+            {
+                throw new \BgaUserException(sprintf($game->translate("Card %s is not an Artifact."), $id));
+            }
+        
+            $game->globals->set(Game::CHOSEN_CARD, $id);
+
+            $game->gamestate->nextState("cardChosen");
+        }
+    }
+
+    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  
+    {
+        parent::actFromActionWithIds($game, $state, $stateName, $ids);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_2)
+        {
+            $playerId = $game->getActivePlayerId();
+            $owner = $this->getOwningCard($game->theah);
+            $id = $ids[0];
+
+            //Get characters in play at the same location
+            $characters = $game->theah->getCharactersAtLocation($owner->Location);
+            $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId);
+            $ids = array_map(fn($character) => $character->Id, $characters);
+            if ( ! in_array($id, $ids))
+            {
+                throw new \BgaUserException(sprintf($game->translate("Character Id #%s is not in play at the same location as %s."), $id, $owner->Name));
+            }
+
+            $performer = $game->getCardObjectFromDb($id);
+            if ($owner->ControllerId != $performer->ControllerId)
+            {
+                throw new \BgaUserException(sprintf($game->translate("Character Id #%s is not controlled by the same player as %s."), $id, $owner->Name));
+            }
+
+            $chosenAttachmentId = $game->globals->get(Game::CHOSEN_CARD);
+            $chosenAttachment = $game->getCardObjectFromDb($chosenAttachmentId);
+
+            //Get the wealth cost of the chosen card
+            if ($chosenAttachment instanceof Attachment)
+                $cost = $chosenAttachment->WealthCost;
+
+            //Get the hand of the player
+            $wealth = $game->handWealthCount($playerId);
+
+            //Get any discounts the player may have
+            $discount = $game->theah->getEquipDiscount($performer, $chosenAttachment);
+
+            if ($cost > $wealth - $discount)
+            {
+                throw new \BgaUserException(sprintf($game->translate("You do not have enough Wealth to equip this card (with a discount of %s)."), $discount));
+            }        
+        
+            $game->globals->set(Game::CHOSEN_PERFORMER, $id);
+
+            $game->gamestate->nextState("performerChosen");
         }
 
-        $owner = $this->getOwningCard($theah);
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
+        {
+            $attachmentId = $game->globals->get(Game::CHOSEN_CARD);
+            $attachment = $game->getCardObjectFromDb($attachmentId);
 
-        return $theah->cardInCity($owner);
-    }
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->getCardObjectFromDb($performerId);
+
+            if ($attachment instanceof Attachment)
+                $cost = $attachment->WealthCost;
+            
+            $discount = $game->theah->getEquipDiscount($performer, $attachment);
+            $cost -= $discount;
+    
+            //Total up the wealth of the cards to see if player paid correctly
+            $totalWealth = 0;
+            foreach ($ids as $cardId) {
+                $card = $game->getCardObjectFromDb($cardId);
+                if ($card == null)
+                    throw new \BgaUserException(sprintf($game->translate("Card %d not found."), $cardId));
+    
+                    //If $card has wealth in its traits, add it to the total wealth
+                $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+            }
+            if ($totalWealth != $cost) {
+                throw new \BgaUserException(sprintf($game->translate("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+            }
+    
+            $playerId = $game->getActivePlayerId();
+    
+            $game->notifyAllPlayers('message', clienttranslate('${player_name} has chosen to Equip <strong>${card_name}</strong> from the top 4 cards of the City Deck.'), [
+                'i18n' => ['card_name'],
+                'player_name' => $game->getActivePlayerName(),
+                'card_name' => $attachment->Name,
+            ]);
+
+            $deck = $game->getGameDeckObject();
+
+            $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
+            foreach ($deckCards as $deckCard) 
+            {
+                $card = $game->getCardObjectFromDb($deckCard['id']);
+                if ($deckCard['id'] == $attachment->Id) continue;
+
+                $event = EventFactory::createCardAddedToCityDeckEvent($playerId, $card->Id, false);
+                $game->theah->queueEvent($event);
+            }
+
+            //Equip the attachment
+            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $attachmentId, $performerId, $discount, $cost);
+            $game->theah->eventCheck($equipAttachmentEvent);
+            $game->theah->queueEvent($equipAttachmentEvent);
+    
+            //Move the cards used to pay to the player's discard pile
+            foreach ($ids as $cardId) {
+                $card = $game->getCardObjectFromDb($cardId);
+                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
+                $game->theah->queueEvent($event);
+            }
+    
+            $deck->moveCard($attachment->Id, $performer->Location, $attachment->ControllerId);
+    
+            $game->gamestate->nextState("artifactEquipped");
+        }
+     }
 }

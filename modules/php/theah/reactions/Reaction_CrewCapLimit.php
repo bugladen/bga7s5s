@@ -67,7 +67,7 @@ class Reaction_CrewCapLimit extends GameReaction
         $character = $game->theah->getCardById($characterId);
         if ( ! $character instanceof Character)
         {
-            throw new \BgaUserException($game->translate("Reaction_CrewCapLimit: Not a character."));
+            throw new \BgaUserException($game->translate("Selection is not a character."));
         }
 
         $event = EventFactory::createCharacterDestroyedEvent($game->getActivePlayerId(), $character->Id, $game->translate('Chosen to sink for Crew Cap Limit'));

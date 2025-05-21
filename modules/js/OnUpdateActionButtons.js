@@ -258,9 +258,9 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args._private.actions.forEach((action, index) => { 
                 this.addActionButton(
-                    `btnChooseAction_${action.id}`, _(action.name), () => this.bgaPerformAction('actHighDramaInPlayActionChosen', { actionId: action.id})) 
+                    `btnChooseAction_${action.id}`, action.name, () => this.bgaPerformAction('actHighDramaInPlayActionChosen', { actionId: action.id})) 
             });
-        },
+    },
 
         'highDramaInPlayActionChoosePerformer'  : () => {
             this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
@@ -272,7 +272,7 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args._private.actions.forEach((action) => { 
                 this.addActionButton(
-                    `btnChooseAction_${action.id}`, _(action.name), () => this.bgaPerformAction('actHighDramaInHandActionChosen', { actionId: action.id})) 
+                    `btnChooseAction_${action.id}`, action.name, () => this.bgaPerformAction('actHighDramaInHandActionChosen', { actionId: action.id})) 
             });
         },
 
@@ -357,7 +357,7 @@ onUpdateActionButtons: function( stateName, args )
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 args.techniques.forEach((technique) => { 
                     this.addActionButton(
-                        `actChooseTechnique${technique.id}-btn`, _(technique.name), () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 
+                        `actChooseTechnique${technique.id}-btn`, technique.name, () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 
                     });
                 this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
             }
@@ -435,7 +435,7 @@ onUpdateActionButtons: function( stateName, args )
         'playerReaction': () => {
             if (this.isCurrentPlayerActive()) {
                 args._private.args.buttons.forEach((button, index) => {
-                    this.addActionButton(`actReaction-${index}`, _(button.text), () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}));
+                    this.addActionButton(`actReaction-${index}`, button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}));
                 });
             }
         },
@@ -449,7 +449,15 @@ onUpdateActionButtons: function( stateName, args )
 
         'duelChooseAction': () => {
             if (args._private.gambleAvailable)
-                this.addActionButton(`btnGamble`, _(`Gamble (${args._private.gamblesLeft} Left)`), () => this.bgaPerformAction('actDuelActionGamble', {})) 
+            {
+                var translated = dojo.string.substitute(
+                    _("Gamble (${gamblesLeft} Left)"),
+                    {
+                        gamblesLeft: args._private.gamblesLeft
+                    }
+                );
+                this.addActionButton(`btnGamble`, translated, () => this.bgaPerformAction('actDuelActionGamble', {})) 
+            }
             if (args._private.maneuversAvailable)
                 this.addActionButton(`btnManueuver`, _('Character Maneuver'), () => this.bgaPerformAction('actDuelActionChooseManeuver', {})) 
             if (args._private.techniquesAvailable)
@@ -473,7 +481,7 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args.techniques.forEach((technique) => { 
                 this.addActionButton(
-                    `btnChooseTechnique_${technique.id}`, _(technique.name), () => this.bgaPerformAction('actDuelTechniqueChosen', { techniqueId: technique.id})) 
+                    `btnChooseTechnique_${technique.id}`, technique.name, () => this.bgaPerformAction('actDuelTechniqueChosen', { techniqueId: technique.id})) 
             });
         },
 
@@ -524,7 +532,14 @@ onUpdateActionButtons: function( stateName, args )
             const panache = leader.panache;
             const count = this.factionHand.count();
 
-            $('faction_hand_info').innerHTML = _(`(${count - panache} cards to discard)`);
+            const amount = count - panache;
+            var translated = dojo.string.substitute(
+                _("(${amount} cards to discard)"),
+                {
+                    amount: amount
+                }
+            );
+            $('faction_hand_info').innerHTML = translated;
             this.factionHand.setSelectionMode(2);
 
         }

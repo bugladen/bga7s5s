@@ -223,9 +223,8 @@ trait FrameworkActionsTrait
 
         //Check if the location actually has reknown to move
         $reknown = $this->getReknownForLocation($location);
-        if ($reknown <= 0) {
-            throw new \BgaUserException(self::_("{$location} does not have any reknown to move."));
-        }
+        if ($reknown <= 0) 
+            throw new \BgaUserException(sprintf(self::_("%s does not have any reknown to move."), $location));
         
         $event = EventFactory::createReknownRemovedFromLocationEvent($this->getActivePlayerId(), $location, 1, "The Boar's Guile: Moving Reknown from one Location to an adjacent location");
         $this->theah->eventCheck($event);
@@ -526,9 +525,8 @@ trait FrameworkActionsTrait
 
         //Check if the location actually has reknown to move
         $reknown = $this->getReknownForLocation($location);
-        if ($reknown <= 0) {
-            throw new \BgaUserException(self::_("{$location} does not have any reknown to move."));
-        }
+        if ($reknown <= 0)
+            throw new \BgaUserException(sprintf(self::_("%s does not have any reknown to move."), $location));
 
         $playerId = $this->getActivePlayerId();
         $event = EventFactory::createReknownRemovedFromLocationEvent($playerId, $location, 1, "Until Morale Improves: Moving Reknown from one Location to an adjacent location");
@@ -582,13 +580,13 @@ trait FrameworkActionsTrait
             $card = $this->getCardObjectFromDb($cardId);
 
             if ($card == null)
-                throw new \BgaUserException(self::_("Card $cardId not found."));
+                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
         }
         if ($totalWealth != $cost) {
-            throw new \BgaUserException(self::_("Cost of Mercenary is {$cost}. You selected {$totalWealth} Wealth of cards."));
+            throw new \BgaUserException(sprintf(self::_("Cost of Mercenary is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         $playerId = $this->getActivePlayerId();
@@ -959,13 +957,13 @@ trait FrameworkActionsTrait
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
             if ($card == null)
-                throw new \BgaUserException(self::_("Card $cardId not found."));
+                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
                 //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
         }
         if ($totalWealth != $cost) {
-            throw new \BgaUserException(self::_("Cost of Attachment is {$cost}. You selected {$totalWealth} Wealth of cards."));
+            throw new \BgaUserException(sprintf(self::_("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         $playerId = $this->getActivePlayerId();
@@ -1192,13 +1190,13 @@ trait FrameworkActionsTrait
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
             if ($card == null)
-                throw new \BgaUserException(self::_("Card $cardId not found."));
+                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
         }
         if ($totalWealth != $cost) {
-            throw new \BgaUserException(self::_("Cost of Card is {$cost}. You selected {$totalWealth} Wealth of cards."));
+            throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         //Move the cards used to pay to the player's discard pile
@@ -1395,7 +1393,7 @@ trait FrameworkActionsTrait
 
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
         if (count($techniques) == 0) {
-            throw new \BgaUserException(self::_("No Techniques available for {$actor->Name}."));
+            throw new \BgaUserException(sprintf(self::_("No Techniques available for %s."), $actor->Name));
         }
 
         $this->gamestate->nextState("chooseTechnique");
@@ -1567,13 +1565,13 @@ trait FrameworkActionsTrait
             $payCard = $this->getCardObjectFromDb($cardId);
 
             if ($payCard == null)
-                throw new \BgaUserException(self::_("Card $cardId not found."));
+                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += in_array("Wealth", $payCard->Traits) ? 2 : 1;
         }
         if ($totalWealth != $cost) {
-            throw new \BgaUserException(self::_("Cost of Card is {$cost}. You selected {$totalWealth} Wealth of cards."));
+            throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         //Move the cards used to pay to the player's discard pile
@@ -1706,7 +1704,7 @@ trait FrameworkActionsTrait
         $duelType = $this->globals->get(Game::DUEL_TYPE);
         if ($duelType != Game::VLADISLAV_DUEL_TYPE)
         {
-            throw new \BgaUserException(self::_("Duel is not Vladislav duel."));
+            throw new \BgaUserException(self::_("Duel is not type Vladislav duel."));
         }
 
         $this->gamestate->nextState("doneWithRound");
@@ -1727,7 +1725,7 @@ trait FrameworkActionsTrait
 
         $cardIds = json_decode($ids, true);
         if ($expectedDiscard != count($cardIds))
-            throw new \BgaUserException(self::_("You must discard exactly {$expectedDiscard} cards."));
+            throw new \BgaUserException(sprintf(self::_("You must discard exactly %d cards."), $expectedDiscard));
         
         foreach ($cardIds as $cardId) 
         {
@@ -1826,13 +1824,13 @@ trait FrameworkActionsTrait
             $payCard = $this->getCardObjectFromDb($cardId);
 
             if ($payCard == null)
-                throw new \BgaUserException(self::_("Card $cardId not found."));
+                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += in_array("Wealth", $payCard->Traits) ? 2 : 1;
         }
         if ($totalWealth != $cost) {
-            throw new \BgaUserException(self::_("Cost of Card is {$cost}. You selected {$totalWealth} Wealth of cards."));
+            throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         //Move the cards used to pay to the player's discard pile

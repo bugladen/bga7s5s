@@ -128,7 +128,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = items.length > 0 ? _(`(${wealth} Wealth worth of cards selected)`) : '';
+
+                var translated = dojo.string.substitute(
+                    _("(${wealth} Wealth worth of cards selected)"),
+                    {
+                        wealth: wealth
+                    }
+                );
+                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
             },
 
             'highDramaPhase01180_3': () => {
@@ -139,7 +146,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
+
+                var translated = dojo.string.substitute(
+                    _("(${wealth} Wealth worth of cards selected)"),
+                    {
+                        wealth: wealth
+                    }
+                );
+                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
             },
 
             'highDramaRecruitActionPayForMercenary_client': () => {
@@ -150,7 +164,13 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = items.length > 0 ? _(`(${wealth} Wealth worth of cards selected)`) : '';
+                var translated = dojo.string.substitute(
+                    _("(${wealth} Wealth worth of cards selected)"),
+                    {
+                        wealth: wealth
+                    }
+                );
+                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
             },
 
             'highDramaEquipActionChooseAttachmentFromHand': () => {
@@ -191,7 +211,13 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
+                var translated = dojo.string.substitute(
+                    _("(${wealth} Wealth worth of cards selected)"),
+                    {
+                        wealth: wealth
+                    }
+                );
+                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
             },
 
             'highDramaEquipActionPayForAttachmentFromPlay': () => {
@@ -202,7 +228,13 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
+                var translated = dojo.string.substitute(
+                    _("(${wealth} Wealth worth of cards selected)"),
+                    {
+                        wealth: wealth
+                    }
+                );
+                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
             },
             
             'highDramaInHandActionPay': () => {
@@ -218,7 +250,13 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
+                var translated = dojo.string.substitute(
+                    _("(${wealth} Wealth worth of cards selected)"),
+                    {
+                        wealth: wealth
+                    }
+                );
+                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
             },
 
             'highDramaPhase01185': () => {
@@ -251,7 +289,13 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
+                var translated = dojo.string.substitute(
+                    _("(${wealth} Wealth worth of cards selected)"),
+                    {
+                        wealth: wealth
+                    }
+                );
+                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
             },
 
             'duskPhaseDiscard': () => {
@@ -275,7 +319,13 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     wealth += card.traits.includes('Wealth') ? 2 : 1;
                     
                 });
-                $('faction_hand_info').innerHTML = _(`(${wealth} Wealth worth of cards selected)`);
+                var translated = dojo.string.substitute(
+                    _("(${wealth} Wealth worth of cards selected)"),
+                    {
+                        wealth: wealth
+                    }
+                );
+                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
             },
 
 
@@ -385,7 +435,13 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
         this.myDlg = new ebg.popindialog();
         this.myDlg.create( 'discardDialog' );
-        this.myDlg.setTitle( _(`${playerName} Discard Pile`) );
+        var translated = dojo.string.substitute(
+            _("${playerName} Discard Pile"),
+            {
+                playerName: playerName
+            }
+        );
+        this.myDlg.setTitle( translated );
         this.myDlg.setMaxWidth( 675 );
 
         let cards = "";
@@ -407,7 +463,13 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
         this.myDlg = new ebg.popindialog();
         this.myDlg.create( 'discardDialog' );
-        this.myDlg.setTitle( _(`${playerName} Locker`) );
+        var translated = dojo.string.substitute(
+            _("${playerName} Locker"),
+            {
+                playerName: playerName
+            }
+        );
+        this.myDlg.setTitle( translated );
         this.myDlg.setMaxWidth( 675 );
 
         let cards = "";

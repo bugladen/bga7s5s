@@ -142,14 +142,14 @@ class Action_01192 extends CharacterAction
 
             if (!$found)
             {
-                throw new \BgaUserException($game->translate(sprintf("Card %d is not in the top %d cards of the player's deck.", $id, $count)));
+                throw new \BgaUserException(sprintf($game->translate("Card %d is not in the top %d cards of the player's deck."), $id, $count));
             }
 
             $chosenCard = $game->getCardObjectFromDb($id);
 
             if (! $chosenCard instanceof Risk)
             {
-                throw new \BgaUserException($game->translate(sprintf("Card %d is not a Risk.", $id)));
+                throw new \BgaUserException(sprintf($game->translate("Card %d is not a Risk."), $id));
             }
         
             // Put the chosen card into the player's hand. Sink the rest.

@@ -83,7 +83,7 @@ class Action_01189b extends EventCityAction
         $locations = $game->theah->getAdjacentCityLocations($currentLocation, $includeHome = false);
         if ( ! in_array($location->Name, $locations))
         {
-            throw new \BgaUserException(sprintf($game->translate("%s is not adjacent to %s."), $location->Name, $currentLocation));
+            throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to Location %s."), $location->Name, $currentLocation));
         }
 
         //Check if the origin location has reknown to move

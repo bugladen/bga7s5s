@@ -838,7 +838,13 @@ onEnteringState: function( stateName, args )
 
                 this.cardProperties[card.id] = card;                
             });
-            $('choose_container_name').innerHTML = _(`Kaj Kousei Artifacts ( ${count} Found )`);
+            var translated = dojo.string.substitute(
+                _("Kaj Kousei Artifacts ( ${count} Found )"),
+                {
+                    count: count
+                }
+            );
+            $('choose_container_name').innerHTML = translated;
             this.chooseList.setSelectionMode(0);
             if (this.isCurrentPlayerActive()) {
                 if (count > 0)
@@ -968,7 +974,13 @@ onEnteringState: function( stateName, args )
 
                 this.cardProperties[card.id] = card;                
             });
-            $('choose_container_name').innerHTML = _(`Gustavo's Risk Cards: ( ${count} Found )`);
+            var translated = dojo.string.substitute(
+                _("Gustavo's Risk Cards: ( ${count} Found )"),
+                {
+                    count: count
+                }
+            );
+            $('choose_container_name').innerHTML = translated;
             this.chooseList.setSelectionMode(0);
             if (this.isCurrentPlayerActive()) {
                 if (count > 0)

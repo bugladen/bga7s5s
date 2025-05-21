@@ -80,7 +80,7 @@ class _01145 extends Scheme
         {
             if ($game->getReknownForLocation($fromLocation) == 0)
             {
-                throw new \BgaUserException($game->translate("{$fromLocation} does not have any reknown to move."));
+                throw new \BgaUserException(sprintf($game->translate("%s does not have any reknown to move."), $fromLocation));
             }
    
             $playerAdded = $game->theah->createEvent(Events::ReknownRemovedFromLocation);
@@ -215,7 +215,7 @@ class _01145 extends Scheme
             if ($addEvent instanceof EventCardDrawn) {
                 $addEvent->card = $card;
                 $addEvent->playerId = $playerId;
-                $addEvent->reason = "<strong>" . $game->translate("Inspire Generosity") . "</strong> " . $game->translate("effect");
+                $addEvent->reason = $game->translate("<strong>Inspire Generosity</strong> effect");
             }
             //No need for a check
             $game->theah->queueEvent($addEvent);
@@ -246,7 +246,7 @@ class _01145 extends Scheme
             if ($addEvent instanceof EventCardDrawn) {
                 $addEvent->card = $card;
                 $addEvent->playerId = $lowestPlayer;
-                $addEvent->reason = "<strong>" . $game->translate("Inspire Generosity") . "</strong> " . $game->translate("effect") . " - " . $game->translate("player has fewest reknown");
+                $addEvent->reason = $game->translate("<strong>Inspire Generosity</strong> effect - player has fewest reknown");
             }
             //No need for a check
             $game->theah->queueEvent($addEvent);
@@ -262,7 +262,7 @@ class _01145 extends Scheme
             if ($addEvent instanceof EventCardDrawn) {
                 $addEvent->card = $card;
                 $addEvent->playerId = $lowestPlayer;
-                $addEvent->reason = "<strong>" . $game->translate("Inspire Generosity") . "</strong> " . $game->translate("effect") . " - " . $game->translate("player has fewest characters in play");
+                $addEvent->reason = $game->translate("<strong>Inspire Generosity</strong> effect - player has fewest characters in play");
             }
             //No need for a check
             $game->theah->queueEvent($addEvent);
