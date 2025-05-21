@@ -9,12 +9,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventClaimOccuring;
@@ -137,22 +133,11 @@ trait FrameworkActionsTrait
         $playerId = $this->getActivePlayerId();
         $card = $this->getCardObjectFromDb($id);
 
-        $removeEvent = $this->theah->createEvent(Events::CardRemovedFromPlayerFactionDeck);
-        if ($removeEvent instanceof EventCardRemovedFromPlayerFactionDeck) {
-            $removeEvent->card = $card;
-            $removeEvent->playerId = $playerId;
-        }
+        $removeEvent = EventFactory::createCardRemovedFromPlayerFactionDeckEvent($playerId, $card->Id);
         $this->theah->eventCheck($removeEvent);
 
-        $addEvent = $this->theah->createEvent(Events::CardAddedToHand);
-        if ($addEvent instanceof EventCardAddedToHand) {
-            $addEvent->card = $card;
-            $addEvent->playerId = $playerId;
-        }
+        $addEvent = EventFactory::createCardAddedToHandEvent($playerId, $card->Id);
         $this->theah->eventCheck($addEvent);
-
-        //Move card in DB
-        $this->cards->moveCard($id, Game::LOCATION_HAND, $playerId);
 
         $this->theah->queueEvent($removeEvent);
         $this->theah->queueEvent($addEvent);
@@ -174,15 +159,8 @@ trait FrameworkActionsTrait
         }
         $this->theah->eventCheck($removeEvent);
 
-        $addEvent = $this->theah->createEvent(Events::CardAddedToHand);
-        if ($addEvent instanceof EventCardAddedToHand) {
-            $addEvent->card = $card;
-            $addEvent->playerId = $playerId;
-        }
+        $addEvent = EventFactory::createCardAddedToHandEvent($playerId, $card->Id);
         $this->theah->eventCheck($addEvent);
-
-        //Move card in DB
-        $this->cards->moveCard($id, Game::LOCATION_HAND, $playerId);
 
         $this->theah->queueEvent($removeEvent);
         $this->theah->queueEvent($addEvent);
@@ -196,34 +174,16 @@ trait FrameworkActionsTrait
         $playerName = $this->getActivePlayerName();
         $card = $this->getCardObjectFromDb($id);
 
-        $removeEvent = $this->theah->createEvent(Events::CardRemovedFromCityDiscardPile);
-        if ($removeEvent instanceof EventCardRemovedFromCityDiscardPile) {
-            $removeEvent->card = $card;
-            $removeEvent->playerId = $playerId;
-        }
+        $removeEvent = EventFactory::createCardRemovedFromCityDiscardPileEvent($playerId, $card->Id);
         $this->theah->eventCheck($removeEvent);
 
-        $addEvent = $this->theah->createEvent(Events::CardAddedToCityDeck);
-        if ($addEvent instanceof EventCardAddedToCityDeck) {
-            $addEvent->card = $card;
-            $addEvent->playerId = $playerId;
-        }
+        $addEvent = EventFactory::createCardAddedToCityDeckEvent($playerId, $card->Id, true);
         $this->theah->eventCheck($addEvent);
-
-        //Move card to top of City Deck
-        $this->cards->insertCardOnExtremePosition($id, Game::LOCATION_CITY_DECK, true);
-
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} chose <strong>${card_name}</strong> to move from the City Discard Pile to the top of the City Deck.'), [
-            'i18n' => ['card_name'],
-            "player_name" => $playerName,
-            "card_name" => $card->Name,
-            "player_id" => $playerId
-        ]);
 
         $this->theah->queueEvent($removeEvent);
         $this->theah->queueEvent($addEvent);
 
-        $this->gamestate->nextState("");
+        $this->gamestate->nextState();
     }
 
     public function actPlanningPhase_01125(string $locations)

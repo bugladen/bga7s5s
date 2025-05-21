@@ -221,7 +221,7 @@ abstract class Character extends Card
                     if ($attachment instanceof CityAttachment)
                         $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($this->ControllerId, $attachment->Id, $attachment->Location);
                     else
-                        $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($this->ControllerId, $attachment->Id, $attachment->Location);
+                        $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location);
 
                     $event->theah->queueEvent($discardEvent);
                 }

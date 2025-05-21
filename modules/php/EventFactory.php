@@ -8,11 +8,16 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToFactionDeck;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
@@ -90,6 +95,32 @@ class EventFactory
         return $event;
     }
 
+    public static function createCardAddedToCityDeckEvent(int $playerId, int $cardId, bool $onTop): EventCardAddedToCityDeck
+    {
+        $event = self::createEvent(Events::CardAddedToCityDeck);
+        if ($event instanceof EventCardAddedToCityDeck)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+            $event->onTop = $onTop;
+        }
+
+        return $event;
+    }
+
+    public static function createCardAddedToFactionDeckEvent(int $playerId, int $cardId, bool $onTop): EventCardAddedToFactionDeck
+    {
+        $event = self::createEvent(Events::CardAddedToFactionDeck);
+        if ($event instanceof EventCardAddedToFactionDeck)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+            $event->onTop = $onTop;
+        }
+
+        return $event;
+    }
+
     public static function createCardAddedToCityDiscardPileEvent(int $playerId, int $cardId, string $location): EventCardAddedToCityDiscardPile
     {
         $event = self::createEvent(Events::CardAddedToCityDiscardPile);
@@ -98,6 +129,17 @@ class EventFactory
             $event->cardId = $cardId;
             $event->fromLocation = $location;
             $event->playerId = $playerId;
+        }
+        return $event;
+    }
+    
+    public static function createCardAddedToHandEvent(int $playerId, int $cardId): EventCardAddedToHand
+    {
+        $event = self::createEvent(Events::CardAddedToHand);
+        if ($event instanceof EventCardAddedToHand)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
         }
         return $event;
     }
@@ -114,12 +156,12 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardDiscardedFromPlayEvent(int $playerId, int $cardId, string $location): EventCardDiscardedFromPlay
+    public static function createCardDiscardedFromPlayEvent(int $ownerId, int $cardId, string $location): EventCardDiscardedFromPlay
     {
         $event = self::createEvent(Events::CardDiscardedFromPlay);
         if ($event instanceof EventCardDiscardedFromPlay)
         {
-            $event->playerId = $playerId;
+            $event->ownerId = $ownerId;
             $event->cardId = $cardId;
             $event->fromLocation = $location;
         }
@@ -150,6 +192,30 @@ class EventFactory
             $event->toLocation = $toLocation;
             $event->engage = $engage;
             $event->sourceId = $sourceId;
+        }
+
+        return $event;
+    }
+
+    public static function createCardRemovedFromCityDiscardPileEvent(int $playerId, int $cardId): EventCardRemovedFromCityDiscardPile
+    {
+        $event = self::createEvent(Events::CardRemovedFromCityDiscardPile);
+        if ($event instanceof EventCardRemovedFromCityDiscardPile)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+        }
+
+        return $event;
+    }
+
+    public static function createCardRemovedFromPlayerFactionDeckEvent(int $playerId, int $cardId): EventCardRemovedFromPlayerFactionDeck
+    {
+        $event = self::createEvent(Events::CardRemovedFromPlayerFactionDeck);
+        if ($event instanceof EventCardRemovedFromPlayerFactionDeck)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
         }
 
         return $event;

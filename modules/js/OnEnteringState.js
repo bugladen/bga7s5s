@@ -951,6 +951,31 @@ onEnteringState: function( stateName, args )
             }
         },
 
+        'highDramaPhase01192' : () => {
+            dojo.removeClass('choose_container', 'hidden');
+            dojo.removeClass('chooseList', 'hidden');
+            
+            let count = 0;
+            args.args.args.cards.forEach((card) => {
+                this.addCardToDeck(this.chooseList, card);
+                if (card.type === 'Risk') 
+                    count++;
+                else
+                {
+                    let div = this.chooseList.getItemDivId(card.id);
+                    dojo.addClass(div, 'unselectable');        
+                }
+
+                this.cardProperties[card.id] = card;                
+            });
+            $('choose_container_name').innerHTML = _(`Gustavo's Risk Cards: ( ${count} Found )`);
+            this.chooseList.setSelectionMode(0);
+            if (this.isCurrentPlayerActive()) {
+                if (count > 0)
+                    this.chooseList.setSelectionMode(1);
+            }
+        },
+
         'playerReaction': () => {
             if (this.isCurrentPlayerActive()) {
                 this.gamedatas.gamestate.descriptionmyturn = _(args.args._private.args.descriptionmyturn);

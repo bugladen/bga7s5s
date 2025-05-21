@@ -9,8 +9,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToFactionDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
@@ -189,26 +191,84 @@ trait EventHub
                 ]);
 
                 // Notify players that card has been added to hand
-                $this->game->notifyAllPlayers("drawCardMessage", clienttranslate('${player_name} drew a card into their hand because of ${reason}.'), [
+                $this->game->notifyAllPlayers("drawCardMessage", clienttranslate('${player_name} drew a card into their Faction Hand because of ${reason}.'), [
                     'i18n' => ['reason'],
                     "playerId" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
                     "reason" => $event->reason,
                 ]);
                 break;
-                
-            case $event instanceof EventCardAddedToHand:
-                $event->card->Location = Game::LOCATION_HAND;
-                $event->card->IsUpdated = true;
 
-                // Notify players that card has been added to hand
-                $this->game->notifyAllPlayers("cardAddedToHand", clienttranslate('${player_name} added ${card_name} into their hand.'), [
-                    'i18n' => ['card_name'],
-                    "player_id" => $event->playerId,
-                    "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "card_name" => "<span style='font-weight:bold'>{$event->card->Name}</span>",
-                    "card" => $event->card->getPropertyArray($this->game),
-                ]);
+            case $event instanceof EventCardAddedToCityDeck:
+                $handler = function (Theah $theah, EventCardAddedToCityDeck $event)
+                {
+                    $card = $theah->getCardById($event->cardId);
+                    $card->Location = Game::LOCATION_CITY_DECK;
+                    $card->IsUpdated = true;
+
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->insertCardOnExtremePosition($event->cardId, Game::LOCATION_CITY_DECK, $event->onTop);
+
+                    $message = $event->onTop 
+                        ? clienttranslate('${player_name} added <strong>${card_name}</strong> to the top of the City Deck.') 
+                        : clienttranslate('${player_name} sunk <strong>${card_name}</strong> to the bottom of the City Deck.');
+
+                    $this->game->notifyAllPlayers("message", $message, [
+                        'i18n' => ['card_name'],
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
+                        "card_name" => $card->Name
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCardAddedToFactionDeck:
+                $handler = function (Theah $theah, EventCardAddedToFactionDeck $event)
+                {
+                    $deckName = $theah->game->getPlayerFactionDeckName($event->playerId);
+                    $card = $theah->getCardById($event->cardId);
+                    $card->Location = $deckName;
+                    $card->IsUpdated = true;
+
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->insertCardOnExtremePosition($event->cardId, $deckName, $event->onTop);
+
+                    $message = $event->onTop 
+                        ? clienttranslate('${player_name} added <strong>${card_name}</strong> to the top of their Faction Deck.') 
+                        : clienttranslate('${player_name} sunk <strong>${card_name}</strong> to the bottom of their Faction Deck.');
+
+                    $this->game->notifyAllPlayers("message", $message, [
+                        'i18n' => ['card_name'],
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
+                        "card_name" => $card->Name
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCardAddedToHand:
+                $handler = function (Theah $theah, EventCardAddedToHand $event)
+                {
+                    //Move card in DB
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->moveCard($event->cardId, Game::LOCATION_HAND, $event->playerId);
+
+                    $card = $theah->game->getCardObjectFromDb($event->cardId);
+                    $card->Location = Game::LOCATION_HAND;
+                    $card->IsUpdated = true;
+
+                    $theah->upsertCard($card);
+    
+                    // Notify players that card has been added to hand
+                    $this->game->notifyAllPlayers("cardAddedToHand", clienttranslate('${player_name} added <strong>${card_name}</strong> to their Faction Hand.'), [
+                        'i18n' => ['card_name'],
+                        "player_id" => $event->playerId,
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
+                        "card_name" => $card->Name,
+                        "card" => $card->getPropertyArray($this->game),
+                    ]);
+                };
+                $handler($this, $event);
                 break;
 
             case $event instanceof EventCardAddedToCityDiscardPile:
@@ -258,7 +318,7 @@ trait EventHub
             case $event instanceof EventCardDiscardedFromPlay:
                 $handler = function (Theah $theah, EventCardDiscardedFromPlay $event)
                     {
-                        $discardPileName = $theah->game->getPlayerDiscardDeckName($event->playerId);
+                        $discardPileName = $theah->game->getPlayerDiscardDeckName($event->ownerId);
 
                         $deck = $theah->game->getGameDeckObject();
                         $deck->moveCard($event->cardId, $discardPileName);
@@ -269,7 +329,7 @@ trait EventHub
     
                     $this->game->notifyAllPlayers("cardDiscardedFromPlay", clienttranslate('<strong>${card_name}</strong> discarded from ${location}.'), [
                         'i18n' => ['card_name', 'location'],
-                        "playerId" => $event->playerId,
+                        "playerId" => $event->ownerId,
                         "card_name" => $card->Name,
                         "cardId" => $event->cardId,
                         "location" => $event->fromLocation,
@@ -342,11 +402,17 @@ trait EventHub
                 break;
 
             case $event instanceof EventCardRemovedFromCityDiscardPile:
-                $this->game->notifyAllPlayers("cardRemovedFromCityDiscardPile", clienttranslate('${card_name} removed from City Discard pile.'), [
-                    'i18n' => ['card_name'],
-                    "card_name" => $event->card->Name,
-                    "card" => $event->card->getPropertyArray($this->game),
-                ]);    
+                $handler = function (Theah $theah, EventCardRemovedFromCityDiscardPile $event)
+                {
+                    $card = $theah->getCardById($event->cardId);
+
+                    $theah->game->notifyAllPlayers("cardRemovedFromCityDiscardPile", clienttranslate('${card_name} removed from City Discard pile.'), [
+                        'i18n' => ['card_name'],
+                        "card_name" => $card->Name,
+                        "card" => $card->getPropertyArray($theah->game),
+                    ]);    
+                };
+                $handler($this, $event);
                 break;
     
             case $event instanceof EventCardRemovedFromPlayerDiscardPile:

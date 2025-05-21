@@ -490,6 +490,13 @@ onLeavingState: function( stateName )
             this.clearCardAsSelectable(image);
         },
 
+        'highDramaPhase01192' : () => {
+            dojo.addClass('choose_container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+            this.chooseList.setSelectionMode(0);
+        },
+
         'duelChooseAction': () => {
             if (this.isCurrentPlayerActive()) {
                 this.factionHand.setSelectionMode(0);

@@ -46,6 +46,26 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'highDramaPhase01192': () => {
+                if (item_id === undefined) return;
+                var items = this.chooseList.getSelectedItems();
+                items.forEach((item) => {
+                    if (item.id != item_id) {
+                        this.chooseList.unselectItem(item.id);
+                    }
+                });
+                const card = this.cardProperties[item_id];
+                if (card.type !== 'Risk') {
+                    this.chooseList.unselectItem(item_id);
+                }
+
+                if (this.chooseList.getSelectedItems().length === 1) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
             'duskPhaseBegin01177_2': () => {
                 // Declare static var named order
                 if (typeof this.onChooseCardClicked.order === 'undefined') {

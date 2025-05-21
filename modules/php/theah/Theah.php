@@ -359,6 +359,12 @@ class Theah
             return $this->cards[$cardId];
         }
 
+        $card = $this->db->getCardObject($cardId);
+        if ($card) {
+            $this->cards[$cardId] = $card;
+            return $card;
+        }
+
         return null;
     }
 

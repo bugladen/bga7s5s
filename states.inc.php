@@ -1006,6 +1006,7 @@ $machinestates = [
                 "01185" => States::HIGH_DRAMA_PLAYER_TURN_01185,
                 "01189a" => States::HIGH_DRAMA_PLAYER_TURN_01189a,
                 "01189b" => States::HIGH_DRAMA_PLAYER_TURN_01189b,
+                "01192" => States::HIGH_DRAMA_PLAYER_TURN_01192,
                 "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
                 "endOfEvents" => States::NEXT_PLAYER,
                 "endOfGame" => States::END_GAME

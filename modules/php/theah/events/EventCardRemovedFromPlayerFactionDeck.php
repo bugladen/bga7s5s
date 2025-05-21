@@ -2,17 +2,17 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
-
 class EventCardRemovedFromPlayerFactionDeck extends Event
 {
-    public Card $card;
     public int  $playerId;
+    public int $cardId;
 
     public function __construct()
     {
         parent::__construct();
         $this->priority = Event::MEDIUM_PRIORITY;
+        $this->cardId = 0;
+        $this->playerId = 0;
     }
 
 }

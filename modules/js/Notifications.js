@@ -314,6 +314,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         debug( 'notif_cardAddedToHand' );
         debug( notif );
+        
         this.addCardToDeck(this.factionHand, notif.args.card);
         $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
     },

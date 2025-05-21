@@ -21,7 +21,7 @@ $machinestates += [
 
     States::HIGH_DRAMA_PLAYER_TURN_01180 => [
         "name" => "highDramaPhase01180",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "description" => clienttranslate('${actplayer} may choose to Equip an Artifact from the top 4 cards of the City Deck.'),
         "descriptionmyturn" => clienttranslate('${you} may choose to Equip an Artifact from the top 4 cards of the City Deck:'),
         "type" => "activeplayer",
         "args" => "argsForState",
@@ -110,6 +110,22 @@ $machinestates += [
         "transitions" => [
             "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
             "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01192 => [
+        "name" => "highDramaPhase01192",
+        "description" => clienttranslate('${actplayer} may choose a Risk to put into their Faction Hand.'),
+        "descriptionmyturn" => clienttranslate('${you} may choose a Risk to put into your Faction Hand:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actFromCardPass"
+        ],
+        "transitions" => [
+            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
 

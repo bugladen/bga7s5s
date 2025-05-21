@@ -38,12 +38,8 @@ class Action_01180 extends CharacterAction
                 $card = $game->getCardObjectFromDb($deckCard['id']);
 
                 //Sink card to City Discard Pile
-                $deck->insertCardOnExtremePosition($card->Id, Game::LOCATION_CITY_DECK, false);
-
-                $game->notifyAllPlayers("message", clienttranslate('<strong>${card_name}</strong> has been sunk to the City Pile.'), [
-                    'i18n' => ['card_name'],
-                    "card_name" => $card->Name,
-                ]);
+                $event = EventFactory::createCardAddedToCityDeckEvent($game->getActivePlayerId(), $card->Id, false);
+                $game->theah->queueEvent($event);
         }
 
             $game->gamestate->nextState("pass");
@@ -179,13 +175,8 @@ class Action_01180 extends CharacterAction
                 $card = $game->getCardObjectFromDb($deckCard['id']);
                 if ($deckCard['id'] == $attachment->Id) continue;
 
-                //Sink card to City Discard Pile
-                $deck->insertCardOnExtremePosition($card->Id, Game::LOCATION_CITY_DECK, false);
-
-                $game->notifyAllPlayers("message", clienttranslate('<strong>${card_name}</strong> has been sunk to the City Discard Pile.'), [
-                    'i18n' => ['card_name'],
-                    "card_name" => $card->Name,
-                ]);
+                $event = EventFactory::createCardAddedToCityDeckEvent($playerId, $card->Id, false);
+                $game->theah->queueEvent($event);
             }
 
             //Equip the attachment

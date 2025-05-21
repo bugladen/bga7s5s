@@ -2,9 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
-
 class Events
 {
     //Phase Events
@@ -25,6 +22,7 @@ class Events
 
     //City Card Events
     const CardAddedToCityDeck = 'EventCardAddedToCityDeck';
+    const CardAddedToFactionDeck = 'EventCardAddedToFactionDeck';
     const CityCardAddedToLocation = 'EventCityCardAddedToLocation';
     const CardAddedToCityDiscardPile = 'EventCardAddedToCityDiscardPile';
     const CardRemovedFromCityDiscardPile = 'EventCardRemovedFromCityDiscardPile';
