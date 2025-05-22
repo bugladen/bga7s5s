@@ -1301,7 +1301,8 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Technique not found."));
         }
 
-        if ($technique->OwnerId != $performer->Id) {
+        $owner = $technique->getOwningCharacter($this->theah);
+        if ($owner->Id != $performer->Id) {
             throw new \BgaUserException(self::_("Technique does not belong to the Performer."));
         }
 

@@ -24,6 +24,8 @@ class Technique_01186 extends Technique
     { 
         parent::handleEvent($event);
 
+        $maryam = $this->getOwningCard($event->theah);
+
         // If activated then this technique will cancel any Maneuvers that are attempted by the opponent
         // until the start of the next round for the owning character.
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
@@ -32,11 +34,10 @@ class Technique_01186 extends Technique
             $this->setUsed($event->theah, true);
         }
 
-        // If the event is a new round and the owning character is Maryam then reset the CancelOpponentManeuvers flag
-        if ($event instanceof EventDuelNewRound && $event->actorId == $this->getOwningCard($event->theah)->Id)
+        // If the event is a new round and Maryam is the actor then reset the CancelOpponentManeuvers flag
+        if ($event instanceof EventDuelNewRound && $maryam->Id == $event->actorId)
         {
-            $this->CancelOpponentManeuvers = false;
-            $maryam = $this->getOwningCard($event->theah);
+            $this->CancelOpponentManeuvers = false;            
             $maryam->IsUpdated = true;
         }
 
@@ -44,14 +45,17 @@ class Technique_01186 extends Technique
         if ($event instanceof EventDuelEnd)
         {
             $this->CancelOpponentManeuvers = false;
-            $maryam = $this->getOwningCard($event->theah);
             $maryam->IsUpdated = true;
         }
     }
 
     public function eventCheck(Event $event)
     {
-        if ($event instanceof EventResolveManeuver && $this->CancelOpponentManeuvers)
+        parent::eventCheck($event);
+
+        $maryam = $this->getOwningCard($event->theah);
+        
+        if ($event instanceof EventResolveManeuver && $event->adversaryId == $maryam->Id && $this->CancelOpponentManeuvers)
         {
             throw new \BgaUserException($event->theah->game->translate("Technique of Maryam Benu Pleroma is active. Opponent Maneuvers are prevented this round."));
         }

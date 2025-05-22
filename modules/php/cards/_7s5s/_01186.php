@@ -63,7 +63,8 @@ class _01186 extends CityCharacter implements IHasTechniques
         //Mark ImperviousnessUsedToday as true so that it cannot be used again until the next day.
         if ( ! $this->ImperviousnessUsedToday && 
             (($event instanceof EventCardMoved && $event->cardId == $this->Id) ||
-            ($event instanceof EventCardEngaged && $event->cardId == $this->Id))
+            ($event instanceof EventCardEngaged && $event->cardId == $this->Id) 
+            && $event->sourceId != 0)
         )
         {
             $source = $event->theah->getCardById($event->sourceId);

@@ -633,7 +633,7 @@ trait ArgumentsTrait
                 "_private" => [
                     "active" => [
                         "cardId" => $cardId,
-                        "maneuvers" => $card->getManeuversArray($this->game)
+                        "maneuvers" => $card->getManeuversArray($this)
                     ]
                 ]
             ];

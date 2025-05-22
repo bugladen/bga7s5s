@@ -71,7 +71,9 @@ trait CardAbilityTrait
 
         $owner = $theah->getCardById($this->OwnerId);
 
-        if ($owner instanceof Attachment and $owner->isAttached()) {
+        if ($owner instanceof Character)
+            return $owner;
+        else if ($owner instanceof Attachment and $owner->isAttached()) {
             $id = $owner->AttachedToId;
             $owner = $theah->getCardById($id);
             return $owner;
