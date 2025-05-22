@@ -55,7 +55,7 @@ class Technique_01067b extends Technique
                 if ( ! $this->UseParryInstead)
                 {
                     $event->threat += 1;
-                    $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Threat.");
+                    $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat."), $this->Name);
                 }
             }
         }

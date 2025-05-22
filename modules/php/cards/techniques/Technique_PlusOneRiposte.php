@@ -20,7 +20,7 @@ class Technique_PlusOneRiposte extends Technique
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
             $event->riposte += 1;
-            $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Riposte.");
+            $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Riposte."), $this->Name);
         }        
     }
 }

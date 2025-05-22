@@ -21,13 +21,13 @@ class Technique_PlusOneThrust extends Technique
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id) 
         {
             $event->threat += 1;
-            $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Threat.");
+            $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat."), $this->Name);
         }
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id) 
         {
             $event->thrust += 1;
-            $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Thrust.");
+            $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Thrust."), $this->Name);
         }        
     }
 }

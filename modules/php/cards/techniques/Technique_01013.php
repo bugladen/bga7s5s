@@ -70,7 +70,7 @@ class Technique_01013 extends Technique
                     if ($this->UseThrust)
                     {
                         $event->threat += 1;
-                        $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Threat.");
+                        $event->explanations[] = sprintf($event->theah->game->translate("Technique [{$this->Name}] adds 1 Threat."), $this->Name);
                     }
                 };
                 $handler($event);
@@ -81,12 +81,12 @@ class Technique_01013 extends Technique
                     if ($this->UseThrust)
                     {
                         $event->thrust += 1;
-                        $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Thrust.");
+                        $event->explanations[] = sprintf($event->theah->game->translate("Technique [{$this->Name}] adds 1 Thrust."), $this->Name);
                     }
                     else
                     {
                         $event->parry += 1;
-                        $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Parry.");
+                        $event->explanations[] = sprintf($event->theah->game->translate("Technique [{$this->Name}] adds 1 Parry."), $this->Name);
                     }        
                 };
                 $handler($event);

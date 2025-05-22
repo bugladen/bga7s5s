@@ -25,12 +25,12 @@ class Technique_01123 extends Technique
             $adversary = $event->theah->getCharacterById($event->adversaryId);
             if ($actor->Wounds < $adversary->Wounds)
             {
-                $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds no Threat due to Valeri having fewer Wounds than opponent.");
+                $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds no Threat due to Valeri having fewer Wounds than opponent."), $this->Name);
             }
             else
             {
                 $event->threat += 1;
-                $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds 1 Threat due to Valeri having equal or more Wounds than opponent.");
+                $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat due to Valeri having equal or more Wounds than opponent."), $this->Name);
             }
         }
 
@@ -40,12 +40,12 @@ class Technique_01123 extends Technique
             $adversary = $event->theah->getCharacterById($event->adversaryId);
             if ($actor->Wounds < $adversary->Wounds)
             {
-                $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds +1 Riposte due to Valeri having fewer Wounds than opponent.");
+                $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds +1 Riposte due to Valeri having fewer Wounds than opponent."), $this->Name);
                 $event->riposte += 1;
             }
             else
             {
-                $event->explanations[] = clienttranslate("Technique [{$this->Name}] adds +1 Thrust due to Valeri having equal or more wounds than opponent.");
+                $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds +1 Thrust due to Valeri having equal or more wounds than opponent."), $this->Name);
                 $event->thrust += 1;
             }
         }
