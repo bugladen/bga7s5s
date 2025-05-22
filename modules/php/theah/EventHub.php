@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
@@ -145,22 +146,16 @@ trait EventHub
             case $event instanceof EventAttachmentUnequipped:
                 $handler = function (Theah $theah, EventAttachmentUnequipped $event)
                 {
-                    $character = $theah->getCardById($event->characterId);
-                    $attachment = $theah->getCardById($event->attachmentId);
+                    $attachment = $theah->getAttachmentById($event->attachmentId);
+                    $attachment->AttachedToId = 0;
+                    $attachment->IsUpdated = true;
 
-                    if ($attachment instanceof Attachment) 
-                    {                        
-                        $attachment->AttachedToId = 0;
-                        $attachment->IsUpdated = true;
-                    }
-
-                    if ($character instanceof Character) {
-                        $character->removeAttachment($attachment);
-                        $modifiedResolve = $character->ModifiedResolve;
-                        $modifiedCombat = $character->ModifiedCombat;
-                        $modifiedFinesse = $character->ModifiedFinesse;
-                        $modifiedInfluence = $character->ModifiedInfluence;
-                    }
+                    $character = $theah->getCharacterById($event->characterId);
+                    $character->removeAttachment($attachment);
+                    $modifiedResolve = $character->ModifiedResolve;
+                    $modifiedCombat = $character->ModifiedCombat;
+                    $modifiedFinesse = $character->ModifiedFinesse;
+                    $modifiedInfluence = $character->ModifiedInfluence;
 
                     $theah->game->notifyAllPlayers("attachmentUnequipped", clienttranslate('${player_name} unequipped <strong>${attachment_name}</strong> from <strong>${character_name}</strong>.'), [
                         'i18n' => ['attachment_name', 'character_name'],
@@ -175,6 +170,12 @@ trait EventHub
                         "modifiedFinesse" => $modifiedFinesse,
                         "modifiedInfluence" => $modifiedInfluence,
                     ]);
+
+                    if ($character->ModifiedResolve <= 0 && ! $character->IsDying)
+                    {
+                        $destroyEvent = EventFactory::createCharacterDestroyedEvent($character->ControllerId, $character->Id, sprintf($this->game->translate("Has unequipped %s"), $attachment->Name));
+                        $this->queueEvent($destroyEvent);
+                    }
                 };
                 $handler($this, $event);
                 break;

@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 
 trait DebugTrait
@@ -126,15 +127,27 @@ trait DebugTrait
         $this->setReknownForLocation($location, $amount);
     }
 
-    public function dbgWoundCharacter(int $characterId, int $sourceId)
+    public function dbgWoundCharacter(int $characterId, int $wounds, int $sourceId = 0)
     {
         $event = $this->theah->createEvent(Events::CharacterWounded);
         if ($event instanceof EventCharacterWounded)
         {
             $event->characterId = $characterId;
             $event->sourceId = $sourceId;
-            $event->wounds = 1;
+            $event->wounds = $wounds;
             $event->reason = 'Debug Wound';
+        }
+        $this->theah->queueEvent($event);
+    }
+
+    public function dbgUnequipAttachment(int $playerId, int $characterId, int $attachmentId)
+    {
+        $event = $this->theah->createEvent(Events::AttachmentUnequipped);
+        if ($event instanceof EventAttachmentUnequipped)
+        {
+            $event->playerId = $playerId;
+            $event->characterId = $characterId;
+            $event->attachmentId = $attachmentId;
         }
         $this->theah->queueEvent($event);
     }

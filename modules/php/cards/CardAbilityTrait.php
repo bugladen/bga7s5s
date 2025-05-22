@@ -63,7 +63,7 @@ trait CardAbilityTrait
         return $owner;
     }
 
-    public function getOwningCharacter(Theah $theah): ?Card
+    public function getOwningCharacter(Theah $theah): ?Character
     {
         if ($this->OwnerId == null) {
             return null;

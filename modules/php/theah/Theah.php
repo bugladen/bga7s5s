@@ -432,7 +432,17 @@ class Theah
     function getCharacterById($id): ?Character
     {
         foreach ($this->cards as $card) {
-            if ($card instanceof Character && $card->Id == $id) {
+            if ($card->Id == $id && $card instanceof Character) {
+                return $card;
+            }
+        }
+        return null;
+    }
+
+    function getAttachmentById($id): ?Attachment
+    {
+        foreach ($this->cards as $card) {
+            if ($card->Id == $id && $card instanceof Attachment) {
                 return $card;
             }
         }

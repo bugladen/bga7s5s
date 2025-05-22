@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
@@ -28,6 +29,8 @@ abstract class Character extends Card
     public bool $DashedFinesse;
     public bool $DashedInfluence;
 
+    public bool $IsDying;
+
     public Array $Attachments = [];
 
     public function __construct()
@@ -47,6 +50,8 @@ abstract class Character extends Card
         $this->DashedCombat = false;
         $this->DashedFinesse = false;
         $this->DashedInfluence = false;
+
+        $this->IsDying = false;
     }
 
     public function resetModifiedCharacterStats()
@@ -210,6 +215,8 @@ abstract class Character extends Card
 
             if ($this->ModifiedResolve == 0)
             {
+                $this->IsDying = true;
+                
                 //Unequip all attachments
                 foreach ($this->Attachments as $attachmentId)
                 {
@@ -259,6 +266,11 @@ abstract class Character extends Card
                 "reason" => $event->reason,
                 'resolve' => $this->ModifiedResolve
             ]);
+        }
+
+        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
+        {
+            $this->IsDying = false;
         }
     }
 
