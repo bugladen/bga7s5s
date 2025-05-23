@@ -43,9 +43,10 @@ class Action_01192 extends CharacterAction
             $gustavo = $this->getOwningCard($event->theah);
             if ($gustavo instanceof Character)
             {
-                $count = $gustavo->ModifiedInfluence;
+                $count = $gustavo instanceof Character && $gustavo->ModifiedInfluence;
             }
 
+            //Announce the Risks that are revealed
             $playerDeckName = $event->theah->game->getPlayerFactionDeckName($gustavo->ControllerId);
             $deckCards = $deck->getCardsOnTop($count, $playerDeckName, $gustavo->ControllerId);
             $names = [];

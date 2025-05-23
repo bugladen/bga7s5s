@@ -497,6 +497,24 @@ onLeavingState: function( stateName )
             this.chooseList.setSelectionMode(0);
         },
 
+        'highDramaPhase01194': () => {
+            card = this.cardProperties[this.clientStateArgs.characterId];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+        },
+
+        'highDramaPhase01194_2': () => {
+            card = this.cardProperties[this.clientStateArgs.characterId];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+
+            this.clientStateArgs.targetCharacterIds.forEach((characterId) => {
+                card = this.cardProperties[characterId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+            });
+        },
+
         'duelChooseAction': () => {
             if (this.isCurrentPlayerActive()) {
                 this.factionHand.setSelectionMode(0);

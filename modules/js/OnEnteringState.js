@@ -988,6 +988,36 @@ onEnteringState: function( stateName, args )
             }
         },
 
+        'highDramaPhase01194': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCardsSelectable = 1;
+                card = this.cardProperties[args.args.args.characterId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.characterId = args.args.args.characterId;
+            }
+        },
+
+        'highDramaPhase01194_2': () => {
+            if (this.isCurrentPlayerActive()) {
+                card = this.cardProperties[args.args.args.characterId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.characterId = args.args.args.characterId;
+
+                this.numberOfCardsSelectable = 1;
+                args.args.args.targetCharacterIds.forEach((characterId) => {
+                    card = this.cardProperties[characterId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+                this.clientStateArgs.targetCharacterIds = args.args.args.targetCharacterIds;
+            }
+        },
+
         'playerReaction': () => {
             if (this.isCurrentPlayerActive()) {
                 this.gamedatas.gamestate.descriptionmyturn = _(args.args._private.args.descriptionmyturn);
