@@ -8,7 +8,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
@@ -113,16 +112,9 @@ trait StatesTrait
 
             $this->cards->moveCard($cityCard['id'], $location);
 
-            $card = $this->getCardObjectFromDb($cityCard['id']);
-
             //Create the event
-            $event = $this->theah->createEvent(Events::CityCardAddedToLocation);
-            if ($event instanceof EventCityCardAddedToLocation) {
-                $event->cardId = $card->Id;
-                $event->location = $location;
-            }
+            $event = EventFactory::createCityCardAddedToLocationEvent($cityCard['id'], $location);
             $this->theah->queueEvent($event);
-            unset($card);
         }
 
         $this->gamestate->nextState("");

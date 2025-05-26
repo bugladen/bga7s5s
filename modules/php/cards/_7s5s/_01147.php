@@ -5,9 +5,9 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
@@ -74,7 +74,6 @@ class _01147 extends Scheme
                 $card = $game->getCardObjectFromDb($cityCard['id']);
                 if ($card instanceof CityAttachment) {
                     $found = true;
-                    $deck->moveCard($cityCard['id'], Game::LOCATION_CITY_BAZAAR);
         
                     $event->theah->game->notifyAllPlayers("message", clienttranslate('${card_name} was found as the top Attachment card in the City Deck.  The cards above it will be sunk.'), [
                         'i18n' => ['card_name'],
@@ -82,11 +81,7 @@ class _01147 extends Scheme
                     ]);
 
                     //Create the event
-                    $newCard = $event->theah->createEvent(Events::CityCardAddedToLocation);
-                    if ($newCard instanceof EventCityCardAddedToLocation) {
-                        $newCard->cardId = $card->Id;
-                        $newCard->location = Game::LOCATION_CITY_BAZAAR;
-                    }
+                    $newCard = EventFactory::createCityCardAddedToLocationEvent($cityCard['id'], Game::LOCATION_CITY_BAZAAR);
                     $event->theah->queueEvent($newCard);
                 }
                 else {

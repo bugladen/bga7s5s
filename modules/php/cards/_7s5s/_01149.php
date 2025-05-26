@@ -4,9 +4,9 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
@@ -64,15 +64,9 @@ class _01149 extends Scheme
             $deck = $game->getGameDeckObject();
             
             $cityCard = $deck->getCardOnTop(Game::LOCATION_CITY_DECK);
-            $deck->moveCard($cityCard['id'], Game::LOCATION_CITY_DOCKS);
-            $card = $game->getCardObjectFromDb($cityCard['id']);
 
             //Create the event
-            $newCard = $event->theah->createEvent(Events::CityCardAddedToLocation);
-            if ($newCard instanceof EventCityCardAddedToLocation) {
-                $newCard->cardId = $card->Id;
-                $newCard->location = Game::LOCATION_CITY_DOCKS;
-            }
+            $newCard = EventFactory::createCityCardAddedToLocationEvent($cityCard['id'], Game::LOCATION_CITY_DOCKS);
             $event->theah->queueEvent($newCard);
         }
     }

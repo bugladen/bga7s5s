@@ -22,6 +22,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
@@ -268,6 +269,18 @@ class EventFactory
             $event->sourceId = $attachmentId;
             $event->wounds = $wounds;
             $event->reason = $reason;
+        }
+
+        return $event;
+    }
+
+    public static function createCityCardAddedToLocationEvent(int $cardId, string $location): EventCityCardAddedToLocation
+    {
+        $event = self::createEvent(Events::CityCardAddedToLocation);
+        if ($event instanceof EventCityCardAddedToLocation)
+        {
+            $event->cardId = $cardId;
+            $event->location = $location;
         }
 
         return $event;

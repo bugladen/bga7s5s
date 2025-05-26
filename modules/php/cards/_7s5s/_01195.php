@@ -2,6 +2,11 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 
 class _01195 extends CityAttachment
 {
@@ -30,5 +35,34 @@ class _01195 extends CityAttachment
             'Sword',
             'Unique',
         ];
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        // If placed in the discard pile, move to the bazaar.
+        if ($event instanceof EventCardAddedToCityDiscardPile && $event->cardId === $this->Id)
+        {
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('Eager Blade was discarded.  Its ability will trigger and it will be moved to the Bazaar.'), []);
+
+            $moveEvent = EventFactory::createCityCardAddedToLocationEvent($this->Id, Game::LOCATION_CITY_BAZAAR);
+            $event->queueEvent($moveEvent);
+        }
+
+        // If Eager Blade is in play, add 1 to the riposte.
+        if ($event instanceof EventDuelCalculateCombatCardStats && $this->isAttached() && $this->AttachedToId == $event->actorId)
+        {
+            $event->riposte += 1;
+            $event->explanations[] = $event->theah->game->translate('+1 Riposte from Eager Blade.');
+
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('Eager Blade was used with a combat card.  Its ability will trigger and it will be destroyed.'), []);
+
+            $unequipEvent = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $this->AttachedToId, $this->Id);
+            $event->queueEvent($unequipEvent);
+
+            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($this->ControllerId, $this->Id, $this->Location);
+            $event->queueEvent($discardEvent);
+        }
     }
 }

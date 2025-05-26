@@ -280,6 +280,7 @@ trait EventHub
 
                     $card = $theah->getCardById($event->cardId);
                     $card->Location = Game::LOCATION_CITY_DISCARD;
+                    $card->ControllerId = 0;
                     $card->IsUpdated = true;
 
                     $this->game->notifyAllPlayers("cardAddedToCityDiscardPile", clienttranslate('<strong>${card_name}</strong> added to City Discard pile from ${location}.'), [
@@ -450,6 +451,9 @@ trait EventHub
                     $card->Location = $event->location;
                     $card->IsUpdated = true;
                     $theah->upsertCard($card);
+
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->moveCard($event->cardId, $event->location);
                     
                     // Notify players that card has been played
                     $theah->game->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_name} added to ${location} from the city deck'), [
