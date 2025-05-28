@@ -15,7 +15,6 @@ trait CardAbilityTrait
     protected string $ClassId;
     public int $OwnerId;
     public string $Name;
-    public string $ShortName;
     public bool $Used;
 
     public function initializeAbility()
@@ -29,7 +28,6 @@ trait CardAbilityTrait
         $this->ClassId = $this->Id;
 
         $this->Name = "";
-        $this->ShortName = "";
         $this->Used = false;
     }
 

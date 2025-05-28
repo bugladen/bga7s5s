@@ -9,8 +9,7 @@ class Technique_01036 extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = "Daniella Dietrich: Move to Adjacent Location";
-        $this->ShortName = "Move to Adjacent Location";
+        $this->Name = "Move to Adjacent Location";
         $this->ResetOnDuelEnd = false;
         $this->ResetOnDayEnd = true;
     }

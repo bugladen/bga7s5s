@@ -8,7 +8,6 @@ class Maneuver_01108 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Life in the Canals: Draw a Card";
-        $this->ShortName = "Draw a Card";
+        $this->Name = "Draw a Card";
     }
 }

@@ -16,8 +16,7 @@ class Technique_01067b extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = "Jean Urbain: +1 Thrust or +1 Riposte";
-        $this->ShortName = "+1 Thrust or +1 Riposte";
+        $this->Name = "+1 Thrust or +1 Riposte";
         $this->UseParryInstead = false;
     }
 

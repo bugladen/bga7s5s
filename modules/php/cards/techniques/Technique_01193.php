@@ -16,8 +16,7 @@ class Technique_01193 extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = "Burnished Cuirass: -1 Thrust to Adversary";
-        $this->ShortName = "-1 Adversary Thrust";
+        $this->Name = "-1 Thrust to Adversary";
         $this->ReduceOpponentThrust = true;
     }
 

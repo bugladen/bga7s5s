@@ -8,7 +8,6 @@ class Maneuver_01088 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "You're Embarrassing Yourself: +1 Riposte";
-        $this->ShortName = "+1 Riposte";
+        $this->Name = "+1 Riposte";
     }
 }

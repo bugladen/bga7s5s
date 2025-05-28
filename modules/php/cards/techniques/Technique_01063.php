@@ -10,8 +10,7 @@ class Technique_01063 extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = "Bastien Girard: Wound Adversary";
-        $this->ShortName = "Wound Adversary";
+        $this->Name = "Wound Adversary";
     }
 
     public function handleEvent(Event $event)

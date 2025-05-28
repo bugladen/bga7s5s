@@ -64,10 +64,11 @@ trait ReactionTrait
             if ($mustBeAvailable && !$reaction->isAvailable()) {
                 continue;
             }
+            $owner = $reaction->getOwningCard($game->theah);
             $array[] = [
                 "id" => $reaction->Id, 
-                "name" => $game->translate($reaction->Name),
-                "shortName" => $game->translate($reaction->ShortName),
+                "name" => $game->translate($owner->Name) . ': ' . $game->translate($reaction->Name),
+                "shortName" => $game->translate($reaction->Name),
                 "available" => $reaction->isAvailable()
             ];
         }

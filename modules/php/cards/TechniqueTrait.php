@@ -38,10 +38,11 @@ trait TechniqueTrait
             if ($mustBeAvailable && !$technique->isAvailable()) {
                 continue;
             }
+            $owner = $technique->getOwningCard($game->theah);
             $array[] = [
                 "id" => $technique->Id, 
-                "name" => $game->translate($technique->Name),
-                "shortName" => $game->translate($technique->ShortName),
+                "name" => $game->translate($owner->Name) . ': ' . $game->translate($technique->Name),
+                "shortName" => $game->translate($technique->Name),
                 "available" => $technique->isAvailable()
             ];
         }

@@ -8,7 +8,6 @@ class Maneuver_01165 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "I Know that Trick!: Copy Technique";
-        $this->ShortName = "Copy Technique";
+        $this->Name = "Copy Technique";
     }
 }

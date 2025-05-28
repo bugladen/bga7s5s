@@ -8,7 +8,6 @@ class Maneuver_01164 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Hidden Corridors: Move to Adjacent Location";
-        $this->ShortName = "Move to Adjacent Location";
+        $this->Name = "Move to Adjacent Location";
     }
 }

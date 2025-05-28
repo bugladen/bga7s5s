@@ -102,7 +102,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             <img src="${g_gamethemeurl + card.image}" />
             <div class="available-card-ability">
                 ${card.actions?.map((action) => `<div style="background-color:${action.available ? 'green' : 'red'};">Action: ${action.shortName}</div>`).join('') ?? ''}
-                ${card.reactions?.map((reaction) => `<div style="background-color:${reaction.available ? 'green' : 'red'};">Reaction: ${reaction.name}</div>`).join('') ?? ''}
+                ${card.reactions?.map((reaction) => `<div style="background-color:${reaction.available ? 'green' : 'red'};">Reaction: ${reaction.shortName}</div>`).join('') ?? ''}
                 ${card.maneuvers?.map((maneuver) => `<div style="background-color:${maneuver.available ? 'green' : 'red'};">Maneuver: ${maneuver.shortName}</div>`).join('') ?? ''}
                 ${card.techniques?.map((technique) => `<div style="background-color:${technique.available ? 'green' : 'red'};">Technique: ${technique.shortName}</div>`).join('') ?? ''}
             </div>

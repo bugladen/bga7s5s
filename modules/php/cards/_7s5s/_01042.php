@@ -38,8 +38,7 @@ class _01042 extends Character implements IHasTechniques
 
         $technique = new Technique_PlusOneThrust();
         $technique->setId("Technique_01042");
-        $technique->Name = "Terrell Brandt: +1 Thrust";
-        $technique->ShortName = "+1 Thrust";
+        $technique->Name = "+1 Thrust";
         $this->Techniques = [
             $technique,
         ];

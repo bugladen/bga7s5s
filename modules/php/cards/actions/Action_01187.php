@@ -14,8 +14,7 @@ class Action_01187 extends AttachmentAction
     {
         parent::__construct();
         
-        $this->Name = "Smuggled Item: Equip No-Cost Attachment";
-        $this->ShortName = "Equip No-Cost Attachment";
+        $this->Name = "Equip No-Cost Attachment";
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

@@ -8,7 +8,6 @@ class Maneuver_01031 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Rough 'em Up: +1 Thrust";
-        $this->ShortName = "+1 Thrust";
+        $this->Name = "+1 Thrust";
     }
 }

@@ -11,8 +11,7 @@ class Maneuver_01135 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Mireli's Revision: +2 Parry, or Wound Adversary and Give -2 Thrust Next Round";
-        $this->ShortName = "+2 Parry, or Wound Adversary and Give -2 Thrust Next Round";
+        $this->Name = "+2 Parry, or Wound Adversary and Give -2 Thrust Next Round";
     }
 
     public function handleEvent(Event $event)

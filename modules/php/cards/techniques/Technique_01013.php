@@ -20,8 +20,7 @@ class Technique_01013 extends Technique
     {
         parent::__construct();
 
-        $this->Name = "Vissenta Scarpa: +1 Thrust or +1 Parry";
-        $this->ShortName = "+1 Thrust or +1 Parry";
+        $this->Name = "+1 Thrust or +1 Parry";
         $this->UseThrust = false;
         $this->AllowEffect = false;
     }

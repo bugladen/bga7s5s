@@ -17,8 +17,7 @@ class Action_01179 extends EventCityAction
     {
         parent::__construct();
 
-        $this->Name = "Siren's Scream: Take a Reknown";
-        $this->ShortName = "Take a Reknown";
+        $this->Name = "Take a Reknown";
         $this->RequiresPerformerSelected = true;
     }
 

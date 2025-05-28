@@ -15,8 +15,7 @@ class Action_01189b extends EventCityAction
     {
         parent::__construct();
 
-        $this->Name = "Point of Opportunity: Move Reknown To Adjacent Location";
-        $this->ShortName = "Move Reknown To Adjacent Location";
+        $this->Name = "Move Reknown To Adjacent Location";
 
         $this->RequiresPerformerSelected = true;
     }

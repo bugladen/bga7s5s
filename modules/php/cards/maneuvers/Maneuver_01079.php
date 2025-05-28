@@ -8,7 +8,6 @@ class Maneuver_01079 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Disarm: Destroy Adversary's Weapon";
-        $this->ShortName = "Destroy Adversary's Weapon";
+        $this->Name = "Destroy Adversary's Weapon";
     }
 }

@@ -8,7 +8,6 @@ class Maneuver_01110 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Nothing Personal: Wound Adversary";
-        $this->ShortName = "Wound Adversary";
+        $this->Name = "Wound Adversary";
     }
 }

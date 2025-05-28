@@ -15,8 +15,7 @@ class Action_01185 extends EventCityAction
     {
         parent::__construct();
         
-        $this->Name = "Risky Undertaking: Add a Reknown";
-        $this->ShortName = "Add a Reknown";
+        $this->Name = "Add a Reknown";
     }    
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

@@ -14,8 +14,7 @@ class Action_01029 extends RiskAction
     {
         parent::__construct();
         
-        $this->Name = "The Pressure Is On: Engage Character";
-        $this->ShortName = "Engage Character";
+        $this->Name = "Engage Character";
         $this->RequiresPerformerSelected = true;
     }
 

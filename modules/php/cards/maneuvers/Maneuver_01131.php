@@ -8,7 +8,6 @@ class Maneuver_01131 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Iron and Velvet: Wound Each Participant with Attachment";
-        $this->ShortName = "Wound Each Participant with Attachment";
+        $this->Name = "Wound Each Participant with Attachment";
     }
 }

@@ -17,8 +17,7 @@ class Action_01192 extends CharacterAction
     public function __construct()
     {
         parent::__construct();
-        $this->Name = "Gustavo: Put a Revealed Risk Into Your Hand";
-        $this->ShortName = "Put a Revealed Risk Into Your Hand";
+        $this->Name = "Put a Revealed Risk Into Your Hand";
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

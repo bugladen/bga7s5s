@@ -8,7 +8,6 @@ class Maneuver_01033 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Veronica's Guile: Move Adversary Home";
-        $this->ShortName = "Move Adversary Home";
+        $this->Name = "Move Adversary Home";
     }
 }

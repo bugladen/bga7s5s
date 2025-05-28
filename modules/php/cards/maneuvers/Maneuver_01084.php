@@ -8,7 +8,6 @@ class Maneuver_01084 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Master of the Valroux Style: +1 Parry, draw card";
-        $this->ShortName = "+1 Parry, Draw Card";
+        $this->Name = "+1 Parry, Draw Card";
     }
 }

@@ -8,7 +8,6 @@ class Maneuver_01055 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Precision: Gain Lethal";
-        $this->ShortName = "Gain Lethal";
+        $this->Name = "Gain Lethal";
     }
 }

@@ -14,8 +14,7 @@ class Action_01191 extends AttachmentAction
     {
         parent::__construct();
 
-        $this->Name = "Duckfoot Pistol: Wound All Characters";
-        $this->ShortName = "Wound All Characters";
+        $this->Name = "Wound All Characters";
     }
 
     public function handleEvent(Event $event)

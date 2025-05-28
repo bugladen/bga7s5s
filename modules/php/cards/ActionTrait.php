@@ -64,10 +64,11 @@ trait ActionTrait
             if ($mustBeAvailable && !$action->isAvailable()) {
                 continue;   
             }
+            $owner = $action->getOwningCard($game->theah);
             $array[] = [
                 "id" => $action->Id, 
-                "name" => $game->translate($action->Name),
-                "shortName" => $game->translate($action->ShortName),
+                "name" => $game->translate($owner->Name) . ': ' . $game->translate($action->Name),
+                "shortName" => $game->translate($action->Name),
                 "available" => $action->isAvailable()
             ];
         }

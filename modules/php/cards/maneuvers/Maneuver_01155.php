@@ -11,8 +11,7 @@ class Maneuver_01155 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Improvised Weapon: +1 Parry";
-        $this->ShortName = "+1 Parry";
+        $this->Name = "+1 Parry";
     }
 
     public function handleEvent(Event $event)
