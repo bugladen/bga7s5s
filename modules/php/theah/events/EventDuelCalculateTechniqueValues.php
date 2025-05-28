@@ -24,7 +24,7 @@ class EventDuelCalculateTechniqueValues extends Event
         $this->parry = 0;
         $this->thrust = 0;
         $this->explanations = [];
-        $this->runHandlerAfterCards = true;
+        $this->runEventHubAfterCards = true;
     }
  
 }

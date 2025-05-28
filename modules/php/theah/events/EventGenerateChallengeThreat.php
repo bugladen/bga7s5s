@@ -24,7 +24,7 @@ class EventGenerateChallengeThreat extends Event
         $this->threat = 0;
         $this->explanations = [];
         $this->statUsed = Game::STAT_COMBAT;
-        $this->runHandlerAfterCards = true;
+        $this->runEventHubAfterCards = true;
     }
  
 }

@@ -52,7 +52,7 @@ class Reaction_01182 extends CardReaction
                 $this->TargetCharacterId = $event->cardId;
                 $this->setUsed($event->theah, true);
                 $transition = EventFactory::createReactionTransitionEvent($ekko->ControllerId, $ekko->Id, $this->Id);
-                $event->theah->queueEvent($transition);
+                $event->queueEvent($transition);
             }
         }
     }

@@ -18,6 +18,6 @@ class EventCardMoved extends Event
         $this->engage = true;
         $this->sourceId = 0;
         
-        $this->runHandlerAfterCards = true;
+        $this->runEventHubAfterCards = true;
     }
 }

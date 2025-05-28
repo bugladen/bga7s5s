@@ -26,6 +26,6 @@ class EventDuelCalculateCombatCardStats extends Event
         $this->thrust = 0;
         $this->gambled = false;
         $this->explanations = [];
-        $this->runHandlerAfterCards = true;
+        $this->runEventHubAfterCards = true;
     }
 }

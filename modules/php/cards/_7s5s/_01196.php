@@ -6,10 +6,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01196;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction_01196;
 
-class _01196 extends CityCharacter implements IHasTechniques
+class _01196 extends CityCharacter implements IHasTechniques, IHasReactions
 {
     use TechniqueTrait;
+    use ReactionTrait;
 
     public function __construct()
     {
@@ -43,6 +47,10 @@ class _01196 extends CityCharacter implements IHasTechniques
 
         $this->Techniques = [
             new Technique_01196(),
+        ];
+
+        $this->Reactions = [
+            new Reaction_01196(),
         ];
     }
 }

@@ -14,7 +14,7 @@ class EventCardEngaged extends Event
         $this->priority = Event::MEDIUM_PRIORITY;
         $this->sourceId = 0;
         
-        $this->runHandlerAfterCards = true;
+        $this->runEventHubAfterCards = true;
     }
 
 }

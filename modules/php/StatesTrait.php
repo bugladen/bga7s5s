@@ -11,7 +11,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
@@ -583,6 +582,7 @@ trait StatesTrait
             if ($event instanceof EventResolveTechnique)
             {
                 $event->playerId = $performer->ControllerId;
+                $event->actorId = $performer->Id;
                 $event->adversaryId = $target->Id;
                 $event->techniqueId = $techniqueId;
                 $event->inDuel = false;
@@ -1511,12 +1511,7 @@ trait StatesTrait
 
             if ($character->Engaged)
             {
-                $engardeEvent = $this->theah->createEvent(Events::CardEngarded);
-                if ($engardeEvent instanceof EventCardEngarded)
-                {
-                    $engardeEvent->cardId = $character->Id;
-                    $engardeEvent->playerId = $character->ControllerId;
-                }
+                $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id);
                 $this->theah->queueEvent($engardeEvent);                    
             }
         }

@@ -15,13 +15,13 @@ abstract class Event
 
     public Theah $theah;
     public int $priority;
-    public bool $runHandlerAfterCards;
+    public bool $runEventHubAfterCards;
     public bool $canceled;
 
     public function __construct()
     {
         $this->priority = Event::LOWEST_PRIORITY;
-        $this->runHandlerAfterCards = false;
+        $this->runEventHubAfterCards = false;
         $this->canceled = false;
     }
 

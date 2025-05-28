@@ -23,6 +23,6 @@ class EventDuelGetCostForManeuverFromHand extends Event
         $this->cost = 0;
         $this->discount = 0;
         $this->explanations = [];
-        $this->runHandlerAfterCards = true;
+        $this->runEventHubAfterCards = true;
     }
 }

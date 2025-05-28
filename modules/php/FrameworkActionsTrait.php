@@ -1429,6 +1429,7 @@ trait FrameworkActionsTrait
         if ($resolveEvent instanceof EventResolveTechnique)
         {
             $resolveEvent->playerId = $playerId;
+            $resolveEvent->actorId = $actor->Id;
             $resolveEvent->adversaryId = $adversary->Id;
             $resolveEvent->techniqueId = $technique->Id;
         }

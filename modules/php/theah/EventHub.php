@@ -684,7 +684,7 @@ trait EventHub
                     $technique = null;
                     if ($event->activatedTechniqueId)
                     {
-                        $message .= '${player_name} will activate Technique <strong>${technique_name}</strong> for the Challenge.';
+                        $message .= '<br>${player_name} will activate Technique <strong>${technique_name}</strong> for the Challenge.';
                         $technique = $theah->getTechniqueById($event->activatedTechniqueId);
                     } 
                                             

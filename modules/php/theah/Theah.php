@@ -180,7 +180,7 @@ class Theah
 
             $event->theah = $this;
 
-            if ( ! $event->runHandlerAfterCards)
+            if ( ! $event->runEventHubAfterCards)
                 $this->handleEvent($event);
 
             //Run the event for all cards in play, including hands
@@ -192,7 +192,7 @@ class Theah
                 $reaction->handleEvent($event);
             
             // Run the event handler for Theah for cleanup
-            if ($event->runHandlerAfterCards)
+            if ($event->runEventHubAfterCards)
                 $this->handleEvent($event);
 
             $inPlayCards = array_filter($this->cards, fn($card) => $card->Location != Game::LOCATION_HAND);
