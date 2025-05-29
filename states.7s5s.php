@@ -161,6 +161,54 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01197 => [
+        "name" => "highDramaPhase01197",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Using Kalla\'s action, ${you} must choose a character to move an attachment FROM:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithIds",
+            "actBack"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_01197_2
+        ]
+    ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01197_2 => [
+        "name" => "highDramaPhase01197_2",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Using Kalla\'s action, ${you} must choose attachment to move:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actBack"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01197,
+            "attachmentChosen" => States::HIGH_DRAMA_PLAYER_TURN_01197_3
+        ]
+    ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01197_3 => [
+        "name" => "highDramaPhase01197_3",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Using Kalla\'s action, ${you} must choose a character to move attachment TO:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithIds",
+            "actBack"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01197_2,
+            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
     States::DUSK_PHASE_BEGIN_01177 => [
         "name" => "duskPhaseBegin01177",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

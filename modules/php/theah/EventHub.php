@@ -123,8 +123,11 @@ trait EventHub
                         $attachment->IsUpdated = true;
                     }
                     
-                    // Notify players of recruited character
-                    $theah->game->notifyAllPlayers("attachmentEquipped", clienttranslate('${player_name} equipped <strong>${attachment_name}</strong> to <strong>${performer_name}</strong> at a discount of ${discount} for a cost of ${cost} Wealth.'), [
+                    // Notify players of attachment equipped
+                    $message = clienttranslate('${player_name} equipped <strong>${attachment_name}</strong> to <strong>${performer_name}</strong>. ');
+                    if ($event->asAction)
+                        $message .= clienttranslate('This was done at a discount of ${discount} for a cost of ${cost} Wealth.');
+                    $theah->game->notifyAllPlayers("attachmentEquipped", $message, [
                         'i18n' => ['attachment_name', 'performer_name'],
                         "player_id" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),

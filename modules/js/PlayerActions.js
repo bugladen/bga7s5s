@@ -108,6 +108,8 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaPhase01029'                                   : 'actFromCardWithIds',
             'highDramaPhase01180_2'                                 : 'actFromCardWithIds',
             'highDramaPhase01194_2'                                 : 'actFromCardWithIds',
+            'highDramaPhase01197'                                   : 'actFromCardWithIds',
+            'highDramaPhase01197_3'                                 : 'actFromCardWithIds',
             'highDramaMoveActionChoosePerformer'                    : 'actHighDramaMoveActionPerformerChosen',
             'highDramaInPlayActionChoosePerformer'                  : 'actHighDramaInPlayActionPerformerChosen',  
             'highDramaInHandActionChoosePerformer'                  : 'actHighDramaInHandActionPerformerChosen',  

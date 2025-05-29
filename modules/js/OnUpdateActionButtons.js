@@ -449,6 +449,25 @@ onUpdateActionButtons: function( stateName, args )
             }
         },
 
+        'highDramaPhase01197': () => {
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
+        },
+
+        'highDramaPhase01197_2': () => {
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            args.args.attachments.forEach((attachment) => {
+                this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+            });
+        },
+
+        'highDramaPhase01197_3': () => {
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
+        },
+
         'playerReaction': () => {
             if (this.isCurrentPlayerActive()) {
                 args._private.args.buttons.forEach((button, index) => {

@@ -69,16 +69,17 @@ class EventFactory
         return $event;
     }
 
-    public static function createAttachmentEquippedEvent(int $playerId, int $attachmentId, int $characterId, int $discount, int $cost): EventAttachmentEquipped
+    public static function createAttachmentEquippedEvent(int $playerId, int $characterId, int $attachmentId, int $discount, int $cost, bool $asAction = true): EventAttachmentEquipped
     {
         $event = self::createEvent(Events::AttachmentEquipped);
         if ($event instanceof EventAttachmentEquipped)
         {
             $event->playerId = $playerId;
-            $event->attachmentId = $attachmentId;
             $event->performerId = $characterId;
+            $event->attachmentId = $attachmentId;
             $event->discount = $discount;
             $event->cost = $cost;
+            $event->asAction = $asAction;
         }
 
         return $event;

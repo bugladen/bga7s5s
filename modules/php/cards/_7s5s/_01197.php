@@ -2,10 +2,18 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01197;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class _01197 extends CityCharacter
+class _01197 extends CityCharacter implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -34,5 +42,21 @@ class _01197 extends CityCharacter
             'Mercenary',
             'Vesten',
         ];
+
+        $this->Actions = [
+            new Action_01197(),
+        ];
+    }
+
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment) : int
+    {
+        $discount = parent::getEquipDiscount($theah, $performer, $attachment);
+
+        if ($performer->Id == $this->Id)
+        {
+            $discount += 1;
+        }
+
+        return $discount;   
     }
 }

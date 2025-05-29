@@ -515,6 +515,44 @@ onLeavingState: function( stateName )
             });
         },
 
+        'highDramaPhase01197': () => {
+            card = this.cardProperties[this.clientStateArgs.performerId];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+
+            this.clientStateArgs.targetCharacterIds.forEach((characterId) => {
+                card = this.cardProperties[characterId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+            });
+        },
+
+        'highDramaPhase01197_2': () => {
+            card = this.cardProperties[this.clientStateArgs.performerId];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+
+            card = this.cardProperties[this.clientStateArgs.chosenCharacterId];
+            const chosenImage = $(`${card.divId}_image`);
+            dojo.removeClass(chosenImage, 'chosen');
+        },
+
+        'highDramaPhase01197_3': () => {
+            card = this.cardProperties[this.clientStateArgs.performerId];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+
+            card = this.cardProperties[this.clientStateArgs.chosenCharacterId];
+            const chosenImage = $(`${card.divId}_image`);
+            dojo.removeClass(chosenImage, 'chosen');
+
+            this.clientStateArgs.targetCharacterIds.forEach((characterId) => {
+                card = this.cardProperties[characterId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+            });
+        },
+
         'duelChooseAction': () => {
             if (this.isCurrentPlayerActive()) {
                 this.factionHand.setSelectionMode(0);
