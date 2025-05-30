@@ -20,16 +20,12 @@ abstract class EventCityAction extends CardAction
         
         $card = $this->getOwningCard($theah);
         $location = $card->Location;
-        $characters = $theah->getCharactersInPlayByPlayerId($playerId);
-        foreach ($characters as $character)
-        {
-            if ($character->Location == $location)
-            {
-                return true;
-            }
-        }
 
-        return false;
+        //Any characters in play at location owned by player?
+        $characters = $theah->getCharactersAtLocation($location);
+        $characters = array_filter($characters, fn($character) => $character->ControllerId == $playerId);
+
+        return count($characters) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array

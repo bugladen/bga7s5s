@@ -19,6 +19,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
+use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeAccepted;
+use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
@@ -75,7 +77,7 @@ class EventFactory
         if ($event instanceof EventAttachmentEquipped)
         {
             $event->playerId = $playerId;
-            $event->performerId = $characterId;
+            $event->characterId = $characterId;
             $event->attachmentId = $attachmentId;
             $event->discount = $discount;
             $event->cost = $cost;
@@ -287,6 +289,31 @@ class EventFactory
 
         return $event;
     }
+
+    public static function createChallengeAcceptedEvent(int $challengerId, int $targetId): EventChallengeAccepted
+    {
+        $event = self::createEvent(Events::ChallengeAccepted);
+        if ($event instanceof EventChallengeAccepted)
+        {
+            $event->challengerId = $challengerId;
+            $event->targetId = $targetId;
+        }
+
+        return $event;
+    }
+
+    public static function createChallengeRejectedEvent(int $challengerId, int $targetId): EventChallengeRejected
+    {
+        $event = self::createEvent(Events::ChallengeRejected);
+        if ($event instanceof EventChallengeRejected)
+        {
+            $event->challengerId = $challengerId;
+            $event->targetId = $targetId;
+        }
+
+        return $event;
+    }
+    
 
     public static function createCityCardAddedToLocationEvent(int $cardId, string $location): EventCityCardAddedToLocation
     {

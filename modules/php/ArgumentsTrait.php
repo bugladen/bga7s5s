@@ -473,6 +473,9 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
+        //Set the challenge to the default stat
+        $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+
         $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
         
         //Filter out those characters that are not in the city
@@ -502,6 +505,7 @@ trait ArgumentsTrait
         $ids = array_map(fn($character) => $character->Id, $charactersAtLocation);
 
         return [
+            "challengeType" => $this->globals->get(Game::CHALLENGE_TYPE),
             "performerId" => $performerId,
             "ids" => $ids
         ];

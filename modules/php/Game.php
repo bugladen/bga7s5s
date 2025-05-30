@@ -82,6 +82,11 @@ class Game extends \Table
     final const TRANSITION_INTERNAL_ID = "transitionInternalId";
     final const REACTION_ID = "reactionId";
 
+    //Challenge global variables
+    final const CHALLENGE_TYPE = "challengeType";
+    final const NORMAL_CHALLENGE_TYPE = 0;
+    final const TRISKELION_CHALLENGE_TYPE = 1;
+
     //Duel global variables
     //Duel Names
     //Delete these at the end of the duel

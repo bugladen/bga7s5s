@@ -446,6 +446,8 @@ trait StatesTrait
         $this->gamestate->changeActivePlayer($this->globals->get(Game::FIRST_PLAYER));
         $this->globals->set(Game::CLAIM_TYPE, Game::NORMAL_CLAIM_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
+        $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
+        $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
         $this->gamestate->nextState("");
     }
 
@@ -538,6 +540,18 @@ trait StatesTrait
         $playerId = $this->getActivePlayerId();
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
+
+        $challengeType = $this->globals->get(GAME::CHALLENGE_TYPE);
+        if ($challengeType == Game::TRISKELION_CHALLENGE_TYPE)
+        {
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to use the <strong>Guild Triskelion</strong> Action.'), [
+                'player_name' => $this->getActivePlayerName($playerId),
+            ]);
+
+            $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+            $action = $this->theah->getInPlayActionById($actionId);
+            $action->SetUsed($this->theah, true);
+        }
 
         //Set the location of the challenge
         $this->globals->set(GAME::CHOSEN_LOCATION, $performer->Location);
@@ -1100,6 +1114,8 @@ trait StatesTrait
         $this->globals->delete(Game::REACTION_ID);
         $this->globals->set(Game::CLAIM_TYPE, Game::NORMAL_CLAIM_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
+        $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
+        $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
 
         $currentPlayerId = $this->globals->get(Game::CURRENT_PLAYER);
         $nextPlayerId = $this->getPlayerAfter($currentPlayerId);

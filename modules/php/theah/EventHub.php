@@ -99,7 +99,7 @@ trait EventHub
             case $event instanceof EventAttachmentEquipped:
                 $handler = function (Theah $theah, EventAttachmentEquipped $event)
                 {
-                    $performer = $theah->getCardById($event->performerId);                    
+                    $performer = $theah->getCardById($event->characterId);                    
                     $attachment = $theah->getCardById($event->attachmentId);
                     // If the attachment is not in the world (came from the City Deck), add it
                     if ($attachment == null)
@@ -682,16 +682,36 @@ trait EventHub
                     
                     $defender = $theah->cards[$event->defenderId];
                     $defender->addCondition(GAME::DUEL_DEFENDER);
+
+                    $statUsed = $theah->game->globals->get(Game::CHALLENGE_STAT);
                     
-                    $message = '${player_name} has chosen to have <strong>${challenger_name}</strong> Challenge <strong>${defender_name}</strong>. ';
+                    $message = clienttranslate('${player_name} has chosen <strong>${challenger_name}</strong> to Challenge <strong>${defender_name}</strong>. ');
+
+                    switch ($statUsed)
+                    {
+                        case Game::STAT_COMBAT:
+                            $message .= clienttranslate('<br>The Duel will use the Combat stat. ');
+                            break;
+                        case Game::STAT_FINESSE:
+                            $message .= clienttranslate('<br>The Duel will use the Finesse stat. ');
+                            break;
+                        case Game::STAT_INFLUENCE:
+                            $message .= clienttranslate('<br>The Duel will use the Influence stat. ');
+                            break;
+                            
+                    }
                     $technique = null;
                     if ($event->activatedTechniqueId)
                     {
-                        $message .= '<br>${player_name} will activate Technique <strong>${technique_name}</strong> for the Challenge.';
+                        $message .= clienttranslate('<br>${player_name} will activate Technique <strong>${technique_name}</strong> for the Challenge.');
                         $technique = $theah->getTechniqueById($event->activatedTechniqueId);
-                    } 
+                    }
+                    else
+                    {
+                        $message .= clienttranslate('<br>No Technique will be activated for the Challenge.');
+                    }
                                             
-                    $theah->game->notifyAllPlayers("challengeIssued", clienttranslate($message), [
+                    $theah->game->notifyAllPlayers("challengeIssued", $message, [
                         'i18n' => ['challenger_name', 'defender_name', 'technique_name'],
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "challenger_name" => $challenger->Name,

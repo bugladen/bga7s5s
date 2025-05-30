@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 class EventAttachmentEquipped extends Event
 {
     public int $playerId;
-    public int $performerId;
+    public int $characterId;
     public int $attachmentId;
     public int $discount;
     public int $cost;
@@ -16,7 +16,7 @@ class EventAttachmentEquipped extends Event
         parent::__construct();
 
         $this->priority = Event::MEDIUM_PRIORITY;
-        $this->performerId = 0;
+        $this->characterId = 0;
         $this->attachmentId = 0;
         $this->discount = 0;
         $this->cost = 0;

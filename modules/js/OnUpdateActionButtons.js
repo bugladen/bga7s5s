@@ -346,7 +346,11 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaChallengeActionChooseTarget': () => {
             if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                if (args.challengeType == 1)
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backTriskelion'}));
+                else if (args.challengeType == 0)
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }

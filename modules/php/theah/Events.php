@@ -50,6 +50,8 @@ class Events
     
     //Challenge Events
     const ChallengeIssued = 'EventChallengeIssued';
+    const ChallengeAccepted = 'EventChallengeAccepted';
+    const ChallengeRejected = 'EventChallengeRejected';
     const CharacterIntervened = 'EventCharacterIntervened';
     const GenerateChallengeThreat = 'EventGenerateChallengeThreat';
 

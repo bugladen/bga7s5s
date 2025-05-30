@@ -61,6 +61,22 @@ trait CardAbilityTrait
         return $owner;
     }
 
+    public function getOwningAttachment(Theah $theah): ?Attachment
+    {
+        if ($this->OwnerId == null) {
+            return null;
+        }
+
+        $owner = $theah->getCardById($this->OwnerId);
+        if ( ! $owner)
+            $owner = $theah->game->getCardObjectFromDb($this->OwnerId);
+
+        if ($owner instanceof Attachment)
+            return $owner;
+        else
+            return null;
+    }
+
     public function getOwningCharacter(Theah $theah): ?Character
     {
         if ($this->OwnerId == null) {

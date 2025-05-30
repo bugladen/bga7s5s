@@ -71,6 +71,11 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("back");
     }
 
+    public function actBackWithTransition(string $transition): void
+    {
+        $this->gamestate->nextState($transition);
+    }
+
     public function actMultipleOk(): void{
         $playerId = $this->getCurrentPlayerId();
         $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
@@ -969,7 +974,7 @@ trait FrameworkActionsTrait
         $playerId = $this->getActivePlayerId();
 
         //Equip the attachment
-        $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $attachmentId, $performerId, $discount, $cost);
+        $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $performerId, $attachmentId, $discount, $cost);
         $this->theah->eventCheck($equipAttachmentEvent);
 
         //Move the cards used to pay to the player's discard pile
@@ -1232,9 +1237,6 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Challenge Action is not allowed right now."));
         }
 
-        //High Drama Challenge action defaults to Combat stat
-        $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
-
         $this->gamestate->nextState("challengeActionStart");
     }
 
@@ -1318,6 +1320,12 @@ trait FrameworkActionsTrait
 
     public function actHighDramaChallengeActionAccept()
     {
+        $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
+        $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
+
+        $event = EventFactory::createChallengeAcceptedEvent($performer->Id, $target->Id);
+        $this->theah->eventCheck($event);
+
         $this->notifyAllPlayers("message", clienttranslate('${player_name} ACCEPTS The Challenge.'), [
             "player_name" => $this->getActivePlayerName(),
         ]);
@@ -1329,6 +1337,12 @@ trait FrameworkActionsTrait
 
     public function actHighDramaChallengeActionReject()
     {
+        $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
+        $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
+
+        $event = EventFactory::createChallengeRejectedEvent($performer->Id, $target->Id);
+        $this->theah->eventCheck($event);
+
         $this->notifyAllPlayers("message", clienttranslate('${player_name} REJECTS The Challenge.'), [
             "player_name" => $this->getActivePlayerName(),
         ]);

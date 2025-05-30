@@ -12,6 +12,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['maneuverUsed', 1],
             ['reactionUsed', 1],
             ['techniqueUsed', 1],
+            ['traitAdded', 1],
+            ['traitRemoved', 1],
             ['approachCardsReceived', 1000],
             ['approachCharacterPlayed', 2000],
             ['approachSchemePlayed', 2000],
@@ -166,6 +168,28 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
+    notif_traitAdded: function( notif )
+    {
+        debug( 'notif_traitAdded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        //Add the trait to the card
+        card.traits.push(args.trait);
+    },
+
+    notif_traitRemoved: function( notif )
+    {
+        debug( 'notif_traitRemoved' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        //Remove the trait from the card
+        card.traits = card.traits.filter(trait => trait !== args.trait);
+    },
+    
     notif_approachSchemePlayed: function( notif )
     {
         debug( 'notif_approachSchemePlayed' );
