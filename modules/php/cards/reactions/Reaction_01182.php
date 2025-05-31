@@ -50,7 +50,6 @@ class Reaction_01182 extends CardReaction
                 $ekko->Location == $event->fromLocation)
             {
                 $this->TargetCharacterId = $event->cardId;
-                $this->setUsed($event->theah, true);
                 $transition = EventFactory::createReactionTransitionEvent($ekko->ControllerId, $ekko->Id, $this->Id);
                 $event->queueEvent($transition);
             }
