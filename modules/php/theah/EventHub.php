@@ -745,7 +745,7 @@ trait EventHub
                 $handler = function ($theah, EventGenerateChallengeThreat $event)
                 {
                     foreach ($event->explanations as $explanation) {
-                        $theah->game->notifyAllPlayers("message", clienttranslate($explanation));
+                        $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
                     
                     $theah->game->globals->set(Game::CHALLENGE_THREAT, $event->threat);
@@ -786,7 +786,7 @@ trait EventHub
                     $technique = $theah->getTechniqueById($event->techniqueId);
 
                     foreach ($event->explanations as $explanation) {
-                        $theah->game->notifyAllPlayers("message", clienttranslate($explanation));
+                        $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
 
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "technique", $event->riposte, $event->parry, $event->thrust);
@@ -837,7 +837,7 @@ trait EventHub
                 $handler = function (Theah $theah, EventDuelGetCostForManeuverFromHand $event)
                 {
                     foreach ($event->explanations as $explanation) {
-                        $theah->game->notifyAllPlayers("message", clienttranslate($explanation), []);
+                        $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation), []);
                     }
 
                     $theah->game->globals->set(Game::CHOSEN_CARD_COST, $event->cost);
@@ -870,7 +870,7 @@ trait EventHub
                     $maneuver = $theah->getManeuverById($event->maneuverId);
 
                     foreach ($event->explanations as $explanation) {
-                        $theah->game->notifyAllPlayers("message", clienttranslate($explanation));
+                        $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
 
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "maneuver", $event->riposte, $event->parry, $event->thrust);
@@ -925,7 +925,7 @@ trait EventHub
                     $playerName = $theah->game->getPlayerNameById($playerId);
 
                     foreach ($event->explanations as $explanation) {
-                        $theah->game->notifyAllPlayers("message", clienttranslate($explanation));
+                        $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
 
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "combat", $event->riposte, $event->parry, $event->thrust);
