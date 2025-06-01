@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
@@ -14,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToFactionDeck
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
@@ -172,6 +174,19 @@ class EventFactory
         }
         return $event;
     }
+
+    public static function createCardDrawnEvent(int $playerId, Card $card, string $reason): EventCardDrawn
+    {
+        $event = self::createEvent(Events::CardDrawn);
+        if ($event instanceof EventCardDrawn)
+        {
+            $event->playerId = $playerId;
+            $event->card = $card;
+            $event->reason = $reason;
+        }
+        return $event;
+    }
+    
 
     public static function createCardEngagedEvent(int $playerId, int $cardId, int $sourceId = 0): EventCardEngaged
     {

@@ -156,7 +156,7 @@ class Action_01194 extends CharacterAction
             $game->theah->eventCheck($discardEvent);
 
             //Wound the target character
-            $woundEvent = EventFactory::createCharacterWoundedEvent($targetCharacter->Id, $adelheide->Id, 1, "Adelheide Schmidt's Action");
+            $woundEvent = EventFactory::createCharacterWoundedEvent($targetCharacter->Id, $adelheide->Id, 1,  $game->translate("Adelheide Schmidt's Action"));
             $game->theah->eventCheck($woundEvent);
 
             $game->theah->queueEvent($unequipEvent);

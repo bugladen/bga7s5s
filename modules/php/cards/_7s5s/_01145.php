@@ -4,9 +4,9 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
@@ -211,12 +211,7 @@ class _01145 extends Scheme
         $players = $game->loadPlayersBasicInfos();
         foreach ($players as $playerId => $player) {
             $card = $game->playerDrawCard($playerId);
-            $addEvent = $game->theah->createEvent(Events::CardDrawn);
-            if ($addEvent instanceof EventCardDrawn) {
-                $addEvent->card = $card;
-                $addEvent->playerId = $playerId;
-                $addEvent->reason = $game->translate("<strong>Inspire Generosity</strong> effect");
-            }
+            $addEvent = EventFactory::createCardDrawnEvent($playerId, $card, $game->translate("<strong>Inspire Generosity</strong> effect"));
             //No need for a check
             $game->theah->queueEvent($addEvent);
         }
@@ -242,12 +237,7 @@ class _01145 extends Scheme
         if ($lowestPlayer != 0)
         {
             $card = $game->playerDrawCard($lowestPlayer);
-            $addEvent = $game->theah->createEvent(Events::CardDrawn);
-            if ($addEvent instanceof EventCardDrawn) {
-                $addEvent->card = $card;
-                $addEvent->playerId = $lowestPlayer;
-                $addEvent->reason = $game->translate("<strong>Inspire Generosity</strong> effect - player has fewest reknown");
-            }
+            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, $card, $game->translate("<strong>Inspire Generosity</strong> effect - player has fewest reknown"));   
             //No need for a check
             $game->theah->queueEvent($addEvent);
         }
@@ -258,12 +248,7 @@ class _01145 extends Scheme
         if ($lowestPlayer != null && $lowestPlayer == $this->ControllerId)
         {
             $card = $game->playerDrawCard($lowestPlayer);
-            $addEvent = $game->theah->createEvent(Events::CardDrawn);
-            if ($addEvent instanceof EventCardDrawn) {
-                $addEvent->card = $card;
-                $addEvent->playerId = $lowestPlayer;
-                $addEvent->reason = $game->translate("<strong>Inspire Generosity</strong> effect - player has fewest characters in play");
-            }
+            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, $card, $game->translate("<strong>Inspire Generosity</strong> effect - player has fewest characters in play"));
             //No need for a check
             $game->theah->queueEvent($addEvent);
         }
