@@ -1009,6 +1009,7 @@ $machinestates = [
                 "01192" => States::HIGH_DRAMA_PLAYER_TURN_01192,
                 "01194" => States::HIGH_DRAMA_PLAYER_TURN_01194,
                 "01197" => States::HIGH_DRAMA_PLAYER_TURN_01197,
+                "01198" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
                 "endOfEvents" => States::NEXT_PLAYER,
                 "endOfGame" => States::END_GAME
@@ -1068,10 +1069,12 @@ $machinestates = [
             "possibleactions" => [
                 "actHighDramaChallengeActionTargetChosen", 
                 "actBack",
+                "actBackWithTransition",
             ],
             "transitions" => [
                 "targetChosen" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE, 
-                "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_PERFORMER
+                "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_PERFORMER,
+                "backTriskelion" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
             ]
         ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE => [
