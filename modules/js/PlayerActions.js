@@ -203,6 +203,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01045'     : 'actPlanningPhase_01045',
             'highDramaPhase01180'                   : 'actFromCardWithId',
             'highDramaPhase01192'                   : 'actFromCardWithId',
+            'highDramaPhase01200_2'                 : 'actFromCardWithId',
             'duelChooseGambleCard'                  : 'actGambleCardChosen',
         };
 

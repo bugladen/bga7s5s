@@ -553,6 +553,12 @@ onLeavingState: function( stateName )
             });
         },
 
+        'highDramaPhase01200_2': () => {
+            dojo.addClass('choose_container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+        },
+
         'duelChooseAction': () => {
             if (this.isCurrentPlayerActive()) {
                 this.factionHand.setSelectionMode(0);

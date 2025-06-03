@@ -16,7 +16,6 @@ class Reaction_01196 extends CardReaction
     {
         parent::__construct();
 
-        $this->Id = 'Reaction_01196';
         $this->Name = 'Discard a Card instead of Engaging';
     }
 
@@ -44,11 +43,14 @@ class Reaction_01196 extends CardReaction
     {
         parent::handleEvent($event);
 
-        $angeline = $this->getOwningCard($event->theah);
-        if ($event instanceof EventCardMoved && $event->cardId == $angeline->Id && $event->engage && ! $angeline->Engaged)
+        if ($event instanceof EventCardMoved)
         {
-            $transition = EventFactory::createReactionTransitionEvent($angeline->ControllerId, $angeline->Id, $this->Id);
-            $event->queueEvent($transition);
+            $angeline = $this->getOwningCard($event->theah);
+            if ($event->cardId == $angeline->Id && $event->engage && ! $angeline->Engaged)
+            {
+                $transition = EventFactory::createReactionTransitionEvent($angeline->ControllerId, $angeline->Id, $this->Id);
+                $event->queueEvent($transition);
+            }
         }
     }
 

@@ -50,15 +50,18 @@ class Action_01198 extends AttachmentAction
     {
         parent::eventCheck($event);
 
-        $attachment = $this->getOwningAttachment($event->theah);
-        if ($event instanceof EventChallengeRejected && $attachment->isAttached())
+        if ($event instanceof EventChallengeRejected)
         {
-            $challengeType = $event->theah->game->globals->get(Game::CHALLENGE_TYPE);
-            $owner = $this->getOwningCharacter($event->theah);
-            $target = $event->theah->getCharacterById($event->targetId);
-            if ($challengeType == Game::TRISKELION_CHALLENGE_TYPE && $owner->Id == $event->challengerId && $target instanceof Character && ! $target instanceof Leader)
+            $attachment = $this->getOwningAttachment($event->theah);
+            if ($attachment->isAttached())
             {
-                throw new \BgaUserException($event->theah->game->translate("Guild Triskelion: Only Leaders can reject a challenge!"));
+                $challengeType = $event->theah->game->globals->get(Game::CHALLENGE_TYPE);
+                $owner = $this->getOwningCharacter($event->theah);
+                $target = $event->theah->getCharacterById($event->targetId);
+                if ($challengeType == Game::TRISKELION_CHALLENGE_TYPE && $owner->Id == $event->challengerId && $target instanceof Character && ! $target instanceof Leader)
+                {
+                    throw new \BgaUserException($event->theah->game->translate("Guild Triskelion: Only Leaders can reject a challenge!"));
+                }
             }
         }
     }

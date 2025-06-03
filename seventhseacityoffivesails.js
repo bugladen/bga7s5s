@@ -73,6 +73,7 @@ function (dojo, declare) {
 
             //Card conditions
             this.ADVERSARY_OF_YEVGENI = 'Adversary of Yevgeni';
+            this.CRYSTAL_EYE_TARGET = 'Crystal Eye Target';
             this.CHALLENGER = 'Challenger';
             this.DEFENDER = 'Defender';
 

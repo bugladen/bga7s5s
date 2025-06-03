@@ -1,0 +1,91 @@
+<?php
+
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions;
+
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01200;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+
+class Reaction_01200 extends AttachmentReaction
+{
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->Name = "Gain Reknown";
+    }
+
+    public function getReactionDescription(Theah $theah): string
+    {
+        $skull = $this->getOwningAttachment($theah);
+        if ($skull instanceof _01200)
+        {
+            $card = $theah->getCardById($skull->ChosenCard);
+        }
+        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('Chosen card %s was played.${you} may choose to gain Reknown: '), $card->Name);
+    }
+
+    public function getReactionButtonProperties(Theah $theah): array
+    {
+        $array = parent::getReactionButtonProperties($theah);
+        $array[] = $this->createButtonProperty($theah->game, 'Gain Reknown', 'gainReknown');
+        $array[] = $this->createButtonProperty($theah->game, 'Pass', 'pass');
+        return $array;
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventApproachCharacterPlayed) 
+        {
+            $attachment = $this->getOwningAttachment($event->theah);
+            if ($attachment->isAttached() && $attachment instanceof _01200 && $event->character->Id == $attachment->ChosenCard)
+            {
+                $event->theah->game->notifyAllPlayers("message", clienttranslate('Crystal Eye has triggered because its targeted card was played.'), []);
+                $transition = EventFactory::createReactionTransitionEvent($attachment->ControllerId, $attachment->Id, $this->Id);
+                $event->theah->queueEvent($transition);
+            }
+        }
+
+        if ($event instanceof EventSchemeCardRevealed) 
+        {
+            $attachment = $this->getOwningAttachment($event->theah);
+            if ($attachment->isAttached() && $attachment instanceof _01200 && $event->scheme->Id == $attachment->ChosenCard)
+            {
+                $event->theah->game->notifyAllPlayers("message", clienttranslate('Crystal Eye has triggered because its targeted card was played.'), []);
+                $transition = EventFactory::createReactionTransitionEvent($attachment->ControllerId, $attachment->Id, $this->Id);
+                $event->theah->queueEvent($transition);
+            }
+        }
+    }
+
+    public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
+    {
+        parent::performReaction($game, $state, $internalId, $reactionId);
+
+        if ($reactionId == "gainReknown")
+        {
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to gain a Reknown from Crystal Eye'), [
+                "player_name" => $game->getActivePlayerName(),
+            ]);
+            $reknownEvent = EventFactory::createPlayerGainsReknownEvent($game->getActivePlayerId(), 1);
+            $game->theah->queueEvent($reknownEvent);
+        }
+
+        if ($reactionId == "pass")
+        {
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to pass on gaining a Reknown from Crystal Eye'), [
+                "player_name" => $game->getActivePlayerName(),
+            ]);
+        }
+
+        $game->gamestate->nextState("done");
+
+    }
+    
+}

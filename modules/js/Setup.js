@@ -212,6 +212,18 @@ return declare('seventhseacityoffivesails.setup', null, {
         // For each card in the approach deck, create a stock item
         gamedatas.approachDeck.forEach((card) => {
             this.addCardToDeck(this.approachDeck, card);
+
+            //Check for any special conditions where a token has to be displayed
+            if (card.conditions.includes(this.CRYSTAL_EYE_TARGET)) {
+                const div = this.approachDeck.getItemDivId(card.id);
+                const id = `${card.id}_crystal_eye_target`;
+                dojo.place( this.format_block( 'jstpl_generic_chip', {
+                    id: id,
+                    class: 'crystal-eye-target-chip',
+                }),  div, 'last');
+                this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
+            }
+
         });
         this.approachDeck.setSelectionMode(0);
 

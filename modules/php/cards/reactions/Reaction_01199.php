@@ -20,7 +20,6 @@ class Reaction_01199 extends CardReaction
     {
         parent::__construct();
 
-        $this->Id = 'Reaction_01199';
         $this->Name = 'Heal Wound';
 
         $this->TargetCharacterId = 0;

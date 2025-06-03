@@ -46,6 +46,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardRemovedFromCityDiscardPile', 500],
             ['cardRemovedFromPlayerDiscardPile', 500],
             ['yevgeniAdversaryChosen', 500],
+            ['crystalEyeTargetChosen', 500],
             ['01126_2_scheme_moved', 500],
             ['challengeIssued', 500],
             ['characterIntervened', 500],
@@ -61,6 +62,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         });
 
         this.notifqueue.setIgnoreNotificationCheck( 'drawCardMessage', (notif) => (notif.args.playerId == this.player_id) );
+        this.notifqueue.setIgnoreNotificationCheck( 'crystalEyeTargetMessage', (notif) => (this.player_id == notif.args.targetplayerId || this.player_id == notif.args.choosingPlayerId) );
     },  
 
     notif_playLeader: function( notif )
@@ -189,7 +191,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         //Remove the trait from the card
         card.traits = card.traits.filter(trait => trait !== args.trait);
     },
-    
+
     notif_approachSchemePlayed: function( notif )
     {
         debug( 'notif_approachSchemePlayed' );
@@ -728,6 +730,25 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }),  imageElement, 'last');
 
         this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
+    },
+
+    notif_crystalEyeTargetChosen: function( notif )
+    {
+        debug( 'notif_crystalEyeTargetChosen' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        card.conditions.push(this.CRYSTAL_EYE_TARGET);
+
+        const div = this.approachDeck.getItemDivId(args.cardId);
+        const id = `${args.cardId}_crystal_eye_target`;
+        dojo.place( this.format_block( 'jstpl_generic_chip', {
+            id: id,
+            class: 'crystal-eye-target-chip',
+        }),  div, 'last');
+
+        this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
     },
 
     notif_01126_2_scheme_moved: function( notif )

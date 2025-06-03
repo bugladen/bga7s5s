@@ -204,6 +204,20 @@ body {
     border: 2px solid orangered
 }
 
+.crystal-eye-target-chip {
+    position: absolute;
+    background-image: url('img/cards/7s5s/200.jpg');
+    background-size: 74px 101px;
+    background-position: -27px -120px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: inline-block;
+    left: 33px;
+    top: 60px;
+    border: 2px solid orangered
+}
+
 .city-image {
     background-image: var(--city-image);
     background-size: 272px 200px;

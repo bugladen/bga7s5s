@@ -14,7 +14,6 @@ class Reaction_01184 extends CardReaction
     {
         parent::__construct();
 
-        $this->Id = 'Reaction_01184';
         $this->Name = 'Count only Performers and En Garge Characters';
     }
 

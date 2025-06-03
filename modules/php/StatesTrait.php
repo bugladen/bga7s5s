@@ -1101,6 +1101,7 @@ trait StatesTrait
         $this->giveExtraTime($player_id);
 
         // Clear the player action globals
+        $this->globals->delete(GAME::CHOSEN_OPPONENT);
         $this->globals->delete(GAME::CHOSEN_CARD);
         $this->globals->delete(GAME::CHOSEN_CARD_COST);
         $this->globals->delete(GAME::CHOSEN_LOCATION);

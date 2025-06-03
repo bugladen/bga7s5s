@@ -209,6 +209,36 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01200 => [
+        "name" => "highDramaPhase01200",
+        "description" => clienttranslate('${actplayer} is choosing an opponent for Crystal Eye\'s Forced Ability.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose an opponent for Crystal Eye\'s Forced Ability:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_01200_2
+        ]
+    ],
+    
+    States::HIGH_DRAMA_PLAYER_TURN_01200_2 => [
+        "name" => "highDramaPhase01200_2",
+        "description" => clienttranslate('${actplayer} is choosing a card for Crystal Eye\'s Forced Ability.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose a card for Crystal Eye\'s Forced Ability:'),
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            
+        ]
+    ],
+    
+
     States::DUSK_PHASE_BEGIN_01177 => [
         "name" => "duskPhaseBegin01177",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

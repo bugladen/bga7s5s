@@ -53,6 +53,10 @@ class Game extends \Table
     final const STAT_INFLUENCE = "Influence";
     final const PASS_COUNT = "passCount";
 
+    //Conditions
+    final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";
+    final const CRYSTAL_EYE_TARGET = "Crystal Eye Target";
+
     //Equip global variables
     final const EQUIP_TYPE = "equipType";
     final const NORMAL_EQUIP_TYPE = 0;
@@ -68,6 +72,7 @@ class Game extends \Table
     //Player action global variables
     //Delete these in stNextPlayer
     final const DISCOUNT = "discount";
+    final const CHOSEN_OPPONENT = "chosenOpponent";
     final const CHOSEN_CARD = "chosenCard";
     final const CHOSEN_CARD_COST = "chosenCardCost";
     final const CHOSEN_LOCATION = "chosenLocation";

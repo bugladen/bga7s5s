@@ -291,7 +291,7 @@ trait FrameworkActionsTrait
             "cardId" => $character->Id,
         ]);
 
-        $character->addCondition("Adversary of Yevgeni");
+        $character->addCondition(Game::ADVERSARY_OF_YEVGENI);
         $this->updateCardObjectInDb($character);
 
         $this->gamestate->nextState("");
@@ -1095,7 +1095,7 @@ trait FrameworkActionsTrait
         $id = json_decode($ids, true)[0];
         $performer = $this->getCardObjectFromDb($id);
 
-        $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+        $actionId = $this->globals->get(GAME::CHOSEN_ACTION, '');
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
@@ -1152,7 +1152,7 @@ trait FrameworkActionsTrait
         $id = json_decode($ids, true)[0];
         $performer = $this->getCardObjectFromDb($id);
 
-        $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+        $actionId = $this->globals->get(GAME::CHOSEN_ACTION, '');
         $action = $this->theah->getInHandActionById($actionId);
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
@@ -1171,7 +1171,7 @@ trait FrameworkActionsTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
-        $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+        $actionId = $this->globals->get(GAME::CHOSEN_ACTION, '');
         $action = $this->theah->getInHandActionById($actionId);
 
         if ($action == null) {
@@ -1755,7 +1755,7 @@ trait FrameworkActionsTrait
     {
         $this->theah->buildCity();
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
-        $actionId = $this->globals->get(Game::CHOSEN_ACTION);
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
         $card = $this->theah->getCardById($sourceId);
         $card->actFromCardPass($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId);
     }
@@ -1765,7 +1765,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
-        $actionId = $this->globals->get(Game::CHOSEN_ACTION);
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
         $card = $this->theah->getCardById($sourceId);
         $card->actFromCardWithId($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $id);
     }
@@ -1776,7 +1776,7 @@ trait FrameworkActionsTrait
         $ids = json_decode($ids, true);
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
-        $actionId = $this->globals->get(Game::CHOSEN_ACTION);
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
         $card = $this->theah->getCardById($sourceId);
         $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $ids);
     }
@@ -1787,7 +1787,7 @@ trait FrameworkActionsTrait
         $locations = json_decode($locations, true);
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
-        $actionId = $this->globals->get(Game::CHOSEN_ACTION);
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
         $card = $this->theah->getCardById($sourceId);
         $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $locations);
     }

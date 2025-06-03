@@ -52,8 +52,7 @@ class Action_01194 extends CharacterAction
 
     public function handleEvent(Event $event)
     {
-        parent::handleEvent($event);
-        
+        parent::handleEvent($event);        
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {

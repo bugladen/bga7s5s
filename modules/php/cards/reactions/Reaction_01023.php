@@ -19,7 +19,6 @@ class Reaction_01023 extends RiskReaction
     {
         parent::__construct();
 
-        $this->Id = 'Reaction_01023';
         $this->Name = 'Prevent Intervention';
     }
 
