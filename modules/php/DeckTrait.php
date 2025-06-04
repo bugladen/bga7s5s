@@ -110,7 +110,7 @@ trait DeckTrait
 
             $cardList = implode(", ", array_map(function($card) { return self::_($card['name']); }, $cards));
             $this->notifyPlayer($playerId, "approachCardsReceived", 
-                clienttranslate('You received your Approach Deck containing: ${card_list}'), [
+                clienttranslate('Private:You received your Approach Deck containing: ${card_list}'), [
                     "card_list" => $cardList,
                     "cards" => $cards
                 ]);

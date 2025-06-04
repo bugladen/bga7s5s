@@ -396,7 +396,7 @@ trait StatesTrait
 
             $cardList = implode(", ", array_map(function($card) { return self::_($card['name']); }, $cards));
             $this->notifyPlayer($playerId, "factionResolveCardDraw", 
-                clienttranslate('Your panache value is: ${panache}.  As your draw you received: ${card_list}'), [
+                clienttranslate('Private: Your panache value is: ${panache}.  As your draw you received: ${card_list}'), [
                     "panache" => $panache,
                     "card_list" => $cardList,
                     "cards" => $cards
@@ -464,7 +464,7 @@ trait StatesTrait
         list($canClaim, $totals) = $this->canPlayerClaim($claimingPlayerId, $performer);
         if ( ! $canClaim) 
         {
-            $this->notifyPlayer($claimingPlayerId, "message", clienttranslate('You cannot claim the location.  You do not have the most influence. Totals: ${totals}'), [
+            $this->notifyPlayer($claimingPlayerId, "message", clienttranslate('Private: You cannot claim the location.  You do not have the most influence. Totals: ${totals}'), [
                 "totals" => $totals
             ]);
             $this->gamestate->nextState("failure");

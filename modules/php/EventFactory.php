@@ -26,6 +26,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
@@ -272,6 +273,18 @@ class EventFactory
             $event->playerId = $playerId;
             $event->characterId = $characterId;
             $event->reason = $reason;
+        }
+
+        return $event;
+    }
+
+    public static function createCharacterPutIntoApproachDeckEvent(int $playerId, int $characterId): EventCharacterPutIntoApproachDeck
+    {
+        $event = self::createEvent(Events::CharacterPutIntoApproachDeck);
+        if ($event instanceof EventCharacterPutIntoApproachDeck)
+        {
+            $event->playerId = $playerId;
+            $event->characterId = $characterId;
         }
 
         return $event;

@@ -177,7 +177,7 @@ trait ArgumentsTrait
         $charactersThatCanReruit = [];
         foreach ($characters as $character) {
             $charactersAtLocation = $this->theah->getCharactersAtLocation($character->Location);
-            $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return in_array("Mercenary", $character->Traits); });
+            $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return $character->isMercenary(); });
             if (count($mercenariesAtLocation) > 0) {
                 $charactersThatCanReruit[] = $character;
             }

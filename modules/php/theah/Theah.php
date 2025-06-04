@@ -792,7 +792,7 @@ class Theah
 
         foreach ($charactersInCity as $character) {
             $charactersAtLocation = $this->getCharactersAtLocation($character->Location);
-            $mercenariesAtLocation = array_filter($charactersAtLocation, fn($character) => ! $character->ControllerId && in_array("Mercenary", $character->Traits));
+            $mercenariesAtLocation = array_filter($charactersAtLocation, fn($character) => ! $character->ControllerId && $character->isMercenary());
             if (count($mercenariesAtLocation) > 0) {
                 $charactersThatCanReruit[] = $character;
             }

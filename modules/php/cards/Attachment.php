@@ -72,4 +72,9 @@ abstract class Attachment extends Card implements IWealthCost
         return $theah->getCardById($this->AttachedToId);
     }
 
+    public function getRequiredAttachTargetId(Theah $theah, int $originalTargetId): int
+    {
+        return $originalTargetId;
+    }
+
 }

@@ -206,7 +206,7 @@ trait FrameworkActionsTrait
         $this->theah->queueEvent($event);
 
         $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('You have chosen to place reknown onto ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
+            clienttranslate('Private: You have chosen to place reknown onto ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
             'i18n' => ['location'],
             "location" => $location
         ]);
@@ -217,7 +217,7 @@ trait FrameworkActionsTrait
     public function actPlanningPhase_01125_Pass()
     {
         $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('You have chosen to pass placing reknown onto a location.  Per The Boar\'s Guile you will now choose a city location to move a Reknown FROM.'), []);
+            clienttranslate('Private: You have chosen to pass placing reknown onto a location.  Per The Boar\'s Guile you will now choose a city location to move a Reknown FROM.'), []);
 
         $this->gamestate->nextState("pass");
     }
@@ -236,7 +236,7 @@ trait FrameworkActionsTrait
         $this->theah->queueEvent($event);
 
         $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('You have chosen to move reknown from ${location}.  You must now choose a location to move the Reknown TO.'), [
+            clienttranslate('Private: You have chosen to move reknown from ${location}.  You must now choose a location to move the Reknown TO.'), [
             'i18n' => ['location'],
             "location" => $location
         ]);
@@ -249,7 +249,7 @@ trait FrameworkActionsTrait
     public function actPlanningPhase_01125_2_Pass()
     {
         $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('You have passed choosing a location to move reknown from.  Per The Boar\'s Guile you must now choose an enemy character to target.'), []);
+            clienttranslate('Private: You have passed choosing a location to move reknown from.  Per The Boar\'s Guile you must now choose an enemy character to target.'), []);
 
         $this->gamestate->nextState("pass");
     }
@@ -269,7 +269,7 @@ trait FrameworkActionsTrait
         $this->theah->queueEvent($event);
 
         $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('You have chosen to move reknown to ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
+            clienttranslate('Private: You have chosen to move reknown to ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
             'i18n' => ['location'],
             "location" => $location
         ]);
@@ -300,7 +300,7 @@ trait FrameworkActionsTrait
     public function actPlanningPhase_01125_4_Pass()
     {
         $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('You have passed choosing a character as an adversary.'), []);
+            clienttranslate('Private: You have passed choosing a character as an adversary.'), []);
 
         $this->gamestate->nextState("");
     }
@@ -735,7 +735,7 @@ trait FrameworkActionsTrait
         $charactersThatCanReruit = [];
         foreach ($characters as $character) {
             $charactersAtLocation = $this->theah->getCharactersAtLocation($character->Location);
-            $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return in_array("Mercenary", $character->Traits); });
+            $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return $character->isMercenary(); });
             if (count($mercenariesAtLocation) > 0) {
                 $charactersThatCanReruit[] = $character;
             }
@@ -779,7 +779,7 @@ trait FrameworkActionsTrait
         $performer = $this->theah->getCharacterById($performerId);
 
         $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
-        $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return in_array("Mercenary", $character->Traits); });        
+        $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return $character->isMercenary(); });        
         $mercenaryIds = array_map(function($character) { return $character->Id; }, $mercenariesAtLocation);
         if (!in_array($recruitId, $mercenaryIds)) {
             throw new \BgaUserException(self::_("Chosen character is not a Mercenary at the Performer's Location."));
@@ -973,8 +973,11 @@ trait FrameworkActionsTrait
 
         $playerId = $this->getActivePlayerId();
 
+        //Some attachments actually attach to different targets
+        $actualTargetId = $attachment->getRequiredAttachTargetId($this->theah, $performer->Id);
+
         //Equip the attachment
-        $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $performerId, $attachmentId, $discount, $cost);
+        $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $actualTargetId, $attachmentId, $discount, $cost);
         $this->theah->eventCheck($equipAttachmentEvent);
 
         //Move the cards used to pay to the player's discard pile

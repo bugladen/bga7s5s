@@ -82,9 +82,10 @@ class Events
     const CardDrawn = 'EventCardDrawn';
     const CardEngaged = 'EventCardEngaged';
     const CardEngarded = 'EventCardEngarded';
-    const CharacterWounded = 'EventCharacterWounded';
-    const CharacterHealed = 'EventCharacterHealed';
     const CharacterDestroyed = 'EventCharacterDestroyed';
+    const CharacterHealed = 'EventCharacterHealed';
+    const CharacterPutIntoApproachDeck = 'EventCharacterPutIntoApproachDeck';
+    const CharacterWounded = 'EventCharacterWounded';
     const SchemeSentToLocker = 'EventSchemeSentToLocker';
 
     //Dusk Phase events

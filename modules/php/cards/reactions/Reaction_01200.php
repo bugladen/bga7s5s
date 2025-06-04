@@ -74,6 +74,7 @@ class Reaction_01200 extends AttachmentReaction
                 "player_name" => $game->getActivePlayerName(),
             ]);
             $reknownEvent = EventFactory::createPlayerGainsReknownEvent($game->getActivePlayerId(), 1);
+            $game->theah->eventCheck($reknownEvent);
             $game->theah->queueEvent($reknownEvent);
         }
 
@@ -85,7 +86,6 @@ class Reaction_01200 extends AttachmentReaction
         }
 
         $game->gamestate->nextState("done");
-
     }
     
 }

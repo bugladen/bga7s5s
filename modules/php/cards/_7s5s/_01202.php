@@ -3,9 +3,15 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction_01202;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class _01202 extends CityAttachment
+class _01202 extends CityAttachment implements IHasReactions
 {
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -29,5 +35,17 @@ class _01202 extends CityAttachment
             'Syrneth',
             'Unique',
         ];
+
+        $this->Reactions = [
+            new Reaction_01202(),
+        ];
+    }
+
+    public function getRequiredAttachTargetId(Theah $theah, int $originalTargetId): int
+    {
+        // This only attaches to the leader
+        $character = $theah->getCharacterById($originalTargetId);        
+        $leader = $theah->getLeaderByPlayerId($character->ControllerId);
+        return $leader->Id;
     }
 }

@@ -25,6 +25,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerD
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
@@ -187,7 +188,7 @@ trait EventHub
                 $event->card->Location = Game::LOCATION_HAND;
                 $event->card->IsUpdated = true;
 
-                $this->game->notifyPlayer($event->playerId, "drawCard", 'You drew ${card_name} because of ${reason}.', [
+                $this->game->notifyPlayer($event->playerId, "drawCard", 'Private: You drew ${card_name} because of ${reason}.', [
                     'i18n' => ['card_name', 'reason'],
                     "card_name" => "<span style='font-weight:bold'>{$event->card->Name}</span>",
                     "card" => $event->card->getPropertyArray($this->game),
@@ -720,6 +721,33 @@ trait EventHub
                         "challengerId" => $challenger->Id,
                         "defenderId" => $defender->Id,
                     ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCharacterPutIntoApproachDeck:
+                $handler = function ($theah, EventCharacterPutIntoApproachDeck $event)
+                {
+                    $deck = $theah->game->getGameDeckObject($event->playerId);
+                    $deck->moveCard($event->characterId, Game::LOCATION_APPROACH, $event->playerId);
+
+                    $character = $theah->getCharacterById($event->characterId);
+                    $character->Location = Game::LOCATION_APPROACH;
+                    $character->OwnerId = $event->playerId;
+                    $character->ControllerId = $event->playerId;
+                    $character->IsUpdated = true;
+
+                    $theah->game->notifyAllPlayers("message", clienttranslate('<strong>${character_name}</strong> has been put into ${player_name}\'s Approach Deck.'), [
+                        'i18n' => ['character_name'],
+                        "character_name" => $character->Name,
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId)
+                    ]);
+
+                    $theah->game->notifyPlayer($event->playerId, "approachCardsReceived", 
+                        clienttranslate(''), [
+                            "cards" => [$character->getPropertyArray($theah->game)]
+                        ]);
+        
                 };
                 $handler($this, $event);
                 break;

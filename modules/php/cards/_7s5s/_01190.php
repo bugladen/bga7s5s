@@ -63,7 +63,6 @@ class _01190 extends CityCharacter
         if ($event instanceof EventChallengeIssued)
         {
             $defender = $event->theah->getCardById($event->defenderId);
-            //var_dump($defender);
             if ($this->Id != $event->defenderId && $defender->Location == $this->Location && ! $this->Engaged)
             {
                 throw new \BgaUserException($event->theah->game->translate("Sigurd Ulfsen must be the target of the challenge if he is En Garge and in the same location."));

@@ -51,14 +51,14 @@ class Technique_01013 extends Technique
                         }
                         $event->theah->queueEvent($transition);
         
-                        $event->theah->game->notifyPlayer($vissenta->ControllerId, 'message', clienttranslate('You are activating technique ${technique_name}.'), [
+                        $event->theah->game->notifyPlayer($vissenta->ControllerId, 'message', clienttranslate('Private: You are activating technique ${technique_name}.'), [
                             'i18n' => ['technique_name'],
                             'technique_name' => $this->Name,
                         ]);
                     }
                     else 
                     {
-                        $event->theah->game->notifyPlayer($vissenta->ControllerId, 'message', clienttranslate('Vissenta must have equal or more wounds than her adversary to use her technique.'), []);
+                        $event->theah->game->notifyPlayer($vissenta->ControllerId, 'message', clienttranslate('Private: Vissenta must have equal or more wounds than her adversary to use her technique.'), []);
                     }
                 };
                 $handler($event);

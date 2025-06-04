@@ -21,7 +21,7 @@ class Reaction_01196 extends CardReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may discard a card instead of engaging.');
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may discard a card instead of engaging: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array

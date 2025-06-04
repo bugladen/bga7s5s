@@ -300,4 +300,9 @@ abstract class Character extends Card
 
         return $properties;
     }
+
+    public function isMercenary(): bool
+    {
+        return in_array("Mercenary", $this->Traits);
+    }
 }
