@@ -31,8 +31,8 @@ class Reaction_01023 extends RiskReaction
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty($theah->game, 'Prevent Intervention', 'preventIntervention');
-        $array[] = $this->createButtonProperty($theah->game, 'Pass', 'pass');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Prevent Intervention'), 'preventIntervention');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
 
         return $array;
     }

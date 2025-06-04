@@ -30,8 +30,8 @@ class Reaction_01202 extends AttachmentReaction
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty($theah->game, 'Put Character into Approach Deck', 'saveCharacter');
-        $array[] = $this->createButtonProperty($theah->game, 'Pass', 'pass');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Put Character into Approach Deck'), 'saveCharacter');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
         return $array;
     }
 

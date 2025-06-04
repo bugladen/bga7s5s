@@ -47,7 +47,7 @@ class Reaction_CrewCapLimit extends GameReaction
         $characters = array_filter($characters, fn($character) => ! $character instanceof Leader);
         foreach ($characters as $character)
         {
-            $array[] = $this->createButtonProperty($theah->game, 'Sink ' . $character->Name, 'sinkCharacter_' . $character->Id);
+            $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Sink %s'), $character->Name), 'sinkCharacter_' . $character->Id);
         }
 
         return $array;

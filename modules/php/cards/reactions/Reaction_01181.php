@@ -30,16 +30,16 @@ class Reaction_01181 extends AttachmentReaction
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty($theah->game, 'Heal 1 Wound', 'heal1Wound');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Heal 1 Wound'), 'heal1Wound');
 
         $owner = $this->getOwningCharacter($theah);
         if ($owner instanceof Character)
         {
             if ($owner && in_array("Strega", $owner->Traits) && $owner->Wounds > 1)
-                $array[] = $this->createButtonProperty($theah->game, 'Heal 2 Wounds', 'heal2Wounds');    
+                $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Heal 2 Wounds'), 'heal2Wounds');    
         }
 
-        $array[] = $this->createButtonProperty($theah->game, 'Pass', 'pass');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
 
         return $array;
     }
