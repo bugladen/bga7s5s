@@ -60,6 +60,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventThreatModified;
 
 trait EventHub
 {
@@ -1177,6 +1178,45 @@ trait EventHub
                 $handler = function ($theah, EventPlunderPhaseEnd $event)
                 {
                     $theah->game->notifyAllPlayers("plunderPhaseEnd", clienttranslate('<strong>END OF PLUNDER PHASE</strong>'), []);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventThreatModified:
+                $handler = function ($theah, EventThreatModified $event)
+                {
+                    $duelId = $theah->game->globals->get(Game::DUEL_ID);
+                    $round = $theah->game->globals->get(Game::DUEL_ROUND);
+                    $challenger = $theah->getCardById($event->challengerId);
+                    $defender = $theah->getCardById($event->defenderId);
+
+                    $db = $theah->getDBObject();
+                    $db->updateRoundThreats($duelId, $round, $event->challengerThreat, $event->defenderThreat);
+
+                    $result = $db->getRoundThreats($duelId, $round);
+                    $endingChallengerThreat = $result['ending_challenger_threat'];
+                    $endingDefenderThreat = $result['ending_defender_threat'];
+                    $wounds = $result['wounds_taken'];
+
+                    $theah->game->notifyAllPlayers("updateRoundThreats", clienttranslate(
+                        'Threat for <strong>${challenger_name}</strong> has been modified by ${challenger_modification}.
+                        <br>
+                        Threat for <strong>${defender_name}</strong> has been modified by ${defender_modification}.
+                        <br>
+                        <strong>Current Challenger Threat:</strong> ${challenger_threat}
+                        <br>
+                        <strong>Current Defender Threat:</strong> ${defender_threat}'), [
+                        'i18n' => ['challenger_name'],
+                        "challenger_name" => $challenger->Name,
+                        "defender_name" => $defender->Name,
+                        "challenger_modification" => $event->challengerThreat,
+                        "defender_modification" => $event->defenderThreat,
+                        "challenger_threat" => $endingChallengerThreat,
+                        "defender_threat" => $endingDefenderThreat,
+                        "wounds" => $wounds,
+                        "round" => $round,
+                    ]);
+
                 };
                 $handler($this, $event);
                 break;

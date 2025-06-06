@@ -37,6 +37,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventThreatModified;
 
 class EventFactory
 {
@@ -460,6 +461,19 @@ class EventFactory
             $event->used = $used;
         }
 
+        return $event;
+    }
+
+    public static function createThreatModifiedEvent(int $challengerId, int $defenderId, int $challengerThreat, int $defenderThreat): EventThreatModified
+    {
+        $event = self::createEvent(Events::ThreatModified);
+        if ($event instanceof EventThreatModified)
+        {
+            $event->challengerId = $challengerId;
+            $event->defenderId = $defenderId;
+            $event->challengerThreat = $challengerThreat;
+            $event->defenderThreat = $defenderThreat;
+        }
         return $event;
     }
 

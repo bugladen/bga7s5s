@@ -610,7 +610,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.addClass(`duel_round_${row.round}_ending_defender_threat_row`, 'duel-acting-character');
         }
 
-        this.addTooltipHtml(`duel_round_${row.round}_wounds`, `<div class='basic-tooltip'>${_("The amount of wounds you took, or will take, for this round")}</div>` );        
+        this.addTooltipHtml(`duel_round_${row.round}_wounds`, `<div class='basic-tooltip'>${_("The amount of wounds the Actor took, or will take, for this round")}</div>` );        
     },
 
     showHandAtTop: () => {

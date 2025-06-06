@@ -41,6 +41,12 @@ class DB extends \APP_DbObject
         return $this->getCollectionFromDB($sql);
     }
 
+    public function getObject(string $sql): array
+    {
+        /** @disregard P1013 */
+        return $this->getObjectFromDB($sql);
+    }
+
     public function getObjectList(string $sql): array
     {
         /** @disregard P1013 */
@@ -193,5 +199,44 @@ class DB extends \APP_DbObject
         $this->executeSql($sql);
 
         return $results;
+    }
+
+    public function updateRoundThreats(int $duelId, int $round, int $challengerThreat, int $defenderThreat): void
+    {
+        $sql = "
+        SELECT d.challenger_id, d.defender_id, r.actor_id, r.wounds_taken 
+        FROM duel d
+        JOIN duel_round r ON d.duel_id = r.duel_id 
+        WHERE d.duel_id = $duelId AND r.round = $round";
+
+        $result = $this->getObject($sql);
+        $challengerId = $result['challenger_id'];
+        $defenderId = $result['defender_id'];
+        $actorId = $result['actor_id'];
+        $wounds = $result['wounds_taken'];
+
+        $adjustedWounds = $wounds;
+        if ($actorId == $challengerId)
+        {
+            $adjustedWounds += $challengerThreat;
+        }
+        else if ($actorId == $defenderId)
+        {
+            $adjustedWounds += $defenderThreat;
+        }
+
+        $sql = "UPDATE duel_round set 
+            ending_challenger_threat = ending_challenger_threat + {$challengerThreat}, 
+            ending_defender_threat = ending_defender_threat + {$defenderThreat},
+            wounds_taken = $adjustedWounds
+            WHERE duel_id = $duelId AND round = $round";
+
+        $this->executeSql($sql);
+    }
+
+    public function getRoundThreats(int $duelId, int $round): array
+    {
+        $sql = "SELECT ending_challenger_threat, ending_defender_threat, wounds_taken FROM duel_round WHERE duel_id = $duelId AND round = $round";
+        return $this->getObject($sql);
     }
 }

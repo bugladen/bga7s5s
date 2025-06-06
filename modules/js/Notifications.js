@@ -53,6 +53,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['duelStarted', 500],
             ['newDuelRound', 500],
             ['updateRoundWithCombatStats', 500],
+            ['updateRoundThreats', 500],
             ['duelEnd', 500],
         ];
 
@@ -913,6 +914,28 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         dojo.removeClass(`duel_round_${args.round}_${args.mode}`, 'ability-not-chosen');
         dojo.removeClass(`duel_round_${args.round}_${args.mode}_stats`, 'ability-not-chosen');
+    },
+
+    notif_updateRoundThreats: function( notif )
+    {
+        debug( 'notif_updateRoundThreats' );
+        debug( notif );
+
+        const args = notif.args;
+
+        $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML = args.challenger_threat;
+        if (args.challenger_threat > 0)
+            dojo.addClass(`duel_round_${args.round}_ending_challenger_threat`, 'threat-chip-threatened');
+        else
+            dojo.removeClass(`duel_round_${args.round}_ending_challenger_threat`, 'threat-chip-threatened');
+
+        $(`duel_round_${args.round}_ending_defender_threat`).innerHTML = args.defender_threat;
+        if (args.defender_threat > 0)
+            dojo.addClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');
+        else
+            dojo.removeClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');
+
+        $(`duel_round_${args.round}_wounds`).innerHTML = args.wounds;
     },
 
     notif_duelEnd: function( notif )

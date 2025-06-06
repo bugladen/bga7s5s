@@ -54,6 +54,7 @@ class Events
     const ChallengeRejected = 'EventChallengeRejected';
     const CharacterIntervened = 'EventCharacterIntervened';
     const GenerateChallengeThreat = 'EventGenerateChallengeThreat';
+    const ThreatModified = 'EventThreatModified';
 
     //Duel Events
     const DuelStarted = 'EventDuelStarted';
