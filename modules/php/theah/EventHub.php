@@ -1011,6 +1011,7 @@ trait EventHub
                 {
                     $playerName = $theah->game->getPlayerNameById($event->playerId);
                     $actor = $theah->getCardById($event->actorId);
+                    $challenger = $theah->getCardById($event->challengerId);
                     $defender = $theah->getCardById($event->defenderId);
                     $theah->game->notifyAllPlayers("newDuelRound", clienttranslate('DUEL ROUND #${round} HAS STARTED for ${player_name} and their ${role} character <strong>${character_name}</strong>.'), [
                         'i18n' => ['role', 'character_name', 'challengerName', 'defenderName'],
@@ -1019,11 +1020,11 @@ trait EventHub
                         "character_name" => $actor->Name,
                         "round" => $event->round,
                         "playerId" => $event->playerId,
-                        "challengerId" => $event->actorId,
+                        "challengerId" => $event->challengerId,
                         "defenderId" => $event->defenderId,
                         "actorId" => $event->actorId,
                         "actor" => $actor->getPropertyArray($theah->game),
-                        "challengerName" => $actor->Name,
+                        "challengerName" => $challenger->Name,
                         "defenderName" => $defender->Name,
                         "startingChallengerThreat" => $event->challengerThreat,
                         "startingDefenderThreat" => $event->defenderThreat,

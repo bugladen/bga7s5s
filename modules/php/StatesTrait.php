@@ -860,6 +860,7 @@ trait StatesTrait
             $event->round = $round;
             $event->playerId = $playerId;
             $event->actorId = $actorId;
+            $event->challengerId = $challengerId;
             $event->defenderId = $defenderId;
             $event->challengerThreat = $challengerThreat;
             $event->defenderThreat = $defenderThreat;
