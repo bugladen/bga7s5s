@@ -32,13 +32,17 @@ class Technique_01196 extends Technique
 
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
-            $actor = $event->theah->getCharacterById($event->actorId);
-            $adversary = $event->theah->getCharacterById($event->adversaryId);
-
-            if ($actor->ModifiedCombat + $actor->ModifiedInfluence >= $adversary->ModifiedCombat + $adversary->ModifiedInfluence)
+            $owner = $this->getOwningCharacter($event->theah);
+            if ($owner->Id == $event->actorId)
             {
-                $event->threat += 1;
-                $event->explanations[] = sprintf($event->theah->game->translate("Technique: +1 Threat from her technique because Angeline Dèmone has more Combat and Influence than %s."), $adversary->Name);
+                $actor = $event->theah->getCharacterById($event->actorId);
+                $adversary = $event->theah->getCharacterById($event->adversaryId);
+
+                if ($actor->ModifiedCombat + $actor->ModifiedInfluence >= $adversary->ModifiedCombat + $adversary->ModifiedInfluence)
+                {
+                    $event->adversaryThreat += 1;
+                    $event->explanations[] = sprintf($event->theah->game->translate("Technique: +1 Threat from her technique because Angeline Dèmone has more Combat and Influence than %s."), $adversary->Name);
+                }
             }
         }
 

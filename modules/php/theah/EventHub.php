@@ -34,6 +34,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverV
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseBegin;
@@ -776,12 +777,16 @@ trait EventHub
                         $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
                     
-                    $theah->game->globals->set(Game::CHALLENGE_THREAT, $event->threat);
+                    $theah->game->globals->set(Game::CHALLENGER_THREAT, $event->actorThreat);
+                    $theah->game->globals->set(Game::DEFENDER_THREAT, $event->adversaryThreat);
                     $actor = $theah->cards[$event->actorId];
+                    $adversary = $theah->cards[$event->adversaryId];
                     
-                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has generated ${threat} total Threat for the Challenge.'), [
-                        "player_name" => $theah->game->getPlayerNameById($actor->ControllerId),
-                        "threat" => $event->threat,
+                    $theah->game->notifyAllPlayers("message", clienttranslate('${actor_name} has ${actor_threat} total Threat for the Challenge. ${adversary_name} has ${adversary_threat} total Threat.'), [
+                        "actor_name" => $actor->Name,
+                        "actor_threat" => $event->actorThreat,
+                        "adversary_name" => $adversary->Name,
+                        "adversary_threat" => $event->adversaryThreat,
                     ]);
                 };
                 $handler($this, $event);
@@ -1001,10 +1006,39 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventDuelNewRound:
+                $handler = function (Theah $theah, EventDuelNewRound $event)
+                {
+                    $playerName = $theah->game->getPlayerNameById($event->playerId);
+                    $actor = $theah->getCardById($event->actorId);
+                    $defender = $theah->getCardById($event->defenderId);
+                    $theah->game->notifyAllPlayers("newDuelRound", clienttranslate('DUEL ROUND #${round} HAS STARTED for ${player_name} and their ${role} character <strong>${character_name}</strong>.'), [
+                        'i18n' => ['role', 'character_name', 'challengerName', 'defenderName'],
+                        "player_name" => $playerName,
+                        "role" => $event->round % 2 == 1 ? "Defending" : "Challenging",
+                        "character_name" => $actor->Name,
+                        "round" => $event->round,
+                        "playerId" => $event->playerId,
+                        "challengerId" => $event->actorId,
+                        "defenderId" => $event->defenderId,
+                        "actorId" => $event->actorId,
+                        "actor" => $actor->getPropertyArray($theah->game),
+                        "challengerName" => $actor->Name,
+                        "defenderName" => $defender->Name,
+                        "startingChallengerThreat" => $event->challengerThreat,
+                        "startingDefenderThreat" => $event->defenderThreat,
+                        "endingChallengerThreat" => $event->challengerThreat,
+                        "endingDefenderThreat" => $event->defenderThreat,
+                        "wounds" => $event->wounds
+                    ]);            
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventDuelPlayerGambled:
-                $handler = function($theah, EventDuelPlayerGambled $event) {
+                $handler = function(Theah $theah, EventDuelPlayerGambled $event) {
                     $card = $theah->game->getCardObjectFromDb($event->chosenCardId);
-                    $theah->cards[$event->chosenCardId] = $card;
+                    $theah->upsertCard($card);
                     $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has gambled with <strong>${card_name}</strong>.'), [
                         'i18n' => ['card_name'],
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
@@ -1015,7 +1049,7 @@ trait EventHub
                 break;
 
             case $event instanceof EventDuelActionsDone:
-                $handler = function ($theah, EventDuelActionsDone $event)
+                $handler = function (Theah $theah, EventDuelActionsDone $event)
                 {
                     $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} is done with their actions for the round.'), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
@@ -1025,21 +1059,21 @@ trait EventHub
                 break;
 
             case $event instanceof EventDuelEnd:
-                $handler = function ($theah, EventDuelEnd $event)
+                $handler = function (Theah $theah, EventDuelEnd $event)
                 {
                     //Cards are going to be read from the database, as they may be in the locker and not available to Theah
                     
                     $challenger = $theah->getCardById($event->challengerId);
                     if ( ! $challenger)
-                        $challenger = $this->game->getCardObjectFromDb($event->challengerId);
+                        $challenger = $theah->game->getCardObjectFromDb($event->challengerId);
                     $challenger->removeCondition(GAME::DUEL_CHALLENGER);
-                    $this->game->updateCardObjectInDb($challenger);
+                    $theah->game->updateCardObjectInDb($challenger);
                     
                     $defender = $theah->getCardById($event->defenderId);
                     if ( ! $defender)
                         $defender = $this->game->getCardObjectFromDb($event->defenderId);                    
                     $defender->removeCondition(GAME::DUEL_DEFENDER);
-                    $this->game->updateCardObjectInDb($defender);
+                    $theah->game->updateCardObjectInDb($defender);
 
                     $theah->game->notifyAllPlayers("duelEnd", clienttranslate('The Duel has ended.'), [
                         "challengerId" => $event->challengerId,

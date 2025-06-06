@@ -644,46 +644,95 @@ trait StatesTrait
             $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
             $target = $this->getCardObjectFromDb($targetId);
 
-            $threat = $this->globals->get(GAME::CHALLENGE_THREAT);
-
+            $challengerThreat = $this->globals->get(GAME::CHALLENGER_THREAT);
+            $defenderThreat = $this->globals->get(GAME::DEFENDER_THREAT);
             $combatStatUsed = $this->globals->get(GAME::CHALLENGE_STAT);
 
-            $stat = $performer->ModifiedCombat;
-            $reason = "<p>";
-            switch ($combatStatUsed)
+            if ($challengerThreat > 0)
             {
-                case GAME::STAT_COMBAT:
-                    $stat = $performer->ModifiedCombat;
-                    $reason .= $this->translate("Stat Used for Challenge was Combat.");
-                    break;
-                case GAME::STAT_FINESSE:
-                    $stat = $performer->ModifiedFinesse;
-                    $reason .= $this->translate("Stat Used for Challenge was Finesse.");
-                    break;
-                case GAME::STAT_INFLUENCE:
-                    $stat = $performer->ModifiedInfluence;
-                    $reason .= $this->translate("Stat Used for Challenge was Influence.");
-                    break;
+                $stat = $target->ModifiedCombat;
+                $reason = "<p>";
+                switch ($combatStatUsed)
+                {
+                    case GAME::STAT_COMBAT:
+                        $stat = $target->ModifiedCombat;
+                        $reason .= $this->translate("Stat Used for Challenge was Combat.");
+                        break;
+                    case GAME::STAT_FINESSE:
+                        $stat = $target->ModifiedFinesse;
+                        $reason .= $this->translate("Stat Used for Challenge was Finesse.");
+                        break;
+                    case GAME::STAT_INFLUENCE:
+                        $stat = $target->ModifiedInfluence;
+                        $reason .= $this->translate("Stat Used for Challenge was Influence.");
+                        break;
+                }    
+
+                $wounds = $challengerThreat;
+                $reason .= "<p>" . $this->translate("Challenge was Rejected. Generated Threat was ") . $challengerThreat . ".";
+                if ($challengerThreat > $stat)
+                {
+                    $wounds = $stat;
+                    $reduction = $challengerThreat - $stat;
+                    $reason .= "<p>" . $this->translate("Threat was reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
+                }
+
+                if ($wounds > 0)
+                {
+                    $event = $this->theah->createEvent(Events::CharacterWounded);
+                    if ($event instanceof EventCharacterWounded)
+                    {
+                        $event->characterId = $performer->Id;
+                        $event->sourceId = $target->Id;
+                        $event->wounds = $wounds;
+                        $event->reason = $reason;
+                    }
+                    $this->theah->queueEvent($event);
+                }
             }
 
-            $wounds = $threat;
-            $reason .= "<p>" . $this->translate("Challenge was Rejected. Generated Threat was ") . $threat . ".";
-            if ($threat > $stat)
+            if ($defenderThreat > 0)
             {
-                $wounds = $stat;
-                $reduction = $threat - $stat;
-                $reason .= "<p>" . $this->translate("Threat was reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
-            }
+                $stat = $performer->ModifiedCombat;
+                $reason = "<p>";
+                switch ($combatStatUsed)
+                {
+                    case GAME::STAT_COMBAT:
+                        $stat = $performer->ModifiedCombat;
+                        $reason .= $this->translate("Stat Used for Challenge was Combat.");
+                        break;
+                    case GAME::STAT_FINESSE:
+                        $stat = $performer->ModifiedFinesse;
+                        $reason .= $this->translate("Stat Used for Challenge was Finesse.");
+                        break;
+                    case GAME::STAT_INFLUENCE:
+                        $stat = $performer->ModifiedInfluence;
+                        $reason .= $this->translate("Stat Used for Challenge was Influence.");
+                        break;
+                }    
 
-            $event = $this->theah->createEvent(Events::CharacterWounded);
-            if ($event instanceof EventCharacterWounded)
-            {
-                $event->characterId = $target->Id;
-                $event->sourceId = $performer->Id;
-                $event->wounds = $wounds;
-                $event->reason = $reason;
+                $wounds = $defenderThreat;
+                $reason .= "<p>" . $this->translate("Challenge was Rejected. Generated Threat was ") . $defenderThreat . ".";
+                if ($defenderThreat > $stat)
+                {
+                    $wounds = $stat;
+                    $reduction = $defenderThreat - $stat;
+                    $reason .= "<p>" . $this->translate("Threat was reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
+                }
+
+                if ($wounds > 0)
+                {
+                    $event = $this->theah->createEvent(Events::CharacterWounded);
+                    if ($event instanceof EventCharacterWounded)
+                    {
+                        $event->characterId = $target->Id;
+                        $event->sourceId = $performer->Id;
+                        $event->wounds = $wounds;
+                        $event->reason = $reason;
+                    }
+                    $this->theah->queueEvent($event);
+                }
             }
-            $this->theah->queueEvent($event);
 
             //Find out who the next player is in order
             $table = $this->getNextPlayerTable();
@@ -708,10 +757,11 @@ trait StatesTrait
         $challenger = $this->getCardObjectFromDb($challengerId);
         $defenderId = $this->globals->get(GAME::CHOSEN_TARGET);
         $defender = $this->getCardObjectFromDb($defenderId);
-        $threat = $this->globals->get(GAME::CHALLENGE_THREAT);
+        $challengerThreat = $this->globals->get(GAME::CHALLENGER_THREAT);
+        $defenderThreat = $this->globals->get(GAME::DEFENDER_THREAT);
         
         $sql = "INSERT INTO duel (duel_id, challenging_player_id, challenger_id, defending_player_id, defender_id, challenger_threat, defender_threat) 
-        VALUES ($duelId, {$challenger->ControllerId}, $challengerId, {$defender->ControllerId}, $defenderId, 0, $threat)";
+        VALUES ($duelId, {$challenger->ControllerId}, $challengerId, {$defender->ControllerId}, $defenderId, $challengerThreat, $defenderThreat)";
         $this->DbQuery($sql);
         
         $this->notifyAllPlayers("duelStarted", clienttranslate('A DUEL HAS STARTED.'), [
@@ -720,7 +770,8 @@ trait StatesTrait
             "challengingPlayerId" => $challenger->ControllerId,
             "defenderId" => $defenderId,
             "defendingPlayerId" => $defender->ControllerId,
-            "threat" => $threat
+            "challengerThreat" => $challengerThreat,
+            "defenderThreat" => $defenderThreat
         ]);
 
         $event = $this->theah->createEvent(Events::DuelStarted);
@@ -809,31 +860,12 @@ trait StatesTrait
             $event->round = $round;
             $event->playerId = $playerId;
             $event->actorId = $actorId;
+            $event->defenderId = $defenderId;
             $event->challengerThreat = $challengerThreat;
             $event->defenderThreat = $defenderThreat;
+            $event->wounds = $wounds;
         }
         $this->theah->queueEvent($event);
-
-        $playerName = $this->getPlayerNameById($playerId);
-        $this->notifyAllPlayers("newDuelRound", clienttranslate('DUEL ROUND #${round} HAS STARTED for ${player_name} and their ${role} character <strong>${character_name}</strong>.'), [
-            'i18n' => ['role', 'character_name', 'challengerName', 'defenderName'],
-            "player_name" => $playerName,
-            "role" => $round % 2 == 1 ? "Defending" : "Challenging",
-            "character_name" => $actor->Name,
-            "round" => $round,
-            "playerId" => $playerId,
-            "challengerId" => $challengerId,
-            "defenderId" => $defenderId,
-            "actorId" => $actorId,
-            "actor" => $actor->getPropertyArray($this),
-            "challengerName" => $challenger->Name,
-            "defenderName" => $defender->Name,
-            "startingChallengerThreat" => $challengerThreat,
-            "startingDefenderThreat" => $defenderThreat,
-            "endingChallengerThreat" => $challengerThreat,
-            "endingDefenderThreat" => $defenderThreat,
-            "wounds" => $wounds
-            ]);    
 
         //Change to the active player based on the round number
         $changeEvent = EventFactory::createChangeActivePlayerEvent($playerId);
@@ -1058,7 +1090,8 @@ trait StatesTrait
         $this->globals->set(GAME::IN_DUEL, false);
 
         $this->globals->delete(Game::CHALLENGE_STAT);
-        $this->globals->delete(Game::CHALLENGE_THREAT);
+        $this->globals->delete(Game::CHALLENGER_THREAT);
+        $this->globals->delete(Game::DEFENDER_THREAT);
         $this->globals->delete(Game::CHALLENGE_ACCEPTED);
         $this->globals->delete(Game::DUEL_ID);
         $this->globals->delete(Game::DUEL_ROUND);

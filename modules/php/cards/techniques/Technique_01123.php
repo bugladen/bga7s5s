@@ -20,17 +20,21 @@ class Technique_01123 extends Technique
 
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
-            $actor = $event->theah->getCharacterById($event->actorId);
-            $adversary = $event->theah->getCharacterById($event->adversaryId);
-            if ($actor->Wounds < $adversary->Wounds)
+            $owner = $this->getOwningCharacter($event->theah);
+            if ($owner->Id == $event->actorId)
             {
-                $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds no Threat due to Valeri having fewer Wounds than opponent."), $this->Name);
-            }
-            else
-            {
-                $event->threat += 1;
-                $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat due to Valeri having equal or more Wounds than opponent."), $this->Name);
-            }
+                $actor = $event->theah->getCharacterById($event->actorId);
+                $adversary = $event->theah->getCharacterById($event->adversaryId);
+                if ($actor->Wounds < $adversary->Wounds)
+                {
+                    $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds no Threat due to Valeri having fewer Wounds than opponent."), $this->Name);
+                }
+                else
+                {
+                    $event->adversaryThreat += 1;
+                    $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat due to Valeri having equal or more Wounds than opponent."), $this->Name);
+                }
+                }
         }
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)

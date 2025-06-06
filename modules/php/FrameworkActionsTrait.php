@@ -1240,6 +1240,9 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Challenge Action is not allowed right now."));
         }
 
+        //Set the challenge to the default stat
+        $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+
         $this->gamestate->nextState("challengeActionStart");
     }
 
@@ -1250,6 +1253,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         $performer = $this->theah->getCharacterById($id);
+
         if ( ! $performer->canChallenge()) {
             throw new \BgaUserException(self::_("Performer cannot Challenge."));
         }

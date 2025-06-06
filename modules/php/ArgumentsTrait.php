@@ -473,9 +473,6 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        //Set the challenge to the default stat
-        $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
-
         $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
         
         //Filter out those characters that are not in the city

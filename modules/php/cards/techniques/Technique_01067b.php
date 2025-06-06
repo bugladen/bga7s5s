@@ -53,7 +53,7 @@ class Technique_01067b extends Technique
                     fn($character) => $character->Id != $owner->Id && $character->ControllerId == $owner->ControllerId && in_array("Musketeer", $character->Traits));
                 if ( ! $this->UseParryInstead)
                 {
-                    $event->threat += 1;
+                    $event->adversaryThreat += 1;
                     $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat."), $this->Name);
                 }
             }

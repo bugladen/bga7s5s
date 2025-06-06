@@ -68,7 +68,7 @@ class Technique_01013 extends Technique
                 $handler = function(EventGenerateChallengeThreat $event) {
                     if ($this->UseThrust)
                     {
-                        $event->threat += 1;
+                        $event->adversaryThreat += 1;
                         $event->explanations[] = sprintf($event->theah->game->translate("Technique [{$this->Name}] adds 1 Threat."), $this->Name);
                     }
                 };

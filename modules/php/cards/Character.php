@@ -177,15 +177,15 @@ abstract class Character extends Card
             switch ($event->statUsed)
             {
                 case Game::STAT_COMBAT:
-                    $event->threat += $this->ModifiedCombat;
+                    $event->adversaryThreat += $this->ModifiedCombat;
                     $event->explanations[] = sprintf($event->theah->game->translate("%s adds %d Threat from their Combat Stat."), $this->Name, $this->ModifiedCombat);
                     break;
                 case Game::STAT_FINESSE:
-                    $event->threat += $this->ModifiedFinesse;
+                    $event->adversaryThreat += $this->ModifiedFinesse;
                     $event->explanations[] = sprintf($event->theah->game->translate("%s adds %d Threat from their Finesse Stat."), $this->Name, $this->ModifiedFinesse);
                     break;
                 case Game::STAT_INFLUENCE:
-                    $event->threat += $this->ModifiedInfluence;
+                    $event->adversaryThreat += $this->ModifiedInfluence;
                     $event->explanations[] = sprintf($event->theah->game->translate("%s adds %d Threat from their Influence Stat."), $this->Name, $this->ModifiedInfluence);
                     break;
             }
