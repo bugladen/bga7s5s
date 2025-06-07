@@ -11,58 +11,73 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 
 class Technique_01193 extends Technique
 {
-    public bool $ReduceOpponentThrust;
+    public bool $ReduceAdversaryThrust;
 
     public function __construct()
     {
         parent::__construct();
         $this->Name = "-1 Thrust to Adversary";
-        $this->ReduceOpponentThrust = true;
+        $this->ReduceAdversaryThrust = true;
     }
 
     public function handleEvent(Event $event)
     { 
         parent::handleEvent($event);
 
-        $attachment = $this->getOwningCard($event->theah);
-        $isAttached = $attachment instanceof Attachment && $attachment->isAttached();
-
-        // If activated then this technique will reduce the opponent's Thrust by 1 until the start of the next round
+        // If activated then this technique will reduce the opponent's Thrust by 1 at the start of the next round
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
-            $this->ReduceOpponentThrust = true;
+            $this->ReduceAdversaryThrust = true;
             $this->setUsed($event->theah, true);
         }
 
         //Reduce the opponent's Thrust by 1 if the technique is activated
-        if ($event instanceof EventDuelCalculateCombatCardStats && $isAttached && $this->ReduceOpponentThrust)
+        if ($event instanceof EventDuelCalculateCombatCardStats && $this->ReduceAdversaryThrust)
         {
-            $character = $this->getOwningCharacter($event->theah);
-            if ($character->Id == $event->adversaryId)
+            $attachment = $this->getOwningCard($event->theah);
+            $isAttached = $attachment instanceof Attachment && $attachment->isAttached();
+
+            if ($isAttached)
             {
-                $event->thrust = $event->thrust > 0 ? $event->thrust - 1 : 0;
-                $event->explanations[] = $event->theah->game->translate($this->Name);
-                $this->ReduceOpponentThrust = false;
-                $attachment->IsUpdated = true;
+                $character = $this->getOwningCharacter($event->theah);
+                if ($character->Id == $event->adversaryId)
+                {
+                    $event->thrust = $event->thrust > 0 ? $event->thrust - 1 : 0;
+                    $event->explanations[] = $event->theah->game->translate($this->Name);
+                    $this->ReduceAdversaryThrust = false;
+                    $attachment->IsUpdated = true;
+                }
             }
         }
 
         // If the event is a new round and the owning character is the actor then reset the ReduceOpponentThrust flag
-        if ($event instanceof EventDuelNewRound && $isAttached)
+        if ($event instanceof EventDuelNewRound)
         {
-            $character = $this->getOwningCharacter($event->theah);
-            if ($character->Id == $event->actorId)
+            $attachment = $this->getOwningCard($event->theah);
+            $isAttached = $attachment instanceof Attachment && $attachment->isAttached();
+
+            if ($isAttached)
             {
-                $this->ReduceOpponentThrust = false;
-                $attachment->IsUpdated = true;
+                $character = $this->getOwningCharacter($event->theah);
+                if ($character->Id == $event->actorId)
+                {
+                    $this->ReduceAdversaryThrust = false;
+                    $attachment->IsUpdated = true;
+                }
             }
         }
 
         // If the duel is over then reset the ReduceOpponentThrust flag
-        if ($event instanceof EventDuelEnd && $isAttached)
+        if ($event instanceof EventDuelEnd)
         {
-            $this->ReduceOpponentThrust = false;
-            $attachment->IsUpdated = true;
+            $attachment = $this->getOwningCard($event->theah);
+            $isAttached = $attachment instanceof Attachment && $attachment->isAttached();
+
+            if ($isAttached)
+            {
+                $this->ReduceAdversaryThrust = false;
+                $attachment->IsUpdated = true;
+            }
         }
     }
 }

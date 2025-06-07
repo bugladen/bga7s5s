@@ -35,6 +35,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventThreatModified;
@@ -445,6 +446,19 @@ class EventFactory
             $event->location = $location;
             $event->amount = $amount;
             $event->source = $source;
+        }
+
+        return $event;
+    }
+
+    public static function createTechniqueActivatedEvent(int $playerId, int $ownerId, string $techniqueId): EventTechniqueActivated
+    {
+        $event = self::createEvent(Events::TechniqueActivated);
+        if ($event instanceof EventTechniqueActivated)
+        {
+            $event->playerId = $playerId;
+            $event->ownerId = $ownerId;
+            $event->techniqueId = $techniqueId;
         }
 
         return $event;

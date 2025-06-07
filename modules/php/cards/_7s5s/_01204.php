@@ -2,10 +2,14 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01204;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
+use BgaUserException;
 
 class _01204 extends CityAttachment implements IHasTechniques
 {
@@ -38,5 +42,19 @@ class _01204 extends CityAttachment implements IHasTechniques
         $this->Techniques = [
             new Technique_01204(),
         ];
+    }
+
+    public function eventCheck(Event $event)
+    {
+        if ($event instanceof EventAttachmentUnequipped && $event->attachmentId == $this->Id)
+        {
+            $owner = $this->attachedTo($event->theah);
+            $canDiscard = $owner instanceof Character && $owner->IsDying;
+
+            if (! $canDiscard)
+            {
+                throw new BgaUserException($event->theah->game->translate("Syrneth Hand can't be destroyed or moved from equipped character."));
+            }
+        }
     }
 }
