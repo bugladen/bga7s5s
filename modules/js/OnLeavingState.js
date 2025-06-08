@@ -559,6 +559,34 @@ onLeavingState: function( stateName )
             this.chooseList.removeAll();
         },
 
+        'highDramaPhase01205': () => {
+            if (this.isCurrentPlayerActive()) {
+                card = this.cardProperties[this.clientStateArgs.characterId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+
+                this.clientStateArgs.targetCharacterIds.forEach((characterId) => {
+                    card = this.cardProperties[characterId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                });
+            }
+        },
+
+        'highDramaPhase01205_2': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.resetCityLocations();
+                let card = this.cardProperties[this.clientStateArgs.characterId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+
+                card = this.cardProperties[this.clientStateArgs.victimId];
+                const victimImage = $(`${card.divId}_image`);
+                dojo.removeClass(victimImage, 'chosen');
+            }
+        },
+
+
         'duelChooseAction': () => {
             if (this.isCurrentPlayerActive()) {
                 this.factionHand.setSelectionMode(0);

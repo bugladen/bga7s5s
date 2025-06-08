@@ -1093,6 +1093,46 @@ onEnteringState: function( stateName, args )
             }
         },
 
+        'highDramaPhase01205': () => {
+            if (this.isCurrentPlayerActive()) {
+                card = this.cardProperties[args.args.args.characterId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.characterId = args.args.args.characterId;
+
+                this.numberOfCardsSelectable = 1;
+                args.args.args.targetCharacterIds.forEach((characterId) => {
+                    card = this.cardProperties[characterId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+                this.clientStateArgs.targetCharacterIds = args.args.args.targetCharacterIds;
+            }
+        },
+
+        'highDramaPhase01205_2': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCityLocationsSelectable = 1;
+                args.args.args.locations.forEach((location) => {
+                        const selectedLocationElement = dojo.query(`[data-location="${location}"]`)[0];
+                        this.makeCityLocationSelectable(selectedLocationElement.id);
+                });
+                const characterId = args.args.args.characterId;
+                this.clientStateArgs.characterId = characterId;
+                card = this.cardProperties[characterId];
+                let image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+
+                const victimId = args.args.args.victimId;
+                this.clientStateArgs.victimId = victimId;
+                card = this.cardProperties[victimId];
+                image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+            }
+        },
+
         'playerReaction': () => {
             if (this.isCurrentPlayerActive()) {
                 this.gamedatas.gamestate.descriptionmyturn = _(args.args._private.args.descriptionmyturn);

@@ -72,6 +72,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaMoveActionChooseLocation': 'actHighDramaMoveActionDestinationChosen',
             'highDramaPhase01189a': 'actFromCardWithLocations',
             'highDramaPhase01189b': 'actFromCardWithLocations',
+            'highDramaPhase01205_2': 'actFromCardWithLocations',
         };
 
         const clientMessageArray = {
@@ -110,6 +111,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaPhase01194_2'                                 : 'actFromCardWithIds',
             'highDramaPhase01197'                                   : 'actFromCardWithIds',
             'highDramaPhase01197_3'                                 : 'actFromCardWithIds',
+            'highDramaPhase01205'                                   : 'actFromCardWithIds',
             'highDramaMoveActionChoosePerformer'                    : 'actHighDramaMoveActionPerformerChosen',
             'highDramaInPlayActionChoosePerformer'                  : 'actHighDramaInPlayActionPerformerChosen',  
             'highDramaInHandActionChoosePerformer'                  : 'actHighDramaInHandActionPerformerChosen',  

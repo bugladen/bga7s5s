@@ -483,6 +483,23 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
+        'highDramaPhase01205': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
+        },
+
+        'highDramaPhase01205_2': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            }
+        },
+
+
         'playerReaction': () => {
             if (this.isCurrentPlayerActive()) {
                 args._private.args.buttons.forEach((button, index) => {

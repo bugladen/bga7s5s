@@ -1310,10 +1310,20 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Technique not found."));
         }
 
-        $owner = $technique->getOwningCharacter($this->theah);
+        $owner = $technique->getOwningCard($this->theah);
         if ($owner->Id != $performer->Id) {
-            throw new \BgaUserException(self::_("Technique does not belong to the Performer."));
+            throw new \BgaUserException(self::_("Technique does not belong to the Card."));
         }
+
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} activates Technique from ${owner_name}.'), [
+            "i18n" => ["owner_name"],
+            "player_name" => $this->getActivePlayerName(),
+            "owner_name" => $owner->Name,
+        ]);
+
+        $event = EventFactory::createTechniqueActivatedEvent($playerId, $owner->Id, $technique->Id);
+        $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);
 
         $this->globals->set(GAME::CHOSEN_TECHNIQUE, $technique->Id);
 
