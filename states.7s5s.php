@@ -21,6 +21,23 @@ $machinestates += [
 
     States::HIGH_DRAMA_PLAYER_TURN_01180 => [
         "name" => "highDramaPhase01180",
+        "descriptionmyturn" => clienttranslate('Kaj Kousei: ${you} must acknowledge revealed cards:'),
+        "type" => "multipleactiveplayer",
+        "args" => "argsForState",
+        "action" => "stMultiPlayerInit",
+        "possibleactions" => [
+            "actMultipleOk", 
+        ],
+        "transitions" => ["multipleOk" => States::HIGH_DRAMA_PLAYER_TURN_01180_2]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01180_2 => [
+        "name" => "highDramaPhase01180_2",
+        "type" => "game",
+        "action" => "stSetCurrentPlayer",
+        "transitions" => ["" => States::HIGH_DRAMA_PLAYER_TURN_01180_3]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01180_3 => [
+        "name" => "highDramaPhase01180_3",
         "description" => clienttranslate('${actplayer} may choose to Equip an Artifact from the top 4 cards of the City Deck.'),
         "descriptionmyturn" => clienttranslate('${you} may choose to Equip an Artifact from the top 4 cards of the City Deck:'),
         "type" => "activeplayer",
@@ -30,12 +47,12 @@ $machinestates += [
             "actFromCardPass"
         ],
         "transitions" => [
-            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_01180_2,
+            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_01180_4,
             "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
-    States::HIGH_DRAMA_PLAYER_TURN_01180_2 => [
-        "name" => "highDramaPhase01180_2",
+    States::HIGH_DRAMA_PLAYER_TURN_01180_4 => [
+        "name" => "highDramaPhase01180_4",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
         "descriptionmyturn" => clienttranslate('${you} must choose a Performer to Equip Artifact:'),
         "type" => "activeplayer",
@@ -46,11 +63,11 @@ $machinestates += [
         ],
         "transitions" => [
             "back" => States::HIGH_DRAMA_PLAYER_TURN_01180,
-            "performerChosen" => States::HIGH_DRAMA_PLAYER_TURN_01180_3
+            "performerChosen" => States::HIGH_DRAMA_PLAYER_TURN_01180_5
         ]
     ],
-    States::HIGH_DRAMA_PLAYER_TURN_01180_3 => [
-        "name" => "highDramaPhase01180_3",
+    States::HIGH_DRAMA_PLAYER_TURN_01180_5 => [
+        "name" => "highDramaPhase01180_5",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
         "descriptionmyturn" => clienttranslate('${you} must choose cards from Your Hand to pay for chosen Artifact:'),
         "type" => "activeplayer",
@@ -60,7 +77,7 @@ $machinestates += [
             "actBack"
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_PLAYER_TURN_01180_2,
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01180_4,
             "artifactEquipped" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
@@ -115,7 +132,7 @@ $machinestates += [
 
     States::HIGH_DRAMA_PLAYER_TURN_01192 => [
         "name" => "highDramaPhase01192",
-        "descriptionmyturn" => clienttranslate('Gustavo: ${you} must must acknowlege revealed cards:'),
+        "descriptionmyturn" => clienttranslate('Gustavo: ${you} must acknowledge revealed cards:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
         "action" => "stMultiPlayerInit",
@@ -126,7 +143,7 @@ $machinestates += [
     ],
 
     States::HIGH_DRAMA_PLAYER_TURN_01192_2 => [
-        "name" => "buildTable",
+        "name" => "highDramaPhase01192_2",
         "type" => "game",
         "action" => "stSetCurrentPlayer",
         "transitions" => ["" => States::HIGH_DRAMA_PLAYER_TURN_01192_3]
