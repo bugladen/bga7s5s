@@ -64,11 +64,14 @@ onLeavingState: function( stateName )
         },
 
         'planningPhaseResolveSchemes_01125_4': () => {
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && card.controllerId != this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                    const image = dojo.query('.card', card.divId)[0];
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && card.controllerId != this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                        const image = dojo.query('.card', card.divId)[0];
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
@@ -120,31 +123,38 @@ onLeavingState: function( stateName )
 
         //Clear the leader cards after one is selected
         'planningPhaseEnd_01098': () => {
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.traits.includes('Leader') && card.controllerId && card.controllerId != this.getActivePlayerId()) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.traits.includes('Leader') && card.controllerId && card.controllerId != this.getActivePlayerId()) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'planningPhaseEnd_01098_2': () => {
+            //Exposed to all players
             dojo.addClass('choose_container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
         },
 
         'highDramaBeginning_01144': () => {
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && this.isCardInCity(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && this.isCardInCity(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
 
-                    const cost = $(`${card.divId}_wealth_cost`);
-                    cost.innerHTML = card.wealthCost;
-                    dojo.removeClass(cost, 'discounted-wealth-cost');
+                        const cost = $(`${card.divId}_wealth_cost`);
+                        cost.innerHTML = card.wealthCost;
+                        dojo.removeClass(cost, 'discounted-wealth-cost');
+                    }
                 }
             }
         },
@@ -156,60 +166,75 @@ onLeavingState: function( stateName )
         },
 
         'highDramaMoveActionChoosePerformer': () => {
-            for ( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for ( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'highDramaMoveActionChooseLocation': () => {
-            this.resetCityLocations();
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.resetCityLocations();
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
+                var home = $(`${this.getActivePlayerId()}-home-anchor`);
+                dojo.removeClass(home, 'selectable');
+                dojo.removeClass(home, 'selected');
+                dojo.style(home, 'cursor', 'default');
             }
-            var home = $(`${this.getActivePlayerId()}-home-anchor`);
-            dojo.removeClass(home, 'selectable');
-            dojo.removeClass(home, 'selected');
-            dojo.style(home, 'cursor', 'default');
         },
 
         'highDramaRecruitActionChoosePerformer': () => {
-            for ( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for ( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'highDramaRecruitActionParley': () => {
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'highDramaRecruitActionChooseMercenary': () => {
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && this.isCardInCity(card.id) && card.id != this.clientStateArgs.performerId) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && this.isCardInCity(card.id) && card.id != this.clientStateArgs.performerId) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
 
-                    const cost = $(`${card.divId}_wealth_cost`);
-                    cost.innerHTML = card.wealthCost;
-                    dojo.removeClass(cost, 'discounted-wealth-cost');
+                        const cost = $(`${card.divId}_wealth_cost`);
+                        cost.innerHTML = card.wealthCost;
+                        dojo.removeClass(cost, 'discounted-wealth-cost');
+                    }
                 }
             }
         },
@@ -295,118 +320,148 @@ onLeavingState: function( stateName )
         },
 
         'highDramaEquipActionChoosePerformer': () => {
-            for ( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for ( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'highDramaEquipActionChooseAttachmentFromHand': () => {
-            this.factionHand.getAllItems().forEach((card, index) => {
-                let div = this.factionHand.getItemDivId(card.id);
-                dojo.removeClass(div, 'selectable');
-            });
-            this.showHandAtBottom();
-            this.factionHand.setSelectionMode(0);
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.factionHand.getAllItems().forEach((card, index) => {
+                    let div = this.factionHand.getItemDivId(card.id);
+                    dojo.removeClass(div, 'selectable');
+                });
+                this.showHandAtBottom();
+                this.factionHand.setSelectionMode(0);
+            }
         },
 
         'highDramaEquipActionChooseAttachmentFromPlay': () => {
-            for ( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Attachment' && ! card.controllerId && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for ( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Attachment' && ! card.controllerId && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'highDramaEquipActionPayForAttachmentFromHand': () => {
-            this.factionHand.getAllItems().forEach((card, index) => {
-                let div = this.factionHand.getItemDivId(card.id);
-                if (dojo.hasClass(div, 'unselectable')) {
-                    dojo.removeClass(div, 'unselectable');
-                    dojo.destroy(`${div}_wealth_cost`);
-                }
-            });
-            this.factionHand.setSelectionMode(0);
-            $('faction_hand_info').innerHTML = '';
-            this.showHandAtBottom();
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.factionHand.getAllItems().forEach((card, index) => {
+                    let div = this.factionHand.getItemDivId(card.id);
+                    if (dojo.hasClass(div, 'unselectable')) {
+                        dojo.removeClass(div, 'unselectable');
+                        dojo.destroy(`${div}_wealth_cost`);
+                    }
+                });
+                this.factionHand.setSelectionMode(0);
+                $('faction_hand_info').innerHTML = '';
+                this.showHandAtBottom();
 
-            for ( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+                for ( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'highDramaEquipActionPayForAttachmentFromPlay': () => {
-            for ( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Attachment' && ! card.controllerId && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {   
+                for ( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Attachment' && ! card.controllerId && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
+                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
-                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
-                }
+                this.factionHand.setSelectionMode(0);
+                $('faction_hand_info').innerHTML = '';
+                this.showHandAtBottom();
             }
-            this.factionHand.setSelectionMode(0);
-            $('faction_hand_info').innerHTML = '';
-            this.showHandAtBottom();
         },
 
         'highDramaClaimActionChoosePerformer': () => {
-            for ( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for ( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                            this.clearCardAsSelectable(image);
+                        }
                 }
             }
         },
 
         'highDramaChallengeActionChoosePerformer': () => {
-            for ( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for ( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'highDramaChallengeActionChooseTarget': () => {
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'highDramaChallengeActionActivateTechnique': () => {
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'highDramaChallengeActionAcceptChallenge' : () => {
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
@@ -424,139 +479,173 @@ onLeavingState: function( stateName )
         },
 
         'highDramaPhase01180' : () => {
+            //Exposed to all players
             dojo.addClass('choose_container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
             this.chooseList.setSelectionMode(0);
-        },
+    },
 
         'highDramaPhase01180_2' : () => {
-            dojo.addClass('choose_container', 'hidden');
-            dojo.addClass('chooseList', 'hidden');
-            this.chooseList.removeAll();
-            this.chooseList.setSelectionMode(0);
+            if (this.isCurrentPlayerActive()) 
+            {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
 
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                            this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'highDramaPhase01180_3' : () => {
-            dojo.addClass('choose_container', 'hidden');
-            dojo.addClass('chooseList', 'hidden');
-            this.chooseList.removeAll();
-            this.chooseList.setSelectionMode(0);
+            if (this.isCurrentPlayerActive()) 
+            {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
 
-            this.showHandAtBottom();
-            this.factionHand.setSelectionMode(0);
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+                this.showHandAtBottom();
+                this.factionHand.setSelectionMode(0);
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'highDramaPhase01185': () => {
-            this.factionHand.setSelectionMode(0);
-            this.showHandAtBottom();
-            $('faction_hand_info').innerHTML = '';
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.factionHand.setSelectionMode(0);
+                this.showHandAtBottom();
+                $('faction_hand_info').innerHTML = '';
 
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Event' && this.isCardInCity(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Event' && this.isCardInCity(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'highDramaPhase01189a': () => {
-            this.resetCityLocations();
-            card = this.cardProperties[this.clientStateArgs.performerId];
-            const image = $(`${card.divId}_image`);
-            this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.resetCityLocations();
+                card = this.cardProperties[this.clientStateArgs.performerId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+            }
         },
 
         'highDramaPhase01189b': () => {
-            this.resetCityLocations();
-            card = this.cardProperties[this.clientStateArgs.performerId];
-            const image = $(`${card.divId}_image`);
-            this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.resetCityLocations();
+                card = this.cardProperties[this.clientStateArgs.performerId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+            }
         },
 
         'highDramaPhase01192' : () => {
+            //Exposed to all players
             dojo.addClass('choose_container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
             this.chooseList.setSelectionMode(0);
-        },
+    },
 
         'highDramaPhase01194': () => {
-            card = this.cardProperties[this.clientStateArgs.characterId];
-            const image = $(`${card.divId}_image`);
-            this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                card = this.cardProperties[this.clientStateArgs.characterId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+            }
         },
 
         'highDramaPhase01194_2': () => {
-            card = this.cardProperties[this.clientStateArgs.characterId];
-            const image = $(`${card.divId}_image`);
-            this.clearCardAsSelectable(image);
-
-            this.clientStateArgs.targetCharacterIds.forEach((characterId) => {
-                card = this.cardProperties[characterId];
+            if (this.isCurrentPlayerActive()) 
+            {
+                card = this.cardProperties[this.clientStateArgs.characterId];
                 const image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
-            });
+
+                this.clientStateArgs.targetCharacterIds.forEach((characterId) => {
+                    card = this.cardProperties[characterId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                });
+            }
         },
 
         'highDramaPhase01197': () => {
-            card = this.cardProperties[this.clientStateArgs.performerId];
-            const image = $(`${card.divId}_image`);
-            this.clearCardAsSelectable(image);
-
-            this.clientStateArgs.targetCharacterIds.forEach((characterId) => {
-                card = this.cardProperties[characterId];
+            if (this.isCurrentPlayerActive()) 
+            {
+                card = this.cardProperties[this.clientStateArgs.performerId];
                 const image = $(`${card.divId}_image`);
-                this.clearCardAsSelectable(image);
-            });
+                this.clearCardAsSelectable(image);  
+
+                this.clientStateArgs.targetCharacterIds.forEach((characterId) => {
+                    card = this.cardProperties[characterId];
+                    const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                });
+            }
         },
 
         'highDramaPhase01197_2': () => {
-            card = this.cardProperties[this.clientStateArgs.performerId];
-            const image = $(`${card.divId}_image`);
-            this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) 
+            {
+                card = this.cardProperties[this.clientStateArgs.performerId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
 
-            card = this.cardProperties[this.clientStateArgs.chosenCharacterId];
-            const chosenImage = $(`${card.divId}_image`);
-            dojo.removeClass(chosenImage, 'chosen');
+                card = this.cardProperties[this.clientStateArgs.chosenCharacterId];
+                const chosenImage = $(`${card.divId}_image`);
+                dojo.removeClass(chosenImage, 'chosen');
+            }
         },
 
         'highDramaPhase01197_3': () => {
-            card = this.cardProperties[this.clientStateArgs.performerId];
-            const image = $(`${card.divId}_image`);
-            this.clearCardAsSelectable(image);
-
-            card = this.cardProperties[this.clientStateArgs.chosenCharacterId];
-            const chosenImage = $(`${card.divId}_image`);
-            dojo.removeClass(chosenImage, 'chosen');
-
-            this.clientStateArgs.targetCharacterIds.forEach((characterId) => {
-                card = this.cardProperties[characterId];
+            if (this.isCurrentPlayerActive()) 
+            {
+                card = this.cardProperties[this.clientStateArgs.performerId];
                 const image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
-            });
+
+                card = this.cardProperties[this.clientStateArgs.chosenCharacterId];
+                const chosenImage = $(`${card.divId}_image`);
+                dojo.removeClass(chosenImage, 'chosen');
+
+                this.clientStateArgs.targetCharacterIds.forEach((characterId) => {
+                    card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+            }
         },
 
         'highDramaPhase01200_2': () => {
-            dojo.addClass('choose_container', 'hidden');
-            dojo.addClass('chooseList', 'hidden');
-            this.chooseList.removeAll();
+            if (this.isCurrentPlayerActive()) {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            }
         },
 
         'highDramaPhase01205': () => {
@@ -594,51 +683,64 @@ onLeavingState: function( stateName )
         },
 
         'duelChooseGambleCard': () => {
-            dojo.addClass('choose_container', 'hidden');
-            dojo.addClass('chooseList', 'hidden');
-            this.chooseList.removeAll();
+            if (this.isCurrentPlayerActive()) {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            }
         },
 
         'duelUseManeuverFromCombatCard' : () => {
-            var items = this.factionHand.getSelectedItems();
-            const types = {};
-            items.forEach((item) => {
-                this.factionHand.unselectItem(item.id);
-            });
+            if (this.isCurrentPlayerActive()) {
+                var items = this.factionHand.getSelectedItems();
+                const types = {};
+                items.forEach((item) => {
+                    this.factionHand.unselectItem(item.id);
+                });
+            }
         },
 
         'duelPayForManeuverFromCombatCard' : () => {
-            this.factionHand.getAllItems().forEach((card, index) => {
-                let div = this.factionHand.getItemDivId(card.id);
-                if (dojo.hasClass(div, 'unselectable')) {
-                    dojo.removeClass(div, 'unselectable');
-                    dojo.destroy(`${div}_wealth_cost`);
-                }
-            });
-            this.factionHand.setSelectionMode(0);
-            $('faction_hand_info').innerHTML = '';
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.factionHand.getAllItems().forEach((card, index) => {
+                    let div = this.factionHand.getItemDivId(card.id);
+                    if (dojo.hasClass(div, 'unselectable')) {
+                        dojo.removeClass(div, 'unselectable');
+                        dojo.destroy(`${div}_wealth_cost`);
+                    }
+                });
+                this.factionHand.setSelectionMode(0);
+                $('faction_hand_info').innerHTML = '';
+            }
         },
 
         'duskPhaseBegin01177' : () => {
-            for( const cardId in this.cardProperties ) {
-                card = this.cardProperties[cardId];
-                if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+            if (this.isCurrentPlayerActive()) {
+                for( const cardId in this.cardProperties ) {
+                    card = this.cardProperties[cardId];
+                    if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 }
             }
         },
 
         'duskPhaseBegin01177_2': () => {
-            dojo.addClass('choose_container', 'hidden');
-            dojo.addClass('chooseList', 'hidden');
-            this.chooseList.removeAll();
+            if (this.isCurrentPlayerActive()) {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            }
         },
 
         'duskPhaseDiscard': () => {
-            this.factionHand.setSelectionMode(0);
-            this.showHandAtBottom();
-            $('faction_hand_info').innerHTML = '';
+            if (this.isCurrentPlayerActive()) {
+                this.factionHand.setSelectionMode(0);
+                this.showHandAtBottom();
+                $('faction_hand_info').innerHTML = '';
+            }
         },
 
         'playerPayForReaction': () => {
