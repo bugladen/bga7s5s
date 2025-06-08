@@ -155,6 +155,8 @@ class Action_01205 extends CharacterAction
                 'player_name' => $game->getActivePlayerName(),
             ]);
 
+            $this->SetUsed($game->theah, true);
+
             $game->gamestate->nextState("locationChosen");
 
         }
