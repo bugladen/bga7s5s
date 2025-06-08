@@ -107,7 +107,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseEnd_01098'                                : 'actPlanningPhaseEnd_01098',
             'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
             'highDramaPhase01029'                                   : 'actFromCardWithIds',
-            'highDramaPhase01180_2'                                 : 'actFromCardWithIds',
+            'highDramaPhase01180_4'                                 : 'actFromCardWithIds',
             'highDramaPhase01194_2'                                 : 'actFromCardWithIds',
             'highDramaPhase01197'                                   : 'actFromCardWithIds',
             'highDramaPhase01197_3'                                 : 'actFromCardWithIds',
@@ -203,7 +203,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01016_2'   : 'actPlanningPhase_01016_2',
             'planningPhaseResolveSchemes_01044'     : 'actPlanningPhase_01044',
             'planningPhaseResolveSchemes_01045'     : 'actPlanningPhase_01045',
-            'highDramaPhase01180'                   : 'actFromCardWithId',
+            'highDramaPhase01180_3'                   : 'actFromCardWithId',
             'highDramaPhase01192_3'                 : 'actFromCardWithId',
             'highDramaPhase01200_2'                 : 'actFromCardWithId',
             'duelChooseGambleCard'                  : 'actGambleCardChosen',
@@ -272,7 +272,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         items = items.map((item) => item.id);
 
         const actionArray = {
-            'highDramaPhase01180_3'               : 'actFromCardWithIds',
+            'highDramaPhase01180_5'               : 'actFromCardWithIds',
         };
 
         const action = actionArray[this.gamedatas.gamestate.name];
@@ -372,7 +372,7 @@ return declare('seventhseacityoffivesails.actions', null, {
     {
         const actionArray = {
             'highDramaPlayerTurn'                       : 'actHighDramaPass',
-            'highDramaPhase01180'                       : 'actPassWithPass',
+            'highDramaPhase01180_3'                     : 'actPassWithPass',
             'planningPhaseResolveSchemes_01016_2'       : 'actPassWithPass',
             'planningPhaseResolveSchemes_01125'         : 'actPlanningPhase_01125_Pass',
             'planningPhaseResolveSchemes_01125_2'       : 'actPlanningPhase_01125_2_Pass',

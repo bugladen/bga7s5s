@@ -382,6 +382,10 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaPhase01180': () => {
+            this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
+        },
+
+        'highDramaPhase01180_3': () => {
             if (this.isCurrentPlayerActive()) {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
                 this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {})) 
@@ -389,7 +393,7 @@ onUpdateActionButtons: function( stateName, args )
             }
         },
 
-        'highDramaPhase01180_2': () => {
+        'highDramaPhase01180_4': () => {
             if (this.isCurrentPlayerActive()) {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
@@ -397,7 +401,7 @@ onUpdateActionButtons: function( stateName, args )
             }
         },
 
-        'highDramaPhase01180_3': () => {
+        'highDramaPhase01180_5': () => {
             if (this.isCurrentPlayerActive()) {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmedFromCard());

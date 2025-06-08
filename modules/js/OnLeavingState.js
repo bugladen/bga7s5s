@@ -484,9 +484,19 @@ onLeavingState: function( stateName )
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
             this.chooseList.setSelectionMode(0);
-    },
+        },
 
-        'highDramaPhase01180_2' : () => {
+        'highDramaPhase01180_3' : () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
+            }
+        },
+
+        'highDramaPhase01180_4' : () => {
             if (this.isCurrentPlayerActive()) 
             {
                 dojo.addClass('choose_container', 'hidden');
@@ -504,7 +514,7 @@ onLeavingState: function( stateName )
             }
         },
 
-        'highDramaPhase01180_3' : () => {
+        'highDramaPhase01180_5' : () => {
             if (this.isCurrentPlayerActive()) 
             {
                 dojo.addClass('choose_container', 'hidden');

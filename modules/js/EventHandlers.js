@@ -26,7 +26,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
     onChooseCardClicked: function(control_name, item_id) 
     {
         const methods = {
-            'highDramaPhase01180': () => {
+            'highDramaPhase01180_3': () => {
                 if (item_id === undefined) return;
                 var items = this.chooseList.getSelectedItems();
                 items.forEach((item) => {
@@ -138,7 +138,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
             },
 
-            'highDramaPhase01180_3': () => {
+            'highDramaPhase01180_5': () => {
                 var items = this.factionHand.getSelectedItems();
                 let wealth = 0;
                 items.forEach((item) => {

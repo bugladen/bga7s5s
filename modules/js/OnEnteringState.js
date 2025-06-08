@@ -830,11 +830,6 @@ onEnteringState: function( stateName, args )
                 this.addCardToDeck(this.chooseList, card);
                 if (card.traits.includes('Artifact')) 
                     count++;
-                else
-                {
-                    let div = this.chooseList.getItemDivId(card.id);
-                    dojo.addClass(div, 'unselectable');        
-                }
 
                 this.cardProperties[card.id] = card;                
             });
@@ -846,13 +841,40 @@ onEnteringState: function( stateName, args )
             );
             $('choose_container_name').innerHTML = translated;
             this.chooseList.setSelectionMode(0);
+        },
+
+        'highDramaPhase01180_3' : () => {
             if (this.isCurrentPlayerActive()) {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                
+                let count = 0;
+                args.args.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                    if (card.traits.includes('Artifact')) 
+                        count++;
+                    else
+                    {
+                        let div = this.chooseList.getItemDivId(card.id);
+                        dojo.addClass(div, 'unselectable');        
+                    }
+
+                    this.cardProperties[card.id] = card;                
+                });
+                var translated = dojo.string.substitute(
+                    _("Kaj Kousei Artifacts ( ${count} Found )"),
+                    {
+                        count: count
+                    }
+                );
+                $('choose_container_name').innerHTML = translated;
+                this.chooseList.setSelectionMode(0);
                 if (count > 0)
-                    this.chooseList.setSelectionMode(1);
+                        this.chooseList.setSelectionMode(1);
             }
         },
 
-        'highDramaPhase01180_2' : () => {
+        'highDramaPhase01180_4' : () => {
             if (this.isCurrentPlayerActive()) {
                 //Wait a second for stock object to catch up?
                 dojo.removeClass('choose_container', 'hidden');
@@ -874,7 +896,7 @@ onEnteringState: function( stateName, args )
             }
         },
 
-        'highDramaPhase01180_3': () => {
+        'highDramaPhase01180_5': () => {
             if (this.isCurrentPlayerActive()) {
                 dojo.removeClass('choose_container', 'hidden');
                 dojo.removeClass('chooseList', 'hidden');
@@ -1002,10 +1024,8 @@ onEnteringState: function( stateName, args )
                 );
                 $('choose_container_name').innerHTML = translated;
                 this.chooseList.setSelectionMode(0);
-                if (this.isCurrentPlayerActive()) {
-                    if (count > 0)
-                        this.chooseList.setSelectionMode(1);
-                }
+                if (count > 0)
+                    this.chooseList.setSelectionMode(1);
             }
         },
 

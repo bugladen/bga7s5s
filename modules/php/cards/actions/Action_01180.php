@@ -66,7 +66,7 @@ class Action_01180 extends CharacterAction
     {
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180 || $state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
         {
             $deck = $game->getGameDeckObject();
             $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
@@ -79,7 +79,7 @@ class Action_01180 extends CharacterAction
             $args["cards"] = $cards;
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_2)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_4)
         {
             $chosenCardId = $game->globals->get(Game::CHOSEN_CARD);
             $chosenCard = $game->getCardObjectFromDb($chosenCardId);
@@ -95,7 +95,7 @@ class Action_01180 extends CharacterAction
             $args['ids'] = $ids;
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_5)
         {
             $chosenAttachmentId = $game->globals->get(Game::CHOSEN_CARD);
             $chosenAttachment = $game->getCardObjectFromDb($chosenAttachmentId);
@@ -116,7 +116,7 @@ class Action_01180 extends CharacterAction
     {
         parent::actFromActionPass($game, $state);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
         {
             $deck = $game->getGameDeckObject();
             $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
@@ -142,7 +142,7 @@ class Action_01180 extends CharacterAction
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
         {
             $deck = $game->getGameDeckObject();
             $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
@@ -179,7 +179,7 @@ class Action_01180 extends CharacterAction
     {
         parent::actFromActionWithIds($game, $state, $stateName, $ids);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_2)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_4)
         {
             $playerId = $game->getActivePlayerId();
             $owner = $this->getOwningCard($game->theah);
@@ -223,7 +223,7 @@ class Action_01180 extends CharacterAction
             $game->gamestate->nextState("performerChosen");
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_5)
         {
             $attachmentId = $game->globals->get(Game::CHOSEN_CARD);
             $attachment = $game->getCardObjectFromDb($attachmentId);
