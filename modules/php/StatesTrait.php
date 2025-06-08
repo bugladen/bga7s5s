@@ -32,6 +32,14 @@ trait StatesTrait
         $this->gamestate->setAllPlayersMultiactive();
     }
 
+    public function stSetCurrentPlayer() 
+    {
+        $currentPlayerId = $this->globals->get(Game::CURRENT_PLAYER);
+        $this->gamestate->changeActivePlayer($currentPlayerId);
+
+        $this->gamestate->nextState("");
+    }
+
     public function stRunEvents() {
         $this->theah->buildCity();
         $this->theah->runEvents();

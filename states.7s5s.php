@@ -115,6 +115,25 @@ $machinestates += [
 
     States::HIGH_DRAMA_PLAYER_TURN_01192 => [
         "name" => "highDramaPhase01192",
+        "descriptionmyturn" => clienttranslate('Gustavo: ${you} must must acknowlege revealed cards:'),
+        "type" => "multipleactiveplayer",
+        "args" => "argsForState",
+        "action" => "stMultiPlayerInit",
+        "possibleactions" => [
+            "actMultipleOk", 
+        ],
+        "transitions" => ["multipleOk" => States::HIGH_DRAMA_PLAYER_TURN_01192_2]
+    ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01192_2 => [
+        "name" => "buildTable",
+        "type" => "game",
+        "action" => "stSetCurrentPlayer",
+        "transitions" => ["" => States::HIGH_DRAMA_PLAYER_TURN_01192_3]
+    ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01192_3 => [
+        "name" => "highDramaPhase01192_3",
         "description" => clienttranslate('${actplayer} may choose a Risk to put into their Faction Hand.'),
         "descriptionmyturn" => clienttranslate('${you} may choose a Risk to put into your Faction Hand:'),
         "type" => "activeplayer",

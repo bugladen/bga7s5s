@@ -567,7 +567,17 @@ onLeavingState: function( stateName )
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();
             this.chooseList.setSelectionMode(0);
-    },
+        },
+
+        'highDramaPhase01192_3' : () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
+            }
+        },
 
         'highDramaPhase01194': () => {
             if (this.isCurrentPlayerActive()) 

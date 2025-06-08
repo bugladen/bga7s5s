@@ -39,11 +39,8 @@ class Action_01192 extends CharacterAction
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $deck = $event->theah->game->getGameDeckObject();
-            $gustavo = $this->getOwningCard($event->theah);
-            if ($gustavo instanceof Character)
-            {
-                $count = $gustavo instanceof Character && $gustavo->ModifiedInfluence;
-            }
+            $gustavo = $this->getOwningCharacter($event->theah);
+            $count = $gustavo->ModifiedInfluence;
 
             //Announce the Risks that are revealed
             $playerDeckName = $event->theah->game->getPlayerFactionDeckName($gustavo->ControllerId);
@@ -52,12 +49,14 @@ class Action_01192 extends CharacterAction
             $found = 0;
             foreach ($deckCards as $deckCard) {
                 $card = $event->theah->game->getCardObjectFromDb($deckCard['id']);
-                $names[] = $event->theah->game->translate($card->Name);
                 if ($card instanceof Risk)
+                {
+                    $names[] = $event->theah->game->translate($card->Name);
                     $found++;
+                }
             }
 
-            $event->theah->game->notifyAllPlayers('message', clienttranslate('${player_name} uses ${card_name} to reveal ${count} Risks from their deck.  ${found} Risks have been revealed. (${names})'), [
+            $event->theah->game->notifyAllPlayers('message', clienttranslate('${player_name} uses Gustavo\'s Action to reveal Risks from their deck.  ${found} Risks have been revealed. (${names})'), [
                 'i18n' => ['card_name'],
                 'player_name' => $event->theah->game->getActivePlayerName(),
                 'card_name' => $gustavo->Name,
@@ -77,13 +76,10 @@ class Action_01192 extends CharacterAction
     {
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192 || $state == States::HIGH_DRAMA_PLAYER_TURN_01192_3)
         {
-            $gustavo = $this->getOwningCard($game->theah);
-            if ($gustavo instanceof Character)
-            {
-                $count = $gustavo->ModifiedInfluence;
-            }
+            $gustavo = $this->getOwningCharacter($game->theah);
+            $count = $gustavo->ModifiedInfluence;
 
             $deck = $game->getGameDeckObject();
             $playerDeckName = $game->getPlayerFactionDeckName($gustavo->ControllerId);
@@ -104,7 +100,7 @@ class Action_01192 extends CharacterAction
     {
         parent::actFromActionPass($game, $state);
      
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192_3)
         {
             $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to put any Risks into their Faction Hand.'), [
                 "player_name" => $game->getActivePlayerName(),
@@ -118,7 +114,7 @@ class Action_01192 extends CharacterAction
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192_3)
         {
             $gustavo = $this->getOwningCard($game->theah);
             if ($gustavo instanceof Character)
