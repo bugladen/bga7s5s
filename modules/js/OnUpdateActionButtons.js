@@ -4,17 +4,44 @@ return declare('seventhseacityoffivesails.onupdateactionbuttons', null, {
 onUpdateActionButtons: function( stateName, args )
 {
     debug( 'onUpdateActionButtons: '+ stateName, args );
+
+    // This lives outside of the methods object because it is dependent on the playing being active or not.
+    // It contains logic to display or hide a special modal to choose a deck.
+    // It must no longer be shown after the player has selected a deck.
+    // Once a player has chosen an action in a multi-active client state and waiting on other players, 
+    // only onUpdateActionButtons is called, so that's why the code lives here.
+    if (stateName === 'pickDecks') {
+        if(this.isCurrentPlayerActive())
+        {
+            if ( ! document.getElementById('deck-picker'))
+            {
+                args.availableDecks.forEach(
+                    (deck) => { this.addActionButton(`actPickDeck${deck.id}-btn`, _(deck.name), () => this.onStarterDeckSelected(deck.id)) }
+                );
+                dojo.addClass('city', 'hidden');
+                dojo.addClass('approachDeck-container', 'hidden');
+                dojo.addClass('factionHand-container', 'hidden');
+                dojo.place( this.format_block( 'jstpl_deck_picker', {
+                    banner_description: _('Select a Starter Deck to play with using the buttons above.  Or explore the available Factions using the buttons below, and click <strong>Select</strong> to choose that Faction.'),
+                    eisen_description: _('<strong>Eisen</strong>: An accomplished General in the War of the Cross, Kaspar Dietrich returned home to Eisen, only to find it in ruins, overrun by monsters. As such, he has a passionate distrust for all things sorcery and supernatural. Kaspar fled south to the port city of Five Sails where he hopes to use his formidable reputation as a master commander and strategist to build an army to reclaim his homeland. He utilizes strategies that involve making use of the city and the mercenaries and equipment available to him.'),
+                    montaigne_description: _('<strong>Montaigne</strong>: Odette Dubois d’Arrent is the most recent arrival to the city. She is a courtier from Montaigne, a country that does not have a district or established foothold in Five Sails. She is tasked to help her patron expand his influence within the free city.  As such, she is eager to find allies. But she did not arrive in Five Sails alone. A small, but elite, group of skilled Musketeers accompanies her and protects her from the rougher elements of the City. Her strengths include movement and creative positioning to make the most of her political abilities and her Musketeer’s steel.'),
+                    select_description: _('Select This Deck'),
+                }),  'city', 'after');
+            }
+        }
+        else
+        {
+            dojo.destroy('deck-picker');
+            dojo.removeClass('city', 'hidden');
+            dojo.removeClass('approachDeck-container', 'hidden');
+            dojo.removeClass('factionHand-container', 'hidden');
+        }
+    }
                 
     if( ! this.isCurrentPlayerActive() )
         return;
 
     const methods = {
-        'pickDecks': () => {
-            args.availableDecks.forEach(
-                (deck) => { this.addActionButton(`actPickDeck${deck.id}-btn`, _(deck.name), () => this.onStarterDeckSelected(deck.id)) }
-            ); 
-        },
-
         'planningPhase': () => {
             this.addActionButton(`actEndPlanningPhase`, _('Confirm Approach Cards'), () => this.onPlanningCardsSelected());
             dojo.addClass('actEndPlanningPhase', 'disabled');

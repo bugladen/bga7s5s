@@ -81,11 +81,28 @@ trait FrameworkActionsTrait
         $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
     }
     
-    public function actPickDeck(string $deck_type, string $deck_id): void
+    public function actPickDeck(string $deck_type, string $deck_id, string $deck_json): void
     {
         $playerId = $this->getCurrentPlayerId();
 
-        $sql = "UPDATE player SET deck_source = '$deck_type', deck_id = '$deck_id'  WHERE player_id='$playerId'";
+        if ($deck_type === 'starter') 
+        {
+            require('includes/starterdecks.inc.php');
+            $starter_decks = json_decode($this->starter_decks);
+            $deck = current(array_filter($starter_decks->decks, fn($deck) => $deck->id === $deck_id));
+            if (! $deck)
+            {
+                throw new \BgaUserException(sprintf(self::_("%s is not a starter valid deck."), $deck_id));
+            }
+
+            $this->notifyPlayer($playerId, 'message', clienttranslate('Private: You have chosen ${deck_name} as your Starter Deck.'), [
+                'deck_name' => $deck->name,
+            ]);
+
+            $deck_json = addslashes(json_encode($deck));
+        }
+
+        $sql = "UPDATE player SET deck_source = '$deck_json' WHERE player_id='$playerId'";
         $this->DbQuery($sql);
 
         $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked'); // deactivate player; if none left, transition to 'deckPicked' state

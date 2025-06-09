@@ -4,41 +4,6 @@ $this->starter_decks = <<<JSON
 {
     "decks": [
         {
-            "id": "SDCastille",
-            "name": "Castille Starter",
-            "faction": "Castille",
-            "leader": "01089",
-            "approach_deck": [ "01098", "01099", "01148", "01149", "01150", "01091", "01092", "01093", "01094", "01097" ],
-            "faction_deck": [
-                { "id": "01100", "count": 1 },
-                { "id": "01101", "count": 2 },
-                { "id": "01102", "count": 2 },
-                { "id": "01103", "count": 1 },
-                { "id": "01104", "count": 2 },
-                { "id": "01105", "count": 2 },
-                { "id": "01106", "count": 2 },
-                { "id": "01107", "count": 1 },
-                { "id": "01108", "count": 2 },
-                { "id": "01109", "count": 2 },
-                { "id": "01110", "count": 1 },
-                { "id": "01111", "count": 1 },
-                { "id": "01112", "count": 2 },
-                { "id": "01113", "count": 2 },
-                { "id": "01114", "count": 2 },
-                { "id": "01115", "count": 2 },
-                { "id": "01156", "count": 1 },
-                { "id": "01157", "count": 2 },
-                { "id": "01158", "count": 2 },
-                { "id": "01164", "count": 1 },
-                { "id": "01165", "count": 1 },
-                { "id": "01167", "count": 1 },
-                { "id": "01168", "count": 1 },
-                { "id": "01169", "count": 2 },
-                { "id": "01171", "count": 1 },
-                { "id": "01176", "count": 1 }
-            ]
-        },
-        {
             "id": "SDEisen",
             "name": "Eisen Starter",
             "faction": "Eisen",
@@ -98,37 +63,44 @@ $this->starter_decks = <<<JSON
                 { "id": "01169", "count": 2 },
                 { "id": "01176", "count": 2 }
             ]
-        },
+        }
+    ]
+}
+JSON;
+
+/*
         {
-            "id": "SDUsurra",
-            "name": "Usurra Starter",
-            "faction": "Eisen",
-            "leader": "01116",
-            "approach_deck": [ "01125", "01126", "01144", "01150", "01145", "01123", "01124", "01118", "01122", "01120" ],
+            "id": "SDCastille",
+            "name": "Castille Starter",
+            "faction": "Castille",
+            "leader": "01089",
+            "approach_deck": [ "01098", "01099", "01148", "01149", "01150", "01091", "01092", "01093", "01094", "01097" ],
             "faction_deck": [
-                { "id": "01127", "count": 1 },
-                { "id": "01128", "count": 2 },
-                { "id": "01130", "count": 2 },
-                { "id": "01131", "count": 1 },
-                { "id": "01132", "count": 2 },
-                { "id": "01133", "count": 2 },
-                { "id": "01134", "count": 2 },
-                { "id": "01135", "count": 2 },
-                { "id": "01136", "count": 2 },
-                { "id": "01137", "count": 2 },
-                { "id": "01138", "count": 2 },
-                { "id": "01139", "count": 1 },
-                { "id": "01140", "count": 2 },
-                { "id": "01141", "count": 2 },
-                { "id": "01142", "count": 1 },
-                { "id": "01153", "count": 2 },
-                { "id": "01155", "count": 2 },
-                { "id": "01159b", "count": 1 },
-                { "id": "01161", "count": 2 },
-                { "id": "01162", "count": 1 },
-                { "id": "01165", "count": 2 },
+                { "id": "01100", "count": 1 },
+                { "id": "01101", "count": 2 },
+                { "id": "01102", "count": 2 },
+                { "id": "01103", "count": 1 },
+                { "id": "01104", "count": 2 },
+                { "id": "01105", "count": 2 },
+                { "id": "01106", "count": 2 },
+                { "id": "01107", "count": 1 },
+                { "id": "01108", "count": 2 },
+                { "id": "01109", "count": 2 },
+                { "id": "01110", "count": 1 },
+                { "id": "01111", "count": 1 },
+                { "id": "01112", "count": 2 },
+                { "id": "01113", "count": 2 },
+                { "id": "01114", "count": 2 },
+                { "id": "01115", "count": 2 },
+                { "id": "01156", "count": 1 },
+                { "id": "01157", "count": 2 },
+                { "id": "01158", "count": 2 },
+                { "id": "01164", "count": 1 },
+                { "id": "01165", "count": 1 },
+                { "id": "01167", "count": 1 },
                 { "id": "01168", "count": 1 },
-                { "id": "01172", "count": 2 },
+                { "id": "01169", "count": 2 },
+                { "id": "01171", "count": 1 },
                 { "id": "01176", "count": 1 }
             ]
         },
@@ -164,7 +136,38 @@ $this->starter_decks = <<<JSON
                 { "id": "01172", "count": 2 },
                 { "id": "01174", "count": 1 }
             ]
-        }
-    ]
-}
-JSON;
+        },
+        {
+            "id": "SDUsurra",
+            "name": "Usurra Starter",
+            "faction": "Eisen",
+            "leader": "01116",
+            "approach_deck": [ "01125", "01126", "01144", "01150", "01145", "01123", "01124", "01118", "01122", "01120" ],
+            "faction_deck": [
+                { "id": "01127", "count": 1 },
+                { "id": "01128", "count": 2 },
+                { "id": "01130", "count": 2 },
+                { "id": "01131", "count": 1 },
+                { "id": "01132", "count": 2 },
+                { "id": "01133", "count": 2 },
+                { "id": "01134", "count": 2 },
+                { "id": "01135", "count": 2 },
+                { "id": "01136", "count": 2 },
+                { "id": "01137", "count": 2 },
+                { "id": "01138", "count": 2 },
+                { "id": "01139", "count": 1 },
+                { "id": "01140", "count": 2 },
+                { "id": "01141", "count": 2 },
+                { "id": "01142", "count": 1 },
+                { "id": "01153", "count": 2 },
+                { "id": "01155", "count": 2 },
+                { "id": "01159b", "count": 1 },
+                { "id": "01161", "count": 2 },
+                { "id": "01162", "count": 1 },
+                { "id": "01165", "count": 2 },
+                { "id": "01168", "count": 1 },
+                { "id": "01172", "count": 2 },
+                { "id": "01176", "count": 1 }
+            ]
+        },
+*/

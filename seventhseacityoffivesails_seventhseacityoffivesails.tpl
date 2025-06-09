@@ -32,6 +32,34 @@
 
 <script type="text/javascript">
 
+var jstpl_deck_picker = `
+<div id="deck-picker" class="deck-picker-container">
+  <div class="deck-picker-modal">
+
+    <div class="deck-picker-tab-content deck-picker-active" id="startingTab">
+      <div class="deck-picker-tab-image deck-picker-banner-image"></div>
+      <div class="deck-picker-tab-text">\${banner_description}</div>
+    </div>
+
+    <div class="deck-picker-tab-content" data-deck-name="Eisen" id="SDEisen">
+      <div class="deck-picker-tab-image deck-picker-faction-image eisen"></div>
+      <div class="deck-picker-tab-text">\${eisen_description}</div>
+    </div>
+
+    <div class="deck-picker-tab-content" data-deck-name="Montaigne" id="SDMontaigne">
+      <div class="deck-picker-tab-image deck-picker-faction-image montaigne"></div>
+      <div class="deck-picker-tab-text">\${montaigne_description}</div>
+    </div>
+
+    <div class="deck-picker-tab-buttons">
+      <button onclick="gameui.deckPickerShowTab(1)">Eisen</button>
+      <button onclick="gameui.deckPickerShowTab(2)">Montaigne</button>
+      <button id="btnDeckSelect" disabled onclick="gameui.deckPickerDeckSelected()">\${select_description}</button>
+    </div>
+  </div>
+</div>
+`;
+
 var jstpl_player_board = `
 <div class="cp_board">
     <div id="\${id}-score-reknown" class="score-reknown">\${reknown}</div>

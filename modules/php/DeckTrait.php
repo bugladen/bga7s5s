@@ -37,23 +37,12 @@ trait DeckTrait
         $this->cards->shuffle(Game::LOCATION_CITY_DECK);
 
         // Load the decks selected by the players
-        require('includes/starterdecks.inc.php');
-        $starter_decks = json_decode($this->starter_decks);
         $players = $this->loadPlayersBasicInfos();
-        foreach ( $players as $playerId => $player ) {
-
+        foreach ( $players as $playerId => $player ) 
+        {
             // Get the source and deck_id of the deck from the DB for the  player
-            $result = $this->getObjectFromDB("SELECT deck_source, deck_id FROM player WHERE player_id = '$playerId'");
-            $source = $result['deck_source'];
-            $deck_id = $result['deck_id'];
-
-            if ($source === 'starter') {
-                $deck = current(array_filter($starter_decks->decks, 
-                    function($deck) use ($deck_id) {
-                        return $deck->id === $deck_id;
-                    }
-                ));
-            }
+            $result = $this->getObjectFromDB("SELECT deck_source FROM player WHERE player_id = '$playerId'");
+            $deck = json_decode($result['deck_source']);
             
             //Now that we have a deck, add the cards in the deck to the db
 

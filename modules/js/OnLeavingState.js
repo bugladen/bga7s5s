@@ -7,6 +7,13 @@ onLeavingState: function( stateName )
 
     const methods = {
 
+        'pickDecks': () => {
+            dojo.destroy('deck-picker');
+            dojo.removeClass('city', 'hidden');
+            dojo.removeClass('approachDeck-container', 'hidden');
+            dojo.removeClass('factionHand-container', 'hidden');
+        },
+
         'planningPhase': () => {
             this.approachDeck.setSelectionMode(0);
         },

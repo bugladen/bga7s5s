@@ -1,6 +1,34 @@
 define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 return declare('seventhseacityoffivesails.utilities', null, {
 
+    deckPickerShowTab: function(tabIndex) {
+        const tabs = document.querySelectorAll('.deck-picker-tab-content');
+        tabs.forEach((tab, i) => {
+          tab.classList.toggle('deck-picker-active', i === tabIndex);
+
+          //If tableIndex matches get the deck name from the data-deck-name attribute
+          if (tabIndex === i) {
+            const deckName = tab.getAttribute('data-deck-name');
+            this.selectedDeck = deckName;
+            var btnDeckSelect = document.getElementById('btnDeckSelect');
+            btnDeckSelect.disabled = false;
+        }
+        });
+
+
+        this.selectedDeck = tabIndex;
+    },
+
+    deckPickerDeckSelected: function() {
+        const tabs = document.querySelectorAll('.deck-picker-tab-content');
+        tabs.forEach((tab, i) => {
+            if (this.selectedDeck === i) {
+                const id = tab.getAttribute('id');
+                this.onStarterDeckSelected(id);
+            }
+        });
+    },
+
     addCardToDeck: function( deck, card )
     {
         this.cardProperties[card.id] = card;

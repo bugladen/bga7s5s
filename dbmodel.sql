@@ -71,8 +71,7 @@ CREATE TABLE IF NOT EXISTS `duel_round` (
 -- Player fields for selected deck and cards
 ALTER TABLE `player` 
   ADD `turn_order` tinyint NULL,
-  ADD `deck_source` varchar(20) NULL,
-  ADD `deck_id` varchar(20) NULL,
+  ADD `deck_source` varchar(1000) NULL,
   ADD `leader_card_id` smallint NULL,
   ADD `selected_scheme_id` smallint NULL,
   ADD `selected_character_id` smallint NULL;

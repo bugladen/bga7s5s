@@ -1,11 +1,12 @@
 define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 return declare('seventhseacityoffivesails.actions', null, {
 
-    onStarterDeckSelected: function( deck_id )
+    onStarterDeckSelected: function(deckId)
     {
         this.bgaPerformAction("actPickDeck", { 
-            'deck_type':'starter',
-            'deck_id':deck_id,
+            'deck_type': 'starter',
+            'deck_id': deckId,
+            'deck_json': ''
         }).then(() =>  {                
             // What to do after the server call if it succeeded
         });        
