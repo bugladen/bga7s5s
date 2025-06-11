@@ -479,11 +479,15 @@ trait StatesTrait
             return;
         }
 
+        $claimType = $this->globals->get(Game::CLAIM_TYPE);
+        if ($claimType == Game::NORMAL_CLAIM_TYPE)
+        {
+            $engageEvent = EventFactory::createCardEngagedEvent($claimingPlayerId, $performer->Id);
+            $this->theah->eventCheck($engageEvent);
+        }
+
         $pressureTypes = $this->theah->getPressureTypesForClaim($performer);
         $this->setControllerForLocation($performer->Location, $claimingPlayerId);
-
-        $engageEvent = EventFactory::createCardEngagedEvent($claimingPlayerId, $performer->Id);
-        $this->theah->eventCheck($engageEvent);
 
         $claimEvent = $this->theah->createEvent(Events::LocationClaimed);
         if ($claimEvent instanceof EventLocationClaimed)
@@ -496,7 +500,11 @@ trait StatesTrait
         }        
         $this->theah->eventCheck($claimEvent);
 
-        $this->theah->queueEvent($engageEvent);
+        if ($claimType == Game::NORMAL_CLAIM_TYPE)
+        {
+            $this->theah->queueEvent($engageEvent);
+        }
+        
         $this->theah->queueEvent($claimEvent);    
 
         $this->globals->set(GAME::PASS_COUNT, 0);

@@ -13,7 +13,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscard
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventClaimOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
@@ -1020,6 +1019,7 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Claim Action is not allowed right now."));
         }
 
+        $this->globals->set(Game::CLAIM_TYPE, Game::NORMAL_CLAIM_TYPE);
         $this->gamestate->nextState("claimActionStart");
     }
 
@@ -1049,14 +1049,8 @@ trait FrameworkActionsTrait
         $this->globals->set(Game::CLAIMING_PLAYER, $activePlayerId);
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
-        $claimEvent = $this->theah->createEvent(Events::ClaimOccuring);
-        if ($claimEvent instanceof EventClaimOccuring)
-        {
-            $claimEvent->performerId = $performer->Id;
-            $claimEvent->location = $performer->Location;
-            $claimEvent->playerId = $this->getActivePlayerId();
-            $claimEvent->pressureTypes = $this->theah->getPressureTypesForClaim($performer);
-        }
+        $pressureTypes = $this->theah->getPressureTypesForClaim($performer);
+        $claimEvent = EventFactory::createClaimOccuringEvent($activePlayerId, $performer->Id, $performer->Location, $pressureTypes);
         $this->theah->eventCheck($claimEvent);
         $this->theah->queueEvent($claimEvent);
 
@@ -1259,6 +1253,7 @@ trait FrameworkActionsTrait
 
         //Set the challenge to the default stat
         $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+        $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
 
         $this->gamestate->nextState("challengeActionStart");
     }

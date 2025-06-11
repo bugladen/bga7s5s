@@ -68,6 +68,7 @@ class Game extends \Table
     final const CLAUD_ID = "claudeId"; //When Claude is in play, this is the ID of the card that caused the claim type
     final const NORMAL_CLAIM_TYPE = 0;
     final const CLAUDE_CLAIM_TYPE = 1;
+    final const CAPTAINS_COAT_CLAIM_TYPE = 2;
 
     //Player action global variables
     //Delete these in stNextPlayer

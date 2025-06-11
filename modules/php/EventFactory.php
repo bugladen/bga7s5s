@@ -29,6 +29,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventClaimOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
@@ -354,6 +355,19 @@ class EventFactory
             $event->location = $location;
         }
 
+        return $event;
+    }
+
+    public static function createClaimOccuringEvent(int $playerId, int $performerId, string $location, Array $pressureTypes): EventClaimOccuring
+    {
+        $event = self::createEvent(Events::ClaimOccuring);
+        if ($event instanceof EventClaimOccuring)
+        {
+            $event->playerId = $playerId;
+            $event->performerId = $performerId;
+            $event->location = $location;
+            $event->pressureTypes = $pressureTypes;
+        }
         return $event;
     }
 
