@@ -647,7 +647,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     showHandAtBottom: () => {
         dojo.place('factionHand-container', 'approachDeck-container', 'after');
-    }
+    },
 
+    showApproachDeckAtTop: () => {
+        dojo.place('approachDeck-container', 'city', 'before');
+    },
+
+    showApproachDeckAtBottom: () => {
+        dojo.place('approachDeck-container', 'factionHand-container', 'before');
+    },
 })
 });

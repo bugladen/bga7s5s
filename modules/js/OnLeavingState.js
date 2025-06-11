@@ -15,6 +15,7 @@ onLeavingState: function( stateName )
         },
 
         'planningPhase': () => {
+            this.showApproachDeckAtBottom();
             this.approachDeck.setSelectionMode(0);
         },
 

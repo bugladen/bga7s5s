@@ -13,6 +13,7 @@ onEnteringState: function( stateName, args )
 
         'planningPhase': () => {
             $('city-day-phase').innerHTML = _('Planning');
+            this.showApproachDeckAtTop();
         },
 
         'planningPhaseResolveSchemes_01016': () => {
