@@ -987,9 +987,11 @@ onEnteringState: function( stateName, args )
             let count = 0;
             args.args.args.cards.forEach((card) => {
                 this.addCardToDeck(this.chooseList, card);
+                if (card.type === 'Risk') 
+                    count++;
             });
             var translated = dojo.string.substitute(
-                _("Gustavo's Risk Cards: ( ${count} Found )"),
+                _("Gustavo's Revealed Cards: ( ${count} Risk(s) Found )"),
                 {
                     count: count
                 }
@@ -1018,7 +1020,7 @@ onEnteringState: function( stateName, args )
                     this.cardProperties[card.id] = card;                
                 });
                 var translated = dojo.string.substitute(
-                    _("Gustavo's Risk Cards: ( ${count} Found )"),
+                    _("Gustavo's Revealed Cards: ( ${count} Risk(s) Found )"),
                     {
                         count: count
                     }

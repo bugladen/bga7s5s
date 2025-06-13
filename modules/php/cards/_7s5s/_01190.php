@@ -60,7 +60,7 @@ class _01190 extends CityCharacter
     {
         parent::eventCheck($event);
 
-        if ($event instanceof EventChallengeIssued)
+        if ($event instanceof EventChallengeIssued && $this->ControllerId != 0)
         {
             $defender = $event->theah->getCardById($event->defenderId);
             if ($this->Id != $event->defenderId && $defender->Location == $this->Location && ! $this->Engaged)

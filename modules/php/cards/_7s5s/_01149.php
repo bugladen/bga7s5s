@@ -60,12 +60,8 @@ class _01149 extends Scheme
             }
             $event->theah->queueEvent($reknown);
 
-            $game = $event->theah->game;
-            $deck = $game->getGameDeckObject();
-            
-            $cityCard = $deck->getCardOnTop(Game::LOCATION_CITY_DECK);
-
             //Create the event
+            $cityCard = $event->theah->game->getCardsOnTopOfCityDeck(1)[0];
             $newCard = EventFactory::createCityCardAddedToLocationEvent($cityCard['id'], Game::LOCATION_CITY_DOCKS);
             $event->theah->queueEvent($newCard);
         }

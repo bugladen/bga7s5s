@@ -1670,7 +1670,7 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Card is not in your faction deck."));
         }
 
-        $cards = $this->cards->getCardsOnTop(2, $deckName);
+        $cards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, 2);
         if ($cards[0]['id'] != $id && $cards[1]['id'] != $id) {
             throw new \BgaUserException(self::_("Chosen card is not one of the two on top."));
         }

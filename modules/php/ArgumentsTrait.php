@@ -657,8 +657,8 @@ trait ArgumentsTrait
 
     public function argsDuelChooseGambleCard(): array
     {
-        $deckName = $this->getPlayerFactionDeckName($this->getActivePlayerId());
-        $deckCards = $this->cards->getCardsOnTop(2, $deckName);
+        $playerId = $this->getActivePlayerId();
+        $deckCards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, 2);
         $cards = [];
         foreach ($deckCards as $deckCard) {
             $card = $this->getCardObjectFromDb($deckCard['id']);

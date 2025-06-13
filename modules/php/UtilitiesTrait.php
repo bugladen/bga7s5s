@@ -22,7 +22,7 @@ trait UtilitiesTrait
 
     public function getAttachmentsInHand(int $playerId)
     {
-        $hand = $this->cards->getCardsInLocation('hand', $playerId);
+        $hand = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
         $attachments = [];
         foreach ($hand as $handCard) {
             $card = $this->getCardObjectFromDb($handCard['id']);
@@ -182,22 +182,6 @@ trait UtilitiesTrait
         return $duel['challenger_id'];
     }
 
-    function getGameDeckObject() {
-        return $this->cards;
-    }
-
-    function getPlayerFactionDeckName($playerId) {
-        return "Faction-$playerId";
-    }
-
-    function getPlayerDiscardDeckName($playerId) {
-        return "Discard-$playerId";
-    }
-
-    function getPlayerLockerName($playerId) {
-        return "Locker-$playerId";
-    }
-
     public function getPlayerChosenScheme($playerId)
     {
         $sql = "SELECT selected_scheme_id FROM player WHERE player_id = $playerId";
@@ -299,7 +283,7 @@ trait UtilitiesTrait
 
     public function handWealthCount(int $playerId)
     {
-        $hand = $this->cards->getCardsInLocation('hand', $playerId);
+        $hand = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
         $wealth = 0;
         foreach ($hand as $handCard) {
             $card = $this->getCardObjectFromDb($handCard['id']);
@@ -315,7 +299,7 @@ trait UtilitiesTrait
 
     public function handHasAttachments(int $playerId)
     {
-        $hand = $this->cards->getCardsInLocation('hand', $playerId);
+        $hand = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
         foreach ($hand as $handCard) {
             $card = $this->getCardObjectFromDb($handCard['id']);
             if ($card instanceof Attachment) {
@@ -337,19 +321,6 @@ trait UtilitiesTrait
             }
         }
         return false;
-    }
-
-    public function playerDrawCard($playerId): Card
-    {
-        $location = $this->getPlayerFactionDeckName($playerId);
-        $cardInfo = $this->cards->pickCard($location, $playerId);
-        $card = $this->getCardObjectFromDb($cardInfo['id']);
-        $card->ControllerId = $playerId;
-        $card->OwnerId = $playerId;
-        $card->Location = Game::LOCATION_HAND;
-        $this->updateCardObjectInDb($card);
-
-        return $card;
     }
 
     function setNewPlayerOrder($firstPlayerId)

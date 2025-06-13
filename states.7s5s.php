@@ -21,6 +21,7 @@ $machinestates += [
 
     States::HIGH_DRAMA_PLAYER_TURN_01180 => [
         "name" => "highDramaPhase01180",
+        "description" => clienttranslate('Your opponent(s) must acknowledge revealed cards.'),
         "descriptionmyturn" => clienttranslate('Kaj Kousei: ${you} must acknowledge revealed cards:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
@@ -132,6 +133,7 @@ $machinestates += [
 
     States::HIGH_DRAMA_PLAYER_TURN_01192 => [
         "name" => "highDramaPhase01192",
+        "description" => clienttranslate('Your opponent(s) must acknowledge revealed cards.'),
         "descriptionmyturn" => clienttranslate('Gustavo: ${you} must acknowledge revealed cards:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",

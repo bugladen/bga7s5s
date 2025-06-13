@@ -43,8 +43,7 @@ class Action_01192 extends CharacterAction
             $count = $gustavo->ModifiedInfluence;
 
             //Announce the Risks that are revealed
-            $playerDeckName = $event->theah->game->getPlayerFactionDeckName($gustavo->ControllerId);
-            $deckCards = $deck->getCardsOnTop($count, $playerDeckName, $gustavo->ControllerId);
+            $deckCards = $event->theah->game->getCardsOnTopOfPlayerFactionDeck($gustavo->ControllerId, $count);
             $names = [];
             $found = 0;
             foreach ($deckCards as $deckCard) {
@@ -81,9 +80,7 @@ class Action_01192 extends CharacterAction
             $gustavo = $this->getOwningCharacter($game->theah);
             $count = $gustavo->ModifiedInfluence;
 
-            $deck = $game->getGameDeckObject();
-            $playerDeckName = $game->getPlayerFactionDeckName($gustavo->ControllerId);
-            $deckCards = $deck->getCardsOnTop($count, $playerDeckName, $gustavo->ControllerId);
+            $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($gustavo->ControllerId, $count);
             $cards = [];
             foreach ($deckCards as $deckCard) {
                 $card = $game->getCardObjectFromDb($deckCard['id']);
@@ -122,9 +119,7 @@ class Action_01192 extends CharacterAction
                 $count = $gustavo->ModifiedInfluence;
             }
 
-            $deck = $game->getGameDeckObject();
-            $playerDeckName = $game->getPlayerFactionDeckName($gustavo->ControllerId);
-            $deckCards = $deck->getCardsOnTop($count, $playerDeckName, $gustavo->ControllerId);
+            $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($gustavo->ControllerId, $count);
 
             $found = false;
             foreach ($deckCards as $deckCard) 

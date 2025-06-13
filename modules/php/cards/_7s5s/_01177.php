@@ -47,8 +47,7 @@ class _01177 extends CityEventCard
         // Get the top 3 cards of the City Deck
         if ($state == States::DUSK_PHASE_BEGIN_01177_2)
         {
-            $deck = $game->getGameDeckObject();
-            $deckCards = $deck->getCardsOnTop(3, Game::LOCATION_CITY_DECK);
+            $deckCards = $game->getCardsOnTopOfCityDeck(3);
             $cards = [];
             foreach ($deckCards as $deckCard) {
                 $card = $game->getCardObjectFromDb($deckCard['id']);
@@ -88,7 +87,7 @@ class _01177 extends CityEventCard
         if ($state == States::DUSK_PHASE_BEGIN_01177_2)
         {
             $deck = $game->getGameDeckObject();
-            $top3Cards = $deck->getCardsOnTop(3, Game::LOCATION_CITY_DECK);
+            $top3Cards = $game->getCardsOnTopOfCityDeck(3);
             $top3Ids = array_map(fn($deckCard) => $deckCard['id'], $top3Cards);
 
             foreach ($ids as $id) 

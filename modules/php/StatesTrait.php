@@ -114,7 +114,7 @@ trait StatesTrait
                 //Remove the debug value                
                 $this->globals->delete(Game::DEBUG_INCLUDE_CITY_CARD);
             } else {
-                $cityCard = $this->cards->getCardOnTop(Game::LOCATION_CITY_DECK);
+                $cityCard = $this->getCardsOnTopOfCityDeck(1)[0];
             }
 
             $this->cards->moveCard($cityCard['id'], $location);
@@ -472,11 +472,11 @@ trait StatesTrait
         list($canClaim, $totals) = $this->canPlayerClaim($claimingPlayerId, $performer);
         if ( ! $canClaim) 
         {
-            $this->notifyPlayer($claimingPlayerId, "message", clienttranslate('Private: You cannot claim the location.  You do not have the most influence. Totals: ${totals}'), [
+            $this->notifyPlayer($claimingPlayerId, "message", clienttranslate('Private: You cannot claim the location. Influence totals: ${totals}'), [
                 "totals" => $totals
             ]);
-            $this->gamestate->nextState("failure");
-            return;
+
+            throw new \BgaUserException(self::_('You cannot claim the location. You do not have the most influence.'));
         }
 
         $claimType = $this->globals->get(Game::CLAIM_TYPE);

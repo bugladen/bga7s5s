@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 
 trait DeckTrait
@@ -149,9 +150,100 @@ trait DeckTrait
         return $cards;
     }
 
-    public function updateCardObjectInDb($card) {
+    public function updateCardObjectInDb($card) 
+    {
         $serialized = addslashes(serialize($card));
         $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $card->Id";
         $this->DbQuery($sql);
+    }
+
+    public function getGameDeckObject() 
+    {
+        return $this->cards;
+    }
+
+    public function getPlayerFactionDeckName($playerId) 
+    {
+        return "Faction-$playerId";
+    }
+
+    public function getPlayerDiscardDeckName($playerId) 
+    {
+        return "Discard-$playerId";
+    }
+
+    public function getPlayerLockerName($playerId) 
+    {
+        return "Locker-$playerId";
+    }
+
+    public function playerDrawCard($playerId): Card
+    {
+        $location = $this->getPlayerFactionDeckName($playerId);
+
+        //If faction deck is empty move cards from player discard to faction deck
+        if ($this->cards->countCardsInLocation($location, $playerId) == 0)
+        {
+            $discardLocation = $this->getPlayerDiscardDeckName($playerId);
+            while($this->cards->countCardsInLocation($discardLocation, $playerId) > 0) 
+            {
+                $cardInfo = $this->cards->getCardOnTop($discardLocation);
+                $this->cards->moveCard($cardInfo['id'], $location);
+                $card = $this->getCardObjectFromDb($cardInfo['id']);
+                $card->Location = $location;
+                $this->updateCardObjectInDb($card);
+            }
+            $this->cards->shuffle($location);
+        }
+
+        $cardInfo = $this->cards->pickCard($location, $playerId);
+        $card = $this->getCardObjectFromDb($cardInfo['id']);
+        $card->ControllerId = $playerId;
+        $card->OwnerId = $playerId;
+        $card->Location = Game::LOCATION_HAND;
+        $this->updateCardObjectInDb($card);
+
+        return $card;
+    }
+
+   
+    public function getCardsOnTopOfCityDeck(int $nbr): Array
+    {
+        if ($this->cards->countCardsInLocation(Game::LOCATION_CITY_DECK) < $nbr)
+        {
+            while($this->cards->countCardsInLocation(Game::LOCATION_CITY_DISCARD) > 0) 
+            {
+                $cardInfo = $this->cards->getCardOnTop(Game::LOCATION_CITY_DISCARD);
+                $this->cards->moveCard($cardInfo['id'], Game::LOCATION_CITY_DECK);
+                $card = $this->getCardObjectFromDb($cardInfo['id']);
+                $card->Location = Game::LOCATION_CITY_DECK;
+                $this->updateCardObjectInDb($card);
+            }
+            $this->cards->shuffle(Game::LOCATION_CITY_DECK);
+        }
+
+        return $this->cards->getCardsOnTop($nbr, Game::LOCATION_CITY_DECK);
+    }
+
+    public function getCardsOnTopOfPlayerFactionDeck($playerId, int $nbr): Array
+    {
+        $location = $this->getPlayerFactionDeckName($playerId);
+
+        //If faction deck is empty move cards from player discard to faction deck
+        if ($this->cards->countCardsInLocation($location) < $nbr)
+        {
+            $discardLocation = $this->getPlayerDiscardDeckName($playerId);
+            while($this->cards->countCardsInLocation($discardLocation) > 0) 
+            {
+                $cardInfo = $this->cards->getCardOnTop($discardLocation);
+                $this->cards->moveCard($cardInfo['id'], $location);
+                $card = $this->getCardObjectFromDb($cardInfo['id']);
+                $card->Location = $location;
+                $this->updateCardObjectInDb($card);
+            }
+            $this->cards->shuffle($location);
+        }
+
+        return $this->cards->getCardsOnTop($nbr, $location);
     }
 }

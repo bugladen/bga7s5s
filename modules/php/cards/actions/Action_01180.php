@@ -37,8 +37,7 @@ class Action_01180 extends CharacterAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $deck = $event->theah->game->getGameDeckObject();
-            $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
+            $deckCards = $event->theah->game->getCardsOnTopOfCityDeck(4);
             $names = [];
             $count = 0;
             foreach ($deckCards as $deckCard) {
@@ -68,8 +67,7 @@ class Action_01180 extends CharacterAction
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180 || $state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
         {
-            $deck = $game->getGameDeckObject();
-            $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
+            $deckCards = $game->getCardsOnTopOfCityDeck(4);
             $cards = [];
             foreach ($deckCards as $deckCard) {
                 $card = $game->getCardObjectFromDb($deckCard['id']);
@@ -118,8 +116,7 @@ class Action_01180 extends CharacterAction
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
         {
-            $deck = $game->getGameDeckObject();
-            $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
+            $deckCards = $game->getCardsOnTopOfCityDeck(4);
 
             $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to Equip any Artifacts.'), [
                 "player_name" => $game->getActivePlayerName(),
@@ -144,8 +141,7 @@ class Action_01180 extends CharacterAction
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
         {
-            $deck = $game->getGameDeckObject();
-            $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
+            $deckCards = $game->getCardsOnTopOfCityDeck(4);
 
             $found = false;
             foreach ($deckCards as $deckCard) 
@@ -259,9 +255,7 @@ class Action_01180 extends CharacterAction
                 'card_name' => $attachment->Name,
             ]);
 
-            $deck = $game->getGameDeckObject();
-
-            $deckCards = $deck->getCardsOnTop(4, Game::LOCATION_CITY_DECK);
+            $deckCards = $game->getCardsOnTopOfCityDeck(4);
             foreach ($deckCards as $deckCard) 
             {
                 $card = $game->getCardObjectFromDb($deckCard['id']);
@@ -283,6 +277,7 @@ class Action_01180 extends CharacterAction
                 $game->theah->queueEvent($event);
             }
     
+            $deck = $game->getGameDeckObject();
             $deck->moveCard($attachment->Id, $performer->Location, $attachment->ControllerId);
     
             $game->gamestate->nextState("artifactEquipped");
