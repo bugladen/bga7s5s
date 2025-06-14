@@ -58,7 +58,7 @@ class Reaction_01203 extends CardReaction
         {
             $leja = $this->getOwningCharacter($event->theah);
 
-            if ($leja->ControllerId != 0)
+            if ($leja->isControlled())
             {
                 $challenger = $event->theah->getCharacterById($event->challengerId);
                 $defender = $event->theah->getCharacterById($event->defenderId);

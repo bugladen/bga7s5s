@@ -24,6 +24,12 @@ class Action_01201 extends CharacterAction
         }
 
         $ravenna = $this->getOwningCard($theah);
+
+        if (! in_array("Sorcerer", $ravenna->Traits))
+        {
+            return false;
+        }
+
         return $theah->cardInCity($ravenna);
     }
 

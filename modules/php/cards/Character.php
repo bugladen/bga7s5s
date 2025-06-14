@@ -305,4 +305,9 @@ abstract class Character extends Card
     {
         return in_array("Mercenary", $this->Traits);
     }
+
+    public function isControlled(): bool
+    {
+        return $this->ControllerId != 0;
+    }
 }

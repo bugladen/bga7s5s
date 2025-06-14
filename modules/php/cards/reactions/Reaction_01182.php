@@ -40,17 +40,20 @@ class Reaction_01182 extends CardReaction
 
         if ($event instanceof EventCardMoved && $this->isAvailable())
         {
-            $ekko = $this->getOwningCard($event->theah);
-            $card = $event->theah->getCardById($event->cardId);
-
-            if ($card instanceof Character && 
-                $event->theah->cardInCity($ekko) &&
-                $ekko->ControllerId != $card->ControllerId && 
-                $ekko->Location == $event->fromLocation)
+            $ekko = $this->getOwningCharacter($event->theah);
+            if ($ekko->isControlled())
             {
-                $this->TargetCharacterId = $event->cardId;
-                $transition = EventFactory::createReactionTransitionEvent($ekko->ControllerId, $ekko->Id, $this->Id);
-                $event->queueEvent($transition);
+                $card = $event->theah->getCardById($event->cardId);
+
+                if ($card instanceof Character && 
+                    $event->theah->cardInCity($ekko) &&
+                    $ekko->ControllerId != $card->ControllerId && 
+                    $ekko->Location == $event->fromLocation)
+                {
+                    $this->TargetCharacterId = $event->cardId;
+                    $transition = EventFactory::createReactionTransitionEvent($ekko->ControllerId, $ekko->Id, $this->Id);
+                    $event->queueEvent($transition);
+                }
             }
         }
     }

@@ -46,28 +46,31 @@ class Reaction_01199 extends CardReaction
         if ($event instanceof EventDuelEnd && $this->isAvailable())
         {
             $takama = $this->getOwningCharacter($event->theah);
-            $challenger = $event->theah->getCharacterById($event->challengerId);
-            $defender = $event->theah->getCharacterById($event->defenderId);
-
-            if ($challenger->Location == $takama->Location && 
-                $takama->ControllerId == $challenger->ControllerId && 
-                $challenger->Wounds > 0)
+            if ($takama->isControlled())
             {
-                $this->TargetCharacterId = $challenger->Id;
-                $takama->IsUpdated = true;
-            }
-            else if ($defender->Location == $takama->Location && 
-                $takama->ControllerId == $defender->ControllerId && 
-                $defender->Wounds > 0)
-            {
-                $this->TargetCharacterId = $defender->Id;
-                $takama->IsUpdated = true;
-            }
-
-            if ($this->TargetCharacterId != 0)
-            {
-                $transition = EventFactory::createReactionTransitionEvent($takama->ControllerId, $takama->Id, $this->Id);
-                $event->queueEvent($transition);
+                $challenger = $event->theah->getCharacterById($event->challengerId);
+                $defender = $event->theah->getCharacterById($event->defenderId);
+    
+                if ($challenger->Location == $takama->Location && 
+                    $takama->ControllerId == $challenger->ControllerId && 
+                    $challenger->Wounds > 0)
+                {
+                    $this->TargetCharacterId = $challenger->Id;
+                    $takama->IsUpdated = true;
+                }
+                else if ($defender->Location == $takama->Location && 
+                    $takama->ControllerId == $defender->ControllerId && 
+                    $defender->Wounds > 0)
+                {
+                    $this->TargetCharacterId = $defender->Id;
+                    $takama->IsUpdated = true;
+                }
+    
+                if ($this->TargetCharacterId != 0)
+                {
+                    $transition = EventFactory::createReactionTransitionEvent($takama->ControllerId, $takama->Id, $this->Id);
+                    $event->queueEvent($transition);
+                }
             }
         }   
         

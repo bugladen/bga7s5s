@@ -48,11 +48,11 @@ class Reaction_01181 extends AttachmentReaction
     {
         parent::handleEvent($event);
 
-        $attachment = $this->getOwningCard($event->theah);
-        if ($event instanceof EventCharacterWounded && $this->ownerIsAttached($event->theah) && $this->isAvailable() && ! $attachment->Engaged)
+        if ($event instanceof EventCharacterWounded && $this->ownerIsAttached($event->theah) && $this->isAvailable())
         {
+            $attachment = $this->getOwningCard($event->theah);
             $character = $event->theah->getCardById($event->characterId);
-            if ($character->Location == $attachment->Location) 
+            if ($character->Location == $attachment->Location && ! $attachment->Engaged) 
             {
                 $this->HealTargetId =  $event->characterId;
                 $attachment->IsUpdated = true;

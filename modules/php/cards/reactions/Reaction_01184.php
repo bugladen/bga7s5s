@@ -37,11 +37,14 @@ class Reaction_01184 extends CardReaction
 
         if ($event instanceof EventClaimOccuring && $this->isAvailable())
         {
-            $claude = $this->getOwningCard($event->theah);
-            if ($event->theah->cardInCity($claude) && $event->location == $claude->Location && $claude->ControllerId)
+            $claude = $this->getOwningCharacter($event->theah);
+            if ($claude->isControlled())
             {
-                $transition = EventFactory::createReactionTransitionEvent($claude->ControllerId, $claude->Id, $this->Id);
-                $event->theah->queueEvent($transition);
+                if ($event->theah->cardInCity($claude) && $event->location == $claude->Location && $claude->ControllerId)
+                {
+                    $transition = EventFactory::createReactionTransitionEvent($claude->ControllerId, $claude->Id, $this->Id);
+                    $event->theah->queueEvent($transition);
+                }
             }
         }
     }
