@@ -453,6 +453,7 @@ trait StatesTrait
     public function stHighDramaPhase() {
         $this->gamestate->changeActivePlayer($this->globals->get(Game::FIRST_PLAYER));
         $this->globals->set(Game::CLAIM_TYPE, Game::NORMAL_CLAIM_TYPE);
+        $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
         $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
@@ -513,7 +514,7 @@ trait StatesTrait
 
     public function stHighDramaRecruitActionParleyable()
     {
-        $id = $this->globals->get(GAME::CHOSEN_CARD);
+        $id = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $card = $this->getCardObjectFromDb($id);
         if ($card instanceof Character)
         {
@@ -1064,6 +1065,7 @@ trait StatesTrait
         $this->globals->delete(GAME::CHOSEN_CARD);
         $this->globals->delete(GAME::CHOSEN_CARD_COST);
         $this->globals->delete(GAME::DISCOUNT);
+        $this->globals->delete(GAME::REVEALED_CARDS);
 
         $this->gamestate->nextState();
     }
@@ -1163,7 +1165,9 @@ trait StatesTrait
         $this->globals->delete(Game::TRANSITION_SOURCE_ID);
         $this->globals->delete(Game::TRANSITION_INTERNAL_ID);
         $this->globals->delete(Game::REACTION_ID);
+        $this->globals->delete(Game::REVEALED_CARDS);
         $this->globals->set(Game::CLAIM_TYPE, Game::NORMAL_CLAIM_TYPE);
+        $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
         $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
@@ -1569,7 +1573,7 @@ trait StatesTrait
         $characters = array_filter($characters, fn($character) => $this->theah->cardInCity($character));
 
         //Only use characters that are controlled (i.e. not mercenaries)
-        $characters = array_filter($characters, fn($character) => $character->ControllerId != 0);
+        $characters = array_filter($characters, fn($character) => $character->isControlled());
 
         foreach ($characters as $character)
         {
@@ -1684,8 +1688,13 @@ trait StatesTrait
         $this->gamestate->nextState();
     }
 
-    public function stEndGame(): void
+    public function stFromCard(): void
     {
+        $this->theah->buildCity();
 
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
+        $card = $this->theah->getCardById($sourceId);
+        $card->stateFromCard($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId);
     }
 }

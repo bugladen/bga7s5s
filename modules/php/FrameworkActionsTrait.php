@@ -731,6 +731,8 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Recruiting is not allowed right now."));
         }
 
+        $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
+
         $this->gamestate->nextState("recruitActionStart");
     }
 
@@ -762,14 +764,14 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Character not in a state to recruit mercenaries."));
         }
 
-        $this->globals->set(GAME::CHOSEN_CARD, $character->Id);
+        $this->globals->set(GAME::CHOSEN_PERFORMER, $character->Id);
 
         $this->gamestate->nextState("performerChosen");
     }
 
     public function actHighDramaRecruitActionParleyYes()
     {
-        $id = $this->globals->get(GAME::CHOSEN_CARD);
+        $id = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $character = $this->getCardObjectFromDb($id);
 
         //Set the discount for recruiting a mercenary.
@@ -791,7 +793,7 @@ trait FrameworkActionsTrait
         $playerId = $this->getActivePlayerId();
         $playerName = $this->getActivePlayerName();
         $discount = $this->globals->get(Game::DISCOUNT);
-        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
         $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);

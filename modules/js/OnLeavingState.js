@@ -486,6 +486,30 @@ onLeavingState: function( stateName )
             }
         },
 
+        'highDramaPhase01035' : () => {
+            //Exposed to all players
+            dojo.addClass('choose_container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+            this.chooseList.setSelectionMode(0);
+        },
+
+        'highDramaPhase01035_3' : () => {
+            //Exposed to all players
+            dojo.addClass('choose_container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+            this.chooseList.setSelectionMode(0);
+        },
+
+        'highDramaPhase01035_4' : () => {
+            //Exposed to all players
+            dojo.addClass('choose_container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+            this.chooseList.setSelectionMode(0);
+        },
+
         'highDramaPhase01180' : () => {
             //Exposed to all players
             dojo.addClass('choose_container', 'hidden');

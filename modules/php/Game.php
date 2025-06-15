@@ -70,6 +70,11 @@ class Game extends \Table
     final const CLAUDE_CLAIM_TYPE = 1;
     final const CAPTAINS_COAT_CLAIM_TYPE = 2;
 
+    //Recruit global variables
+    final const RECRUIT_TYPE = "recruitType";
+    final const NORMAL_RECRUIT_TYPE = 0;
+    final const KASPAR_RECRUIT_TYPE = 1;
+
     //Player action global variables
     //Delete these in stNextPlayer
     final const DISCOUNT = "discount";
@@ -88,6 +93,7 @@ class Game extends \Table
     final const TRANSITION_SOURCE_ID = "transitionSourceId";
     final const TRANSITION_INTERNAL_ID = "transitionInternalId";
     final const REACTION_ID = "reactionId";
+    final const REVEALED_CARDS = "revealedCards";
 
     //Challenge global variables
     final const CHALLENGE_TYPE = "challengeType";

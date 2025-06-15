@@ -77,8 +77,8 @@ return declare('seventhseacityoffivesails.actions', null, {
         };
 
         const clientMessageArray = {
-            'planningPhaseResolveSchemes_01126_2_client': "Leshiye of the Wood: ${you} must choose two other locations to place Reknown onto:",
-            'planningPhaseResolveSchemes_01145_2_client': "Inspire Generosity: ${you} must choose a location to move the Reknown to:",
+            'planningPhaseResolveSchemes_01126_2_client': _("Leshiye of the Wood: ${you} must choose two other locations to place Reknown onto: "),
+            'planningPhaseResolveSchemes_01145_2_client': _("Inspire Generosity: ${you} must choose a location to move the Reknown to: "),
         };
 
         const action = actionMap[this.gamedatas.gamestate.name];
@@ -128,8 +128,8 @@ return declare('seventhseacityoffivesails.actions', null, {
         };
 
         const clientMessages = {
-            'highDramaBeginning_01144_client'                       : "${you} must choose cards from your Faction Hand to pay for selected Mercenary:",
-            'highDramaRecruitActionPayForMercenary_client'          : "${you} are performing a Recruit Action. Choose cards from your Faction Hand to pay for selected Mercenary:",
+            'highDramaBeginning_01144_client'                       : _("${you} must choose cards from your Faction Hand to pay for selected Mercenary: "),
+            'highDramaRecruitActionPayForMercenary_client'          : _("${you} are performing a Recruit Action. Choose cards from your Faction Hand to pay for selected Mercenary: "),
         };
 
         const action = actions[this.gamedatas.gamestate.name];
@@ -240,7 +240,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             if (this.gamedatas.gamestate.name == 'highDramaBeginning_01144_client')
                 this.setClientState('highDramaBeginning_01144',
                     {
-                        'descriptionmyturn' : _("${you} may choose a Mercenary from a City Location to recruit to your home:"),
+                        'descriptionmyturn' : _("${you} may choose a Mercenary from a City Location to recruit to your home: "),
                     })
         });        
     },

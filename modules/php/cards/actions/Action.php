@@ -21,6 +21,8 @@ abstract class Action
     
     public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  { }
 
+    public function stateFromAction(Game $game, int $state, string $stateName): void { }
+
     public function handleEvent(Event $event) { }
 
     public function eventCheck(Event $event) {}

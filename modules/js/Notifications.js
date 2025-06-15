@@ -55,6 +55,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['updateRoundWithCombatStats', 500],
             ['updateRoundThreats', 500],
             ['duelEnd', 500],
+            ['cityDiscardShuffled', 500],
+            ['playerDiscardShuffled', 500],
         ];
 
         notifs.forEach((notif) => {
@@ -389,12 +391,16 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
 
         const card = this.cardProperties[args.cardId];
-        card.location = this.LOCATION_CITY_DISCARD;
+        if (card)
+        {
+            card.location = this.LOCATION_CITY_DISCARD;
 
-        dojo.destroy(card.divId);
-        card.divId = null;
-
-        this.gamedatas.cityDiscard.push(card);
+            dojo.destroy(card.divId);
+            card.divId = null;
+    
+            this.gamedatas.cityDiscard.push(card);
+   
+        }
     },
 
     notif_cardDiscardedFromPlay: function( notif )
@@ -968,6 +974,25 @@ return declare('seventhseacityoffivesails.notifications', null, {
         {
             this.showHandAtBottom();
         }
+    },
+
+    notif_cityDiscardShuffled: function( notif )
+    {
+        debug( 'notif_cityDiscardShuffled' );
+        debug( notif );
+
+        //Clear the city discard pile
+        this.gamedatas.cityDiscard = [];
+    },
+
+    notif_playerDiscardShuffled: function( notif )
+    {
+        debug( 'notif_playerDiscardShuffled' );
+        debug( notif );
+
+        const args = notif.args;
+        const player = this.gamedatas.players[args.playerId];
+        player.discard = [];
     },
 })
 });

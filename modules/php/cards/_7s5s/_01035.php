@@ -2,10 +2,15 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01035;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 
-class _01035 extends Leader
+class _01035 extends Leader implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -35,6 +40,10 @@ class _01035 extends Leader
             "Hero",
             "General",
             "Eisen",
+        ];
+
+        $this->Actions = [
+            new Action_01035(),
         ];
     }
 

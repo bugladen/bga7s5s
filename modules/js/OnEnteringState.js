@@ -822,6 +822,42 @@ onEnteringState: function( stateName, args )
             }
         },
 
+        'highDramaPhase01035' : () => {
+            dojo.removeClass('choose_container', 'hidden');
+            dojo.removeClass('chooseList', 'hidden');
+            
+            args.args.args.cards.forEach((card) => {
+                this.addCardToDeck(this.chooseList, card);
+            });
+
+            var translated = _("Kaspar's Revealed Cards: ");
+            $('choose_container_name').innerHTML = translated;
+            this.chooseList.setSelectionMode(0);
+        },
+
+
+        'highDramaPhase01035_3' : () => {
+            dojo.removeClass('choose_container', 'hidden');
+            dojo.removeClass('chooseList', 'hidden');
+            
+            this.addCardToDeck(this.chooseList, args.args.args.character);
+
+            var translated = _("Kaspar's Revealed Mercenary: ");
+            $('choose_container_name').innerHTML = translated;
+            this.chooseList.setSelectionMode(0);
+        },
+
+        'highDramaPhase01035_4' : () => {
+            dojo.removeClass('choose_container', 'hidden');
+            dojo.removeClass('chooseList', 'hidden');
+            
+            this.addCardToDeck(this.chooseList, args.args.args.character);
+
+            var translated = _("Kaspar's Revealed Mercenary: ");
+            $('choose_container_name').innerHTML = translated;
+            this.chooseList.setSelectionMode(0);
+        },
+
         'highDramaPhase01180' : () => {
             dojo.removeClass('choose_container', 'hidden');
             dojo.removeClass('chooseList', 'hidden');

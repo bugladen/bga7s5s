@@ -408,6 +408,26 @@ onUpdateActionButtons: function( stateName, args )
             }
         },
 
+        'highDramaPhase01035': () => {
+            this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
+        },
+
+        'highDramaPhase01035_3': () => {
+            if (this.isCurrentPlayerActive()) {
+                debugger
+                this.addActionButton(`actRecruit`, _('Recruit'), () => this.bgaPerformAction('actFromCardWithId', {id: 1})) 
+                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {})) 
+            }
+        },
+
+        'highDramaPhase01035_4': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actParley`, _('Parley'), () => this.bgaPerformAction('actFromCardWithId', {id: 1})) 
+                this.addActionButton(`actNoParley`, _('No Parley'), () => this.bgaPerformAction('actFromCardWithId', {id: 0})) 
+            }
+        },
+
         'highDramaPhase01180': () => {
             this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
         },

@@ -19,13 +19,64 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01035 => [
+        "name" => "highDramaPhase01035",
+        "description" => clienttranslate('Your opponent(s) must acknowledge revealed cards.'),
+        "descriptionmyturn" => clienttranslate('Kaspar: ${you} must acknowledge revealed cards:'),
+        "type" => "multipleactiveplayer",
+        "args" => "argsForState",
+        "action" => "stMultiPlayerInit",
+        "possibleactions" => [
+            "actMultipleOk", 
+        ],
+        "transitions" => ["multipleOk" => States::HIGH_DRAMA_PLAYER_TURN_01035_2]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01035_2 => [
+        "name" => "highDramaPhase01035_2",
+        "type" => "game",
+        "action" => "stFromCard",
+        "transitions" => ["" => States::HIGH_DRAMA_PLAYER_TURN_01035_3]
+    ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01035_3 => [
+        "name" => "highDramaPhase01035_3",
+        "description" => clienttranslate('${actplayer} is choosing whether to recruit the revealed mercenary.'),
+        "descriptionmyturn" => clienttranslate('Kaspar: ${you} must choose whether to recruit the revealed mercenary:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actFromCardPass"
+        ],
+        "transitions" => [
+            "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            "recruit" => States::HIGH_DRAMA_PLAYER_TURN_01035_4
+        ]
+    ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01035_4 => [
+        "name" => "highDramaPhase01035_4",
+        "description" => clienttranslate('${actplayer} is choosing whether to parley with the revealed mercenary.'),
+        "descriptionmyturn" => clienttranslate('Kaspar: ${you} must choose whether to parley with the revealed mercenary:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01035_3,
+            "parleyChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01180 => [
         "name" => "highDramaPhase01180",
         "description" => clienttranslate('Your opponent(s) must acknowledge revealed cards.'),
         "descriptionmyturn" => clienttranslate('Kaj Kousei: ${you} must acknowledge revealed cards:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
-        "action" => "stMultiPlayerInit",
+        "action" => "stMultiPlayerInit",    
         "possibleactions" => [
             "actMultipleOk", 
         ],
@@ -159,7 +210,7 @@ $machinestates += [
         "args" => "argsForState",
         "possibleactions" => [
             "actFromCardWithId",
-            "actFromCardPass"
+            "actFromCardPass"   
         ],
         "transitions" => [
             "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
@@ -167,7 +218,7 @@ $machinestates += [
         ]
     ],
 
-    States::HIGH_DRAMA_PLAYER_TURN_01194 => [
+States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "name" => "highDramaPhase01194",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
         "descriptionmyturn" => clienttranslate('${you} must choose an attachment on Adelheide to discard:'),

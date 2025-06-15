@@ -200,9 +200,21 @@ trait DeckTrait
    
     public function getCardsOnTopOfCityDeck(int $nbr): Array
     {
-        if ($this->cards->countCardsInLocation(Game::LOCATION_CITY_DECK) < $nbr)
+        $count = $this->cards->countCardsInLocation(Game::LOCATION_CITY_DECK);
+        if ($count < $nbr)
         {
+            $cards = $this->cards->getCardsOnTop($count, Game::LOCATION_CITY_DECK);
+            $ids = array_map(function($card) { return $card['id']; }, $cards);
+
             $this->shuffleCityDiscardIntoCityDeck();
+
+            //Stick cards already revealed to the top of the deck
+            $ids = array_reverse($ids);
+            //Insert the cards at the top of the deck
+            foreach ($ids as $id)
+            {
+                $this->cards->insertCardOnExtremePosition($id, Game::LOCATION_CITY_DECK, true);
+            }
         }
 
         return $this->cards->getCardsOnTop($nbr, Game::LOCATION_CITY_DECK);
@@ -219,6 +231,8 @@ trait DeckTrait
             $this->updateCardObjectInDb($card);
         }
         $this->cards->shuffle(Game::LOCATION_CITY_DECK);
+
+        $this->notifyAllPlayers("cityDiscardShuffled", clienttranslate('The City Discard Pile has been shuffled into the City Deck.'), []);
     }
 
     public function getCardsOnTopOfPlayerFactionDeck($playerId, int $nbr): Array
@@ -226,9 +240,21 @@ trait DeckTrait
         $location = $this->getPlayerFactionDeckName($playerId);
 
         //If faction deck is empty move cards from player discard to faction deck
-        if ($this->cards->countCardsInLocation($location) < $nbr)
+        $count = $this->cards->countCardsInLocation($location);
+        if ($count < $nbr)
         {
+            $cards = $this->cards->getCardsOnTop($count, $location);
+            $ids = array_map(function($card) { return $card['id']; }, $cards);
+
             $this->shufflePlayerDiscardIntoPlayerFactionDeck($playerId);
+
+            //Stick cards already revealed to the top of the deck
+            $ids = array_reverse($ids);
+            //Insert the cards at the top of the deck
+            foreach ($ids as $id)
+            {
+                $this->cards->insertCardOnExtremePosition($id, $location, true);
+            }
         }
 
         return $this->cards->getCardsOnTop($nbr, $location);
@@ -247,5 +273,10 @@ trait DeckTrait
             $this->updateCardObjectInDb($card);
         }
         $this->cards->shuffle($location);
+
+        $this->notifyAllPlayers("playerDiscardShuffled", clienttranslate('The Discard Pile of ${player_name} has been shuffled into their Faction Deck.'), [
+            'player_name' => $this->getPlayerNameById($playerId),
+            'playerId' => $playerId,
+        ]);
     }
 }

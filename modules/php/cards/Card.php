@@ -110,14 +110,24 @@ abstract class Card
 
     public function actFromCardWithIds(Game $game, int $state, string $stateName, string $actionId, array $ids): void 
     { 
-
         if ($this instanceof IHasActions)
         {
-            $actionId = $game->globals->get(Game::CHOSEN_ACTION);
             $action = $this->getActionById($actionId);
             if ($action)
             {
                 $action->actFromActionWithIds($game, $state, $stateName, $ids);
+            }
+        }
+    }
+
+    public function stateFromCard(Game $game, int $state, string $stateName, string $actionId): void
+    {
+        if ($this instanceof IHasActions)
+        {
+            $action = $this->getActionById($actionId);
+            if ($action)
+            {
+                $action->stateFromAction($game, $state, $stateName);
             }
         }
     }

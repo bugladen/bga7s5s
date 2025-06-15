@@ -194,7 +194,7 @@ trait ArgumentsTrait
 
     public function argsHighDramaRecruitActionParley(): array
     {
-        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
 
         return [
             "performerId" => $performerId,
@@ -203,7 +203,7 @@ trait ArgumentsTrait
 
     public function argsHighDramaRecruitActionChooseMercenary(): array
     {
-        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $discount = $this->globals->get(GAME::DISCOUNT);
 
         return [
