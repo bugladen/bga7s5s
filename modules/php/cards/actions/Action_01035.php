@@ -58,7 +58,9 @@ class Action_01035 extends CharacterAction
             $game->notifyAllPlayers("message", clienttranslate('<strong>Kaspar</strong> is performing his Recruit Action from the City Deck.'), []);
             $deck = $game->getGameDeckObject();
 
-            $cards = $deck->getCardsInLocation(Game::LOCATION_CITY_DECK, null, 'card_location_arg');
+            $count = $deck->countCardInLocation(Game::LOCATION_CITY_DECK);
+            $cards = $game->getCardsOnTopOfCityDeck($count);
+            //$cards = $deck->getCardsInLocation(Game::LOCATION_CITY_DECK, null, 'card_location_arg');
             $revealed = [];
             $names = [];
             $found = false;
@@ -94,7 +96,9 @@ class Action_01035 extends CharacterAction
 
                 $revealed = [];
                 $names = [];
-                $cards = $deck->getCardsInLocation(Game::LOCATION_CITY_DECK, null, 'card_location_arg');
+                $count = $deck->countCardInLocation(Game::LOCATION_CITY_DECK);
+                $cards = $game->getCardsOnTopOfCityDeck($count);    
+                //$cards = $deck->getCardsInLocation(Game::LOCATION_CITY_DECK, null, 'card_location_arg');
                 foreach ($cards as $cardInfo)
                 {
                     $card = $game->getCardObjectFromDb($cardInfo['id']);
@@ -125,6 +129,10 @@ class Action_01035 extends CharacterAction
                 $game->notifyAllPlayers("message", clienttranslate('${mercenary} is the first Mercenary revealed in the City Deck.'), [
                     'mercenary' => $mercenary->Name,
                 ]);
+
+                $addEvent = EventFactory::createCityCardAddedToLocationEvent($mercenary->Id, $kaspar->Location);
+                $event->queueEvent($addEvent);
+    
             }
             else
             {
@@ -154,13 +162,16 @@ class Action_01035 extends CharacterAction
                 $cards[] = $card->getPropertyArray($game);
                 unset($card);
             }
-
             $args['cards'] = $cards;
+
+            $args['kasparId'] = $this->getOwningCharacter($game->theah)->Id;
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01035_3 || 
             $state == States::HIGH_DRAMA_PLAYER_TURN_01035_4)
         {
+            $args['kasparId'] = $this->getOwningCharacter($game->theah)->Id;
+
             $mercenaryId = $game->globals->get(Game::CHOSEN_CARD);
             $mercenary = $game->getCardObjectFromDb($mercenaryId);
             $args['character'] = $mercenary->getPropertyArray($game);
@@ -209,6 +220,11 @@ class Action_01035 extends CharacterAction
             $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to recruit the revealed mercenary.'), [
                 "player_name" => $game->getActivePlayerName(),
             ]);
+
+            $mercenaryId = $game->globals->get(Game::CHOSEN_CARD);
+            $kaspar = $this->getOwningCharacter($game->theah);
+            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($kaspar->ControllerId, $mercenaryId, $kaspar->Location);
+            $game->theah->queueEvent($discardEvent);
 
             $game->gamestate->nextState("pass");
         }
@@ -259,6 +275,8 @@ class Action_01035 extends CharacterAction
             
                 $game->globals->set(Game::DISCOUNT, 0);
             }
+
+            $game->globals->set(Game::CHOSEN_PERFORMER, $kaspar->Id);
 
             $game->gamestate->nextState("parleyChosen");
         }

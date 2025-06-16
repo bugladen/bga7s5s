@@ -839,6 +839,11 @@ onEnteringState: function( stateName, args )
                 this.addCardToDeck(this.chooseList, card);
             });
 
+            card = this.cardProperties[args.args.args.kasparId];
+            let image = $(`${card.divId}_image`);
+            dojo.addClass(image, 'chosen');
+            this.clientStateArgs.kasparId = args.args.args.kasparId;
+
             var translated = _("Kaspar's Revealed Cards: ");
             $('choose_container_name').innerHTML = translated;
             this.chooseList.setSelectionMode(0);

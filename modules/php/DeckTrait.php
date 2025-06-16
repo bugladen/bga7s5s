@@ -182,7 +182,7 @@ trait DeckTrait
         $location = $this->getPlayerFactionDeckName($playerId);
 
         //If faction deck is empty move cards from player discard to faction deck
-        if ($this->cards->countCardsInLocation($location, $playerId) == 0)
+        if ($this->cards->countCardsInLocation($location) == 0)
         {
             $this->shufflePlayerDiscardIntoPlayerFactionDeck($playerId);
         }

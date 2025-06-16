@@ -496,6 +496,10 @@ onLeavingState: function( stateName )
 
         'highDramaPhase01035' : () => {
             //Exposed to all players
+            let card = this.cardProperties[this.clientStateArgs.kasparId];
+            let image = $(`${card.divId}_image`);
+            dojo.removeClass(image, 'chosen');
+
             dojo.addClass('choose_container', 'hidden');
             dojo.addClass('chooseList', 'hidden');
             this.chooseList.removeAll();

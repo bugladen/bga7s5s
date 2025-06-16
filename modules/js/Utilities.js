@@ -23,6 +23,11 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const tabs = document.querySelectorAll('.deck-picker-tab-content');
         tabs.forEach((tab, i) => {
             if (this.selectedDeck === i) {
+                var deckPickerButtons = document.querySelectorAll('.deck-picker-button');
+                deckPickerButtons.forEach((button) => {
+                    button.disabled = true;
+                });
+                
                 const id = tab.getAttribute('id');
                 this.onStarterDeckSelected(id);
             }
@@ -31,7 +36,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     addCardToDeck: function( deck, card )
     {
-        this.cardProperties[card.id] = card;
+        if (!this.cardProperties[card.id])
+            this.cardProperties[card.id] = card;
 
         //Different weight depending on the type. Scheme and attachment cards go first
         const weight = card.type === "Scheme" || card.type === 'Attachment' ? 1 : 2;

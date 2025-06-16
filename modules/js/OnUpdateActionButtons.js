@@ -273,7 +273,8 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaRecruitActionPayForMercenary': () => {
-            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            if (args.recruitType == 0)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onRecruitCharacterConfirmed());
         },
 

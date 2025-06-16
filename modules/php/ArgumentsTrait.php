@@ -216,12 +216,13 @@ trait ArgumentsTrait
     {
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $recruitId = $this->globals->get(GAME::CHOSEN_CARD);
-        $discount = $this->globals->get(GAME::DISCOUNT);
+        $discount = $this->globals->get(GAME::DISCOUNT);        
 
         return [
             "performerId" => $performerId,
             "recruitId" => $recruitId,
             "discount" => $discount,
+            "recruitType" => $this->globals->get(Game::RECRUIT_TYPE)
         ];
     }
 

@@ -52,9 +52,9 @@ var jstpl_deck_picker = `
     </div>
 
     <div class="deck-picker-tab-buttons">
-      <button onclick="gameui.deckPickerShowTab(1)">Eisen</button>
-      <button onclick="gameui.deckPickerShowTab(2)">Montaigne</button>
-      <button id="btnDeckSelect" disabled onclick="gameui.deckPickerDeckSelected()">\${select_description}</button>
+      <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(1)">Eisen</button>
+      <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(2)">Montaigne</button>
+      <button id="btnDeckSelect" class="deck-picker-button" disabled onclick="gameui.deckPickerDeckSelected()">\${select_description}</button>
     </div>
   </div>
 </div>

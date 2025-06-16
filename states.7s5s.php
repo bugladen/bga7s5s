@@ -66,7 +66,7 @@ $machinestates += [
         ],
         "transitions" => [
             "back" => States::HIGH_DRAMA_PLAYER_TURN_01035_3,
-            "parleyChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+            "parleyChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY
         ]
     ],
 
