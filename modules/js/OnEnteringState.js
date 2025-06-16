@@ -516,20 +516,29 @@ onEnteringState: function( stateName, args )
             }
         },
 
-        'highDramaRecruitActionPayForMercenary_client': () => {
-            const card = this.cardProperties[this.clientStateArgs.selectedCards[0]];
-            const image = $(`${card.divId}_image`);
-            dojo.addClass(image, 'chosen');
-
-            const cost = $(`${card.divId}_wealth_cost`);
-            let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
-            discountedCost = discountedCost < 0 ? 0 : discountedCost;
-            this.clientStateArgs.discountedCost = discountedCost;
-            cost.innerHTML = parseInt(discountedCost);
-            dojo.addClass(cost, 'discounted-wealth-cost');
-
-            this.showHandAtTop();
-            this.factionHand.setSelectionMode(2);
+        'highDramaRecruitActionPayForMercenary': () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                let card = this.cardProperties[args.args.performerId];
+                let image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.performerId = card.id;
+    
+                card = this.cardProperties[args.args.recruitId];
+                image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.recruitId = card.id;
+    
+                const cost = $(`${card.divId}_wealth_cost`);
+                let discountedCost = parseInt(cost.innerHTML) - args.args.discount;
+                discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                this.clientStateArgs.discountedCost = discountedCost;
+                cost.innerHTML = parseInt(discountedCost);
+                dojo.addClass(cost, 'discounted-wealth-cost');
+    
+                this.showHandAtTop();
+                this.factionHand.setSelectionMode(2);
+            }
         },    
 
         'highDramaInPlayActionChoosePerformer' : () => {

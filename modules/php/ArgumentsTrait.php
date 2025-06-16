@@ -207,9 +207,21 @@ trait ArgumentsTrait
         $discount = $this->globals->get(GAME::DISCOUNT);
 
         return [
-            "discount" => $discount,
-            "withWithout" => $discount > 0 ? "WITH" : "WITHOUT",
             "performerId" => $performerId,
+            "discount" => $discount,
+        ];
+    }
+
+    public function argsHighDramaRecruitActionPayForMercenary(): array
+    {
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $recruitId = $this->globals->get(GAME::CHOSEN_CARD);
+        $discount = $this->globals->get(GAME::DISCOUNT);
+
+        return [
+            "performerId" => $performerId,
+            "recruitId" => $recruitId,
+            "discount" => $discount,
         ];
     }
 

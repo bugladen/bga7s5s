@@ -272,12 +272,8 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
-        'highDramaRecruitActionPayForMercenary_client': () => {
-            this.addActionButton(`actBack`, '<', () => 
-                this.setClientState('highDramaRecruitActionChooseMercenary',
-                    {
-                        'descriptionmyturn' : _("${you} are performing a Recruit Action.  Choose a Mercenary to recruit:"),
-                    }));
+        'highDramaRecruitActionPayForMercenary': () => {
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onRecruitCharacterConfirmed());
         },
 
@@ -414,7 +410,6 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaPhase01035_3': () => {
             if (this.isCurrentPlayerActive()) {
-                debugger
                 this.addActionButton(`actRecruit`, _('Recruit'), () => this.bgaPerformAction('actFromCardWithId', {id: 1})) 
                 this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {})) 
             }

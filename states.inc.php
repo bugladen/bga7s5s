@@ -1649,10 +1649,26 @@ $machinestates = [
                     "actBack",
                 ],
                 "transitions" => [
-                    "mercenaryChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
-                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
+                    "mercenaryChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY, 
+                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_PARLEY
                 ]
             ],
+            States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY => [
+                "name" => "highDramaRecruitActionPayForMercenary",
+                "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+                "descriptionmyturn" => clienttranslate('${you} are performing a Recruit Action. Choose cards from your Faction Hand to pay for selected Mercenary: '),
+                "type" => "activeplayer",
+                "args" => "argsHighDramaRecruitActionPayForMercenary",
+                "possibleactions" => [
+                    "actHighDramaRecruitActionPayForMercenary", 
+                    "actBack",
+                ],
+                "transitions" => [
+                    "mercenaryPaidFor" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
+                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY
+                ]
+            ],
+
             States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION => [
                 "name" => "highDramaInPlayActionChooseAction",
                 "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

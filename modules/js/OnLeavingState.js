@@ -247,17 +247,25 @@ onLeavingState: function( stateName )
             }
         },
 
-        'highDramaRecruitActionPayForMercenary_client': () => {
-            this.showHandAtBottom();
-            this.factionHand.setSelectionMode(0);
-            const card = this.cardProperties[this.clientStateArgs.performerId];
-            const image = $(`${card.divId}_image`);
-            this.clearCardAsSelectable(image)
-            $('faction_hand_info').innerHTML = '';
-
-            const cost = $(`${card.divId}_wealth_cost`);
-            cost.innerHTML = card.wealthCost;
-            dojo.removeClass(cost, 'discounted-wealth-cost');
+        'highDramaRecruitActionPayForMercenary': () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.showHandAtBottom();
+                this.factionHand.setSelectionMode(0);
+                let card = this.cardProperties[this.clientStateArgs.performerId];
+                let image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image)
+    
+                card = this.cardProperties[this.clientStateArgs.recruitId];
+                image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image)
+    
+                $('faction_hand_info').innerHTML = '';
+    
+                const cost = $(`${card.divId}_wealth_cost`);
+                cost.innerHTML = card.wealthCost;
+                dojo.removeClass(cost, 'discounted-wealth-cost');
+            }                
         },
 
         'highDramaInPlayActionChoosePerformer' : () => {

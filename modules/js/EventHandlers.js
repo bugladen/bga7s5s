@@ -156,7 +156,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
             },
 
-            'highDramaRecruitActionPayForMercenary_client': () => {
+            'highDramaRecruitActionPayForMercenary': () => {
                 var items = this.factionHand.getSelectedItems();
                 let wealth = 0;
                 items.forEach((item) => {

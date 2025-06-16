@@ -787,12 +787,10 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("parleyChosen");
     }
 
-    public function actHighDramaRecruitActionMercenaryChosen(int $recruitId, string $payWithCards)
+    public function actHighDramaRecruitActionMercenaryChosen(string $ids)
     {
         $this->theah->buildCity();
-        $playerId = $this->getActivePlayerId();
-        $playerName = $this->getActivePlayerName();
-        $discount = $this->globals->get(Game::DISCOUNT);
+        $recruitId = json_decode($ids, true)[0];
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
@@ -801,7 +799,22 @@ trait FrameworkActionsTrait
         $mercenaryIds = array_map(function($character) { return $character->Id; }, $mercenariesAtLocation);
         if (!in_array($recruitId, $mercenaryIds)) {
             throw new \BgaUserException(self::_("Chosen character is not a Mercenary at the Performer's Location."));
-        }        
+        }
+
+        $this->globals->set(GAME::CHOSEN_CARD, $recruitId);
+
+        $this->gamestate->nextState("mercenaryChosen");
+    }
+
+    public function actHighDramaRecruitActionPayForMercenary(string $payWithCards)
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+        $playerName = $this->getActivePlayerName();
+        $discount = $this->globals->get(Game::DISCOUNT);
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $recruitId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performer = $this->theah->getCharacterById($performerId);
 
         $this->notifyAllPlayers("message", clienttranslate('${player_name} chose <strong>${card_name}</strong> to perform a Recruit Action.'), [
             'i18n' => ['card_name'],
@@ -824,7 +837,7 @@ trait FrameworkActionsTrait
 
         $this->actRecruitMercenary($recruitId, $payWithCards);
         $this->globals->set(GAME::PASS_COUNT, 0);
-        $this->gamestate->nextState("mercenaryChosen");
+        $this->gamestate->nextState("mercenaryPaidFor");
     }
 
     public function actHighDramaEquipActionStart()

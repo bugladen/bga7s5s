@@ -117,7 +117,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaInPlayActionChoosePerformer'                  : 'actHighDramaInPlayActionPerformerChosen',  
             'highDramaInHandActionChoosePerformer'                  : 'actHighDramaInHandActionPerformerChosen',  
             'highDramaRecruitActionChoosePerformer'                 : 'actHighDramaRecruitActionPerformerChosen',
-            'highDramaRecruitActionChooseMercenary'                 : 'highDramaRecruitActionPayForMercenary_client',
+            'highDramaRecruitActionChooseMercenary'                 : 'actHighDramaRecruitActionMercenaryChosen',
             'highDramaEquipActionChoosePerformer'                   : 'actHighDramaEquipActionPerformerChosen',
             'highDramaEquipActionChooseAttachmentFromPlay'          : 'actHighDramaEquipActionAttachmentFromPlaySelected',
             'highDramaClaimActionChoosePerformer'                   : 'actHighDramaClaimActionPerformerChosen',
@@ -129,7 +129,6 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const clientMessages = {
             'highDramaBeginning_01144_client'                       : _("${you} must choose cards from your Faction Hand to pay for selected Mercenary: "),
-            'highDramaRecruitActionPayForMercenary_client'          : _("${you} are performing a Recruit Action. Choose cards from your Faction Hand to pay for selected Mercenary: "),
         };
 
         const action = actions[this.gamedatas.gamestate.name];
@@ -229,20 +228,29 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const actionArray = {
             'highDramaBeginning_01144_client'               : 'actHighDramaBeginning_01144',
-            'highDramaRecruitActionPayForMercenary_client'  : 'actHighDramaRecruitActionMercenaryChosen',
+            'highDramaRecruitActionPayForMercenary'         : 'actHighDramaRecruitActionPayForMercenary',
         };
 
         const action = actionArray[this.gamedatas.gamestate.name];
-        this.bgaPerformAction(action, { 
-            'recruitId': this.clientStateArgs.selectedCards[0],
-            'payWithCards': JSON.stringify(items),
-        }).catch(() =>  {
-            if (this.gamedatas.gamestate.name == 'highDramaBeginning_01144_client')
-                this.setClientState('highDramaBeginning_01144',
-                    {
-                        'descriptionmyturn' : _("${you} may choose a Mercenary from a City Location to recruit to your home: "),
-                    })
-        });        
+        switch (action) {
+            case 'actHighDramaRecruitActionPayForMercenary':
+                this.bgaPerformAction(action, { 
+                    'payWithCards': JSON.stringify(items),
+                });
+                break;
+                case 'actHighDramaBeginning_01144':
+                    this.bgaPerformAction(action, { 
+                    'recruitId': this.clientStateArgs.selectedCards[0],
+                    'payWithCards': JSON.stringify(items),
+                }).catch(() =>  {
+                    if (this.gamedatas.gamestate.name == 'highDramaBeginning_01144_client')
+                        this.setClientState('highDramaBeginning_01144',
+                            {
+                                'descriptionmyturn' : _("${you} may choose a Mercenary from a City Location to recruit to your home: "),
+                            })
+                });        
+                break;
+        }
     },
 
     onActionCardFromHandPaymentConfirmed: function()
