@@ -4,7 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-abstract class EventCityAction extends CardAction
+abstract class CityAction extends CardAction
 {
     public function __construct()
     {

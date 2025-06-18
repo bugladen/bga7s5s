@@ -25,7 +25,7 @@ abstract class CardAction extends Action
         }
 
         $card = $this->getOwningCard($theah);
-        if ($card->ControllerId != $playerId && ! $card instanceof EventCityAction)
+        if ($card->ControllerId != $playerId && ! $card instanceof CityAction)
         {
             return false;
         }
