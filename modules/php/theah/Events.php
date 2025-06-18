@@ -13,6 +13,7 @@ class Events
     const PhasePlanningBeginning = 'EventPhasePlanningBeginning';
     const PhasePlanningEnd = 'EventPhasePlanningEnd';
     const PhaseHighDrama = 'EventPhaseHighDrama';
+    const PlayerTurnEnd = 'EventPlayerTurnEnd';
 
     //Planning Phase Events
     const ApproachCharacterPlayed = 'EventApproachCharacterPlayed';

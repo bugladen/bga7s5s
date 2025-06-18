@@ -1174,8 +1174,10 @@ trait StatesTrait
 
         $currentPlayerId = $this->globals->get(Game::CURRENT_PLAYER);
         $nextPlayerId = $this->getPlayerAfter($currentPlayerId);
-        $this->gamestate->changeActivePlayer($nextPlayerId);
         $this->globals->set(Game::CURRENT_PLAYER, $nextPlayerId);
+
+        $event = EventFactory::createPlayerTurnEndEvent($currentPlayerId);
+        $this->theah->queueEvent($event);
         
         $this->gamestate->nextState("nextPlayer");
     }

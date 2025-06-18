@@ -32,6 +32,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocatio
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventClaimOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
@@ -380,6 +381,17 @@ class EventFactory
             $event->ownerId = $ownerId;
             $event->maneuverId = $maneuverId;
             $event->used = $used;
+        }
+
+        return $event;
+    }
+
+    public static function createPlayerTurnEndEvent(int $playerId): EventPlayerTurnEnd
+    {
+        $event = self::createEvent(Events::PlayerTurnEnd);
+        if ($event instanceof EventPlayerTurnEnd)
+        {
+            $event->playerId = $playerId;
         }
 
         return $event;

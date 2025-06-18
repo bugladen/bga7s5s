@@ -217,7 +217,11 @@ class States
         const DUEL_END_PAY_FOR_REACTION = 542;
     
     const NEXT_PLAYER = 59;
-    
+        const NEXT_PLAYER_EVENTS = 590;
+        const NEXT_PLAYER_REACTIONS = 591;
+        const NEXT_PLAYER_PAY_FOR_REACTION = 592;
+    const NEXT_PLAYER_SET_CURRENT_PLAYER = 593;
+
     const HIGH_DRAMA_END = 60;
         const HIGH_DRAMA_END_EVENTS = 600;
         const HIGH_DRAMA_END_REACTIONS = 601;

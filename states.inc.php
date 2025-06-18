@@ -2230,11 +2230,57 @@ $machinestates = [
         "action" => "stNextPlayer",
         "updateGameProgression" => true,
         "transitions" => [
-            "nextPlayer" => States::HIGH_DRAMA_PLAYER_TURN,
+            "nextPlayer" => States::NEXT_PLAYER_EVENTS,
             "endOfGame" => States::END_GAME
             ]
         ],
-        
+        States::NEXT_PLAYER_EVENTS => [
+            "name" => "nextPlayerEvents",
+            "description" => clienttranslate("Resolving Events for end of Player Turn..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "reaction" => States::NEXT_PLAYER_REACTIONS,
+                "endOfEvents" => States::NEXT_PLAYER_SET_CURRENT_PLAYER,
+                "endOfGame" => States::END_GAME
+                ]
+        ],
+        States::NEXT_PLAYER_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actReactionForState", 
+            ],
+            "transitions" => [
+                "done" => States::NEXT_PLAYER_EVENTS, 
+                "pay" => States::NEXT_PLAYER_PAY_FOR_REACTION,
+            ]
+        ],
+        States::NEXT_PLAYER_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::NEXT_PLAYER_REACTIONS, 
+                "paid" => States::NEXT_PLAYER_EVENTS, 
+            ]
+        ],
+    States::NEXT_PLAYER_SET_CURRENT_PLAYER => [
+        "name" => "nextPlayerSetCurrentPlayer",
+        "type" => "game",
+        "action" => "stSetCurrentPlayer",
+        "transitions" => ["" => States::HIGH_DRAMA_PLAYER_TURN]
+    ],
+            
     States::HIGH_DRAMA_END => [
         "name" => "highDramaEnd",
         "type" => "game",
