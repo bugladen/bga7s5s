@@ -136,6 +136,7 @@ class Action_01035 extends CharacterAction
             }
             else
             {
+                $game->globals->delete(Game::CHOSEN_CARD);
                 $game->notifyAllPlayers("message", clienttranslate('No mercenary was found in the City Deck.'), []);
             }
 
@@ -205,10 +206,17 @@ class Action_01035 extends CharacterAction
             }
         }
 
-        $currentPlayerId = $game->globals->get(Game::CURRENT_PLAYER);
-        $game->gamestate->changeActivePlayer($currentPlayerId);
-
-        $game->gamestate->nextState("");
+        $mercenaryId = $game->globals->get(Game::CHOSEN_CARD);
+        if ($mercenaryId)
+        {
+            $currentPlayerId = $game->globals->get(Game::CURRENT_PLAYER);
+            $game->gamestate->changeActivePlayer($currentPlayerId);   
+            $game->gamestate->nextState("found");
+        }
+        else
+        {
+            $game->gamestate->nextState("notFound");
+        }
     }
 
     public function actFromActionPass(Game $game, int $state): void

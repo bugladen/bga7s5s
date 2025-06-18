@@ -35,7 +35,10 @@ $machinestates += [
         "name" => "highDramaPhase01035_2",
         "type" => "game",
         "action" => "stFromCard",
-        "transitions" => ["" => States::HIGH_DRAMA_PLAYER_TURN_01035_3]
+        "transitions" => [
+            "found" => States::HIGH_DRAMA_PLAYER_TURN_01035_3, 
+            "notFound" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
     ],
 
     States::HIGH_DRAMA_PLAYER_TURN_01035_3 => [
