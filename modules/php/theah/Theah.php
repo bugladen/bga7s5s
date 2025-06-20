@@ -508,6 +508,16 @@ class Theah
         return $discount;
     }
 
+    function getParleyDiscount(Character $performer, bool $parleying): int
+    {
+        $discount = 0;
+        foreach ($this->cards as $card) {
+            $discount += $card->getParleyDiscount($performer, $parleying);
+        }
+
+        return $discount;
+    }
+
     function getInPlayActionsAvailableToPlayer($playerId)
     {
         $actionsArray = [];

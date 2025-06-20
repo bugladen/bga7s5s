@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01035;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 
@@ -47,9 +48,16 @@ class _01035 extends Leader implements IHasActions
         ];
     }
 
-    public function getParleyDiscount(bool $parleying) : int
+    public function getParleyDiscount(Character $performer, bool $parleying) : int
     {
-        return parent::getParleyDiscount($parleying) + 2;
+        $discount = parent::getParleyDiscount($performer, $parleying);
+
+        if ($performer->Id == $this->Id && $parleying)
+        {
+            $discount += 2;
+        }
+
+        return $discount;
     }
 
 }

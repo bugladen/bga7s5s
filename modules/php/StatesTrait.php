@@ -514,20 +514,18 @@ trait StatesTrait
 
     public function stHighDramaRecruitActionParleyable()
     {
+        $this->theah->buildCity();
         $id = $this->globals->get(GAME::CHOSEN_PERFORMER);
-        $card = $this->getCardObjectFromDb($id);
-        if ($card instanceof Character)
+        $performer = $this->theah->getCharacterById($id);
+        if ($performer->Engaged)
         {
-            if ($card->Engaged)
-            {
-                //Discount might have special abilities above parleying
-                $discount = $card->getParleyDiscount(false);
-                $this->globals->set(Game::DISCOUNT, $discount);
-                $this->gamestate->nextState("notParleyable");
-            }
-            else
-                $this->gamestate->nextState("parleyable");
+            //Discount might have special abilities above parleying
+            $discount = $this->theah->getParleyDiscount($performer, false);
+            $this->globals->set(Game::DISCOUNT, $discount);
+            $this->gamestate->nextState("notParleyable");
         }
+        else
+            $this->gamestate->nextState("parleyable");
     }
 
     public function stTechniqueAvailable()

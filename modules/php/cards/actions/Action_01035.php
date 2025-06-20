@@ -271,7 +271,7 @@ class Action_01035 extends CharacterAction
                 ]);
 
                 //Set the discount for recruiting a mercenary.
-                $discount = $kaspar->getParleyDiscount(true);
+                $discount = $game->theah->getParleyDiscount($kaspar, true);
                 $game->globals->set(Game::DISCOUNT, $discount);
             }
             else

@@ -13,11 +13,12 @@ onUpdateActionButtons: function( stateName, args )
     if (stateName === 'pickDecks') {
         if(this.isCurrentPlayerActive())
         {
+            args.availableDecks.forEach(
+                (deck) => { this.addActionButton(`actPickDeck${deck.id}-btn`, _(deck.name), () => this.onStarterDeckSelected(deck.id)) }
+            );
+    
             if ( ! document.getElementById('deck-picker'))
             {
-                args.availableDecks.forEach(
-                    (deck) => { this.addActionButton(`actPickDeck${deck.id}-btn`, _(deck.name), () => this.onStarterDeckSelected(deck.id)) }
-                );
                 dojo.addClass('city', 'hidden');
                 dojo.addClass('approachDeck-container', 'hidden');
                 dojo.addClass('factionHand-container', 'hidden');

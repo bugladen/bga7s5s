@@ -2,16 +2,21 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction_01045;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
-class _01045 extends Scheme
+class _01045 extends Scheme implements IHasReactions
 {
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -30,6 +35,21 @@ class _01045 extends Scheme
             "Bargain", 
             "Prepared",
         ];
+
+        $this->Reactions = [
+            new Reaction_01045(),
+        ];
+    }
+
+    public function getParleyDiscount(Character $performer, bool $parleying) : int
+    {
+        $discount = parent::getParleyDiscount($performer, $parleying);
+        if ($this->Location == Game::LOCATION_PLAYER_HOME && $parleying && $performer->ControllerId == $this->ControllerId && $performer instanceof Leader)
+        {
+            $discount += 1;
+        }
+
+        return $discount;
     }
 
     public function handleEvent(Event $event)
@@ -45,21 +65,11 @@ class _01045 extends Scheme
                 "player_name" => $event->theah->game->getPlayerNameById($event->playerId),
             ]);
 
-            $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($reknown instanceof EventReknownAddedToLocation) {
-                $reknown->playerId = $this->ControllerId;
-                $reknown->location = Game::LOCATION_CITY_FORUM;
-                $reknown->amount = 1;
-                $reknown->source = $this->Name;
-            }
+            $reknown = EventFactory::createReknownAddedToLocationEvent($event->playerId, Game::LOCATION_CITY_FORUM, 1, $this->Name);
             $event->theah->queueEvent($reknown);
 
             //Transition to the state where player can choose a mercenary out of the City Deck discard pile
-            $transition = $event->theah->createEvent(Events::Transition);
-            if ($transition instanceof EventTransition) {
-                $transition->playerId = $event->playerId;
-                $transition->transition = '01045';
-            }
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, '01045');
             $event->theah->queueEvent($transition);
         }
     }

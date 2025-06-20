@@ -749,11 +749,12 @@ trait FrameworkActionsTrait
 
     public function actHighDramaRecruitActionParleyYes()
     {
+        $this->theah->buildCity();
         $id = $this->globals->get(GAME::CHOSEN_PERFORMER);
-        $character = $this->getCardObjectFromDb($id);
+        $character = $this->theah->getCharacterById($id);
 
         //Set the discount for recruiting a mercenary.
-        $discount = $character->getParleyDiscount(true);
+        $discount = $this->theah->getParleyDiscount($character, true);
         $this->globals->set(Game::DISCOUNT, $discount);
 
         $this->gamestate->nextState("parleyChosen");
@@ -761,7 +762,12 @@ trait FrameworkActionsTrait
 
     public function actHighDramaRecruitActionParleyNo()
     {
-        $this->globals->set(Game::DISCOUNT, 0);
+        $this->theah->buildCity();
+        $id = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $character = $this->theah->getCharacterById($id);
+
+        $discount = $this->theah->getParleyDiscount($character, false);
+        $this->globals->set(Game::DISCOUNT, $discount);
         $this->gamestate->nextState("parleyChosen");
     }
 

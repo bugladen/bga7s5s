@@ -77,9 +77,15 @@ abstract class Character extends Card
         return false;
     }
 
-    public function getParleyDiscount(bool $parleying) : int
+    public function getParleyDiscount(Character $performer, bool $parleying) : int
     {
-        return $parleying ? $this->ModifiedInfluence : 0;
+        $discount = parent::getParleyDiscount($performer, $parleying);
+        if ($performer->Id == $this->Id && $parleying)
+        {
+            $discount += $this->ModifiedInfluence;
+        }
+
+        return $discount;
     }
 
     public function getActionFromHandDiscount(Theah $theah, Character $performer): int
