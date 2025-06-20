@@ -1158,6 +1158,7 @@ trait StatesTrait
         $this->globals->delete(GAME::CHOSEN_CARD_COST);
         $this->globals->delete(GAME::CHOSEN_LOCATION);
         $this->globals->delete(GAME::CHOSEN_PERFORMER);
+        $this->globals->delete(GAME::CHOSEN_ATTACHMENT);
         $this->globals->delete(GAME::CHOSEN_ACTION);
         $this->globals->delete(GAME::CHOSEN_TARGET);
         $this->globals->delete(GAME::CHOSEN_TECHNIQUE);

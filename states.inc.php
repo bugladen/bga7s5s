@@ -591,18 +591,6 @@ $machinestates = [
                 ],
                 "transitions" => ["multipleOk" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
             ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01044 => [
-                "name" => "planningPhaseResolveSchemes_01044",
-                "description" => clienttranslate('Armed and Marshaled: ${actplayer} must choose an Attachment from your discard pile if able.'),
-                "descriptionmyturn" => clienttranslate('Armed and Marshaled: ${you} must choose an Attachment from your discard pile if able:'),
-                "type" => "activeplayer",
-                "args" => "argsEmpty",
-                "possibleactions" => [
-                    "actPlanningPhase_01044", 
-                    "actPass"
-                ],
-                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-            ],
             States::PLANNING_PHASE_RESOLVE_SCHEMES_01045 => [
                 "name" => "planningPhaseResolveSchemes_01045",
                 "description" => clienttranslate('The Song of Eisen: ${actplayer} must choose a Mercenary from the City Deck discard pile if able.'),
@@ -1003,6 +991,7 @@ $machinestates = [
             "transitions" => [
                 "01029" => States::HIGH_DRAMA_PLAYER_TURN_01029,
                 "01035" => States::HIGH_DRAMA_PLAYER_TURN_01035,
+                "01044" => States::HIGH_DRAMA_PLAYER_TURN_01044,
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
                 "01187" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION,
                 "01185" => States::HIGH_DRAMA_PLAYER_TURN_01185,
@@ -1688,7 +1677,7 @@ $machinestates = [
             States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER => [
                 "name" => "highDramaInPlayActionChoosePerformer",
                 "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-                "descriptionmyturn" => clienttranslate('${you} must choose a performer to perform an In-Play Action:'),
+                "descriptionmyturn" => clienttranslate('${you} must choose a performer for the chosen In-Play Action:'),
                 "type" => "activeplayer",
                 "args" => "argsHighDramaInPlayActionChoosePerformer",
                 "possibleactions" => [

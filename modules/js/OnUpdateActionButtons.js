@@ -424,10 +424,33 @@ onUpdateActionButtons: function( stateName, args )
             }
         },
 
+        'highDramaPhase01044': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            }
+        },
+        'highDramaPhase01044_2': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
+        },
+        'highDramaPhase01044_3': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                if ( ! args.args.engaged)
+                    this.addActionButton(`actEngage`, _('Engage'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actSendHome`, _('Send Home'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            }
+        },
+
         'highDramaPhase01180': () => {
             this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
         },
-
         'highDramaPhase01180_3': () => {
             if (this.isCurrentPlayerActive()) {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
@@ -435,7 +458,6 @@ onUpdateActionButtons: function( stateName, args )
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }
         },
-
         'highDramaPhase01180_4': () => {
             if (this.isCurrentPlayerActive()) {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
@@ -443,7 +465,6 @@ onUpdateActionButtons: function( stateName, args )
                 dojo.addClass('actChooseCardSelected', 'disabled');
             }
         },
-
         'highDramaPhase01180_5': () => {
             if (this.isCurrentPlayerActive()) {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));

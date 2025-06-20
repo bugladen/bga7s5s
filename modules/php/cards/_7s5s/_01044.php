@@ -2,16 +2,20 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01044;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
-class _01044 extends Scheme
+class _01044 extends Scheme implements IHasActions
 {
+    use ActionTrait;
+    
     public function __construct()
     {
         parent::__construct();
@@ -30,6 +34,10 @@ class _01044 extends Scheme
             "Duress", 
             "Logistics",
         ];
+
+        $this->Actions = [
+            new Action_01044(),
+        ];
     }
 
     public function handleEvent(Event $event)
@@ -46,31 +54,50 @@ class _01044 extends Scheme
                 "player_name" => $event->theah->game->getPlayerNameById($event->playerId),
             ]);
 
-            $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($reknown instanceof EventReknownAddedToLocation) {
-                $reknown->playerId = $this->ControllerId;
-                $reknown->location = Game::LOCATION_CITY_DOCKS;
-                $reknown->amount = 1;
-                $reknown->source = $this->Name;
-            }
+            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_DOCKS, 1, $this->Name);
             $event->theah->queueEvent($reknown);
-
-            $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($reknown instanceof EventReknownAddedToLocation) {
-                $reknown->playerId = $this->ControllerId;
-                $reknown->location = Game::LOCATION_CITY_BAZAAR;
-                $reknown->amount = 1;
-                $reknown->source = $this->Name;
-            }
+            
+            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->Name);
             $event->theah->queueEvent($reknown);
 
             //Transition to the state where player can choose an item out of their discard pile
-            $transition = $event->theah->createEvent(Events::Transition);
-            if ($transition instanceof EventTransition) {
-                $transition->playerId = $event->playerId;
-                $transition->transition = '01044';
-            }
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, '01044');
             $event->theah->queueEvent($transition);
+        }
+    }
+
+    public function actFromCardWithId(Game $game, int $state, string $stateName, string $actionId, int $id): void
+    {
+        parent::actFromCardWithId($game, $state, $stateName, $actionId, $id);
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01044)
+        {
+            $playerId = $game->getActivePlayerId();
+            $card = $game->getCardObjectFromDb($id);
+            if (! $card)
+            {
+                throw new \BgaUserException($game->translate("Invalid card"));
+            }
+
+            //Make sure the card is in the discard pile
+            $deck = $game->getGameDeckObject($playerId);
+            $discardPileName = $game->getPlayerDiscardDeckName($playerId);
+            $cardObjects = $deck->getCardsInLocation($discardPileName);
+            if (! in_array($card->Id, array_column($cardObjects, 'id')))
+            {
+                throw new \BgaUserException($game->translate("Card is not in the discard pile"));
+            }
+    
+            $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($playerId, $card->Id);
+            $game->theah->eventCheck($removeEvent);
+    
+            $addEvent = EventFactory::createCardAddedToHandEvent($playerId, $card->Id);
+            $game->theah->eventCheck($addEvent);
+    
+            $game->theah->queueEvent($removeEvent);
+            $game->theah->queueEvent($addEvent);
+    
+            $game->gamestate->nextState("");
         }
     }
 }

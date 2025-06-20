@@ -550,6 +550,7 @@ onEnteringState: function( stateName, args )
                     const image = $(`${card.divId}_image`);
                     dojo.addClass(image, 'chosen');
                 }
+                this.clientStateArgs.actionCardId = args.args.actionCardId;
 
                 this.numberOfCardsSelectable = 1;
                 args.args.ids.forEach((id) => { 
@@ -558,6 +559,7 @@ onEnteringState: function( stateName, args )
                     this.clearCardAsSelectable(image);
                     this.makeCardSelectable(image);
                 });
+                this.clientStateArgs.ids = args.args.ids;
             }
         },
 
@@ -583,32 +585,38 @@ onEnteringState: function( stateName, args )
         },
 
         'highDramaEquipActionChooseAttachmentFromHand': () => {
-            card = this.cardProperties[args.args._private.performerId];
-            const image = $(`${card.divId}_image`);
-            this.clearCardAsSelectable(image);
-            dojo.addClass(image, 'chosen');
+            if (this.isCurrentPlayerActive()) 
+            {
+                card = this.cardProperties[args.args._private.performerId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'chosen');
 
-            args.args._private.attachmentsInHand.forEach((cardId) => {
-                let div = this.factionHand.getItemDivId(cardId);
-                dojo.addClass(div, 'selectable');
-            });
-            this.showHandAtTop();
-            this.factionHand.setSelectionMode(2);
+                args.args._private.attachmentsInHand.forEach((cardId) => {
+                    let div = this.factionHand.getItemDivId(cardId);
+                    dojo.addClass(div, 'selectable');
+                });
+                this.showHandAtTop();
+                this.factionHand.setSelectionMode(2);
+            }
         },
 
         'highDramaEquipActionChooseAttachmentFromPlay': () => {
-            this.numberOfCardsSelectable = 1;
-            card = this.cardProperties[args.args.performerId];
-            const image = $(`${card.divId}_image`);
-            this.clearCardAsSelectable(image);
-            dojo.addClass(image, 'chosen');
-
-            args.args.attachmentsInPlay.forEach((cardId) => {
-                card = this.cardProperties[cardId];
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.numberOfCardsSelectable = 1;
+                card = this.cardProperties[args.args.performerId];
                 const image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
-                this.makeCardSelectable(image);
-            });
+                dojo.addClass(image, 'chosen');
+
+                args.args.attachmentsInPlay.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+            }
         },
 
         'highDramaEquipActionPayForAttachmentFromHand': () => {
@@ -870,6 +878,61 @@ onEnteringState: function( stateName, args )
             var translated = _("Kaspar's Revealed Mercenary: ");
             $('choose_container_name').innerHTML = translated;
             this.chooseList.setSelectionMode(0);
+        },
+
+        'highDramaPhase01044' : () => {
+            if (this.isCurrentPlayerActive()) {
+                let card = this.cardProperties[args.args.args.performerId ];
+                let image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.performerId = args.args.args.performerId;
+
+                card = this.cardProperties[args.args.args.actionCardId];
+                image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.actionCardId = args.args.args.actionCardId;
+            }
+        },
+
+        'highDramaPhase01044_2' : () => {
+            if (this.isCurrentPlayerActive()) {
+                let card = this.cardProperties[args.args.args.performerId];
+                let image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.performerId = args.args.args.performerId;
+
+                card = this.cardProperties[args.args.args.actionCardId];
+                image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.actionCardId = args.args.args.actionCardId;
+
+                this.numberOfCardsSelectable = 1;
+                args.args.args.ids.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+                this.clientStateArgs.ids = args.args.args.ids;
+            }
+        },
+        'highDramaPhase01044_3' : () => {
+            if (this.isCurrentPlayerActive()) {
+                let card = this.cardProperties[args.args.args.performerId];
+                let image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.performerId = args.args.args.performerId;
+
+                card = this.cardProperties[args.args.args.actionCardId];
+                image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.actionCardId = args.args.args.actionCardId;
+
+                card = this.cardProperties[args.args.args.opposingCharacterId];
+                image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.opposingCharacterId = args.args.args.opposingCharacterId;
+            }
         },
 
         'highDramaPhase01180' : () => {

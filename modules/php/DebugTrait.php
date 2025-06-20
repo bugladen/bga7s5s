@@ -63,7 +63,13 @@ trait DebugTrait
             $dbCard = $this->cards->getCardsOfType($className);
             $dbCard = reset($dbCard);
             if ($dbCard)
+            {
                 $this->cards->moveCard($dbCard['id'], $location, $playerId);
+                $card = $this->getCardObjectFromDb($dbCard['id']);
+                $card->Location = $location;
+                $card->ControllerId = $playerId;
+                $this->updateCardObjectInDb($card);
+            }
         }
     }
 

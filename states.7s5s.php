@@ -4,6 +4,19 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 $machinestates += [
 
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01044 => [
+        "name" => "planningPhaseResolveSchemes_01044",
+        "description" => clienttranslate('Armed and Marshaled: ${actplayer} must choose an Attachment from their discard pile if able.'),
+        "descriptionmyturn" => clienttranslate('Armed and Marshaled: ${you} must choose an Attachment from your discard pile if able:'),
+        "type" => "activeplayer",
+        "args" => "argsEmpty",
+        "possibleactions" => [
+            "actFromCardWithId", 
+            "actPass"
+        ],
+        "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01029 => [
         "name" => "highDramaPhase01029",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -70,6 +83,52 @@ $machinestates += [
         "transitions" => [
             "back" => States::HIGH_DRAMA_PLAYER_TURN_01035_3,
             "parleyChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY
+        ]
+    ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01044 => [
+        "name" => "highDramaPhase01044",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Armed and Marshaled: ${you} must choose an attachment to Engage on the selected performer: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
+            "attachmentChosen" => States::HIGH_DRAMA_PLAYER_TURN_01044_2
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01044_2 => [
+        "name" => "highDramaPhase01044_2",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Armed and Marshaled: ${you} must choose an opposing character to manipulate: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithIds"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01044,
+            "opposingCharacterChosen" => States::HIGH_DRAMA_PLAYER_TURN_01044_3
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01044_3 => [
+        "name" => "highDramaPhase01044_3",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Armed and Marshaled: ${you} must choose how to manipulate the chosen character: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01044_2,
+            "manipulationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
 

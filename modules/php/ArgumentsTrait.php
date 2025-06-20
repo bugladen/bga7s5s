@@ -401,11 +401,7 @@ trait ArgumentsTrait
 
         $actionId = $this->globals->get(Game::CHOSEN_ACTION);
         $action = $this->theah->getInPlayActionById($actionId);
-
-        $owner = null;
-        if ($action instanceof CardAction) {
-            $owner = $action->getOwningCard($this->theah);
-        }
+        $owner = $action->getOwningCard($this->theah);
         
         $performers = $action->getPerformersForAction($playerId, $this->theah);
         

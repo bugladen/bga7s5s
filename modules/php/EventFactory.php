@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeAccepted;
 use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeRejected;
@@ -246,6 +247,18 @@ class EventFactory
         return $event;
     }
 
+    public static function createCardRemovedFromPlayerDiscardPileEvent(int $playerId, int $cardId): EventCardRemovedFromPlayerDiscardPile
+    {
+        $event = self::createEvent(Events::CardRemovedFromPlayerDiscardPile);
+        if ($event instanceof EventCardRemovedFromPlayerDiscardPile)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+        }
+
+        return $event;
+    }
+
     public static function createCardRemovedFromPlayerFactionDeckEvent(int $playerId, int $cardId): EventCardRemovedFromPlayerFactionDeck
     {
         $event = self::createEvent(Events::CardRemovedFromPlayerFactionDeck);
@@ -437,7 +450,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createReknownAddedToLocationEvent(int $playerId, string $location, int $amount, string $playerName)
+    public static function createReknownAddedToLocationEvent(int $playerId, string $location, int $amount, string $source)
     {
         $event = self::createEvent(Events::ReknownAddedToLocation);
         if ($event instanceof EventReknownAddedToLocation) 
@@ -445,7 +458,7 @@ class EventFactory
             $event->playerId = $playerId;
             $event->location = $location;
             $event->amount = $amount;
-            $event->source = $playerName;
+            $event->source = $source;
         }
         return $event;
     }

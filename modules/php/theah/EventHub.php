@@ -262,8 +262,9 @@ trait EventHub
 
                     $card = $theah->game->getCardObjectFromDb($event->cardId);
                     $card->Location = Game::LOCATION_HAND;
-                    $card->IsUpdated = true;
+                    $theah->game->updateCardObjectInDb($card);
 
+                    $card->IsUpdated = true;
                     $theah->upsertCard($card);
     
                     // Notify players that card has been added to hand
@@ -353,7 +354,7 @@ trait EventHub
                     $card->Engaged = true;
                     $card->IsUpdated = true;
 
-                    $this->game->notifyAllPlayers("cardEngaged", clienttranslate('${player_name} Engages <strong>${card_name}</strong>.'), [
+                    $theah->game->notifyAllPlayers("cardEngaged", clienttranslate('${player_name} Engages <strong>${card_name}</strong>.'), [
                         'i18n' => ['card_name'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
                         "card_name" => $card->Name,
@@ -424,13 +425,18 @@ trait EventHub
                 break;
     
             case $event instanceof EventCardRemovedFromPlayerDiscardPile:
-                $this->game->notifyAllPlayers("cardRemovedFromPlayerDiscardPile", clienttranslate('${card_name} removed from ${player_name}\'s discard pile.'), [
-                    'i18n' => ['card_name'],
-                    "player_id" => $event->playerId,
-                    "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "card_name" => $event->card->Name,
-                    "card" => $event->card->getPropertyArray($this->game),
-                ]);
+                $handler = function (Theah $theah, EventCardRemovedFromPlayerDiscardPile $event)
+                {
+                    $card = $theah->getCardById($event->cardId);
+                    $this->game->notifyAllPlayers("cardRemovedFromPlayerDiscardPile", clienttranslate('${card_name} removed from ${player_name}\'s discard pile.'), [
+                        'i18n' => ['card_name'],
+                        "player_id" => $event->playerId,
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
+                        "card_name" => $card->Name,
+                        "card" => $card->getPropertyArray($this->game),
+                    ]);
+                };
+                $handler($this, $event);
                 break;
 
             case $event instanceof EventCharacterRecruited:

@@ -10,7 +10,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
@@ -166,27 +165,6 @@ trait FrameworkActionsTrait
         $this->globals->set(GAME::CHOSEN_CARD, $card->Id);
 
         $this->gamestate->nextState("cardChosen");
-    }
-
-    public function actPlanningPhase_01044(int $id)
-    {
-        $playerId = $this->getActivePlayerId();
-        $card = $this->getCardObjectFromDb($id);
-
-        $removeEvent = $this->theah->createEvent(Events::CardRemovedFromPlayerDiscardPile);
-        if ($removeEvent instanceof EventCardRemovedFromPlayerDiscardPile) {
-            $removeEvent->card = $card;
-            $removeEvent->playerId = $playerId;
-        }
-        $this->theah->eventCheck($removeEvent);
-
-        $addEvent = EventFactory::createCardAddedToHandEvent($playerId, $card->Id);
-        $this->theah->eventCheck($addEvent);
-
-        $this->theah->queueEvent($removeEvent);
-        $this->theah->queueEvent($addEvent);
-
-        $this->gamestate->nextState("");
     }
 
     public function actPlanningPhase_01045(int $id)

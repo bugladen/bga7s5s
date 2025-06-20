@@ -175,19 +175,12 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
             'highDramaEquipActionChooseAttachmentFromHand': () => {
                 var items = this.factionHand.getSelectedItems();
-                const types = {};
                 items.forEach((item) => {
-                    const type = this.cardProperties[item.type].type;
-                    if (type != 'Attachment')
-                        this.factionHand.unselectItem(item.id);
-                    else if (types[type])
-                    {
-                        this.factionHand.unselectItem(item.id);
-                        this.factionHand.selectItem(item_id);
-                    }
-                    else
-                        types[type] = true;
-                });
+                    this.factionHand.unselectItem(item.id);
+                });                
+                const type = this.cardProperties[item_id]?.type;
+                if (type == 'Attachment')
+                    this.factionHand.selectItem(item_id);
 
                 // Enable the confirm button if we have a card selected
                 items = this.factionHand.getSelectedItems();
