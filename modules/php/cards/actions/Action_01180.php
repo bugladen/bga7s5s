@@ -85,7 +85,7 @@ class Action_01180 extends CharacterAction
             //Get characters in play at the same location
             $owningCard = $this->getOwningCard($game->theah);
             $characters = $game->theah->getCharactersAtLocation($owningCard->Location);
-            $characters = array_filter($characters, fn($character) => $character->ControllerId == $owningCard->ControllerId);
+            $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId == $owningCard->ControllerId));
             $ids = array_map(fn($character) => $character->Id, $characters);
 
             $args['chosenCard'] = $chosenCard->getPropertyArray($game);
@@ -169,21 +169,15 @@ class Action_01180 extends CharacterAction
 
             $game->gamestate->nextState("cardChosen");
         }
-    }
-
-    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  
-    {
-        parent::actFromActionWithIds($game, $state, $stateName, $ids);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_4)
         {
             $playerId = $game->getActivePlayerId();
             $owner = $this->getOwningCard($game->theah);
-            $id = $ids[0];
 
             //Get characters in play at the same location
             $characters = $game->theah->getCharactersAtLocation($owner->Location);
-            $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId);
+            $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId));
             $ids = array_map(fn($character) => $character->Id, $characters);
             if ( ! in_array($id, $ids))
             {
@@ -218,6 +212,11 @@ class Action_01180 extends CharacterAction
 
             $game->gamestate->nextState("performerChosen");
         }
+    }
+
+    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  
+    {
+        parent::actFromActionWithIds($game, $state, $stateName, $ids);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_5)
         {

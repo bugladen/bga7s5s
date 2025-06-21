@@ -29,7 +29,7 @@ class Action_01197 extends CharacterAction
         //There has to be at least two other friendly characters at her location with an attachment
         $characters = $theah->getCharactersAtLocation($kalla->Location);
         $characters = array_filter($characters, fn($character) => $character->ControllerId == $kalla->ControllerId && count($character->Attachments) > 0);
-        if (count($characters) < 2)
+        if (count($characters) < 1)
         {
             return false;
         }
@@ -99,8 +99,7 @@ class Action_01197 extends CharacterAction
             $characters = $game->theah->getCharactersAtLocation($kalla->Location);
             $characters = array_values(array_filter($characters, fn($character) => 
                 $character->Id != $chosenCharacterId &&
-                $character->ControllerId == $kalla->ControllerId &&
-                count($character->Attachments) > 0
+                $character->ControllerId == $kalla->ControllerId
             )); 
 
             $args["targetCharacterIds"] = array_map(fn($character) => $character->Id, $characters);
@@ -112,6 +111,36 @@ class Action_01197 extends CharacterAction
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void  
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01197)
+        {
+            $kalla = $this->getOwningCharacter($game->theah);
+            
+            $targetCharacter = $game->theah->getCharacterById($id);
+            if ($targetCharacter == null)
+            {
+                throw new \BgaUserException(sprintf($game->translate("Invalid target character id: %d"), $id));
+            }
+    
+            if ($targetCharacter->ControllerId != $kalla->ControllerId)
+            {
+                throw new \BgaUserException($game->translate("Target character is not a friendly character."));
+            }
+    
+            if ($targetCharacter->Location != $kalla->Location)
+            {
+                throw new \BgaUserException($game->translate("Target character is not at Kalla's location."));
+            }
+
+            if (count($targetCharacter->Attachments) == 0)
+            {
+                throw new \BgaUserException($game->translate("Target character does not have any attachments."));
+            }
+    
+            $game->globals->set(Game::CHOSEN_PERFORMER, $id);
+
+            $game->gamestate->nextState("characterChosen");
+        }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01197_2)
         {
@@ -134,51 +163,34 @@ class Action_01197 extends CharacterAction
 
             $game->gamestate->nextState("attachmentChosen");
         }
-    }
-
-    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  
-    {
-        parent::actFromActionWithIds($game, $state, $stateName, $ids);
-
-        $kalla = $this->getOwningCharacter($game->theah);
-        $chosenId = $ids[0];
-
-        $targetCharacter = $game->theah->getCharacterById($chosenId);
-        if ($targetCharacter == null)
-        {
-            throw new \BgaUserException(sprintf($game->translate("Invalid target character id: %d"), $chosenId));
-        }
-
-        if ($targetCharacter->ControllerId != $kalla->ControllerId)
-        {
-            throw new \BgaUserException($game->translate("Target character is not a friendly character."));
-        }
-
-        if ($targetCharacter->Location != $kalla->Location)
-        {
-            throw new \BgaUserException($game->translate("Target character is not at Kalla's location."));
-        }
-
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01197)
-        {
-            if (count($targetCharacter->Attachments) == 0)
-            {
-                throw new \BgaUserException($game->translate("Target character does not have any attachments."));
-            }
-    
-            $game->globals->set(Game::CHOSEN_PERFORMER, $chosenId);
-        }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01197_3)
         {
+            $kalla = $this->getOwningCharacter($game->theah);
+    
+            $targetCharacter = $game->theah->getCharacterById($id);
+            if ($targetCharacter == null)
+            {
+                throw new \BgaUserException(sprintf($game->translate("Invalid target character id: %d"), $id));
+            }
+    
+            if ($targetCharacter->ControllerId != $kalla->ControllerId)
+            {
+                throw new \BgaUserException($game->translate("Target character is not a friendly character."));
+            }
+    
+            if ($targetCharacter->Location != $kalla->Location)
+            {
+                throw new \BgaUserException($game->translate("Target character is not at Kalla's location."));
+            }
+
             $this->setUsed($game->theah, true);
 
             $fromCharacterId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $fromCharacter = $game->theah->getCharacterById($fromCharacterId);
-            $chosenCharacter = $game->theah->getCharacterById($chosenId);
+            $chosenCharacter = $game->theah->getCharacterById($id);
 
             $attachmentId = $game->globals->get(Game::CHOSEN_CARD);
-            $attachment = $game->theah->getAttachmentById($attachmentId);
 
             $unequipAttachment = EventFactory::createAttachmentUnequippedEvent($fromCharacter->ControllerId, $fromCharacter->Id, $attachmentId);
             $game->theah->eventCheck($unequipAttachment);
@@ -188,9 +200,8 @@ class Action_01197 extends CharacterAction
 
             $game->theah->queueEvent($unequipAttachment);
             $game->theah->queueEvent($equipAttachment);
+
+            $game->gamestate->nextState("characterChosen");
         }
-
-
-        $game->gamestate->nextState("characterChosen");
     }
 }

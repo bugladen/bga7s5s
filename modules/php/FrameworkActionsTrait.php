@@ -271,9 +271,8 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhase_01125_4(string $ids)
+    public function actPlanningPhase_01125_4(int $id)
     {
-        $id = json_decode($ids, true)[0];
         $playerName = $this->getActivePlayerName();
         $character = $this->getCardObjectFromDb($id);
 
@@ -616,9 +615,8 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhaseEnd_01098(string $ids)
+    public function actPlanningPhaseEnd_01098(int $id)
     {
-        $id = json_decode($ids, true)[0];
         $leader = $this->getCardObjectFromDb($id);
         $chosenPlayerId = $leader->ControllerId;
 
@@ -668,9 +666,8 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("moveActionStart");
     }
 
-    public function actHighDramaMoveActionPerformerChosen(string $ids)
+    public function actHighDramaMoveActionPerformerChosen(int $id)
     {
-        $id = json_decode($ids, true)[0];
         $character = $this->getCardObjectFromDb($id);
 
         $this->globals->set(GAME::CHOSEN_CARD, $character->Id);
@@ -714,11 +711,10 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("recruitActionStart");
     }
 
-    public function actHighDramaRecruitActionPerformerChosen(string $ids)
+    public function actHighDramaRecruitActionPerformerChosen(int $id)
     {
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
-        $id = json_decode($ids, true)[0];
         $character = $this->theah->getCharacterById($id);
 
         if (!$this->theah->cardInCity($character)) {
@@ -771,10 +767,10 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("parleyChosen");
     }
 
-    public function actHighDramaRecruitActionMercenaryChosen(string $ids)
+    public function actHighDramaRecruitActionMercenaryChosen(int $id)
     {
         $this->theah->buildCity();
-        $recruitId = json_decode($ids, true)[0];
+        $recruitId = $id;
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
@@ -837,11 +833,10 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("equipActionStart");
     }
 
-    public function actHighDramaEquipActionPerformerChosen(string $ids)
+    public function actHighDramaEquipActionPerformerChosen(int $id)
     {
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
-        $id = json_decode($ids, true)[0];
         $performer = $this->theah->getCharacterById($id);
         $handHasAttachments = $this->handHasAttachments($playerId);
 
@@ -902,10 +897,10 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("attachmentSelected");
     }
 
-    public function actHighDramaEquipActionAttachmentFromPlaySelected(string $ids)
+    public function actHighDramaEquipActionAttachmentFromPlaySelected(int $id)
     {
         $this->theah->buildCity();
-        $attachmentId = json_decode($ids, true)[0];
+        $attachmentId = $id;
 
         $attachment = $this->theah->getCardById($attachmentId);
         if ($attachment == null) {
@@ -1022,9 +1017,8 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("claimActionStart");
     }
 
-    public function actHighDramaClaimActionPerformerChosen(string $ids)
+    public function actHighDramaClaimActionPerformerChosen(int $id)
     {
-        $id = json_decode($ids, true)[0];
         $activePlayerId = $this->getActivePlayerId();
         $this->theah->buildCity();
 
@@ -1102,10 +1096,9 @@ trait FrameworkActionsTrait
         }
     }
 
-    public function actHighDramaInPlayActionPerformerChosen(string $ids)
+    public function actHighDramaInPlayActionPerformerChosen(int $id)
     {
         $playerId = (int)$this->getActivePlayerId();
-        $id = json_decode($ids, true)[0];
         $performer = $this->getCardObjectFromDb($id);
 
         $actionId = $this->globals->get(GAME::CHOSEN_ACTION, '');
@@ -1157,12 +1150,11 @@ trait FrameworkActionsTrait
         }
     }
 
-    public function actHighDramaInHandActionPerformerChosen(string $ids)
+    public function actHighDramaInHandActionPerformerChosen(int $id)
     {
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $id = json_decode($ids, true)[0];
         $performer = $this->getCardObjectFromDb($id);
 
         $actionId = $this->globals->get(GAME::CHOSEN_ACTION, '');
@@ -1257,9 +1249,8 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("challengeActionStart");
     }
 
-    public function actHighDramaChallengeActionPerformerChosen(string $ids)
+    public function actHighDramaChallengeActionPerformerChosen(int $id)
     {
-        $id = json_decode($ids, true)[0];
         $activePlayerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
@@ -1293,10 +1284,8 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("performerChosen");
     }
 
-    public function actHighDramaChallengeActionTargetChosen(string $ids)
+    public function actHighDramaChallengeActionTargetChosen(int $id)
     {
-        $id = json_decode($ids, true)[0];
-
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($id);
 
@@ -1380,9 +1369,8 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actHighDramaChallengeActionIntervene(string $ids)
+    public function actHighDramaChallengeActionIntervene(int $id)
     {
-        $id = json_decode($ids, true)[0];
         $playerId = $this->getActivePlayerId();
         $playerName = $this->getActivePlayerName();
 

@@ -118,20 +118,15 @@ class Action_01194 extends CharacterAction
 
             $game->gamestate->nextState("attachmentChosen");
         }
-    }
-
-    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  
-    { 
-        parent::actFromActionWithIds($game, $state, $stateName, $ids);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01194_2)
         {
             $adelheide = $this->getOwningCharacter($game->theah);
 
-            $targetCharacter = $game->theah->getCharacterById($ids[0]);
+            $targetCharacter = $game->theah->getCharacterById($id);
             if ($targetCharacter == null)
             {
-                throw new \BgaUserException(sprintf($game->translate("Invalid target character id: %d"), $ids[0]));
+                throw new \BgaUserException(sprintf($game->translate("Invalid target character id: %d"), $id));
             }
 
             if ($targetCharacter->ControllerId == $adelheide->ControllerId)
@@ -173,5 +168,4 @@ class Action_01194 extends CharacterAction
             $game->gamestate->nextState("characterChosen");
         }
     }
-
 }

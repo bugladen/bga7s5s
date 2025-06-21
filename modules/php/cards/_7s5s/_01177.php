@@ -38,7 +38,7 @@ class _01177 extends CityEventCard
             $characters = $game->theah->getCharactersAtLocation($this->Location);
             
             //Filter out the characters that are not controlled by the current player
-            $characters = array_filter($characters, fn($character) => $character->ControllerId == $game->getActivePlayerId());
+            $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId == $game->getActivePlayerId()));
 
             $args['sourceId'] = $this->Id;
             $args['ids'] = array_map(fn($character) => $character->Id, $characters);
@@ -62,14 +62,14 @@ class _01177 extends CityEventCard
         return $args;        
     }
 
-    public function actFromCardWithIds(Game $game, int $state, string $stateName, string $actionId, array $ids): void
+    public function actFromCardWithId(Game $game, int $state, string $stateName, string $actionId, int $id): void
     {
-        parent::actFromCardWithIds($game, $state, $stateName, $actionId, $ids);
+        parent::actFromCardWithId($game, $state, $stateName, $actionId, $id);
 
         //Set the character that will be shown the way
         if ($state == States::DUSK_PHASE_BEGIN_01177)
         {
-            $selectedCharacter = $game->theah->getCharacterById($ids[0]);
+            $selectedCharacter = $game->theah->getCharacterById($id);
             $selectedCharacter->Conditions[] = "Helped By Penya";
             $game->updateCardObjectInDb($selectedCharacter);
     
@@ -82,6 +82,11 @@ class _01177 extends CityEventCard
     
             $game->gamestate->nextState("pickCards");
         }
+    }
+
+    public function actFromCardWithIds(Game $game, int $state, string $stateName, string $actionId, array $ids): void
+    {
+        parent::actFromCardWithIds($game, $state, $stateName, $actionId, $ids);
 
         //Set the order of the top 3 cards in the City Deck
         if ($state == States::DUSK_PHASE_BEGIN_01177_2)

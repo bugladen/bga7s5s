@@ -107,13 +107,13 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01125_4'                   : 'actPlanningPhase_01125_4',
             'planningPhaseEnd_01098'                                : 'actPlanningPhaseEnd_01098',
             'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
-            'highDramaPhase01029'                                   : 'actFromCardWithIds',
-            'highDramaPhase01044_2'                                 : 'actFromCardWithIds',
-            'highDramaPhase01180_4'                                 : 'actFromCardWithIds',
-            'highDramaPhase01194_2'                                 : 'actFromCardWithIds',
-            'highDramaPhase01197'                                   : 'actFromCardWithIds',
-            'highDramaPhase01197_3'                                 : 'actFromCardWithIds',
-            'highDramaPhase01205'                                   : 'actFromCardWithIds',
+            'highDramaPhase01029'                                   : 'actFromCardWithId',
+            'highDramaPhase01044_2'                                 : 'actFromCardWithId',
+            'highDramaPhase01180_4'                                 : 'actFromCardWithId',
+            'highDramaPhase01194_2'                                 : 'actFromCardWithId',
+            'highDramaPhase01197'                                   : 'actFromCardWithId',
+            'highDramaPhase01197_3'                                 : 'actFromCardWithId',
+            'highDramaPhase01205'                                   : 'actFromCardWithId',
             'highDramaMoveActionChoosePerformer'                    : 'actHighDramaMoveActionPerformerChosen',
             'highDramaInPlayActionChoosePerformer'                  : 'actHighDramaInPlayActionPerformerChosen',  
             'highDramaInHandActionChoosePerformer'                  : 'actHighDramaInHandActionPerformerChosen',  
@@ -125,7 +125,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaChallengeActionChoosePerformer'               : 'actHighDramaChallengeActionPerformerChosen',
             'highDramaChallengeActionChooseTarget'                  : 'actHighDramaChallengeActionTargetChosen',
             'highDramaChallengeActionAcceptChallenge'               : 'actHighDramaChallengeActionIntervene', 
-            'duskPhaseBegin01177'                                   : 'actFromCardWithIds',
+            'duskPhaseBegin01177'                                   : 'actFromCardWithId',
         };
 
         const clientMessages = {
@@ -142,9 +142,8 @@ return declare('seventhseacityoffivesails.actions', null, {
                 'descriptionmyturn' : _(clientMessage),
             })
         } else {
-            const ids = JSON.stringify(this.selectedCards);
             this.bgaPerformAction(action, { 
-                'ids' : ids,
+                'id' : this.selectedCards[0],
             });
         }
     },

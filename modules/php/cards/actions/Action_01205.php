@@ -84,19 +84,18 @@ class Action_01205 extends CharacterAction
         return $args;
     }
 
-    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  
+    public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void  
     {
-        parent::actFromActionWithIds($game, $state, $stateName, $ids);
+        parent::actFromActionWithId($game, $state, $stateName, $id);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01205)
         {
             $giacinto = $this->getOwningCharacter($game->theah);
-            $chosenId = $ids[0];
 
-            $targetCharacter = $game->theah->getCharacterById($chosenId);
+            $targetCharacter = $game->theah->getCharacterById($id);
             if ($targetCharacter == null)
             {
-                throw new \BgaUserException(sprintf($game->translate("Invalid target character id: %d"), $chosenId));
+                throw new \BgaUserException(sprintf($game->translate("Invalid target character id: %d"), $id));
             }
 
             if ($targetCharacter->ControllerId == $giacinto->ControllerId)
@@ -113,6 +112,11 @@ class Action_01205 extends CharacterAction
 
             $game->gamestate->nextState("victimChosen");
         }
+}
+
+    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  
+    {
+        parent::actFromActionWithIds($game, $state, $stateName, $ids);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01205_2)
         {

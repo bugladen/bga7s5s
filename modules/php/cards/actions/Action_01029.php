@@ -24,66 +24,49 @@ class Action_01029 extends RiskAction
         {
             return false;
         }
-        
-        // Add characters owned by the player that are in play
-        $characters = $theah->getCharactersInPlayByPlayerId($playerId);
 
-        //Filter out any characters that are not in the city
-        $characters = array_filter($characters, fn($character) => $theah->cardInCity($character));
+        $performersWithOpposingCharacters = $this->getOpposingCharacters($theah, $playerId);
 
-        //Filter out any chracters that are not at a location controlled by the player
-        $controllingCharacters = [];
-        $controllers = $theah->getCityLocationControllers();
-        foreach ($characters as $character)
-            if ($controllers[$character->Location] == $playerId)
-                $controllingCharacters[] = $character;
-        
-        $performersWithOpposingCharacters = [];
-        foreach ($controllingCharacters as $performer)
-        {
-            $characters = $theah->getCharactersAtLocation($performer->Location);
-            foreach ($characters as $character)
-            {
-                if ($character->ControllerId != $performer->ControllerId)
-                {
-                    $performersWithOpposingCharacters[] = $performer;
-                    break;
-                }
-            }
-
-        }
         return count($performersWithOpposingCharacters) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        $performers = parent::getPerformersForAction($playerId, $theah);
+        return $this->getOpposingCharacters($theah, $playerId);
+    }
 
-        //Filter out any performers that are not in the city
-        $performers = array_values(array_filter($performers, fn($performer) => $theah->cardInCity($performer)));
+    private function getOpposingCharacters(Theah $theah, int $playerId): array
+    {
+        // Add characters owned by the player that are in play
+        $performers = $theah->getCharactersInPlayByPlayerId($playerId);
+
+        //Filter out any characters that are not in the city
+        $performers = array_filter($performers, fn($character) => $theah->cardInCity($character));
 
         //Filter out any chracters that are not at a location controlled by the player
-        $controllingCharacters = [];
+        $controllingPerformers = [];
         $controllers = $theah->getCityLocationControllers();
-        foreach ($performers as $character)
-            if ($controllers[$character->Location] == $playerId)
-                $controllingCharacters[] = $character;
-
+        foreach ($performers as $performer)
+            if ($controllers[$performer->Location] == $playerId)
+                $controllingPerformers[] = $performer;
+        
+        //Get opposing characters that are not engaged
         $performersWithOpposingCharacters = [];
-        foreach ($controllingCharacters as $performer)
+        foreach ($controllingPerformers as $performer)
         {
             $characters = $theah->getCharactersAtLocation($performer->Location);
             foreach ($characters as $character)
             {
-                if ($character->ControllerId != $performer->ControllerId)
+                if ($character->isControlled() && $character->ControllerId != $performer->ControllerId && ! $character->Engaged)
                 {
                     $performersWithOpposingCharacters[] = $performer;
                     break;
                 }
             }
+
         }
 
-        return $performers;
+        return $performersWithOpposingCharacters;
     }
 
     public function handleEvent(Event $event)
@@ -106,15 +89,15 @@ class Action_01029 extends RiskAction
 
         $characters = $game->theah->getCharactersAtLocation($performer->Location);
         //Filter out characters owned by the player
-        $characters = array_filter($characters, fn($character) => $character->ControllerId != $performer->ControllerId);
+        $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId != $performer->ControllerId));
         $args['ids'] = array_map(fn($character) => $character->Id, $characters);
 
         return $args;
     }
 
-    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  
+    public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void  
     { 
-        parent::actFromActionWithIds($game, $state, $stateName, $ids);
+        parent::actFromActionWithId($game, $state, $stateName, $id);
 
         $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
         $performer = $game->theah->getCardById($performerId);
@@ -125,7 +108,6 @@ class Action_01029 extends RiskAction
 
         $character_ids = array_map(fn($character) => $character->Id, $characters);
 
-        $id = $ids[0];
         if ( ! in_array($id, $character_ids))
         {
             throw new \BgaUserException($game->translate("Invalid character selected"));
@@ -140,6 +122,4 @@ class Action_01029 extends RiskAction
         $game->gamestate->nextState("cardChosen");
         
     }
-
-
 }

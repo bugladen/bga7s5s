@@ -24,7 +24,7 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithIds",
+            "actFromCardWithId",
             "actFromCardPass"
         ],
         "transitions" => [
@@ -109,7 +109,7 @@ $machinestates += [
         "args" => "argsForState",
         "possibleactions" => [
             "actBack",
-            "actFromCardWithIds"
+            "actFromCardWithId"
         ],
         "transitions" => [
             "back" => States::HIGH_DRAMA_PLAYER_TURN_01044,
@@ -172,7 +172,7 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithIds",
+            "actFromCardWithId",
             "actBack"
         ],
         "transitions" => [
@@ -303,7 +303,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithIds",
+            "actFromCardWithId",
             "actBack"
         ],
         "transitions" => [
@@ -319,7 +319,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithIds",
+            "actFromCardWithId",
             "actBack"
         ],
         "transitions" => [
@@ -351,7 +351,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithIds",
+            "actFromCardWithId",
             "actBack"
         ],
         "transitions" => [
@@ -396,7 +396,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithIds",
+            "actFromCardWithId",
             "actBack"
         ],
         "transitions" => [
@@ -423,12 +423,12 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
 
     States::DUSK_PHASE_BEGIN_01177 => [
         "name" => "duskPhaseBegin01177",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "description" => clienttranslate('${actplayer} is choosing options for Penya.'),
         "descriptionmyturn" => clienttranslate('${you} may choose a character to follow Penya:'),
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithIds",
+            "actFromCardWithId",
             "actPassWithPass"
         ],
         "transitions" => [
@@ -437,7 +437,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
     ],
     States::DUSK_PHASE_BEGIN_01177_2 => [
         "name" => "duskPhaseBegin01177_2",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "description" => clienttranslate('${actplayer} is choosing options for Penya.'),
         "descriptionmyturn" => clienttranslate('${you} must choose the order to replace the top 3 cards of the City Deck:'),
         "type" => "activeplayer",
         "args" => "argsForStatePrivate",

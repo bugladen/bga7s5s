@@ -129,6 +129,37 @@ class Action_01044 extends SchemeCityAction
             $game->gamestate->nextState("attachmentChosen");
         }
 
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01044_2)
+        {
+            $character = $game->theah->getCharacterById($id);
+            if (! $character)
+            {
+                throw new \BgaUserException($game->translate("Invalid character"));
+            }
+
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
+
+            if ($character->isControlled() && $character->ControllerId == $performer->ControllerId)
+            {
+                throw new \BgaUserException($game->translate("Character is not opposing the performer"));
+            }
+
+            if ($character->Location != $performer->Location)
+            {
+                throw new \BgaUserException($game->translate("Character is not at the same location as the performer"));
+            }
+
+            if(count($character->Attachments) > count($performer->Attachments))
+            {
+                throw new \BgaUserException($game->translate("Character has more or equal number of attachments than the performer"));
+            }
+            
+            $game->globals->set(Game::CHOSEN_CARD, $character->Id);
+
+            $game->gamestate->nextState("opposingCharacterChosen");
+        }
+
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01044_3)
         {
             $characterId = $game->globals->get(Game::CHOSEN_CARD);
@@ -186,41 +217,6 @@ class Action_01044 extends SchemeCityAction
             }
 
             $game->gamestate->nextState("manipulationChosen");
-        }
-    }
-
-    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void
-    {
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01044_2)
-        {
-            $id = $ids[0];
-            $character = $game->theah->getCharacterById($id);
-            if (! $character)
-            {
-                throw new \BgaUserException($game->translate("Invalid character"));
-            }
-
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-
-            if ($character->isControlled() && $character->ControllerId == $performer->ControllerId)
-            {
-                throw new \BgaUserException($game->translate("Character is not opposing the performer"));
-            }
-
-            if ($character->Location != $performer->Location)
-            {
-                throw new \BgaUserException($game->translate("Character is not at the same location as the performer"));
-            }
-
-            if(count($character->Attachments) > count($performer->Attachments))
-            {
-                throw new \BgaUserException($game->translate("Character has more or equal number of attachments than the performer"));
-            }
-            
-            $game->globals->set(Game::CHOSEN_CARD, $character->Id);
-
-            $game->gamestate->nextState("opposingCharacterChosen");
         }
     }
 
