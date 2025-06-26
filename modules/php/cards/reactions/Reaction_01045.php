@@ -82,14 +82,6 @@ class Reaction_01045 extends CardReaction
             $this->setUsed($game->theah, true);
         }
 
-        if ($reactionId == 'pass')
-        {
-            $soe = $this->getOwningCard($game->theah);
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Song of Eisen</strong>: ${player_name} passes on Reaction'), [
-                'player_name' => $game->getPlayerNameById($soe->ControllerId),
-            ]);
-        }
-
         $game->gamestate->nextState("done");
     }
 }

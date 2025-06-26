@@ -838,7 +838,7 @@ $machinestates = [
             "type" => "activeplayer",
             "args" => "argsForStatePrivate",
             "possibleactions" => [
-                "actactReactionForState", 
+                "actReactionForState", 
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_END_EVENTS, 

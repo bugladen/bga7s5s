@@ -241,4 +241,9 @@ abstract class Card
     {
         return 0;
     }
+
+    public function hasTrait(string $trait): bool
+    {
+        return in_array($trait, $this->Traits);
+    }
 }

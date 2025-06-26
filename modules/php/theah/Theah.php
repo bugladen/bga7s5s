@@ -912,4 +912,13 @@ class Theah
         $this->cards[$card->Id] = $card;
     }
 
+    public function deleteManeuverEvents(string $maneuverId)
+    {
+        $this->db->deleteManeuverEvents($maneuverId);
+    }
+
+    public function deleteTechniqueEvents(string $techniqueId)
+    {
+        $this->db->deleteTechniqueEvents($techniqueId);
+    }
 }

@@ -31,6 +31,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproa
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventClaimOccuring;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
@@ -382,6 +383,19 @@ class EventFactory
             $event->location = $location;
             $event->pressureTypes = $pressureTypes;
         }
+        return $event;
+    }
+
+    public static function createManeuverActivatedEvent(int $playerId, int $ownerId, string $maneuverId): EventManeuverActivated
+    {
+        $event = self::createEvent(Events::ManeuverActivated);
+        if ($event instanceof EventManeuverActivated)
+        {
+            $event->playerId = $playerId;
+            $event->ownerId = $ownerId;
+            $event->maneuverId = $maneuverId;
+        }
+
         return $event;
     }
 

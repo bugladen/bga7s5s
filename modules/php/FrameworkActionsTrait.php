@@ -1455,6 +1455,10 @@ trait FrameworkActionsTrait
         $adversaryId = $this->getDuelOpponentId($actorId);
         $adversary = $this->theah->getCharacterById($adversaryId);
 
+        $activateEvent = EventFactory::createTechniqueActivatedEvent($playerId, $actor->Id, $technique->Id);
+        $this->theah->eventCheck($activateEvent);
+        $this->theah->queueEvent($activateEvent);
+
         $resolveEvent = $this->theah->createEvent(Events::ResolveTechnique);
         if ($resolveEvent instanceof EventResolveTechnique)
         {
@@ -1612,6 +1616,10 @@ trait FrameworkActionsTrait
             $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $payCard->Id);
             $this->theah->queueEvent($event);
         }
+
+        $activateEvent = EventFactory::createManeuverActivatedEvent($playerId, $cardId, $maneuver->Id);
+        $this->theah->eventCheck($activateEvent);
+        $this->theah->queueEvent($activateEvent);
 
         $adversaryId = $this->getDuelOpponentId($actorId);
         $adversary = $this->theah->getCharacterById($adversaryId);

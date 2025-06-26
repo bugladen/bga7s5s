@@ -20,8 +20,7 @@ class DB extends \APP_DbObject
     public function getNextEvent()
     {
         $sql = "SELECT event_id as id, event_serialized as json FROM events ORDER BY event_priority LIMIT 1";
-        /** @disregard P1013 */
-        $data = $this->getObjectFromDB($sql);
+        $data = $this->getObject($sql);
 
         if (!$data) {
             return null;
@@ -35,13 +34,29 @@ class DB extends \APP_DbObject
         return $event;
     }
 
+    public function deleteManeuverEvents(string $maneuverId)
+    {
+        $sql = "DELETE FROM events 
+                WHERE (event_serialized LIKE '%EventDuelCalculateManeuverValues%' AND event_serialized LIKE '%maneuverId\":{$maneuverId}%')
+                   OR (event_serialized LIKE '%EventResolveManeuver%' AND event_serialized LIKE '%maneuverId\":{$maneuverId}%')";
+        $this->executeSql($sql);
+    }
+
+    public function deleteTechniqueEvents(string $techniqueId)
+    {
+        $sql = "DELETE FROM events 
+                WHERE (event_serialized LIKE '%EventResolveTechnique%' AND event_serialized LIKE '%techniqueId\":{$techniqueId}%')
+                   OR (event_serialized LIKE '%EventDuelCalculateTechniqueValues%' AND event_serialized LIKE '%techniqueId\":{$techniqueId}%')";
+        $this->executeSql($sql);
+    }
+
     public function getCollection(string $sql): array
     {
         /** @disregard P1013 */
         return $this->getCollectionFromDB($sql);
     }
 
-    public function getObject(string $sql): array
+    public function getObject(string $sql): array | null
     {
         /** @disregard P1013 */
         return $this->getObjectFromDB($sql);
@@ -51,6 +66,12 @@ class DB extends \APP_DbObject
     {
         /** @disregard P1013 */
         return $this->getObjectListFromDB($sql);
+    }
+
+    public function getUniqueValue(string $sql)
+    {
+        /** @disregard P1013 */
+        return $this->getUniqueValueFromDB($sql);
     }
 
     public function executeSql(string $sql)

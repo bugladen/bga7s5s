@@ -2,6 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction_01146a;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction_01146b;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
@@ -9,8 +13,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
-class _01146 extends Scheme
+class _01146 extends Scheme implements IHasReactions
 {
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -27,6 +33,11 @@ class _01146 extends Scheme
         $this->Traits = [
             "Flourish", 
             "Honor",
+        ];
+
+        $this->Reactions = [
+            new Reaction_01146a(),
+            new Reaction_01146b(),
         ];
     }
 

@@ -9,7 +9,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCar
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 
 class Technique_01204 extends Technique
 {
@@ -26,17 +25,14 @@ class Technique_01204 extends Technique
     { 
         parent::handleEvent($event);
 
-        if ($event instanceof EventTechniqueActivated && $event->techniqueId == $this->Id)
+        // If activated then this technique will reduce the opponent's Parry by 2 at the start of the next round
+        if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $attachment = $this->getOwningCard($event->theah);
             $character = $this->getOwningCharacter($event->theah);
             $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $attachment->Id, 1, $event->theah->game->translate("Syrneth Hand"));
             $event->theah->queueEvent($woundEvent);
-        }
 
-        // If activated then this technique will reduce the opponent's Parry by 2 at the start of the next round
-        if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
-        {
             $this->ReduceAdversaryParry = true;
             $this->setUsed($event->theah, true);
         }

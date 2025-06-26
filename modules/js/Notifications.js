@@ -116,13 +116,16 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         const card = this.cardProperties[args.ownerId];
-        //Get the action from the card
-        const action = card.actions.find(action => action.id === args.actionId);
-        if (action)
+        if (card)
         {
-            action.available = ! args.used;
-            this.createTooltipForCard(card);
-        }       
+            //Get the action from the card
+            const action = card.actions.find(action => action.id === args.actionId);
+            if (action)
+            {
+                action.available = ! args.used;
+                this.createTooltipForCard(card);
+            }       
+        }
     },
 
     notif_maneuverUsed: function( notif )
@@ -132,12 +135,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         const card = this.cardProperties[args.ownerId];
-        //Get the maneuver from the card
-        const maneuver = card.maneuvers.find(maneuver => maneuver.id === args.maneuverId);
-        if (maneuver)
+        if (card)
         {
-            maneuver.available = ! args.used;
-            this.createTooltipForCard(card);
+            //Get the maneuver from the card
+            const maneuver = card.maneuvers.find(maneuver => maneuver.id === args.maneuverId);
+            if (maneuver)
+            {
+                maneuver.available = ! args.used;
+                this.createTooltipForCard(card);
+            }
         }
     },
 
@@ -148,12 +154,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         const card = this.cardProperties[args.ownerId];
-        //Get the reaction from the card
-        const reaction = card.reactions.find(reaction => reaction.id === args.reactionId);
-        if (reaction)
+        if (card)
         {
-            reaction.available = ! args.used;
-            this.createTooltipForCard(card);
+            //Get the reaction from the card
+            const reaction = card.reactions.find(reaction => reaction.id === args.reactionId);
+            if (reaction)
+            {
+                reaction.available = ! args.used;
+                this.createTooltipForCard(card);
+            }
         }
     },
 
@@ -164,12 +173,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         const card = this.cardProperties[args.ownerId];
-        //Get the technique from the card
-        const technique = card.techniques.find(technique => technique.id === args.techniqueId);
-        if (technique)
+        if (card)
         {
-            technique.available = ! args.used;
-            this.createTooltipForCard(card);
+            //Get the technique from the card
+            const technique = card.techniques.find(technique => technique.id === args.techniqueId);
+            if (technique)
+            {
+                technique.available = ! args.used;
+                this.createTooltipForCard(card);
+            }
         }
     },
 
@@ -180,8 +192,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         const card = this.cardProperties[args.characterId];
-        //Add the trait to the card
-        card.traits.push(args.trait);
+        if (card)
+        {
+            //Add the trait to the card
+            card.traits.push(args.trait);
+        }
     },
 
     notif_traitRemoved: function( notif )
@@ -191,8 +206,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         const card = this.cardProperties[args.characterId];
-        //Remove the trait from the card
-        card.traits = card.traits.filter(trait => trait !== args.trait);
+        if (card)
+        {
+            //Remove the trait from the card
+            card.traits = card.traits.filter(trait => trait !== args.trait);
+        }
     },
 
     notif_approachSchemePlayed: function( notif )
