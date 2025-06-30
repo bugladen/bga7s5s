@@ -152,13 +152,16 @@ class _01147 extends Scheme implements IHasActions
 
         $actionId = $theah->game->globals->get(Game::CHOSEN_ACTION);
         $action = $theah->getInPlayActionById($actionId);
-        $owner = $action->getOwningCard($theah);
-
-        if ($owner->Id == $this->Id && 
-        $performer->ControllerId == $this->ControllerId &&
-        $performer->Location == Game::LOCATION_CITY_BAZAAR)
+        if ($action != null)
         {
-            $discount += 1;
+            $owner = $action->getOwningCard($theah);
+
+            if ($owner->Id == $this->Id && 
+            $performer->ControllerId == $this->ControllerId &&
+            $performer->Location == Game::LOCATION_CITY_BAZAAR)
+            {
+                $discount += 1;
+            }
         }
 
         return $discount;
