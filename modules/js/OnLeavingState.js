@@ -413,18 +413,19 @@ onLeavingState: function( stateName )
 
         'highDramaEquipActionPayForAttachmentFromPlay': () => {
             if (this.isCurrentPlayerActive()) 
-            {   
-                for ( const cardId in this.cardProperties ) {
-                    card = this.cardProperties[cardId];
-                    if (card.type === 'Attachment' && ! card.controllerId && this.isCardInPlay(card.id)) {
-                        const image = $(`${card.divId}_image`);
-                        this.clearCardAsSelectable(image);
-                    }
-                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                        const image = $(`${card.divId}_image`);
-                        this.clearCardAsSelectable(image);
-                    }
-                }
+            {
+                let performer = this.cardProperties[this.clientStateArgs.performerId];
+                const performerImage = $(`${performer.divId}_image`);
+                dojo.removeClass(performerImage, 'chosen');
+
+                let card = this.cardProperties[this.clientStateArgs.chosenAttachmentId];
+                const image = $(`${card.divId}_image`);
+                dojo.removeClass(image, 'chosen');
+
+                const cost = $(`${card.divId}_wealth_cost`);
+                cost.innerHTML = card.wealthCost;
+                dojo.removeClass(cost, 'discounted-wealth-cost');
+
                 this.factionHand.setSelectionMode(0);
                 $('faction_hand_info').innerHTML = '';
                 this.showHandAtBottom();
@@ -581,6 +582,21 @@ onLeavingState: function( stateName )
                 card = this.cardProperties[this.clientStateArgs.opposingCharacterId];
                 const opposingCharacterImage = $(`${card.divId}_image`);
                 dojo.removeClass(opposingCharacterImage, 'chosen');
+            }
+        },
+
+        'highDramaPhase01147': () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                let performer = this.cardProperties[this.clientStateArgs.performerId];
+                const performerImage = $(`${performer.divId}_image`);
+                dojo.removeClass(performerImage, 'chosen');
+
+                this.clientStateArgs.attachmentsInPlay.forEach((attachmentId) => {
+                    let card = this.cardProperties[attachmentId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                });
             }
         },
 
