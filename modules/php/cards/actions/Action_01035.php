@@ -60,7 +60,6 @@ class Action_01035 extends CharacterAction
 
             $count = $deck->countCardInLocation(Game::LOCATION_CITY_DECK);
             $cards = $game->getCardsOnTopOfCityDeck($count);
-            //$cards = $deck->getCardsInLocation(Game::LOCATION_CITY_DECK, null, 'card_location_arg');
             $revealed = [];
             $names = [];
             $found = false;
@@ -189,7 +188,6 @@ class Action_01035 extends CharacterAction
         {
             //Sink all the cards except the revealed mercenary
             $mercenaryId = $game->globals->get(Game::CHOSEN_CARD);
-            $mercenary = $game->getCardObjectFromDb($mercenaryId);
             $revealed = json_decode($game->globals->get(Game::REVEALED_CARDS), true);
             $cards = [];
             foreach ($revealed as $cardId)
@@ -204,18 +202,17 @@ class Action_01035 extends CharacterAction
                 $event = EventFactory::createCardAddedToCityDiscardPileEvent($card->ControllerId, $card->Id, Game::LOCATION_CITY_DECK);
                 $game->theah->queueEvent($event);
             }
-        }
 
-        $mercenaryId = $game->globals->get(Game::CHOSEN_CARD);
-        if ($mercenaryId)
-        {
-            $currentPlayerId = $game->globals->get(Game::CURRENT_PLAYER);
-            $game->gamestate->changeActivePlayer($currentPlayerId);   
-            $game->gamestate->nextState("found");
-        }
-        else
-        {
-            $game->gamestate->nextState("notFound");
+            if ($mercenaryId)
+            {
+                $currentPlayerId = $game->globals->get(Game::CURRENT_PLAYER);
+                $game->gamestate->changeActivePlayer($currentPlayerId);   
+                $game->gamestate->nextState("found");
+            }
+            else
+            {
+                $game->gamestate->nextState("notFound");
+            }
         }
     }
 

@@ -496,15 +496,16 @@ class Theah
 
     function getEquipDiscount(Character $performer, Attachment $attachment): int
     {
+        //Smuggled Item cost is free
         if ($this->game->globals->get(Game::EQUIP_TYPE) == Game::SMUGGLED_ITEM_EQUIP_TYPE) {
             return $attachment->WealthCost;
         }
         
         $discount = 0;
-        $characters = $this->getCharactersInPlay();
-        foreach ($characters as $character) {
-            $discount += $character->getEquipDiscount($this, $performer, $attachment);
+        foreach ($this->cards as $card) {
+            $discount += $card->getEquipDiscount($this, $performer, $attachment);
         }
+
         return $discount;
     }
 

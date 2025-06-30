@@ -105,7 +105,8 @@ abstract class Character extends Card
 
     public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment) : int
     {
-        $discount = 0;
+        $discount = parent::getEquipDiscount($theah, $performer, $attachment);
+        
         foreach ($this->Attachments as $attachmentId)
         {
             $attachment = $theah->getCardById($attachmentId);

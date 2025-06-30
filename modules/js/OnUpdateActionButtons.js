@@ -165,6 +165,10 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
+        'planningPhaseResolveSchemes_01147': () => {
+            this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
+        },
+
         'planningPhaseResolveSchemes_01150': () => {
             this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
             this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
@@ -349,6 +353,9 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaEquipActionPayForAttachmentFromPlay': () => {
+            if (args._private.equipType === this.LETS_HAGGLE_EQUIP_TYPE) 
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backLetsHaggle'}));
+            else
             this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
         },
@@ -447,6 +454,12 @@ onUpdateActionButtons: function( stateName, args )
                     this.addActionButton(`actEngage`, _('Engage'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
                 this.addActionButton(`actSendHome`, _('Send Home'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             }
+        },
+
+        'highDramaPhase01147': () => {
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaPhase01180': () => {

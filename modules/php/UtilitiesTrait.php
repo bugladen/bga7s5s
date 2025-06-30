@@ -422,4 +422,101 @@ trait UtilitiesTrait
         return [true, $totals];
     }
 
+    function revealFirstCardTypeFromCityDeck(string $type): ?Card
+    {
+        $count = $this->cards->countCardInLocation(Game::LOCATION_CITY_DECK);
+        $cards = $this->getCardsOnTopOfCityDeck($count);
+        $revealed = [];
+        $names = [];
+        $found = false;
+        $cardFound = null;
+        foreach ($cards as $cardInfo)
+        {
+            $card = $this->getCardObjectFromDb($cardInfo['id']);
+            if ($type == "Attachment")
+            {
+                if ($card instanceof Attachment)
+                {
+                    $revealed[] = $cardInfo['id'];
+                    $found = true;
+                    $cardFound = $card;
+                    $names[] = $card->Name;
+                    break;
+                }
+            }
+            else
+            {
+                if (in_array($type, $card->Traits))
+                {
+                    $revealed[] = $cardInfo['id'];
+                    $found = true;
+                    $cardFound = $card;
+                    $names[] = $card->Name;
+                    break;
+                }
+            }
+
+            $revealed[] = $cardInfo['id'];
+            $names[] = $card->Name;
+            unset($card);                
+        }
+
+        // Per rules team, if no mercenary is found, shuffle the discard pile into the deck and try again.
+        if ( ! $found)
+        {
+            $this->shuffleCityDiscardIntoCityDeck();
+
+            //Stick cards already revealed in the top of the deck
+            $revealed = array_reverse($revealed);
+            foreach ($revealed as $cardId)
+            {
+                $this->cards->insertCardOnExtremePosition($cardId, Game::LOCATION_CITY_DECK, true);
+            }
+
+            $revealed = [];
+            $names = [];
+            $count = $this->cards->countCardInLocation(Game::LOCATION_CITY_DECK);
+            $cards = $this->getCardsOnTopOfCityDeck($count);    
+            foreach ($cards as $cardInfo)
+            {
+                $card = $this->getCardObjectFromDb($cardInfo['id']);
+                if ($type == "Attachment")
+                {
+                    if ($card instanceof Attachment)
+                    {
+                        $revealed[] = $cardInfo['id'];
+                        $found = true;
+                        $cardFound = $card;
+                        $names[] = $card->Name;
+                        break;
+                    }
+                }
+                else
+                {
+                    if (in_array($type, $card->Traits))
+                    {
+                        $revealed[] = $cardInfo['id'];
+                        $found = true;
+                        $cardFound = $card;
+                        $names[] = $card->Name;
+                        break;
+                    }
+                }
+
+                $revealed[] = $cardInfo['id'];
+                $names[] = $card->Name;
+                unset($card);
+            }
+        }
+
+        $names = implode(", ", $names);
+        $this->notifyAllPlayers("message", clienttranslate('A total of ${count} City Cards were revealed: ${names}'), [
+            'count' => count($revealed),
+            'names' => $names,
+        ]);
+
+        $this->globals->set(Game::REVEALED_CARDS, json_encode($revealed));
+
+        return $cardFound;
+    }
 }

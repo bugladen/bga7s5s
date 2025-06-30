@@ -325,7 +325,8 @@ trait ArgumentsTrait
                 "active" => [
                     "performerId" => $performerId,
                     "chosenAttachmentId" => $attachmentId,
-                    "discount" => $this->globals->get(GAME::DISCOUNT)
+                    "discount" => $this->globals->get(GAME::DISCOUNT),
+                    "equipType" => $this->globals->get(Game::EQUIP_TYPE)
                 ]
             ],
         ];

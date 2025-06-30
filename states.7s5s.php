@@ -17,6 +17,27 @@ $machinestates += [
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
 
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01147 => [
+        "name" => "planningPhaseResolveSchemes_01147",
+        "description" => clienttranslate('Let\'s Haggle: Your opponent(s) must acknowledge revealed cards.'),
+        "descriptionmyturn" => clienttranslate('Let\'s Haggle: ${you} must acknowledge revealed cards:'),
+        "type" => "multipleactiveplayer",
+        "args" => "argsForState",
+        "action" => "stMultiPlayerInit",
+        "possibleactions" => [
+            "actMultipleOk", 
+        ],
+        "transitions" => ["multipleOk" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+    ],
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01147_2 => [
+        "name" => "planningPhaseResolveSchemes_01147_2",
+        "type" => "game",
+        "action" => "stFromCard",
+        "transitions" => [
+            "" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01029 => [
         "name" => "highDramaPhase01029",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -53,7 +74,6 @@ $machinestates += [
             "notFound" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
-
     States::HIGH_DRAMA_PLAYER_TURN_01035_3 => [
         "name" => "highDramaPhase01035_3",
         "description" => clienttranslate('${actplayer} is choosing whether to recruit the revealed mercenary.'),
@@ -129,6 +149,22 @@ $machinestates += [
         "transitions" => [
             "back" => States::HIGH_DRAMA_PLAYER_TURN_01044_2,
             "manipulationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01147 => [
+        "name" => "highDramaPhase01147",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Let\'s Haggle: ${you} must choose an attachment to Equip from the Bazaar: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
+            "attachmentSelected" => States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_PLAY
         ]
     ],
 

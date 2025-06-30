@@ -112,6 +112,18 @@ onLeavingState: function( stateName )
             this.resetCityLocations();
         },
 
+        'planningPhaseResolveSchemes_01147' : () => {
+            //Exposed to all players
+            let card = this.cardProperties[this.clientStateArgs.letsHaggleId];
+            let image = $(`${card.divId}_image`);
+            dojo.removeClass(image, 'chosen');
+
+            dojo.addClass('choose_container', 'hidden');
+            dojo.addClass('chooseList', 'hidden');
+            this.chooseList.removeAll();
+            this.chooseList.setSelectionMode(0);
+        },
+
         'planningPhaseResolveSchemes_01150': () => {
             dojo.removeClass("forum-image", 'darkened');
             this.resetCityLocations();

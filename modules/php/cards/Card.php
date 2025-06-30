@@ -132,6 +132,8 @@ abstract class Card
         }
     }
 
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment): int { return 0; }
+
     public function getParleyDiscount(Character $performer, bool $parleying) : int { return 0; }
 
     public function eventCheck(Event $event)

@@ -61,6 +61,7 @@ class Game extends \Table
     final const EQUIP_TYPE = "equipType";
     final const NORMAL_EQUIP_TYPE = 0;
     final const SMUGGLED_ITEM_EQUIP_TYPE = 1;
+    final const LETS_HAGGLE_EQUIP_TYPE = 2;
     
     //Claim global variables
     final const CLAIMING_PLAYER = "claimingPlayer";

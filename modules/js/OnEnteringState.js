@@ -293,6 +293,24 @@ onEnteringState: function( stateName, args )
             }
         },
 
+        'planningPhaseResolveSchemes_01147' : () => {
+            dojo.removeClass('choose_container', 'hidden');
+            dojo.removeClass('chooseList', 'hidden');
+            
+            args.args.args.cards.forEach((card) => {
+                this.addCardToDeck(this.chooseList, card);
+            });
+
+            card = this.cardProperties[args.args.args.letsHaggleId];
+            let image = $(`${card.divId}_image`);
+            dojo.addClass(image, 'chosen');
+            this.clientStateArgs.letsHaggleId = args.args.args.letsHaggleId;
+
+            var translated = _("Let's Haggle: Revealed Cards: ");
+            $('choose_container_name').innerHTML = translated;
+            this.chooseList.setSelectionMode(0);
+        },
+
         'planningPhaseResolveSchemes_01150': () => {
             if (this.isCurrentPlayerActive()) {
                 const locations = this.getListofAvailableCityLocationImages();
@@ -663,10 +681,12 @@ onEnteringState: function( stateName, args )
                 let image = $(`${performer.divId}_image`);
                 this.clearCardAsSelectable(image);
                 dojo.addClass(image, 'chosen');
+                this.clientStateArgs.performerId = performer.id;
     
                 const card = this.cardProperties[args.args._private.chosenAttachmentId];
                 image = $(`${card.divId}_image`);
                 dojo.addClass(image, 'chosen');
+                this.clientStateArgs.chosenAttachmentId = card.id;
     
                 const costDiv = $(`${card.divId}_wealth_cost`);
                 const cost = parseInt(costDiv.innerHTML);
@@ -674,7 +694,7 @@ onEnteringState: function( stateName, args )
                 discountedCost = discountedCost < 0 ? 0 : discountedCost;
                 if (discountedCost !== cost)
                 {
-                    cost.innerHTML = parseInt(discountedCost);
+                    costDiv.innerHTML = parseInt(discountedCost);
                     dojo.addClass(costDiv, 'discounted-wealth-cost');
                 }
         
@@ -932,6 +952,26 @@ onEnteringState: function( stateName, args )
                 image = $(`${card.divId}_image`);
                 dojo.addClass(image, 'chosen');
                 this.clientStateArgs.opposingCharacterId = args.args.args.opposingCharacterId;
+            }
+        },
+
+        'highDramaPhase01147': () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.numberOfCardsSelectable = 1;
+                card = this.cardProperties[args.args.args.performerId];
+                const image = $(`${card.divId}_image`);
+                this.clearCardAsSelectable(image);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.performerId = args.args.args.performerId;
+
+                args.args.args.attachmentsInPlay.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+                this.clientStateArgs.attachmentsInPlay = args.args.args.attachmentsInPlay;
             }
         },
 

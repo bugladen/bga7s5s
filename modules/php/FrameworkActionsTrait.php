@@ -932,6 +932,7 @@ trait FrameworkActionsTrait
 
         $attachmentId = $this->globals->get(GAME::CHOSEN_CARD);        
         $attachment = $this->getCardObjectFromDb($attachmentId);
+        $equipType = $this->globals->get(Game::EQUIP_TYPE);
 
         //Sanity checks
         if ($attachment->Location == Game::LOCATION_HAND)
@@ -943,10 +944,19 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
             }
         }
-        if ($attachment->Location != Game::LOCATION_HAND)
+        // Let's Haggle can equip attachments only from the Bazaar
+        if ($equipType == Game::LETS_HAGGLE_EQUIP_TYPE) 
+        {
+            if ($attachment->Location != Game::LOCATION_CITY_BAZAAR)
+            {
+                throw new \BgaUserException(self::_("Let's Haggle: Attachment is not at Bazaar."));
+            }
+        }        
+        else if ($attachment->Location != Game::LOCATION_HAND)
         {
             $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($performer->Location);
             $attachmentIds = array_map(function($attachment) { return $attachment->Id; }, $attachmentsAtLocation);
+
             if (!in_array($attachmentId, $attachmentIds)) {
                 throw new \BgaUserException(self::_("Attachment is not at Performer's Location."));
             }

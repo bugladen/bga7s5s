@@ -517,6 +517,7 @@ $machinestates = [
                 "01143" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01143,
                 "01144" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144,
                 "01145" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145,
+                "01147" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01147,
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
                 "01152" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_SCHEMES_REACTIONS,
@@ -992,6 +993,7 @@ $machinestates = [
                 "01029" => States::HIGH_DRAMA_PLAYER_TURN_01029,
                 "01035" => States::HIGH_DRAMA_PLAYER_TURN_01035,
                 "01044" => States::HIGH_DRAMA_PLAYER_TURN_01044,
+                "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
                 "01187" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION,
                 "01185" => States::HIGH_DRAMA_PLAYER_TURN_01185,
@@ -1548,10 +1550,12 @@ $machinestates = [
             "possibleactions" => [
                 "actHighDramaEquipAttachment", 
                 "actBack",
+                "actBackWithTransition",
             ],
             "transitions" => [
                 "attachmentEquipped" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
-                "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY
+                "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY,
+                "backLetsHaggle" => States::HIGH_DRAMA_PLAYER_TURN_01147
             ]
         ],
 

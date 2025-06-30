@@ -35,7 +35,8 @@ abstract class Attachment extends Card implements IWealthCost
 
     public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment): int
     {
-        return 0;
+        $discount = parent::getEquipDiscount($theah, $performer, $attachment);
+        return $discount;
     }
 
     public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction): int

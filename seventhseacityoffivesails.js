@@ -68,6 +68,20 @@ function (dojo, declare) {
             this.LOCATION_PLAYER_DISCARD = 'Player Discard';
             this.LOCATION_PLAYER_LOCKER = 'Player Locker';
 
+            //Recruit types
+            this.NORMAL_RECRUIT_TYPE = 0;
+            this.KASPAR_RECRUIT_TYPE = 1;
+
+            //Equip types
+            this.NORMAL_EQUIP_TYPE = 0;
+            this.SMUGGLED_ITEM_EQUIP_TYPE = 1;
+            this.LETS_HAGGLE_EQUIP_TYPE = 2;
+
+            //Recruit types
+            this.NORMAL_RECRUIT_TYPE = 0;
+            this.KASPAR_RECRUIT_TYPE = 1;
+
+
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 100;
 
