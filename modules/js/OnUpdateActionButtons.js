@@ -325,7 +325,9 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaEquipActionChooseAttachmentLocation': () => {
-            if (args._private.equipType === 0) 
+            if (args._private.equipType === this.SMUGGLED_ITEM_EQUIP_TYPE)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backSmuggledItem'}));
+            else if (args._private.equipType === this.NORMAL_EQUIP_TYPE) 
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             if (args._private.attachmentsInHand.length > 0) {
                 this.addActionButton(`actChooseFromHand`, _('Equip from Hand'), () => this.bgaPerformAction('actSimpleTransition', {transition: 'equipFromHand'}));

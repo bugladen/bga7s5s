@@ -58,6 +58,7 @@ class Game extends \Table
     final const CRYSTAL_EYE_TARGET = "Crystal Eye Target";
 
     //Equip global variables
+    final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';
     final const EQUIP_TYPE = "equipType";
     final const NORMAL_EQUIP_TYPE = 0;
     final const SMUGGLED_ITEM_EQUIP_TYPE = 1;

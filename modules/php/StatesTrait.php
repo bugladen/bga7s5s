@@ -1171,6 +1171,8 @@ trait StatesTrait
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
         $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
 
+        $this->globals->delete(Game::SMUGGLED_ITEM_ATTACHMENT_ID);
+
         $currentPlayerId = $this->globals->get(Game::CURRENT_PLAYER);
         $nextPlayerId = $this->getPlayerAfter($currentPlayerId);
         $this->globals->set(Game::CURRENT_PLAYER, $nextPlayerId);

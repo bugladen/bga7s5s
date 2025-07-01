@@ -43,17 +43,7 @@ class Action_01187 extends AttachmentAction
 
             $smuggledItem = $this->getOwningCard($event->theah);
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${player_name} is performing the Action from <strong>${card_name}</strong>.'), [
-                'i18n' => ['card_name', 'location'],
-                "player_name" => $event->theah->game->getPlayerNameById($event->playerId),
-                "card_name" => $smuggledItem->Name,
-            ]);
-
-            $unattached = EventFactory::createAttachmentUnequippedEvent($event->playerId, $performer->Id, $smuggledItem->Id);
-            $event->theah->queueEvent($unattached);
-
-            $discard = EventFactory::createCardAddedToCityDiscardPileEvent($smuggledItem->ControllerId, $smuggledItem->Id, $smuggledItem->Location);
-            $event->theah->queueEvent($discard);
+            $event->theah->game->globals->set(Game::SMUGGLED_ITEM_ATTACHMENT_ID, $smuggledItem->Id);
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01187");
             $event->theah->queueEvent($transition);

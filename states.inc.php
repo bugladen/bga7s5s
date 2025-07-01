@@ -1488,11 +1488,13 @@ $machinestates = [
             "possibleactions" => [
                 "actSimpleTransition", 
                 "actBack",
+                "actBackWithTransition",
             ],
             "transitions" => [
                 "equipFromHand" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND, 
                 "equipFromPlay" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY, 
-                "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER
+                "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER,
+                "backSmuggledItem" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION
             ]
         ],
         States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND => [

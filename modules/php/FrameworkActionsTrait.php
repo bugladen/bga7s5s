@@ -993,6 +993,25 @@ trait FrameworkActionsTrait
 
         $playerId = $this->getActivePlayerId();
 
+        // If the Equip event was caused by Smuggled Item, we need to unequip it and discard it
+        if ($equipType == Game::SMUGGLED_ITEM_EQUIP_TYPE)
+        {
+            $smuggledItemId = $this->globals->get(Game::SMUGGLED_ITEM_ATTACHMENT_ID);
+            $smuggledItem = $this->theah->getCardById($smuggledItemId);
+
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} is performing the Action from <strong>${card_name}</strong>.'), [
+                'i18n' => ['card_name', 'location'],
+                "player_name" => $this->getPlayerNameById($playerId),
+                "card_name" => $smuggledItem->Name,
+            ]);
+
+            $smuggledUnattachedEvent = EventFactory::createAttachmentUnequippedEvent($playerId, $performer->Id, $smuggledItem->Id);
+            $this->theah->queueEvent($smuggledUnattachedEvent);
+
+            $smuggledDiscardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($smuggledItem->ControllerId, $smuggledItem->Id, $smuggledItem->Location);
+            $this->theah->queueEvent($smuggledDiscardEvent);
+        }
+
         //Some attachments actually attach to different targets
         $actualTargetId = $attachment->getRequiredAttachTargetId($this->theah, $performer->Id);
 
