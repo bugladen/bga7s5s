@@ -754,18 +754,6 @@ $machinestates = [
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
     
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01150 => [
-            "name" => "planningPhaseResolveSchemes_01150",
-            "description" => clienttranslate('Parley Gone Wrong: ${actplayer} may choose a city location to move a Reknown from.'),
-            "descriptionmyturn" => clienttranslate('Parley Gone Wrong: ${you} may choose a city location to move a Reknown from:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actPlanningPhase_01150", 
-                "actPass" 
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-        ],
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01152 => [
             "name" => "planningPhaseResolveSchemes_01152",
             "description" => clienttranslate('Until Morale Improves: ${actplayer} may choose a City Location to place a Reknown onto.'),

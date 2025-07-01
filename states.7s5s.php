@@ -38,6 +38,19 @@ $machinestates += [
         ]
     ],
 
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01150 => [
+        "name" => "planningPhaseResolveSchemes_01150",
+        "description" => clienttranslate('Parley Gone Wrong: ${actplayer} may choose a city location to move a Reknown from.'),
+        "descriptionmyturn" => clienttranslate('Parley Gone Wrong: ${you} may choose a city location to move a Reknown from:'),
+        "type" => "activeplayer",
+        "args" => "argsEmpty",
+        "possibleactions" => [
+            "actPlanningPhase_01150", 
+            "actPass" 
+        ],
+        "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01029 => [
         "name" => "highDramaPhase01029",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

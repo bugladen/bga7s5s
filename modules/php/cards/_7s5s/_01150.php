@@ -6,6 +6,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -41,9 +43,9 @@ class _01150 extends Scheme
 
             $game = $event->theah->game;
 
-            $game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves. A Reknown will be added to the The Forum.  Opponents MAY then choose a city location. One Reknown will move from chosen location to The Forum.'), [
+            $game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> now resolves. A Reknown will be added to the The Forum.  Opponents MAY then choose a city location. One Reknown will move from chosen location to The Forum.'), [
                 'i18n' => ['scheme_name'],
-                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+                "scheme_name" => $this->Name,
             ]);
 
             $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
@@ -70,6 +72,7 @@ class _01150 extends Scheme
             }
         }
 
+        //When a player adds Reknown to The Forum, they may intervene this turn
         if ($event instanceof EventReknownAddedToLocation && $this->Location == Game::LOCATION_PLAYER_HOME && $event->location == Game::LOCATION_CITY_FORUM) 
         {
             $game = $event->theah->game;
@@ -80,17 +83,45 @@ class _01150 extends Scheme
 
             $playerNames = [];
             foreach ($this->interveneList as $playerId) {
-                    $playerName = $game->getUniqueValueFromDB("SELECT player_name from player where player_id = {$playerId}");
-                    $playerNames[] = $playerName;
+                $playerNames[] = $game->getPlayerNameById($playerId);
             }
-            $playerName = implode(", ", $playerNames);
+            $playerNames = implode(", ", $playerNames);
 
-            $game->notifyAllPlayers("message", clienttranslate('${card_name}: ${player_name} has/have added Reknown to The Forums and may intervene this turn.'), [
+            $game->notifyAllPlayers("message", clienttranslate('<strong>${card_name}</strong>: ${player_names} has/have added Reknown to The Forums and may intervene this turn.'), [
                 'i18n' => ['card_name'],
-                "card_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
-                "player_name" => $playerName
+                "card_name" => $this->Name,
+                "player_names" => $playerNames
             ]);
+        }
 
+        //Reset the intervene list at the end of the day
+        if ($event instanceof EventDuskEndOfDay)
+        {
+            $this->interveneList = [];
+            $this->IsUpdated = true;
+        }
+    }
+
+    public function eventCheck(Event $event)
+    {
+        parent::eventCheck($event);
+
+        //Only allow intervene at The Forum if the player contributed Reknown to The Forum
+        if ($event instanceof EventCharacterIntervened && $this->Location == Game::LOCATION_PLAYER_HOME)
+        {
+            $game = $event->theah->game; 
+            
+            //We are going to use the old target's location as the Challenge Location
+            $oldTarget = $event->theah->getCharacterById($event->oldTargetId);
+            if ($oldTarget->Location == Game::LOCATION_CITY_FORUM)
+            {
+                $playerId = $event->playerId;
+
+                if ( ! in_array($playerId, $this->interveneList))
+                {
+                    throw new \BgaUserException($game->translate("Parley Gone Wrong: You cannot intervene at The Forum because you did not contribute Reknown to The Forum."));
+                }
+            }
         }
     }
 }
