@@ -1657,10 +1657,12 @@ $machinestates = [
                 "possibleactions" => [
                     "actHighDramaRecruitActionPayForMercenary", 
                     "actBack",
+                    "actBackWithTransition",
                 ],
                 "transitions" => [
                     "mercenaryPaidFor" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
-                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY
+                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY,
+                    "backKaspar" => States::HIGH_DRAMA_PLAYER_TURN_01035_4
                 ]
             ],
 

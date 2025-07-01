@@ -278,8 +278,10 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaRecruitActionPayForMercenary': () => {
-            if (args.recruitType == 0)
+            if (args.recruitType == this.NORMAL_RECRUIT_TYPE)
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            else if (args.recruitType == this.KASPAR_RECRUIT_TYPE)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backKaspar'}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onRecruitCharacterConfirmed());
         },
 
@@ -358,7 +360,7 @@ onUpdateActionButtons: function( stateName, args )
             if (args._private.equipType === this.LETS_HAGGLE_EQUIP_TYPE) 
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backLetsHaggle'}));
             else
-            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
         },
 

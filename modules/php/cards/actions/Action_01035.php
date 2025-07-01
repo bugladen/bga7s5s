@@ -55,7 +55,7 @@ class Action_01035 extends CharacterAction
             $event->theah->eventCheck($engageEvent);
             $event->queueEvent($engageEvent);
             
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Kaspar</strong> is performing his Recruit Action from the City Deck.'), []);
+            $game->notifyAllPlayers("message", clienttranslate('<strong>Kaspar</strong> performed his Recruit Action from the City Deck.'), []);
             $deck = $game->getGameDeckObject();
 
             $count = $deck->countCardInLocation(Game::LOCATION_CITY_DECK);
