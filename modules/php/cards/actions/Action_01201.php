@@ -39,7 +39,7 @@ class Action_01201 extends CharacterAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $event->theah->game->notifyAllPlayers('message', clienttranslate('${player_name} is performing Ravenna\'s action to wound Ravenna and draw a card'), [
+            $event->theah->game->notifyAllPlayers('message', clienttranslate('${player_name} performed Ravenna\'s action to wound Ravenna and draw a card'), [
                 'player_name' => $event->theah->game->getActivePlayerName()
             ]);
 

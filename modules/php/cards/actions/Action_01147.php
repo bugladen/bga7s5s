@@ -80,6 +80,7 @@ class Action_01147 extends SchemeCityAction
             $game->globals->set(Game::DISCOUNT, $discount);
     
             $game->globals->set(Game::EQUIP_TYPE, Game::LETS_HAGGLE_EQUIP_TYPE);
+            
             $game->gamestate->nextState("attachmentSelected");
         }
     }

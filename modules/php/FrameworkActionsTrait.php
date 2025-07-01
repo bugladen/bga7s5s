@@ -999,8 +999,8 @@ trait FrameworkActionsTrait
             $smuggledItemId = $this->globals->get(Game::SMUGGLED_ITEM_ATTACHMENT_ID);
             $smuggledItem = $this->theah->getCardById($smuggledItemId);
 
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} is performing the Action from <strong>${card_name}</strong>.'), [
-                'i18n' => ['card_name', 'location'],
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} performed the Action from <strong>${card_name}</strong>.'), [
+                'i18n' => ['card_name'],
                 "player_name" => $this->getPlayerNameById($playerId),
                 "card_name" => $smuggledItem->Name,
             ]);
@@ -1010,6 +1010,16 @@ trait FrameworkActionsTrait
 
             $smuggledDiscardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($smuggledItem->ControllerId, $smuggledItem->Id, $smuggledItem->Location);
             $this->theah->queueEvent($smuggledDiscardEvent);
+        }
+
+        //If the Equip event was caused by Let's Haggle, we need to announce it here
+        if ($equipType == Game::LETS_HAGGLE_EQUIP_TYPE)
+        {
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} performed the Action from <strong>${card_name}</strong>.'), [
+                'i18n' => ['card_name'],
+                "player_name" => $this->getPlayerNameById($playerId),
+                "card_name" => "Let's Haggle",
+            ]);
         }
 
         //Some attachments actually attach to different targets
