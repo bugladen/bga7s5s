@@ -37,10 +37,10 @@ class _01016 extends Scheme
         //Two locations will each get one Reknown.
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves. ${player_name} must choose two city locations to place reknown onto. 
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> now resolves. ${player_name} must choose two city locations to place reknown onto. 
             Then they must search their deck for a Red Hand Thug, reaveal it, and put it in their hand.'), [
                 'i18n' => ['scheme_name'],
-                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+                "scheme_name" => $this->Name,
                 "player_name" => $event->playerName,
             ]);
 

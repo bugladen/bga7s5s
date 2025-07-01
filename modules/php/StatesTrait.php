@@ -441,7 +441,7 @@ trait StatesTrait
         $this->globals->set(Game::PASS_COUNT, 0);
 
         //Notify players that it is high drama phase
-        $this->notifyAllPlayers("message", clienttranslate('<span style="font-weight:bold">HIGH DRAMA PHASE</span>.'), []);
+        $this->notifyAllPlayers("message", clienttranslate('<strong>HIGH DRAMA PHASE</strong>.'), []);
 
         $event = $this->theah->createEvent(Events::PhaseHighDrama);
         $this->theah->queueEvent($event);

@@ -36,9 +36,9 @@ abstract class Leader extends Character
                 $this->ModifiedPanache += $event->scheme->PanacheModifier;
                 $this->IsUpdated = true;
 
-                $event->theah->game->notifyAllPlayers("panacheModified", clienttranslate('${leader_name}: Panache modified to ${panache} by ${scheme_name}'), [
+                $event->theah->game->notifyAllPlayers("panacheModified", clienttranslate('<strong>${leader_name}</strong>: Panache modified to ${panache} by ${scheme_name}'), [
                     'i18n' => ['leader_name', 'scheme_name'],
-                    "leader_name" => "<span style='font-weight:bold'>$this->Name</span>",
+                    "leader_name" => $this->Name,
                     "panache" => $this->ModifiedPanache,
                     "scheme_name" => $event->scheme->Name,
                     "playerId" => $this->ControllerId,

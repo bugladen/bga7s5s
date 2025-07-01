@@ -190,9 +190,9 @@ trait EventHub
                 $event->card->Location = Game::LOCATION_HAND;
                 $event->card->IsUpdated = true;
 
-                $this->game->notifyPlayer($event->playerId, "drawCard", 'Private: You drew ${card_name} because of ${reason}.', [
+                $this->game->notifyPlayer($event->playerId, "drawCard", clienttranslate('Private: You drew <strong>${card_name}</strong> because of ${reason}.'), [
                     'i18n' => ['card_name', 'reason'],
-                    "card_name" => "<span style='font-weight:bold'>{$event->card->Name}</span>",
+                    "card_name" => $event->card->Name,
                     "card" => $event->card->getPropertyArray($this->game),
                     "reason" => $event->reason,
                 ]);
@@ -445,11 +445,11 @@ trait EventHub
                 $character->IsUpdated = true;
 
                 // Notify players of recruited character
-                $this->game->notifyAllPlayers("characterRecruited", clienttranslate('${player_name} recruits ${character_name} at a discount of ${discount} for a cost of ${cost} Wealth.'), [
+                $this->game->notifyAllPlayers("characterRecruited", clienttranslate('${player_name} recruits <strong>${character_name}</strong> at a discount of ${discount} for a cost of ${cost} Wealth.'), [
                     'i18n' => ['character_name'],
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "character_name" => "<span style='font-weight:bold'>{$event->character->Name}</span>",
+                    "character_name" => $event->character->Name,
                     "characterId" => $event->character->Id,
                     "discount" => $event->discount,
                     "cost" => $event->cost,
@@ -468,9 +468,9 @@ trait EventHub
                     $deck->moveCard($event->cardId, $event->location);
                     
                     // Notify players that card has been played
-                    $theah->game->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_name} added to ${location} from the city deck'), [
+                    $theah->game->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('<strong>${card_name}</strong> added to ${location} from the city deck'), [
                         'i18n' => ['card_name', 'location'],
-                        "card_name" => "<span style='font-weight:bold'>{$card->Name}</span>",
+                        "card_name" => $card->Name,
                         "location" => $event->location,
                         "card" => $card->getPropertyArray($theah->game)
                     ]);
@@ -652,10 +652,10 @@ trait EventHub
                 $event->scheme->IsUpdated = true;
 
                 // Notify players of selected scheme
-                $this->game->notifyAllPlayers("approachSchemePlayed", clienttranslate('${player_name} plays ${scheme_name} as their Approach Scheme.'), [
+                $this->game->notifyAllPlayers("approachSchemePlayed", clienttranslate('${player_name} plays <strong>${scheme_name}</strong> as their Approach Scheme.'), [
                     'i18n' => ['scheme_name'],
                     "player_name" => $event->playerName,
-                    "scheme_name" => "<span style='font-weight:bold'>{$event->scheme->Name}</span>",
+                    "scheme_name" => $event->scheme->Name,
                     "player_id" => $event->playerId,
                     "scheme" => $event->scheme->getPropertyArray($this->game),
                 ]);

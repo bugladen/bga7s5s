@@ -46,11 +46,11 @@ class _01044 extends Scheme implements IHasActions
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves.  
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> now resolves.  
             Reknown will be added to The Docks and The Grand Bazaar. 
             ${player_name} will now search their discard pile for an attachment.'), [
                 'i18n' => ['scheme_name'],
-                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+                "scheme_name" => $this->Name,
                 "player_name" => $event->theah->game->getPlayerNameById($event->playerId),
             ]);
 

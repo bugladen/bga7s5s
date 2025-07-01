@@ -38,10 +38,10 @@ class _01143 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_name} now resolves.  Reknown will be added to The City Forum.
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> now resolves.  Reknown will be added to The City Forum.
             Then ${player_name} may choose a city location to place reknown onto. If they do, all City Cards will be discarded from that location.'), [
                 'i18n' => ['scheme_name'],
-                "scheme_name" => "<span style='font-weight:bold'>{$this->Name}</span>",
+                "scheme_name" => $this->Name,
                 "player_name" => $event->playerName,
             ]);
 
