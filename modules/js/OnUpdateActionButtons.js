@@ -380,9 +380,9 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaChallengeActionChooseTarget': () => {
             if (this.isCurrentPlayerActive()) {
-                if (args.challengeType == 1)
+                if (args.challengeType == this.TRISKELION_CHALLENGE_TYPE)
                     this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backTriskelion'}));
-                else if (args.challengeType == 0)
+                else if (args.challengeType == this.NORMAL_CHALLENGE_TYPE)
                     this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
 
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
