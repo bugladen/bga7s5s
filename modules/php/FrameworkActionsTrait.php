@@ -1393,13 +1393,19 @@ trait FrameworkActionsTrait
 
     public function actHighDramaChallengeActionReject()
     {
+        $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
+        if ($challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE)
+        {
+            throw new \BgaUserException(self::_("Épée Sanglante: Refusing a Challenge is not allowed."));
+        }
+
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
 
         $event = EventFactory::createChallengeRejectedEvent($performer->Id, $target->Id);
         $this->theah->eventCheck($event);
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} REJECTS The Challenge.'), [
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} REFUSES The Challenge.'), [
             "player_name" => $this->getActivePlayerName(),
         ]);
 

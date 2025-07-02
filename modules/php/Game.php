@@ -103,6 +103,7 @@ class Game extends \Table
     final const CHALLENGE_TYPE = "challengeType";
     final const NORMAL_CHALLENGE_TYPE = 0;
     final const TRISKELION_CHALLENGE_TYPE = 1;
+    final const EPEE_SANGLANTE_CHALLENGE_TYPE = 2;
 
     //Duel global variables
     //Duel Names

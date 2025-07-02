@@ -168,7 +168,7 @@ class Theah
         }
     }
 
-    public function runEvents()
+    public function runEvents(bool $debug = false)
     {
         while (true) {
            
@@ -204,11 +204,11 @@ class Theah
                 }
             }
 
-            if ($event instanceof EventChangeActivePlayer) {
+            if (! $debug && $event instanceof EventChangeActivePlayer) {
                 $this->game->gamestate->changeActivePlayer($event->playerId);
             }
 
-            if ($event instanceof EventTransition) {                
+            if (! $debug && $event instanceof EventTransition) {                
                 if($event->getPlayerId()) {
                     $this->game->gamestate->changeActivePlayer($event->getPlayerId());
                 }
@@ -220,7 +220,9 @@ class Theah
             }
         }
 
-        $this->game->gamestate->nextState('endOfEvents');
+        if (! $debug) {
+            $this->game->gamestate->nextState('endOfEvents');
+        }
     }
 
     function getAdjacentCityLocations($location, bool $includeHome = true): array
@@ -466,6 +468,17 @@ class Theah
         $characters = [];
         foreach ($this->cards as $card) {
             if ($card instanceof Character && $card->ControllerId == $playerId && $card->Location != Game::LOCATION_HAND) {
+                $characters[] = $card;
+            }
+        }
+        return $characters;
+    }
+
+    function getCharactersInCityByPlayerId($playerId): array
+    {
+        $characters = [];
+        foreach ($this->cards as $card) {
+            if ($card instanceof Character && $card->ControllerId == $playerId && $this->cardInCity($card)) {
                 $characters[] = $card;
             }
         }
@@ -778,12 +791,17 @@ class Theah
 
     function cardInCity(Card $card): bool
     {
+        return $this->locationInCity($card->Location);
+    }
+
+    function locationInCity(string $location): bool
+    {
         return 
-         $card->Location == Game::LOCATION_CITY_OLES_INN ||
-         $card->Location == Game::LOCATION_CITY_DOCKS ||
-         $card->Location == Game::LOCATION_CITY_FORUM ||
-         $card->Location == Game::LOCATION_CITY_BAZAAR ||
-         $card->Location == Game::LOCATION_CITY_GOVERNORS_GARDEN;
+         $location == Game::LOCATION_CITY_OLES_INN ||
+         $location == Game::LOCATION_CITY_DOCKS ||
+         $location == Game::LOCATION_CITY_FORUM ||
+         $location == Game::LOCATION_CITY_BAZAAR ||
+         $location == Game::LOCATION_CITY_GOVERNORS_GARDEN;
     }
 
     public function playerCanMove($playerId): bool

@@ -28,12 +28,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventClaimOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
@@ -296,6 +298,19 @@ class EventFactory
         return $event;
     }
 
+    public static function createCharacterInfluenceModifiedEvent(int $playerId, int $characterId, int $oldInfluence, int $newInfluence): EventCharacterInfluenceModified
+    {
+        $event = self::createEvent(Events::CharacterInfluenceModified);
+        if ($event instanceof EventCharacterInfluenceModified)
+        {
+            $event->PlayerId = $playerId;
+            $event->CharacterId = $characterId;
+            $event->OldInfluence = $oldInfluence;
+            $event->NewInfluence = $newInfluence;
+        }
+        return $event;
+    }
+
     public static function createCharacterPutIntoApproachDeckEvent(int $playerId, int $characterId): EventCharacterPutIntoApproachDeck
     {
         $event = self::createEvent(Events::CharacterPutIntoApproachDeck);
@@ -348,7 +363,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createChallengeRejectedEvent(int $challengerId, int $targetId): EventChallengeRejected
+public static function createChallengeRejectedEvent(int $challengerId, int $targetId): EventChallengeRejected
     {
         $event = self::createEvent(Events::ChallengeRejected);
         if ($event instanceof EventChallengeRejected)
@@ -428,6 +443,18 @@ class EventFactory
     {
         $event = self::createEvent(Events::PlayerGainsReknown);
         if ($event instanceof EventPlayerGainsReknown)
+        {
+            $event->playerId = $playerId;
+            $event->amount = $amount;
+        }
+
+        return $event;
+    }
+
+    public static function createPlayerLosesReknownEvent(int $playerId, int $amount): EventPlayerLosesReknown
+    {
+        $event = self::createEvent(Events::PlayerLosesReknown);
+        if ($event instanceof EventPlayerLosesReknown)
         {
             $event->playerId = $playerId;
             $event->amount = $amount;

@@ -568,6 +568,17 @@ trait StatesTrait
             $action->SetUsed($this->theah, true);
         }
 
+        if ($challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE)
+        {
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to use their Scheme Action <strong>Épée Sanglante</strong>.'), [
+                'player_name' => $this->getActivePlayerName($playerId),
+            ]);
+
+            $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+            $action = $this->theah->getInPlayActionById($actionId);
+            $action->SetUsed($this->theah, true);
+        }
+
         //Set the location of the challenge
         $this->globals->set(GAME::CHOSEN_LOCATION, $performer->Location);
 
@@ -1081,6 +1092,8 @@ trait StatesTrait
 
         if ($endingChallengerThreat == 0 && $endingDefenderThreat == 0)
         {
+            $this->notifyAllPlayers("message", clienttranslate('No Threat remains in either player pool.'), []);
+            
             $this->gamestate->nextState("endOfDuel");
             return;
         }

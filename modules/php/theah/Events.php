@@ -92,6 +92,9 @@ class Events
     const CharacterWounded = 'EventCharacterWounded';
     const SchemeSentToLocker = 'EventSchemeSentToLocker';
 
+    //Character events
+    const CharacterInfluenceModified = 'EventCharacterInfluenceModified';
+
     //Dusk Phase events
     const DuskPhaseBegin = 'EventDuskPhaseBegin';
     const DuskPhaseEnd = 'EventDuskPhaseEnd';

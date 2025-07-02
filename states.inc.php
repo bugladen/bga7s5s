@@ -604,17 +604,6 @@ $machinestates = [
                 ],
                 "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
             ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01071 => [
-                "name" => "planningPhaseResolveSchemes_01071",
-                "description" => clienttranslate('Épée Sanglante: ${actplayer} must choose a city location to place Reknown onto.'),
-                "descriptionmyturn" => clienttranslate('Épée Sanglante: ${you} must choose a city location to place Reknown onto:'),
-                "type" => "activeplayer",
-                "args" => "argsEmpty",
-                "possibleactions" => [
-                    "actCityLocationsForReknownSelected", 
-                ],
-                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-            ],
             States::PLANNING_PHASE_RESOLVE_SCHEMES_01072 => [
                 "name" => "planningPhaseResolveSchemes_01072",
                 "description" => clienttranslate('Réputation Méritée: ${actplayer} must choose a city location to place Reknown onto that doesn\'t have any.'),
@@ -981,6 +970,7 @@ $machinestates = [
                 "01029" => States::HIGH_DRAMA_PLAYER_TURN_01029,
                 "01035" => States::HIGH_DRAMA_PLAYER_TURN_01035,
                 "01044" => States::HIGH_DRAMA_PLAYER_TURN_01044,
+                "01071" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
                 "01187" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION,
@@ -1059,6 +1049,7 @@ $machinestates = [
                 "targetChosen" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE, 
                 "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_PERFORMER,
                 "backTriskelion" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+                "backEpeeSanglante" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
             ]
         ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE => [

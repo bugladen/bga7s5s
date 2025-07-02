@@ -17,6 +17,18 @@ $machinestates += [
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
 
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01071 => [
+        "name" => "planningPhaseResolveSchemes_01071",
+        "description" => clienttranslate('Épée Sanglante: ${actplayer} must choose a city location to place Reknown onto.'),
+        "descriptionmyturn" => clienttranslate('Épée Sanglante: ${you} must choose a city location to place Reknown onto:'),
+        "type" => "activeplayer",
+        "args" => "argsEmpty",
+        "possibleactions" => [
+            "actCityLocationsForReknownSelected", 
+        ],
+        "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+    ],
+
     States::PLANNING_PHASE_RESOLVE_SCHEMES_01147 => [
         "name" => "planningPhaseResolveSchemes_01147",
         "description" => clienttranslate('Let\'s Haggle: Your opponent(s) must acknowledge revealed cards.'),

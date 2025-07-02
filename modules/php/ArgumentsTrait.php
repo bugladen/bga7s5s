@@ -558,7 +558,8 @@ trait ArgumentsTrait
         return [
             "performerId" => $performerId,
             "targetId" => $targetId,
-            "ids" => $ids
+            "ids" => $ids,
+            "challengeType" => $this->globals->get(Game::CHALLENGE_TYPE)
         ];
 
     }

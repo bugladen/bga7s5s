@@ -382,10 +382,12 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaChallengeActionChooseTarget': () => {
             if (this.isCurrentPlayerActive()) {
-                if (args.challengeType == this.TRISKELION_CHALLENGE_TYPE)
-                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backTriskelion'}));
-                else if (args.challengeType == this.NORMAL_CHALLENGE_TYPE)
+                if (args.challengeType == this.NORMAL_CHALLENGE_TYPE)
                     this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                else if (args.challengeType == this.TRISKELION_CHALLENGE_TYPE)
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backTriskelion'}));
+                else if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE)
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backEpeeSanglante'}));
 
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
@@ -405,8 +407,10 @@ onUpdateActionButtons: function( stateName, args )
         
         'highDramaChallengeActionAcceptChallenge': () => {
             this.addActionButton(`btnAccept`, _('Accept'), () => this.bgaPerformAction('actHighDramaChallengeActionAccept', {})) 
-            this.addActionButton(`btnReject`, _('Reject'), () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
+            this.addActionButton(`btnRefuse`, _('Refuse'), () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
             this.addActionButton(`actChooseCardSelected`, _('Intervene'), () => this.onChooseInPlayCardConfirmed());
+            if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE)
+                dojo.addClass('btnRefuse', 'disabled');
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 

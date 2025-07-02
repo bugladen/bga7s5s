@@ -29,6 +29,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardEngarded', 1000],
             ['cardMoved', 1000],
             ['characterDestroyed', 1000],
+            ['characterInfluenceModified', 1000],
             ['schemeSentToLocker', 1000],
             ['characterRecruited', 1000],
             ['characterHealed', 1000],
@@ -593,6 +594,23 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const player = this.gamedatas.players[args.playerId];
         player.locker.push(card);
+    },
+
+    notif_characterInfluenceModified: function( notif )
+    {
+        debug( 'notif_characterInfluenceModified' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        card.modifiedInfluence = args.newInfluence;
+
+        const element = $(`${card.divId}_influence_value`);
+        element.innerHTML = card.modifiedInfluence;
+        if (card.modifiedInfluence != card.influence)
+            dojo.addClass(element, 'modified-stat-value');
+        else
+            dojo.removeClass(element, 'modified-stat-value');
     },
 
     notif_schemeSentToLocker: function( notif )

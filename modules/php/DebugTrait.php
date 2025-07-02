@@ -5,6 +5,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 
 trait DebugTrait
 {
@@ -128,9 +130,28 @@ trait DebugTrait
         $this->DBQuery("UPDATE player SET player_score = $score WHERE player_id = $playerId");
     }
 
-    public function debug_SetRenownAtLocation(string $location, int $amount)
+    public function debug_AddReknownToLocation(string $location, int $amount)
     {
-        $this->setReknownForLocation($location, $amount);
+        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
+        if ($event instanceof EventReknownAddedToLocation)
+        {
+            $event->location = $location;
+            $event->amount = $amount;
+        }
+        $this->theah->queueEvent($event);
+        $this->theah->runEvents($debug = true);
+    }
+
+    public function debug_RemoveReknownFromLocation(string $location, int $amount)
+    {
+        $event = $this->theah->createEvent(Events::ReknownRemovedFromLocation);
+        if ($event instanceof EventReknownRemovedFromLocation)
+        {
+            $event->location = $location;
+            $event->amount = $amount;
+        }
+        $this->theah->queueEvent($event);
+        $this->theah->runEvents($debug = true);
     }
 
     public function dbgWoundCharacter(int $characterId, int $wounds, int $sourceId = 0)
@@ -144,6 +165,7 @@ trait DebugTrait
             $event->reason = 'Debug Wound';
         }
         $this->theah->queueEvent($event);
+        $this->theah->runEvents($debug = true);
     }
 
     public function dbgUnequipAttachment(int $playerId, int $characterId, int $attachmentId)

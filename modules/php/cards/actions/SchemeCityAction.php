@@ -33,8 +33,7 @@ abstract class SchemeCityAction extends CardAction
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
 
-        $performers += $theah->getCharactersInPlayByPlayerId($playerId);
-        $performers = array_values(array_filter($performers, fn($character) => $theah->cardInCity($character)));
+        $performers += $theah->getCharactersInCityByPlayerId($playerId);
 
         return $performers;
     }    

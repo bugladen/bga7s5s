@@ -24,6 +24,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
@@ -439,6 +440,24 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventCharacterInfluenceModified:
+                $handler = function (Theah $theah, EventCharacterInfluenceModified $event)
+                {
+                    $character = $theah->getCharacterById($event->CharacterId);
+                    $character->ModifiedInfluence = $event->NewInfluence;
+                    $character->IsUpdated = true;
+
+                    $theah->game->notifyAllPlayers("characterInfluenceModified", clienttranslate('The influence of ${character_name} went from ${oldInfluence} to ${newInfluence}.'), [
+                        'i18n' => ['character_name'],
+                        "character_name" => $character->Name,
+                        "characterId" => $character->Id,
+                        "oldInfluence" => $event->OldInfluence, 
+                        "newInfluence" => $event->NewInfluence,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventCharacterRecruited:
                 $character = $this->cards[$event->character->Id];
                 $character->ControllerId = $event->playerId;
@@ -563,6 +582,13 @@ trait EventHub
                     if ($reknown > 0) 
                     {
                         $reknown -= $event->amount;
+                        if ($reknown < 0)
+                        {
+                            //Adjust the amount to be the amount that will be lost
+                            $event->amount = $reknown;
+                            $reknown = 0;
+                        }
+
                         $db->setPlayerReknown($playerId, $reknown);
 
                         // Notify players that the player has lost reknown
