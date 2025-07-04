@@ -14,11 +14,40 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                         this.approachDeck.unselectItem(item.id);
                     }
                 });
+
+                //Get a count of available schemes and characters
+                let schemeCount = 0;
+                let characterCount = 0;
+                items = this.approachDeck.getAllItems();
+                items.forEach((item) => {
+                    card = this.cardProperties[item.id];
+                    if (card.type === 'Scheme') {
+                        schemeCount++;
+                    } else if (card.type === 'Character') {
+                        characterCount++;
+                    }
+                });
+
+                let schemeSelected = false;
+                let characterSelected = false;
+                items = this.approachDeck.getSelectedItems();
+                items.forEach((item) => {
+                    const type = this.cardProperties[item.id].type;            
+                    if (selectedType === type && item.id != item_id) {
+                        this.approachDeck.unselectItem(item.id);
+                    }
+                    
+                    if (type === 'Scheme') {
+                        schemeSelected = true;
+                    } else if (type === 'Character') {
+                        characterSelected = true;
+                    }
+                });
         
-                var items = this.approachDeck.getSelectedItems();
-        
-                // Enable the confirm button if we have 2 cards selected
-                if (items.length === 2) {
+                // Enable the confirm button if we have 2 cards selected or there are no schemes or characters left
+                if (schemeSelected && characterSelected || 
+                    (schemeCount === 0 && characterSelected) || 
+                    (schemeSelected && characterCount === 0)) {
                     dojo.removeClass('actEndPlanningPhase', 'disabled');
                 } else {
                     dojo.addClass('actEndPlanningPhase', 'disabled');

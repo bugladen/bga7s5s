@@ -87,20 +87,28 @@ trait EventHub
                 break;
 
             case $event instanceof EventApproachCharacterPlayed:
-                $character = $this->getCardById($event->characterId);
-                $this->cards[$event->characterId] = $character;
+                $handler = function (Theah $theah, EventApproachCharacterPlayed $event)
+                {
+                    //Update the character's location in the DB
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->moveCard($event->characterId, Game::LOCATION_PLAYER_HOME, $event->playerId);
 
-                $character->Location = $event->location;
-                $character->IsUpdated = true;
+                    $character = $theah->getCardById($event->characterId);
+                    $theah->upsertCard($character);
 
-                // Notify players of selected character
-                $this->game->notifyAllPlayers("approachCharacterPlayed", clienttranslate('${player_name} plays <strong>${character_name}</strong> as their Approach Character.'), [
-                    'i18n' => ['character_name'],
-                    "player_id" => $event->playerId,
-                    "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "character_name" => $character->Name,
-                    "character" => $character->getPropertyArray($this->game),
-                ]);
+                    $character->Location = Game::LOCATION_PLAYER_HOME;
+                    $character->IsUpdated = true;
+
+                    // Notify players of selected character
+                    $theah->game->notifyAllPlayers("approachCharacterPlayed", clienttranslate('${player_name} plays <strong>${character_name}</strong> as their Approach Character.'), [
+                        'i18n' => ['character_name'],
+                        "player_id" => $event->playerId,
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "character_name" => $character->Name,
+                        "character" => $character->getPropertyArray($theah->game),
+                        ]);
+                };
+                $handler($this, $event);
                 break;
 
             case $event instanceof EventAttachmentEquipped:
@@ -464,6 +472,10 @@ trait EventHub
                 case $event instanceof EventCharacterMustered:
                     $handler = function (Theah $theah, EventCharacterMustered $event)
                     {
+                        //Update the character's location in the DB
+                        $deck = $theah->game->getGameDeckObject();
+                        $deck->moveCard($event->characterId, $event->location, $event->playerId);
+
                         $character = $theah->getCardById($event->characterId);
                         $character->Location = $event->location;
                         $character->ControllerId = $event->playerId;

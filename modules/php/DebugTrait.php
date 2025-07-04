@@ -75,7 +75,7 @@ trait DebugTrait
         }
     }
 
-    public function debug_SetCardinCityDiscardPile(string $className)
+    public function debug_SetCardInCityDiscardPile(string $className)
     {
         $card = $this->instantiateCard($className);
         if ($card) {
@@ -98,7 +98,7 @@ trait DebugTrait
         $this->updateCardObjectInDb($card);
     }
 
-    public function dbgEngageCard(int $cardId)
+    public function debug_EngageCard(int $cardId)
     {
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
@@ -109,7 +109,7 @@ trait DebugTrait
         $this->updateCardObjectInDb($card);
     }
 
-    public function dbgSetReknownOnCard(int $cardId, int $reknown)
+    public function debug_SetReknownOnCard(int $cardId, int $reknown)
     {
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
@@ -154,7 +154,7 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
-    public function dbgWoundCharacter(int $characterId, int $wounds, int $sourceId = 0)
+    public function debug_WoundCharacter(int $characterId, int $wounds, int $sourceId = 0)
     {
         $event = $this->theah->createEvent(Events::CharacterWounded);
         if ($event instanceof EventCharacterWounded)
@@ -168,7 +168,7 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
-    public function dbgUnequipAttachment(int $playerId, int $characterId, int $attachmentId)
+    public function debug_UnequipAttachment(int $playerId, int $characterId, int $attachmentId)
     {
         $event = $this->theah->createEvent(Events::AttachmentUnequipped);
         if ($event instanceof EventAttachmentUnequipped)
@@ -178,5 +178,13 @@ trait DebugTrait
             $event->attachmentId = $attachmentId;
         }
         $this->theah->queueEvent($event);
+        $this->theah->runEvents($debug = true);
+    }
+
+    public function debug_PlayApproachCharacterAtHome(int $playerId, int $characterId)
+    {
+        $event = EventFactory::createApproachCharacterPlayedEvent($playerId, $characterId);
+        $this->theah->queueEvent($event);
+        $this->theah->runEvents($debug = true);
     }
 }

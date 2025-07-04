@@ -7,7 +7,6 @@ class EventApproachCharacterPlayed extends Event
 {
     public int $playerId;
     public int $characterId;
-    public string $location;
 
     public function __construct()
     {
@@ -15,6 +14,5 @@ class EventApproachCharacterPlayed extends Event
 
         $this->playerId = 0;
         $this->characterId = 0;
-        $this->location = '';
     }
 }

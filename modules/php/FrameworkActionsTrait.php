@@ -114,8 +114,10 @@ trait FrameworkActionsTrait
 
         //Move the cards to a purgatory state while waiting for the other players to finish their day planning.
         //This is necessary to prevent the card from being shown back in the player's approach deck if they F5.
-        $this->cards->moveCard($scheme, Game::LOCATION_PURGATORY);
-        $this->cards->moveCard($character, Game::LOCATION_PURGATORY);
+        if ($scheme)
+            $this->cards->moveCard($scheme, Game::LOCATION_PURGATORY);
+        if ($character)
+            $this->cards->moveCard($character, Game::LOCATION_PURGATORY);
 
         $this->gamestate->setPlayerNonMultiactive($playerId, 'dayPlanned'); // deactivate player; if none left, transition to 'dayPlanned' state
     }

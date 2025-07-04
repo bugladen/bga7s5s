@@ -85,14 +85,13 @@ class EventFactory
         return $event;
     }
 
-    public static function createApproachCharacterPlayedEvent(int $playerId, int $characterId, string $location): EventApproachCharacterPlayed
+    public static function createApproachCharacterPlayedEvent(int $playerId, int $characterId): EventApproachCharacterPlayed
     {
         $event = self::createEvent(Events::ApproachCharacterPlayed);
         if ($event instanceof EventApproachCharacterPlayed)
         {
             $event->playerId = $playerId;
             $event->characterId = $characterId;
-            $event->location = $location;
         }
 
         return $event;

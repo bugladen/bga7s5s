@@ -159,29 +159,31 @@ trait StatesTrait
         $players = $this->getCollectionFromDb($sql);
 
         //Reveal the cards
-        foreach ( $players as $playerId => $player ) {
-
-            //Update the character's location in the DB
-            $this->cards->moveCard($player['characterId'], Game::LOCATION_PLAYER_HOME, $playerId);
-
+        foreach ( $players as $playerId => $player ) 
+        {
             // Run events that the character has been played to a location
-            $character = $this->getCardObjectFromDb($player['characterId']);
-            $event = EventFactory::createApproachCharacterPlayedEvent($playerId, $character->Id, Game::LOCATION_PLAYER_HOME);
-            $this->theah->queueEvent($event);
+            if ($player['characterId']) {
+                $character = $this->getCardObjectFromDb($player['characterId']);
+                $event = EventFactory::createApproachCharacterPlayedEvent($playerId, $character->Id);
+                $this->theah->queueEvent($event);
+            }
 
             //Update the scheme's location in the DB
-            $this->cards->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
+            if ($player['schemeId']) 
+            {
+                $this->cards->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
 
-            // Run events that the scheme has been played to a location
-            $scheme = $this->getCardObjectFromDb($player['schemeId']);
-            $event = $this->theah->createEvent(Events::SchemeCardRevealed);
-            if ($event instanceof EventSchemeCardRevealed) {
-                $event->playerId = $playerId;
-                $event->scheme = $scheme;
-                $event->location = Game::LOCATION_PLAYER_HOME;
-                $event->playerName = $player['player_name'];
+                // Run events that the scheme has been played to a location
+                $scheme = $this->getCardObjectFromDb($player['schemeId']);
+                $event = $this->theah->createEvent(Events::SchemeCardRevealed);
+                if ($event instanceof EventSchemeCardRevealed) {
+                    $event->playerId = $playerId;
+                    $event->scheme = $scheme;
+                    $event->location = Game::LOCATION_PLAYER_HOME;
+                    $event->playerName = $player['player_name'];
+                }
+                $this->theah->queueEvent($event);
             }
-            $this->theah->queueEvent($event);
         }
 
         $this->gamestate->nextState("");
@@ -262,7 +264,7 @@ trait StatesTrait
         // If we have a tie for initiative and no first player exists, then we determine first player by random method.
         // Extract all the player id keys from the $players array and shuffle them.
         $size = count($players);
-        $rand = random_int(0, $size - 1);
+        $rand = bga_rand(0, $size - 1);
         $slice = array_slice($players, $rand, 1, true);
         $firstPlayerId = key($slice);
         $this->globals->set(Game::FIRST_PLAYER, $firstPlayerId);
@@ -287,21 +289,29 @@ trait StatesTrait
         $players = $this->getCollectionFromDb($sql);
 
         $whenRevealedEffectsCount = 0;
-        foreach ( $players as $playerId => $player ) {
+        foreach ( $players as $playerId => $player ) 
+        {
             $whenRevealedEffectsCard = null;
 
-            $character = $this->theah->getCardById($player['characterId']);
-            $scheme = $this->theah->getCardById($player['schemeId']);
+            if ($player['characterId']) 
+            {
+                $character = $this->theah->getCardById($player['characterId']);
+                // Determine the number of "When Revealed" effects that will be triggered
+                if ($character->hasWhenRevealedEffect()) {
+                    $whenRevealedEffectsCount++;
+                    $whenRevealedEffectsCard = $character;
+                }
+            }
 
-            // Determine the number of "When Revealed" effects that will be triggered
-            if ($character->hasWhenRevealedEffect()) {
-                $whenRevealedEffectsCount++;
-                $whenRevealedEffectsCard = $character;
+            if ($player['schemeId']) 
+            {
+                $scheme = $this->theah->getCardById($player['schemeId']);
+                if ($scheme->hasWhenRevealedEffect()) {
+                    $whenRevealedEffectsCount++;
+                    $whenRevealedEffectsCard = $scheme;
+                }
             }
-            if ($scheme->hasWhenRevealedEffect()) {
-                $whenRevealedEffectsCount++;
-                $whenRevealedEffectsCard = $scheme;
-            }
+
             if ($whenRevealedEffectsCount == 1) {
                 // Perform the necessary actions for the "When Revealed" effect
             }

@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -41,7 +42,7 @@ class Reaction_01200 extends AttachmentReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventApproachCharacterPlayed) 
+        if ($event instanceof EventApproachCharacterPlayed || $event instanceof EventCharacterMustered) 
         {
             $attachment = $this->getOwningAttachment($event->theah);
             if ($attachment->isAttached() && $attachment instanceof _01200 && $event->characterId == $attachment->ChosenCard)

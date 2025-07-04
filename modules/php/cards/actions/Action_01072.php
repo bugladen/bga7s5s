@@ -50,7 +50,8 @@ class Action_01072 extends CardAction
             $game = $event->theah->game;
             $leader = $event->theah->getLeaderByPlayerId($event->playerId);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} used the action from <strong>Réputation Méritée</strong>.'), [
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} used the action from <strong>Réputation Méritée</strong>.
+            They will pressure the location, discard a City Card, and muster a Character from their Approach Deck.'), [
                 "player_name" => $game->getPlayerNameById($leader->ControllerId)
             ]);
 
