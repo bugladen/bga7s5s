@@ -178,9 +178,8 @@ class Game extends \Table
      */
     public function getGameProgression()
     {
-        // TODO: compute and return the game progression
-
-        return 0;
+        $day = (int) $this->getGameStateValue("day");
+        return round($day / 5 * 100);
     }
 
     /**

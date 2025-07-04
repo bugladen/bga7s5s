@@ -53,6 +53,7 @@ $machinestates = [
         "description" => clienttranslate("Preparing the City for the next full Day..."),
         "type" => "game",
         "action" => "stDawnNewDay",
+        "updateGameProgression" => true,
         "transitions" => ["" => States::DAWN_NEW_DAY_EVENTS]
     ],
         States::DAWN_NEW_DAY_EVENTS => [
@@ -1579,7 +1580,6 @@ $machinestates = [
                 "name" => "highDramaRecruitActionParleyable",
                 "type" => "game",
                 "action" => "stHighDramaRecruitActionParleyable",
-                "updateGameProgression" => false,
                 "transitions" => [
                     "parleyable" => States::HIGH_DRAMA_RECRUIT_ACTION_PARLEY, 
                     "notParleyable" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY
@@ -2133,7 +2133,6 @@ $machinestates = [
                 "name" => "duelNextPlayer",
                 "type" => "game",
                 "action" => "stDuelNextPlayer",
-                "updateGameProgression" => true,
                 "transitions" => [
                     "endOfGame" => States::END_GAME, 
                     "endOfDuel" => States::DUEL_END, 
@@ -2144,7 +2143,6 @@ $machinestates = [
                 "name" => "duelEnd",
                 "type" => "game",
                 "action" => "stDuelEnd",
-                "updateGameProgression" => true,
                 "transitions" => [
                     "" => States::DUEL_END_EVENTS
                 ]
@@ -2193,7 +2191,6 @@ $machinestates = [
         "name" => "nextPlayer",
         "type" => "game",
         "action" => "stNextPlayer",
-        "updateGameProgression" => true,
         "transitions" => [
             "nextPlayer" => States::NEXT_PLAYER_EVENTS,
             "endOfGame" => States::END_GAME
@@ -2700,6 +2697,7 @@ $machinestates = [
         "description" => clienttranslate("End of game"),
         "type" => "manager",
         "action" => "stGameEnd",
+        "updateGameProgression" => true,
         "args" => "argGameEnd"
     ],
 
