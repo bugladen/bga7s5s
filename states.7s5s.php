@@ -29,6 +29,19 @@ $machinestates += [
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
 
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01072 => [
+        "name" => "planningPhaseResolveSchemes_01072",
+        "description" => clienttranslate('Réputation Méritée: ${actplayer} must choose a city location to place Reknown onto that doesn\'t have any.'),
+        "descriptionmyturn" => clienttranslate('Réputation Méritée: ${you} must choose a city location to place Reknown onto that doesn\'t have any:'),
+        "type" => "activeplayer",
+        "args" => "argsEmpty",
+        "possibleactions" => [
+            "actCityLocationsForReknownSelected", 
+            "actPass"
+        ],
+        "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+    ],
+
     States::PLANNING_PHASE_RESOLVE_SCHEMES_01147 => [
         "name" => "planningPhaseResolveSchemes_01147",
         "description" => clienttranslate('Let\'s Haggle: Your opponent(s) must acknowledge revealed cards.'),
@@ -193,6 +206,35 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01072 => [
+        "name" => "highDramaPhase01072",
+        "description" => clienttranslate('${actplayer} is choosing a City Card to discard.'),
+        "descriptionmyturn" => clienttranslate('Réputation Méritée: ${you} must choose a City Card to discard: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_01072_2,
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01072_2 => [
+        "name" => "highDramaPhase01072_2",
+        "description" => clienttranslate('${actplayer} is choosing a card to Muster.'),
+        "descriptionmyturn" => clienttranslate('Réputation Méritée: ${you} must choose a card to Muster: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actBack"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01072,
+            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+        
     States::HIGH_DRAMA_PLAYER_TURN_01180 => [
         "name" => "highDramaPhase01180",
         "description" => clienttranslate('Your opponent(s) must acknowledge revealed cards.'),

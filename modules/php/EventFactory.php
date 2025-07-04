@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
@@ -29,9 +30,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventClaimOccuring;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
@@ -77,6 +80,19 @@ class EventFactory
             $event->ownerId = $ownerId;
             $event->actionId = $actionId;
             $event->used = $used;
+        }
+
+        return $event;
+    }
+
+    public static function createApproachCharacterPlayedEvent(int $playerId, int $characterId, string $location): EventApproachCharacterPlayed
+    {
+        $event = self::createEvent(Events::ApproachCharacterPlayed);
+        if ($event instanceof EventApproachCharacterPlayed)
+        {
+            $event->playerId = $playerId;
+            $event->characterId = $characterId;
+            $event->location = $location;
         }
 
         return $event;
@@ -311,6 +327,19 @@ class EventFactory
         return $event;
     }
 
+    public static function createCharacterMusteredEvent(int $playerId, int $characterId, string $location): EventCharacterMustered
+    {
+        $event = self::createEvent(Events::CharacterMustered);
+        if ($event instanceof EventCharacterMustered)
+        {
+            $event->playerId = $playerId;
+            $event->characterId = $characterId;
+            $event->location = $location;
+        }
+
+        return $event;
+    }
+
     public static function createCharacterPutIntoApproachDeckEvent(int $playerId, int $characterId): EventCharacterPutIntoApproachDeck
     {
         $event = self::createEvent(Events::CharacterPutIntoApproachDeck);
@@ -398,6 +427,22 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->location = $location;
             $event->pressureTypes = $pressureTypes;
         }
+        return $event;
+    }
+
+    public static function createLocationPressuredEvent(int $playerId, int $performerId, string $location, string $pressureType, bool $success, string $totalsExplanation): EventLocationPressured
+    {
+        $event = self::createEvent(Events::LocationPressured);
+        if ($event instanceof EventLocationPressured)
+        {
+            $event->playerId = $playerId;
+            $event->performerId = $performerId;
+            $event->location = $location;
+            $event->pressureType = $pressureType;
+            $event->success = $success;
+            $event->totalsExplanation = $totalsExplanation;
+        }
+
         return $event;
     }
 

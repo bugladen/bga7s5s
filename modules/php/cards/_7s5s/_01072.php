@@ -2,14 +2,19 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01072;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
-class _01072 extends Scheme
+class _01072 extends Scheme implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -27,6 +32,10 @@ class _01072 extends Scheme
         $this->Traits = [
             "Camaraderie", 
             "Honor",
+        ];
+
+        $this->Actions = [
+            new Action_01072(),
         ];
     }
 

@@ -26,6 +26,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
@@ -44,6 +45,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThrea
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
@@ -85,18 +87,19 @@ trait EventHub
                 break;
 
             case $event instanceof EventApproachCharacterPlayed:
-                $this->cards[$event->character->Id] = $event->character;
+                $character = $this->getCardById($event->characterId);
+                $this->cards[$event->characterId] = $character;
 
-                $event->character->Location = $event->location;
-                $event->character->IsUpdated = true;
+                $character->Location = $event->location;
+                $character->IsUpdated = true;
 
                 // Notify players of selected character
                 $this->game->notifyAllPlayers("approachCharacterPlayed", clienttranslate('${player_name} plays <strong>${character_name}</strong> as their Approach Character.'), [
                     'i18n' => ['character_name'],
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "character_name" => $event->character->Name,
-                    "character" => $event->character->getPropertyArray($this->game),
+                    "character_name" => $character->Name,
+                    "character" => $character->getPropertyArray($this->game),
                 ]);
                 break;
 
@@ -458,6 +461,28 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+                case $event instanceof EventCharacterMustered:
+                    $handler = function (Theah $theah, EventCharacterMustered $event)
+                    {
+                        $character = $theah->getCardById($event->characterId);
+                        $character->Location = $event->location;
+                        $character->ControllerId = $event->playerId;
+                        $character->IsUpdated = true;
+                        $theah->upsertCard($character);        
+        
+                        // Notify players of mustered character
+                        $theah->game->notifyAllPlayers("characterMustered", clienttranslate('${player_name} musters <strong>${character_name}</strong> at ${location}.'), [
+                            'i18n' => ['character_name', 'location'],
+                            "player_id" => $event->playerId,
+                            "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                            "character_name" => $character->Name,
+                            "location" => $event->location,
+                            "character" => $character->getPropertyArray($theah->game),
+                        ]);
+                    };
+                    $handler($this, $event);
+                    break;
+
             case $event instanceof EventCharacterRecruited:
                 $character = $this->cards[$event->character->Id];
                 $character->ControllerId = $event->playerId;
@@ -513,6 +538,26 @@ trait EventHub
                         "pressureTypes" => $event->pressureTypes,
                         "playerId" => $event->playerId,
                         "location" => $event->performer->Location,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventLocationPressured:
+                $handler = function (Theah $theah, EventLocationPressured $event)
+                {
+                    $performer = $theah->getCharacterById($event->performerId);
+                    $theah->game->notifyAllPlayers("locationPressured", clienttranslate('${player_name} chose <strong>${performer_name}</strong> to ${result} Pressure <strong>${location}</strong>.
+                    <br>Pressure Type: ${pressureType}
+                    <br>Influence Totals: ${totals}'), [
+                        'i18n' => ['performer_name', 'location', 'pressureType'],
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
+                        "performer_name" => $performer->Name,
+                        "result" => $event->success ? clienttranslate("successfully") : clienttranslate("unsuccessfully"),
+                        "totals" => $event->totalsExplanation,
+                        "pressureType" => $event->pressureType,
+                        "playerId" => $event->playerId,
+                        "location" => $performer->Location,
                     ]);
                 };
                 $handler($this, $event);

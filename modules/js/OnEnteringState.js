@@ -955,6 +955,52 @@ onEnteringState: function( stateName, args )
             }
         },
 
+        'highDramaPhase01072' : () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCardsSelectable = 1;
+
+                args.args.args.targetCardIds.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+                });
+                this.clientStateArgs.targetCardIds = args.args.args.targetCardIds;
+
+                card = this.cardProperties[args.args.args.schemeId];
+                const image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+
+                this.clientStateArgs.schemeId = args.args.args.schemeId;
+            }
+        },
+
+        'highDramaPhase01072_2' : () => {
+            if (this.isCurrentPlayerActive()) {
+                card = this.cardProperties[args.args.args.chosenCardId];
+                const image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+                this.clientStateArgs.chosenCardId = args.args.args.chosenCardId;
+
+                card = this.cardProperties[args.args.args.schemeId];
+                const schemeImage = $(`${card.divId}_image`);
+                dojo.addClass(schemeImage, 'chosen');
+                this.clientStateArgs.schemeId = args.args.args.schemeId;
+
+                this.showApproachDeckAtTop();
+                this.approachDeck.setSelectionMode(1);
+
+                items = this.approachDeck.getAllItems();
+                items.forEach((item) => {
+                    card = this.cardProperties[item.id];
+                    if (card.type === 'Scheme') {
+                        let div = this.approachDeck.getItemDivId(item.id);
+                        dojo.addClass(div, 'unselectable');
+                    }
+                });
+            }
+        },
+
         'highDramaPhase01147': () => {
             if (this.isCurrentPlayerActive()) 
             {

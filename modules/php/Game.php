@@ -78,6 +78,9 @@ class Game extends \Table
     final const NORMAL_RECRUIT_TYPE = 0;
     final const KASPAR_RECRUIT_TYPE = 1;
 
+    final const NORMAL_PRESSURE_TYPE = 1;
+    final const REPUTATION_MERITEE_PRESSURE_TYPE = 2;
+
     //Player action global variables
     //Delete these in stNextPlayer
     final const DISCOUNT = "discount";

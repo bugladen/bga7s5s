@@ -347,10 +347,81 @@ trait UtilitiesTrait
         return in_array($state, $array);
     }
 
+    function canPlayerPressureLocation(int $attemptingPlayerId, string $location, string $statType, int $pressureType) : array
+    {
+        //Get an array of players to keep track of their influence at the location 
+        $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player");
+        foreach ($playerInfluences as $playerId => $player) {
+            $player["influence"] = 0;
+            $playerInfluences[$playerId] = $player;
+        }
+
+        $charactersAtLocation = $this->theah->getCharactersAtLocation($location);
+        foreach ($charactersAtLocation as $character) 
+        {
+            if (!$character->ControllerId) continue;
+
+            if ($pressureType == Game::REPUTATION_MERITEE_PRESSURE_TYPE && $character->isMercenary())
+            {
+                continue;
+            }
+
+            $player = $playerInfluences[$character->ControllerId];
+
+            switch ($statType) {
+                case Game::STAT_COMBAT:
+                    $player['influence'] += $character->getCombatPressureValue();
+                    break;
+                case Game::STAT_FINESSE:
+                    $player['influence'] += $character->getFinessePressureValue();
+                    break;
+                case Game::STAT_INFLUENCE:
+                    $player['influence'] += $character->getInfluencePressureValue();
+                    break;
+            }
+            $playerInfluences[$character->ControllerId] = $player;
+        }
+
+        //Get the player with the most influence
+        $maxInfluence = 0;
+        $maxPlayerId = 0;
+        $totals = "";
+        foreach ($playerInfluences as $playerId => $player) 
+        {
+            $totals .= "{$this->getPlayerNameById($playerId)}:({$player['influence']}) ";
+            if ($player['influence'] > $maxInfluence) {
+                $maxInfluence = $player['influence'];
+                $maxPlayerId = $playerId;
+            }
+        }
+
+        //Check for ties
+        $ties = array_filter($playerInfluences, fn($player) => $player['influence'] == $maxInfluence);
+
+        if ($pressureType == Game::NORMAL_PRESSURE_TYPE)
+        {
+            if (count($ties) > 1 || $attemptingPlayerId != $maxPlayerId) 
+                return [false, $totals];
+
+            return [true, $totals];
+        }
+        else if ($pressureType == Game::REPUTATION_MERITEE_PRESSURE_TYPE)
+        {
+            if ($attemptingPlayerId == $maxPlayerId || array_key_exists($attemptingPlayerId, $ties))
+                return [true, $totals];
+
+            return [false, $totals];
+        }
+        else
+        {
+            throw new \Exception("Invalid pressure type: $pressureType");
+        }
+    }
+
     function canPlayerClaim(int $attemptingPlayerId, Character $performer): Array
     {
         //Get an array of players to keep track of their influence at the location 
-        $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player ORDER BY player_score DESC");
+        $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player");
         foreach ($playerInfluences as $playerId => $player) {
             $player["influence"] = 0;
             $playerInfluences[$playerId] = $player;
@@ -385,7 +456,8 @@ trait UtilitiesTrait
     
                 $player = $playerInfluences[$character->ControllerId];
 
-                switch ($pressureType) {
+                switch ($pressureType) 
+                {
                     case Game::STAT_COMBAT:
                         $player['influence'] += $character->getCombatPressureValue();
                         break;

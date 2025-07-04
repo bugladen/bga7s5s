@@ -464,6 +464,35 @@ onUpdateActionButtons: function( stateName, args )
             }
         },
 
+        'highDramaPhase01072': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                this.addActionButton(`actNone`, _('None'), () => this.bgaPerformAction('actFromCardWithId', {id: 0})) 
+                dojo.addClass('actChooseCardSelected', 'disabled');
+                if (args.args.targetCardIds.length > 0)
+                    dojo.addClass('actNone', 'disabled');
+            }
+        },
+
+        'highDramaPhase01072_2': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Muster Card'), () => this.onMusterCardSelected());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+
+                let count = 0;
+                items = this.approachDeck.getAllItems();
+                items.forEach((item) => {
+                    card = this.cardProperties[item.id];
+                    if (card.type !== 'Scheme') {
+                        count++;
+                    }
+                });
+                if (count === 0)
+                    this.addActionButton(`actNone`, _('None'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
+            }
+        },
+
         'highDramaPhase01147': () => {
             this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());

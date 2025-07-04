@@ -585,6 +585,46 @@ onLeavingState: function( stateName )
             }
         },
 
+        'highDramaPhase01072' : () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.clientStateArgs.targetCardIds.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                });
+
+                card = this.cardProperties[this.clientStateArgs.schemeId];
+                const schemeImage = $(`${card.divId}_image`);
+                dojo.removeClass(schemeImage, 'chosen');
+            }
+        },
+
+        'highDramaPhase01072_2' : () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                card = this.cardProperties[this.clientStateArgs.chosenCardId];
+                const image = $(`${card.divId}_image`);
+                dojo.removeClass(image, 'chosen');
+
+                card = this.cardProperties[this.clientStateArgs.schemeId];
+                const schemeImage = $(`${card.divId}_image`);
+                dojo.removeClass(schemeImage, 'chosen');
+
+                this.showApproachDeckAtBottom();
+                this.approachDeck.setSelectionMode(0);
+
+                items = this.approachDeck.getAllItems();
+                items.forEach((item) => {
+                    card = this.cardProperties[item.id];
+                    if (card.type === 'Scheme') {
+                        let div = this.approachDeck.getItemDivId(item.id);
+                        dojo.removeClass(div, 'unselectable');
+                    }
+                });
+            }
+        },
+
         'highDramaPhase01147': () => {
             if (this.isCurrentPlayerActive()) 
             {

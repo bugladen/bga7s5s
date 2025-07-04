@@ -1066,13 +1066,8 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Performer cannot Claim because it is engaged."));
         }
 
-        $characters = $this->theah->getCharactersInPlayByPlayerId($activePlayerId);
-        
-        //Filter out those characters that are not in the city
-        $charactersInCity = array_filter($characters, fn($character) => $this->theah->cardInCity($character) );  
-
-        //Select the Ids of the characters
-        $characterIds = array_map(function($character) { return $character->Id; }, $charactersInCity);
+        $charactersInCity = $this->theah->getCharactersInCityByPlayerId($activePlayerId);
+        $characterIds = array_map(fn($character) => $character->Id, $charactersInCity);
 
         if (!in_array($id, $characterIds)) {
             throw new \BgaUserException(self::_("Performer is not in the City."));

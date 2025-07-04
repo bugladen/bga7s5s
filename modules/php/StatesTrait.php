@@ -2,14 +2,12 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
@@ -168,12 +166,7 @@ trait StatesTrait
 
             // Run events that the character has been played to a location
             $character = $this->getCardObjectFromDb($player['characterId']);
-            $event = $this->theah->createEvent(Events::ApproachCharacterPlayed);
-            if ($event instanceof EventApproachCharacterPlayed) {
-                $event->playerId = $playerId;
-                $event->character = $character;
-                $event->location = Game::LOCATION_PLAYER_HOME;
-            }
+            $event = EventFactory::createApproachCharacterPlayedEvent($playerId, $character->Id, Game::LOCATION_PLAYER_HOME);
             $this->theah->queueEvent($event);
 
             //Update the scheme's location in the DB
@@ -473,11 +466,7 @@ trait StatesTrait
         list($canClaim, $totals) = $this->canPlayerClaim($claimingPlayerId, $performer);
         if ( ! $canClaim) 
         {
-            $this->notifyPlayer($claimingPlayerId, "message", clienttranslate('Private: You cannot claim the location. Influence totals: ${totals}'), [
-                "totals" => $totals
-            ]);
-
-            throw new \BgaUserException(self::_('You cannot claim the location. You do not have the most influence.'));
+            throw new \BgaUserException(sprintf(self::_('You cannot claim the location. You do not have the most influence.  Totals: %s'), $totals));
         }
 
         $claimType = $this->globals->get(Game::CLAIM_TYPE);

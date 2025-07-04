@@ -33,6 +33,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['schemeSentToLocker', 1000],
             ['characterRecruited', 1000],
             ['characterHealed', 1000],
+            ['characterMustered', 1000],
             ['characterWounded', 1000],
             ['drawCard', 2000],
             ['firstPlayer', 2000],
@@ -237,7 +238,6 @@ return declare('seventhseacityoffivesails.notifications', null, {
     {
         debug( 'notif_approachCharacterPlayed' );
         debug( notif );
-
 
         const args = notif.args;
 
@@ -499,6 +499,18 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const card = this.cardProperties[args.cardId];
         dojo.removeClass(`${card.divId}_image`, 'engaged');
     },
+
+    notif_characterMustered: function (notif) 
+    {
+        debug( 'notif_characterMustered' );
+        debug( notif );
+
+        const args = notif.args;
+        const cardId = this.createCardId(args.character, args.location);
+        const target = this.getTargetElementForLocation(args.location, args.playerId);
+        this.createCard(cardId, args.character, target);
+    },
+
 
     notif_characterRecruited: function( notif )
     {

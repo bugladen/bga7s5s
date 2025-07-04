@@ -2,8 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-
-class EventApproachCharacterPlayed extends Event
+class EventCharacterMustered extends Event
 {
     public int $playerId;
     public int $characterId;
@@ -16,5 +15,5 @@ class EventApproachCharacterPlayed extends Event
         $this->playerId = 0;
         $this->characterId = 0;
         $this->location = '';
-    }
+    }    
 }

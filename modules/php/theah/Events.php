@@ -45,6 +45,7 @@ class Events
     //High Drama Events
     const ClaimOccuring = 'EventClaimOccuring';
     const LocationClaimed = 'EventLocationClaimed';
+    const LocationPressured = 'EventLocationPressured';
     const CharacterRecruited = 'EventCharacterRecruited';
     const HighDramaPhasePlayerPassed = 'EventHighDramaPhasePlayerPassed';
     const HighDramaPhaseEnd = 'EventHighDramaPhaseEnd';
@@ -94,6 +95,7 @@ class Events
 
     //Character events
     const CharacterInfluenceModified = 'EventCharacterInfluenceModified';
+    const CharacterMustered = 'EventCharacterMustered';
 
     //Dusk Phase events
     const DuskPhaseBegin = 'EventDuskPhaseBegin';

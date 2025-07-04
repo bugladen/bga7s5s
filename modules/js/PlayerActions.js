@@ -109,6 +109,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
             'highDramaPhase01029'                                   : 'actFromCardWithId',
             'highDramaPhase01044_2'                                 : 'actFromCardWithId',
+            'highDramaPhase01072'                                   : 'actFromCardWithId',
             'highDramaPhase01147'                                   : 'actFromCardWithId',
             'highDramaPhase01180_4'                                 : 'actFromCardWithId',
             'highDramaPhase01194_2'                                 : 'actFromCardWithId',
@@ -147,6 +148,27 @@ return declare('seventhseacityoffivesails.actions', null, {
                 'id' : this.selectedCards[0],
             });
         }
+    },
+
+    onMusterCardSelected: function()
+    {
+        var items = this.approachDeck.getSelectedItems();
+        const card = Object.values(items)[0];
+
+        const actions = {
+            'highDramaPhase01072_2'   : 'actFromCardWithId',
+        };
+
+        const action = actions[this.gamedatas.gamestate.name];
+
+        let errors = false;
+        this.bgaPerformAction(action, { 
+            'id' : card.id
+        }).catch(() =>  {
+            errors = true;
+        }).then(() =>  {                
+            if (!errors) this.approachDeck.removeFromStockById(card.id);
+        });
     },
 
     onPlanningCardsSelected: function()

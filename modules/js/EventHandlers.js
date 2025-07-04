@@ -3,24 +3,53 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
     onApproachCardClicked: function( control_name, item_id )
     {
-        var items = this.approachDeck.getSelectedItems();
-        // Grab the type of card from the properties cache and make sure we are only selecting 1 of each type
-        const selectedType = this.cardProperties[item_id].type;        
-        items.forEach((item) => {
-            const type = this.cardProperties[item.id].type;            
-            if (selectedType === type && item.id != item_id) {
-                this.approachDeck.unselectItem(item.id);
+        const methods = {
+            'planningPhase': () => {
+                var items = this.approachDeck.getSelectedItems();
+                // Grab the type of card from the properties cache and make sure we are only selecting 1 of each type
+                const selectedType = this.cardProperties[item_id].type;        
+                items.forEach((item) => {
+                    const type = this.cardProperties[item.id].type;            
+                    if (selectedType === type && item.id != item_id) {
+                        this.approachDeck.unselectItem(item.id);
+                    }
+                });
+        
+                var items = this.approachDeck.getSelectedItems();
+        
+                // Enable the confirm button if we have 2 cards selected
+                if (items.length === 2) {
+                    dojo.removeClass('actEndPlanningPhase', 'disabled');
+                } else {
+                    dojo.addClass('actEndPlanningPhase', 'disabled');
+                }
+            },
+
+            'highDramaPhase01072_2': () => {
+                var items = this.approachDeck.getSelectedItems();
+                items.forEach((item) => {
+                    if (item.id != item_id) {
+                        this.approachDeck.unselectItem(item.id);
+                    }
+                });
+                if (item_id)
+                {
+                    const card = this.cardProperties[item_id];
+                    if (card.type === 'Scheme') {
+                        this.approachDeck.unselectItem(item_id);
+                    }
+                }
+
+                if (this.approachDeck.getSelectedItems().length === 1) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
             }
-        });
+        };
 
-        var items = this.approachDeck.getSelectedItems();
-
-        // Enable the confirm button if we have 2 cards selected
-        if (items.length === 2) {
-            dojo.removeClass('actEndPlanningPhase', 'disabled');
-        } else {
-            dojo.addClass('actEndPlanningPhase', 'disabled');
-        }
+        if (methods[this.gamedatas.gamestate.name])
+            methods[this.gamedatas.gamestate.name]();
     },
 
     onChooseCardClicked: function(control_name, item_id) 

@@ -604,18 +604,6 @@ $machinestates = [
                 ],
                 "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
             ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01072 => [
-                "name" => "planningPhaseResolveSchemes_01072",
-                "description" => clienttranslate('Réputation Méritée: ${actplayer} must choose a city location to place Reknown onto that doesn\'t have any.'),
-                "descriptionmyturn" => clienttranslate('Réputation Méritée: ${you} must choose a city location to place Reknown onto that doesn\'t have any:'),
-                "type" => "activeplayer",
-                "args" => "argsEmpty",
-                "possibleactions" => [
-                    "actCityLocationsForReknownSelected", 
-                    "actPass"
-                ],
-                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-            ],
             States::PLANNING_PHASE_RESOLVE_SCHEMES_01098 => [
                 "name" => "planningPhaseResolveSchemes_01098",
                 "description" => clienttranslate('The Cat\'s Embargo: ${actplayer} must choose two city locations to place Reknown onto.'),
@@ -971,6 +959,7 @@ $machinestates = [
                 "01035" => States::HIGH_DRAMA_PLAYER_TURN_01035,
                 "01044" => States::HIGH_DRAMA_PLAYER_TURN_01044,
                 "01071" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "01072" => States::HIGH_DRAMA_PLAYER_TURN_01072,
                 "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
                 "01187" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION,
