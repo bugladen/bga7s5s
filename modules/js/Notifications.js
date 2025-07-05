@@ -5,7 +5,6 @@ return declare('seventhseacityoffivesails.notifications', null, {
     {
         debug( 'notifications subscriptions setup' );
         
-        // TODO: here, associate your game notifications with local methods
         const notifs = [
             ['playLeader', 1500],
             ['actionUsed', 1],

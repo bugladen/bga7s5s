@@ -248,4 +248,9 @@ abstract class Card
     {
         return in_array($trait, $this->Traits);
     }
+
+    public function isControlled(): bool
+    {
+        return $this->ControllerId != 0;
+    }
 }

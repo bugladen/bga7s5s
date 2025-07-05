@@ -155,8 +155,10 @@ class Action_01205 extends CharacterAction
             $game->theah->queueEvent($giacintoMoveEvent);
             $game->theah->queueEvent($victimMoveEvent);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has activated Giancinto\'s Kidnap Action.'), [
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the ${action} Action'), [
+                'i18n' => ['action'],
                 'player_name' => $game->getActivePlayerName(),
+                'action' => 'Giancinto',
             ]);
 
             $this->SetUsed($game->theah, true);

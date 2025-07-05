@@ -105,8 +105,10 @@ class Action_01189b extends EventCityAction
         $game->theah->queueEvent($toEvent);
         $game->theah->queueEvent($discardEvent);
 
-        $game->notifyAllPlayers("message", clienttranslate('${player_name} has activated Point of Opportunity'), [
+        $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the ${action} Action'), [
+            'i18n' => ['action'],
             'player_name' => $game->getActivePlayerName(),
+            'action' => 'Point of Opportunity',
         ]);
 
         $game->gamestate->nextState("locationChosen");

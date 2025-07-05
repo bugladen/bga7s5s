@@ -235,6 +235,22 @@ $machinestates += [
         ]
     ],
         
+    States::HIGH_DRAMA_PLAYER_TURN_01149 => [
+        "name" => "highDramaPhase01149",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Midnight Shipment: ${you} must choose a location to move chosen Performer: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithLocations",
+            "actBack"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
+            "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01180 => [
         "name" => "highDramaPhase01180",
         "description" => clienttranslate('Your opponent(s) must acknowledge revealed cards.'),

@@ -475,7 +475,7 @@ onEnteringState: function( stateName, args )
                     }
                     else
                     {
-                        const selectedLocationElement = dojo.query(`[data-location="${location}"]`)[0];
+                        const selectedLocationElement = this.getCityLocationElement(location);
                         this.makeCityLocationSelectable(selectedLocationElement.id);
                     }
                 });
@@ -1021,6 +1021,29 @@ onEnteringState: function( stateName, args )
             }
         },
 
+        'highDramaPhase01149': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.numberOfCityLocationsSelectable = 1;
+                let images = this.getListofAvailableCityLocationImages();
+                images.forEach((location) => {
+                    if (location != 'dock-image')
+                    {
+                        this.makeCityLocationSelectable(location);
+                    }
+                });
+                const performerId = args.args.args.performerId;
+                this.clientStateArgs.performerId = performerId;
+                card = this.cardProperties[args.args.args.performerId];
+                const image = $(`${card.divId}_image`);
+                dojo.addClass(image, 'chosen');
+
+                card = this.cardProperties[args.args.args.schemeId];
+                const schemeImage = $(`${card.divId}_image`);
+                dojo.addClass(schemeImage, 'chosen');
+                this.clientStateArgs.schemeId = args.args.args.schemeId;
+            }
+        },
+
         'highDramaPhase01180' : () => {
             dojo.removeClass('choose_container', 'hidden');
             dojo.removeClass('chooseList', 'hidden');
@@ -1153,7 +1176,7 @@ onEnteringState: function( stateName, args )
             if (this.isCurrentPlayerActive()) {
                 this.numberOfCityLocationsSelectable = 1;
                 args.args.args.locations.forEach((location) => {
-                        const selectedLocationElement = dojo.query(`[data-location="${location}"]`)[0];
+                        const selectedLocationElement = this.getCityLocationElement(location);
                         this.makeCityLocationSelectable(selectedLocationElement.id);
                 });
                 const performerId = args.args.args.performerId;
@@ -1168,7 +1191,7 @@ onEnteringState: function( stateName, args )
             if (this.isCurrentPlayerActive()) {
                 this.numberOfCityLocationsSelectable = 1;
                 args.args.args.locations.forEach((location) => {
-                        const selectedLocationElement = dojo.query(`[data-location="${location}"]`)[0];
+                        const selectedLocationElement = this.getCityLocationElement(location);
                         this.makeCityLocationSelectable(selectedLocationElement.id);
                 });
                 const performerId = args.args.args.performerId;
@@ -1359,7 +1382,7 @@ onEnteringState: function( stateName, args )
             if (this.isCurrentPlayerActive()) {
                 this.numberOfCityLocationsSelectable = 1;
                 args.args.args.locations.forEach((location) => {
-                        const selectedLocationElement = dojo.query(`[data-location="${location}"]`)[0];
+                        const selectedLocationElement = this.getCityLocationElement(location);
                         this.makeCityLocationSelectable(selectedLocationElement.id);
                 });
                 const characterId = args.args.args.characterId;

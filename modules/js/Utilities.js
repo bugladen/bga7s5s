@@ -546,7 +546,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         if (controllerId != 0) 
         {
             const player = this.gamedatas.players[controllerId];
-            const imageElement = dojo.query(`[data-location="${location}"]`)[0];
+            const imageElement = this.getCityLocationElement(location);
             dojo.place( this.format_block( 'jstpl_location_control_chip', {
                 id: imageElement.id,
                 player_color: player.color,
@@ -661,6 +661,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     showApproachDeckAtBottom: () => {
         dojo.place('approachDeck-container', 'factionHand-container', 'before');
+    },
+
+    getCityLocationElement: function(location) {
+        return dojo.query(`[data-location="${location}"]`)[0];
     },
 })
 });

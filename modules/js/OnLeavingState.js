@@ -640,6 +640,21 @@ onLeavingState: function( stateName )
             }
         },
 
+        'highDramaPhase01149': () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.resetCityLocations();
+
+                let card = this.cardProperties[this.clientStateArgs.performerId];
+                const performerImage = $(`${card.divId}_image`);
+                dojo.removeClass(performerImage, 'chosen');
+
+                card = this.cardProperties[this.clientStateArgs.schemeId];
+                const schemeImage = $(`${card.divId}_image`);
+                dojo.removeClass(schemeImage, 'chosen');
+            }
+        },
+
         'highDramaPhase01180' : () => {
             //Exposed to all players
             dojo.addClass('choose_container', 'hidden');

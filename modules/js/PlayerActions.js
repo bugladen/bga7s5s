@@ -71,6 +71,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01152_2': 'actPlanningPhase_01152_2',
             'planningPhaseResolveSchemes_01152_3': 'actPlanningPhase_01152_3',
             'highDramaMoveActionChooseLocation': 'actHighDramaMoveActionDestinationChosen',
+            'highDramaPhase01149': 'actFromCardWithLocations',
             'highDramaPhase01189a': 'actFromCardWithLocations',
             'highDramaPhase01189b': 'actFromCardWithLocations',
             'highDramaPhase01205_2': 'actFromCardWithLocations',
@@ -83,7 +84,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const action = actionMap[this.gamedatas.gamestate.name];
         const locations = this.selectedCityLocations.map((loc) => $(loc).getAttribute('data-location'));
-
+        
         //If the action ends with _client, we need to call a client side function
         if (action.includes('_client')) {
             this.clientStateArgs.selectedCityLocations = this.selectedCityLocations

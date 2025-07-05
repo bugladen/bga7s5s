@@ -499,6 +499,14 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
+        'highDramaPhase01149': () => {
+            if (this.isCurrentPlayerActive()) {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            }
+        },
+
         'highDramaPhase01180': () => {
             this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
         },

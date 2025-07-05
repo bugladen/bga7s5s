@@ -341,7 +341,6 @@ trait StatesTrait
 
             $characterCount = $this->theah->getCharacterCountByPlayerId($playerId);
             if ($characterCount > $crewCap) {
-                //TODO: Go into a state to allow the player to remove characters
                 $this->notifyAllPlayers("message", clienttranslate('${player_name} is over their Crew Cap limit of ${crewcap}'), [
                     'player_name' => $player['player_name'],
                     'crewcap' => $crewCap

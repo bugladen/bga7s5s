@@ -195,6 +195,8 @@ class Action_01072 extends CardAction
                 $game->theah->queueEvent($event);
             }
 
+            $this->setUsed($game->theah, true);
+
             $game->gamestate->nextState("cardChosen");
         }
     }

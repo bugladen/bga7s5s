@@ -74,8 +74,10 @@ class Action_01185 extends EventCityAction
 
             $playerName = $game->getActivePlayerName();
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has activated Risky Undertaking'), [
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the ${action} Action'), [
+                'i18n' => ['action'],
                 'player_name' => $playerName,
+                'action' => 'Risky Undertaking',
             ]);
 
             //Move the cards used to pay to the player's discard pile
