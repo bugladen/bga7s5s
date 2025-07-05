@@ -15,7 +15,7 @@ class _01055 extends Risk implements IHasManeuvers
     {
         parent::__construct();
 
-        $this->Name = "Last Word";
+        $this->Name = clienttranslate("Last Word");
         $this->Image = "img/cards/7s5s/055.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

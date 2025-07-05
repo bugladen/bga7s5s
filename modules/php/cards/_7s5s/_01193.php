@@ -15,7 +15,7 @@ class _01193 extends CityAttachment implements IHasTechniques
     {
         parent::__construct();
 
-        $this->Name = 'Burnished Cuirass';
+        $this->Name = clienttranslate('Burnished Cuirass');
         $this->Image = "img/cards/7s5s/193.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

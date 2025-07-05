@@ -15,7 +15,7 @@ class _01128 extends FactionAttachment implements IHasTechniques
     {
         parent::__construct();
 
-        $this->Name = "Mireli Sabre";
+        $this->Name = clienttranslate("Mireli Sabre");
         $this->Image = "img/cards/7s5s/128.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

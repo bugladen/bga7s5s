@@ -21,7 +21,7 @@ class _01146 extends Scheme implements IHasReactions
     {
         parent::__construct();
 
-        $this->Name = "Let The Sword Decide";
+        $this->Name = clienttranslate("Let The Sword Decide");
         $this->Image = "img/cards/7s5s/146.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

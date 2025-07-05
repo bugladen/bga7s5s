@@ -14,7 +14,7 @@ class _01191 extends CityAttachment implements IHasActions
     {
         parent::__construct();
 
-        $this->Name = 'Duckfoot Pistol';
+        $this->Name = clienttranslate('Duckfoot Pistol');
         $this->Image = "img/cards/7s5s/191.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

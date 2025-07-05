@@ -22,7 +22,7 @@ class _01186 extends CityCharacter implements IHasTechniques
     {
         parent::__construct();
 
-        $this->Name = "Maryam Benu Pleroma";
+        $this->Name = clienttranslate("Maryam Benu Pleroma");
         $this->Image = "img/cards/7s5s/186.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

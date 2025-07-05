@@ -22,7 +22,7 @@ class _01200 extends CityAttachment implements IHasReactions
     {
         parent::__construct();
 
-        $this->Name = 'Crystal Eye';
+        $this->Name = clienttranslate('Crystal Eye');
         $this->Image = "img/cards/7s5s/200.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

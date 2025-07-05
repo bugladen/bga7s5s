@@ -21,7 +21,7 @@ class _01045 extends Scheme implements IHasReactions
     {
         parent::__construct();
 
-        $this->Name = "The Song of Eisen";
+        $this->Name = clienttranslate("The Song of Eisen");
         $this->Image = "img/cards/7s5s/045.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

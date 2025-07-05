@@ -19,7 +19,7 @@ class _01072 extends Scheme implements IHasActions
     {
         parent::__construct();
 
-        $this->Name = "Réputation Méritée";
+        $this->Name = clienttranslate("Réputation Méritée");
         $this->Image = "img/cards/7s5s/072.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

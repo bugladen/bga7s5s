@@ -18,7 +18,7 @@ class _01145 extends Scheme
     {
         parent::__construct();
 
-        $this->Name = "Inspire Generosity";
+        $this->Name = clienttranslate("Inspire Generosity");
         $this->Image = "img/cards/7s5s/145.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

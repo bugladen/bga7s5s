@@ -20,7 +20,7 @@ class _01150 extends Scheme
     {
         parent::__construct();
 
-        $this->Name = "Parley Gone Wrong";
+        $this->Name = clienttranslate("Parley Gone Wrong");
         $this->Image = "img/cards/7s5s/150.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

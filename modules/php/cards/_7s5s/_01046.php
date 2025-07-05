@@ -10,7 +10,7 @@ class _01046 extends FactionAttachment
     {
         parent::__construct();
 
-        $this->Name = "Dark Gift";
+        $this->Name = clienttranslate("Dark Gift");
         $this->Image = "img/cards/7s5s/046.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

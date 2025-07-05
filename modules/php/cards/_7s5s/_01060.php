@@ -10,7 +10,7 @@ class _01060 extends Risk
     {
         parent::__construct();
 
-        $this->Name = "Stratege";
+        $this->Name = clienttranslate("Stratege");
         $this->Image = "img/cards/7s5s/060.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

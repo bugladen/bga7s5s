@@ -15,7 +15,7 @@ class _01181 extends CityAttachment implements IHasReactions
     {
         parent::__construct();
 
-        $this->Name = 'Sorte Deck';
+        $this->Name = clienttranslate('Sorte Deck');
         $this->Image = "img/cards/7s5s/181.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

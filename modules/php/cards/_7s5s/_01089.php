@@ -10,7 +10,7 @@ class _01089 extends Leader
     {
         parent::__construct();
 
-        $this->Name = "Soline El Gato";
+        $this->Name = clienttranslate("Soline El Gato");
         $this->Image = "img/cards/7s5s/089.jpg";
         $this->ExpansionName = "_7";
         $this->ExpansionNumber = 1;

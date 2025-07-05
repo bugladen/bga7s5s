@@ -19,7 +19,7 @@ class _01196 extends CityCharacter implements IHasTechniques, IHasReactions
     {
         parent::__construct();
 
-        $this->Name = 'Angeline Dèmone';
+        $this->Name = clienttranslate('Angeline Dèmone');
         $this->Image = "img/cards/7s5s/196.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

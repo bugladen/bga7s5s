@@ -10,7 +10,7 @@ class _01094 extends Character
     {
         parent::__construct();
 
-        $this->Name = "'Padre' Anibal";
+        $this->Name = clienttranslate("'Padre' Anibal");
         $this->Image = "img/cards/7s5s/094.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

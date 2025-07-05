@@ -10,7 +10,7 @@ class _01019 extends FactionCharacter
     {
         parent::__construct();
 
-        $this->Name = 'Buratino';
+        $this->Name = clienttranslate('Buratino');
         $this->Image = 'img/cards/7s5s/019.jpg';
         $this->ExpansionName = '_7s5s';
         $this->ExpansionNumber = 1;

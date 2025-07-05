@@ -15,7 +15,7 @@ class _01185 extends CityEventCard implements IHasActions
     {
         parent::__construct();
 
-        $this->Name = "Risky Undertaking";
+        $this->Name = clienttranslate("Risky Undertaking");
         $this->Image = "img/cards/7s5s/185.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

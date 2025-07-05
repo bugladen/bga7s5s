@@ -23,7 +23,7 @@ class _01071 extends Scheme implements IHasActions
     {
         parent::__construct();
 
-        $this->Name = "Épée Sanglante";
+        $this->Name = clienttranslate("Épée Sanglante");
         $this->Image = "img/cards/7s5s/071.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

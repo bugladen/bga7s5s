@@ -15,7 +15,7 @@ class _01029 extends Risk implements IHasActions
     {
         parent::__construct();
 
-        $this->Name = 'The Pressure is On';
+        $this->Name = clienttranslate('The Pressure is On');
         $this->Image = 'img/cards/7s5s/029.jpg';
         $this->ExpansionName = '_7s5s';
         $this->ExpansionNumber = 1;

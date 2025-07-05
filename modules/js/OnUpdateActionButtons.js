@@ -693,7 +693,7 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args._private.maneuvers.forEach((maneuver) => { 
                 this.addActionButton(
-                    `btnChooseManeuver_${maneuver.id}`, _(maneuver.name), () => this.bgaPerformAction('actDuelUseManeuverFromCombatCard', { maneuverId: maneuver.id})) 
+                    `btnChooseManeuver_${maneuver.id}`, maneuver.name, () => this.bgaPerformAction('actDuelUseManeuverFromCombatCard', { maneuverId: maneuver.id})) 
             });
             this.addActionButton(`btnDecline`, _('Decline'), () => this.bgaPerformAction('actDuelUseManeuverFromCombatCardDeclined', {}));
         },

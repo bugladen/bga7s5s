@@ -14,7 +14,7 @@ class _01152 extends Scheme
     {
         parent::__construct();
 
-        $this->Name = "Until Morale Improves";
+        $this->Name = clienttranslate("Until Morale Improves");
         $this->Image = "img/cards/7s5s/152.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

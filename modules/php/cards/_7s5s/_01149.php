@@ -19,7 +19,7 @@ class _01149 extends Scheme implements IHasActions
     {
         parent::__construct();
 
-        $this->Name = "Midnight Shipment";
+        $this->Name = clienttranslate("Midnight Shipment");
         $this->Image = "img/cards/7s5s/149.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

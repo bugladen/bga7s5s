@@ -16,7 +16,7 @@ class _01123 extends Character implements IHasTechniques
     {
         parent::__construct();
 
-        $this->Name = "Valeri Mikhailov";
+        $this->Name = clienttranslate("Valeri Mikhailov");
         $this->Image = "img/cards/7s5s/123.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
