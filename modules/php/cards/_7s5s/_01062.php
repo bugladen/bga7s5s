@@ -2,15 +2,24 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01062;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction_01062;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 
-class _01062 extends Leader
+class _01062 extends Leader implements IHasActions, IHasReactions
 {
+    use ActionTrait;
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
 
-        $this->Name = "Odette Dubois D'Arrent";
+        $this->Name = clienttranslate("Odette Dubois D'Arrent");
         $this->Image = "img/cards/7s5s/062.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
@@ -35,6 +44,14 @@ class _01062 extends Leader
             "Hero",
             "Diplomat",
             "Montaigne",
+        ];
+
+        $this->Actions = [
+            new Action_01062(),
+        ];
+
+        $this->Reactions = [
+            new Reaction_01062(),
         ];
     }
 

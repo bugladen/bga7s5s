@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
@@ -1378,6 +1379,7 @@ trait FrameworkActionsTrait
 
         $event = EventFactory::createChallengeAcceptedEvent($performer->Id, $target->Id);
         $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);
 
         $this->notifyAllPlayers("message", clienttranslate('${player_name} ACCEPTS The Challenge.'), [
             "player_name" => $this->getActivePlayerName(),
@@ -1442,11 +1444,27 @@ trait FrameworkActionsTrait
         }    
         $this->theah->eventCheck($interveneEvent);
 
-        $engageEvent = EventFactory::createCardEngagedEvent($playerId, $character->Id);
-        $this->theah->eventCheck($engageEvent);
+        $engageRequired = true;
+        //If Odette was the target, and intervening character is a Musketeer, they are not required to engage
+        if ($target instanceof _01062 && in_array("Musketeer", $character->Traits))
+        {
+            $this->notifyAllPlayers("message", clienttranslate('${character_name} does not need to engage because they are a Musketeer intervening for Odette.'), [
+                "i18n" => ["character_name"],
+                "character_name" => $character->Name,
+            ]);
+
+            $engageRequired = false;
+        }
+
+        if ($engageRequired)
+        {
+            // Intervening character is now engaged
+            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $character->Id);
+            $this->theah->eventCheck($engageEvent);
+            $this->theah->queueEvent($engageEvent);
+        }
         
         $this->theah->queueEvent($interveneEvent);
-        $this->theah->queueEvent($engageEvent);
 
         $this->globals->set(GAME::CHALLENGE_ACCEPTED, true);
 

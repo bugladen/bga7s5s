@@ -32,5 +32,7 @@ class Reaction_01043 extends CardReaction
     {
         parent::handleEvent($event);
 
+        // Add events as necessary to handle the reaction
+
     }
 }
