@@ -59,7 +59,7 @@ class Reaction_01184 extends CardReaction
             $game->globals->set(Game::CLAIM_TYPE, Game::CLAUDE_CLAIM_TYPE);
             $game->globals->set(Game::CLAUD_ID, $claude->Id);
 
-            $game->notifyAllPlayers('message', clienttranslate('${player_name} is choosing to use ${card_name}\'s Reaction to count only the Performer and En Garde Characters for Claims at his location for the rest of the turn.'), [
+            $game->notifyAllPlayers('message', clienttranslate('<strong>${card_name}:</strong> ${player_name} used Reaction to count only the Performer and En Garde Characters for Claims at his location for the rest of the turn.'), [
                 'i18n' => ['card_name'],
                 'player_name' => $game->getActivePlayerName(),
                 'card_name' => $claude->Name,

@@ -88,7 +88,7 @@ class Reaction_01203 extends CardReaction
 
         if ($reactionId == 'addThreatChallenger')
         {
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} activates Leja\'s Reaction: Add or Remove Threat. Threat for <strong>${challenger_name}</strong> has been modified by +1.'), [
+            $game->notifyAllPlayers("message", clienttranslate('<strong>Leja Juska:</strong> ${player_name} used Reaction to add 1 Threat to <strong>${challenger_name}</strong>.'), [
                 'i18n' => ['challenger_name'],
                 "player_name" => $playerName,
                 "challenger_name" => $challenger->Name,
@@ -100,7 +100,7 @@ class Reaction_01203 extends CardReaction
 
         if ($reactionId == 'addThreatDefender')
         {
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} activates Leja\'s Reaction: Add or Remove Threat. Threat for <strong>${defender_name}</strong> has been modified by +1.'), [
+            $game->notifyAllPlayers("message", clienttranslate('<strong>Leja Junka:</strong> ${player_name} usedto add 1 Threat to <strong>${defender_name}</strong>.'), [
                 'i18n' => ['defender_name'],
                 "player_name" => $playerName,
                 "defender_name" => $defender->Name,

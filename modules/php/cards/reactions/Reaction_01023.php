@@ -109,8 +109,12 @@ class Reaction_01023 extends RiskReaction
 
         if ($reactionId == 'preventIntervention')
         {
-            $this->PreventIntervention = true;
             $owner = $this->getOwningCard($game->theah);
+            $game->notifyAllPlayers("message", clienttranslate('<strong>Ambush:</strong> ${player_name} used Reaction. Other characters will not be allowed to intervene in this Challenge.'), [
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+            ]);
+
+            $this->PreventIntervention = true;
             $owner->IsUpdated = true;
         }
     }

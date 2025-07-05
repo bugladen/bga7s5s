@@ -71,19 +71,12 @@ class Reaction_01200 extends AttachmentReaction
 
         if ($reactionId == "gainReknown")
         {
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to gain a Reknown from Crystal Eye'), [
-                "player_name" => $game->getActivePlayerName(),
+            $game->notifyAllPlayers("message", clienttranslate('<strong>Crystal Eye:</strong> ${player_name} used Reaction to gain a Reknown.'), [
+                "player_name" => $game->getActivePlayerName(), 
             ]);
             $reknownEvent = EventFactory::createPlayerGainsReknownEvent($game->getActivePlayerId(), 1);
             $game->theah->eventCheck($reknownEvent);
             $game->theah->queueEvent($reknownEvent);
-        }
-
-        if ($reactionId == "pass")
-        {
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to pass on gaining a Reknown from Crystal Eye'), [
-                "player_name" => $game->getActivePlayerName(),
-            ]);
         }
 
         $game->gamestate->nextState("done");

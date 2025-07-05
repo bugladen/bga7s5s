@@ -78,7 +78,7 @@ class Reaction_01202 extends AttachmentReaction
             $game->theah->eventCheck($discardEvent);
 
             $targetCharacter = $game->theah->getCharacterById($this->SavedCharacterId);
-            $game->notifyAllPlayers('message', clienttranslate('${player_name} has chosen to use Object of Wonder\'s Ability to put <strong>${character_name}</strong> into their Approach Deck.'), [
+            $game->notifyAllPlayers('message', clienttranslate('<strong>Object of Wonder:</strong> ${player_name} used Reaction to put <strong>${character_name}</strong> into their Approach Deck.'), [
                 'i18n' => ['character_name'],
                 'player_name' => $game->getActivePlayerName(),
                 'character_name' => $targetCharacter->Name,
