@@ -16,7 +16,7 @@ class Action_01180 extends CharacterAction
     {
         parent::__construct();
 
-        $this->Name = "Equip Artifact from City Deck";
+        $this->Name = clienttranslate("Equip Artifact from City Deck");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

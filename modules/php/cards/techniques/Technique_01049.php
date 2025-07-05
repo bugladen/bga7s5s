@@ -10,7 +10,7 @@ class Technique_01049 extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = "Gain Lethal";
+        $this->Name = clienttranslate("Gain Lethal");
     }
 
     public function handleEvent(Event $event)

@@ -10,7 +10,7 @@ class Technique_01127 extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = "+2 Thrust";
+        $this->Name = clienttranslate("+2 Thrust");
     }
 
     public function handleEvent(Event $event)

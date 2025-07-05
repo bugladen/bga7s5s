@@ -19,7 +19,7 @@ class Action_01071 extends SchemeCityAction
         parent::__construct();
 
         $this->RequiresPerformerSelected = true;
-        $this->Name = "Issue Fight Challenge";
+        $this->Name = clienttranslate("Issue Fight Challenge");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

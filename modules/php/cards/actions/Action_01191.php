@@ -14,7 +14,7 @@ class Action_01191 extends AttachmentAction
     {
         parent::__construct();
 
-        $this->Name = "Wound All Characters";
+        $this->Name = clienttranslate("Wound All Characters");
     }
 
     public function handleEvent(Event $event)

@@ -11,7 +11,7 @@ class Maneuver_01155 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "+1 Parry";
+        $this->Name = clienttranslate("+1 Parry");
     }
 
     public function handleEvent(Event $event)

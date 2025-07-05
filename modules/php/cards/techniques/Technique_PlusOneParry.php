@@ -10,7 +10,7 @@ class Technique_PlusOneParry extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = "+1 Parry";
+        $this->Name = clienttranslate("+1 Parry");
     }
 
     public function handleEvent(Event $event)

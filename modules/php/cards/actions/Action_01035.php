@@ -16,7 +16,7 @@ class Action_01035 extends CharacterAction
     {
         parent::__construct();
 
-        $this->Name = "Recruit Mercenary from City Deck";
+        $this->Name = clienttranslate("Recruit Mercenary from City Deck");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

@@ -17,7 +17,7 @@ class Action_01179 extends EventCityAction
     {
         parent::__construct();
 
-        $this->Name = "Take a Reknown";
+        $this->Name = clienttranslate("Take a Reknown");
         $this->RequiresPerformerSelected = true;
     }
 

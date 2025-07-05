@@ -8,6 +8,6 @@ class Maneuver_01058 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "+1 or +2 Thrust";
+        $this->Name = clienttranslate("+1 or +2 Thrust");
     }
 }

@@ -17,7 +17,7 @@ class Technique_01204 extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = "Wound and -2 Parry to Adversary";
+        $this->Name = clienttranslate("Wound and -2 Parry to Adversary");
         $this->ReduceAdversaryParry = true;
     }
 

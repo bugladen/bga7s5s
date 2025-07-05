@@ -8,6 +8,6 @@ class Maneuver_01136 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "+1 Parry";
+        $this->Name = clienttranslate("+1 Parry");
     }
 }

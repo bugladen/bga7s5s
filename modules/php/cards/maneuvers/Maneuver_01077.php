@@ -8,6 +8,6 @@ class Maneuver_01077 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Play Additional Combat Card";
+        $this->Name = clienttranslate("Play Additional Combat Card");
     }
 }

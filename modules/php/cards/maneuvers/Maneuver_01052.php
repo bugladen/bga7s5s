@@ -8,6 +8,6 @@ class Maneuver_01052 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "Heal Wounds";
+        $this->Name = clienttranslate("Heal Wounds");
     }
 }

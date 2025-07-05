@@ -14,7 +14,7 @@ class Reaction_01203 extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = "Add or Remove Threat";
+        $this->Name = clienttranslate("Add or Remove Threat");
     }
 
     public function getReactionDescription(Theah $theah): string

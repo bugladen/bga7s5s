@@ -17,7 +17,7 @@ class Reaction_01200 extends AttachmentReaction
     {
         parent::__construct();
 
-        $this->Name = "Gain Reknown";
+        $this->Name = clienttranslate("Gain Reknown");
     }
 
     public function getReactionDescription(Theah $theah): string

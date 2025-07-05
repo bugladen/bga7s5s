@@ -15,7 +15,7 @@ class Reaction_01146a extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = "Draw card after equipping weapon";
+        $this->Name = clienttranslate("Draw card after equipping weapon");
     }
 
     public function getReactionDescription(Theah $theah): string

@@ -19,7 +19,7 @@ class Reaction_01023 extends RiskReaction
     {
         parent::__construct();
 
-        $this->Name = 'Prevent Intervention';
+        $this->Name = clienttranslate('Prevent Intervention');
     }
 
     public function getReactionAnnouncement(Game $game, int $state, string $internalId, string $reactionId): string

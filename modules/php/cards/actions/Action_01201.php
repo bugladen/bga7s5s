@@ -13,7 +13,7 @@ class Action_01201 extends CharacterAction
     {
         parent::__construct();
 
-        $this->Name = " Wound and draw a card";
+        $this->Name = clienttranslate("Wound and draw a card");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

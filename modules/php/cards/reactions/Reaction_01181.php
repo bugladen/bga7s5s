@@ -17,7 +17,7 @@ class Reaction_01181 extends AttachmentReaction
     {
         parent::__construct();
 
-        $this->Name = 'Heal Wounds';
+        $this->Name = clienttranslate('Heal Wounds');
 
         $this->HealTargetId = 0;
     }

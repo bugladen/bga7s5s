@@ -14,7 +14,7 @@ class Action_01197 extends CharacterAction
     public function __construct()
     {
         parent::__construct();
-        $this->Name = "Move equipped attachment";
+        $this->Name = clienttranslate("Move equipped attachment");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

@@ -16,7 +16,7 @@ class Action_01147 extends SchemeCityAction
         parent::__construct();
 
         $this->RequiresPerformerSelected = true;
-        $this->Name = "Equip Attachment from Bazaar";
+        $this->Name = clienttranslate("Equip Attachment from Bazaar");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

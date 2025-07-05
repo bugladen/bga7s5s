@@ -11,7 +11,7 @@ class Maneuver_01135 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "+2 Parry, or Wound Adversary and Give -2 Thrust Next Round";
+        $this->Name = clienttranslate("+2 Parry, or Wound Adversary and Give -2 Thrust Next Round");
     }
 
     public function handleEvent(Event $event)

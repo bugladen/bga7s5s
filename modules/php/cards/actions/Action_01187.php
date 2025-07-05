@@ -14,7 +14,7 @@ class Action_01187 extends AttachmentAction
     {
         parent::__construct();
         
-        $this->Name = "Equip No-Cost Attachment";
+        $this->Name = clienttranslate("Equip No-Cost Attachment");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

@@ -8,6 +8,6 @@ class Maneuver_01087 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = "En Garde your Participant";
+        $this->Name = clienttranslate("En Garde your Participant");
     }
 }

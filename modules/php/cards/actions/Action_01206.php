@@ -15,7 +15,7 @@ class Action_01206 extends AttachmentAction
     {
         parent::__construct();
 
-        $this->Name = "Pressure Location to Claim";        
+        $this->Name = clienttranslate("Pressure Location to Claim");        
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

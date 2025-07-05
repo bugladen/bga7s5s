@@ -11,7 +11,7 @@ class Reaction_01043 extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = 'Toggle Mercenary Trait';
+        $this->Name = clienttranslate('Toggle Mercenary Trait');
     }
 
     public function getReactionDescription(Theah $theah): string

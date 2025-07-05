@@ -16,7 +16,7 @@ class Action_01044 extends SchemeCityAction
         parent::__construct();
 
         $this->RequiresPerformerSelected = true;
-        $this->Name = "Manipulate Opposing Character";
+        $this->Name = clienttranslate("Manipulate Opposing Character");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

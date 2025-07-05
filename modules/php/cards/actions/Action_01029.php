@@ -14,7 +14,7 @@ class Action_01029 extends RiskAction
     {
         parent::__construct();
         
-        $this->Name = "Engage Character";
+        $this->Name = clienttranslate("Engage Character");
         $this->RequiresPerformerSelected = true;
     }
 

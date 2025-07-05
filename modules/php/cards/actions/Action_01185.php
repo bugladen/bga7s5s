@@ -15,7 +15,7 @@ class Action_01185 extends EventCityAction
     {
         parent::__construct();
         
-        $this->Name = "Add a Reknown";
+        $this->Name = clienttranslate("Add a Reknown");
     }    
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

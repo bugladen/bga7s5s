@@ -17,7 +17,7 @@ class Reaction_01202 extends AttachmentReaction
     {
         parent::__construct();
 
-        $this->Name = 'Put Character into Approach Deck';
+        $this->Name = clienttranslate('Put Character into Approach Deck');
         $this->SavedCharacterId = 0;
     }
 

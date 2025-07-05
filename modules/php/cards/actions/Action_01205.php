@@ -15,7 +15,7 @@ class Action_01205 extends CharacterAction
     {
         parent::__construct();
 
-        $this->Name = "Kidnap Character";
+        $this->Name = clienttranslate("Kidnap Character");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

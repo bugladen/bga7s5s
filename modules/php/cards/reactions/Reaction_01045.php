@@ -14,7 +14,7 @@ class Reaction_01045 extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = "Gain Reknown at High Drama End";
+        $this->Name = clienttranslate("Gain Reknown at High Drama End");
     }
 
     public function getReactionDescription(Theah $theah): string

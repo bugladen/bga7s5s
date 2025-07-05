@@ -17,7 +17,7 @@ class Action_01198 extends AttachmentAction
     {
         parent::__construct();
 
-        $this->Name = "Issue a Finesse Challenge";
+        $this->Name = clienttranslate("Issue a Finesse Challenge");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
