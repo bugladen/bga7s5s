@@ -37,6 +37,8 @@ class Technique_01067b extends Technique
                 if ($transition instanceof EventTransition) {
                     $transition->playerId = $owner->ControllerId;
                     $transition->transition = '01067b';
+                    $transition->sourceId = $owner->Id;
+                    $transition->internalId = $this->Id;
                     $transition->priority = Event::HIGH_PRIORITY;
                 }
                 $event->theah->queueEvent($transition);

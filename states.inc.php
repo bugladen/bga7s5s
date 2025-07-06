@@ -1186,7 +1186,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "01067b" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS_01067b,
+                    "01067b" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01067b,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_REACTIONS,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
                     "endOfGame" => States::END_GAME
@@ -1221,7 +1221,7 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS, 
                 ]
             ],
-            States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS_01067b => [
+            States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01067b => [
             "name" => "highDramaChallengeActionResolveTechnique_01067b",
             "description" => clienttranslate('${actplayer} is choosing options to resolve Jean Urbain\'s Technique.'),
             "descriptionmyturn" => clienttranslate('Jean Urbain: +1 Thrust or Riposte: ${you} may choose Thrust or Riposte:'),
