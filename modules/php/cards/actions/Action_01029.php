@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -75,7 +76,7 @@ class Action_01029 extends RiskAction
         
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01029");
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01029", $this->Id);
             $event->theah->queueEvent($transition);
         }
     }
@@ -84,13 +85,16 @@ class Action_01029 extends RiskAction
     {
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
-        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-        $performer = $game->theah->getCardById($performerId);
-
-        $characters = $game->theah->getCharactersAtLocation($performer->Location);
-        //Filter out characters owned by the player
-        $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId != $performer->ControllerId));
-        $args['ids'] = array_map(fn($character) => $character->Id, $characters);
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01029)
+        {
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCardById($performerId);
+    
+            $characters = $game->theah->getCharactersAtLocation($performer->Location);
+            //Filter out characters owned by the player
+            $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId != $performer->ControllerId));
+            $args['ids'] = array_map(fn($character) => $character->Id, $characters);
+        }
 
         return $args;
     }
@@ -99,27 +103,29 @@ class Action_01029 extends RiskAction
     { 
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
-        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-        $performer = $game->theah->getCardById($performerId);
-
-        $characters = $game->theah->getCharactersAtLocation($performer->Location);
-        //Filter out characters owned by the player
-        $characters = array_filter($characters, fn($character) => $character->ControllerId != $performer->ControllerId);
-
-        $character_ids = array_map(fn($character) => $character->Id, $characters);
-
-        if ( ! in_array($id, $character_ids))
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01029)
         {
-            throw new \BgaUserException($game->translate("Invalid character selected"));
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCardById($performerId);
+    
+            $characters = $game->theah->getCharactersAtLocation($performer->Location);
+            //Filter out characters owned by the player
+            $characters = array_filter($characters, fn($character) => $character->ControllerId != $performer->ControllerId);
+    
+            $character_ids = array_map(fn($character) => $character->Id, $characters);
+    
+            if ( ! in_array($id, $character_ids))
+            {
+                throw new \BgaUserException($game->translate("Invalid character selected"));
+            }
+    
+            $owner = $this->getOwningCard($game->theah);
+    
+            $target = $game->theah->getCardById($id);
+            $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $target->Id, $owner->Id);
+            $game->theah->queueEvent($event);
+    
+            $game->gamestate->nextState("cardChosen");
         }
-
-        $owner = $this->getOwningCard($game->theah);
-
-        $target = $game->theah->getCardById($id);
-        $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $target->Id, $owner->Id);
-        $game->theah->queueEvent($event);
-
-        $game->gamestate->nextState("cardChosen");
-        
     }
 }

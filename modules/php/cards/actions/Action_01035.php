@@ -141,7 +141,7 @@ class Action_01035 extends CharacterAction
 
             $game->globals->set(Game::REVEALED_CARDS, json_encode($revealed));
 
-            $revealEvent = EventFactory::createTransitionEvent($playerId, $kaspar->Id, "01035");
+            $revealEvent = EventFactory::createTransitionEvent($playerId, $kaspar->Id, "01035", $this->Id);
             $event->queueEvent($revealEvent);
 
             $this->setUsed($event->theah, true);

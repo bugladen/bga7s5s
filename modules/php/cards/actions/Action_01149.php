@@ -89,11 +89,15 @@ class Action_01149 extends SchemeCityAction
     {
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
-        $scheme = $this->getOwningCard($game->theah);
-        $args['schemeId'] = $scheme->Id;
-
-        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-        $args['performerId'] = $performerId;
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01149)
+        {
+            $scheme = $this->getOwningCard($game->theah);
+            $args['schemeId'] = $scheme->Id;
+    
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $args['performerId'] = $performerId;
+    
+        }
 
         return $args;
     }

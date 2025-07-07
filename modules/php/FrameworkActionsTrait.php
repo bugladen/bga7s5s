@@ -1112,6 +1112,7 @@ trait FrameworkActionsTrait
         }
 
         $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
+        $this->globals->set(GAME::TRANSITION_INTERNAL_ID, $action->Id);
 
         // If a character action, the default performer is the owner of the action.
         // This can of course be overrident by the specific card
@@ -1176,6 +1177,7 @@ trait FrameworkActionsTrait
         }
 
         $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
+        $this->globals->set(GAME::TRANSITION_INTERNAL_ID, $action->Id);
 
         if ($action->RequiresPerformerSelected)
         {
@@ -1839,7 +1841,7 @@ trait FrameworkActionsTrait
     {
         $this->theah->buildCity();
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
-        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
+        $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
         $card = $this->theah->getCardById($sourceId);
         $card->actFromCardPass($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId);
     }
@@ -1849,7 +1851,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
-        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
+        $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
         $card = $this->theah->getCardById($sourceId);
         $card->actFromCardWithId($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $id);
     }
@@ -1860,7 +1862,7 @@ trait FrameworkActionsTrait
         $ids = json_decode($ids, true);
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
-        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
+        $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
         $card = $this->theah->getCardById($sourceId);
         $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $ids);
     }

@@ -66,7 +66,7 @@ class Action_01072 extends CardAction
             if ($success)
             {
                 $scheme = $this->getOwningCard($event->theah);
-                $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $scheme->Id, "01072");
+                $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $scheme->Id, "01072", $this->Id);
                 $event->theah->queueEvent($transitionEvent);
             }
         }

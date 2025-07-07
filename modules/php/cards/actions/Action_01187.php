@@ -45,7 +45,7 @@ class Action_01187 extends AttachmentAction
 
             $event->theah->game->globals->set(Game::SMUGGLED_ITEM_ATTACHMENT_ID, $smuggledItem->Id);
 
-            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01187");
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01187", $this->Id);
             $event->theah->queueEvent($transition);
         }
     }

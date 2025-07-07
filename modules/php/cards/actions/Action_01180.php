@@ -56,7 +56,7 @@ class Action_01180 extends CharacterAction
 
             $this->setUsed($event->theah, true);
 
-            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01180");
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01180", $this->Id);
             $event->theah->queueEvent($transition);
         }
     }

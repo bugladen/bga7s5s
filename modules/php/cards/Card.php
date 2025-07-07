@@ -84,11 +84,11 @@ abstract class Card
         return $args; 
     }
 
-    public function actFromCardPass(Game $game, int $state, string $stateName, string $actionId): void 
+    public function actFromCardPass(Game $game, int $state, string $stateName, string $internalId): void 
     { 
         if ($this instanceof IHasActions)
         {
-            $action = $this->getActionById($actionId);
+            $action = $this->getActionById($internalId);
             if ($action)
             {
                 $action->actFromActionPass($game, $state, $stateName);
@@ -96,11 +96,11 @@ abstract class Card
         }
     }
 
-    public function actFromCardWithId(Game $game, int $state, string $stateName, string $actionId, int $id): void 
+    public function actFromCardWithId(Game $game, int $state, string $stateName, string $internalId, int $id): void 
     { 
         if ($this instanceof IHasActions)
         {
-            $action = $this->getActionById($actionId);
+            $action = $this->getActionById($internalId);
             if ($action)
             {
                 $action->actFromActionWithId($game, $state, $stateName, $id);
@@ -108,11 +108,11 @@ abstract class Card
         }
     }
 
-    public function actFromCardWithIds(Game $game, int $state, string $stateName, string $actionId, array $ids): void 
+    public function actFromCardWithIds(Game $game, int $state, string $stateName, string $internalId, array $ids): void 
     { 
         if ($this instanceof IHasActions)
         {
-            $action = $this->getActionById($actionId);
+            $action = $this->getActionById($internalId);
             if ($action)
             {
                 $action->actFromActionWithIds($game, $state, $stateName, $ids);
@@ -120,11 +120,11 @@ abstract class Card
         }
     }
 
-    public function stateFromCard(Game $game, int $state, string $stateName, string $actionId): void
+    public function stateFromCard(Game $game, int $state, string $stateName, string $internalId): void
     {
         if ($this instanceof IHasActions)
         {
-            $action = $this->getActionById($actionId);
+            $action = $this->getActionById($internalId);
             if ($action)
             {
                 $action->stateFromAction($game, $state, $stateName);

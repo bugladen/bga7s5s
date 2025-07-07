@@ -109,6 +109,8 @@ class Action_01044 extends SchemeCityAction
 
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
+        parent::actFromActionWithId($game, $state, $stateName, $id);
+
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01044)
         {
             $attachment = $game->theah->getAttachmentById($id);
@@ -258,7 +260,7 @@ class Action_01044 extends SchemeCityAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01044");
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01044", $this->Id);
             $event->theah->queueEvent($transition);
         }
     }

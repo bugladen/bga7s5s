@@ -62,7 +62,7 @@ class Action_01206 extends AttachmentAction
             $claimEvent = EventFactory::createClaimOccuringEvent($performer->ControllerId, $performer->Id, $performer->Location, $pressureTypes);
             $event->theah->queueEvent($claimEvent);
 
-            $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $performer->Id, "01206");
+            $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $performer->Id, "01206", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
     }

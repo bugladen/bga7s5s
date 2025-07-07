@@ -52,7 +52,7 @@ class Action_01071 extends SchemeCityAction
         {
             $event->theah->game->globals->set(Game::CHALLENGE_TYPE, Game::EPEE_SANGLANTE_CHALLENGE_TYPE);
 
-            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01071");
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01071", $this->Id);
             $event->theah->queueEvent($transition);
         }
 

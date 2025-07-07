@@ -78,7 +78,7 @@ class Action_01198 extends AttachmentAction
             $owner = $this->getOwningCharacter($event->theah);
             $event->theah->game->globals->set(Game::CHOSEN_PERFORMER, $owner->Id);
 
-            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01198");
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01198", $this->Id);
             $event->theah->queueEvent($transition);
 
         }

@@ -49,7 +49,7 @@ class Action_01205 extends CharacterAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01205");
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01205", $this->Id);
             $event->theah->queueEvent($transition);
         }
     }

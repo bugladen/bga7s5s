@@ -42,7 +42,7 @@ class Action_01185 extends EventCityAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01185");
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01185", $this->Id);
             $event->theah->queueEvent($transition);
         }
     }
