@@ -62,9 +62,8 @@ class _01186 extends CityCharacter implements IHasTechniques
         //Handle each event from a Risk source that would target her and cancel them before they are processed.
         //Mark ImperviousnessUsedToday as true so that it cannot be used again until the next day.
         if ( ! $this->ImperviousnessUsedToday && 
-            (($event instanceof EventCardMoved && $event->cardId == $this->Id) ||
-            ($event instanceof EventCardEngaged && $event->cardId == $this->Id) 
-            && $event->sourceId != 0)
+            (($event instanceof EventCardMoved && $event->cardId == $this->Id && $event->sourceId != 0) ||
+            ($event instanceof EventCardEngaged && $event->cardId == $this->Id && $event->sourceId != 0))
         )
         {
             $source = $event->theah->getCardById($event->sourceId);
