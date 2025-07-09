@@ -408,18 +408,22 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
 
-        const card = this.cardProperties[args.cardId];
+        let card = this.cardProperties[args.cardId];
         if (card)
         {
             card.location = this.LOCATION_CITY_DISCARD;
 
             dojo.destroy(card.divId);
             card.divId = null;
-    
-            this.gamedatas.cityDiscard.push(card);
-   
         }
-    },
+        else
+        {
+            card = args.card;
+        }
+
+        this.gamedatas.cityDiscard.push(card);
+
+},
 
     notif_cardDiscardedFromPlay: function( notif )
     {

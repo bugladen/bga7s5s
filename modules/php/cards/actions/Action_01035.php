@@ -48,7 +48,7 @@ class Action_01035 extends CharacterAction
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $game = $event->theah->game;
-            $playerId = $event->theah->game->getActivePlayerId();
+            $playerId = $event->playerId;
             
             $kaspar = $this->getOwningCharacter($event->theah);
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $kaspar->Id);
@@ -56,73 +56,10 @@ class Action_01035 extends CharacterAction
             $event->queueEvent($engageEvent);
             
             $game->notifyAllPlayers("message", clienttranslate('<strong>Kaspar</strong> performed his Recruit Action from the City Deck.'), []);
-            $deck = $game->getGameDeckObject();
 
-            $count = $deck->countCardInLocation(Game::LOCATION_CITY_DECK);
-            $cards = $game->getCardsOnTopOfCityDeck($count);
-            $revealed = [];
-            $names = [];
-            $found = false;
-            $mercenary = null;
-            foreach ($cards as $cardInfo)
-            {
-                $card = $game->getCardObjectFromDb($cardInfo['id']);
-                if (in_array("Mercenary", $card->Traits))
-                {
-                    $revealed[] = $cardInfo['id'];
-                    $found = true;
-                    $mercenary = $card;
-                    $names[] = $card->Name;
-                    break;
-                }
+            $mercenary = $game->revealFirstCardTypeFromCityDeck($playerId, "Mercenary");
 
-                $revealed[] = $cardInfo['id'];
-                $names[] = $card->Name;
-                unset($card);                
-            }
-
-            // Per rules team, if no mercenary is found, shuffle the discard pile into the deck and try again.
-            if ( ! $found)
-            {
-                $game->shuffleCityDiscardIntoCityDeck();
-
-                //Stick cards already revealed in the top of the deck
-                $revealed = array_reverse($revealed);
-                foreach ($revealed as $cardId)
-                {
-                    $deck->insertCardOnExtremePosition($cardId, Game::LOCATION_CITY_DECK, true);
-                }
-
-                $revealed = [];
-                $names = [];
-                $count = $deck->countCardInLocation(Game::LOCATION_CITY_DECK);
-                $cards = $game->getCardsOnTopOfCityDeck($count);    
-                //$cards = $deck->getCardsInLocation(Game::LOCATION_CITY_DECK, null, 'card_location_arg');
-                foreach ($cards as $cardInfo)
-                {
-                    $card = $game->getCardObjectFromDb($cardInfo['id']);
-                    if (in_array("Mercenary", $card->Traits))
-                    {
-                        $revealed[] = $cardInfo['id'];
-                        $names[] = $card->Name;
-                        $found = true;
-                        $mercenary = $card;
-                        break;
-                    }
-
-                    $revealed[] = $cardInfo['id'];
-                    $names[] = $card->Name;
-                    unset($card);
-                }
-            }
-
-            $names = implode(", ", $names);
-            $game->notifyAllPlayers("message", clienttranslate('A total of ${count} City Cards were revealed: ${names}'), [
-                'count' => count($revealed),
-                'names' => $names,
-            ]);
-
-            if ($found)
+            if ($mercenary)
             {
                 $game->globals->set(Game::CHOSEN_CARD, $mercenary->Id);
                 $game->notifyAllPlayers("message", clienttranslate('${mercenary} is the first Mercenary revealed in the City Deck.'), [
@@ -138,8 +75,6 @@ class Action_01035 extends CharacterAction
                 $game->globals->delete(Game::CHOSEN_CARD);
                 $game->notifyAllPlayers("message", clienttranslate('No mercenary was found in the City Deck.'), []);
             }
-
-            $game->globals->set(Game::REVEALED_CARDS, json_encode($revealed));
 
             $revealEvent = EventFactory::createTransitionEvent($playerId, $kaspar->Id, "01035", $this->Id);
             $event->queueEvent($revealEvent);
