@@ -73,11 +73,19 @@ abstract class Card
 
         if ($this instanceof IHasActions) 
         {
-            $actionId = $game->globals->get(Game::CHOSEN_ACTION);
-            $action = $this->getActionById($actionId);
+            $action = $this->getActionById($internalId);
             if ($action)
             {
                 $args += $action->getArgsFromAction($game, $state, $stateName);
+            }
+        }
+
+        if ($this instanceof IHasTechniques)
+        {
+            $technique = $this->getTechniqueById($internalId);
+            if ($technique)
+            {
+                $args += $technique->getArgsFromTechnique($game, $state, $stateName);
             }
         }
 
@@ -94,6 +102,15 @@ abstract class Card
                 $action->actFromActionPass($game, $state, $stateName);
             }
         }
+
+        if ($this instanceof IHasTechniques)
+        {
+            $technique = $this->getTechniqueById($internalId);
+            if ($technique)
+            {
+                $technique->actFromTechniquePass($game, $state, $stateName);
+            }
+        }
     }
 
     public function actFromCardWithId(Game $game, int $state, string $stateName, string $internalId, int $id): void 
@@ -104,6 +121,15 @@ abstract class Card
             if ($action)
             {
                 $action->actFromActionWithId($game, $state, $stateName, $id);
+            }
+        }
+
+        if ($this instanceof IHasTechniques)
+        {
+            $technique = $this->getTechniqueById($internalId);
+            if ($technique)
+            {
+                $technique->actFromTechniqueWithId($game, $state, $stateName, $id);
             }
         }
     }
@@ -118,6 +144,15 @@ abstract class Card
                 $action->actFromActionWithIds($game, $state, $stateName, $ids);
             }
         }
+
+        if ($this instanceof IHasTechniques)
+        {
+            $technique = $this->getTechniqueById($internalId);
+            if ($technique)
+            {
+                $technique->actFromTechniqueWithIds($game, $state, $stateName, $ids);
+            }
+        }
     }
 
     public function stateFromCard(Game $game, int $state, string $stateName, string $internalId): void
@@ -128,6 +163,15 @@ abstract class Card
             if ($action)
             {
                 $action->stateFromAction($game, $state, $stateName);
+            }
+        }
+
+        if ($this instanceof IHasTechniques)
+        {
+            $technique = $this->getTechniqueById($internalId);
+            if ($technique)
+            {
+                $technique->stateFromTechnique($game, $state, $stateName);
             }
         }
     }

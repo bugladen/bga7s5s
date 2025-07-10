@@ -49,7 +49,6 @@ class Reaction_01146b extends CardReaction
             if ($owner->ControllerId != $scheme->ControllerId)
             {
                 $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
-                $reactionEvent->priority = Event::HIGHEST_PRIORITY;
                 $event->theah->queueEvent($reactionEvent);
 
                 $this->TechniqueId = $event->techniqueId;
@@ -64,7 +63,6 @@ class Reaction_01146b extends CardReaction
             if ($owner->ControllerId != $scheme->ControllerId)
             {
                 $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
-                $reactionEvent->priority = Event::HIGHEST_PRIORITY;
                 $event->theah->queueEvent($reactionEvent);
 
                 $this->ManeuverId = $event->maneuverId;
@@ -84,8 +82,8 @@ class Reaction_01146b extends CardReaction
             if ($this->TechniqueId != '')
             {
                 $technique = $game->theah->getTechniqueById($this->TechniqueId);
-                $game->notifyAllPlayers('message', clienttranslate('<strong>Let The Sword Decide:</strong> ${you} chose to cancel Technique: [${technique}]'), [
-                    'you' => $game->getActivePlayerName(),
+                $game->notifyAllPlayers('message', clienttranslate('<strong>Let The Sword Decide:</strong> ${player_name} chose to cancel Technique: [${technique}]'), [
+                    'player_name' => $game->getActivePlayerName(),
                     'technique' => $technique->Name
                 ]);
                 $game->globals->delete(Game::CHOSEN_TECHNIQUE);
@@ -97,8 +95,8 @@ class Reaction_01146b extends CardReaction
             if ($this->ManeuverId != '')
             {
                 $maneuver = $game->theah->getManeuverById($this->ManeuverId);
-                $game->notifyAllPlayers('message', clienttranslate('<strong>Let The Sword Decide:</strong> ${you} chose to cancel Maneuver: [${maneuver}]'), [
-                    'you' => $game->getActivePlayerName(),
+                $game->notifyAllPlayers('message', clienttranslate('<strong>Let The Sword Decide:</strong> ${player_name} chose to cancel Maneuver: [${maneuver}]'), [
+                    'player_name' => $game->getActivePlayerName(),
                     'maneuver' => $maneuver->Name
                 ]);
                 $game->globals->delete(Game::CHOSEN_MANEUVER);

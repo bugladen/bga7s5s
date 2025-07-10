@@ -2,12 +2,12 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 
 class Technique_01067b extends Technique
 {
@@ -25,34 +25,33 @@ class Technique_01067b extends Technique
         parent::handleEvent($event);
         
         //If there is more than one Musketeer as owner location, switch to state where player can choose one to gain +1 Thrust or +1 Riposte.
-        if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
+        if ($event instanceof EventTechniqueActivated && $event->techniqueId == $this->Id)
         {
-            $owner = $event->theah->getCharacterById($this->OwnerId);
-            $characters = $event->theah->getCharactersAtLocation($owner->Location);
-            $characters = array_filter($characters, 
-                fn($character) => $character->Id != $owner->Id && $character->ControllerId == $owner->ControllerId && in_array("Musketeer", $character->Traits));
+            $jeanUrbain = $event->theah->getCharacterById($this->OwnerId);
+            $characters = $event->theah->getCharactersAtLocation($jeanUrbain->Location);
+            $characters = array_filter($characters, fn($character) => 
+                $character->Id != $jeanUrbain->Id && 
+                $character->ControllerId == $jeanUrbain->ControllerId && 
+                $character->hasTrait("Musketeer"));
             if (count($characters) > 0)
             {
-                $transition = $event->theah->createEvent(Events::Transition);
-                if ($transition instanceof EventTransition) {
-                    $transition->playerId = $owner->ControllerId;
-                    $transition->transition = '01067b';
-                    $transition->sourceId = $owner->Id;
-                    $transition->internalId = $this->Id;
-                    $transition->priority = Event::HIGH_PRIORITY;
-                }
+                $transition = EventFactory::createTechniqueTransitionEvent($jeanUrbain->ControllerId, $jeanUrbain->Id, "01067b", $this->Id);
                 $event->theah->queueEvent($transition);
             }
+
+            $this->setUsed($event->theah, true);
         }
 
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
-            $owner = $event->theah->getCharacterById($this->OwnerId);
-            if ($owner && $owner->Id == $event->actorId)
+            $jeanUrbain = $event->theah->getCharacterById($this->OwnerId);
+            if ($jeanUrbain && $jeanUrbain->Id == $event->actorId)
             {
-                $characters = $event->theah->getCharactersAtLocation($owner->Location);
-                $characters = array_filter($characters, 
-                    fn($character) => $character->Id != $owner->Id && $character->ControllerId == $owner->ControllerId && in_array("Musketeer", $character->Traits));
+                $characters = $event->theah->getCharactersAtLocation($jeanUrbain->Location);
+                $characters = array_filter($characters, fn($character) => 
+                    $character->Id != $jeanUrbain->Id && 
+                    $character->ControllerId == $jeanUrbain->ControllerId && 
+                    $character->hasTrait("Musketeer"));
                 if ( ! $this->UseParryInstead)
                 {
                     $event->adversaryThreat += 1;
@@ -67,5 +66,29 @@ class Technique_01067b extends Technique
             $card = $this->getOwningCard($event->theah);
             $card->IsUpdated = true;
         }
+    }
+
+    public function actFromTechniqueWithId(Game $game, int $state, string $stateName, int $id): void
+    {
+        parent::actFromTechniqueWithId($game, $state, $stateName, $id);
+
+        if ($id == 1)
+        {
+            $this->UseParryInstead = false;
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses +1 Thrust for Jean Urbain\'s Technique.'), [
+                "player_name" => $game->getActivePlayerName(),
+            ]);
+        }
+        else if ($id == 2)
+        {
+            $this->UseParryInstead = true;
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses +1 Riposte for Jean Urbain\'s Technique.'), [
+                "player_name" => $game->getActivePlayerName(),
+            ]);
+        }
+        $jean = $this->getOwningCharacter($game->theah);
+        $jean->IsUpdated = true;
+
+        $game->gamestate->nextState();
     }
 }

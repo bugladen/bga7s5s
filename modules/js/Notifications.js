@@ -6,20 +6,13 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( 'notifications subscriptions setup' );
         
         const notifs = [
-            ['playLeader', 1500],
+            ['01126_2_scheme_moved', 500],
             ['actionUsed', 1],
-            ['maneuverUsed', 1],
-            ['reactionUsed', 1],
-            ['techniqueUsed', 1],
-            ['traitAdded', 1],
-            ['traitRemoved', 1],
             ['approachCardsReceived', 1000],
             ['approachCharacterPlayed', 2000],
             ['approachSchemePlayed', 2000],
             ['attachmentEquipped', 1000],
             ['attachmentUnequipped', 1000],
-            ['newDay', 1000],
-            ['cityCardAddedToLocation', 1000],
             ['cardAddedToCityDiscardPile', 500],
             ['cardAddedToHand', 2000],
             ['cardDiscardedFromHand', 500],
@@ -27,37 +20,46 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardEngaged', 1000],
             ['cardEngarded', 1000],
             ['cardMoved', 1000],
-            ['characterDestroyed', 1000],
-            ['characterInfluenceModified', 1000],
-            ['schemeSentToLocker', 1000],
-            ['characterRecruited', 1000],
-            ['characterHealed', 1000],
-            ['characterMustered', 1000],
-            ['characterWounded', 1000],
-            ['drawCard', 2000],
-            ['firstPlayer', 2000],
-            ['locationClaimed', 500],
-            ['panacheModified', 1000],
-            ['playerReknownUpdated', 500],
-            ['reknownUpdatedOnCard', 500],
-            ['reknownAddedToLocation', 500],
-            ['reknownRemovedFromLocation', 500],
-            ['factionResolveCardDraw', 1000],
-            ['factionResolveCardDrawPublic', 500],
             ['cardRemovedFromCityDiscardPile', 500],
             ['cardRemovedFromPlayerDiscardPile', 500],
-            ['yevgeniAdversaryChosen', 500],
-            ['crystalEyeTargetChosen', 500],
-            ['01126_2_scheme_moved', 500],
             ['challengeIssued', 500],
+            ['characterDestroyed', 1000],
+            ['characterHealed', 1000],
+            ['characterInfluenceModified', 1000],
             ['characterIntervened', 500],
-            ['duelStarted', 500],
-            ['newDuelRound', 500],
-            ['updateRoundWithCombatStats', 500],
-            ['updateRoundThreats', 500],
-            ['duelEnd', 500],
+            ['characterMustered', 1000],
+            ['characterRecruited', 1000],
+            ['characterWounded', 1000],
+            ['cityCardAddedToLocation', 1000],
             ['cityDiscardShuffled', 500],
+            ['crystalEyeTargetChosen', 500],
+            ['drawCard', 2000],
+            ['duelEnd', 500],
+            ['duelStarted', 500],
+            ['factionResolveCardDraw', 1000],
+            ['factionResolveCardDrawPublic', 500],
+            ['firstPlayer', 2000],
+            ['locationClaimed', 500],
+            ['maneuverUsed', 1],
+            ['newDay', 1000],
+            ['newDuelRound', 500],
+            ['panacheModified', 1000],
             ['playerDiscardShuffled', 500],
+            ['playerReknownUpdated', 500],
+            ['playLeader', 1500],
+            ['reactionUsed', 1],
+            ['reknownAddedToLocation', 500],
+            ['reknownRemovedFromLocation', 500],
+            ['reknownUpdatedOnCard', 500],
+            ['schemeSentToLocker', 1000],
+            ['techniqueAdded', 1],
+            ['techniqueRemoved', 1],
+            ['techniqueUsed', 1],
+            ['traitAdded', 1],
+            ['traitRemoved', 1],
+            ['updateRoundThreats', 500],
+            ['updateRoundWithCombatStats', 500],
+            ['yevgeniAdversaryChosen', 500],
         ];
 
         notifs.forEach((notif) => {
@@ -167,6 +169,36 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
+    notif_techniqueAdded: function( notif )
+    {
+        debug( 'notif_techniqueAdded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        if (card)
+        {
+            //Add the technique to the card
+            card.techniques.push(args.technique);
+            this.createTooltipForCard(card);
+        }
+    },
+
+    notif_techniqueRemoved: function( notif )
+    {
+        debug( 'notif_techniqueRemoved' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        if (card)
+        {
+            //Remove the technique from the card
+            card.techniques = card.techniques.filter(technique => technique.id !== args.techniqueId);
+            this.createTooltipForCard(card);
+        }
+    },
+    
     notif_techniqueUsed: function( notif )
     {
         debug( 'notif_techniqueUsed' );
@@ -1045,5 +1077,6 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const player = this.gamedatas.players[args.playerId];
         player.discard = [];
     },
+
 })
 });

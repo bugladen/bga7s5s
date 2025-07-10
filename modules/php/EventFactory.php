@@ -588,6 +588,21 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
+    public static function createTechniqueTransitionEvent(int $playerId, int $sourceId, string $transitionName, string $internalId): EventTransition
+    {
+        $transition = self::createEvent(Events::Transition);
+        if ($transition instanceof EventTransition)
+        {
+            $transition->playerId = $playerId;
+            $transition->sourceId = $sourceId;
+            $transition->internalId = $internalId;
+            $transition->transition = $transitionName;
+            $transition->priority = Event::HIGH_PRIORITY;
+        }
+
+        return $transition;
+    }
+
     public static function createTechniqueUsedEvent(int $playerId, int $ownerId, string $techniqueId, bool $used): EventTechniqueUsed
     {
         $event = self::createEvent(Events::TechniqueUsed);

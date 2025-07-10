@@ -1365,6 +1365,7 @@ trait FrameworkActionsTrait
         $this->theah->queueEvent($event);
 
         $this->globals->set(GAME::CHOSEN_TECHNIQUE, $technique->Id);
+        $this->globals->set(GAME::TRANSITION_INTERNAL_ID, $technique->Id);
 
         $this->gamestate->nextState("techniqueActivated");
     }
@@ -1513,6 +1514,9 @@ trait FrameworkActionsTrait
         if ( ! $this->theah->isTechniqueOwnedByCharacter($technique, $actor)) {
             throw new \BgaUserException(self::_("Technique does not belong to the Actor."));
         }
+
+        $this->globals->set(GAME::CHOSEN_TECHNIQUE, $technique->Id);
+        $this->globals->set(GAME::TRANSITION_INTERNAL_ID, $technique->Id);
 
         $adversaryId = $this->getDuelOpponentId($actorId);
         $adversary = $this->theah->getCharacterById($adversaryId);

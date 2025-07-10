@@ -36,13 +36,7 @@ trait ManeuverTrait
         foreach ($this->Maneuvers as $maneuver) {
             if ($mustBeAvailable && !$maneuver->isAvailable())
                 continue;
-            $owner = $maneuver->getOwningCard($game->theah);
-            $array[] = [
-                "id" => $maneuver->Id, 
-                "name" => $game->translate($owner->Name) . ': ' . $game->translate($maneuver->Name),
-                "shortName" => $game->translate($maneuver->Name),
-                "available" => $maneuver->isAvailable()
-            ];
+            $array[] = $maneuver->getPropertyArray($game);
         }
 
         return $array;

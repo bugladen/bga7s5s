@@ -6,13 +6,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Reaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 trait CardAbilityTrait
 {
     public string $Id;
-    protected string $ClassId;
+    public string $ClassId;
     public int $OwnerId;
     public string $Name;
     public bool $Used;
@@ -94,6 +95,18 @@ trait CardAbilityTrait
         }
         else
             return null;
+    }
+
+    public function getPropertyArray(Game $game): array
+    {
+        $owner = $this->getOwningCard($game->theah);
+        $name = $game->translate($this->Name);
+        return [
+            "id" => $this->Id, 
+            "name" => $game->translate($owner->Name) . ': ' . $name,
+            "shortName" => $name,
+            "available" => $this->isAvailable()
+        ];
     }
 
     public function setUsed(Theah $theah, bool $used)

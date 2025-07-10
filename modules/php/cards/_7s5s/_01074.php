@@ -42,7 +42,6 @@ class _01074 extends FactionAttachment implements IHasTechniques
 
         $technique = new Technique_PlusOneRiposte();
         $technique->setId("Technique_01074");
-        $technique->Name = "+1 Riposte";
         $this->Techniques = [
             $technique,
         ];

@@ -14,8 +14,14 @@ interface IHasTechniques
     public function anyTechniquesAvailable(): bool;
 
     public function getTechniqueById($id): ?Technique;
+    
+    public function getTechniqueByClassId($classId): ?Technique;
 
     public function getTechniquesArray(Game $game, bool $mustBeAvailable = false): Array;
 
     public function updateTechniqueOwnerIds($id);
+
+    public function addTechnique(Technique $technique);
+
+    public function removeTechnique(Technique $technique);
 }

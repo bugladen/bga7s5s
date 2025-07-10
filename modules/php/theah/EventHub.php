@@ -306,6 +306,7 @@ trait EventHub
                         'i18n' => ['card_name', 'location'],
                         "card_name" => $card->Name,
                         "cardId" => $card->Id,
+                        "card" => $card->getPropertyArray($theah->game),
                         "location" => $event->fromLocation,
                     ]);
                 };

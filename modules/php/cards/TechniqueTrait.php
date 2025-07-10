@@ -38,13 +38,7 @@ trait TechniqueTrait
             if ($mustBeAvailable && !$technique->isAvailable()) {
                 continue;
             }
-            $owner = $technique->getOwningCard($game->theah);
-            $array[] = [
-                "id" => $technique->Id, 
-                "name" => $game->translate($owner->Name) . ': ' . $game->translate($technique->Name),
-                "shortName" => $game->translate($technique->Name),
-                "available" => $technique->isAvailable()
-            ];
+            $array[] = $technique->getPropertyArray($game);
         }
 
         return $array;
@@ -59,10 +53,35 @@ trait TechniqueTrait
         return null;
     }
 
+    public function getTechniqueByClassId($classId): ?Technique
+    {
+        foreach ($this->Techniques as $technique) {
+            if ($technique->ClassId == $classId)
+                return $technique;
+        }
+        return null;
+    }
+
     public function updateTechniqueOwnerIds($id)
     {
         foreach ($this->Techniques as $technique) {
             $technique->setOwnerId($id);
         }
+    }
+
+    public function addTechnique(Technique $technique)
+    {
+        //Check if the technique is already in the list.
+        if (in_array($technique, $this->Techniques))
+        {
+            return;
+        }
+
+        $this->Techniques[] = $technique;
+    }
+
+    public function removeTechnique(Technique $technique)
+    {
+        $this->Techniques = array_filter($this->Techniques, fn($t) => $t->Id != $technique->Id);
     }
 }
