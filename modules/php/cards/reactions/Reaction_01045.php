@@ -47,7 +47,7 @@ class Reaction_01045 extends CardReaction
                 {
                     $attachments = $event->theah->getAvailableAttachmentsAtLocation($location->Name);
                     $characters = $event->theah->getCharactersAtLocation($location->Name);
-                    $mercenarys = array_filter($characters, fn($character) => $character->isMercenary() && ! $character->isControlled());
+                    $mercenarys = array_filter($characters, fn($character) => $character->hasTrait("Mercenary") && ! $character->isControlled());
 
                     if (count($mercenarys) > 0 || count($attachments) > 0)
                     {

@@ -46,7 +46,7 @@ class Reaction_01202 extends AttachmentReaction
             {
                 $owningCharacter = $this->getOwningCharacter($event->theah);
                 $dyingCharacter = $event->theah->getCharacterById($event->characterId);
-                if ($owningCharacter->ControllerId == $dyingCharacter->ControllerId && ! $dyingCharacter instanceof Leader && ! $dyingCharacter->isMercenary())
+                if ($owningCharacter->ControllerId == $dyingCharacter->ControllerId && ! $dyingCharacter instanceof Leader && ! $dyingCharacter->hasTrait("Mercenary"))
                 {
                     $this->SavedCharacterId = $dyingCharacter->Id;
                     $objectOfWonder = $this->getOwningCard($event->theah);

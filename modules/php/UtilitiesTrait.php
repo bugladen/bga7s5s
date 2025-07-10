@@ -361,7 +361,7 @@ trait UtilitiesTrait
         {
             if (!$character->ControllerId) continue;
 
-            if ($pressureType == Game::REPUTATION_MERITEE_PRESSURE_TYPE && $character->isMercenary())
+            if ($pressureType == Game::REPUTATION_MERITEE_PRESSURE_TYPE && $character->hasTrait("Mercenary"))
             {
                 continue;
             }
@@ -494,7 +494,7 @@ trait UtilitiesTrait
         return [true, $totals];
     }
 
-    function revealFirstCardTypeFromCityDeck(string $type): ?Card
+    function revealFirstCardTypeFromCityDeck(int $playerId, string $type): ?Card
     {
         $count = $this->cards->countCardInLocation(Game::LOCATION_CITY_DECK);
         $cards = $this->getCardsOnTopOfCityDeck($count);
@@ -518,7 +518,7 @@ trait UtilitiesTrait
             }
             else
             {
-                if (in_array($type, $card->Traits))
+                if ($card->hasTrait($type))
                 {
                     $revealed[] = $cardInfo['id'];
                     $found = true;
@@ -586,6 +586,16 @@ trait UtilitiesTrait
             'count' => count($revealed),
             'names' => $names,
         ]);
+
+        //Send the revealed cards (sans the found card) to the discard pile
+        foreach ($revealed as $cardId)
+        {
+            if ($cardId != $cardFound->Id)
+            {
+                $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $cardId, Game::LOCATION_CITY_DECK);
+                $this->theah->queueEvent($event);
+            }
+        }
 
         $this->globals->set(Game::REVEALED_CARDS, json_encode($revealed));
 

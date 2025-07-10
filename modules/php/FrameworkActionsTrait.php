@@ -730,7 +730,7 @@ trait FrameworkActionsTrait
         $charactersThatCanReruit = [];
         foreach ($characters as $character) {
             $charactersAtLocation = $this->theah->getCharactersAtLocation($character->Location);
-            $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return $character->isMercenary(); });
+            $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return $character->hasTrait("Mercenary"); });
             if (count($mercenariesAtLocation) > 0) {
                 $charactersThatCanReruit[] = $character;
             }
@@ -778,7 +778,7 @@ trait FrameworkActionsTrait
         $performer = $this->theah->getCharacterById($performerId);
 
         $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
-        $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return $character->isMercenary(); });        
+        $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return $character->hasTrait("Mercenary"); });        
         $mercenaryIds = array_map(function($character) { return $character->Id; }, $mercenariesAtLocation);
         if (!in_array($recruitId, $mercenaryIds)) {
             throw new \BgaUserException(self::_("Chosen character is not a Mercenary at the Performer's Location."));
