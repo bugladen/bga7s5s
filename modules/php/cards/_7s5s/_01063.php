@@ -3,14 +3,10 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01063;
 
-class _01063 extends Character implements IHasTechniques
+class _01063 extends Character
 {
-    use TechniqueTrait;
-    
     public function __construct()
     {
         parent::__construct();

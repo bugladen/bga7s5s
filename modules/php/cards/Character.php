@@ -12,8 +12,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-abstract class Character extends Card
+abstract class Character extends Card implements IHasTechniques
 {
+    use TechniqueTrait;
+    
     public string $Title;
     public int $Resolve;
     public int $ModifiedResolve;
@@ -308,8 +310,8 @@ abstract class Character extends Card
         return $properties;
     }
 
-    public function isMercenary(): bool
+    public function hasTrait(string $trait): bool
     {
-        return in_array("Mercenary", $this->Traits);
+        return in_array($trait, $this->Traits);
     }
 }

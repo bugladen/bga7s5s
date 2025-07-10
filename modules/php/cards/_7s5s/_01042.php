@@ -3,15 +3,11 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_PlusOneThrust;
 
 
-class _01042 extends Character implements IHasTechniques
+class _01042 extends Character
 {
-    use TechniqueTrait;
-
     public function __construct()
     {
         parent::__construct();
@@ -38,7 +34,6 @@ class _01042 extends Character implements IHasTechniques
 
         $technique = new Technique_PlusOneThrust();
         $technique->setId("Technique_01042");
-        $technique->Name = "+1 Thrust";
         $this->Techniques = [
             $technique,
         ];
