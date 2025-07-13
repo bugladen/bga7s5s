@@ -210,9 +210,11 @@ class Action_01044 extends SchemeCityAction
 
                 $aam = $this->getOwningCard($game->theah);
                 $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id);
+                $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 
                 $movedHome = EventFactory::createCardMovedEvent($game->getActivePlayerId(), $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false);
+                $game->theah->eventCheck($movedHome);
                 $game->theah->queueEvent($movedHome);
 
                 $this->setUsed($game->theah, true);
