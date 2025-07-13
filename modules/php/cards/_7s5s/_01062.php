@@ -2,13 +2,13 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01062;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01062;
 
 class _01062 extends Leader implements IHasActions, IHasReactions
 {
