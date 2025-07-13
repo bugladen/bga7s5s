@@ -555,8 +555,8 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
-    States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01067b => [
-        "name" => "highDramaChallengeActionActivateTechnique_01067b",
+    States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01067 => [
+        "name" => "highDramaChallengeActionActivateTechnique_01067",
         "description" => clienttranslate('${actplayer} is choosing options to resolve Jean Urbain\'s Technique.'),
         "descriptionmyturn" => clienttranslate('Jean Urbain: +1 Thrust or Riposte: ${you} must choose Thrust or Riposte:'),
         "type" => "activeplayer",

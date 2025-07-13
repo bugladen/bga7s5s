@@ -39,7 +39,7 @@ $this->starter_decks = <<<JSON
             "name": "Montaigne Starter",
             "faction": "Montaigne",
             "leader": "01062",
-            "approach_deck": [ "01071", "01072", "01146", "01147", "01149", "01063", "01065", "01067b", "01068", "01069" ],
+            "approach_deck": [ "01071", "01072", "01146", "01147", "01149", "01063", "01065", "01067", "01068", "01069" ],
             "faction_deck": [
                 { "id": "01073", "count": 2 },
                 { "id": "01074", "count": 2 },

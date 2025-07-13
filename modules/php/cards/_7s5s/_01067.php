@@ -4,20 +4,20 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01067b;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01067;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_PlusOneRiposte;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 
-class _01067b extends Character 
+class _01067 extends Character 
 {
     public function __construct()
     {
         parent::__construct();
 
         $this->Name = clienttranslate("Jean Urbain");
-        $this->Image = "img/cards/7s5s/067b.jpg";
+        $this->Image = "img/cards/7s5s/067.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 67;
@@ -38,7 +38,7 @@ class _01067b extends Character
         ];
 
         $this->Techniques = [
-            new Technique_01067b(),
+            new Technique_01067(),
         ];
 
     }
@@ -66,7 +66,7 @@ class _01067b extends Character
                     {
                         if ($character instanceof IHasTechniques)
                         {
-                            $technique = $character->getTechniqueByClassId("Technique_01067b");
+                            $technique = $character->getTechniqueByClassId("Technique_01067");
                             if ($technique)
                             {
                                 $character->removeTechnique($technique);
@@ -96,7 +96,7 @@ class _01067b extends Character
                     foreach ($characters as $character)
                     {
                         $technique = new Technique_PlusOneRiposte();
-                        $technique->setId("Technique_01067b");
+                        $technique->setId("Technique_01067");
                         $technique->setOwnerId($character->Id);
                         if ($character instanceof IHasTechniques)
                         {
@@ -122,7 +122,7 @@ class _01067b extends Character
                 if ($character->ControllerId == $this->ControllerId && $character->hasTrait("Musketeer") && $character instanceof IHasTechniques)
                 {
                     $technique = new Technique_PlusOneRiposte();
-                    $technique->setId("Technique_01067b");
+                    $technique->setId("Technique_01067");
                     $technique->setOwnerId($character->Id);
                     $character->addTechnique($technique);
 
@@ -143,7 +143,7 @@ class _01067b extends Character
                 $character = $event->theah->getCardById($event->cardId);
                 if ($character->ControllerId == $this->ControllerId && $character->hasTrait("Musketeer") && $character instanceof IHasTechniques)
                 {
-                    $technique = $character->getTechniqueByClassId("Technique_01067b");
+                    $technique = $character->getTechniqueByClassId("Technique_01067");
                     if ($technique)
                     {
                         $character->removeTechnique($technique);

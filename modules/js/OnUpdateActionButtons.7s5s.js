@@ -170,7 +170,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onRecruitCharacterConfirmed());
             },
     
-            'highDramaChallengeActionActivateTechnique_01067b': () => {
+            'highDramaChallengeActionActivateTechnique_01067': () => {
                 this.addActionButton(`actThrust`, _('Choose +1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
                 this.addActionButton(`actRiposte`, _('Choose +1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
