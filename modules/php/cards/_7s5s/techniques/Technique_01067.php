@@ -6,19 +6,20 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 
 class Technique_01067 extends Technique
 {
-    public bool $UseParryInstead;
+    public bool $UseRiposteInstead;
 
     public function __construct()
     {
         parent::__construct();
         $this->Name = clienttranslate("+1 Thrust or +1 Riposte");
-        $this->UseParryInstead = false;
+        $this->UseRiposteInstead = false;
     }
 
     public function handleEvent(Event $event)
@@ -36,7 +37,7 @@ class Technique_01067 extends Technique
                 $character->hasTrait("Musketeer"));
             if (count($characters) > 0)
             {
-                $transition = EventFactory::createTechniqueTransitionEvent($jeanUrbain->ControllerId, $jeanUrbain->Id, "01067b", $this->Id);
+                $transition = EventFactory::createTechniqueTransitionEvent($jeanUrbain->ControllerId, $jeanUrbain->Id, "01067", $this->Id);
                 $event->theah->queueEvent($transition);
             }
         }
@@ -51,7 +52,7 @@ class Technique_01067 extends Technique
                     $character->Id != $jeanUrbain->Id && 
                     $character->ControllerId == $jeanUrbain->ControllerId && 
                     $character->hasTrait("Musketeer"));
-                if ( ! $this->UseParryInstead)
+                if ( ! $this->UseRiposteInstead)
                 {
                     $event->adversaryThreat += 1;
                     $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat."), $this->Name);
@@ -59,9 +60,23 @@ class Technique_01067 extends Technique
             }
         }
 
+        if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
+        {
+            if ($this->UseRiposteInstead)
+            {
+                $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds +1 Riposte."), $this->Name);
+                $event->riposte += 1;
+            }
+            else
+            {
+                $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds +1 Thrust."), $this->Name);
+                $event->thrust += 1;
+            }
+        }
+
         if ($event instanceof EventDuelEnd)
         {
-            $this->UseParryInstead = false;
+            $this->UseRiposteInstead = false;
             $card = $this->getOwningCard($event->theah);
             $card->IsUpdated = true;
         }
@@ -73,14 +88,14 @@ class Technique_01067 extends Technique
 
         if ($id == 1)
         {
-            $this->UseParryInstead = false;
+            $this->UseRiposteInstead = false;
             $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses +1 Thrust for Jean Urbain\'s Technique.'), [
                 "player_name" => $game->getActivePlayerName(),
             ]);
         }
         else if ($id == 2)
         {
-            $this->UseParryInstead = true;
+            $this->UseRiposteInstead = true;
             $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses +1 Riposte for Jean Urbain\'s Technique.'), [
                 "player_name" => $game->getActivePlayerName(),
             ]);

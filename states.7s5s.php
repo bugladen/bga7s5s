@@ -583,6 +583,20 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
+    States::DUEL_CHOOSE_TECHNIQUE_01067 => [
+        "name" => "duelChooseTechnique_01067",
+        "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+        "descriptionmyturn" => clienttranslate('Jean Urbain\'s Technique: ${you} must choose +1 Thrust or +1 Riposte:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId", 
+        ],
+        "transitions" => [
+            "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+        ]
+    ],
+
     States::DUSK_PHASE_BEGIN_01177 => [
         "name" => "duskPhaseBegin01177",
         "description" => clienttranslate('${actplayer} is choosing options for Penya.'),

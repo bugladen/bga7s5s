@@ -781,7 +781,9 @@ trait StatesTrait
 
     public function stDuelStarted()
     {
-        $duelId = $this->globals->get(GAME::DUEL_ID) + 1;
+        $sql = "SELECT MAX(duel_id) FROM duel";
+        $result = $this->getUniqueValueFromDB($sql);
+        $duelId = $result + 1;
         $this->globals->set(GAME::DUEL_ID, $duelId);
         
         $this->globals->set(GAME::IN_DUEL, true);

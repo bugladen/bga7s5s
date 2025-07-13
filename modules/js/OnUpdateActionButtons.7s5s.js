@@ -171,8 +171,8 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
             },
     
             'highDramaChallengeActionActivateTechnique_01067': () => {
-                this.addActionButton(`actThrust`, _('Choose +1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
-                this.addActionButton(`actRiposte`, _('Choose +1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+                this.addActionButton(`actThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actRiposte`, _('+1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
     
             'highDramaPhase01029': () => {
@@ -406,6 +406,11 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
             'duelChooseTechnique_01063': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'duelChooseTechnique_01067': () => {
+                this.addActionButton(`actThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actRiposte`, _('+1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
     
             'duskPhaseBegin01177': () => {
