@@ -4,8 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01063;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01063Swap;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01063;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01063Swap;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
