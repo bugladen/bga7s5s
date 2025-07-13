@@ -1076,6 +1076,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "01067b" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01067b,
+                    "01063" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01063,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_REACTIONS,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE,
                     "endOfGame" => States::END_GAME
@@ -1837,6 +1838,7 @@ $machinestates = [
                     "transitions" => [
                         "reaction" => States::DUEL_CHOOSE_TECHNIQUE_REACTIONS,
                         "01013" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS_01013,
+                        "01063" => States::DUEL_CHOOSE_TECHNIQUE_01063,
                         "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                         "endOfGame" => States::END_GAME
                         ]

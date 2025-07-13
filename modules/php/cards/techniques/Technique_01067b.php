@@ -27,7 +27,7 @@ class Technique_01067b extends Technique
         //If there is more than one Musketeer as owner location, switch to state where player can choose one to gain +1 Thrust or +1 Riposte.
         if ($event instanceof EventTechniqueActivated && $event->techniqueId == $this->Id)
         {
-            $jeanUrbain = $event->theah->getCharacterById($this->OwnerId);
+            $jeanUrbain = $this->getOwningCharacter($event->theah);
             $characters = $event->theah->getCharactersAtLocation($jeanUrbain->Location);
             $characters = array_filter($characters, fn($character) => 
                 $character->Id != $jeanUrbain->Id && 
@@ -38,8 +38,6 @@ class Technique_01067b extends Technique
                 $transition = EventFactory::createTechniqueTransitionEvent($jeanUrbain->ControllerId, $jeanUrbain->Id, "01067b", $this->Id);
                 $event->theah->queueEvent($transition);
             }
-
-            $this->setUsed($event->theah, true);
         }
 
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)

@@ -71,11 +71,13 @@ class _01067b extends Character
                             {
                                 $character->removeTechnique($technique);
 
-                                $event->theah->game->notifyAllPlayers('techniqueRemoved', clienttranslate('<strong>Jean Urbain:</strong> ${character_name} has lost Technique: [+1 Riposte].'), [
-                                    'i18n' => ['character_name'],
+                                $event->theah->game->notifyAllPlayers('techniqueRemoved', clienttranslate('<strong>${source_name}:</strong> ${character_name} has lost Technique: ${technique_name}.'), [
+                                    'i18n' => ['source_name', 'character_name', 'technique_name'],
+                                    'source_name' => $this->Name,
                                     'character_name' => $character->Name,
                                     'characterId' => $character->Id,
-                                    'techniqueId' => $technique->Id
+                                    'techniqueId' => $technique->Id,
+                                    'technique_name' => $technique->Name
                                 ]);
                                 $character->IsUpdated = true;
                             }
@@ -100,11 +102,13 @@ class _01067b extends Character
                         {
                             $character->addTechnique($technique);
 
-                            $event->theah->game->notifyAllPlayers('techniqueAdded', clienttranslate('<strong>Jean Urbain:</strong> ${character_name} has gained Technique: [+1 Riposte].'), [
-                                'i18n' => ['character_name'],
+                            $event->theah->game->notifyAllPlayers('techniqueAdded', clienttranslate('<strong>${source_name}:</strong> ${character_name} has gained Technique: ${technique_name}.'), [
+                                'i18n' => ['source_name', 'character_name', 'technique_name'],
+                                'source_name' => $this->Name,
                                 'character_name' => $character->Name,
                                 'characterId' => $character->Id,
-                                'technique' => $technique->getPropertyArray($event->theah->game)
+                                'technique' => $technique->getPropertyArray($event->theah->game),
+                                'technique_name' => $technique->Name
                             ]);
                             $character->IsUpdated = true;
                         }
@@ -122,11 +126,13 @@ class _01067b extends Character
                     $technique->setOwnerId($character->Id);
                     $character->addTechnique($technique);
 
-                    $event->theah->game->notifyAllPlayers('techniqueAdded', clienttranslate('<strong>Jean Urbain:</strong> ${character_name} has gained Technique: [+1 Riposte].'), [
-                        'i18n' => ['character_name'],
+                    $event->theah->game->notifyAllPlayers('techniqueAdded', clienttranslate('<strong>${source_name}:</strong> ${character_name} has gained Technique: ${technique_name}.'), [
+                        'i18n' => ['source_name', 'character_name', 'technique_name'],
+                        'source_name' => $this->Name,
                         'character_name' => $character->Name,
                         'characterId' => $character->Id,
-                        'technique' => $technique->getPropertyArray($event->theah->game)
+                        'technique' => $technique->getPropertyArray($event->theah->game),
+                        'technique_name' => $technique->Name
                     ]);
                     $character->IsUpdated = true;
                 }
@@ -142,11 +148,13 @@ class _01067b extends Character
                     {
                         $character->removeTechnique($technique);
 
-                        $event->theah->game->notifyAllPlayers('techniqueRemoved', clienttranslate('<strong>Jean Urbain:</strong> ${character_name} has lost Technique: [+1 Riposte].'), [
-                            'i18n' => ['character_name'],
+                            $event->theah->game->notifyAllPlayers('techniqueRemoved', clienttranslate('<strong>${source_name}:</strong> ${character_name} has lost Technique: ${technique_name}.'), [
+                            'i18n' => ['source_name', 'character_name', 'technique_name'],
+                            'source_name' => $this->Name,
                             'character_name' => $character->Name,
                             'characterId' => $character->Id,
-                            'techniqueId' => $technique->Id
+                            'techniqueId' => $technique->Id,
+                            'technique_name' => $technique->Name
                         ]);
                         $character->IsUpdated = true;
                     }

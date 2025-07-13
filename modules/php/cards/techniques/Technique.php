@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 
 abstract class Technique 
 {
@@ -26,6 +27,11 @@ abstract class Technique
 
     public function handleEvent(Event $event)
     {
+        if ($event instanceof EventTechniqueActivated && $event->techniqueId == $this->Id)
+        {
+            $this->setUsed($event->theah, true);
+        }
+
         if ($event instanceof EventDuskEndOfDay && $this->ResetOnDayEnd)
         {
             $this->setUsed($event->theah, false);

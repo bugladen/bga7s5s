@@ -615,7 +615,17 @@ trait StatesTrait
     
             $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
             $target = $this->theah->getCharacterById($targetId);
+
+            $technique = $this->theah->getTechniqueById($techniqueId);
+            $owner = $technique->getOwningCard($this->theah);
     
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} activates Technique [${technique_name}] from ${owner_name}.'), [
+                "i18n" => ["owner_name", "technique_name"],
+                "player_name" => $this->getActivePlayerName(),
+                "owner_name" => $owner->Name,
+                "technique_name" => $technique->Name,
+            ]);    
+
             $event = $this->theah->createEvent(Events::ResolveTechnique);
             if ($event instanceof EventResolveTechnique)
             {
@@ -845,6 +855,10 @@ trait StatesTrait
             $actorId = $defenderId;
             $actor = $defender;
             $playerId = $defendingPlayerId;
+
+            $this->globals->set(Game::DUEL_CURRENT_PLAYER, $playerId);
+            $changeEvent = EventFactory::createChangeActivePlayerEvent($playerId);
+            $this->theah->queueEvent($changeEvent);
         }
         else
         {
@@ -873,8 +887,8 @@ trait StatesTrait
         }
 
         $serialized = addslashes(serialize($actor));
-        $sql = "INSERT INTO duel_round (duel_id, round, player_id, actor_id, actor_serialized, starting_challenger_threat, starting_defender_threat, ending_challenger_threat, ending_defender_threat, wounds_taken) 
-        VALUES ($duelId, $round, $playerId, $actorId, '$serialized', $challengerThreat, $defenderThreat, $challengerThreat, $defenderThreat, $wounds)";
+        $sql = "INSERT INTO duel_round (duel_id, round, player_id, actor_id, actor_serialized, challenger_id, defender_id, starting_challenger_threat, starting_defender_threat, ending_challenger_threat, ending_defender_threat, wounds_taken) 
+        VALUES ($duelId, $round, $playerId, $actorId, '$serialized', $challengerId, $defenderId, $challengerThreat, $defenderThreat, $challengerThreat, $defenderThreat, $wounds)";
         $this->DbQuery($sql);
 
         $event = $this->theah->createEvent(Events::DuelNewRound);
@@ -891,10 +905,6 @@ trait StatesTrait
             $event->wounds = $wounds;
         }
         $this->theah->queueEvent($event);
-
-        //Change to the active player based on the round number
-        $changeEvent = EventFactory::createChangeActivePlayerEvent($playerId);
-        $this->theah->queueEvent($changeEvent);
 
         $this->gamestate->nextState();
     }
@@ -1067,6 +1077,9 @@ trait StatesTrait
             $this->theah->queueEvent($event);
         }
 
+        $event = EventFactory::createDuelEndOfRoundEvent($actor->ControllerId, $actor->Id);
+        $this->theah->queueEvent($event);
+
         $this->globals->delete(GAME::CHOSEN_TECHNIQUE);
         $this->globals->delete(GAME::CHOSEN_MANEUVER);
         $this->globals->delete(GAME::CHOSEN_CARD);
@@ -1104,9 +1117,15 @@ trait StatesTrait
 
         // Change to the next player in the duel
         if ($actorId == $challengerId)
+        {
+            $this->globals->set(Game::DUEL_CURRENT_PLAYER, $defendingPlayerId);
             $this->gamestate->changeActivePlayer($defendingPlayerId);
+        }
         else
+        {
+            $this->globals->set(Game::DUEL_CURRENT_PLAYER, $challengingPlayerId);
             $this->gamestate->changeActivePlayer($challengingPlayerId);
+        }
 
         $this->gamestate->nextState("newRound");
 
@@ -1117,6 +1136,7 @@ trait StatesTrait
         $duelId = $this->globals->get(Game::DUEL_ID);
         $this->globals->set(GAME::IN_DUEL, false);
 
+        $this->globals->delete(Game::DUEL_CURRENT_PLAYER);
         $this->globals->delete(Game::CHALLENGE_STAT);
         $this->globals->delete(Game::CHALLENGER_THREAT);
         $this->globals->delete(Game::DEFENDER_THREAT);

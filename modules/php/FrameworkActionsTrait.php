@@ -1354,12 +1354,6 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Technique does not belong to the Card."));
         }
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} activates Technique from ${owner_name}.'), [
-            "i18n" => ["owner_name"],
-            "player_name" => $this->getActivePlayerName(),
-            "owner_name" => $owner->Name,
-        ]);
-
         $event = EventFactory::createTechniqueActivatedEvent($playerId, $owner->Id, $technique->Id);
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);

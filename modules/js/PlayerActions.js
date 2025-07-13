@@ -128,6 +128,8 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaChallengeActionChoosePerformer'               : 'actHighDramaChallengeActionPerformerChosen',
             'highDramaChallengeActionChooseTarget'                  : 'actHighDramaChallengeActionTargetChosen',
             'highDramaChallengeActionAcceptChallenge'               : 'actHighDramaChallengeActionIntervene', 
+            'highDramaChallengeActionActivateTechnique_01063'       : 'actFromCardWithId',
+            'duelChooseTechnique_01063'                             : 'actFromCardWithId',
             'duskPhaseBegin01177'                                   : 'actFromCardWithId',
         };
 

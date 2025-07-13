@@ -390,10 +390,22 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     dojo.addClass('actCityLocationsSelected', 'disabled');
                 }
             },
+
+            'highDramaChallengeActionActivateTechnique_01063': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
         
             'duelActionResolveTechnique_01013': () => {
                 this.addActionButton(`btnParry`, _('+1 Parry'), () => this.bgaPerformAction('actDuelActionResolveTechnique_01013', { useThrust: false}));
                 this.addActionButton(`btnThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actDuelActionResolveTechnique_01013', { useThrust: true}));
+            },
+
+            'duelChooseTechnique_01063': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
             'duskPhaseBegin01177': () => {

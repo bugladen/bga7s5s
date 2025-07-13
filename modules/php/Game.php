@@ -112,6 +112,7 @@ class Game extends \Table
     //Duel Names
     //Delete these at the end of the duel
     final const DUEL_TYPE = "duelType";
+    final const DUEL_CURRENT_PLAYER = "duelCurrentPlayer";
     final const NORMAL_DUEL_TYPE = 0;
     final const VLADISLAV_DUEL_TYPE = 1;
     final const CHALLENGE_STAT = "ChallengeStat";
@@ -271,6 +272,9 @@ class Game extends \Table
         $result["inDuel"] = $inDuel;
         if ($inDuel)
         {
+            $round = $this->globals->get(Game::DUEL_ROUND);
+            $result["duelRound"] = $round;
+
             $performerId = $this->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $this->getCardObjectFromDb($performerId);
             $result["challengingPlayerId"] = $performer->ControllerId;

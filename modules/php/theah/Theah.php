@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions\Reaction_CrewCapLimit;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -217,6 +218,29 @@ class Theah
 
                 $this->game->gamestate->nextState($event->transition);
                 return;
+            }
+        }
+
+        //After all the events are run, we need to change back to the current player
+        $inDuel = $this->game->globals->get(Game::IN_DUEL);
+        if ($inDuel) 
+        {
+            $currentPlayerId = $this->game->globals->get(Game::DUEL_CURRENT_PLAYER);
+            if ($currentPlayerId) 
+            {
+                $this->game->gamestate->changeActivePlayer($currentPlayerId);
+            }
+        }
+        else 
+        {
+            $state = $this->game->gamestate->state();
+            if ($state['type'] == "activeplayer")
+            {
+                $currentPlayerId = $this->game->globals->get(Game::CURRENT_PLAYER);
+                if ($currentPlayerId) 
+                {
+                    $this->game->gamestate->changeActivePlayer($currentPlayerId);
+                }
             }
         }
 
@@ -939,5 +963,70 @@ class Theah
     public function deleteTechniqueEvents(string $techniqueId)
     {
         $this->db->deleteTechniqueEvents($techniqueId);
+    }
+
+    public function swapParticipantsInDuel(int $duelId, int $round, int $oldParticipantId, int $newParticipantId)
+    {
+        $sql = "SELECT challenging_player_id, challenger_id, defending_player_id, defender_id FROM duel where duel_id = $duelId";
+        $duelValues = $this->db->getObjectList($sql)[0];
+        $challengerId = $duelValues['challenger_id'];
+        $defenderId = $duelValues['defender_id'];
+
+        $oldParticipant = $this->getCharacterById($oldParticipantId);
+        $newParticipant = $this->getCharacterById($newParticipantId);
+
+        if ($oldParticipantId == $challengerId)
+        {
+            $sql = "UPDATE duel SET challenger_id = $newParticipantId WHERE duel_id = $duelId";
+            $this->db->executeSql($sql);
+
+            $sql = "UPDATE duel_round SET challenger_id = $newParticipantId WHERE duel_id = $duelId AND round = $round";
+            $this->db->executeSql($sql);
+
+            //Reset the conditions for challenger
+            $oldParticipant->removeCondition(Game::DUEL_CHALLENGER);
+            $oldParticipant->IsUpdated = true;
+
+            $newParticipant->addCondition(Game::DUEL_CHALLENGER);
+            $newParticipant->IsUpdated = true;
+
+            $this->game->globals->set(Game::CHOSEN_PERFORMER, $newParticipant->Id);
+
+            $challengerSwappedEvent = EventFactory::createChallengerSwappedEvent($oldParticipant->ControllerId, $oldParticipant->Id, $newParticipant->Id);
+            $this->queueEvent($challengerSwappedEvent);
+        }
+        else
+        {
+            $sql = "UPDATE duel SET defender_id = $newParticipantId WHERE duel_id = $duelId";
+            $this->db->executeSql($sql);
+
+            $sql = "UPDATE duel_round SET defender_id = $newParticipantId WHERE duel_id = $duelId AND round = $round";
+            $this->db->executeSql($sql);
+
+            //Reset the conditions for defender
+            $oldParticipant->removeCondition(Game::DUEL_DEFENDER);
+            $oldParticipant->IsUpdated = true;
+
+            $newParticipant->addCondition(Game::DUEL_DEFENDER);
+            $newParticipant->IsUpdated = true;
+
+            $defenderSwappedEvent = EventFactory::createDefenderSwappedEvent($oldParticipant->ControllerId, $oldParticipant->Id, $newParticipant->Id);
+            $this->queueEvent($defenderSwappedEvent);
+        }
+
+        //Update the actor in the round
+        $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
+        $actorId = $this->db->getUniqueValue($sql);
+        if ($actorId == $oldParticipantId)
+        {
+            $serialized = addslashes(serialize($newParticipant));
+            $sql = "UPDATE duel_round SET actor_id = $newParticipantId, actor_serialized = '$serialized' WHERE duel_id = $duelId AND round = $round";
+            $this->db->executeSql($sql);
+
+            $this->game->notifyAllPlayers("duelActorSwapped", '', [
+                'round' => $round,
+                'actor' => $newParticipant->getPropertyArray($this->game),
+            ]);
+        }
     }
 }

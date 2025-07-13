@@ -33,7 +33,7 @@ class Reaction_01146b extends CardReaction
         $array = parent::getReactionButtonProperties($theah);
         $text = $this->ManeuverId != '' ? $theah->game->translate('Cancel Maneuver') : $theah->game->translate('Cancel Technique');
         $array[] = $this->createButtonProperty($theah->game, $text, 'cancel');
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Decline'), 'decline');
 
         return $array;
     }
@@ -49,6 +49,7 @@ class Reaction_01146b extends CardReaction
             if ($owner->ControllerId != $scheme->ControllerId)
             {
                 $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
+                $reactionEvent->priority = Event::HIGH_PRIORITY;
                 $event->theah->queueEvent($reactionEvent);
 
                 $this->TechniqueId = $event->techniqueId;
@@ -63,6 +64,7 @@ class Reaction_01146b extends CardReaction
             if ($owner->ControllerId != $scheme->ControllerId)
             {
                 $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
+                $reactionEvent->priority = Event::HIGH_PRIORITY;
                 $event->theah->queueEvent($reactionEvent);
 
                 $this->ManeuverId = $event->maneuverId;
@@ -88,8 +90,12 @@ class Reaction_01146b extends CardReaction
                 ]);
                 $game->globals->delete(Game::CHOSEN_TECHNIQUE);
                 $game->theah->deleteTechniqueEvents($this->TechniqueId);
-                $this->TechniqueId = '';
                 $scheme->IsUpdated = true;
+
+                $canceledEvent = EventFactory::createTechniqueCanceledEvent($scheme->ControllerId, $this->TechniqueId);
+                $game->theah->queueEvent($canceledEvent);
+
+                $this->TechniqueId = '';
             }
 
             if ($this->ManeuverId != '')
@@ -101,8 +107,12 @@ class Reaction_01146b extends CardReaction
                 ]);
                 $game->globals->delete(Game::CHOSEN_MANEUVER);
                 $game->theah->deleteManeuverEvents($this->ManeuverId);
-                $this->ManeuverId = '';
                 $scheme->IsUpdated = true;
+
+                $canceledEvent = EventFactory::createManeuverCanceledEvent($scheme->ControllerId, $this->ManeuverId);
+                $game->theah->queueEvent($canceledEvent);
+
+                $this->ManeuverId = '';
             }
 
             $this->setUsed($game->theah, true);

@@ -252,6 +252,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         if (gamedatas.inDuel)
         {
             this.inDuel = true;
+            this.duelRound = gamedatas.duelRound;
 
             this.displayDuelTable();
 

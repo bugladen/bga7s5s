@@ -2,19 +2,19 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventTechniqueActivated extends Event
+class EventDefenderSwapped extends Event
 {
     public int $playerId;
-    public int $ownerId;
-    public string $techniqueId;
+    public int $oldDefenderId;
+    public int $newDefenderId;
 
     public function __construct()
     {
         parent::__construct();
-        $this->playerId = 0;
-        $this->ownerId = 0;
-        $this->techniqueId = "";
-
         $this->priority = Event::MEDIUM_PRIORITY;
+
+        $this->playerId = 0;
+        $this->oldDefenderId = 0;
+        $this->newDefenderId = 0;
     }
 }

@@ -25,6 +25,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerD
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeAccepted;
 use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeRejected;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
@@ -34,8 +35,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventClaimOccuring;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
@@ -45,6 +49,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventThreatModified;
@@ -289,6 +294,32 @@ class EventFactory
         return $event;
     }
 
+    public static function createChallengerSwappedEvent(int $playerId, int $oldChallengerId, int $newChallengerId): EventChallengerSwapped
+    {
+        $event = self::createEvent(Events::ChallengerSwapped);
+        if ($event instanceof EventChallengerSwapped)
+        {
+            $event->playerId = $playerId;
+            $event->oldChallengerId = $oldChallengerId;
+            $event->newChallengerId = $newChallengerId;
+        }
+
+        return $event;
+    }
+
+    public static function createDefenderSwappedEvent(int $playerId, int $oldDefenderId, int $newDefenderId): EventDefenderSwapped
+    {
+        $event = self::createEvent(Events::DefenderSwapped);
+        if ($event instanceof EventDefenderSwapped)
+        {
+            $event->playerId = $playerId;
+            $event->oldDefenderId = $oldDefenderId;
+            $event->newDefenderId = $newDefenderId;
+        }
+
+        return $event;
+    }
+
     public static function createChangeActivePlayerEvent(int $playerId): EventChangeActivePlayer
     {
         $event = self::createEvent(Events::ChangeActivePlayer);
@@ -429,6 +460,17 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
+    public static function createDuelEndOfRoundEvent(int $playerId, int $actorId): EventDuelEndOfRound
+    {
+        $event = self::createEvent(Events::DuelEndOfRound);
+        if ($event instanceof EventDuelEndOfRound)
+        {
+            $event->playerId = $playerId;
+            $event->actorId = $actorId;
+        }
+        return $event;
+    }
+
     public static function createLocationPressuredEvent(int $playerId, int $performerId, string $location, string $pressureType, bool $success, string $totalsExplanation): EventLocationPressured
     {
         $event = self::createEvent(Events::LocationPressured);
@@ -452,6 +494,18 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         {
             $event->playerId = $playerId;
             $event->ownerId = $ownerId;
+            $event->maneuverId = $maneuverId;
+        }
+
+        return $event;
+    }
+
+    public static function createManeuverCanceledEvent(int $playerId, string $maneuverId): EventManeuverCanceled
+    {
+        $event = self::createEvent(Events::ManeuverCanceled);
+        if ($event instanceof EventManeuverCanceled)
+        {
+            $event->playerId = $playerId;
             $event->maneuverId = $maneuverId;
         }
 
@@ -588,6 +642,18 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
+    public static function createTechniqueCanceledEvent(int $playerId, string $techniqueId): EventTechniqueCanceled
+    {
+        $event = self::createEvent(Events::TechniqueCanceled);
+        if ($event instanceof EventTechniqueCanceled)
+        {
+            $event->playerId = $playerId;
+            $event->techniqueId = $techniqueId;
+        }
+
+        return $event;
+    }
+
     public static function createTechniqueTransitionEvent(int $playerId, int $sourceId, string $transitionName, string $internalId): EventTransition
     {
         $transition = self::createEvent(Events::Transition);
@@ -597,7 +663,8 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $transition->sourceId = $sourceId;
             $transition->internalId = $internalId;
             $transition->transition = $transitionName;
-            $transition->priority = Event::HIGH_PRIORITY;
+            //This transition event is to present a choice to the player, so it should be the highest priority before any other events are processed
+            $transition->priority = Event::HIGHEST_PRIORITY;
         }
 
         return $transition;

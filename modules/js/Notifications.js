@@ -23,6 +23,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardRemovedFromCityDiscardPile', 500],
             ['cardRemovedFromPlayerDiscardPile', 500],
             ['challengeIssued', 500],
+            ['challengerSwapped', 500],
             ['characterDestroyed', 1000],
             ['characterHealed', 1000],
             ['characterInfluenceModified', 1000],
@@ -33,7 +34,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cityCardAddedToLocation', 1000],
             ['cityDiscardShuffled', 500],
             ['crystalEyeTargetChosen', 500],
+            ['defenderSwapped', 500],
             ['drawCard', 2000],
+            ['duelActorSwapped', 500],
             ['duelEnd', 500],
             ['duelStarted', 500],
             ['factionResolveCardDraw', 1000],
@@ -901,6 +904,52 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.addTooltipHtml( defenderChipId, `<div class='basic-tooltip'>${_("Duel Defender")}</div>` );
     },
 
+    notif_challengerSwapped: function( notif )
+    {
+        debug( 'notif_challengerSwapped' );
+        debug( notif );
+
+        const args = notif.args;
+
+        const oldChallenger = this.cardProperties[args.oldChallengerId];
+        oldChallenger.conditions = oldChallenger.conditions.filter(condition => condition !== this.CHALLENGER);
+        const oldChallengerChipId = `${oldChallenger.divId}_challenger`;
+        dojo.destroy(oldChallengerChipId);
+
+        const newChallenger = this.cardProperties[args.newChallengerId];
+        newChallenger.conditions.push(this.CHALLENGER);
+        const challengerImage = $(`${newChallenger.divId}_image`);
+        const challengerChipId = `${newChallenger.divId}_challenger`;
+        dojo.place( this.format_block( 'jstpl_generic_chip', {
+            id: challengerChipId,
+            class: 'challenger-chip',
+        }),  challengerImage, 'last');
+        this.addTooltipHtml( challengerChipId, `<div class='basic-tooltip'>${_("Duel Challenger")}</div>` );
+    },
+
+    notif_defenderSwapped: function( notif )
+    {
+        debug( 'notif_defenderSwapped' );
+        debug( notif );
+
+        const args = notif.args;
+
+        const oldDefender = this.cardProperties[args.oldDefenderId];
+        oldDefender.conditions = oldDefender.conditions.filter(condition => condition !== this.DEFENDER);
+        const oldDefenderChipId = `${oldDefender.divId}_defender`;
+        dojo.destroy(oldDefenderChipId);
+
+        const newDefender = this.cardProperties[args.newDefenderId];
+        newDefender.conditions.push(this.DEFENDER);
+        const defenderImage = $(`${newDefender.divId}_image`);
+        const defenderChipId = `${newDefender.divId}_defender`;
+        dojo.place( this.format_block( 'jstpl_generic_chip', {
+            id: defenderChipId,
+            class: 'defender-chip',
+        }),  defenderImage, 'last');
+        this.addTooltipHtml( defenderChipId, `<div class='basic-tooltip'>${_("Duel Defender")}</div>` );
+    },
+
     notif_characterIntervened: function( notif )
     {
         debug( 'notif_characterIntervened' );
@@ -932,6 +981,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
 
         this.inDuel = true;
+        this.duelRound = 0;
         this.displayDuelTable();
         
         if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)
@@ -946,8 +996,31 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
+        this.duelRound = args.round;
         this.displayDuelRow(args);
 
+    },
+
+    notif_duelActorSwapped: function( notif )
+    {
+        debug( 'notif_duelActorSwapped' );
+        debug( notif );
+
+        const args = notif.args;
+        let divId = `duel_round_${args.round}_actor`
+        dojo.empty(divId);
+        this.createCard(`duel_${args.round}_${args.actor.id}`, args.actor, divId, true);
+
+        if (dojo.hasClass(`duel_round_${args.round}_starting_challenger_threat_row`, 'duel-acting-character'))
+        {
+            divId = `duel_round_${args.round}_challenger_name`;
+            $(divId).innerHTML = args.actor.name;
+        }
+        else
+        {
+            divId = `duel_round_${args.round}_defender_name`;
+            $(divId).innerHTML = args.actor.name;
+        }
     },
 
     notif_updateRoundWithCombatStats: function( notif )

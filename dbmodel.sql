@@ -44,6 +44,8 @@ CREATE TABLE IF NOT EXISTS `duel_round` (
   `player_id` int NOT NULL,
   `actor_id` int NOT NULL,
   `actor_serialized` text NULL,
+  `challenger_id` int NOT NULL,
+  `defender_id` int NOT NULL,
   `starting_challenger_threat` tinyint NOT NULL,
   `starting_defender_threat` tinyint NOT NULL,
   `technique_id` varchar(50) NULL,

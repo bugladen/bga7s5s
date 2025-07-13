@@ -23,6 +23,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
@@ -30,6 +31,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
@@ -62,6 +64,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventThreatModified;
 
@@ -817,6 +820,24 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventChallengerSwapped:
+                $handler = function ($theah, EventChallengerSwapped $event)
+                {
+                    $challenger = $theah->getCharacterById($event->oldChallengerId);
+                    $newChallenger = $theah->getCharacterById($event->newChallengerId);
+
+                    $theah->game->notifyAllPlayers("challengerSwapped", clienttranslate('${player_name} has swapped <strong>${challenger_name}</strong> for <strong>${new_challenger_name}</strong>.'), [
+                        'i18n' => ['challenger_name', 'new_challenger_name'],
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "challenger_name" => $challenger->Name,
+                        "new_challenger_name" => $newChallenger->Name,
+                        "oldChallengerId" => $event->oldChallengerId,
+                        "newChallengerId" => $event->newChallengerId,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventCharacterPutIntoApproachDeck:
                 $handler = function ($theah, EventCharacterPutIntoApproachDeck $event)
                 {
@@ -861,6 +882,24 @@ trait EventHub
                 $handler($this, $event);
                 break;
                         
+            case $event instanceof EventDefenderSwapped:
+                $handler = function ($theah, EventDefenderSwapped $event)
+                {
+                    $defender = $theah->getCharacterById($event->oldDefenderId);
+                    $newDefender = $theah->getCharacterById($event->newDefenderId);
+
+                    $theah->game->notifyAllPlayers("defenderSwapped", clienttranslate('${player_name} has swapped <strong>${defender_name}</strong> for <strong>${new_defender_name}</strong>.'), [
+                        'i18n' => ['defender_name', 'new_defender_name'],
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "defender_name" => $defender->Name,
+                        "new_defender_name" => $newDefender->Name,
+                        "oldDefenderId" => $event->oldDefenderId,
+                        "newDefenderId" => $event->newDefenderId,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventGenerateChallengeThreat:
                 $handler = function ($theah, EventGenerateChallengeThreat $event)
                 {
@@ -878,6 +917,21 @@ trait EventHub
                         "actor_threat" => $event->actorThreat,
                         "adversary_name" => $adversary->Name,
                         "adversary_threat" => $event->adversaryThreat,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventTechniqueActivated:
+                $handler = function ($theah, EventTechniqueActivated $event)
+                {
+                    $technique = $theah->getTechniqueById($event->techniqueId);
+                    $technique->setUsed($theah, true);
+
+                    $theah->game->notifyAllPlayers("techniqueActivated", clienttranslate('${player_name} has activated the Technique [${technique_name}].'), [
+                        'i18n' => ['technique_name'],
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "technique_name" => $technique->Name,
                     ]);
                 };
                 $handler($this, $event);
@@ -931,11 +985,11 @@ trait EventHub
                         $effects .= "<p>{$thrustText} +{$results["thrust"]}";
                     }
                     if ($results["endingChallengerThreatBefore"] != $results["endingChallengerThreatAfter"])
-                        $effects .= $theah->game->translate("<p>Challenger Threat went from {$results["endingChallengerThreatBefore"]} to {$results["endingChallengerThreatAfter"]}. ");
+                        $effects .= sprintf($theah->game->translate("<p>Challenger Threat went from %s to %s. "), $results["endingChallengerThreatBefore"], $results["endingChallengerThreatAfter"]);
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
-                        $effects .= $theah->game->translate("<p>Defender Threat went from {$results["endingDefenderThreatBefore"]} to {$results["endingDefenderThreatAfter"]}. ");
-                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${character_name} has activated the Technique <strong>${effect_name}</strong> 
-                    with the following effects: ${effects}'), [
+                        $effects .= sprintf($theah->game->translate("<p>Defender Threat went from %s to %s. "), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"]);
+
+                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('<strong>${character_name}</strong> adds the Technique [<strong>${effect_name}</strong>]. ${effects}'), [
                         'i18n' => ['character_name', 'effect_name', 'effects'],
                         "round" => $round,
                         "mode" => "technique",
@@ -1015,9 +1069,9 @@ trait EventHub
                         $effects .= "<p>{$thrustText} +{$results["thrust"]}";
                     }
                     if ($results["endingChallengerThreatBefore"] != $results["endingChallengerThreatAfter"])
-                        $effects .= "<p>" . $theah->game->translate("Challenger Threat went from ") . $results["endingChallengerThreatBefore"] . $theah->game->translate(" to ") . $results["endingChallengerThreatAfter"];
+                        $effects .= "<p>" . sprintf($theah->game->translate("Challenger Threat went from %s to %s. "), $results["endingChallengerThreatBefore"], $results["endingChallengerThreatAfter"]);
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
-                        $effects .= "<p>" . $theah->game->translate("Defender Threat went from ") . $results["endingDefenderThreatBefore"] . $theah->game->translate(" to ") . $results["endingDefenderThreatAfter"];
+                        $effects .= "<p>" . sprintf($theah->game->translate("Defender Threat went from %s to %s. "), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"]);
                     $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${character_name} has activated the Maneuver <strong>${effect_name}</strong> 
                     with the following effects: ${effects}'), [
                         'i18n' => ['character_name', 'effect_name', 'effects'],
@@ -1070,9 +1124,9 @@ trait EventHub
                         $effects .= "<p>{$thrustText} +{$results["thrust"]}";
                     }
                     if ($results["endingChallengerThreatBefore"] != $results["endingChallengerThreatAfter"])
-                        $effects .= "<p>" . $theah->game->translate("Challenger Threat went from ") . $results["endingChallengerThreatBefore"] . $theah->game->translate(" to ") . $results["endingChallengerThreatAfter"];
+                        $effects .= "<p>" . sprintf($theah->game->translate("Challenger Threat went from %s to %s. "), $results["endingChallengerThreatBefore"], $results["endingChallengerThreatAfter"]);
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
-                        $effects .= "<p>" . $theah->game->translate("Defender Threat went from ") . $results["endingDefenderThreatBefore"] . $theah->game->translate(" to ") . $results["endingDefenderThreatAfter"];
+                        $effects .= "<p>" . sprintf($theah->game->translate("Defender Threat went from %s to %s. "), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"]);
                     $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${player_name} has played <strong>${effect_name}</strong> as their Combat Card 
                     with the following effects: ${effects}'), [
                         'i18n' => ['effect_name', 'effects'],
@@ -1296,7 +1350,7 @@ trait EventHub
                         <strong>Current Challenger Threat:</strong> ${challenger_threat}
                         <br>
                         <strong>Current Defender Threat:</strong> ${defender_threat}'), [
-                        'i18n' => ['challenger_name'],
+                        'i18n' => ['challenger_name', 'defender_name'],
                         "challenger_name" => $challenger->Name,
                         "defender_name" => $defender->Name,
                         "challenger_modification" => $event->challengerThreat,

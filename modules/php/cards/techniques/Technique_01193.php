@@ -28,7 +28,6 @@ class Technique_01193 extends Technique
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $this->ReduceAdversaryThrust = true;
-            $this->setUsed($event->theah, true);
         }
 
         //Reduce the opponent's Thrust by 1 if the technique is activated

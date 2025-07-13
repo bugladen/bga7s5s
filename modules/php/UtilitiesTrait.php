@@ -85,9 +85,9 @@ trait UtilitiesTrait
             player_id as playerId,
             actor_id as actorId, 
             actor_serialized as actorSerialized,
-            d.challenger_id as challengerId,
+            challenger_id as challengerId,
             starting_challenger_threat as startingChallengerThreat,
-            d.defender_id as defenderId,
+            defender_id as defenderId,
             starting_defender_threat as startingDefenderThreat,
             technique_id as techniqueId,
             technique_name as techniqueName,
@@ -107,9 +107,8 @@ trait UtilitiesTrait
             ending_challenger_threat as endingChallengerThreat,
             ending_defender_threat as endingDefenderThreat,
             wounds_taken as wounds
-            FROM duel_round r
-            INNER JOIN duel d ON d.duel_id = r.duel_id
-            WHERE r.duel_id = $duelId";
+            FROM duel_round
+            WHERE duel_id = $duelId";
         $rounds_result = $this->getCollectionFromDb($sql);
 
         foreach ($rounds_result as $round)

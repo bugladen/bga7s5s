@@ -204,11 +204,11 @@ var jstpl_duel_round = `
     <td>
     <table class="threat-table">
         <tr id="duel_round_\${round}_starting_challenger_threat_row">
-            <td>\${challengerName}</td>
+            <td><div id="duel_round_\${round}_challenger_name">\${challengerName}</div></td>
             <td><div id="duel_round_\${round}_starting_challenger_threat" class="threat-chip">\${startingChallengerThreat}</div></td>
         </tr>
         <tr id="duel_round_\${round}_starting_defender_threat_row">
-            <td>\${defenderName}</td>
+            <td><div id="duel_round_\${round}_defender_name">\${defenderName}</div></td>
             <td><div id="duel_round_\${round}_starting_defender_threat" class="threat-chip">\${startingDefenderThreat}</div></td>
         </tr>
     </table>

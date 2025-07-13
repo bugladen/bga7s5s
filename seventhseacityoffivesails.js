@@ -115,6 +115,7 @@ function (dojo, declare) {
             this.connects = [];
 
             this.inDuel = false;
+            this.duelRound = 0;
         },
     });      
 });

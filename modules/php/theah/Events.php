@@ -54,7 +54,9 @@ class Events
     const ChallengeIssued = 'EventChallengeIssued';
     const ChallengeAccepted = 'EventChallengeAccepted';
     const ChallengeRejected = 'EventChallengeRejected';
+    const ChallengerSwapped = 'EventChallengerSwapped';
     const CharacterIntervened = 'EventCharacterIntervened';
+    const DefenderSwapped = 'EventDefenderSwapped';
     const GenerateChallengeThreat = 'EventGenerateChallengeThreat';
     const ThreatModified = 'EventThreatModified';
     const TechniqueActivated = 'EventTechniqueActivated';
@@ -71,6 +73,7 @@ class Events
     const DuelCalculateCombatCardStats = 'EventDuelCalculateCombatCardStats';
     const DuelPlayerGambled = 'EventDuelPlayerGambled';
     const DuelActionsDone = 'EventDuelActionsDone';
+    const DuelEndOfRound = 'EventDuelEndOfRound';
     const DuelEnd = 'EventDuelEnd';
 
     //Plunder Phase events
@@ -91,7 +94,9 @@ class Events
     const CharacterHealed = 'EventCharacterHealed';
     const CharacterPutIntoApproachDeck = 'EventCharacterPutIntoApproachDeck';
     const CharacterWounded = 'EventCharacterWounded';
+    const ManeuverCanceled = 'EventManeuverCanceled';
     const SchemeSentToLocker = 'EventSchemeSentToLocker';
+    const TechniqueCanceled = 'EventTechniqueCanceled';
 
     //Character events
     const CharacterInfluenceModified = 'EventCharacterInfluenceModified';

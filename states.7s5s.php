@@ -540,10 +540,25 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
+    States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01063 => [
+
+        "name" => "highDramaChallengeActionActivateTechnique_01063",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Bastien\'s Technique: Swap with a Musketeer: ${you} must choose a Musketeer:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId", 
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS,
+        ]
+    ],
+
     States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01067b => [
         "name" => "highDramaChallengeActionActivateTechnique_01067b",
         "description" => clienttranslate('${actplayer} is choosing options to resolve Jean Urbain\'s Technique.'),
-        "descriptionmyturn" => clienttranslate('Jean Urbain: +1 Thrust or Riposte: ${you} may choose Thrust or Riposte:'),
+        "descriptionmyturn" => clienttranslate('Jean Urbain: +1 Thrust or Riposte: ${you} must choose Thrust or Riposte:'),
         "type" => "activeplayer",
         "args" => "argsEmpty",
         "possibleactions" => [
@@ -551,6 +566,20 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ],
         "transitions" => [
             "" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS,
+        ]
+    ],
+
+    States::DUEL_CHOOSE_TECHNIQUE_01063 => [
+        "name" => "duelChooseTechnique_01063",
+        "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+        "descriptionmyturn" => clienttranslate('Bastien\'s Technique: Swap with a Musketeer: ${you} must choose a Musketeer:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId", 
+        ],
+        "transitions" => [
+            "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
         ]
     ],
 

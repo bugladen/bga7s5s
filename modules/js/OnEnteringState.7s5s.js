@@ -4,8 +4,6 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
     // 7s5s Core Set methods only
     onEnteringState_7s5s: function( stateName, args )
     {
-        debug( 'Entering state: '+ stateName, args );
-
         const methods = {
             'planningPhaseResolveSchemes_01016': () => {
                 if (this.isCurrentPlayerActive()) {
@@ -982,6 +980,40 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     card = this.cardProperties[victimId];
                     image = $(`${card.divId}_image`);
                     dojo.addClass(image, 'chosen');
+                }
+            },
+
+            'highDramaChallengeActionActivateTechnique_01063': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    args.args.args.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.characterIds = args.args.args.characterIds;
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, 'chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
+            'duelChooseTechnique_01063': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    args.args.args.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.characterIds = args.args.args.characterIds;
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, 'chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
                 }
             },
         
