@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01147;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01147;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
@@ -94,6 +94,8 @@ class _01147 extends Scheme implements IHasActions
                 $game->globals->delete(Game::CHOSEN_CARD);
                 $game->notifyAllPlayers("message", clienttranslate('No Attachment was found in the City Deck.'), []);
             }
+
+            $game->notifyAllPlayers("message", clienttranslate('The rest of the revealed cards have been sunk.'), []);
 
             $revealEvent = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "01147");
             //This puts the event in same priority as the rest of the resolve events

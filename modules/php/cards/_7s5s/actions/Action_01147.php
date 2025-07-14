@@ -1,7 +1,8 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;

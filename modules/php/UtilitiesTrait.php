@@ -493,7 +493,7 @@ trait UtilitiesTrait
         return [true, $totals];
     }
 
-    function revealFirstCardTypeFromCityDeck(int $playerId, string $type): ?Card
+    function revealFirstCardTypeFromCityDeck(int $playerId, string $type, bool $discardInsteadOfSink = false): ?Card
     {
         $count = $this->cards->countCardInLocation(Game::LOCATION_CITY_DECK);
         $cards = $this->getCardsOnTopOfCityDeck($count);
@@ -587,12 +587,26 @@ trait UtilitiesTrait
         ]);
 
         //Send the revealed cards (sans the found card) to the discard pile
-        foreach ($revealed as $cardId)
+        if ($discardInsteadOfSink)
         {
-            if ($cardId != $cardFound->Id)
+            foreach ($revealed as $cardId)
             {
-                $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $cardId, Game::LOCATION_CITY_DECK);
-                $this->theah->queueEvent($event);
+                if ($cardId != $cardFound->Id)
+                {
+                    $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $cardId, Game::LOCATION_CITY_DECK);
+                    $this->theah->queueEvent($event);
+                }
+            }
+        }
+        else
+        {
+            shuffle($revealed);
+            foreach ($revealed as $cardId)
+            {
+                if ($cardId != $cardFound->Id)
+                {
+                    $this->cards->insertCardOnExtremePosition($cardId, Game::LOCATION_CITY_DECK, false);
+                }
             }
         }
 
