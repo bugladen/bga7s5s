@@ -67,11 +67,11 @@ trait DeckTrait
                 $this->DbQuery($sql);
 
                 //Notify players about the leaders
-                $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} plays ${player_faction} Faction and ${leader_name} as their leader.'), [
+                $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} plays <strong>${player_faction} Faction</strong> and <strong>${leader_name}</strong> as their leader.'), [
                     'i18n' => ['player_faction', 'leader_name'],
                     "player_name" => $player['player_name'],
-                    "player_faction" => "<span style='font-weight:bold'>{$card->Faction}</span>",
-                    "leader_name" => "<span style='font-weight:bold'>{$card->Name}</span>",
+                    "player_faction" => $card->Faction,
+                    "leader_name" => $card->Name,
                     "player_id" => $playerId,
                     "player_color" => $player['player_color'],
                     "leader" => $card->getPropertyArray($this),

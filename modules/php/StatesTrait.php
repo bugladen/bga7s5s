@@ -221,11 +221,10 @@ trait StatesTrait
             $this->setNewPlayerOrder($highPlayerId);
 
             // Notify all players of the first player.
-            $this->notifyAllPlayers("firstPlayer", clienttranslate('${player_name} has the highest initiative of ${initiative} and will be set as ${firstPlayer}.'), [
+            $this->notifyAllPlayers("firstPlayer", clienttranslate('${player_name} has the highest initiative of ${initiative} and will be set as <span style="font-weight:bold; color:red">First Player</span>.'), [
                 'player_name' => $players[$highPlayerId]['player_name'],
                 'initiative' => $highInitiative,
-                'playerId' => $highPlayerId,
-                'firstPlayer' => "<span style='font-weight:bold; color:red'>First Player</span>"
+                'playerId' => $highPlayerId
             ]);
 
             $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
@@ -248,11 +247,10 @@ trait StatesTrait
             $this->setNewPlayerOrder($nextPlayerId);
 
             // Notify all players of the first player.
-            $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as ${firstPlayer}.'), [
+            $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as <span style="font-weight:bold; color:red">First Player</span>.'), [
                 'player_name' => $players[$nextPlayerId]['player_name'],
                 'initiative' => $highInitiative,
                 'playerId' => $nextPlayerId,
-                'firstPlayer' => "<span style='font-weight:bold; color:red'>First Player</span>"
             ]);
 
             $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
@@ -272,7 +270,7 @@ trait StatesTrait
         $this->setNewPlayerOrder($firstPlayerId);
 
         // Notify all players of the first player.
-        $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, and no previous First Player, ${player_name} has been chosen randomly as the First Player.'), [
+        $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, and no previous First Player, ${player_name} has been chosen randomly as the <span style="font-weight:bold; color:red">First Player</span>.'), [
             'player_name' => $players[$firstPlayerId]['player_name'],
             'initiative' => $highInitiative,
             'playerId' => $firstPlayerId

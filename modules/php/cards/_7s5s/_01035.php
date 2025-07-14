@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01035;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01035;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;

@@ -235,10 +235,11 @@ trait EventHub
                         ? clienttranslate('${player_name} added <strong>${card_name}</strong> to the top of the City Deck.') 
                         : clienttranslate('${player_name} sunk <strong>${card_name}</strong> to the bottom of the City Deck.');
 
-                    $this->game->notifyAllPlayers("message", $message, [
+                    $this->game->notifyAllPlayers("cardAddedToCityDeck", $message, [
                         'i18n' => ['card_name'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "card_name" => $card->Name
+                        "card_name" => $card->Name,
+                        "cardId" => $card->Id,
                     ]);
                 };
                 $handler($this, $event);

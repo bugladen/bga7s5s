@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -76,6 +76,8 @@ class Action_01035 extends CharacterAction
                 $game->notifyAllPlayers("message", clienttranslate('No mercenary was found in the City Deck.'), []);
             }
 
+            $game->notifyAllPlayers("message", clienttranslate('The rest of the revealed cards have been sunk.'), []);
+
             $revealEvent = EventFactory::createTransitionEvent($playerId, $kaspar->Id, "01035", $this->Id);
             $event->queueEvent($revealEvent);
 
@@ -121,23 +123,7 @@ class Action_01035 extends CharacterAction
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01035_2)
         {
-            //Sink all the cards except the revealed mercenary
             $mercenaryId = $game->globals->get(Game::CHOSEN_CARD);
-            $revealed = json_decode($game->globals->get(Game::REVEALED_CARDS), true);
-            $cards = [];
-            foreach ($revealed as $cardId)
-            {
-                if ($cardId == $mercenaryId)
-                {
-                    continue;
-                }
-
-                $card = $game->getCardObjectFromDb($cardId);
-                $cards[] = $card->getPropertyArray($game);
-                $event = EventFactory::createCardAddedToCityDiscardPileEvent($card->ControllerId, $card->Id, Game::LOCATION_CITY_DECK);
-                $game->theah->queueEvent($event);
-            }
-
             if ($mercenaryId)
             {
                 $currentPlayerId = $game->globals->get(Game::CURRENT_PLAYER);
@@ -163,8 +149,8 @@ class Action_01035 extends CharacterAction
 
             $mercenaryId = $game->globals->get(Game::CHOSEN_CARD);
             $kaspar = $this->getOwningCharacter($game->theah);
-            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($kaspar->ControllerId, $mercenaryId, $kaspar->Location);
-            $game->theah->queueEvent($discardEvent);
+            $sinkEvent = EventFactory::createCardAddedToCityDeckEvent($kaspar->ControllerId, $mercenaryId, false);
+            $game->theah->queueEvent($sinkEvent);
 
             $game->gamestate->nextState("pass");
         }

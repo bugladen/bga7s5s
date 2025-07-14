@@ -13,6 +13,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['approachSchemePlayed', 2000],
             ['attachmentEquipped', 1000],
             ['attachmentUnequipped', 1000],
+            ['cardAddedToCityDeck', 500],
             ['cardAddedToCityDiscardPile', 500],
             ['cardAddedToHand', 2000],
             ['cardDiscardedFromHand', 500],
@@ -436,6 +437,24 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     },
 
+    notif_cardAddedToCityDeck: function( notif )
+    {
+        debug( 'notif_cardAddedToCityDeck' );
+        debug( notif );
+
+        const args = notif.args;
+
+        let card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.location = this.LOCATION_CITY_DECK;
+
+            dojo.destroy(card.divId);
+            card.divId = null;
+            delete this.cardProperties[args.cardId];
+        }
+    },
+
     notif_cardAddedToCityDiscardPile: function( notif )
     {
         debug( 'notif_cardAddedToCityDiscardPile' );
@@ -458,7 +477,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         this.gamedatas.cityDiscard.push(card);
 
-},
+    },
 
     notif_cardDiscardedFromPlay: function( notif )
     {
