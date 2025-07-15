@@ -412,6 +412,18 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 this.addActionButton(`actThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
                 this.addActionButton(`actRiposte`, _('+1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
+
+            'highDramaPhase01068': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase01068_2': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
     
             'duskPhaseBegin01177': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Character'), () => this.onChooseInPlayCardConfirmed());

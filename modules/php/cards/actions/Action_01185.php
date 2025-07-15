@@ -72,12 +72,13 @@ class Action_01185 extends EventCityAction
                 throw new \BgaUserException(sprintf($game->translate("Invalid number of cards selected for action: %d"), count($ids)));
             }
 
+            $riskyUndertaking = $this->getOwningCard($game->theah);
             $playerName = $game->getActivePlayerName();
 
             $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the ${action} Action'), [
                 'i18n' => ['action'],
                 'player_name' => $playerName,
-                'action' => 'Risky Undertaking',
+                'action' => $riskyUndertaking->Name,
             ]);
 
             //Move the cards used to pay to the player's discard pile
@@ -90,7 +91,6 @@ class Action_01185 extends EventCityAction
             }
 
             //Add a reknown to the location
-            $riskyUndertaking = $this->getOwningCard($game->theah);
             $location = $riskyUndertaking->Location;            
             $event = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $playerName);
             $game->theah->queueEvent($event);

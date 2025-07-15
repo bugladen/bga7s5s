@@ -2,10 +2,15 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01068;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 
-class _01068 extends Character
+class _01068 extends Character implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -30,6 +35,10 @@ class _01068 extends Character
             "Musketeer",
             "Sorcerer",
             "Montaigne",
+        ];
+
+        $this->Actions = [
+            new Action_01068(),
         ];
     }
 

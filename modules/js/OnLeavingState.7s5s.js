@@ -574,6 +574,23 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
 
+            'highDramaPhase01068': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+
+            'highDramaPhase01068_2': () => {
+
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
             'duskPhaseBegin01177' : () => {
                 if (this.isCurrentPlayerActive()) {
                     for( const cardId in this.cardProperties ) {

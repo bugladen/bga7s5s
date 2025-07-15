@@ -115,7 +115,7 @@ class Action_01189b extends EventCityAction
             $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the ${action} Action'), [
                 'i18n' => ['action'],
                 'player_name' => $game->getActivePlayerName(),
-                'action' => 'Point of Opportunity',
+                'action' => $poo->Name,
             ]);
     
             $game->gamestate->nextState("locationChosen");

@@ -179,8 +179,9 @@ class Game extends \Table
      */
     public function getGameProgression()
     {
+        //Progression will only happen each day.  There are 5 days in the game.
         $day = (int) $this->getGameStateValue("day");
-        return round($day / 5 * 100);
+        return round(($day - 1) / 5 * 100);
     }
 
     /**

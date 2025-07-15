@@ -190,6 +190,37 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01068 => [
+        "name" => "highDramaPhase01068",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Léontine Giroux: ${you} must choose a character to move: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_01068_2
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01068_2 => [
+        "name" => "highDramaPhase01068_2",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Léontine Giroux: ${you} must choose a location to move the chosen character to: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithLocations"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01068,
+            "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01147 => [
         "name" => "highDramaPhase01147",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

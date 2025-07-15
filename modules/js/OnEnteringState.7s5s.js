@@ -538,6 +538,29 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.clientStateArgs.opposingCharacterId = args.args.args.opposingCharacterId;
                 }
             },
+
+            'highDramaPhase01068': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    args.args.args.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.characterIds = args.args.args.characterIds;
+                }
+            },
+
+            'highDramaPhase01068_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
     
             'highDramaPhase01072' : () => {
                 if (this.isCurrentPlayerActive()) {

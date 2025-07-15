@@ -158,7 +158,7 @@ class Action_01205 extends CharacterAction
             $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the ${action} Action'), [
                 'i18n' => ['action'],
                 'player_name' => $game->getActivePlayerName(),
-                'action' => 'Giancinto',
+                'action' => $giacinto->Name,
             ]);
 
             $this->SetUsed($game->theah, true);

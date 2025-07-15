@@ -124,10 +124,11 @@ class Action_01149 extends SchemeCityAction
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 
+            $scheme = $this->getOwningCard($game->theah);
             $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the ${action} Action'), [
                 'i18n' => ['action'],
                 'player_name' => $game->getActivePlayerName(),
-                'action' => 'Midnight Shipment',
+                'action' => $scheme->Name,
             ]);
 
             $this->SetUsed($game->theah, true);
