@@ -561,6 +561,42 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     });
                 }
             },
+
+            'highDramaPhase01069': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.showHandAtTop();
+                    var translated = dojo.string.substitute(
+                        _("(${amount} card(s) to discard)"),
+                        {
+                            amount: 1
+                        }
+                    );
+                    $('faction_hand_info').innerHTML = translated;
+                    this.factionHand.setSelectionMode(1);
+    
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, 'chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
+            'highDramaPhase01069_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    $('choose_container_name').innerHTML = _('Your Discard Pile');
+    
+                    // For each card in the players discard pile, create a stock item
+                    const player = this.gamedatas.players[this.getActivePlayerId()];      
+                    player.discard.forEach((card) => {
+                        if (card.type === 'Attachment' && !card.traits.includes('Unique'))
+                            this.addCardToDeck(this.chooseList, card);
+                    });
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
     
             'highDramaPhase01072' : () => {
                 if (this.isCurrentPlayerActive()) {
@@ -799,12 +835,19 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 if (this.isCurrentPlayerActive()) 
                 {
                     this.showHandAtTop();
-                    $('faction_hand_info').innerHTML = _(`(2 cards to discard)`);
+                    var translated = dojo.string.substitute(
+                        _("(${amount} card(s) to discard)"),
+                        {
+                            amount: 2
+                        }
+                    );
+                    $('faction_hand_info').innerHTML = translated;
                     this.factionHand.setSelectionMode(2);
     
                     card = this.cardProperties[args.args.args.id];
                     const image = $(`${card.divId}_image`);
                     dojo.addClass(image, 'chosen');
+                    this.clientStateArgs.id = args.args.args.id;
                 }
             },
     

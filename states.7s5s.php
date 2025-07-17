@@ -221,6 +221,37 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01069 => [
+        "name" => "highDramaPhase01069",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Maxime De Lafayette: ${you} must discard a card from your Faction Hand: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_01069_2
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01069_2 => [
+        "name" => "highDramaPhase01069_2",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Maxime De Lafayette: ${you} must choose an attachment to recover from your discard pile: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01069,
+            "attachmentChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01085 => [
         "name" => "highDramaPhase01085",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

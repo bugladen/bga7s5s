@@ -3,11 +3,12 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 
-abstract class Maneuver
+abstract class Maneuver implements ICardAbility
 {
     use CardAbilityTrait;
 

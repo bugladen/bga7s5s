@@ -445,7 +445,7 @@ trait EventHub
                 $handler = function (Theah $theah, EventCardRemovedFromPlayerDiscardPile $event)
                 {
                     $card = $theah->getCardById($event->cardId);
-                    $this->game->notifyAllPlayers("cardRemovedFromPlayerDiscardPile", clienttranslate('${card_name} removed from ${player_name}\'s discard pile.'), [
+                    $this->game->notifyAllPlayers("cardRemovedFromPlayerDiscardPile", clienttranslate('<strong>${card_name}</strong> removed from ${player_name}\'s discard pile.'), [
                         'i18n' => ['card_name'],
                         "player_id" => $event->playerId,
                         "player_name" => $this->game->getPlayerNameById($event->playerId),

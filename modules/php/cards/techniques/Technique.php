@@ -3,13 +3,14 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 
-abstract class Technique 
+abstract class Technique implements ICardAbility
 {
     use CardAbilityTrait;
 

@@ -233,7 +233,8 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01016_2'   : 'actPlanningPhase_01016_2',
             'planningPhaseResolveSchemes_01044'     : 'actFromCardWithId',
             'planningPhaseResolveSchemes_01045'     : 'actPlanningPhase_01045',
-            'highDramaPhase01180_3'                   : 'actFromCardWithId',
+            'highDramaPhase01069_2'                 : 'actFromCardWithId',
+            'highDramaPhase01180_3'                 : 'actFromCardWithId',
             'highDramaPhase01192_3'                 : 'actFromCardWithId',
             'highDramaPhase01200_2'                 : 'actFromCardWithId',
             'duelChooseGambleCard'                  : 'actGambleCardChosen',
@@ -352,6 +353,21 @@ return declare('seventhseacityoffivesails.actions', null, {
         let errors = false;
         this.bgaPerformAction('actDuskPhaseCardsDiscarded', { 
             'ids': JSON.stringify(items),
+        }).catch(() =>  {
+            errors = true;
+        }).then(() =>  {
+            if (!errors) items.forEach((item) => this.factionHand.removeFromStockById(item));
+        });        
+    },
+
+    onCardsDiscarded_01069: function()
+    {
+        let items = this.factionHand.getSelectedItems();
+        let item = items[0].id;
+        let errors = false;
+    
+        this.bgaPerformAction('actFromCardWithId', { 
+            'id': item,
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {

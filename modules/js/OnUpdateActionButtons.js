@@ -340,7 +340,7 @@ onUpdateActionButtons: function( stateName, args )
 
             const amount = count - panache;
             var translated = dojo.string.substitute(
-                _("(${amount} cards to discard)"),
+                _("(${amount} card(s) to discard)"),
                 {
                     amount: amount
                 }

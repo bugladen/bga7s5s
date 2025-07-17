@@ -225,6 +225,35 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
     
+            'highDramaPhase01068': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase01068_2': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
+            'highDramaPhase01069': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardsDiscarded_01069());
+                dojo.addClass('actChooseDiscardCards', 'disabled');
+            },
+
+            'highDramaPhase01069_2': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase01085': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'highDramaPhase01072': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
@@ -411,23 +440,6 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
             'duelChooseTechnique_01067': () => {
                 this.addActionButton(`actThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
                 this.addActionButton(`actRiposte`, _('+1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
-            },
-
-            'highDramaPhase01068': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
-            },
-
-            'highDramaPhase01068_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                dojo.addClass('actCityLocationsSelected', 'disabled');
-            },
-
-            'highDramaPhase01085': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'duelApplyCombatCardStats_01085': () => {

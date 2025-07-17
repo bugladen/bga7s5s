@@ -155,6 +155,28 @@ abstract class Card
         }
     }
 
+    public function getAbilityById($id): ?ICardAbility
+    {
+        if ($this instanceof IHasActions)
+        {
+            return $this->getActionById($id);
+        }
+        if ($this instanceof IHasTechniques)
+        {
+            return $this->getTechniqueById($id);
+        }
+        if ($this instanceof IHasManeuvers)
+        {
+            return $this->getManeuverById($id);
+        }
+        if ($this instanceof IHasReactions)
+        {
+            return $this->getReactionById($id);
+        }
+
+        return null;
+    }
+
     public function stateFromCard(Game $game, int $state, string $stateName, string $internalId): void
     {
         if ($this instanceof IHasActions)

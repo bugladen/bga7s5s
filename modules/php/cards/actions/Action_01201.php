@@ -2,12 +2,13 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01201 extends CharacterAction
+class Action_01201 extends CharacterAction implements ISorcererAbility
 {
     public function __construct()
     {

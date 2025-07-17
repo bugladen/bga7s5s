@@ -3,11 +3,12 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-abstract class CardAction extends Action
+abstract class CardAction extends Action implements ICardAbility
 {
     use CardAbilityTrait;
 

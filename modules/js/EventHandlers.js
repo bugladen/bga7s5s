@@ -310,6 +310,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
             },
 
+            'highDramaPhase01069': () => {
+                if (this.factionHand.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseDiscardCards', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCards', 'disabled');
+                }
+            },
+
             'highDramaPhase01185': () => {
                 if (this.factionHand.getSelectedItems().length > 0) {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');
