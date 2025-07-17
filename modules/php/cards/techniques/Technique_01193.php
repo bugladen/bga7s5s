@@ -17,7 +17,7 @@ class Technique_01193 extends Technique
     {
         parent::__construct();
         $this->Name = clienttranslate("-1 Thrust to Adversary");
-        $this->ReduceAdversaryThrust = true;
+        $this->ReduceAdversaryThrust = false;
     }
 
     public function handleEvent(Event $event)

@@ -382,7 +382,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createCharacterWoundedEvent(int $characterId, int $sourceId, int $wounds, string $reason): EventCharacterWounded
+    public static function createCharacterWoundedEvent(int $characterId, int $sourceId, int $wounds, string $reason, string $abilityId = ''): EventCharacterWounded
     {
         $event = self::createEvent(Events::CharacterWounded);
         if ($event instanceof EventCharacterWounded)
@@ -391,6 +391,7 @@ class EventFactory
             $event->sourceId = $sourceId;
             $event->wounds = $wounds;
             $event->reason = $reason;
+            $event->abilityId = $abilityId;
         }
 
         return $event;

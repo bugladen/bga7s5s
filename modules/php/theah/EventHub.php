@@ -1128,8 +1128,7 @@ trait EventHub
                         $effects .= "<p>" . sprintf($theah->game->translate("Challenger Threat went from %s to %s. "), $results["endingChallengerThreatBefore"], $results["endingChallengerThreatAfter"]);
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
                         $effects .= "<p>" . sprintf($theah->game->translate("Defender Threat went from %s to %s. "), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"]);
-                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${player_name} has played <strong>${effect_name}</strong> as their Combat Card 
-                    with the following effects: ${effects}'), [
+                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${player_name} has played <strong>${effect_name}</strong> as their Combat Card. ${effects}'), [
                         'i18n' => ['effect_name', 'effects'],
                         "round" => $round,
                         "mode" => "combat",

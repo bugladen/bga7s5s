@@ -1255,9 +1255,10 @@ trait FrameworkActionsTrait
             $this->theah->queueEvent($event);
         }
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} has decided to perform the In-Hand Action from <strong>${card_name}</strong>.'), [
-            'i18n' => ['card_name'],
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} has decided to perform the In-Hand Action [${action_name}] from <strong>${card_name}</strong>.'), [
+            "i18n" => ["action_name", "card_name"],
             "player_name" => $this->getActivePlayerName(),
+            "action_name" => $action->Name,
             "card_name" => $risk->Name,
         ]);
 
@@ -1471,13 +1472,8 @@ trait FrameworkActionsTrait
     public function actDuelActionChooseTechnique()
     {
         $this->theah->buildCity();
-        $duelId = $this->globals->get(Game::DUEL_ID);
-        $round = $this->globals->get(Game::DUEL_ROUND);
-        $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
-        $round = $this->getObjectListFromDB($sql)[0];
 
-        $actorId = $round['actor_id'];
-        $actor = $this->theah->getCharacterById($actorId);
+        $actor = $this->theah->getDuelRoundActor();
 
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
         if (count($techniques) == 0) {
@@ -1492,13 +1488,7 @@ trait FrameworkActionsTrait
         $playerId = $this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $duelId = $this->globals->get(Game::DUEL_ID);
-        $round = $this->globals->get(Game::DUEL_ROUND);
-        $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
-        $result = $this->getObjectListFromDB($sql)[0];
-
-        $actorId = $result['actor_id'];
-        $actor = $this->theah->getCharacterById($actorId);
+        $actor = $this->theah->getDuelRoundActor();
 
         $technique = $this->theah->getTechniqueById($techniqueId);
         if ($technique == null) {
@@ -1512,7 +1502,7 @@ trait FrameworkActionsTrait
         $this->globals->set(GAME::CHOSEN_TECHNIQUE, $technique->Id);
         $this->globals->set(GAME::TRANSITION_INTERNAL_ID, $technique->Id);
 
-        $adversaryId = $this->getDuelOpponentId($actorId);
+        $adversaryId = $this->getDuelOpponentId($actor->Id);
         $adversary = $this->theah->getCharacterById($adversaryId);
 
         $activateEvent = EventFactory::createTechniqueActivatedEvent($playerId, $actor->Id, $technique->Id);
@@ -1634,13 +1624,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
         
-        $duelId = $this->globals->get(Game::DUEL_ID);
-        $round = $this->globals->get(Game::DUEL_ROUND);
-        $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
-        $result = $this->getObjectListFromDB($sql)[0];
-
-        $actorId = $result['actor_id'];
-        $actor = $this->theah->getCharacterById($actorId);
+        $actor = $this->theah->getDuelRoundActor();
 
         $maneuverId = $this->globals->get(Game::CHOSEN_MANEUVER);
         $maneuver = $this->theah->getManeuverById($maneuverId);
@@ -1681,7 +1665,7 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($activateEvent);
         $this->theah->queueEvent($activateEvent);
 
-        $adversaryId = $this->getDuelOpponentId($actorId);
+        $adversaryId = $this->getDuelOpponentId($actor->Id);
         $adversary = $this->theah->getCharacterById($adversaryId);
 
         $resolveEvent = $this->theah->createEvent(Events::ResolveManeuver);
@@ -1886,7 +1870,7 @@ trait FrameworkActionsTrait
 
         if ($sourceId == Game::THEAH_ID)
         {
-            $reaction = $this->theah->getReactionById($internalId);
+            $reaction = $this->theah->getTheahReactionById($internalId);
             $reaction->performReaction($this, $state, $internalId, $reactionId);    
         }
         else

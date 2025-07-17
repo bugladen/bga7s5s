@@ -44,7 +44,7 @@ class Action_01029 extends RiskAction
         //Filter out any characters that are not in the city
         $performers = array_filter($performers, fn($character) => $theah->cardInCity($character));
 
-        //Filter out any chracters that are not at a location controlled by the player
+        //Filter out any characters that are not at a location controlled by the player
         $controllingPerformers = [];
         $controllers = $theah->getCityLocationControllers();
         foreach ($performers as $performer)

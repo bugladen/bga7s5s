@@ -1,0 +1,128 @@
+<?php
+
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
+
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+
+class Action_01085 extends RiskAction
+{
+    public function __construct()
+    {
+        parent::__construct();
+        
+        $this->Name = clienttranslate("Move Character to Performer's Location");
+        $this->RequiresPerformerSelected = true;
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        {
+            return false;
+        }
+
+        // Get characters that are not at the performer's location
+        $characters = $theah->getCharactersInPlayByPlayerId($playerId);
+        $sorcerers = array_filter($characters, fn($character) => $character->HasTrait("Sorcerer"));
+        if (count($sorcerers) == 0)
+        {
+            return false;
+        }
+
+        foreach ($sorcerers as $sorcerer)
+        {
+            $characters = $theah->getCharactersInPlayByPlayerId($playerId);
+            foreach ($characters as $character)
+            {
+                if ($character->Location != $sorcerer->Location)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public function getPerformersForAction(int $playerId, Theah $theah): array
+    {
+        $characters = $theah->getCharactersInPlayByPlayerId($playerId);
+        $characters = array_filter($characters, fn($character) => $character->HasTrait("Sorcerer"));
+
+        return $characters;
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
+        {
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01085", $this->Id);
+            $event->theah->queueEvent($transition);
+        }
+    }
+
+    public function getArgsFromAction(Game $game, int $state, string $stateName): array
+    {
+        $args = parent::getArgsFromAction($game, $state, $stateName);
+
+        $playerId = $game->getActivePlayerId();
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        $characters = $game->theah->getCharactersInPlayByPlayerId($playerId);
+        $characters = array_values(array_filter($characters, fn($character) => $character->Location != $performer->Location));
+
+        $ids = array_map(fn($character) => $character->Id, $characters);
+
+        $args["performerId"] = $performerId;
+        $args["charactersIds"] = $ids;
+
+        return $args;
+    }
+
+    public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
+    {
+        parent::actFromActionWithId($game, $state, $stateName, $id);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01085)
+        {
+            $porteTravel = $this->getOwningCard($game->theah);
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
+
+            $target = $game->theah->getCharacterById($id);
+            if ($target == null)
+                throw new \BgaUserException($game->translate("Character not found"));
+
+            if ($target->Location == $performer->Location)
+            {
+                throw new \BgaUserException($game->translate("Character is already at the performer's location"));
+            }
+
+            $game->notifyAllPlayers("message", $game->translate('Porté Travel: ${player_name} has chosen to move <strong>${character_name}</strong> to <strong>${performer_name}</strong>\'s location.'), [
+                "i18n" => ["character_name", "performer_name"],
+                "player_name" => $game->getActivePlayerName(),
+                "character_name" => $target->Name,
+                "performer_name" => $performer->Name,
+            ]);
+
+            $event = EventFactory::createCharacterWoundedEvent($performer->Id, $porteTravel->Id, 1, $game->translate($this->Name));
+            $game->theah->eventCheck($event);
+            $game->theah->queueEvent($event);
+
+            $event = EventFactory::createCardMovedEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, $engage = false, $porteTravel->Id);
+            $game->theah->eventCheck($event);
+            $game->theah->queueEvent($event);
+            
+            $game->gamestate->nextState("targetChosen");
+        }
+    }
+}

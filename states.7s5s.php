@@ -221,6 +221,20 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01085 => [
+        "name" => "highDramaPhase01085",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Porté Travel: ${you} must choose a character to move:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "targetChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01147 => [
         "name" => "highDramaPhase01147",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -625,6 +639,20 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ],
         "transitions" => [
             "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+        ]
+    ],
+
+    States::DUEL_APPLY_COMBAT_CARD_STATS_01085 => [
+        "name" => "duelApplyCombatCardStats_01085",
+        "description" => clienttranslate('Porté Travel\'s Forced Ability: ${actplayer} is choosing their Sorcerer.'),
+        "descriptionmyturn" => clienttranslate('Porté Travel\'s Forced Ability: ${you} must choose a Sorcerer:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId", 
+        ],
+        "transitions" => [
+            "" => States::DUEL_APPLY_COMBAT_CARD_STATS_EVENTS,
         ]
     ],
 

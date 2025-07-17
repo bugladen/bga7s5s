@@ -26,8 +26,8 @@ class Reaction_01203 extends CardReaction
     {
         $array = parent::getReactionButtonProperties($theah);
 
-        $challengerId = $theah->game->getDuelChallengerId();
-        $defenderId = $theah->game->getDuelDefenderId();
+        $challengerId = $theah->getDuelChallengerId();
+        $defenderId = $theah->getDuelDefenderId();
         $challenger = $theah->getCharacterById($challengerId);
         $defender = $theah->getCharacterById($defenderId);
 
@@ -78,10 +78,10 @@ class Reaction_01203 extends CardReaction
 
         $leja = $this->getOwningCharacter($game->theah);
 
-        $challengerId = $game->theah->game->getDuelChallengerId();
+        $challengerId = $game->theah->getDuelChallengerId();
         $challenger = $game->theah->getCharacterById($challengerId);
 
-        $defenderId = $game->theah->game->getDuelDefenderId();
+        $defenderId = $game->theah->getDuelDefenderId();
         $defender = $game->theah->getCharacterById($defenderId);
 
         $playerName = $game->getActivePlayerName();

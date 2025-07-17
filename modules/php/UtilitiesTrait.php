@@ -59,22 +59,6 @@ trait UtilitiesTrait
         return $id;
     }
 
-    public function getDuelChallengerId() : int
-    {
-        $duelId = $this->globals->get(Game::DUEL_ID);
-        $sql = "SELECT challenger_id FROM duel WHERE duel_id = $duelId";
-        $result = $this->getObjectListFromDB($sql)[0];
-        return $result['challenger_id'];
-    }
-
-    public function getDuelDefenderId() : int
-    {
-        $duelId = $this->globals->get(Game::DUEL_ID);
-        $sql = "SELECT defender_id FROM duel WHERE duel_id = $duelId";
-        $result = $this->getObjectListFromDB($sql)[0];
-        return $result['defender_id'];
-    }
-
     public function getDuelRows() : Array
     {
         $rounds = [];

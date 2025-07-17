@@ -621,14 +621,8 @@ trait ArgumentsTrait
     public function argsChooseDuelTechnique(): array
     {
         $this->theah->buildCity();
-        $duelId = $this->globals->get(Game::DUEL_ID);
-        $round = $this->globals->get(Game::DUEL_ROUND);
-        $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
-        $round = $this->getObjectListFromDB($sql)[0];
 
-        $actorId = $round['actor_id'];
-        $actor = $this->theah->getCharacterById($actorId);
-
+        $actor = $this->theah->getDuelRoundActor();
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
         return [
             "techniques" => $techniques

@@ -56,7 +56,7 @@ class Theah
     {
         $args = [];
 
-        $reaction = $this->getReactionById($internalId);
+        $reaction = $this->getTheahReactionById($internalId);
         $args['buttons'] = $reaction->getReactionButtonProperties($this);
         $args['descriptionmyturn'] = $reaction->getReactionDescription($this);
 
@@ -686,18 +686,6 @@ class Theah
         return $pressureTypes;
     }
 
-    public function getReactionById($id): ?Reaction
-    {
-        foreach ($this->Reactions as $reaction)
-        {
-            if ($reaction->Id == $id)
-            {
-                return $reaction;
-            }
-        }
-        return null;
-    }
-
     function getReactionFromHandDiscount(CardReaction $reaction): int
     {
         $discount = 0;
@@ -731,6 +719,19 @@ class Theah
                 }
         }
 
+        return null;
+    }
+
+    public function getTheahReactionById($id): ?Reaction
+    {
+        foreach ($this->Reactions as $reaction)
+        {
+            if ($reaction->Id == $id)
+            {
+                return $reaction;
+            }
+        }
+        
         return null;
     }
 
@@ -1028,5 +1029,48 @@ class Theah
                 'actor' => $newParticipant->getPropertyArray($this->game),
             ]);
         }
+    }
+
+    public function getDuelChallengerId() : ?int
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $sql = "SELECT challenger_id FROM duel WHERE duel_id = $duelId";
+        $result = $this->db->getUniqueValue($sql);
+        return $result;
+    }
+
+    public function getDuelDefenderId() : int
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $sql = "SELECT defender_id FROM duel WHERE duel_id = $duelId";
+        $result = $this->db->getUniqueValue($sql);
+        return $result;
+    }
+
+    public function getDuelRoundActor(): ?Character
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
+        $actorId = $this->db->getUniqueValue($sql);
+        return $this->getCharacterById($actorId);
+    }
+
+    public function getCurrentDuelThreat($characterId) : int
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT challenger_id, defender_id, ending_challenger_threat, ending_defender_threat FROM duel_round where duel_id = $duelId AND round = $round";
+        $result = $this->db->getObjectList($sql)[0];
+        if ($characterId == $result['challenger_id'])
+        {
+            return $result['ending_challenger_threat'];
+        }
+        else if ($characterId == $result['defender_id'])
+        {
+            return $result['ending_defender_threat'];
+        }
+
+        return 0;
     }
 }

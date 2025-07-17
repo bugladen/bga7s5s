@@ -18,7 +18,7 @@ class Technique_01204 extends Technique
     {
         parent::__construct();
         $this->Name = clienttranslate("Wound and -2 Parry to Adversary");
-        $this->ReduceAdversaryParry = true;
+        $this->ReduceAdversaryParry = false;
     }
 
     public function handleEvent(Event $event)

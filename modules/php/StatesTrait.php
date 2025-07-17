@@ -711,14 +711,7 @@ trait StatesTrait
 
                 if ($wounds > 0)
                 {
-                    $event = $this->theah->createEvent(Events::CharacterWounded);
-                    if ($event instanceof EventCharacterWounded)
-                    {
-                        $event->characterId = $performer->Id;
-                        $event->sourceId = $target->Id;
-                        $event->wounds = $wounds;
-                        $event->reason = $reason;
-                    }
+                    $event = EventFactory::createCharacterWoundedEvent($performer->Id, $target->Id, $wounds, $reason);
                     $this->theah->queueEvent($event);
                 }
             }
@@ -754,14 +747,7 @@ trait StatesTrait
 
                 if ($wounds > 0)
                 {
-                    $event = $this->theah->createEvent(Events::CharacterWounded);
-                    if ($event instanceof EventCharacterWounded)
-                    {
-                        $event->characterId = $target->Id;
-                        $event->sourceId = $performer->Id;
-                        $event->wounds = $wounds;
-                        $event->reason = $reason;
-                    }
+                    $event = EventFactory::createCharacterWoundedEvent($target->Id, $performer->Id, $wounds, $reason);
                     $this->theah->queueEvent($event);
                 }
             }
@@ -917,9 +903,7 @@ trait StatesTrait
         $round = $this->globals->get(Game::DUEL_ROUND);
 
         $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
-        $result = $this->getObjectListFromDB($sql)[0];
-
-        $actorId = $result['actor_id'];
+        $actorId = $this->getUniqueValueFromDB($sql);
         $adversaryId = $this->getDuelOpponentId($actorId);
 
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
@@ -952,20 +936,15 @@ trait StatesTrait
         $card = $this->getCardObjectFromDb($cardId);
         $cost = $card->WealthCost;
 
-        $duelId = $this->globals->get(Game::DUEL_ID);
-        $round = $this->globals->get(Game::DUEL_ROUND);
-        $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
-        $result = $this->getObjectListFromDB($sql)[0];
-
-        $actorId = $result['actor_id'];
-        $adversaryId = $this->getDuelOpponentId($actorId);
+        $actor = $this->theah->getDuelRoundActor();
+        $adversaryId = $this->getDuelOpponentId($actor->Id);
 
         $maneuverId = $this->globals->get(GAME::CHOSEN_MANEUVER);
 
         $event = $this->theah->createEvent(Events::DuelGetCostForManeuverFromHand);
         if ($event instanceof EventDuelGetCostForManeuverFromHand)
         {
-            $event->actorId = $actorId;
+            $event->actorId = $actor->Id;
             $event->adversaryId = $adversaryId;
             $event->combatCardId = $cardId;
             $event->maneuverId = $maneuverId;
@@ -1066,14 +1045,7 @@ trait StatesTrait
                 $reason .= "<p>" . $this->translate("Wounds were reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
             }
 
-            $event = $this->theah->createEvent(Events::CharacterWounded);
-            if ($event instanceof EventCharacterWounded)
-            {
-                $event->characterId = $actor->Id;
-                $event->sourceId = $adversary->Id;
-                $event->wounds = $wounds;
-                $event->reason = $reason;
-            }
+            $event = EventFactory::createCharacterWoundedEvent($actor->Id, $adversary->Id, $wounds, $reason);
             $this->theah->queueEvent($event);
         }
 

@@ -113,6 +113,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaPhase01044_2'                                 : 'actFromCardWithId',
             'highDramaPhase01068'                                   : 'actFromCardWithId',
             'highDramaPhase01072'                                   : 'actFromCardWithId',
+            'highDramaPhase01085'                                   : 'actFromCardWithId',
             'highDramaPhase01147'                                   : 'actFromCardWithId',
             'highDramaPhase01180_4'                                 : 'actFromCardWithId',
             'highDramaPhase01194_2'                                 : 'actFromCardWithId',
@@ -132,6 +133,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaChallengeActionAcceptChallenge'               : 'actHighDramaChallengeActionIntervene', 
             'highDramaChallengeActionActivateTechnique_01063'       : 'actFromCardWithId',
             'duelChooseTechnique_01063'                             : 'actFromCardWithId',
+            'duelApplyCombatCardStats_01085'                        : 'actFromCardWithId',
             'duskPhaseBegin01177'                                   : 'actFromCardWithId',
         };
 
