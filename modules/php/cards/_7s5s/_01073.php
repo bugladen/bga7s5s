@@ -2,12 +2,17 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01073;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
-class _01073 extends FactionAttachment
+class _01073 extends FactionAttachment implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -32,6 +37,10 @@ class _01073 extends FactionAttachment
             'Attire',
             'Hat',
         ];
+
+        $this->Actions = [
+            new Action_01073(),
+        ];
     }
 
     public function eventCheck(Event $event)
@@ -41,8 +50,10 @@ class _01073 extends FactionAttachment
         if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id) 
         {
             $performer = $event->theah->getCardById($event->characterId);
-            if (!in_array("Duelist", $performer->Traits))
+            if (! $performer->hasTrait("Duelist"))
+            {
                 throw new \BgaUserException($event->theah->game->translate(("Cavalier Hat can only be equipped to Duelists.")));
+            }
         }
     }
 

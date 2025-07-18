@@ -553,26 +553,20 @@ trait StatesTrait
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
 
         $challengeType = $this->globals->get(GAME::CHALLENGE_TYPE);
-        if ($challengeType == Game::TRISKELION_CHALLENGE_TYPE)
+        if ($challengeType == Game::TRISKELION_CHALLENGE_TYPE || 
+            $challengeType == Game::CAVALIER_HAT_CHALLENGE_TYPE || 
+            $challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE)
         {
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to use the <strong>Guild Triskelion</strong> Action.'), [
-                'player_name' => $this->getActivePlayerName($playerId),
-            ]);
-
             $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
             $action = $this->theah->getInPlayActionById($actionId);
+            $owner = $action->getOwningCard($this->theah);
             $action->SetUsed($this->theah, true);
-        }
 
-        if ($challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE)
-        {
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to use their Scheme Action <strong>Épée Sanglante</strong>.'), [
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [
                 'player_name' => $this->getActivePlayerName($playerId),
+                'action' => $action->Name,
+                'owner_name' => $owner->Name,
             ]);
-
-            $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
-            $action = $this->theah->getInPlayActionById($actionId);
-            $action->SetUsed($this->theah, true);
         }
 
         //Set the location of the challenge

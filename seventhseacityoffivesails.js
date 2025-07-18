@@ -91,6 +91,7 @@ function (dojo, declare) {
             this.NORMAL_CHALLENGE_TYPE = 0;
             this.TRISKELION_CHALLENGE_TYPE = 1;
             this.EPEE_SANGLANTE_CHALLENGE_TYPE = 2;
+            this.CAVALIER_HAT_CHALLENGE_TYPE = 3;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 100;

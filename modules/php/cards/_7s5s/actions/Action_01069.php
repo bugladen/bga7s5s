@@ -139,10 +139,11 @@ class Action_01069 extends CharacterAction
                 throw new \BgaUserException($game->translate("You cannot recover a unique attachment"));
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the ${action} Action'), [
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [
                 'i18n' => ['action'],
                 'player_name' => $game->getActivePlayerName(),
-                'action' => $maxime->Name,
+                'action' => $this->Name,
+                'owner_name' => $maxime->Name,
             ]);
 
             // Get the card discarded from the previous step

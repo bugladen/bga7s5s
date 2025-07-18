@@ -160,10 +160,11 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the ${action} Action'), [
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [
                 'i18n' => ['action'],
                 'player_name' => $game->getActivePlayerName(),
-                'action' => $leontine->Name,
+                'action' => $this->Name,
+                'owner_name' => $leontine->Name,
             ]);
 
             $this->SetUsed($game->theah, true);

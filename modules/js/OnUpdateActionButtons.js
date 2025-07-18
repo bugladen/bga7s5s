@@ -228,6 +228,8 @@ onUpdateActionButtons: function( stateName, args )
                     this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backTriskelion'}));
                 else if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE)
                     this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backEpeeSanglante'}));
+                else if (args.challengeType == this.CAVALIER_HAT_CHALLENGE_TYPE)
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backCavalierHat'}));
 
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

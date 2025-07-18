@@ -963,6 +963,7 @@ $machinestates = [
                 "01069" => States::HIGH_DRAMA_PLAYER_TURN_01069,
                 "01071" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01072" => States::HIGH_DRAMA_PLAYER_TURN_01072,
+                "01073" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01085" => States::HIGH_DRAMA_PLAYER_TURN_01085,
                 "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
                 "01149" => States::HIGH_DRAMA_PLAYER_TURN_01149,
@@ -1044,6 +1045,7 @@ $machinestates = [
                 "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_PERFORMER,
                 "backTriskelion" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
                 "backEpeeSanglante" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
+                "backCavalierHat" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
             ]
         ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE => [
