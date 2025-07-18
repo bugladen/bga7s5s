@@ -319,4 +319,21 @@ abstract class Card
     {
         return $this->ControllerId != 0;
     }
+
+    public function addTrait(string $trait): void
+    {
+        $this->Traits[] = $trait;
+        $this->IsUpdated = true;
+    }
+
+    public function removeTrait(string $trait): void
+    {
+        $index = array_search($trait, $this->Traits);
+        if ($index !== false)
+        {
+            unset($this->Traits[$index]);
+        }
+        $this->Traits = array_values($this->Traits);
+        $this->IsUpdated = true;
+    }
 }

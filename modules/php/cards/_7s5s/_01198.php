@@ -49,8 +49,7 @@ class _01198 extends CityAttachment implements IHasActions
         if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            $character->Traits[] = 'Duelist';
-            $character->IsUpdated = true;
+            $character->addTrait('Duelist');
 
             $event->theah->game->notifyAllPlayers('traitAdded', clienttranslate('Guild Triskelion effect triggers: ${character_name} gains the <strong>Duelist</strong> trait.'), [
                 'i18n' => ['character_name'],
@@ -63,8 +62,7 @@ class _01198 extends CityAttachment implements IHasActions
         if ($event instanceof EventAttachmentUnequipped && $event->attachmentId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            $character->Traits = array_diff($character->Traits, ['Duelist']);
-            $character->IsUpdated = true;
+            $character->removeTrait('Duelist');
 
             $event->theah->game->notifyAllPlayers('traitRemoved', clienttranslate('Guild Triskelion effect triggers: ${character_name} loses the <strong>Duelist</strong> trait.'), [
                 'i18n' => ['character_name'],
