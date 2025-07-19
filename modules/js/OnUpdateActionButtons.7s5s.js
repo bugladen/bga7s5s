@@ -282,6 +282,22 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                         this.addActionButton(`actNone`, _('None'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
                 }
             },
+
+            'highDramaPhase01076': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
+                    dojo.addClass('actCityLocationsSelected', 'disabled');
+                }
+            },
+
+            'highDramaPhase01076_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                    this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                    this.addActionButton(`btnDecline`, _('Decline'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
     
             'highDramaPhase01147': () => {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));

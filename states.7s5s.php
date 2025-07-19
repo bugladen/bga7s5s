@@ -252,6 +252,37 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01076 => [
+        "name" => "highDramaPhase01076",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Blood Mark: ${you} must choose a City location to move Performer: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithLocations"
+        ],
+        "transitions" => [
+            "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_01076_2
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01076_2 => [
+        "name" => "highDramaPhase01076_2",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Blood Mark: ${you} may Wound Performer and choose Character to include: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01076,
+            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
+
     States::HIGH_DRAMA_PLAYER_TURN_01085 => [
         "name" => "highDramaPhase01085",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

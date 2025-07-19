@@ -2,10 +2,15 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01076;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 
-class _01076 extends Risk
+class _01076 extends Risk implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -24,6 +29,10 @@ class _01076 extends Risk
         $this->Traits = [
             'Sorcery',
             'Porte',
+        ];
+
+        $this->Actions = [
+            new Action_01076(),
         ];
     }
 }
