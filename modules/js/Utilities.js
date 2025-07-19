@@ -570,6 +570,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
         else
             //Surround the maneuver names with div tags
             maneuvers = maneuvers.map((maneuver) => `<div class="duel-maneuver">${maneuver}</div>`);
+
+        var techniques = row.techniqueNames;
+        if (!techniques)
+            techniques = [];
+        else
+            //Surround the technique names with div tags
+            techniques = techniques.map((technique) => `<div class="duel-technique">${technique}</div>`);
         
         dojo.place( this.format_block( 'jstpl_duel_round', {
             round: row.round,
@@ -580,7 +587,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             combatRiposte: row.combatRiposte ?? 0,
             combatParry: row.combatParry ?? 0,
             combatThrust: row.combatThrust ?? 0,
-            technique: row.techniqueName ?? 'Not Chosen',
+            technique: techniques.length > 0 ? techniques : 'Not Chosen',
             techniqueRiposte: row.techniqueRiposte ?? 0,
             techniqueParry: row.techniqueParry ?? 0,
             techniqueThrust: row.techniqueThrust ?? 0,
@@ -622,7 +629,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.addClass(`duel_round_${row.round}_combat`, 'ability-not-chosen');
             dojo.addClass(`duel_round_${row.round}_combat_stats`, 'ability-not-chosen');
         }
-        if (!row.techniqueName)
+        if (!row.techniqueNames)
         {
             dojo.addClass(`duel_round_${row.round}_technique`, 'ability-not-chosen');
             dojo.addClass(`duel_round_${row.round}_technique_stats`, 'ability-not-chosen');

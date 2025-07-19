@@ -948,7 +948,7 @@ trait EventHub
                         $duelId = $theah->game->globals->get(Game::DUEL_ID);
                         $round = $theah->game->globals->get(Game::DUEL_ROUND);
                         $name = substr(addslashes($technique->Name), 0, 500);
-                        $sql = "UPDATE duel_round SET technique_id = '{$event->techniqueId}', technique_name ='$name' WHERE duel_id = $duelId AND round = $round";
+                        $sql = "INSERT INTO duel_round_technique (duel_id, round, technique_id, technique_name) VALUES ($duelId, $round, '{$event->techniqueId}', '$name')";
                         $event->theah->game->DbQuery($sql);    
                     }
                 };

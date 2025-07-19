@@ -1077,8 +1077,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }
 
         }
-        else        
-            $(`duel_round_${args.round}_${args.mode}`).innerHTML = args.effect_name;
+        else
+        {
+            var element = $(`duel_round_${args.round}_${args.mode}`);
+            if (element.innerHTML == 'Not Chosen')
+            {
+                element.innerHTML = '';
+            }
+            element.innerHTML += args.effect_name;
+        }
 
         $(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML = args.riposte;
         $(`duel_round_${args.round}_${args.mode}_parry`).innerHTML = args.parry;

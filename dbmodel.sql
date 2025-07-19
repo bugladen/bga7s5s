@@ -48,8 +48,6 @@ CREATE TABLE IF NOT EXISTS `duel_round` (
   `defender_id` int NOT NULL,
   `starting_challenger_threat` tinyint NOT NULL,
   `starting_defender_threat` tinyint NOT NULL,
-  `technique_id` varchar(50) NULL,
-  `technique_name` varchar(500) NULL,
   `technique_riposte` tinyint NULL,
   `technique_parry` tinyint NULL,
   `technique_thrust` tinyint NULL,
@@ -83,6 +81,16 @@ CREATE TABLE IF NOT EXISTS `duel_round_maneuver` (
   `maneuver_id` varchar(50) NOT NULL,
   `maneuver_name` varchar(500) NULL,
   PRIMARY KEY (`duel_round_maneuver_id`),
+  FOREIGN KEY (`duel_id`) REFERENCES `duel` (`duel_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+CREATE TABLE IF NOT EXISTS `duel_round_technique` (
+  `duel_round_technique_id` smallint unsigned NOT NULL AUTO_INCREMENT,
+  `duel_id` tinyint unsigned NOT NULL,
+  `round` smallint unsigned NOT NULL,
+  `technique_id` varchar(50) NOT NULL,
+  `technique_name` varchar(500) NULL,
+  PRIMARY KEY (`duel_round_technique_id`),
   FOREIGN KEY (`duel_id`) REFERENCES `duel` (`duel_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 

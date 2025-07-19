@@ -73,8 +73,6 @@ trait UtilitiesTrait
             starting_challenger_threat as startingChallengerThreat,
             defender_id as defenderId,
             starting_defender_threat as startingDefenderThreat,
-            technique_id as techniqueId,
-            technique_name as techniqueName,
             technique_riposte as techniqueRiposte,
             technique_parry as techniqueParry,
             technique_thrust as techniqueThrust,
@@ -118,7 +116,21 @@ trait UtilitiesTrait
             $row['defenderName'] = $defender->Name;
             $row['startingDefenderThreat'] = $round['startingDefenderThreat'];
 
-            $row['techniqueName'] = $round['techniqueName'];
+            $sql = "SELECT technique_name FROM duel_round_technique where duel_id = $duelId AND round = {$round['round']}";
+            $techniqueNames = $this->getCollectionFromDB($sql);
+
+            if (count($techniqueNames) == 0)
+                $row['techniqueName'] = null;
+            else
+            {
+                $techniques = [];
+                foreach ($techniqueNames as $techniqueName)
+                {
+                    $techniques[] = $techniqueName['technique_name'];
+                }
+                $row['techniqueNames'] = $techniques;
+            }
+
             $row['techniqueRiposte'] = $round['techniqueRiposte'];
             $row['techniqueParry'] = $round['techniqueParry'];
             $row['techniqueThrust'] = $round['techniqueThrust'];
