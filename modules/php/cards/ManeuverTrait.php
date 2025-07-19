@@ -33,8 +33,9 @@ trait ManeuverTrait
     public function getManeuversArray(Game $game, bool $mustBeAvailable = false): Array
     {
         $array = [];
+        $playerId = $game->getActivePlayerId();
         foreach ($this->Maneuvers as $maneuver) {
-            if ($mustBeAvailable && !$maneuver->isAvailable())
+            if ($mustBeAvailable && !$maneuver->isAvailable() && !$maneuver->isAvailableToPlayer($playerId, $game->theah))
                 continue;
             $array[] = $maneuver->getPropertyArray($game);
         }

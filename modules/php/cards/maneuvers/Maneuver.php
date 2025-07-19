@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 abstract class Maneuver implements ICardAbility
 {
@@ -35,5 +36,10 @@ abstract class Maneuver implements ICardAbility
         {
             $this->setUsed($event->theah, false);
         }
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        return true;
     }
 }

@@ -336,4 +336,20 @@ abstract class Card
         $this->Traits = array_values($this->Traits);
         $this->IsUpdated = true;
     }
+
+    public function hasManeuversAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if ($this instanceof IHasManeuvers)
+        {
+            foreach ($this->getManeuvers() as $maneuver)
+            {
+                if ($maneuver->isAvailableToPlayer($playerId, $theah))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

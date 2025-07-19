@@ -1573,7 +1573,7 @@ trait FrameworkActionsTrait
 
         $this->globals->set(Game::CHOSEN_CARD, $card->Id);
 
-        if ($card instanceof IHasManeuvers)
+        if ($card->hasManeuversAvailableToPlayer($playerId, $this->theah))
         {
             $this->gamestate->nextState("useManeuver");
         }
