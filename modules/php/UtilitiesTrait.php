@@ -78,8 +78,6 @@ trait UtilitiesTrait
             technique_riposte as techniqueRiposte,
             technique_parry as techniqueParry,
             technique_thrust as techniqueThrust,
-            maneuver_id as maneuverId,
-            maneuver_name as maneuverName,
             maneuver_riposte as maneuverRiposte,
             maneuver_parry as maneuverParry,
             maneuver_thrust as maneuverThrust,
@@ -125,7 +123,21 @@ trait UtilitiesTrait
             $row['techniqueParry'] = $round['techniqueParry'];
             $row['techniqueThrust'] = $round['techniqueThrust'];
 
-            $row['maneuverName'] = $round['maneuverName'];
+            $sql = "SELECT maneuver_name FROM duel_round_maneuver where duel_id = $duelId AND round = {$round['round']}";
+            $maneuverNames = $this->getCollectionFromDB($sql);
+
+            if (count($maneuverNames) == 0)
+                $row['maneuverNames'] = null;
+            else
+            {
+                $maneuvers = [];
+                foreach ($maneuverNames as $maneuverName)
+                {
+                    $maneuvers[] = $maneuverName['maneuver_name'];
+                }
+                $row['maneuverNames'] = $maneuvers;
+            }
+
             $row['maneuverRiposte'] = $round['maneuverRiposte'];
             $row['maneuverParry'] = $round['maneuverParry'];
             $row['maneuverThrust'] = $round['maneuverThrust'];

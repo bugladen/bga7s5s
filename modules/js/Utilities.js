@@ -563,6 +563,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
     displayDuelRow: function(row)
     {
         const headerRow = $('duel_header_row');
+
+        var maneuvers = row.maneuverNames;
+        if (!maneuvers)
+            maneuvers = [];
+        else
+            //Surround the maneuver names with div tags
+            maneuvers = maneuvers.map((maneuver) => `<div class="duel-maneuver">${maneuver}</div>`);
         
         dojo.place( this.format_block( 'jstpl_duel_round', {
             round: row.round,
@@ -577,7 +584,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             techniqueRiposte: row.techniqueRiposte ?? 0,
             techniqueParry: row.techniqueParry ?? 0,
             techniqueThrust: row.techniqueThrust ?? 0,
-            maneuver: row.maneuverName ?? 'Not Chosen',
+            maneuver: maneuvers.length > 0 ? maneuvers : 'Not Chosen',
             maneuverRiposte: row.maneuverRiposte ?? 0,
             maneuverParry: row.maneuverParry ?? 0,
             maneuverThrust: row.maneuverThrust ?? 0,
@@ -620,7 +627,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.addClass(`duel_round_${row.round}_technique`, 'ability-not-chosen');
             dojo.addClass(`duel_round_${row.round}_technique_stats`, 'ability-not-chosen');
         }
-        if (!row.maneuverName)
+        if (!row.maneuverNames)
         {
             dojo.addClass(`duel_round_${row.round}_maneuver`, 'ability-not-chosen');
             dojo.addClass(`duel_round_${row.round}_maneuver_stats`, 'ability-not-chosen');
