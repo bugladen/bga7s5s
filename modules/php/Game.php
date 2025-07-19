@@ -72,6 +72,7 @@ class Game extends \Table
     final const NORMAL_CLAIM_TYPE = 0;
     final const CLAUDE_CLAIM_TYPE = 1;
     final const CAPTAINS_COAT_CLAIM_TYPE = 2;
+    final const TABARD_CLAIM_TYPE = 3;
 
     //Recruit global variables
     final const RECRUIT_TYPE = "recruitType";

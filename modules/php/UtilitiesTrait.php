@@ -471,10 +471,21 @@ trait UtilitiesTrait
         //Check for ties
         $ties = array_filter($playerInfluences, fn($player) => $player['influence'] == $maxInfluence);
 
-        if (count($ties) > 1 || $attemptingPlayerId != $maxPlayerId) 
-            return [false, $totals];
-
-        return [true, $totals];
+        if (count($ties) > 1)
+        {
+            if ($claimType == Game::TABARD_CLAIM_TYPE)
+            {
+                return [array_key_exists($attemptingPlayerId, $ties), $totals];
+            }
+            else
+            {
+                return [false, $totals];
+            }
+        }
+        else
+        {
+            return $attemptingPlayerId == $maxPlayerId ? [true, $totals] : [false, $totals];
+        }
     }
 
     function revealFirstCardTypeFromCityDeck(int $playerId, string $type, bool $discardInsteadOfSink = false): ?Card
