@@ -891,8 +891,6 @@ trait StatesTrait
 
     public function stApplyCombatCardStats(): void
     {
-        $playerId = $this->getActivePlayerId();
-
         $duelId = $this->globals->get(Game::DUEL_ID);
         $round = $this->globals->get(Game::DUEL_ROUND);
 
@@ -903,7 +901,7 @@ trait StatesTrait
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
         $card = $this->getCardObjectFromDb($cardId);
 
-        $sql = "UPDATE duel_round SET combat_card_id = {$card->Id} WHERE duel_id = $duelId AND round = $round";
+        $sql = "INSERT INTO duel_round_combat_card (duel_id, round, combat_card_id) VALUES ($duelId, $round, $cardId)";
         $this->DbQuery($sql);
 
         $sql = "SELECT gambled from duel_round where duel_id = $duelId AND round = $round";

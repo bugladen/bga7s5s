@@ -588,26 +588,29 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         this.createCard(`duel_${row.round}_${row.actor.id}`, row.actor, `duel_round_${row.round}_actor`, true);
 
-        const combatCard = row.combatCard;
-        if (combatCard)
+        const combatCards = row.combatCards;
+        if (combatCards)
         {
             const divId = `duel_round_${row.round}_combat`;
-            $(divId).innerHTML = this.format_block('jstpl_row_combat_card', { 
-                round: row.round,
-                id: combatCard.id,
-                image: g_gamethemeurl + combatCard.image 
-            });
-            this.addTooltipHtml(divId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+            $(divId).innerHTML = '';
+            combatCards.forEach((combatCard) => {                
+                $(divId).innerHTML += this.format_block('jstpl_row_combat_card', { 
+                    round: row.round,
+                    id: combatCard.id,
+                    image: g_gamethemeurl + combatCard.image 
+                });
+                this.addTooltipHtml(divId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
 
-            if (row.gambled)
-            {
-                const imageDiv = `duel_round_${row.round}_combat_card_${combatCard.id}`
-                dojo.addClass(imageDiv, 'engaged');
-                dojo.addClass(imageDiv, 'duel-row-combat-card-gambled');
-            }
+                if (row.gambled)
+                {
+                    const imageDiv = `duel_round_${row.round}_combat_card_${combatCard.id}`
+                    dojo.addClass(imageDiv, 'engaged');
+                    dojo.addClass(imageDiv, 'duel-row-combat-card-gambled');
+                }
+            });
         }
 
-        if (!row.combatCard)
+        if (!row.combatCards)
         {
             dojo.addClass(`duel_round_${row.round}_combat`, 'ability-not-chosen');
             dojo.addClass(`duel_round_${row.round}_combat_stats`, 'ability-not-chosen');

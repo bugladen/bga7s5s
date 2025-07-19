@@ -83,7 +83,6 @@ trait UtilitiesTrait
             maneuver_riposte as maneuverRiposte,
             maneuver_parry as maneuverParry,
             maneuver_thrust as maneuverThrust,
-            combat_card_id as combatCardId,
             combat_riposte as combatRiposte,
             combat_parry as combatParry,
             combat_thrust as combatThrust,
@@ -131,12 +130,20 @@ trait UtilitiesTrait
             $row['maneuverParry'] = $round['maneuverParry'];
             $row['maneuverThrust'] = $round['maneuverThrust'];
 
-            if ($round['combatCardId'] == null)
-                $row['combatCard'] = null;
+            $sql = "SELECT combat_card_id FROM duel_round_combat_card where duel_id = $duelId AND round = {$round['round']}";
+            $combatCardIds = $this->getCollectionFromDB($sql);
+
+            if (count($combatCardIds) == 0)
+                $row['combatCards'] = null;
             else 
             {
-                $combatCard = $this->getCardObjectFromDb($round['combatCardId']);
-                $row['combatCard'] = $combatCard->getPropertyArray($this);
+                $combatCards = [];
+                foreach ($combatCardIds as $combatCardId)
+                {
+                    $combatCard = $this->getCardObjectFromDb($combatCardId['combat_card_id']);
+                    $combatCards[] = $combatCard->getPropertyArray($this);
+                }
+                $row['combatCards'] = $combatCards;
             }
             $row['combatRiposte'] = $round['combatRiposte'];
             $row['combatParry'] = $round['combatParry'];

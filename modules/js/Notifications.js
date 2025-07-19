@@ -1053,7 +1053,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
         {
             const combatCard = args.combatCard;
             const divId = `duel_round_${args.round}_combat`;
-            $(divId).innerHTML = this.format_block('jstpl_row_combat_card', { 
+            if ($(divId).innerHTML == 'Not Chosen')
+            {
+                $(divId).innerHTML = '';
+            }
+            $(divId).innerHTML += this.format_block('jstpl_row_combat_card', { 
                 round: args.round,
                 id: combatCard.id,
                 image: g_gamethemeurl + combatCard.image 

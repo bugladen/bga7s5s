@@ -1757,15 +1757,16 @@ trait FrameworkActionsTrait
         $round = $this->globals->get(Game::DUEL_ROUND);    
         $type = $this->globals->get(Game::DUEL_TYPE);
 
-        $sql = "SELECT actor_id, combat_card_id FROM duel_round where duel_id = $duelId AND round = $round";
-        $roundInfo = $this->getObjectListFromDB($sql)[0];
-        $actorId = $roundInfo['actor_id'];
-        $cardId = $roundInfo['combat_card_id'];
+        $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
+        $actorId = $this->getUniqueValueFromDB($sql);
+
+        $sql = "SELECT count(*) FROM duel_round_combat_card where duel_id = $duelId AND round = $round";
+        $combatCardsCount = $this->getUniqueValueFromDB($sql);
 
         if ($round == 1 && $type != Game::VLADISLAV_DUEL_TYPE)
         {
             //Check to see if a combat card was played
-            if ($cardId == null)
+            if ($combatCardsCount == 0)
             {
                 throw new \BgaUserException(self::_("For the first round, you must either gamble or a combat card must be played."));
             }
