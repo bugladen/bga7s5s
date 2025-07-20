@@ -587,32 +587,6 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
 
-            'highDramaChallengeActionActivateTechnique_01063': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.clientStateArgs.characterIds.forEach((characterId) => {
-                        card = this.cardProperties[characterId];
-                        const image = $(`${card.divId}_image`);
-                        this.clearCardAsSelectable(image);
-                    });
-                    card = this.cardProperties[this.clientStateArgs.performerId];
-                    const performerImage = $(`${card.divId}_image`);
-                    dojo.removeClass(performerImage, 'chosen');
-                }
-            },
-
-            'duelChooseTechnique_01063': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.clientStateArgs.characterIds.forEach((characterId) => {
-                        card = this.cardProperties[characterId];
-                        const image = $(`${card.divId}_image`);
-                        this.clearCardAsSelectable(image);
-                    });
-                    card = this.cardProperties[this.clientStateArgs.performerId];
-                    const performerImage = $(`${card.divId}_image`);
-                    dojo.removeClass(performerImage, 'chosen');
-                }
-            },
-
             'highDramaPhase01068': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.clientStateArgs.characterIds.forEach((characterId) => {
@@ -641,6 +615,42 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                         const image = $(`${card.divId}_image`);
                         this.clearCardAsSelectable(image);
                     });
+                }
+            },
+
+            'highDramaChallengeActionActivateTechnique_01063': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const performerImage = $(`${card.divId}_image`);
+                    dojo.removeClass(performerImage, 'chosen');
+                }
+            },
+
+            'duelChooseTechnique_01063': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const performerImage = $(`${card.divId}_image`);
+                    dojo.removeClass(performerImage, 'chosen');
+                }
+            },
+
+            'duelResolveManeuver_01077': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
                 }
             },
 

@@ -867,8 +867,52 @@ trait StatesTrait
         }
 
         $serialized = addslashes(serialize($actor));
-        $sql = "INSERT INTO duel_round (duel_id, round, player_id, actor_id, actor_serialized, challenger_id, defender_id, starting_challenger_threat, starting_defender_threat, ending_challenger_threat, ending_defender_threat, wounds_taken) 
-        VALUES ($duelId, $round, $playerId, $actorId, '$serialized', $challengerId, $defenderId, $challengerThreat, $defenderThreat, $challengerThreat, $defenderThreat, $wounds)";
+        $sql = "INSERT INTO duel_round (
+            duel_id, 
+            round, 
+            player_id, 
+            actor_id, 
+            actor_serialized, 
+            challenger_id, 
+            defender_id, 
+            starting_challenger_threat, 
+            starting_defender_threat, 
+            ending_challenger_threat, 
+            ending_defender_threat, 
+            combat_riposte,
+            combat_parry,
+            combat_thrust,
+            technique_riposte,
+            technique_parry,
+            technique_thrust,
+            maneuver_riposte,
+            maneuver_parry,
+            maneuver_thrust,
+            wounds_taken
+        ) 
+        VALUES (
+            $duelId, 
+            $round, 
+            $playerId, 
+            $actorId, 
+            '$serialized', 
+            $challengerId, 
+            $defenderId, 
+            $challengerThreat, 
+            $defenderThreat, 
+            $challengerThreat, 
+            $defenderThreat, 
+            0, 
+            0, 
+            0, 
+            0, 
+            0, 
+            0, 
+            0,
+            0,
+            0,
+            $wounds
+        )";
         $this->DbQuery($sql);
 
         $event = $this->theah->createEvent(Events::DuelNewRound);
@@ -1048,6 +1092,7 @@ trait StatesTrait
         $this->globals->delete(GAME::CHOSEN_MANEUVER);
         $this->globals->delete(GAME::CHOSEN_CARD);
         $this->globals->delete(GAME::CHOSEN_CARD_COST);
+        $this->globals->delete(GAME::NEXT_COMBAT_CARD);
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(GAME::REVEALED_CARDS);
 
@@ -1149,6 +1194,7 @@ trait StatesTrait
         $this->globals->delete(GAME::CHOSEN_OPPONENT);
         $this->globals->delete(GAME::CHOSEN_CARD);
         $this->globals->delete(GAME::CHOSEN_CARD_COST);
+        $this->globals->delete(GAME::NEXT_COMBAT_CARD);
         $this->globals->delete(GAME::CHOSEN_LOCATION);
         $this->globals->delete(GAME::CHOSEN_PERFORMER);
         $this->globals->delete(GAME::CHOSEN_ATTACHMENT);
@@ -1694,5 +1740,31 @@ trait StatesTrait
         $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
         $card = $this->theah->getCardById($sourceId);
         $card->stateFromCard($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId);
+    }
+
+    //Handles whether special conditions (like Broken Time) exist for another combat card
+    public function stSetNextCombatCard(): void
+    {
+        $nextCombatCard = $this->globals->get(Game::NEXT_COMBAT_CARD, 0);
+        if ($nextCombatCard > 0)
+        {
+            $this->globals->delete(Game::NEXT_COMBAT_CARD);
+            $card = $this->theah->getCardById($nextCombatCard);
+
+            $this->globals->set(Game::CHOSEN_CARD, $card->Id);
+
+            if ($card->hasManeuversAvailableToPlayer($card->ControllerId, $this->theah))
+            {
+                $this->gamestate->nextState("useManeuver");
+            }
+            else
+            {
+                $this->gamestate->nextState("applyCombatCardStats");
+            }   
+        }
+        else
+        {
+            $this->gamestate->nextState("noMoreCombatCards");
+        }
     }
 }

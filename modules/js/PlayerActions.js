@@ -240,6 +240,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaPhase01192_3'                 : 'actFromCardWithId',
             'highDramaPhase01200_2'                 : 'actFromCardWithId',
             'duelChooseGambleCard'                  : 'actGambleCardChosen',
+            'duelResolveManeuver_01077'             : 'actFromCardWithId',
         };
 
         const action = actions[this.gamedatas.gamestate.name];

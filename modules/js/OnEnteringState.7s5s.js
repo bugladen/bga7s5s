@@ -1143,6 +1143,20 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
             },
+
+            'duelResolveManeuver_01077': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    $('choose_container_name').innerHTML = _('Revealed Cards in Your Faction Deck');
+    
+                    // For each card in the players deck, create a stock item
+                    args.args._private.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
         
             'duskPhaseBegin01177' : () => {
                 if (this.isCurrentPlayerActive()) {

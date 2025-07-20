@@ -648,7 +648,6 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
     ],
 
     States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01063 => [
-
         "name" => "highDramaChallengeActionActivateTechnique_01063",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
         "descriptionmyturn" => clienttranslate('Bastien\'s Technique: Swap with a Musketeer: ${you} must choose a Musketeer:'),
@@ -701,6 +700,20 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ],
         "transitions" => [
             "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+        ]
+    ],
+
+    States::DUEL_RESOLVE_MANEUVER_01077 => [
+        "name" => "duelResolveManeuver_01077",
+        "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+        "descriptionmyturn" => clienttranslate('Broken Time: ${you} must choose a Combat Card to play:'),
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actFromCardWithId", 
+        ],
+        "transitions" => [
+            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
         ]
     ],
 

@@ -163,14 +163,16 @@ class DB extends \APP_DbObject
         {
             //Riposte sends threat back to adversary, only in the amount it reduced threat to the actor
             $riposte = $eventRiposte < 0 ? 0 : $eventRiposte;
-            if ($riposte > $endingChallengerThreat) $riposte = $endingChallengerThreat;
+            if ($riposte > $endingChallengerThreat) 
+                $riposte = $endingChallengerThreat;
             $endingChallengerThreat -= $riposte;
             $endingDefenderThreat += $riposte;
             $results['riposte'] = $riposte;
 
             //Parry reduces threat
             $parry = $eventParry < 0 ? 0 : $eventParry;
-            if ($parry > $endingChallengerThreat) $parry = $endingChallengerThreat;
+            if ($parry > $endingChallengerThreat) 
+                $parry = $endingChallengerThreat;
             $endingChallengerThreat -= $parry;
             $results['parry'] = $parry;
 
@@ -185,14 +187,16 @@ class DB extends \APP_DbObject
         {
             //Riposte sends threat back to adversary, only in the amount it reduced threat to the actor
             $riposte = $eventRiposte < 0 ? 0 : $eventRiposte;
-            if ($riposte > $endingDefenderThreat) $riposte = $endingDefenderThreat;
+            if ($riposte > $endingDefenderThreat) 
+                $riposte = $endingDefenderThreat;
             $endingDefenderThreat -= $riposte;
             $endingChallengerThreat += $riposte;
             $results['riposte'] = $riposte;
-
+         
             //Parry reduces threat
             $parry = $eventParry < 0 ? 0 : $eventParry;
-            if ($parry > $endingDefenderThreat) $parry = $endingDefenderThreat;
+            if ($parry > $endingDefenderThreat) 
+                $parry = $endingDefenderThreat;
             $endingDefenderThreat -= $parry;
             $results['parry'] = $parry;
 
@@ -209,9 +213,9 @@ class DB extends \APP_DbObject
         $results['wounds'] = $wounds;
 
         $sql = "UPDATE duel_round SET 
-            {$mode}_riposte = {$eventRiposte}, 
-            {$mode}_parry = {$eventParry}, 
-            {$mode}_thrust = {$eventThrust},
+            {$mode}_riposte = {$mode}_riposte + {$eventRiposte}, 
+            {$mode}_parry = {$mode}_parry + {$eventParry}, 
+            {$mode}_thrust = {$mode}_thrust + {$eventThrust},
             ending_challenger_threat = $endingChallengerThreat,
             ending_defender_threat = $endingDefenderThreat,
             wounds_taken = $wounds 

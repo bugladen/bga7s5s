@@ -1947,6 +1947,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "01077" => States::DUEL_RESOLVE_MANEUVER_01077,
                         "reaction" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_REACTIONS,
                         "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                         "endOfGame" => States::END_GAME
@@ -1996,7 +1997,7 @@ $machinestates = [
                     "transitions" => [
                         "01085" => States::DUEL_APPLY_COMBAT_CARD_STATS_01085,
                         "reaction" => States::DUEL_APPLY_COMBAT_CARD_STATS_REACTIONS,
-                        "endOfEvents" => States::DUEL_CHOOSE_ACTION,
+                        "endOfEvents" => States::DUEL_SET_NEXT_COMBAT_CARD,
                         "endOfGame" => States::END_GAME
                     ]
                 ],
@@ -2029,6 +2030,17 @@ $machinestates = [
                         "paid" => States::DUEL_APPLY_COMBAT_CARD_STATS_EVENTS, 
                     ]
                 ],
+            States::DUEL_SET_NEXT_COMBAT_CARD => [
+                "name" => "duelSetNextCombatCard",
+                "type" => "game",
+                "action" => "stSetNextCombatCard",
+                "transitions" => [
+                    "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
+                    "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
+                    "noMoreCombatCards" => States::DUEL_CHOOSE_ACTION
+                ]
+            ],
+
             States::DUEL_CHOOSE_GAMBLE_CARD =>[
                 "name" => "duelChooseGambleCard",
                 "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),

@@ -1047,6 +1047,7 @@ trait EventHub
                     $round = $theah->game->globals->get(Game::DUEL_ROUND);
                     $actor = $theah->cards[$event->actorId];
                     $maneuver = $theah->getManeuverById($event->maneuverId);
+                    $maneuverCard = $maneuver->getOwningCard($theah);
 
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
@@ -1073,13 +1074,20 @@ trait EventHub
                         $effects .= "<p>" . sprintf($theah->game->translate("Challenger Threat went from %s to %s. "), $results["endingChallengerThreatBefore"], $results["endingChallengerThreatAfter"]);
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
                         $effects .= "<p>" . sprintf($theah->game->translate("Defender Threat went from %s to %s. "), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"]);
-                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${character_name} has activated the Maneuver <strong>${effect_name}</strong> 
-                    with the following effects: ${effects}'), [
+
+                    $message = clienttranslate('${character_name} has activated the Maneuver <strong>${effect_name}</strong> ${effects}');
+                    if (! $maneuverCard instanceof Character)
+                    {
+                        $message = clienttranslate('${character_name} has activated the Maneuver <strong>${effect_name}</strong> from <strong>${card_name}</strong> ${effects}');
+                    }
+
+                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", $message, [
                         'i18n' => ['character_name', 'effect_name', 'effects'],
                         "round" => $round,
                         "mode" => "maneuver",
                         "character_name" => $actor->Name,
                         "effect_name" => $maneuver->Name,
+                        "card_name" => $maneuverCard->Name,
                         "effects" => $effects,
                         "riposte" => $results["riposte"],
                         "parry" => $results["parry"],

@@ -613,13 +613,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
                     id: combatCard.id,
                     image: g_gamethemeurl + combatCard.image 
                 });
-                this.addTooltipHtml(divId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+
+                const cardDivId = `duel_round_${row.round}_combat_card_${combatCard.id}`;
+                this.addTooltipHtml(cardDivId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
 
                 if (row.gambled)
                 {
-                    const imageDiv = `duel_round_${row.round}_combat_card_${combatCard.id}`
-                    dojo.addClass(imageDiv, 'engaged');
-                    dojo.addClass(imageDiv, 'duel-row-combat-card-gambled');
+                    dojo.addClass(cardDivId, 'engaged');
+                    dojo.addClass(cardDivId, 'duel-row-combat-card-gambled');
                 }
             });
         }

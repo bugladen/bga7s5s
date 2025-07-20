@@ -1062,7 +1062,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
                 id: combatCard.id,
                 image: g_gamethemeurl + combatCard.image 
             });
-            this.addTooltipHtml(divId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+            const cardDivId = `duel_round_${args.round}_combat_card_${combatCard.id}`;
+            this.addTooltipHtml(cardDivId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
     
             if (args.gambled)
             {
@@ -1087,9 +1088,12 @@ return declare('seventhseacityoffivesails.notifications', null, {
             element.innerHTML += args.effect_name;
         }
 
-        $(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML = args.riposte;
-        $(`duel_round_${args.round}_${args.mode}_parry`).innerHTML = args.parry;
-        $(`duel_round_${args.round}_${args.mode}_thrust`).innerHTML = args.thrust;
+        let riposte = parseInt($(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML) + args.riposte;
+        let parry = parseInt($(`duel_round_${args.round}_${args.mode}_parry`).innerHTML) + args.parry;
+        let thrust = parseInt($(`duel_round_${args.round}_${args.mode}_thrust`).innerHTML) + args.thrust;
+        $(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML = riposte;
+        $(`duel_round_${args.round}_${args.mode}_parry`).innerHTML = parry;
+        $(`duel_round_${args.round}_${args.mode}_thrust`).innerHTML = thrust;
         $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML = args.endingChallengerThreatAfter;
         $(`duel_round_${args.round}_ending_defender_threat`).innerHTML = args.endingDefenderThreatAfter;
         $(`duel_round_${args.round}_wounds`).innerHTML = args.wounds;

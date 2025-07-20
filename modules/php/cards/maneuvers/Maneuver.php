@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
@@ -42,4 +43,17 @@ abstract class Maneuver implements ICardAbility
     {
         return true;
     }
+
+    public function getArgsFromManeuver(Game $game, int $state, string $stateName): array
+    {
+        return [];
+    }
+
+    public function actFromManeuverPass(Game $game, int $state): void { }
+
+    public function actFromManeuverWithId(Game $game, int $state, string $stateName, int $id): void { }
+
+    public function stateFromManeuver(Game $game, int $state, string $stateName): void { }
+
+    public function actFromManeuverWithIds(Game $game, int $state, string $stateName, array $ids): void { }
 }

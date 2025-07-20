@@ -89,6 +89,15 @@ abstract class Card
             }
         }
 
+        if ($this instanceof IHasManeuvers)
+        {
+            $maneuver = $this->getManeuverById($internalId);
+            if ($maneuver)
+            {
+                $args += $maneuver->getArgsFromManeuver($game, $state, $stateName);
+            }
+        }
+
         return $args; 
     }
 
@@ -109,6 +118,15 @@ abstract class Card
             if ($technique)
             {
                 $technique->actFromTechniquePass($game, $state, $stateName);
+            }
+        }
+
+        if ($this instanceof IHasManeuvers)
+        {
+            $maneuver = $this->getManeuverById($internalId);
+            if ($maneuver)
+            {
+                $maneuver->actFromManeuverPass($game, $state, $stateName);
             }
         }
     }
@@ -132,6 +150,15 @@ abstract class Card
                 $technique->actFromTechniqueWithId($game, $state, $stateName, $id);
             }
         }
+
+        if ($this instanceof IHasManeuvers)
+        {
+            $maneuver = $this->getManeuverById($internalId);
+            if ($maneuver)
+            {
+                $maneuver->actFromManeuverWithId($game, $state, $stateName, $id);
+            }
+        }
     }
 
     public function actFromCardWithIds(Game $game, int $state, string $stateName, string $internalId, array $ids): void 
@@ -151,6 +178,15 @@ abstract class Card
             if ($technique)
             {
                 $technique->actFromTechniqueWithIds($game, $state, $stateName, $ids);
+            }
+        }
+
+        if ($this instanceof IHasManeuvers)
+        {
+            $maneuver = $this->getManeuverById($internalId);
+            if ($maneuver)
+            {
+                $maneuver->actFromManeuverWithIds($game, $state, $stateName, $ids);
             }
         }
     }
@@ -194,6 +230,15 @@ abstract class Card
             if ($technique)
             {
                 $technique->stateFromTechnique($game, $state, $stateName);
+            }
+        }
+
+        if ($this instanceof IHasManeuvers)
+        {
+            $maneuver = $this->getManeuverById($internalId);
+            if ($maneuver)
+            {
+                $maneuver->stateFromManeuver($game, $state, $stateName);
             }
         }
     }
