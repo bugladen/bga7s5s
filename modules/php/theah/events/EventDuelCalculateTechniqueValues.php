@@ -15,7 +15,6 @@ class EventDuelCalculateTechniqueValues extends Event
     public function __construct()
     {
         parent::__construct();
-        $this->priority = Event::MEDIUM_PRIORITY;
 
         $this->actorId = 0;
         $this->adversaryId = 0;

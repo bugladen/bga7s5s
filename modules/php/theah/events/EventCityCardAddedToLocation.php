@@ -11,8 +11,8 @@ class EventCityCardAddedToLocation extends Event
     {
         parent::__construct();
 
+        $this->cardId = 0;
         $this->location = "";
-        $this->priority = Event::MEDIUM_PRIORITY;
     }
 
 }

@@ -11,7 +11,6 @@ class EventCardDiscardedFromPlay extends Event
     public function __construct()
     {
         parent::__construct();
-        $this->priority = Event::MEDIUM_PRIORITY;
 
         $this->ownerId = 0;
         $this->cardId = 0;

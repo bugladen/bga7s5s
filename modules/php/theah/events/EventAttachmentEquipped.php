@@ -15,7 +15,6 @@ class EventAttachmentEquipped extends Event
     {
         parent::__construct();
 
-        $this->priority = Event::MEDIUM_PRIORITY;
         $this->characterId = 0;
         $this->attachmentId = 0;
         $this->discount = 0;

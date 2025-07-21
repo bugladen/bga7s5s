@@ -15,6 +15,5 @@ class EventTechniqueActivated extends Event
         $this->ownerId = 0;
         $this->techniqueId = "";
 
-        $this->priority = Event::MEDIUM_PRIORITY;
     }
 }

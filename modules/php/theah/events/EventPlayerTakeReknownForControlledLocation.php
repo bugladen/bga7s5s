@@ -15,7 +15,5 @@ class EventPlayerTakeReknownForControlledLocation extends Event
         $this->playerId = 0;
         $this->location = "";
         $this->reknown = 0;
-
-        $this->priority = Event::MEDIUM_PRIORITY;
     }
 }

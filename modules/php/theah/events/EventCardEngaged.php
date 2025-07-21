@@ -11,7 +11,6 @@ class EventCardEngaged extends Event
     public function __construct()
     {
         parent::__construct();
-        $this->priority = Event::MEDIUM_PRIORITY;
         $this->sourceId = 0;
         
         $this->runEventHubAfterCards = true;

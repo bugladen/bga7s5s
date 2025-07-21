@@ -10,7 +10,6 @@ class EventCardRemovedFromCityDiscardPile extends Event
     public function __construct()
     {
         parent::__construct();
-        $this->priority = Event::MEDIUM_PRIORITY;
 
         $this->playerId = 0;
         $this->cardId = 0;

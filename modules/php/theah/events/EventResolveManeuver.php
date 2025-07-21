@@ -13,7 +13,6 @@ class EventResolveManeuver extends Event
     public function __construct()
     {
         parent::__construct();
-        $this->priority = Event::MEDIUM_PRIORITY;
     }
  
 }

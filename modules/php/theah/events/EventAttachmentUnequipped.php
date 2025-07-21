@@ -16,7 +16,6 @@ class EventAttachmentUnequipped extends Event
         $this->characterId = 0;
         $this->attachmentId = 0;
         
-        $this->priority = Event::MEDIUM_PRIORITY;
     }
 }
 

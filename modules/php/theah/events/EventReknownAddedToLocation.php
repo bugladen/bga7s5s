@@ -17,7 +17,6 @@ class EventReknownAddedToLocation extends Event
         $this->location = "";
         $this->amount = 0;
         $this->source = "";
-        $this->priority = Event::MEDIUM_PRIORITY;
 
     }
 }

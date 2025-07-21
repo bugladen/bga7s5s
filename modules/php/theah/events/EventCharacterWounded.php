@@ -20,6 +20,5 @@ class EventCharacterWounded extends Event
         $this->wounds = 0;
         $this->reason = '';
 
-        $this->priority = Event::MEDIUM_PRIORITY;
     }
 }

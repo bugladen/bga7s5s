@@ -13,8 +13,6 @@ class EventDuelEnd extends Event
     {
         parent::__construct();
 
-        $this->priority = Event::MEDIUM_PRIORITY;
-
         $this->challengingPlayerId = 0;
         $this->challengerId = 0;
         $this->defendingPlayerId = 0;

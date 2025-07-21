@@ -20,7 +20,7 @@ abstract class Event
 
     public function __construct()
     {
-        $this->priority = Event::LOWEST_PRIORITY;
+        $this->priority = Event::MEDIUM_PRIORITY;
         $this->runEventHubAfterCards = false;
         $this->canceled = false;
     }

@@ -12,7 +12,6 @@ class EventCharacterInfluenceModified extends Event
     public function __construct()
     {
         parent::__construct();
-        $this->priority = Event::MEDIUM_PRIORITY;
 
         $this->PlayerId = 0;
         $this->CharacterId = 0;

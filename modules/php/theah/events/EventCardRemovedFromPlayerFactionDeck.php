@@ -10,7 +10,7 @@ class EventCardRemovedFromPlayerFactionDeck extends Event
     public function __construct()
     {
         parent::__construct();
-        $this->priority = Event::MEDIUM_PRIORITY;
+
         $this->cardId = 0;
         $this->playerId = 0;
     }
