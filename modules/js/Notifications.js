@@ -1057,19 +1057,20 @@ return declare('seventhseacityoffivesails.notifications', null, {
             {
                 $(divId).innerHTML = '';
             }
-            $(divId).innerHTML += this.format_block('jstpl_row_combat_card', { 
+
+            dojo.place( this.format_block('jstpl_row_combat_card', { 
                 round: args.round,
                 id: combatCard.id,
                 image: g_gamethemeurl + combatCard.image 
-            });
+            }),  divId, 'last');
+
             const cardDivId = `duel_round_${args.round}_combat_card_${combatCard.id}`;
             this.addTooltipHtml(cardDivId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
     
             if (args.gambled)
             {
-                const imageDiv = `duel_round_${args.round}_combat_card_${combatCard.id}`
-                dojo.addClass(imageDiv, 'engaged');
-                dojo.addClass(imageDiv, 'duel-row-combat-card-gambled');
+                dojo.addClass(cardDivId, 'engaged');
+                dojo.addClass(cardDivId, 'duel-row-combat-card-gambled');
             }
             else if (this.player_id == combatCard.controllerId)
             {
@@ -1085,7 +1086,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             {
                 element.innerHTML = '';
             }
-            element.innerHTML += args.effect_name;
+            element.innerHTML += args.card_name + ': ' + args.effect_name;
         }
 
         let riposte = parseInt($(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML) + args.riposte;

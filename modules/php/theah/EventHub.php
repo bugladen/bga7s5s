@@ -48,6 +48,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
@@ -963,6 +964,7 @@ trait EventHub
                     $round = $theah->game->globals->get(Game::DUEL_ROUND);
                     $actor = $theah->cards[$event->actorId];
                     $technique = $theah->getTechniqueById($event->techniqueId);
+                    $owningCard = $technique->getOwningCard($theah);
 
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
@@ -995,6 +997,7 @@ trait EventHub
                         "round" => $round,
                         "mode" => "technique",
                         "character_name" => $actor->Name,
+                        "card_name" => $owningCard->Name,
                         "effect_name" => $technique->Name,
                         "effects" => $effects,
                         "riposte" => $results["riposte"],
@@ -1025,17 +1028,33 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventManeuverActivated:
+                $handler = function ($theah, EventManeuverActivated $event)
+                {
+                    $maneuver = $theah->getManeuverById($event->maneuverId);
+                    $maneuver->setUsed($theah, true);
+
+                    $theah->game->notifyAllPlayers("maneuverActivated", clienttranslate('${player_name} has activated the Maneuver [${maneuver_name}].'), [
+                        'i18n' => ['maneuver_name'],
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "maneuver_name" => $maneuver->Name,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+    
             case $event instanceof EventResolveManeuver:
                 $handler = function (Theah $theah, EventResolveManeuver $event)
                 {
                     $maneuver = $theah->getManeuverById($event->maneuverId);
                     $maneuver->setUsed($theah, true);
+                    $owningCard = $maneuver->getOwningCard($theah);
                     $duelId = $theah->game->globals->get(Game::DUEL_ID);
                     $round = $theah->game->globals->get(Game::DUEL_ROUND);
-                    $name = substr(addslashes($maneuver->Name), 0, 500);
+                    $name = substr(addslashes($owningCard->Name) . ":" . addslashes($maneuver->Name), 0, 500);
                     $sql = "INSERT INTO duel_round_maneuver (duel_id, round, maneuver_id, maneuver_name) VALUES ($duelId, $round, '{$event->maneuverId}', '$name')";
                     $event->theah->game->DbQuery($sql);    
-            };
+                };
                 $handler($this, $event);
                 break;
 
