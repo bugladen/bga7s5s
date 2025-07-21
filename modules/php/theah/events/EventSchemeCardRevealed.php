@@ -14,5 +14,11 @@ class EventSchemeCardRevealed extends Event
     public function __construct()
     {
         parent::__construct();
+
+        $this->playerId = 0;
+        $this->location = "";
+        $this->playerName = "";
+
+        $this->priority = Event::LOW_PRIORITY;
     }
 }

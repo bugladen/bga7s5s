@@ -612,31 +612,29 @@ trait UtilitiesTrait
             'names' => $names,
         ]);
 
-        //Send the revealed cards (sans the found card) to the discard pile
+        $this->globals->set(Game::REVEALED_CARDS, json_encode($revealed));
+
+        //Take the found card out of the revealed cards
+        $revealed = array_filter($revealed, fn($cardId) => $cardId != $cardFound->Id);
+
         if ($discardInsteadOfSink)
         {
+            //Send the revealed cards to the discard pile
             foreach ($revealed as $cardId)
             {
-                if ($cardId != $cardFound->Id)
-                {
-                    $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $cardId, Game::LOCATION_CITY_DECK);
-                    $this->theah->queueEvent($event);
-                }
+                $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $cardId, Game::LOCATION_CITY_DECK);
+                $this->theah->queueEvent($event);
             }
         }
         else
         {
+            //Place the remaining cards at the bottom of the deck in a random order
             shuffle($revealed);
             foreach ($revealed as $cardId)
             {
-                if ($cardId != $cardFound->Id)
-                {
-                    $this->cards->insertCardOnExtremePosition($cardId, Game::LOCATION_CITY_DECK, false);
-                }
+                $this->cards->insertCardOnExtremePosition($cardId, Game::LOCATION_CITY_DECK, false);
             }
         }
-
-        $this->globals->set(Game::REVEALED_CARDS, json_encode($revealed));
 
         return $cardFound;
     }
