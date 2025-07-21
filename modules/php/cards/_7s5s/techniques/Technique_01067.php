@@ -9,7 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 
 class Technique_01067 extends Technique
 {
@@ -26,8 +26,8 @@ class Technique_01067 extends Technique
     {
         parent::handleEvent($event);
         
-        //If there is more than one Musketeer as owner location, switch to state where player can choose one to gain +1 Thrust or +1 Riposte.
-        if ($event instanceof EventTechniqueActivated && $event->techniqueId == $this->Id)
+        //If there is more than one Musketeer at owner's location, switch to state where player can choose one to gain +1 Thrust or +1 Riposte.
+        if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $jeanUrbain = $this->getOwningCharacter($event->theah);
             $characters = $event->theah->getCharactersAtLocation($jeanUrbain->Location);
@@ -35,6 +35,7 @@ class Technique_01067 extends Technique
                 $character->Id != $jeanUrbain->Id && 
                 $character->ControllerId == $jeanUrbain->ControllerId && 
                 $character->hasTrait("Musketeer"));
+            
             if (count($characters) > 0)
             {
                 $transition = EventFactory::createTechniqueTransitionEvent($jeanUrbain->ControllerId, $jeanUrbain->Id, "01067", $this->Id);
@@ -44,19 +45,10 @@ class Technique_01067 extends Technique
 
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
-            $jeanUrbain = $event->theah->getCharacterById($this->OwnerId);
-            if ($jeanUrbain && $jeanUrbain->Id == $event->actorId)
+            if ( ! $this->UseRiposteInstead)
             {
-                $characters = $event->theah->getCharactersAtLocation($jeanUrbain->Location);
-                $characters = array_filter($characters, fn($character) => 
-                    $character->Id != $jeanUrbain->Id && 
-                    $character->ControllerId == $jeanUrbain->ControllerId && 
-                    $character->hasTrait("Musketeer"));
-                if ( ! $this->UseRiposteInstead)
-                {
-                    $event->adversaryThreat += 1;
-                    $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat."), $this->Name);
-                }
+                $event->adversaryThreat += 1;
+                $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat."), $this->Name);
             }
         }
 

@@ -34,10 +34,11 @@ trait TechniqueTrait
     public function getTechniquesArray(Game $game, bool $mustBeAvailable = false): Array
     {
         $array = [];
-        foreach ($this->Techniques as $technique) {
-            if ($mustBeAvailable && !$technique->isAvailable()) {
+        foreach ($this->Techniques as $technique) 
+        {
+            if ($mustBeAvailable && (!$technique->isAvailable() || !$technique->isAvailableToPlayer($game->getActivePlayerId(), $game->theah))) 
                 continue;
-            }
+
             $array[] = $technique->getPropertyArray($game);
         }
 

@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 abstract class Technique implements ICardAbility
 {
@@ -42,6 +43,11 @@ abstract class Technique implements ICardAbility
         {
             $this->setUsed($event->theah, false);
         }
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        return true;
     }
 
     public function getArgsFromTechnique(Game $game, int $state, string $stateName): array 

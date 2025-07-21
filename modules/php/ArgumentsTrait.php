@@ -579,10 +579,10 @@ trait ArgumentsTrait
         $combatCardsCount = $this->getUniqueValueFromDB($sql);
 
         $sql = "SELECT count(*) FROM duel_round_maneuver where duel_id = $duelId AND round = $round";
-        $maneuversCount = $this->getUniqueValueFromDB($sql);
+        $playedManeuversCount = $this->getUniqueValueFromDB($sql);
 
         $sql = "SELECT count(*) FROM duel_round_technique where duel_id = $duelId AND round = $round";
-        $techniquesCount = $this->getUniqueValueFromDB($sql);
+        $playedTechniquesCount = $this->getUniqueValueFromDB($sql);
 
         $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
         $round = $this->getObjectListFromDB($sql)[0];
@@ -614,8 +614,8 @@ trait ArgumentsTrait
             return [
                 "_private" => [
                     "active" => [
-                        "maneuversAvailable" => (count($characterManeuevers) > 0) && $maneuversCount == 0,
-                        "techniquesAvailable" => count($techniques) > 0 && $techniquesCount == 0,
+                        "maneuversAvailable" => (count($characterManeuevers) > 0) && $playedManeuversCount == 0,
+                        "techniquesAvailable" => count($techniques) > 0 && $playedTechniquesCount == 0,
                         "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $combatCardsCount == 0,
                         "gamblesLeft" => $gamblesLeft,
                         "combatCardAvailable" => $combatCardsCount == 0,

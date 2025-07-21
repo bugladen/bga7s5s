@@ -7,8 +7,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01063Swap extends Technique
 {
@@ -21,26 +22,32 @@ class Technique_01063Swap extends Technique
         $this->Name = clienttranslate("Swap this Character with a Musketeer");
     }
 
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        $owner = $this->getOwningCharacter($theah);
+        $characters = $theah->getCharactersAtLocation($owner->Location);
+        $characters = array_filter($characters, fn($character) => 
+            $character->Id != $owner->Id && 
+            $character->ControllerId == $owner->ControllerId && 
+            $character->hasTrait("Musketeer"));
+
+        return count($characters) > 0;
+    }
+
+
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventTechniqueActivated && $event->techniqueId == $this->Id)
+        if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $owner = $this->getOwningCharacter($event->theah);
-            $characters = $event->theah->getCharactersAtLocation($owner->Location);
-            $characters = array_filter($characters, fn($character) => 
-                $character->Id != $owner->Id && 
-                $character->ControllerId == $owner->ControllerId && 
-                $character->hasTrait("Musketeer"));
-            if (count($characters) > 0)
-            {
-                $transition = EventFactory::createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "01063", $this->Id);
-                $event->theah->queueEvent($transition);
-            }
+            $transition = EventFactory::createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "01063", $this->Id);
+            $event->theah->queueEvent($transition);
         }
 
-        if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
+        if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)    
         {
             $game = $event->theah->game;
 

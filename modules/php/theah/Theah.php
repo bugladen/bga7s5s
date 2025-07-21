@@ -323,13 +323,11 @@ class Theah
     {
         $techniques = [];
 
-        if ( ! $character instanceof IHasTechniques) {
-            return $techniques;
-        }
+        if ($character instanceof IHasTechniques) 
+            $techniques = array_merge($techniques, $character->getTechniquesArray($this->game, $mustBeAvailable = true));
 
-        $techniques = array_merge($techniques, $character->getTechniquesArray($this->game, $mustBeAvailable = true));
-
-        foreach($character->Attachments as $attachment) {
+        foreach($character->Attachments as $attachment) 
+        {
             $attachmentCard = $this->getCardById($attachment);
             if ($attachmentCard instanceof IHasTechniques) {
                 $techniques = array_merge($techniques, $attachmentCard->getTechniquesArray($this->game, $mustBeAvailable = true));
