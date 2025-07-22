@@ -185,17 +185,6 @@ trait UtilitiesTrait
         return $rounds;
     }
 
-    function getDuelOpponentId($actorId)
-    {
-        $duelId = $this->globals->get(Game::DUEL_ID);
-        $sql = "SELECT challenger_id, defender_id FROM duel WHERE duel_id = $duelId";
-        $duel = $this->getObjectListFromDB($sql)[0];
-        if ($duel['challenger_id'] == $actorId) {
-            return $duel['defender_id'];
-        }
-        return $duel['challenger_id'];
-    }
-
     public function getPlayerChosenScheme($playerId)
     {
         $sql = "SELECT selected_scheme_id FROM player WHERE player_id = $playerId";

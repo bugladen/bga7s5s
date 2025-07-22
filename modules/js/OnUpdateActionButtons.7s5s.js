@@ -463,6 +463,17 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'duelResolveManeuver_01079': () => {
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+
+            'duelResolveManeuver_01079_2': () => {
+                this.addActionButton(`actDestroyWeapon`, _('Destroy Weapon'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actTakeWound`, _('Take Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
+
             'duelApplyCombatCardStats_01085': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

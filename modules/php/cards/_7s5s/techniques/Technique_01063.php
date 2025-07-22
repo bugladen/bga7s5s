@@ -56,7 +56,7 @@ class Technique_01063 extends Technique
             if ($bastien->Id == $event->actorId && ! $this->BastienWoundedThisRound)
             {
                 $game = $event->theah->game;
-                $adversaryId = $game->getDuelOpponentId($bastien->Id);
+                $adversaryId = $event->theah->getDuelOpponentId($bastien->Id);
                 $woundedEvent = EventFactory::createCharacterWoundedEvent($adversaryId, $bastien->Id, 1, $game->translate("Bastien Technique: Bastien was not wounded this round."));
                 $event->theah->queueEvent($woundedEvent);
             }

@@ -366,7 +366,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         attachment.attachedToId = null;
         attachment.controllerId = 0;
         
-        character.attachedCards = character.attachedCards.filter(card => card.id !== attachment.id);
+        this.unattachCard(character, attachment);
+
         character.modifiedResolve = args.modifiedResolve;
         character.modifiedCombat = args.modifiedCombat;
         character.modifiedFinesse = args.modifiedFinesse;

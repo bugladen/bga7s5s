@@ -1054,6 +1054,19 @@ class Theah
         return $this->getCharacterById($actorId);
     }
 
+    function getDuelOpponentId($actorId) : int
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $sql = "SELECT challenger_id, defender_id FROM duel WHERE duel_id = $duelId";
+        $duel = $this->db->getObjectList($sql)[0];
+        if ($duel['challenger_id'] == $actorId) {
+            return $duel['defender_id'];
+        }
+        return $duel['challenger_id'];
+    }
+
+
+
     public function getCurrentDuelThreat($characterId) : int
     {
         $duelId = $this->game->globals->get(Game::DUEL_ID);

@@ -716,6 +716,34 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
+    States::DUEL_RESOLVE_MANEUVER_01079 => [
+        "name" => "duelResolveManeuver_01079",
+        "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+        "descriptionmyturn" => clienttranslate('Disarm: ${you} must choose a Adversary\'s weapon to destroy:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId", 
+        ],
+        "transitions" => [
+            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+        ]
+    ],
+    States::DUEL_RESOLVE_MANEUVER_01079_2 => [
+        "name" => "duelResolveManeuver_01079_2",
+        "description" => clienttranslate('${actplayer} is choosing to destroy their weapon or take a wound.'),
+        "descriptionmyturn" => clienttranslate('Disarm: ${you} must choose to destroy your weapon or take a wound:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId", 
+        ],
+        "transitions" => [
+            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+        ]
+    ],
+
+
     States::DUEL_APPLY_COMBAT_CARD_STATS_01085 => [
         "name" => "duelApplyCombatCardStats_01085",
         "description" => clienttranslate('Porté Travel\'s Forced Ability: ${actplayer} is choosing their Sorcerer.'),

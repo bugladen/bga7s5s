@@ -933,7 +933,7 @@ trait StatesTrait
 
         $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
         $actorId = $this->getUniqueValueFromDB($sql);
-        $adversaryId = $this->getDuelOpponentId($actorId);
+        $adversaryId = $this->theah->getDuelOpponentId($actorId);
 
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
         $card = $this->getCardObjectFromDb($cardId);
@@ -966,7 +966,7 @@ trait StatesTrait
         $cost = $card->WealthCost;
 
         $actor = $this->theah->getDuelRoundActor();
-        $adversaryId = $this->getDuelOpponentId($actor->Id);
+        $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
 
         $maneuverId = $this->globals->get(GAME::CHOSEN_MANEUVER);
 
@@ -1002,7 +1002,7 @@ trait StatesTrait
         $actorId = $values['actor_id'];
         $actor = $this->theah->getCharacterById($actorId);
         
-        $adversaryId = $this->getDuelOpponentId($actorId);
+        $adversaryId = $this->theah->getDuelOpponentId($actorId);
         $adversary = $this->theah->getCharacterById($adversaryId);
         if (!$adversary)
             $adversary = $this->getCardObjectFromDb($adversaryId);

@@ -527,6 +527,15 @@ return declare('seventhseacityoffivesails.utilities', null, {
         attachment.attachmentIndex = equipped.attachedCards.length;
     },
 
+    unattachCard: function( equipped, attachment) {
+        equipped.attachedCards = equipped.attachedCards.filter((card) => card.id !== attachment.id);
+        //Reorder the attachmentIndex on the attached cards
+        let index = 1;
+        equipped.attachedCards.forEach((card) => {
+            card.attachmentIndex = index++;
+        });
+    },
+
     moveAttachmentsToCharacters: function(list) {
         const attachments = list.filter((card) => card.type === 'Attachment');
         attachments.forEach((attachment, index) => {

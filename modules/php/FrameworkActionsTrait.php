@@ -1499,7 +1499,7 @@ trait FrameworkActionsTrait
         $this->globals->set(GAME::CHOSEN_TECHNIQUE, $technique->Id);
         $this->globals->set(GAME::TRANSITION_INTERNAL_ID, $technique->Id);
 
-        $adversaryId = $this->getDuelOpponentId($actor->Id);
+        $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
         $adversary = $this->theah->getCharacterById($adversaryId);
 
         $activateEvent = EventFactory::createTechniqueActivatedEvent($playerId, $actor->Id, $technique->Id);
@@ -1651,6 +1651,12 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} is playing <strong>${card_name}</strong> as their Combat Card.'), [
+            "i18n" => ["player_name", "effect_name", "maneuver_name"],
+            "player_name" => $this->getActivePlayerName(),
+            "card_name" => $card->Name
+        ]);
+
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $payCard = $this->getCardObjectFromDb($cardId);
@@ -1662,7 +1668,7 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($activateEvent);
         $this->theah->queueEvent($activateEvent);
 
-        $adversaryId = $this->getDuelOpponentId($actor->Id);
+        $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
         $adversary = $this->theah->getCharacterById($adversaryId);
 
         $resolveEvent = $this->theah->createEvent(Events::ResolveManeuver);
@@ -1728,7 +1734,7 @@ trait FrameworkActionsTrait
         $result = $this->getObjectListFromDB($sql)[0];
 
         $actorId = $result['actor_id'];
-        $adversaryId = $this->getDuelOpponentId($actorId);
+        $adversaryId = $this->theah->getDuelOpponentId($actorId);
 
         $event = $this->theah->createEvent(Events::DuelPlayerGambled);
         if ($event instanceof EventDuelPlayerGambled)
@@ -1774,7 +1780,7 @@ trait FrameworkActionsTrait
         {
             $event->playerId = $this->getActivePlayerId();
             $event->actorId = $actorId;
-            $event->adversaryId = $this->getDuelOpponentId($actorId);
+            $event->adversaryId = $this->theah->getDuelOpponentId($actorId);
         }
         $this->theah->queueEvent($event);
         
