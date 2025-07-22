@@ -1401,10 +1401,7 @@ trait FrameworkActionsTrait
 
         $event = EventFactory::createChallengeRejectedEvent($performer->Id, $target->Id);
         $this->theah->eventCheck($event);
-
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} REFUSES The Challenge.'), [
-            "player_name" => $this->getActivePlayerName(),
-        ]);
+        $this->theah->queueEvent($event);
 
         $this->globals->set(GAME::CHALLENGE_ACCEPTED, false);
 

@@ -24,6 +24,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardRemovedFromCityDiscardPile', 500],
             ['cardRemovedFromPlayerDiscardPile', 500],
             ['challengeIssued', 500],
+            ['challengeRejected', 500],
             ['challengerSwapped', 500],
             ['characterDestroyed', 1000],
             ['characterHealed', 1000],
@@ -1133,6 +1134,30 @@ return declare('seventhseacityoffivesails.notifications', null, {
             dojo.removeClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');
 
         $(`duel_round_${args.round}_wounds`).innerHTML = args.wounds;
+    },
+
+    notif_challengeRejected: function( notif )
+    {
+        debug( 'notif_challengeRejected' );
+        debug( notif );
+
+        const args = notif.args;
+
+        const challenger = this.cardProperties[args.challengerId];
+        if (challenger)
+        {
+            challenger.conditions = challenger.conditions.filter(condition => condition !== this.CHALLENGER);
+            const challengerChipId = `${challenger.divId}_challenger`;
+            dojo.destroy(challengerChipId);
+        }
+
+        const defender = this.cardProperties[args.defenderId];
+        if (defender)
+        {
+            defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
+            const defenderChipId = `${defender.divId}_defender`;
+            dojo.destroy(defenderChipId);
+        }
     },
 
     notif_duelEnd: function( notif )

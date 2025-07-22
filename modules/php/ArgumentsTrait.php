@@ -472,6 +472,7 @@ trait ArgumentsTrait
                     "performerId" => $performerId,
                     "chosenActionId" => $actionId,
                     "choseActionCardId" => $owner->Id,
+                    "requiresPerformerSelected" => $action->RequiresPerformerSelected,
                     "discount" => $this->globals->get(GAME::DISCOUNT)
                 ]
             ],

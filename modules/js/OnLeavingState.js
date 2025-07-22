@@ -173,14 +173,13 @@ onLeavingState: function( stateName )
                 this.factionHand.setSelectionMode(0);
                 $('faction_hand_info').innerHTML = '';
                 this.showHandAtBottom();
-    
-                for ( const cardId in this.cardProperties ) {
-                    card = this.cardProperties[cardId];
-                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                        const image = $(`${card.divId}_image`);
-                        this.clearCardAsSelectable(image);
-                    }
-                }
+
+                if (this.clientStateArgs.performerId)
+                {
+                    performer = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${performer.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                }   
             }
         },
 

@@ -319,10 +319,14 @@ onEnteringState: function( stateName, args )
 
         'highDramaInHandActionPay': () => {
             if (this.isCurrentPlayerActive()) {
-                performer = this.cardProperties[args.args._private.performerId];
-                const image = $(`${performer.divId}_image`);
-                this.clearCardAsSelectable(image);
-                dojo.addClass(image, 'chosen');
+                if (args.args._private.performerId)
+                {
+                    performer = this.cardProperties[args.args._private.performerId];
+                    const image = $(`${performer.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    dojo.addClass(image, 'chosen');
+                    this.clientStateArgs.performerId = performer.id;
+                }
 
                 const chosenActionCardId = args.args._private.choseActionCardId;
                 const card = this.cardProperties[chosenActionCardId];

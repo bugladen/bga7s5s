@@ -282,7 +282,6 @@ $machinestates += [
         ]
     ],
 
-
     States::HIGH_DRAMA_PLAYER_TURN_01085 => [
         "name" => "highDramaPhase01085",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

@@ -966,6 +966,7 @@ $machinestates = [
                 "01073" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01075" => States::HIGH_DRAMA_CLAIM_ACTION,
                 "01076" => States::HIGH_DRAMA_PLAYER_TURN_01076,
+                "01078" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01085" => States::HIGH_DRAMA_PLAYER_TURN_01085,
                 "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
                 "01149" => States::HIGH_DRAMA_PLAYER_TURN_01149,
@@ -1291,7 +1292,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_REACTIONS,
-                    "endOfEvents" => States::HIGH_DRAMA_PLAYER_TURN,
+                    "endOfEvents" => States::NEXT_PLAYER,
                     "endOfGame" => States::END_GAME
                     ]
             ],
@@ -1700,11 +1701,12 @@ $machinestates = [
                 "args" => "argsHighDramaInHandActionPay",
                 "possibleactions" => [
                     "actPayForInHandAction", 
-                    "actBack",
+                    "actBackWithTransition",
                 ],
                 "transitions" => [
                     "actionPaidFor" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-                    "back" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER
+                    "backPerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
+                    "backChooseAction" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_ACTION
                 ]
             ],
     

@@ -746,13 +746,6 @@ trait StatesTrait
                 }
             }
 
-            //Find out who the next player is in order
-            $table = $this->getNextPlayerTable();
-            $nextPlayerId = $table[$performer->ControllerId];
-
-            $nextPlayerEvent = EventFactory::createChangeActivePlayerEvent($nextPlayerId);
-            $this->theah->queueEvent($nextPlayerEvent);
-
             $this->gamestate->nextState("rejected");
         }
     }
@@ -1177,9 +1170,6 @@ trait StatesTrait
             $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
             $this->theah->queueEvent($event);
         }
-
-        $changeEvent = EventFactory::createChangeActivePlayerEvent($result['challenging_player_id']);
-        $this->theah->queueEvent($changeEvent);
 
         $this->gamestate->nextState();
     }

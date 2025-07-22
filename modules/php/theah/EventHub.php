@@ -23,6 +23,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
@@ -1237,14 +1238,10 @@ trait EventHub
                     //Cards are going to be read from the database, as they may be in the locker and not available to Theah
                     
                     $challenger = $theah->getCardById($event->challengerId);
-                    if ( ! $challenger)
-                        $challenger = $theah->game->getCardObjectFromDb($event->challengerId);
                     $challenger->removeCondition(GAME::DUEL_CHALLENGER);
                     $theah->game->updateCardObjectInDb($challenger);
                     
                     $defender = $theah->getCardById($event->defenderId);
-                    if ( ! $defender)
-                        $defender = $this->game->getCardObjectFromDb($event->defenderId);                    
                     $defender->removeCondition(GAME::DUEL_DEFENDER);
                     $theah->game->updateCardObjectInDb($defender);
 
@@ -1254,6 +1251,26 @@ trait EventHub
                         "challengingPlayerId" => $event->challengingPlayerId,
                         "defendingPlayerId" => $event->defendingPlayerId
                     ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventChallengeRejected:
+                $handler = function (Theah $theah, EventChallengeRejected $event)
+                {
+                    $challenger = $theah->getCardById($event->challengerId);
+                    $challenger->removeCondition(GAME::DUEL_CHALLENGER);
+                    $theah->game->updateCardObjectInDb($challenger);
+                    
+                    $defender = $theah->getCardById($event->targetId);
+                    $defender->removeCondition(GAME::DUEL_DEFENDER);
+                    $theah->game->updateCardObjectInDb($defender);
+
+                    $theah->game->notifyAllPlayers("challengeRejected", clienttranslate('${player_name} REFUSES The Challenge.'), [
+                        "player_name" => $theah->game->getPlayerNameById($defender->ControllerId),
+                        "challengerId" => $event->challengerId,
+                        "defenderId" => $event->targetId,
+                    ]);                       
                 };
                 $handler($this, $event);
                 break;

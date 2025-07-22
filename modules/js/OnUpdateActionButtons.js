@@ -154,7 +154,10 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaInHandActionPay': () => {
-            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            if (args._private.requiresPerformerSelected)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backPerformer'}));
+            else
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backChooseAction'}));
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onActionCardFromHandPaymentConfirmed());
         },
 
