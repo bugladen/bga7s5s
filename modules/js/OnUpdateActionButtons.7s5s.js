@@ -254,7 +254,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
-            'highDramaPhase01072': () => {
+            'highDramaPhase01072_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                     this.addActionButton(`actNone`, _('None'), () => this.bgaPerformAction('actFromCardWithId', {id: 0})) 
@@ -264,7 +264,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
     
-            'highDramaPhase01072_2': () => {
+            'highDramaPhase01072_3': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                     this.addActionButton(`actChooseCardSelected`, _('Confirm Muster Card'), () => this.onMusterCardSelected());

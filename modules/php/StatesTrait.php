@@ -452,7 +452,7 @@ trait StatesTrait
 
     public function stHighDramaPhase() {
         $this->gamestate->changeActivePlayer($this->globals->get(Game::FIRST_PLAYER));
-        $this->globals->set(Game::CLAIM_TYPE, Game::NORMAL_CLAIM_TYPE);
+        $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
@@ -470,21 +470,33 @@ trait StatesTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->getCardObjectFromDb($performerId);
         
-        list($canClaim, $totals) = $this->canPlayerClaim($claimingPlayerId, $performer);
-        if ( ! $canClaim) 
+        list($success, $totals) = $this->pressureLocation($claimingPlayerId, $performer, Game::STAT_INFLUENCE);
+        if ( ! $success) 
         {
-            throw new \BgaUserException(sprintf(self::_('You cannot claim the location. You do not have the most influence.  Totals: %s'), $totals));
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} attempted to claim ${location_name}. They did not have the most influence.  Totals: ${totals}'), [
+                'player_name' => $this->getPlayerNameById($claimingPlayerId),
+                'location_name' => $performer->Location,
+                'totals' => $totals
+            ]);
+
+            $this->gamestate->nextState();
+            return;
         }
 
-        $claimType = $this->globals->get(Game::CLAIM_TYPE);
-        if ($claimType == Game::NORMAL_CLAIM_TYPE)
+        $claimType = $this->globals->get(Game::PRESSURE_TYPE);
+        if ($claimType == Game::NORMAL_PRESSURE_TYPE)
         {
             $engageEvent = EventFactory::createCardEngagedEvent($claimingPlayerId, $performer->Id);
             $this->theah->eventCheck($engageEvent);
+            $this->theah->queueEvent($engageEvent);
         }
 
-        $pressureTypes = $this->theah->getPressureTypesForClaim($performer);
+        $pressureTypes = $this->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
         $this->setControllerForLocation($performer->Location, $claimingPlayerId);
+
+        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureTypes), $success, $totals);
+        $this->theah->eventCheck($pressuredEvent);
+        $this->theah->queueEvent($pressuredEvent);
 
         $claimEvent = $this->theah->createEvent(Events::LocationClaimed);
         if ($claimEvent instanceof EventLocationClaimed)
@@ -492,20 +504,13 @@ trait StatesTrait
             $claimEvent->performer = $performer;
             $claimEvent->location = $performer->Location;
             $claimEvent->playerId = $claimingPlayerId;
-            $claimEvent->pressureTypes = implode(", ", $pressureTypes);
-            $claimEvent->totalsExplanation = $totals;
         }        
         $this->theah->eventCheck($claimEvent);
 
-        if ($claimType == Game::NORMAL_CLAIM_TYPE)
-        {
-            $this->theah->queueEvent($engageEvent);
-        }
-        
         $this->theah->queueEvent($claimEvent);    
 
         $this->globals->set(GAME::PASS_COUNT, 0);
-        $this->gamestate->nextState("success");
+        $this->gamestate->nextState();
     }
 
     public function stHighDramaRecruitActionParleyable()
@@ -1196,7 +1201,7 @@ trait StatesTrait
         $this->globals->delete(Game::TRANSITION_INTERNAL_ID);
         $this->globals->delete(Game::REACTION_ID);
         $this->globals->delete(Game::REVEALED_CARDS);
-        $this->globals->set(Game::CLAIM_TYPE, Game::NORMAL_CLAIM_TYPE);
+        $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);

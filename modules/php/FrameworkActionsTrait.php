@@ -1055,7 +1055,7 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Claim Action is not allowed right now."));
         }
 
-        $this->globals->set(Game::CLAIM_TYPE, Game::NORMAL_CLAIM_TYPE);
+        $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
         $this->gamestate->nextState("claimActionStart");
     }
 
@@ -1079,8 +1079,8 @@ trait FrameworkActionsTrait
         $this->globals->set(Game::CLAIMING_PLAYER, $activePlayerId);
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
-        $pressureTypes = $this->theah->getPressureTypesForClaim($performer);
-        $claimEvent = EventFactory::createClaimOccuringEvent($activePlayerId, $performer->Id, $performer->Location, $pressureTypes);
+        $pressureTypes = $this->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
+        $claimEvent = EventFactory::createPressureOccuringEvent($activePlayerId, $performer->Id, $performer->Location, $pressureTypes);
         $this->theah->eventCheck($claimEvent);
         $this->theah->queueEvent($claimEvent);
 

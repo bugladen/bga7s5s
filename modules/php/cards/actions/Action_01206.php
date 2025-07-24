@@ -47,7 +47,6 @@ class Action_01206 extends AttachmentAction
             $game = $event->theah->game;
             $game->globals->set(Game::CLAIMING_PLAYER, $performer->ControllerId);
             $game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
-            $game->globals->set(Game::CLAIM_TYPE, Game::CAPTAINS_COAT_CLAIM_TYPE);
 
             $this->setUsed($event->theah, true);
 
@@ -58,9 +57,11 @@ class Action_01206 extends AttachmentAction
             $engageEvent = EventFactory::createCardEngagedEvent($coat->ControllerId, $coat->Id);
             $event->theah->queueEvent($engageEvent);
 
-            $pressureTypes = $event->theah->getPressureTypesForClaim($performer);
-            $claimEvent = EventFactory::createClaimOccuringEvent($performer->ControllerId, $performer->Id, $performer->Location, $pressureTypes);
-            $event->theah->queueEvent($claimEvent);
+            $event->theah->game->setGlobalFlag(Game::PRESSURE_TYPE, Game::CAPTAINS_COAT_PRESSURE_TYPE);
+
+            $pressureTypes = $event->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
+            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($performer->ControllerId, $performer->Id, $performer->Location, $pressureTypes);
+            $event->theah->queueEvent($pressureOccuringEvent);
 
             $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $performer->Id, "01206", $this->Id);
             $event->theah->queueEvent($transitionEvent);

@@ -54,7 +54,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
-            'highDramaPhase01072_2': () => {
+            'highDramaPhase01072_3': () => {
                 var items = this.approachDeck.getSelectedItems();
                 items.forEach((item) => {
                     if (item.id != item_id) {

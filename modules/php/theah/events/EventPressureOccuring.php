@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventClaimOccuring extends Event
+class EventPressureOccuring extends Event
 {
     public int $performerId;
     public string $location;
@@ -12,6 +12,5 @@ class EventClaimOccuring extends Event
     public function __construct()
     {
         parent::__construct();
-        
     }
 }

@@ -50,7 +50,7 @@ class Action_01075 extends AttachmentAction
 
             $game->globals->set(Game::CLAIMING_PLAYER, $owner->ControllerId);
             $game->globals->set(Game::CHOSEN_PERFORMER, $owner->Id);
-            $game->globals->set(Game::CLAIM_TYPE, Game::TABARD_CLAIM_TYPE);
+            $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE);
 
             $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [
                 'i18n' => ['action'],
@@ -58,6 +58,12 @@ class Action_01075 extends AttachmentAction
                 'action' => $this->Name,
                 'owner_name' => $owner->Name,
             ]);
+
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id);
+            $event->theah->queueEvent($engageEvent);
+
+            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, $owner->Id, $owner->Location, [Game::STAT_INFLUENCE]);
+            $event->theah->queueEvent($pressureOccuringEvent);
 
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01075", $this->Id);
             $event->theah->queueEvent($transitionEvent);

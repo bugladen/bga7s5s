@@ -67,20 +67,21 @@ class Game extends \Table
     
     //Claim global variables
     final const CLAIMING_PLAYER = "claimingPlayer";
-    final const CLAIM_TYPE = "claimType";
-    final const CLAUD_ID = "claudeId"; //When Claude is in play, this is the ID of the card that caused the claim type
-    final const NORMAL_CLAIM_TYPE = 0;
-    final const CLAUDE_CLAIM_TYPE = 1;
-    final const CAPTAINS_COAT_CLAIM_TYPE = 2;
-    final const TABARD_CLAIM_TYPE = 3;
 
     //Recruit global variables
     final const RECRUIT_TYPE = "recruitType";
     final const NORMAL_RECRUIT_TYPE = 0;
     final const KASPAR_RECRUIT_TYPE = 1;
 
-    final const NORMAL_PRESSURE_TYPE = 1;
-    final const REPUTATION_MERITEE_PRESSURE_TYPE = 2;
+    //Pressure global variables
+    final const CLAUD_ID = "claudeId"; //When Claude is in play, this is the ID of the card that caused the claim type
+    final const PRESSURE_TYPE = "pressureType";
+    final const NORMAL_PRESSURE_TYPE = 0;
+    //These must be binary flags
+    final const CLAUDE_PRESSURE_TYPE = 1;
+    final const CAPTAINS_COAT_PRESSURE_TYPE = 2;
+    final const REPUTATION_MERITEE_PRESSURE_TYPE = 4;
+    final const TABARD_PRESSURE_TYPE = 8;
 
     //Player action global variables
     //Delete these in stNextPlayer

@@ -9,8 +9,6 @@ class EventLocationClaimed extends Event
     public Character $performer;
     public string $location;
     public int $playerId;
-    public string $pressureTypes;
-    public string $totalsExplanation;
 
     public function __construct()
     {

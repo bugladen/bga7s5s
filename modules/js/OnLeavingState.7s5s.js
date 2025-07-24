@@ -280,7 +280,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 this.chooseList.removeAll();
             },
                 
-            'highDramaPhase01072' : () => {
+            'highDramaPhase01072_2' : () => {
                 if (this.isCurrentPlayerActive()) 
                 {
                     this.clientStateArgs.targetCardIds.forEach((cardId) => {
@@ -295,12 +295,15 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
     
-            'highDramaPhase01072_2' : () => {
+            'highDramaPhase01072_3' : () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    card = this.cardProperties[this.clientStateArgs.chosenCardId];
-                    const image = $(`${card.divId}_image`);
-                    dojo.removeClass(image, 'chosen');
+                    if (this.clientStateArgs.chosenCardId)
+                    {
+                        card = this.cardProperties[this.clientStateArgs.chosenCardId];
+                        const image = $(`${card.divId}_image`);
+                        dojo.removeClass(image, 'chosen');
+                    }
     
                     card = this.cardProperties[this.clientStateArgs.schemeId];
                     const schemeImage = $(`${card.divId}_image`);

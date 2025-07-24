@@ -598,7 +598,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
     
-            'highDramaPhase01072' : () => {
+            'highDramaPhase01072_2' : () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
     
@@ -618,12 +618,15 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
     
-            'highDramaPhase01072_2' : () => {
+            'highDramaPhase01072_3' : () => {
                 if (this.isCurrentPlayerActive()) {
                     card = this.cardProperties[args.args.args.chosenCardId];
-                    const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
-                    this.clientStateArgs.chosenCardId = args.args.args.chosenCardId;
+                    if (card)
+                    {
+                        const image = $(`${card.divId}_image`);
+                        dojo.addClass(image, 'chosen');
+                        this.clientStateArgs.chosenCardId = args.args.args.chosenCardId;
+                    }
     
                     card = this.cardProperties[args.args.args.schemeId];
                     const schemeImage = $(`${card.divId}_image`);

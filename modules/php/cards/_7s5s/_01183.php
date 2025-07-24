@@ -28,9 +28,9 @@ class _01183 extends CityEventCard
         ];
     }
 
-    public function getPressureTypesForClaim(Theah $theah, Character $performer, Array &$pressureTypes): void
+    public function getPressureTypes(Theah $theah, Character $performer, Array &$pressureTypes): void
     {
-        parent::getPressureTypesForClaim($theah, $performer, $pressureTypes);
+        parent::getPressureTypes($theah, $performer, $pressureTypes);
 
         if ($performer->Location == $this->Location) {
             $pressureTypes[] = Game::STAT_COMBAT;

@@ -546,17 +546,12 @@ trait EventHub
                 {
                     $this->cityLocations[$event->location]->Controller = $event->playerId;
 
-                    $this->game->notifyAllPlayers("locationClaimed", clienttranslate('${player_name} chose <strong>${card_name}</strong> to Claim <strong>${location_name}</strong>.
-                    <br>Pressure Types: ${pressureTypes}
-                    <br>Influence Totals: ${totals}'), [
+                    $this->game->notifyAllPlayers("locationClaimed", clienttranslate('${player_name} Claimed <strong>${location_name}</strong>.'), [
                         'i18n' => ['card_name', 'location_name'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "card_name" => $event->performer->Name,
-                        "location_name" => $event->performer->Location,
-                        "totals" => $event->totalsExplanation,
-                        "pressureTypes" => $event->pressureTypes,
+                        "location_name" => $event->location,
                         "playerId" => $event->playerId,
-                        "location" => $event->performer->Location,
+                        "location" => $event->location,
                     ]);
                 };
                 $handler($this, $event);

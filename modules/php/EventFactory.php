@@ -34,7 +34,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModi
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventClaimOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
@@ -44,6 +43,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
@@ -448,19 +448,6 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createClaimOccuringEvent(int $playerId, int $performerId, string $location, Array $pressureTypes): EventClaimOccuring
-    {
-        $event = self::createEvent(Events::ClaimOccuring);
-        if ($event instanceof EventClaimOccuring)
-        {
-            $event->playerId = $playerId;
-            $event->performerId = $performerId;
-            $event->location = $location;
-            $event->pressureTypes = $pressureTypes;
-        }
-        return $event;
-    }
-
     public static function createDuelEndOfRoundEvent(int $playerId, int $actorId): EventDuelEndOfRound
     {
         $event = self::createEvent(Events::DuelEndOfRound);
@@ -562,6 +549,19 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
+    public static function createPressureOccuringEvent(int $playerId, int $performerId, string $location, Array $pressureTypes): EventPressureOccuring
+    {
+        $event = self::createEvent(Events::PressureOccuring);
+        if ($event instanceof EventPressureOccuring)
+        {
+            $event->playerId = $playerId;
+            $event->performerId = $performerId;
+            $event->location = $location;
+            $event->pressureTypes = $pressureTypes;
+        }
+        return $event;
+    }
+
     public static function createReactionTransitionEvent(int $playerId, int $sourceId, string $internalId): EventTransition
     {
         $transition = self::createEvent(Events::Transition);
@@ -571,6 +571,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $transition->sourceId = $sourceId;
             $transition->internalId = $internalId;
             $transition->transition = 'reaction';
+            $transition->priority = Event::REACTION_PRIORITY;
         }
 
         return $transition;

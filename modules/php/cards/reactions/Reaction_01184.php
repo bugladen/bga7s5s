@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventClaimOccuring;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01184 extends CardReaction
@@ -14,12 +14,12 @@ class Reaction_01184 extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate('Count only Performers and En Garge Characters');
+        $this->Name = clienttranslate('Count only Performers and En Garde Characters for Pressures');
     }
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to count only the Performer and En Garde Characters for this Claim: ');
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to count only the Performer and En Garde Characters for this Pressure: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -35,7 +35,7 @@ class Reaction_01184 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventClaimOccuring && $this->isAvailable())
+        if ($event instanceof EventPressureOccuring && $this->isAvailable())
         {
             $claude = $this->getOwningCharacter($event->theah);
             if ($claude->isControlled())
@@ -56,10 +56,10 @@ class Reaction_01184 extends CardReaction
         if ($reactionId == 'specialCount')
         {
             $claude = $this->getOwningCard($game->theah);
-            $game->globals->set(Game::CLAIM_TYPE, Game::CLAUDE_CLAIM_TYPE);
+            $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::CLAUDE_PRESSURE_TYPE);
             $game->globals->set(Game::CLAUD_ID, $claude->Id);
 
-            $game->notifyAllPlayers('message', clienttranslate('<strong>${card_name}:</strong> ${player_name} used Reaction to count only the Performer and En Garde Characters for Claims at his location for the rest of the turn.'), [
+            $game->notifyAllPlayers('message', clienttranslate('<strong>${card_name}:</strong> ${player_name} used Reaction to count only the Performer and En Garde Characters for this Pressure.'), [
                 'i18n' => ['card_name'],
                 'player_name' => $game->getActivePlayerName(),
                 'card_name' => $claude->Name,

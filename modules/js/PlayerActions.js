@@ -113,7 +113,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaPhase01029'                                   : 'actFromCardWithId',
             'highDramaPhase01044_2'                                 : 'actFromCardWithId',
             'highDramaPhase01068'                                   : 'actFromCardWithId',
-            'highDramaPhase01072'                                   : 'actFromCardWithId',
+            'highDramaPhase01072_2'                                 : 'actFromCardWithId',
             'highDramaPhase01076_2'                                 : 'actFromCardWithId',
             'highDramaPhase01085'                                   : 'actFromCardWithId',
             'highDramaPhase01147'                                   : 'actFromCardWithId',
@@ -165,7 +165,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         const card = Object.values(items)[0];
 
         const actions = {
-            'highDramaPhase01072_2'   : 'actFromCardWithId',
+            'highDramaPhase01072_3'   : 'actFromCardWithId',
         };
 
         const action = actions[this.gamedatas.gamestate.name];

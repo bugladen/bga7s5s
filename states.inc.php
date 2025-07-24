@@ -1425,9 +1425,8 @@ $machinestates = [
             "type" => "game",
             "action" => "stHighDramaClaim",
             "transitions" => [
-                "success" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-                "failure" => States::HIGH_DRAMA_PLAYER_TURN,
-                ]
+                "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+            ]
         ],
 
         States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER => [

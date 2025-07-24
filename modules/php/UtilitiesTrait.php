@@ -350,7 +350,7 @@ trait UtilitiesTrait
         return in_array($state, $array);
     }
 
-    function canPlayerPressureLocation(int $attemptingPlayerId, string $location, string $statType, int $pressureType) : array
+    function pressureLocation(int $attemptingPlayerId, Character $performer, string $pressureType): Array
     {
         //Get an array of players to keep track of their influence at the location 
         $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player");
@@ -359,85 +359,26 @@ trait UtilitiesTrait
             $playerInfluences[$playerId] = $player;
         }
 
-        $charactersAtLocation = $this->theah->getCharactersAtLocation($location);
-        foreach ($charactersAtLocation as $character) 
-        {
-            if (!$character->ControllerId) continue;
-
-            if ($pressureType == Game::REPUTATION_MERITEE_PRESSURE_TYPE && $character->hasTrait("Mercenary"))
-            {
-                continue;
-            }
-
-            $player = $playerInfluences[$character->ControllerId];
-
-            switch ($statType) {
-                case Game::STAT_COMBAT:
-                    $player['influence'] += $character->getCombatPressureValue();
-                    break;
-                case Game::STAT_FINESSE:
-                    $player['influence'] += $character->getFinessePressureValue();
-                    break;
-                case Game::STAT_INFLUENCE:
-                    $player['influence'] += $character->getInfluencePressureValue();
-                    break;
-            }
-            $playerInfluences[$character->ControllerId] = $player;
-        }
-
-        //Get the player with the most influence
-        $maxInfluence = 0;
-        $maxPlayerId = 0;
-        $totals = "";
-        foreach ($playerInfluences as $playerId => $player) 
-        {
-            $totals .= "{$this->getPlayerNameById($playerId)}:({$player['influence']}) ";
-            if ($player['influence'] > $maxInfluence) {
-                $maxInfluence = $player['influence'];
-                $maxPlayerId = $playerId;
-            }
-        }
-
-        //Check for ties
-        $ties = array_filter($playerInfluences, fn($player) => $player['influence'] == $maxInfluence);
-
-        if ($pressureType == Game::NORMAL_PRESSURE_TYPE)
-        {
-            if (count($ties) > 1 || $attemptingPlayerId != $maxPlayerId) 
-                return [false, $totals];
-
-            return [true, $totals];
-        }
-        else if ($pressureType == Game::REPUTATION_MERITEE_PRESSURE_TYPE)
-        {
-            if ($attemptingPlayerId == $maxPlayerId || array_key_exists($attemptingPlayerId, $ties))
-                return [true, $totals];
-
-            return [false, $totals];
-        }
-        else
-        {
-            throw new \Exception("Invalid pressure type: $pressureType");
-        }
-    }
-
-    function canPlayerClaim(int $attemptingPlayerId, Character $performer): Array
-    {
-        //Get an array of players to keep track of their influence at the location 
-        $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player");
-        foreach ($playerInfluences as $playerId => $player) {
-            $player["influence"] = 0;
-            $playerInfluences[$playerId] = $player;
-        }
-
-        $pressureTypes = $this->theah->getPressureTypesForClaim($performer);
+        $pressureTypes = $this->theah->getPressureTypes($performer, $pressureType);
 
         //Get the total influence of the characters at the location
         $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
 
-        $claimType = $this->globals->get(Game::CLAIM_TYPE);
-        if ($claimType == Game::CLAUDE_CLAIM_TYPE)
-            $this->notifyAllPlayers('message', clienttranslate('Claude de la Roche\'s Reaction is in effect. '), []);
+        //If Claude reaction has been activated, and claim is at Claude's location,
+        //then we only want to count the performer and en garde characters
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CLAUDE_PRESSURE_TYPE))
+        {
+            $claude = $this->theah->getCardById($this->globals->get(Game::CLAUD_ID));
+            if ($claude->Location == $performer->Location)
+            {
+                $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => $character->Id == $performer->Id || ! $character->Engaged);
+            }
+        }
+
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE))
+        {
+            $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => ! $character->hasTrait("Mercenary"));
+        }
 
         foreach ($pressureTypes as $pressureType) 
         {
@@ -445,18 +386,6 @@ trait UtilitiesTrait
             {
                 if (!$character->ControllerId) continue;
 
-                //If Claude reaction has been activated, and claim is at Claude's location,
-                //then we only want to count the performer and en garde characters
-                if ($claimType == Game::CLAUDE_CLAIM_TYPE)
-                {
-                    $claude = $this->theah->getCardById($this->globals->get(Game::CLAUD_ID));
-                    //If this claim is at Claude's location, and the character is not the performer or engaged then ignore it
-                    if ($claude->Location == $performer->Location && 
-                        $character->Id != $performer->Id && 
-                        $character->Engaged)
-                        continue;                    
-                }
-    
                 $player = $playerInfluences[$character->ControllerId];
 
                 switch ($pressureType) 
@@ -491,20 +420,25 @@ trait UtilitiesTrait
         //Check for ties
         $ties = array_filter($playerInfluences, fn($player) => $player['influence'] == $maxInfluence);
 
-        if (count($ties) > 1)
+        $pressureType = $this->globals->get(Game::PRESSURE_TYPE);
+        if ($pressureType == Game::NORMAL_PRESSURE_TYPE)
         {
-            if ($claimType == Game::TABARD_CLAIM_TYPE)
-            {
-                return [array_key_exists($attemptingPlayerId, $ties), $totals];
-            }
-            else
-            {
+            if (count($ties) > 1 || $attemptingPlayerId != $maxPlayerId) 
                 return [false, $totals];
-            }
+
+            return [true, $totals];
+        }
+        else if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE) || 
+                 $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE))
+        {
+            if ($attemptingPlayerId == $maxPlayerId || array_key_exists($attemptingPlayerId, $ties))
+                return [true, $totals];
+
+            return [false, $totals];
         }
         else
         {
-            return $attemptingPlayerId == $maxPlayerId ? [true, $totals] : [false, $totals];
+            throw new \Exception("Invalid pressure type: $pressureType");
         }
     }
 
@@ -626,5 +560,19 @@ trait UtilitiesTrait
         }
 
         return $cardFound;
+    }
+
+    public function setGlobalFlag(string $variable, int $flag)
+    {
+        $global = $this->globals->get($variable);
+        $this->globals->set($variable, $global | $flag);
+    }
+
+    public function isGlobalFlagSet(string $variable, int $flag)
+    {
+        $global = $this->globals->get($variable);
+        
+        //Return true if the flag is set
+        return ($global & $flag) == $flag;
     }
 }
