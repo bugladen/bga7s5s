@@ -567,7 +567,7 @@ trait EventHub
                         'i18n' => ['performer_name', 'location', 'pressureType'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
                         "performer_name" => $performer->Name,
-                        "result" => $event->success ? clienttranslate("successfully") : clienttranslate("unsuccessfully"),
+                        "result" => $event->success ? clienttranslate("SUCCESSFULLY") : clienttranslate("UNSUCCESSFULLY"),
                         "totals" => $event->totalsExplanation,
                         "pressureType" => $event->pressureType,
                         "playerId" => $event->playerId,

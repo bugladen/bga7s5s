@@ -58,6 +58,7 @@ class Action_01072 extends CardAction
             $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $leader->Id);
             $event->theah->queueEvent($engageEvent);
 
+            $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $pressureTypes = $event->theah->getPressureTypes($leader, Game::STAT_INFLUENCE);
             $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($leader->ControllerId, $leader->Id, $leader->Location, $pressureTypes);
             $event->theah->queueEvent($pressureOccuringEvent);
@@ -85,25 +86,10 @@ class Action_01072 extends CardAction
 
             if ($success)
             {
-
-                $game->notifyAllPlayers("message", clienttranslate('<strong>${card_name}</strong>: ${player_name} successfully Pressured ${location_name}. Totals: ${totals}'), [
-                    'card_name' => $owner->Name,
-                    'player_name' => $game->getPlayerNameById($leader->ControllerId),
-                    'location_name' => $leader->Location,
-                    'totals' => $totals
-                ]);
-
                 $game->gamestate->nextState("success");
             }
             else
             {
-                $game->notifyAllPlayers("message", clienttranslate('<strong>${card_name}</strong>: ${player_name} attempted to pressure ${location_name}. They did not have the most influence.  Totals: ${totals}'), [
-                    'card_name' => $owner->Name,
-                    'player_name' => $game->getPlayerNameById($leader->ControllerId),
-                    'location_name' => $leader->Location,
-                    'totals' => $totals
-                ]);
-
                 $game->gamestate->nextState("failure");
             }
         }

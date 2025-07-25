@@ -17,7 +17,7 @@ abstract class RiskReaction extends CardReaction
         $announcement = parent::getReactionAnnouncement($game, $state, $internalId, $reactionId);
 
         $risk = $this->getOwningCard($game->theah);
-        $announcement .= $game->translate("Played") . "<strong>" . $game->translate($risk->Name) . "</strong>.";
+        $announcement .= sprintf($game->translate("Played <strong>%s</strong>."), $game->translate($risk->Name));
 
         return $announcement;
     }
@@ -25,6 +25,6 @@ abstract class RiskReaction extends CardReaction
     public function getReactionDescription(Theah $theah): string
     {
         $owner = $this->getOwningCard($theah);
-        return $theah->game->translate("Faction Hand") . " > " . $theah->game->translate($owner->Name) . " > " . $theah->game->translate("Reaction: ");
+        return sprintf($theah->game->translate("Faction Hand > %s > Reaction: "), $theah->game->translate($owner->Name));
     }
 }

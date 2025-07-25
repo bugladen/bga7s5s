@@ -238,6 +238,7 @@ class States
     const DUEL_NEXT_PLAYER = 53;
     const DUEL_END = 54;
         const DUEL_END_EVENTS = 540;
+        const DUEL_END_01080 = 5401080;
         const DUEL_END_REACTIONS = 541;
         const DUEL_END_PAY_FOR_REACTION = 542;
     

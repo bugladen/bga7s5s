@@ -10,14 +10,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTakeReknownForControlledLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
@@ -498,16 +496,9 @@ trait StatesTrait
         $this->theah->eventCheck($pressuredEvent);
         $this->theah->queueEvent($pressuredEvent);
 
-        $claimEvent = $this->theah->createEvent(Events::LocationClaimed);
-        if ($claimEvent instanceof EventLocationClaimed)
-        {
-            $claimEvent->performer = $performer;
-            $claimEvent->location = $performer->Location;
-            $claimEvent->playerId = $claimingPlayerId;
-        }        
+        $claimEvent = EventFactory::createLocationClaimedEvent($claimingPlayerId, $performer->Id, $performer->Location);
         $this->theah->eventCheck($claimEvent);
-
-        $this->theah->queueEvent($claimEvent);    
+        $this->theah->queueEvent($claimEvent);
 
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState();
@@ -1732,9 +1723,9 @@ trait StatesTrait
         $this->theah->buildCity();
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
-        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
+        $transitionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
         $card = $this->theah->getCardById($sourceId);
-        $card->stateFromCard($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId);
+        $card->stateFromCard($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $transitionId);
     }
 
     //Handles whether special conditions (like Broken Time) exist for another combat card

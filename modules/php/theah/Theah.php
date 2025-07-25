@@ -84,7 +84,7 @@ class Theah
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_BAZAAR);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_PURGATORY);
-        $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_HAND, $this->game->getActivePlayerId());
+        $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_HAND);
 
         $playerIds = $this->db->getPlayerIds();
         foreach ($playerIds as $playerId) 
@@ -196,8 +196,7 @@ class Theah
             if ($event->runEventHubAfterCards)
                 $this->handleEvent($event);
 
-            $inPlayCards = array_filter($this->cards, fn($card) => $card->Location != Game::LOCATION_HAND);
-            foreach ($inPlayCards as $card) {
+            foreach ($this->cards as $card) {
             // If any cards were updated, update them in the database
                 if ($card->IsUpdated) {
                     $card->IsUpdated = false;

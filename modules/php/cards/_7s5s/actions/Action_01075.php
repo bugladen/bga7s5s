@@ -50,6 +50,7 @@ class Action_01075 extends AttachmentAction
 
             $game->globals->set(Game::CLAIMING_PLAYER, $owner->ControllerId);
             $game->globals->set(Game::CHOSEN_PERFORMER, $owner->Id);
+            $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE);
 
             $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [

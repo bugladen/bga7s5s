@@ -57,6 +57,7 @@ class Action_01206 extends AttachmentAction
             $engageEvent = EventFactory::createCardEngagedEvent($coat->ControllerId, $coat->Id);
             $event->theah->queueEvent($engageEvent);
 
+            $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $event->theah->game->setGlobalFlag(Game::PRESSURE_TYPE, Game::CAPTAINS_COAT_PRESSURE_TYPE);
 
             $pressureTypes = $event->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);

@@ -767,6 +767,15 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
+    States::DUEL_END_01080 => [
+        "name" => "duelEnd_01080",
+        "type" => "game",
+        "action" => "stFromCard",
+        "transitions" => [
+            "" => States::DUEL_END_EVENTS
+        ]
+    ],
+
     States::DUSK_PHASE_BEGIN_01177 => [
         "name" => "duskPhaseBegin01177",
         "description" => clienttranslate('${actplayer} is choosing options for Penya.'),

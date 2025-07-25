@@ -36,6 +36,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
@@ -456,6 +457,19 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->playerId = $playerId;
             $event->actorId = $actorId;
         }
+        return $event;
+    }
+
+    public static function createLocationClaimedEvent(int $playerId, int $performerId, string $location): EventLocationClaimed
+    {
+        $event = self::createEvent(Events::LocationClaimed);
+        if ($event instanceof EventLocationClaimed)
+        {
+            $event->playerId = $playerId;
+            $event->performerId = $performerId;
+            $event->location = $location;
+        }
+
         return $event;
     }
 

@@ -2166,7 +2166,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
-                    "reaction" => States::DUEL_END_REACTIONS,
+                        "reaction" => States::DUEL_END_REACTIONS,
                         "endOfEvents" => States::NEXT_PLAYER,
                         "endOfGame" => States::END_GAME
                     ]
@@ -2181,6 +2181,7 @@ $machinestates = [
                         "actReactionForState", 
                     ],
                     "transitions" => [
+                        "01080" => States::DUEL_END_01080,
                         "done" => States::DUEL_END_EVENTS, 
                         "pay" => States::DUEL_END_PAY_FOR_REACTION,
                     ]

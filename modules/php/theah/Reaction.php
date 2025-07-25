@@ -40,4 +40,18 @@ abstract class Reaction
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void {}
+
+    public function actFromReactionPass(Game $game, int $state): void { }
+
+    public function actFromReactionWithId(Game $game, int $state, string $stateName, int $id): void  { }
+    
+    public function actFromReactionWithIds(Game $game, int $state, string $stateName, array $ids): void  { }
+
+    public function stateFromReaction(Game $game, int $state, string $stateName): void { }
+
+    public function getArgsFromReaction(Game $game, int $state, string $stateName): array 
+    {
+        return [];
+    }
+
 }

@@ -70,7 +70,7 @@ class Reaction_CrewCapLimit extends GameReaction
             throw new \BgaUserException($game->translate("Selection is not a character."));
         }
 
-        $event = EventFactory::createCharacterDestroyedEvent($game->getActivePlayerId(), $character->Id, $game->translate('Chosen to sink for Crew Cap Limit'));
+        $event = EventFactory::createCharacterDestroyedEvent($game->getActivePlayerId(), $character->Id, $game->translate('Chosen for The Locker for Crew Cap Limit'));
         $game->theah->queueEvent($event);
         $game->gamestate->nextState("done");
 }

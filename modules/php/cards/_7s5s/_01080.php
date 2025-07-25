@@ -2,10 +2,15 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01080;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 
-class _01080 extends Risk
+class _01080 extends Risk implements IHasReactions
 {
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -24,6 +29,10 @@ class _01080 extends Risk
         $this->Traits = [
             'Bureaucracy',
             'Rumor',
+        ];
+
+        $this->Reactions = [
+            new Reaction_01080(),
         ];
     }
 }
