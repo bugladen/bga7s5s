@@ -249,6 +249,11 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase01081': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'highDramaPhase01085': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

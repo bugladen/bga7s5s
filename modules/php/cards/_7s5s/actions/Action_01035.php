@@ -55,7 +55,12 @@ class Action_01035 extends CharacterAction
             $event->theah->eventCheck($engageEvent);
             $event->queueEvent($engageEvent);
             
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Kaspar</strong> performed his Recruit Action from the City Deck.'), []);
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [
+                'i18n' => ['action'],
+                'player_name' => $game->getActivePlayerName(),
+                'action' => $this->Name,
+                'owner_name' => $kaspar->Name,
+            ]);
 
             $mercenary = $game->revealFirstCardTypeFromCityDeck($playerId, "Mercenary");
 

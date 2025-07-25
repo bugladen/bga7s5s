@@ -346,6 +346,20 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     dojo.removeClass(performerImage, 'chosen');
                 }
             },
+
+            'highDramaPhase01081': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const performerImage = $(`${card.divId}_image`);
+                    dojo.removeClass(performerImage, 'chosen');
+
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
     
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 

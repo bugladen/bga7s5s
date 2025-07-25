@@ -1255,7 +1255,7 @@ trait FrameworkActionsTrait
             $this->theah->queueEvent($event);
         }
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} has decided to perform the In-Hand Action [${action_name}] from <strong>${card_name}</strong>.'), [
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} is performing the In-Hand Action [${action_name}] from <strong>${card_name}</strong>.'), [
             "i18n" => ["action_name", "card_name"],
             "player_name" => $this->getActivePlayerName(),
             "action_name" => $action->Name,

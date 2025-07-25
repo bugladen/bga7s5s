@@ -282,6 +282,21 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01081 => [
+        "name" => "highDramaPhase01081",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Gallant Deeds: ${you} must choose an Opposing Character to Engage:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "targetChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01085 => [
         "name" => "highDramaPhase01085",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -293,22 +308,6 @@ $machinestates += [
         ],
         "transitions" => [
             "targetChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-        ]
-    ],
-
-    States::HIGH_DRAMA_PLAYER_TURN_01147 => [
-        "name" => "highDramaPhase01147",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Let\'s Haggle: ${you} must choose an attachment to Equip from the Bazaar: '),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actBack",
-            "actFromCardWithId"
-        ],
-        "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
-            "attachmentSelected" => States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_PLAY
         ]
     ],
 
@@ -350,6 +349,22 @@ $machinestates += [
         ]
     ],
         
+    States::HIGH_DRAMA_PLAYER_TURN_01147 => [
+        "name" => "highDramaPhase01147",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Let\'s Haggle: ${you} must choose an attachment to Equip from the Bazaar: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
+            "attachmentSelected" => States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_PLAY
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01149 => [
         "name" => "highDramaPhase01149",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
