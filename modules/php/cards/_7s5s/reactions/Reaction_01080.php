@@ -18,7 +18,7 @@ class Reaction_01080 extends RiskReaction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Pressure location After Duel");
+        $this->Name = clienttranslate("Pressure Location After Duel");
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -107,10 +107,6 @@ class Reaction_01080 extends RiskReaction
                 'player_name' => $game->getPlayerNameById($performer->ControllerId),
                 'location_name' => $performer->Location
             ]);
-
-            $owner = $this->getOwningCard($game->theah);
-            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($owner->ControllerId, $owner->Id);
-            $game->theah->queueEvent($discardEvent);
 
             $game->gamestate->nextState("01080");
 

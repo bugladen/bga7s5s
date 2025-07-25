@@ -772,7 +772,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "type" => "game",
         "action" => "stFromCard",
         "transitions" => [
-            "" => States::DUEL_END_EVENTS
+            "" => States::DUEL_END_PAY_FOR_REACTION
         ]
     ],
 
