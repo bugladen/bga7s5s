@@ -1068,6 +1068,11 @@ trait StatesTrait
             $stat = $adversary->ModifiedCombat;
             $reason = "<p>$threat " . $this->translate("Threat was left over in their Pool.");
 
+            if ($lethal == 1)
+            {
+                $reason .= "<p>" . $this->translate("Threat was LETHAL.");
+            }
+
             $wounds = $threat;
             if ($threat > $stat && $lethal == 0)
             {
