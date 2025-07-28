@@ -225,7 +225,7 @@ class Theah
         if ($inDuel) 
         {
             $currentPlayerId = $this->game->globals->get(Game::DUEL_CURRENT_PLAYER);
-            if ($currentPlayerId) 
+            if ($currentPlayerId && ! $debug) 
             {
                 $this->game->gamestate->changeActivePlayer($currentPlayerId);
             }
@@ -236,7 +236,7 @@ class Theah
             if ($state['type'] == "activeplayer")
             {
                 $currentPlayerId = $this->game->globals->get(Game::CURRENT_PLAYER);
-                if ($currentPlayerId) 
+                if ($currentPlayerId && ! $debug) 
                 {
                     $this->game->gamestate->changeActivePlayer($currentPlayerId);
                 }
@@ -454,11 +454,16 @@ class Theah
 
     function getCharacterById($id): ?Character
     {
-        foreach ($this->cards as $card) {
-            if ($card->Id == $id && $card instanceof Character) {
-                return $card;
-            }
+        if (array_key_exists($id, $this->cards)) {
+            return $this->cards[$id];
         }
+
+        $card = $this->db->getCardObject($id);
+        if ($card) {
+            $this->cards[$id] = $card;
+            return $card;
+        }
+
         return null;
     }
 

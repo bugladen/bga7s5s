@@ -1128,6 +1128,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
         else
             dojo.removeClass(`duel_round_${args.round}_ending_challenger_threat`, 'threat-chip-threatened');
 
+        if (args.challengerThreatIsLethal == 1)
+            $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
+        if (args.defenderThreatIsLethal == 1)
+            $(`duel_round_${args.round}_ending_defender_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
+    
         $(`duel_round_${args.round}_ending_defender_threat`).innerHTML = args.defender_threat;
         if (args.defender_threat > 0)
             dojo.addClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');

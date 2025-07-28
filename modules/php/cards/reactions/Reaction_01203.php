@@ -94,31 +94,43 @@ class Reaction_01203 extends CardReaction
                 "challenger_name" => $challenger->Name,
             ]);
 
-            $event = EventFactory::createThreatModifiedEvent($challengerId, $defenderId, 1, 0);
+            $event = EventFactory::createThreatModifiedEvent(1, 0);
             $game->theah->queueEvent($event);
         }
 
         if ($reactionId == 'addThreatDefender')
         {
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Leja Junka:</strong> ${player_name} usedto add 1 Threat to <strong>${defender_name}</strong>.'), [
+            $game->notifyAllPlayers("message", clienttranslate('<strong>Leja Junka:</strong> ${player_name} used Reaction to add 1 Threat to <strong>${defender_name}</strong>.'), [
                 'i18n' => ['defender_name'],
                 "player_name" => $playerName,
                 "defender_name" => $defender->Name,
             ]);
 
-            $event = EventFactory::createThreatModifiedEvent($challengerId, $defenderId, 0, 1);
+            $event = EventFactory::createThreatModifiedEvent(0, 1);
             $game->theah->queueEvent($event);
         }
         
         if ($reactionId == 'removeThreatChallenger')
         {
-            $event = EventFactory::createThreatModifiedEvent($challengerId, $defenderId, -1, 0);
+            $game->notifyAllPlayers("message", clienttranslate('<strong>Leja Juska:</strong> ${player_name} used Reaction to remove 1 Threat to <strong>${challenger_name}</strong>.'), [
+                'i18n' => ['challenger_name'],
+                "player_name" => $playerName,
+                "challenger_name" => $challenger->Name,
+            ]);
+
+            $event = EventFactory::createThreatModifiedEvent(-1, 0);
             $game->theah->queueEvent($event);
         }
         
         if ($reactionId == 'removeThreatDefender')
         {
-            $event = EventFactory::createThreatModifiedEvent($challengerId, $defenderId, 0, -1);
+            $game->notifyAllPlayers("message", clienttranslate('<strong>Leja Juska:</strong> ${player_name} used Reaction to remove 1 Threat to <strong>${defender_name}</strong>.'), [
+                'i18n' => ['defender_name'],
+                "player_name" => $playerName,
+                "defender_name" => $defender->Name,
+            ]);
+
+            $event = EventFactory::createThreatModifiedEvent(0, -1);
             $game->theah->queueEvent($event);
         }
 

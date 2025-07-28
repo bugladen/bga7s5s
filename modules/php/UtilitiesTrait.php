@@ -85,6 +85,8 @@ trait UtilitiesTrait
             gambled,
             ending_challenger_threat as endingChallengerThreat,
             ending_defender_threat as endingDefenderThreat,
+            challenger_threat_is_lethal as challengerThreatIsLethal,
+            defender_threat_is_lethal as defenderThreatIsLethal,
             wounds_taken as wounds
             FROM duel_round
             WHERE duel_id = $duelId";
@@ -177,6 +179,8 @@ trait UtilitiesTrait
 
             $row['endingChallengerThreat'] = $round['endingChallengerThreat'];
             $row['endingDefenderThreat'] = $round['endingDefenderThreat'];
+            $row['challengerThreatIsLethal'] = $round['challengerThreatIsLethal'];
+            $row['defenderThreatIsLethal'] = $round['defenderThreatIsLethal'];
             $row['wounds'] = $round['wounds'];
 
             $rounds[] = $row;

@@ -118,7 +118,7 @@ class _01085 extends Risk implements IHasActions
             $modifiedChallengerThreat = $actor->Id == $challengerId ? $challengerThreat * -1 : $challengerThreat;
             $modifiedDefenderThreat = $actor->Id == $defenderId ? $defenderThreat * -1 : $defenderThreat;
 
-            $event = EventFactory::createThreatModifiedEvent($challengerId, $defenderId, $modifiedChallengerThreat, $modifiedDefenderThreat);
+            $event = EventFactory::createThreatModifiedEvent($modifiedChallengerThreat, $modifiedDefenderThreat);
             $game->theah->queueEvent($event);
             
             $game->gamestate->nextState();

@@ -659,6 +659,11 @@ return declare('seventhseacityoffivesails.utilities', null, {
         if (row.endingDefenderThreat > 0)
             dojo.addClass(`duel_round_${row.round}_ending_defender_threat`, 'threat-chip-threatened');
 
+        if (row.challengerThreatIsLethal == 1)
+            $(`duel_round_${row.round}_ending_challenger_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
+        if (row.defenderThreatIsLethal == 1)
+            $(`duel_round_${row.round}_ending_defender_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
+
         if (row.actorId === row.challengerId)
         {
             dojo.addClass(`duel_round_${row.round}_starting_challenger_threat_row`, 'duel-acting-character');

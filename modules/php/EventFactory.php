@@ -700,15 +700,15 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createThreatModifiedEvent(int $challengerId, int $defenderId, int $challengerThreat, int $defenderThreat): EventThreatModified
+    public static function createThreatModifiedEvent(int $challengerThreat, int $defenderThreat, ?bool $challengerThreatIsLethal = null, ?bool $defenderThreatIsLethal = null): EventThreatModified
     {
         $event = self::createEvent(Events::ThreatModified);
         if ($event instanceof EventThreatModified)
         {
-            $event->challengerId = $challengerId;
-            $event->defenderId = $defenderId;
             $event->challengerThreat = $challengerThreat;
             $event->defenderThreat = $defenderThreat;
+            $event->challengerThreatIsLethal = $challengerThreatIsLethal;
+            $event->defenderThreatIsLethal = $defenderThreatIsLethal;
         }
         return $event;
     }

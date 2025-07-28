@@ -801,7 +801,14 @@ trait StatesTrait
             $this->globals->set(GAME::DUEL_ROUND, $round);
         }
 
-        $sql = "SELECT challenging_player_id, challenger_id, challenger_threat, defending_player_id, defender_id, defender_threat FROM duel WHERE duel_id = {$duelId}";
+        $sql = "SELECT 
+            challenging_player_id, 
+            challenger_id, 
+            challenger_threat, 
+            defending_player_id, 
+            defender_id, 
+            defender_threat 
+            FROM duel WHERE duel_id = {$duelId}";
         $result = $this->getObjectListFromDb($sql)[0];
         $challengingPlayerId = $result['challenging_player_id'];
         $challengerId = $result['challenger_id'];
@@ -832,7 +839,7 @@ trait StatesTrait
         else
         {
             //Get the actor from the previous round
-            $sql = "SELECT actor_id, ending_challenger_threat, ending_defender_threat FROM duel_round WHERE duel_id = {$duelId} AND round = " . ($round - 1);
+            $sql = "SELECT actor_id, ending_challenger_threat, ending_defender_threat, challenger_threat_is_lethal, defender_threat_is_lethal FROM duel_round WHERE duel_id = {$duelId} AND round = " . ($round - 1);
             $result = $this->getObjectListFromDB($sql)[0];
             $lastActorId = $result['actor_id'];
             if ($lastActorId == $challengerId)
@@ -841,7 +848,9 @@ trait StatesTrait
                 $actor = $defender;
                 $playerId = $defendingPlayerId;
                 $challengerThreat = 0;
+                $challengerThreatIsLethal = 0;
                 $defenderThreat = $result['ending_defender_threat'];
+                $defenderThreatIsLethal = $result['defender_threat_is_lethal'];
                 $wounds = $defenderThreat;
             }
             else
@@ -850,7 +859,9 @@ trait StatesTrait
                 $actor = $challenger;
                 $playerId = $challengingPlayerId;
                 $challengerThreat = $result['ending_challenger_threat'];
+                $challengerThreatIsLethal = $result['challenger_threat_is_lethal'];
                 $defenderThreat = 0;
+                $defenderThreatIsLethal = 0;
                 $wounds = $challengerThreat;
             }
         }
@@ -868,6 +879,8 @@ trait StatesTrait
             starting_defender_threat, 
             ending_challenger_threat, 
             ending_defender_threat, 
+            challenger_threat_is_lethal,
+            defender_threat_is_lethal,
             combat_riposte,
             combat_parry,
             combat_thrust,
@@ -891,6 +904,8 @@ trait StatesTrait
             $defenderThreat, 
             $challengerThreat, 
             $defenderThreat, 
+            $challengerThreatIsLethal,
+            $defenderThreatIsLethal,
             0, 
             0, 
             0, 
@@ -915,6 +930,9 @@ trait StatesTrait
             $event->defenderId = $defenderId;
             $event->challengerThreat = $challengerThreat;
             $event->defenderThreat = $defenderThreat;
+            $event->challengerThreatIsLethal = $challengerThreatIsLethal;
+            $event->defenderThreatIsLethal = $defenderThreatIsLethal;
+
             $event->wounds = $wounds;
         }
         $this->theah->queueEvent($event);
@@ -1027,14 +1045,17 @@ trait StatesTrait
         //Any threat remaining for the actor is applied
         $threat = 0;
         $field = "";
+        $lethal = 0;
         if ($actorId == $challengerId)
         {
             $threat = $values['ending_challenger_threat'];
+            $lethal = $values['challenger_threat_is_lethal'];
             $field = "ending_challenger_threat";
         }
         else
         {
             $threat = $values['ending_defender_threat'];
+            $lethal = $values['defender_threat_is_lethal'];
             $field = "ending_defender_threat";
         }
         $sql = "UPDATE duel_round SET $field = 0 WHERE duel_id = $duelId AND round = $round";
@@ -1048,7 +1069,7 @@ trait StatesTrait
             $reason = "<p>$threat " . $this->translate("Threat was left over in their Pool.");
 
             $wounds = $threat;
-            if ($threat > $stat)
+            if ($threat > $stat && $lethal == 0)
             {
                 switch ($combatStatUsed)
                 {

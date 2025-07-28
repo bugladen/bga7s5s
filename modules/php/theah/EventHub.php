@@ -1198,6 +1198,8 @@ trait EventHub
                         "startingDefenderThreat" => $event->defenderThreat,
                         "endingChallengerThreat" => $event->challengerThreat,
                         "endingDefenderThreat" => $event->defenderThreat,
+                        "challengerThreatIsLethal" => $event->challengerThreatIsLethal,
+                        "defenderThreatIsLethal" => $event->defenderThreatIsLethal,
                         "wounds" => $event->wounds
                     ]);            
                 };
@@ -1370,25 +1372,32 @@ trait EventHub
                 {
                     $duelId = $theah->game->globals->get(Game::DUEL_ID);
                     $round = $theah->game->globals->get(Game::DUEL_ROUND);
-                    $challenger = $theah->getCardById($event->challengerId);
-                    $defender = $theah->getCardById($event->defenderId);
+                    $challengerId = $theah->getDuelChallengerId();
+                    $defenderId = $theah->getDuelDefenderId();
+                    $challenger = $theah->getCardById($challengerId);
+                    $defender = $theah->getCardById($defenderId);
 
                     $db = $theah->getDBObject();
-                    $db->updateRoundThreats($duelId, $round, $event->challengerThreat, $event->defenderThreat);
+                    $db->updateRoundThreats($duelId, $round, $event->challengerThreat, $event->defenderThreat, $event->challengerThreatIsLethal, $event->defenderThreatIsLethal);
 
                     $result = $db->getRoundThreats($duelId, $round);
                     $endingChallengerThreat = $result['ending_challenger_threat'];
                     $endingDefenderThreat = $result['ending_defender_threat'];
                     $wounds = $result['wounds_taken'];
+                    $challengerThreatIsLethal = $result['challenger_threat_is_lethal'];
+                    $defenderThreatIsLethal = $result['defender_threat_is_lethal'];
+
+                    $challengerThreatIsLethalText = $challengerThreatIsLethal ? clienttranslate("Challenger Threat is LETHAL") : "";
+                    $defenderThreatIsLethalText = $defenderThreatIsLethal ? clienttranslate("Defender Threat is LETHAL") : "";
 
                     $theah->game->notifyAllPlayers("updateRoundThreats", clienttranslate(
                         'Threat for <strong>${challenger_name}</strong> has been modified by ${challenger_modification}.
                         <br>
                         Threat for <strong>${defender_name}</strong> has been modified by ${defender_modification}.
                         <br>
-                        <strong>Current Challenger Threat:</strong> ${challenger_threat}
+                        <strong>Current Challenger Threat:</strong> ${challenger_threat}. ${challenger_lethal_text}
                         <br>
-                        <strong>Current Defender Threat:</strong> ${defender_threat}'), [
+                        <strong>Current Defender Threat:</strong> ${defender_threat}. ${defender_lethal_text}'), [
                         'i18n' => ['challenger_name', 'defender_name'],
                         "challenger_name" => $challenger->Name,
                         "defender_name" => $defender->Name,
@@ -1396,6 +1405,10 @@ trait EventHub
                         "defender_modification" => $event->defenderThreat,
                         "challenger_threat" => $endingChallengerThreat,
                         "defender_threat" => $endingDefenderThreat,
+                        "challenger_lethal_text" => $challengerThreatIsLethalText,
+                        "defender_lethal_text" => $defenderThreatIsLethalText,
+                        "challengerThreatIsLethal" => $challengerThreatIsLethal,
+                        "defenderThreatIsLethal" => $defenderThreatIsLethal,
                         "wounds" => $wounds,
                         "round" => $round,
                     ]);

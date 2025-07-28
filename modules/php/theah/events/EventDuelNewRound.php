@@ -12,6 +12,8 @@ class EventDuelNewRound extends Event
     public int $defenderId;
     public int $challengerThreat;
     public int $defenderThreat;
+    public int $challengerThreatIsLethal;
+    public int $defenderThreatIsLethal;
     public int $wounds;
 
     public function __construct()
@@ -26,6 +28,8 @@ class EventDuelNewRound extends Event
         $this->defenderId = 0;
         $this->challengerThreat = 0;
         $this->defenderThreat = 0;
+        $this->challengerThreatIsLethal = 0;
+        $this->defenderThreatIsLethal = 0;
         $this->wounds = 0;
         
         $this->runEventHubAfterCards = true;

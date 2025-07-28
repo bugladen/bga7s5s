@@ -7,7 +7,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;

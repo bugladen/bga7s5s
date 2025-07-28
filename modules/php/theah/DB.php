@@ -226,7 +226,7 @@ class DB extends \APP_DbObject
         return $results;
     }
 
-    public function updateRoundThreats(int $duelId, int $round, int $challengerThreat, int $defenderThreat): void
+    public function updateRoundThreats(int $duelId, int $round, int $challengerThreat, int $defenderThreat, ?bool $challengerThreatIsLethal = null, ?bool $defenderThreatIsLethal = null): void
     {
         $sql = "
         SELECT d.challenger_id, d.defender_id, r.actor_id, r.wounds_taken 
@@ -257,11 +257,25 @@ class DB extends \APP_DbObject
             WHERE duel_id = $duelId AND round = $round";
 
         $this->executeSql($sql);
+
+        if ($challengerThreatIsLethal)
+        {
+            $lethal = $challengerThreatIsLethal ? 1 : 0;
+            $sql = "UPDATE duel_round set challenger_threat_is_lethal = $lethal WHERE duel_id = $duelId AND round = $round";
+            $this->executeSql($sql);
+        }
+
+        if ($defenderThreatIsLethal)
+        {
+            $lethal = $defenderThreatIsLethal ? 1 : 0;
+            $sql = "UPDATE duel_round set defender_threat_is_lethal = $lethal WHERE duel_id = $duelId AND round = $round";
+            $this->executeSql($sql);
+        }
     }
 
     public function getRoundThreats(int $duelId, int $round): array
     {
-        $sql = "SELECT ending_challenger_threat, ending_defender_threat, wounds_taken FROM duel_round WHERE duel_id = $duelId AND round = $round";
+        $sql = "SELECT ending_challenger_threat, ending_defender_threat, wounds_taken, challenger_threat_is_lethal, defender_threat_is_lethal FROM duel_round WHERE duel_id = $duelId AND round = $round";
         return $this->getObject($sql);
     }
 }

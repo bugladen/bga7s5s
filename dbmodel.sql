@@ -57,6 +57,8 @@ CREATE TABLE IF NOT EXISTS `duel_round` (
   `gambled` bit(1) NULL,
   `combat_riposte` tinyint NULL,
   `combat_parry` tinyint NULL,
+  `challenger_threat_is_lethal` tinyint NULL,
+  `defender_threat_is_lethal` tinyint NULL,
   `combat_thrust` tinyint NULL,
   `ending_challenger_threat` tinyint NULL,
   `ending_defender_threat` tinyint NULL,
