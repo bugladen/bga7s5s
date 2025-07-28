@@ -112,6 +112,7 @@ class Game extends \Table
     final const EPEE_SANGLANTE_CHALLENGE_TYPE = 2;
     final const CAVALIER_HAT_CHALLENGE_TYPE = 3;
     final const DEFENDING_HONOR_CHALLENGE_TYPE = 4;
+    final const LEGENDARY_REPUTATION_CHALLENGE_TYPE = 5;
 
     //Duel global variables
     //Duel Names

@@ -93,6 +93,7 @@ function (dojo, declare) {
             this.EPEE_SANGLANTE_CHALLENGE_TYPE = 2;
             this.CAVALIER_HAT_CHALLENGE_TYPE = 3;
             this.DEFENDING_HONOR_CHALLENGE_TYPE = 4;
+            this.LEGENDARY_REPUTATION_CHALLENGE_TYPE = 5;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 100;

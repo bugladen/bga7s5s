@@ -840,11 +840,9 @@ class Theah
 
     public function playerCanRecruit($playerId): bool
     {
-        $characters = $this->getCharactersInPlayByPlayerId($playerId);
-
         //Get all characters that are in the city that have mercenaries at their location
         $charactersThatCanReruit = [];
-        $charactersInCity = array_filter($characters, fn($character) => $this->cardInCity($character));
+        $charactersInCity = $this->getCharactersInCityByPlayerId($playerId);
 
         foreach ($charactersInCity as $character) {
             $charactersAtLocation = $this->getCharactersAtLocation($character->Location);
@@ -859,11 +857,8 @@ class Theah
 
     public function playerCanEquip($playerId): bool
     {
-        $characters = $this->getCharactersInPlayByPlayerId($playerId);
-
-        //Get all characters that are in the city that have attachments at their location
+        $charactersInCity = $this->getCharactersInCityByPlayerId($playerId);
         $charactersThatCanEquipInCity = [];
-        $charactersInCity = array_filter($characters, function($character) { return $this->cardInCity($character); });
 
         foreach ($charactersInCity as $character) {
             $attachmentsAtLocation = $this->getAvailableAttachmentsAtLocation($character->Location);
@@ -877,11 +872,10 @@ class Theah
 
     public function playerCanChallenge($playerId): bool
     {
-        $characters = $this->getCharactersInPlayByPlayerId($playerId);
+        $characters = $this->getCharactersInCityByPlayerId($playerId);
         $charactersThatCanChallenge = [];
         foreach ($characters as $character) 
         {
-            if ( ! $this->cardInCity($character)) continue;
             if ( ! $character->canChallenge()) continue;
 
             $otherCharacters = $this->getCharactersAtLocation($character->Location);
@@ -896,12 +890,9 @@ class Theah
 
     public function playerCanClaim($playerId): bool
     {
-        $characters = $this->getCharactersInPlayByPlayerId($playerId);
+        $characters = $this->getCharactersInCityByPlayerId($playerId);
         $charactersThatCanClaim = [];
         foreach ($characters as $character) {
-            if (!$this->cardInCity($character)) {
-                continue;
-            }
             if ($character->Engaged)
                 continue;
             $charactersThatCanClaim[] = $character;

@@ -548,10 +548,15 @@ trait StatesTrait
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
 
+        $types = [
+            Game::TRISKELION_CHALLENGE_TYPE,
+            Game::CAVALIER_HAT_CHALLENGE_TYPE,
+            Game::EPEE_SANGLANTE_CHALLENGE_TYPE,
+            Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE,
+        ];
+
         $challengeType = $this->globals->get(GAME::CHALLENGE_TYPE);
-        if ($challengeType == Game::TRISKELION_CHALLENGE_TYPE || 
-            $challengeType == Game::CAVALIER_HAT_CHALLENGE_TYPE || 
-            $challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE)
+        if (in_array($this->globals->get(GAME::CHALLENGE_TYPE), $types))
         {
             $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
             $action = $this->theah->getInPlayActionById($actionId);

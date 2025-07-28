@@ -170,9 +170,7 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
-        //Filter out those characters that are not in the city
-        $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
+        $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
 
         $charactersThatCanReruit = [];
         foreach ($characters as $character) {
@@ -231,8 +229,7 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
-        $charactersInCity = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
+        $charactersInCity = $this->theah->getCharactersInCityByPlayerId($playerId);
 
         $handHasAttachments = $this->handHasAttachments($playerId);
         $charactersThatCanEquip = [];
@@ -363,11 +360,8 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
+        $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
         
-        //Filter out those characters that are not in the city
-        $characters = array_values(array_filter($characters, fn($character) => $this->theah->cardInCity($character) ));
-
         //Filter out those characters that are engaged
         $characters = array_values(array_filter($characters, fn($character) => !$character->Engaged ));
 
@@ -484,11 +478,8 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
+        $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
         
-        //Filter out those characters that are not in the city
-        $characters = array_values(array_filter($characters, fn($character) => $this->theah->cardInCity($character) ));
-
         //Filter out those characters that can challenge
         $characters = array_values(array_filter($characters, fn($character) => $character->canChallenge() ));
 

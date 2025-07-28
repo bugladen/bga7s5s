@@ -226,8 +226,7 @@ class Action_01044 extends SchemeCityAction
 
     private function getAvailablePerformers(int $playerId, Theah $theah): array
     {
-        $performers = $theah->getCharactersInPlayByPlayerId($playerId);
-        $performers = array_values(array_filter($performers, fn($character) => $theah->cardInCity($character)));
+        $performers = $theah->getCharactersInCityByPlayerId($playerId);
 
         $performersWithAttachments = [];
         foreach ($performers as $performer)

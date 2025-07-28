@@ -38,11 +38,7 @@ class Action_01029 extends RiskAction
 
     private function getOpposingCharacters(Theah $theah, int $playerId): array
     {
-        // Add characters owned by the player that are in play
-        $performers = $theah->getCharactersInPlayByPlayerId($playerId);
-
-        //Filter out any characters that are not in the city
-        $performers = array_filter($performers, fn($character) => $theah->cardInCity($character));
+        $performers = $theah->getCharactersInCityByPlayerId($playerId);
 
         //Filter out any characters that are not at a location controlled by the player
         $controllingPerformers = [];

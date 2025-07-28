@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
@@ -723,9 +724,7 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Character is not in the City."));
         }
 
-        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);
-        //Filter out those characters that are not in the city
-        $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });  
+        $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
         $charactersThatCanReruit = [];
         foreach ($characters as $character) {
             $charactersAtLocation = $this->theah->getCharactersAtLocation($character->Location);
@@ -842,9 +841,7 @@ trait FrameworkActionsTrait
         $performer = $this->theah->getCharacterById($id);
         $handHasAttachments = $this->handHasAttachments($playerId);
 
-        $characters = $this->theah->getCharactersInPlayByPlayerId($playerId);        
-        //Filter out those characters that are not in the city
-        $characters = array_filter($characters, function($character) { return $this->theah->cardInCity($character); });
+        $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
         $charactersThatCanEquip = [];
         foreach ($characters as $character) {
             $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($character->Location);
@@ -1299,13 +1296,10 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Performer cannot Challenge."));
         }
 
-        $characters = $this->theah->getCharactersInPlayByPlayerId($activePlayerId);
-        
-        //Filter out those characters that are not in the city
-        $charactersInCity = array_filter($characters, fn($character) => $this->theah->cardInCity($character) );  
+        $characters = $this->theah->getCharactersInCityByPlayerId($activePlayerId);
 
         //Select the Ids of the characters
-        $characterIds = array_map(function($character) { return $character->Id; }, $charactersInCity);
+        $characterIds = array_map(function($character) { return $character->Id; }, $characters);
 
         if (!in_array($id, $characterIds)) {
             throw new \BgaUserException(self::_("Performer is not in the City."));
@@ -1423,6 +1417,12 @@ trait FrameworkActionsTrait
         if( ! $character->canIntervene()) {
             throw new \BgaUserException(self::_("Character cannot Intervene."));
         }
+
+        $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
+        if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE && ! $character instanceof Leader) {
+            throw new \BgaUserException(self::_("Legendary Reputation: Only Leaders can Intervene"));
+        }
+
 
         //Reset the conditions for defender
         $target->removeCondition(Game::DUEL_DEFENDER);

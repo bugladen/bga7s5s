@@ -24,8 +24,7 @@ abstract class SchemeCityAction extends CardAction
             return false;
         }
 
-        $characters = $theah->getCharactersInPlayByPlayerId($playerId);
-        $characters = array_filter($characters, fn($character) => $theah->cardInCity($character));
+        $characters = $theah->getCharactersInCityByPlayerId($playerId);
         return count($characters) > 0;
     }
 
