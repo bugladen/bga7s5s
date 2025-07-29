@@ -252,6 +252,44 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01072 => [
+        "name" => "highDramaPhase01072",
+        "type" => "game",
+        "action" => "stFromCard",
+        "transitions" => [
+            "success" => States::HIGH_DRAMA_PLAYER_TURN_01072_2,
+            "failure" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01072_2 => [
+        "name" => "highDramaPhase01072_2",
+        "description" => clienttranslate('${actplayer} is choosing a City Card to discard.'),
+        "descriptionmyturn" => clienttranslate('Réputation Méritée: ${you} must choose a City Card to discard: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_01072_3
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01072_3 => [
+        "name" => "highDramaPhase01072_3",
+        "description" => clienttranslate('${actplayer} is choosing a card to Muster.'),
+        "descriptionmyturn" => clienttranslate('Réputation Méritée: ${you} must choose a card to Muster: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actBack"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01072_2,
+            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+        
     States::HIGH_DRAMA_PLAYER_TURN_01076 => [
         "name" => "highDramaPhase01076",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -311,44 +349,20 @@ $machinestates += [
         ]
     ],
 
-    States::HIGH_DRAMA_PLAYER_TURN_01072 => [
-        "name" => "highDramaPhase01072",
-        "type" => "game",
-        "action" => "stFromCard",
-        "transitions" => [
-            "success" => States::HIGH_DRAMA_PLAYER_TURN_01072_2,
-            "failure" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
-        ]
-    ],
-    States::HIGH_DRAMA_PLAYER_TURN_01072_2 => [
-        "name" => "highDramaPhase01072_2",
-        "description" => clienttranslate('${actplayer} is choosing a City Card to discard.'),
-        "descriptionmyturn" => clienttranslate('Réputation Méritée: ${you} must choose a City Card to discard: '),
+    States::HIGH_DRAMA_PLAYER_TURN_01086 => [
+        "name" => "highDramaPhase01086",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Status Matters: ${you} must choose a location to make Uncontrolled:'),
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithId",
+            "actFromCardWithLocations"
         ],
         "transitions" => [
-            "" => States::HIGH_DRAMA_PLAYER_TURN_01072_3
+            "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
         ]
     ],
-    States::HIGH_DRAMA_PLAYER_TURN_01072_3 => [
-        "name" => "highDramaPhase01072_3",
-        "description" => clienttranslate('${actplayer} is choosing a card to Muster.'),
-        "descriptionmyturn" => clienttranslate('Réputation Méritée: ${you} must choose a card to Muster: '),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId",
-            "actBack"
-        ],
-        "transitions" => [
-            "back" => States::HIGH_DRAMA_PLAYER_TURN_01072_2,
-            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
-        ]
-    ],
-        
+    
     States::HIGH_DRAMA_PLAYER_TURN_01147 => [
         "name" => "highDramaPhase01147",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

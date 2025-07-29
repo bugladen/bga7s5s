@@ -625,7 +625,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
                 const cardDivId = `duel_round_${row.round}_combat_card_${combatCard.id}`;
                 this.addTooltipHtml(cardDivId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
-                console.log(cardDivId);
                 if (row.gambled)
                 {
                     dojo.addClass(divId, 'engaged');

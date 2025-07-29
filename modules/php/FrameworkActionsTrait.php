@@ -1208,16 +1208,12 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
 
-        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
-        $performer = $this->theah->getCharacterById($performerId);
-
         $actionId = $this->globals->get(GAME::CHOSEN_ACTION, '');
         $action = $this->theah->getInHandActionById($actionId);
 
         if ($action == null) {
             throw new \BgaUserException(self::_("In-Hand Action not found."));
         }
-
         $risk = $this->theah->getCardById($action->OwnerId);
 
         //Sanity checks
@@ -1225,8 +1221,16 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Risk is not in Player's Hand."));
         }
 
-        $cost = $risk->WealthCost;
-        $discount = $this->globals->get(Game::DISCOUNT);
+
+        $performerId = 0;
+        if ($action->RequiresPerformerSelected)
+        {
+            $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        }
+
+        $discount = $this->globals->get(Game::DISCOUNT, 0);
+        $cost = $risk->WealthCost - $discount;
+        if ($cost < 0) $cost = 0;
 
         $cardIds = json_decode($payWithCards, true);
         
@@ -1258,7 +1262,7 @@ trait FrameworkActionsTrait
             "card_name" => $risk->Name,
         ]);
 
-        $event = EventFactory::createActionTriggeredEvent($playerId, $performer->Id, $actionId);
+        $event = EventFactory::createActionTriggeredEvent($playerId, $performerId, $actionId);
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 

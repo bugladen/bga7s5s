@@ -2,14 +2,18 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01086;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver_01086;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01086;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 
-class _01086 extends Risk implements IHasManeuvers
+class _01086 extends Risk implements IHasActions, IHasManeuvers
 {
     use ManeuverTrait;
+    use ActionTrait;
     
     public function __construct()
     {
@@ -32,6 +36,10 @@ class _01086 extends Risk implements IHasManeuvers
             "Valroux",
         ];
         
+        $this->Actions = [
+            new Action_01086(),
+        ];
+
         $this->Maneuvers = [
             new Maneuver_01086(),
         ];

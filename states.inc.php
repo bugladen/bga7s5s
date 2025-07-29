@@ -949,7 +949,7 @@ $machinestates = [
             "end" => States::HIGH_DRAMA_END
         ]
     ],
-        // Add transitions here
+        // Add action transitions here
         States::HIGH_DRAMA_PLAYER_TURN_EVENTS => [
             "name" => "highDramaPlayerTurnEvents",
             "description" => clienttranslate("Resolving Events for High Drama Player Turn..."),
@@ -970,6 +970,7 @@ $machinestates = [
                 "01081" => States::HIGH_DRAMA_PLAYER_TURN_01081,
                 "01083" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01085" => States::HIGH_DRAMA_PLAYER_TURN_01085,
+                "01086" => States::HIGH_DRAMA_PLAYER_TURN_01086,
                 "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
                 "01149" => States::HIGH_DRAMA_PLAYER_TURN_01149,
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,

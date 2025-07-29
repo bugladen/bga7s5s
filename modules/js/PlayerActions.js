@@ -73,6 +73,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaMoveActionChooseLocation': 'actHighDramaMoveActionDestinationChosen',
             'highDramaPhase01068_2': 'actFromCardWithLocations',
             'highDramaPhase01076': 'actFromCardWithLocations',
+            'highDramaPhase01086': 'actFromCardWithLocations',
             'highDramaPhase01149': 'actFromCardWithLocations',
             'highDramaPhase01189a': 'actFromCardWithLocations',
             'highDramaPhase01189b': 'actFromCardWithLocations',

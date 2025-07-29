@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01083 extends RiskCityAction
 {
@@ -16,6 +17,27 @@ class Action_01083 extends RiskCityAction
 
         $this->Name = clienttranslate("Issue Challenge only Leaders can Intervene");
         $this->RequiresPerformerSelected = true;
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        {
+            return false;
+        }
+
+        $characters = $theah->getCharactersInCityByPlayerId($playerId);
+        foreach ($characters as $character)
+        {
+            $adversaries = $theah->getCharactersAtLocation($character->Location);
+            $adversaries = array_filter($adversaries, fn($adversary) => $adversary->isControlled() && $adversary->ControllerId != $playerId);
+            if (count($adversaries) > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function handleEvent(Event $event)

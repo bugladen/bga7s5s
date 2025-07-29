@@ -360,6 +360,12 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     });
                 }
             },
+
+            'highDramaPhase01086': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
     
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 

@@ -41,7 +41,6 @@ class Maneuver_01084 extends Maneuver
         if ($event instanceof EventDuelGetCostForManeuverFromHand && $event->maneuverId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
-            $actor = $event->theah->getDuelRoundActor();
             $adversary = $event->theah->getCharacterById($event->adversaryId);
 
             if ($adversary->Engaged)

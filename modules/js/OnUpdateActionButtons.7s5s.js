@@ -249,16 +249,6 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
-            'highDramaPhase01081': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
-            },
-
-            'highDramaPhase01085': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
-            },
-
             'highDramaPhase01072_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
@@ -304,6 +294,21 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
     
+            'highDramaPhase01081': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase01085': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase01086': () => {
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'highDramaPhase01147': () => {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());

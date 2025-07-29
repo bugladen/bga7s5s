@@ -45,6 +45,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['factionResolveCardDrawPublic', 500],
             ['firstPlayer', 2000],
             ['locationClaimed', 500],
+            ['locationUncontrolled', 500],
             ['maneuverUsed', 1],
             ['newDay', 1000],
             ['newDuelRound', 500],
@@ -896,6 +897,17 @@ return declare('seventhseacityoffivesails.notifications', null, {
             id: imageElement.id,
             player_color: player.color,
         }),  imageElement, 'before');
+    },
+
+    notif_locationUncontrolled: function( notif )
+    {
+        debug( 'notif_locationUncontrolled' );
+        debug( notif );
+
+        const args = notif.args;
+        const imageElement = dojo.query(`[data-location="${args.location}"]`)[0];
+        const id = `${imageElement.id}-location-control-chip`;
+        dojo.destroy(id);
     },
     
     notif_challengeIssued: function( notif )

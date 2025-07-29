@@ -98,15 +98,16 @@ trait DebugTrait
         $this->updateCardObjectInDb($card);
     }
 
-    public function debug_EngageCard(int $cardId)
+    public function debug_EngageCard(int $playerId, int $cardId)
     {
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
             throw new \BgaUserException(self::_("Card not found"));
 
-        $card->Engaged = true;
-        $this->updateCardObjectInDb($card);
+        $event = EventFactory::createCardEngagedEvent($playerId, $cardId);
+        $this->theah->queueEvent($event);
+        $this->theah->runEvents($debug = true);
     }
 
     public function debug_SetReknownOnCard(int $cardId, int $reknown)
@@ -185,6 +186,16 @@ trait DebugTrait
     {
         $event = EventFactory::createApproachCharacterPlayedEvent($playerId, $characterId);
         $this->theah->queueEvent($event);
+        $this->theah->runEvents($debug = true);
+    }
+
+    public function debug_ClaimLocation(int $playerId, string $location)
+    {
+        $this->setControllerForLocation($location, $playerId);
+
+        $claimEvent = EventFactory::createLocationClaimedEvent($playerId, 0, $location);
+        $this->theah->eventCheck($claimEvent);
+        $this->theah->queueEvent($claimEvent);
         $this->theah->runEvents($debug = true);
     }
 }
