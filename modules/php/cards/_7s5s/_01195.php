@@ -54,7 +54,7 @@ class _01195 extends CityAttachment
         if ($event instanceof EventDuelCalculateCombatCardStats && $this->isAttached() && $this->AttachedToId == $event->actorId)
         {
             $event->riposte += 1;
-            $event->explanations[] = $event->theah->game->translate('+1 Riposte from Eager Blade.');
+            $event->explanations[] = "<strong>Eager Blade</strong>: +1 Riposte";
 
             $event->theah->game->notifyAllPlayers("message", clienttranslate('Eager Blade was used with a combat card.  Its ability will trigger and it will be destroyed.'), []);
 

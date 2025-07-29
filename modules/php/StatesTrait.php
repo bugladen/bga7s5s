@@ -818,6 +818,8 @@ trait StatesTrait
         $challengingPlayerId = $result['challenging_player_id'];
         $challengerId = $result['challenger_id'];
         $challengerThreat = $result['challenger_threat'];
+        $challengerThreatIsLethal = 0;
+        $defenderThreatIsLethal = 0;
         
         $defendingPlayerId = $result['defending_player_id'];
         $defenderId = $result['defender_id'];

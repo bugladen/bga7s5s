@@ -53,7 +53,7 @@ class Technique_01204 extends Technique
                     {
                         $event->parry = 0;
                     }
-                    $event->explanations[] = $event->theah->game->translate("Syrneth Hand: -2 Parry");
+                    $event->explanations[] = sprintf($event->theah->game->translate("<strong>%s</strong> reduces the Adversary's Parry by %d"), $attachment->Name, 2);
                     $this->ReduceAdversaryParry = false;
                     $attachment->IsUpdated = true;
                 }
