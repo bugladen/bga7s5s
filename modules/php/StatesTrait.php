@@ -564,6 +564,7 @@ trait StatesTrait
             $action->SetUsed($this->theah, true);
 
             $this->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [
+                'i18n' => ['action', 'owner_name'],
                 'player_name' => $this->getActivePlayerName($playerId),
                 'action' => $action->Name,
                 'owner_name' => $owner->Name,

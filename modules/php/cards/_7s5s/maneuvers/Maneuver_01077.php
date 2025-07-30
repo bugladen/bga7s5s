@@ -35,7 +35,7 @@ class Maneuver_01077 extends Maneuver
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventResolveManeuver)
+        if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01077", $this->Id);

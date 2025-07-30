@@ -54,7 +54,7 @@ class Action_01075 extends AttachmentAction
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE);
 
             $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [
-                'i18n' => ['action'],
+                'i18n' => ['action', 'owner_name'],
                 'player_name' => $game->getPlayerNameById($owner->ControllerId),
                 'action' => $this->Name,
                 'owner_name' => $owner->Name,

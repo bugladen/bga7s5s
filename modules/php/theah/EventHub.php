@@ -1090,10 +1090,10 @@ trait EventHub
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
                         $effects .= "<p>" . sprintf($theah->game->translate("Defender Threat went from %s to %s. "), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"]);
 
-                    $message = clienttranslate('${character_name} activated the Maneuver <strong>${effect_name}</strong> ${effects}');
+                    $message = clienttranslate('<strong>${character_name}</strong> activated the Maneuver [${effect_name}] ${effects}');
                     if (! $maneuverCard instanceof Character)
                     {
-                        $message = clienttranslate('${character_name} has activated the Maneuver <strong>${effect_name}</strong> from <strong>${card_name}</strong> ${effects}');
+                        $message = clienttranslate('<strong>${character_name}</strong> has activated the Maneuver [${effect_name}] from <strong>${card_name}</strong> ${effects}');
                     }
 
                     $theah->game->notifyAllPlayers("updateRoundWithCombatStats", $message, [
