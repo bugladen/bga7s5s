@@ -180,10 +180,9 @@ trait EventHub
                     $modifiedFinesse = $character->ModifiedFinesse;
                     $modifiedInfluence = $character->ModifiedInfluence;
 
-                    $theah->game->notifyAllPlayers("attachmentUnequipped", clienttranslate('${player_name} unequipped <strong>${attachment_name}</strong> from <strong>${character_name}</strong>.'), [
+                    $theah->game->notifyAllPlayers("attachmentUnequipped", clienttranslate('<strong>${attachment_name}</strong> has been unequipped from <strong>${character_name}</strong>.'), [
                         'i18n' => ['attachment_name', 'character_name'],
                         "player_id" => $event->playerId,
-                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "attachment_name" => $attachment->Name,
                         "character_name" => $character->Name,
                         "attachmentId" => $attachment->Id,

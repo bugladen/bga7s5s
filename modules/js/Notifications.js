@@ -597,6 +597,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
+
+        if (args.wounds == 0)
+            return;
+
         const card = this.cardProperties[args.characterId];
         if (card.wounds == 0)
         {
