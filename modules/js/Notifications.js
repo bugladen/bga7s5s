@@ -25,6 +25,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardRemovedFromPlayerDiscardPile', 500],
             ['challengeIssued', 500],
             ['challengeRejected', 500],
+            ['challengeCancelled', 500],
             ['challengerSwapped', 500],
             ['characterDestroyed', 1000],
             ['characterHealed', 1000],
@@ -1157,6 +1158,30 @@ return declare('seventhseacityoffivesails.notifications', null, {
     notif_challengeRejected: function( notif )
     {
         debug( 'notif_challengeRejected' );
+        debug( notif );
+
+        const args = notif.args;
+
+        const challenger = this.cardProperties[args.challengerId];
+        if (challenger)
+        {
+            challenger.conditions = challenger.conditions.filter(condition => condition !== this.CHALLENGER);
+            const challengerChipId = `${challenger.divId}_challenger`;
+            dojo.destroy(challengerChipId);
+        }
+
+        const defender = this.cardProperties[args.defenderId];
+        if (defender)
+        {
+            defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
+            const defenderChipId = `${defender.divId}_defender`;
+            dojo.destroy(defenderChipId);
+        }
+    },
+
+    notif_challengeCancelled: function( notif )
+    {
+        debug( 'notif_challengeCancelled' );
         debug( notif );
 
         const args = notif.args;

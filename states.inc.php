@@ -1137,7 +1137,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_REACTIONS,
-                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE,
+                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED,
                     "endOfGame" => States::END_GAME
                 ]
             ],
@@ -1170,6 +1170,16 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_EVENTS, 
                 ]
             ],
+
+        States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED => [
+            "name" => "highChallengeActionCheckCancelled",
+            "type" => "game",
+            "action" => "stChallengeActionCheckCancelled",
+            "transitions" => [
+                "notCancelled" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE,
+                "cancelled" => States::NEXT_PLAYER,
+            ]
+        ],
     
         States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE => [
             "name" => "highDramaChallengeActionAcceptChallenge",
@@ -2184,7 +2194,6 @@ $machinestates = [
                         "actReactionForState", 
                     ],
                     "transitions" => [
-                        "01080" => States::DUEL_END_01080,
                         "done" => States::DUEL_END_EVENTS, 
                         "pay" => States::DUEL_END_PAY_FOR_REACTION,
                     ]
@@ -2202,6 +2211,7 @@ $machinestates = [
                     "transitions" => [
                         "back" => States::DUEL_END_REACTIONS, 
                         "paid" => States::DUEL_END_EVENTS, 
+                        "01080" => States::DUEL_END_01080,
                     ]
                 ],
                 

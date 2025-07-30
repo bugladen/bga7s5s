@@ -95,6 +95,19 @@ class Reaction_01080 extends RiskReaction
 
         if ($reactionId == "pressure")
         {
+            $game->gamestate->nextState("pay");
+            return;
+        }
+
+        $game->gamestate->nextState("done");
+    }
+
+    public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void
+    {
+        parent::reactionPaidFor($game, $state, $internalId, $reactionId);
+
+        if ($reactionId == "pressure")
+        {
             $performer = $game->theah->getCharacterById($this->DuelOpponentId);
 
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
@@ -109,11 +122,7 @@ class Reaction_01080 extends RiskReaction
             ]);
 
             $game->gamestate->nextState("01080");
-
-            return;
         }
-
-        $game->gamestate->nextState("done");
     }
 
     public function stateFromReaction(Game $game, int $state, string $stateName): void

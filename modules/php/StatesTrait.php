@@ -544,7 +544,7 @@ trait StatesTrait
     public function stSetupChallenge()
     {
         $this->theah->buildCity();
-        $playerId = $this->getActivePlayerId();
+        $playerId = $this->globals->get(GAME::CURRENT_PLAYER);
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
 
@@ -570,6 +570,8 @@ trait StatesTrait
                 'owner_name' => $owner->Name,
             ]);
         }
+        
+        $this->globals->set(Game::CHALLENGE_CANCELLED, false);
 
         //Set the location of the challenge
         $this->globals->set(GAME::CHOSEN_LOCATION, $performer->Location);
@@ -595,6 +597,36 @@ trait StatesTrait
         $changeEvent = EventFactory::createChangeActivePlayerEvent($target->ControllerId);
         $this->theah->queueEvent($changeEvent);
         $this->gamestate->nextState();
+    }
+
+    public function stChallengeActionCheckCancelled()
+    {
+        $cancelled = $this->globals->get(Game::CHALLENGE_CANCELLED);
+        if ($cancelled)
+        {
+            $challengerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+            $challenger = $this->theah->getCardById($challengerId);
+            $challenger->removeCondition(GAME::DUEL_CHALLENGER);
+            $this->theah->game->updateCardObjectInDb($challenger);
+            
+            $defenderId = $this->globals->get(GAME::CHOSEN_TARGET);
+            $defender = $this->theah->getCardById($defenderId);
+            $defender->removeCondition(GAME::DUEL_DEFENDER);
+            $this->theah->game->updateCardObjectInDb($defender);
+
+            $this->notifyAllPlayers("challengeCancelled", clienttranslate('Challenge was cancelled.'), [
+                "challengerId" => $challengerId,
+                "defenderId" => $defenderId,
+                "challengingPlayerId" => $challenger->ControllerId,
+                "defendingPlayerId" => $defender->ControllerId
+            ]);
+
+            $this->gamestate->nextState("cancelled");
+        }
+        else
+        {
+            $this->gamestate->nextState("notCancelled");
+        }
     }
 
     public function stHighDramaChallengeActionResolveTechnique(): void
@@ -1168,6 +1200,7 @@ trait StatesTrait
         $duelId = $this->globals->get(Game::DUEL_ID);
         $this->globals->set(GAME::IN_DUEL, false);
 
+        $this->globals->delete(Game::CHALLENGE_CANCELLED);
         $this->globals->delete(Game::DUEL_CURRENT_PLAYER);
         $this->globals->delete(Game::CHALLENGE_STAT);
         $this->globals->delete(Game::CHALLENGER_THREAT);
@@ -1207,8 +1240,8 @@ trait StatesTrait
     public function stNextPlayer(): void 
     {
         // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-        $this->giveExtraTime($player_id);
+        $currentPlayerId = $this->globals->get(Game::CURRENT_PLAYER);
+        $this->giveExtraTime($currentPlayerId);
 
         // Clear the player action globals
         $this->globals->delete(GAME::CHOSEN_OPPONENT);
@@ -1234,7 +1267,6 @@ trait StatesTrait
 
         $this->globals->delete(Game::SMUGGLED_ITEM_ATTACHMENT_ID);
 
-        $currentPlayerId = $this->globals->get(Game::CURRENT_PLAYER);
         $nextPlayerId = $this->getPlayerAfter($currentPlayerId);
         $this->globals->set(Game::CURRENT_PLAYER, $nextPlayerId);
 

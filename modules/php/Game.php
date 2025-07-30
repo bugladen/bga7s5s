@@ -106,6 +106,7 @@ class Game extends \Table
     final const REVEALED_CARDS = "revealedCards";
 
     //Challenge global variables
+    final const CHALLENGE_CANCELLED = "challengeCancelled";
     final const CHALLENGE_TYPE = "challengeType";
     final const NORMAL_CHALLENGE_TYPE = 0;
     final const TRISKELION_CHALLENGE_TYPE = 1;
