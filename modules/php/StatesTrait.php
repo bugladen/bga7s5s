@@ -1156,6 +1156,9 @@ trait StatesTrait
 
     public function stDuelNextPlayer(): void
     {
+        $currentPlayerId = $this->globals->get(Game::DUEL_CURRENT_PLAYER);
+        $this->giveExtraTime($currentPlayerId);
+
         $duelId = $this->globals->get(Game::DUEL_ID);
         $round = $this->globals->get(Game::DUEL_ROUND);    
 

@@ -297,13 +297,14 @@ class Theah
         return $locations;
     }
 
-    function getActionFromHandDiscount(Character $performer): int
+    function getActionFromHandDiscount(Character $performer, CardAction $action): int
     {
-        $characters = $this->getCharactersInPlay();
+        $cards = $this->cards;
         $discount = 0;
-        foreach ($characters as $character) {
-            $discount += $character->getActionFromHandDiscount($this, $performer);
+        foreach ($cards as $card) {
+            $discount += $card->getActionFromHandDiscount($this, $performer, $action);
         }
+            
         return $discount;
     }
 

@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
@@ -26,6 +27,11 @@ abstract class CardAction extends Action implements ICardAbility
         }
 
         return ! $this->Used;
+    }
+
+    public function getActionFromHandDiscount(Theah $theah, Character $performer, CardAction $action): int
+    {
+        return 0;
     }
 
 

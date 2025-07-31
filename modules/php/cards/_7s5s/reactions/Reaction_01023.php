@@ -1,7 +1,9 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -101,6 +103,29 @@ class Reaction_01023 extends RiskReaction
         }
 
         $game->gamestate->nextState('done');
+    }
+
+    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction) : int
+    {
+        $discount = parent::getReactionFromHandDiscount($theah, $reaction);
+
+        $owner = $this->getOwningCard($theah);
+        if ($owner->Location == Game::LOCATION_HAND && $reaction->Id == $this->Id)
+        {
+            $challengeLocation = $theah->game->globals->get(GAME::CHOSEN_LOCATION);
+
+            //Get all characters at the location of the challenge
+            $characters = $theah->getCharactersAtLocation($challengeLocation, $owner->ControllerId);
+            //Filter out characters that are owned by the player and have the Brute trait
+            $characters = array_filter($characters, fn($character) => $character->OwnerId == $owner->ControllerId && in_array('Brute', $character->Traits));
+            if (count($characters) > 0)
+            {
+                $discount += 1;
+            }
+        }
+
+        return $discount;
+
     }
 
     public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void

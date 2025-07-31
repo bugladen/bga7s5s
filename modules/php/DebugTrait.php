@@ -98,7 +98,7 @@ trait DebugTrait
         $this->updateCardObjectInDb($card);
     }
 
-    public function debug_EngageCard(int $playerId, int $cardId)
+    public function debug_EngageCard(int $cardId, int $playerId)
     {
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);

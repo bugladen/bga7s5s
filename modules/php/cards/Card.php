@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -395,9 +396,32 @@ abstract class Card
         return $properties;
     }
 
-    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction): int
+    public function getActionFromHandDiscount(Theah $theah, Character $performer, CardAction $requestedAction): int
     {
-        return 0;
+        $discount = 0;
+        if ($this instanceof IHasActions)
+        {
+            foreach ($this->getActions() as $action)
+            {
+                $discount += $action->getActionFromHandDiscount($theah, $performer, $requestedAction);
+            }
+        }
+
+        return $discount;
+    }
+
+    public function getReactionFromHandDiscount(Theah $theah, CardReaction $requestedReaction): int
+    {
+        $discount = 0;
+        if ($this instanceof IHasReactions)
+        {
+            foreach ($this->getReactions() as $reaction)
+            {
+                $discount += $reaction->getReactionFromHandDiscount($theah, $requestedReaction);
+            }
+        }
+
+        return $discount;
     }
 
     public function hasTrait(string $trait): bool

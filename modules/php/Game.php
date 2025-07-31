@@ -12,11 +12,14 @@ declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\GameFramework\Table;
+use Bga\GameFramework\Components\Deck;
+
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
-class Game extends \Table
+class Game extends Table
 {
     // Phases of the day
     final const SETUP_PHASE = 0;
@@ -136,7 +139,7 @@ class Game extends \Table
     use DebugTrait;
     use UtilitiesTrait;
 
-    private \Deck $cards;
+    private Deck $cards;
 
     public Theah $theah;
 

@@ -41,6 +41,11 @@ abstract class CardReaction extends Reaction implements ICardAbility
     {
         return sprintf($theah->game->translate('${you} must now select cards to pay for Reaction: %s'), $this->Name);
     }
+
+    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction): int
+    {
+        return 0;
+    }
     
     public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void 
     {

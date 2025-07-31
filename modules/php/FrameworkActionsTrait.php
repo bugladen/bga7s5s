@@ -1197,7 +1197,7 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
-        $discount = $this->theah->getActionFromHandDiscount($performer);
+        $discount = $this->theah->getActionFromHandDiscount($performer, $action);
         $this->globals->set(Game::DISCOUNT, $discount);
 
         $this->gamestate->nextState("inHandActionPerformerChosen");
@@ -1220,7 +1220,6 @@ trait FrameworkActionsTrait
         if ($risk->Location != Game::LOCATION_HAND || $risk->ControllerId != $playerId) {
             throw new \BgaUserException(self::_("Risk is not in Player's Hand."));
         }
-
 
         $performerId = 0;
         if ($action->RequiresPerformerSelected)
