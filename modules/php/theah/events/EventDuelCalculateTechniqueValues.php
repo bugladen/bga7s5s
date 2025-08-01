@@ -7,6 +7,8 @@ class EventDuelCalculateTechniqueValues extends Event
     public int $actorId;
     public int $adversaryId;
     public string $techniqueId;
+
+    //These values are set during the event run
     public int $riposte;
     public int $parry;
     public int $thrust;
@@ -19,6 +21,7 @@ class EventDuelCalculateTechniqueValues extends Event
         $this->actorId = 0;
         $this->adversaryId = 0;
         $this->techniqueId = "";
+
         $this->riposte = 0;
         $this->parry = 0;
         $this->thrust = 0;

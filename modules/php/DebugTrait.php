@@ -10,7 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLoca
 
 trait DebugTrait
 {
-    public function debug_AddCardToHand(int $playerId, string $className)
+    public function debug_AddCardToHand(string $className, int $playerId)
     {
         $card = $this->instantiateCard($className);
 

@@ -9,15 +9,21 @@ onLeavingState: function( stateName )
     const methods = {
 
         'pickDecks': () => {
-            dojo.destroy('deck-picker');
-            dojo.removeClass('city', 'hidden');
-            dojo.removeClass('approachDeck-container', 'hidden');
-            dojo.removeClass('factionHand-container', 'hidden');
+            if (! this.isSpectator)
+            {
+                dojo.destroy('deck-picker');
+                dojo.removeClass('city', 'hidden');
+                dojo.removeClass('approachDeck-container', 'hidden');
+                dojo.removeClass('factionHand-container', 'hidden');
+            }
         },
 
         'planningPhase': () => {
-            this.showApproachDeckAtBottom();
-            this.approachDeck.setSelectionMode(0);
+            if (! this.isSpectator)
+            {
+                this.showApproachDeckAtBottom();
+                this.approachDeck.setSelectionMode(0);
+            }
         },
 
         'highDramaMoveActionChoosePerformer': () => {

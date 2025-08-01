@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS `duel_round_technique` (
   `round` smallint unsigned NOT NULL,
   `technique_id` varchar(50) NOT NULL,
   `technique_name` varchar(500) NULL,
+  `technique_is_main` tinyint NULL,
   PRIMARY KEY (`duel_round_technique_id`),
   FOREIGN KEY (`duel_id`) REFERENCES `duel` (`duel_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;

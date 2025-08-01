@@ -90,6 +90,7 @@ class Reaction_01146b extends CardReaction
                     'technique' => $technique->Name
                 ]);
                 $game->globals->delete(Game::CHOSEN_TECHNIQUE);
+                $game->globals->delete(Game::CHOSEN_TECHNIQUE_IS_MAIN);
                 $game->theah->deleteTechniqueEvents($this->TechniqueId);
                 $scheme->IsUpdated = true;
 

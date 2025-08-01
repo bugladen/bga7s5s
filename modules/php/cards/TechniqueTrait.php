@@ -21,14 +21,14 @@ trait TechniqueTrait
         $properties['techniques'] = $this->getTechniquesArray($game, $mustBeAvailable = false);
     }
 
-    public function anyTechniquesAvailable(): bool
+    public function getTechniquesAvailableToPlayer(Game $game, int $playerId): Array
     {
+        $array = [];
         foreach ($this->Techniques as $technique) {
-            if ($technique->isAvailable()) {
-                return true;
-            }
+            if ($technique->isAvailableToPlayer($playerId, $game->theah))
+                $array[] = $technique;
         }
-        return false;
+        return $array;
     }
 
     public function getTechniquesArray(Game $game, bool $mustBeAvailable = false): Array

@@ -35,6 +35,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
@@ -49,6 +50,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -449,6 +451,19 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
+    public static function createDuelCalculateTechniqueValuesEvent(int $actorId, int $adversaryId, string $techniqueId): EventDuelCalculateTechniqueValues
+    {
+        $event = self::createEvent(Events::DuelCalculateTechniqueValues);
+        if ($event instanceof EventDuelCalculateTechniqueValues)
+        {
+            $event->actorId = $actorId;
+            $event->adversaryId = $adversaryId;
+            $event->techniqueId = $techniqueId;            
+        }
+
+        return $event;
+    }
+
     public static function createDuelEndOfRoundEvent(int $playerId, int $actorId): EventDuelEndOfRound
     {
         $event = self::createEvent(Events::DuelEndOfRound);
@@ -645,7 +660,21 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createTechniqueActivatedEvent(int $playerId, int $ownerId, string $techniqueId): EventTechniqueActivated
+    public static function createResolveTechniqueEvent(int $playerId, int $actorId, int $adversaryId, string $techniqueId): EventResolveTechnique
+    {
+        $event = self::createEvent(Events::ResolveTechnique);
+        if ($event instanceof EventResolveTechnique)
+        {
+            $event->playerId = $playerId;
+            $event->actorId = $actorId;
+            $event->adversaryId = $adversaryId;
+            $event->techniqueId = $techniqueId;
+        }
+
+        return $event;
+    }
+
+    public static function createTechniqueActivatedEvent(int $playerId, int $ownerId, string $techniqueId, bool $copied = false): EventTechniqueActivated
     {
         $event = self::createEvent(Events::TechniqueActivated);
         if ($event instanceof EventTechniqueActivated)
@@ -653,6 +682,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->playerId = $playerId;
             $event->ownerId = $ownerId;
             $event->techniqueId = $techniqueId;
+            $event->copied = $copied;
         }
 
         return $event;

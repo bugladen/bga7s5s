@@ -39,10 +39,8 @@ class Technique_01013 extends Technique
                     if ($vissenta->Wounds >= $adversary->Wounds)
                     {
                         $this->AllowEffect = true;
-                        $vissenta->IsUpdated = true;
-        
-                        $event->theah->game->globals->set(Game::CHOSEN_TECHNIQUE, $this->Id);
-        
+                        $vissenta->IsUpdated = true;      
+
                         $transition = $event->theah->createEvent(Events::Transition);
                         if ($transition instanceof EventTransition) {
                             $transition->playerId = $vissenta->ControllerId;

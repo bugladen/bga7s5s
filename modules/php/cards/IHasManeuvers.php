@@ -13,6 +13,8 @@ interface IHasManeuvers
 
     public function getManeuverById($id): ?Maneuver;
 
+    public function getManeuversAvailableToPlayer(Game $game, int $playerId): Array;
+
     public function getManeuversArray(Game $game, bool $mustBeAvailable = false): Array;
 
     public function updateManeuverOwnerIds($id);

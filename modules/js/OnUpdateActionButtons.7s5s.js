@@ -322,7 +322,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     dojo.addClass('actCityLocationsSelected', 'disabled');
                 }
             },
-    
+
             'highDramaPhase01180': () => {
                 this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
             },
@@ -484,6 +484,12 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 this.addActionButton(`actTakeWound`, _('Take Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
 
+            'duelResolveManeuver_01165': () => {
+                args._private.args.techniques.forEach((technique) => {
+                    this.addActionButton(`actChooseTechnique-${technique.Id}`, technique.Name, () => this.bgaPerformAction('actFromCardWithIds', {ids: JSON.stringify([technique.Id])}));
+                });
+            },
+    
             'duelApplyCombatCardStats_01085': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

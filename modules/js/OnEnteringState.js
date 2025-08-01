@@ -13,7 +13,10 @@ onEnteringState: function( stateName, args )
 
         'planningPhase': () => {
             $('city-day-phase').innerHTML = _('Planning');
-            this.showApproachDeckAtTop();
+            if (! this.isSpectator)
+            {
+                this.showApproachDeckAtTop();
+            }
         },
 
         'highDramaBeginning': () => {

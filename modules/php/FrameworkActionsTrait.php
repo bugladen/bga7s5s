@@ -1499,6 +1499,7 @@ trait FrameworkActionsTrait
         }
 
         $this->globals->set(GAME::CHOSEN_TECHNIQUE, $technique->Id);
+        $this->globals->set(GAME::CHOSEN_TECHNIQUE_IS_MAIN, true);
         $this->globals->set(GAME::TRANSITION_INTERNAL_ID, $technique->Id);
 
         $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
@@ -1508,24 +1509,11 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($activateEvent);
         $this->theah->queueEvent($activateEvent);
 
-        $resolveEvent = $this->theah->createEvent(Events::ResolveTechnique);
-        if ($resolveEvent instanceof EventResolveTechnique)
-        {
-            $resolveEvent->playerId = $playerId;
-            $resolveEvent->actorId = $actor->Id;
-            $resolveEvent->adversaryId = $adversary->Id;
-            $resolveEvent->techniqueId = $technique->Id;
-        }
+        $resolveEvent = EventFactory::createResolveTechniqueEvent($playerId, $actor->Id, $adversary->Id, $technique->Id);
         $this->theah->eventCheck($resolveEvent);
         $this->theah->queueEvent($resolveEvent);
 
-        $threatEvent = $this->theah->createEvent(Events::DuelCalculateTechniqueValues);
-        if ($threatEvent instanceof EventDuelCalculateTechniqueValues)
-        {
-            $threatEvent->actorId = $actor->Id;
-            $threatEvent->adversaryId = $adversary->Id;
-            $threatEvent->techniqueId = $technique->Id;
-        }
+        $threatEvent = EventFactory::createDuelCalculateTechniqueValuesEvent($actor->Id, $adversary->Id, $technique->Id);
         $this->theah->eventCheck($threatEvent);
         $this->theah->queueEvent($threatEvent);
 

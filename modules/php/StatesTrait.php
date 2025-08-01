@@ -576,9 +576,7 @@ trait StatesTrait
         //Set the location of the challenge
         $this->globals->set(GAME::CHOSEN_LOCATION, $performer->Location);
 
-        $techniqueId = "";
-        if ($this->globals->has(GAME::CHOSEN_TECHNIQUE))
-            $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE);
+        $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE, "");
 
         $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
         $this->theah->queueEvent($engageEvent);
@@ -1143,6 +1141,7 @@ trait StatesTrait
         $event = EventFactory::createDuelEndOfRoundEvent($actor->ControllerId, $actor->Id);
         $this->theah->queueEvent($event);
 
+        $this->globals->delete(GAME::CHOSEN_TECHNIQUE_IS_MAIN);
         $this->globals->delete(GAME::CHOSEN_TECHNIQUE);
         $this->globals->delete(GAME::CHOSEN_MANEUVER);
         $this->globals->delete(GAME::CHOSEN_CARD);
@@ -1256,6 +1255,7 @@ trait StatesTrait
         $this->globals->delete(GAME::CHOSEN_ATTACHMENT);
         $this->globals->delete(GAME::CHOSEN_ACTION);
         $this->globals->delete(GAME::CHOSEN_TARGET);
+        $this->globals->delete(GAME::CHOSEN_TECHNIQUE_IS_MAIN);
         $this->globals->delete(GAME::CHOSEN_TECHNIQUE);
         $this->globals->delete(GAME::CHOSEN_MANEUVER);
         $this->globals->delete(Game::TRANSITION_SOURCE_ID);

@@ -31,7 +31,7 @@ onUpdateActionButtons: function( stateName, args )
                 }),  'city', 'after');
             }
         }
-        else
+        else if (! this.isSpectator)
         {
             dojo.destroy('deck-picker');
             dojo.removeClass('city', 'hidden');

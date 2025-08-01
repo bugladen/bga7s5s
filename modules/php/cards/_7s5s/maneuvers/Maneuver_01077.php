@@ -24,6 +24,10 @@ class Maneuver_01077 extends Maneuver
         if (! parent::isAvailableToPlayer($playerId, $theah))
             return false;
 
+        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
+        if (! $inDuel)
+            return false;
+
         $actor = $theah->getDuelRoundActor();
         if (!$actor->hasTrait("Duelist"))
             return false;

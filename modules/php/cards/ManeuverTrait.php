@@ -30,13 +30,24 @@ trait ManeuverTrait
         return null;
     }
 
+    public function getManeuversAvailableToPlayer(Game $game, int $playerId): Array
+    {
+        $array = [];
+        foreach ($this->Maneuvers as $maneuver) {
+            if ($maneuver->isAvailableToPlayer($playerId, $game->theah))
+                $array[] = $maneuver;
+        }
+        return $array;
+    }
+
     public function getManeuversArray(Game $game, bool $mustBeAvailable = false): Array
     {
         $array = [];
         $playerId = $game->getActivePlayerId();
         foreach ($this->Maneuvers as $maneuver) {
-            if ($mustBeAvailable && !$maneuver->isAvailable() && !$maneuver->isAvailableToPlayer($playerId, $game->theah))
+            if ($mustBeAvailable && (! $maneuver->isAvailable() || ! $maneuver->isAvailableToPlayer($playerId, $game->theah)))
                 continue;
+
             $array[] = $maneuver->getPropertyArray($game);
         }
 

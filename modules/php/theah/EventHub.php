@@ -923,7 +923,8 @@ trait EventHub
                 $handler = function ($theah, EventTechniqueActivated $event)
                 {
                     $technique = $theah->getTechniqueById($event->techniqueId);
-                    $technique->setUsed($theah, true);
+                    if (!$event->copied)
+                        $technique->setUsed($theah, true);
 
                     $theah->game->notifyAllPlayers("techniqueActivated", clienttranslate('${player_name} has activated the Technique [${technique_name}].'), [
                         'i18n' => ['technique_name'],
@@ -938,13 +939,14 @@ trait EventHub
                 $handler = function ($theah, EventResolveTechnique $event)
                 {
                     $technique = $theah->getTechniqueById($event->techniqueId);
-                    $technique->setUsed($theah, true);
                     if ($event->inDuel)
                     {
                         $duelId = $theah->game->globals->get(Game::DUEL_ID);
                         $round = $theah->game->globals->get(Game::DUEL_ROUND);
-                        $name = substr(addslashes($technique->Name), 0, 500);
-                        $sql = "INSERT INTO duel_round_technique (duel_id, round, technique_id, technique_name) VALUES ($duelId, $round, '{$event->techniqueId}', '$name')";
+                        $owningCard = $technique->getOwningCard($theah);
+                        $name = substr(addslashes($owningCard->Name) . ": " . addslashes($technique->Name), 0, 500);
+                        $isMain = $theah->game->globals->get(Game::CHOSEN_TECHNIQUE_IS_MAIN, false) ? 1 : 0;
+                        $sql = "INSERT INTO duel_round_technique (duel_id, round, technique_id, technique_name, technique_is_main) VALUES ($duelId, $round, '{$event->techniqueId}', '$name', $isMain)";
                         $event->theah->game->DbQuery($sql);    
                     }
                 };

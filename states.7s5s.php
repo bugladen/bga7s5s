@@ -781,6 +781,19 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
+    States::DUEL_RESOLVE_MANEUVER_01165 => [
+        "name" => "duelResolveManeuver_01165",
+        "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+        "descriptionmyturn" => clienttranslate('Copy Technique from Adversary: ${you} must choose a Technique to copy:'),
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actFromCardWithIds", 
+        ],
+        "transitions" => [
+            "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+        ]
+    ],
 
     States::DUEL_APPLY_COMBAT_CARD_STATS_01085 => [
         "name" => "duelApplyCombatCardStats_01085",

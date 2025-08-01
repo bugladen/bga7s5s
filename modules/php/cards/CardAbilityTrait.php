@@ -103,7 +103,7 @@ trait CardAbilityTrait
         $name = $game->translate($this->Name);
         return [
             "id" => $this->Id, 
-            "name" => $game->translate($owner->Name) . ': ' . $name,
+            "name" => $game->translate($owner->Name) . ': ' . $game->translate($name),
             "shortName" => $name,
             "available" => $this->isAvailable()
         ];

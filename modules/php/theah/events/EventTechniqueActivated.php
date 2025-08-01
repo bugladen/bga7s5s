@@ -7,6 +7,7 @@ class EventTechniqueActivated extends Event
     public int $playerId;
     public int $ownerId;
     public string $techniqueId;
+    public bool $copied;
 
     public function __construct()
     {
@@ -14,6 +15,6 @@ class EventTechniqueActivated extends Event
         $this->playerId = 0;
         $this->ownerId = 0;
         $this->techniqueId = "";
-
+        $this->copied = false;
     }
 }
