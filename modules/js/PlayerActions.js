@@ -78,6 +78,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaPhase01189a': 'actFromCardWithLocations',
             'highDramaPhase01189b': 'actFromCardWithLocations',
             'highDramaPhase01205_2': 'actFromCardWithLocations',
+            'duelChooseTechnique_01036': 'actFromCardWithLocations',
         };
 
         const clientMessageArray = {

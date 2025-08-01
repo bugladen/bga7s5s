@@ -248,7 +248,7 @@ class Theah
         }
     }
 
-    function getAdjacentCityLocations($location, bool $includeHome = true): array
+    function getAdjacentCityLocations(string $location, bool $includeHome = true): array
     {
         $playerCount = $this->game->globals->get(Game::PLAYER_COUNT);
         $locations = [];

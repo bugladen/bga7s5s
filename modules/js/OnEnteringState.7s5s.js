@@ -1157,6 +1157,16 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
 
+            'duelChooseTechnique_01036': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const selectedLocationElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(selectedLocationElement.id);
+                    });
+                }
+            },
+
             'duelChooseTechnique_01063': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

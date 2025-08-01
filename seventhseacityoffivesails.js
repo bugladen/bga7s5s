@@ -94,6 +94,7 @@ function (dojo, declare) {
             this.CAVALIER_HAT_CHALLENGE_TYPE = 3;
             this.DEFENDING_HONOR_CHALLENGE_TYPE = 4;
             this.LEGENDARY_REPUTATION_CHALLENGE_TYPE = 5;
+            this.DANIELA_DEITRICH_CHALLENGE_TYPE = 6;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 100;

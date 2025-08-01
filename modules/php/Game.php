@@ -12,14 +12,13 @@ declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
-use Bga\GameFramework\Table;
 use Bga\GameFramework\Components\Deck;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
-class Game extends Table
+class Game extends \Bga\GameFramework\Table
 {
     // Phases of the day
     final const SETUP_PHASE = 0;
@@ -118,6 +117,7 @@ class Game extends Table
     final const CAVALIER_HAT_CHALLENGE_TYPE = 3;
     final const DEFENDING_HONOR_CHALLENGE_TYPE = 4;
     final const LEGENDARY_REPUTATION_CHALLENGE_TYPE = 5;
+    final const DANIELA_DEITRICH_CHALLENGE_TYPE = 6;
 
     //Duel global variables
     //Duel Names

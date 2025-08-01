@@ -272,7 +272,6 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
             },
 
             'highDramaPhase01068_2': () => {
-
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
                 }
@@ -652,6 +651,12 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     card = this.cardProperties[this.clientStateArgs.performerId];
                     const performerImage = $(`${card.divId}_image`);
                     dojo.removeClass(performerImage, 'chosen');
+                }
+            },
+
+            'duelChooseTechnique_01036': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
                 }
             },
 

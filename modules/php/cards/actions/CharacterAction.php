@@ -25,7 +25,7 @@ abstract class CharacterAction extends CardAction
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        //Character actions are always performed by the character card itself
+        //Character actions are almost always performed by the character card itself
         $card = $this->getOwningCard($theah);
         return [$card];
     }

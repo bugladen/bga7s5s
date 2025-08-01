@@ -553,6 +553,7 @@ trait StatesTrait
             Game::CAVALIER_HAT_CHALLENGE_TYPE,
             Game::EPEE_SANGLANTE_CHALLENGE_TYPE,
             Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE,
+            Game::DANIELA_DEITRICH_CHALLENGE_TYPE,
         ];
 
         $challengeType = $this->globals->get(GAME::CHALLENGE_TYPE);

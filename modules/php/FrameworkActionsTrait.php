@@ -1849,7 +1849,7 @@ trait FrameworkActionsTrait
         $locations = json_decode($locations, true);
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
-        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
+        $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
         $card = $this->theah->getCardById($sourceId);
         $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $locations);
     }

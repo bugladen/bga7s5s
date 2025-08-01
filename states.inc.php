@@ -958,6 +958,7 @@ $machinestates = [
             "transitions" => [
                 "01029" => States::HIGH_DRAMA_PLAYER_TURN_01029,
                 "01035" => States::HIGH_DRAMA_PLAYER_TURN_01035,
+                "01036" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01044" => States::HIGH_DRAMA_PLAYER_TURN_01044,
                 "01068" => States::HIGH_DRAMA_PLAYER_TURN_01068,
                 "01069" => States::HIGH_DRAMA_PLAYER_TURN_01069,
@@ -1852,6 +1853,7 @@ $machinestates = [
                     "back" => States::DUEL_CHOOSE_ACTION
                 ]
             ],
+                //Most custom transitions for techniques will be here
                 States::DUEL_CHOOSE_TECHNIQUE_EVENTS => [
                     "name" => "duelChooseTechniqueEvents",
                     "type" => "game",
@@ -1859,6 +1861,7 @@ $machinestates = [
                     "transitions" => [
                         "reaction" => States::DUEL_CHOOSE_TECHNIQUE_REACTIONS,
                         "01013" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS_01013,
+                        "01036" => States::DUEL_CHOOSE_TECHNIQUE_01036,
                         "01063" => States::DUEL_CHOOSE_TECHNIQUE_01063,
                         "01067" => States::DUEL_CHOOSE_TECHNIQUE_01067,
                         "endOfEvents" => States::DUEL_CHOOSE_ACTION,
