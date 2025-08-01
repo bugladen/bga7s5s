@@ -1046,7 +1046,6 @@ trait StatesTrait
         $sql = "SELECT challenger_id, defender_id FROM duel where duel_id = $duelId";
         $result = $this->getObjectListFromDB($sql)[0];
         $challengerId = $result['challenger_id'];
-        $defenderId = $result['defender_id'];
 
         $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
         $values = $this->getObjectListFromDB($sql)[0];
@@ -1056,30 +1055,7 @@ trait StatesTrait
         
         $adversaryId = $this->theah->getDuelOpponentId($actorId);
         $adversary = $this->theah->getCharacterById($adversaryId);
-        if (!$adversary)
-            $adversary = $this->getCardObjectFromDb($adversaryId);
 
-        //If the adversary is dead or not in the same location as the actor, then any adversary threat is nullified
-        if ($actor->Location != $adversary->Location)
-        {
-            $field = "";
-            if ($actorId == $challengerId)
-                $field = "ending_defender_threat";
-            else
-                $field = "ending_challenger_threat";
-            $sql = "UPDATE duel_round SET $field = 0 WHERE duel_id = $duelId AND round = $round";
-            $this->DbQuery($sql);
-
-            //Also make sure the threat read from the database is 0
-            $values[$field] = 0;
-
-            $this->notifyAllPlayers("message", clienttranslate('Due to the challenger and defender not sharing the same location, any threat from ${actor_name} to ${adversary_name} is nullified.'), [
-                'i18n' => ['actor_name', 'adversary_name'],
-                "actor_name" => $actor->Name,
-                "adversary_name" => $adversary->Name
-            ]);
-        }
-        
         //Any threat remaining for the actor is applied
         $threat = 0;
         $field = "";
@@ -1159,11 +1135,37 @@ trait StatesTrait
         $this->giveExtraTime($currentPlayerId);
 
         $duelId = $this->globals->get(Game::DUEL_ID);
-        $round = $this->globals->get(Game::DUEL_ROUND);    
+        $round = $this->globals->get(Game::DUEL_ROUND);
 
+        $actor = $this->theah->getDuelRoundActor();
+        $actorId = $actor->Id;
+        $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
+        $adversary = $this->theah->getCharacterById($adversaryId);
+        $challengerId = $this->theah->getDuelChallengerId();
+
+        //If the adversary is dead or not in the same location as the actor, then any adversary threat is nullified
+        if ($actor->Location != $adversary->Location)
+        {
+            $field = "";
+            if ($actorId == $challengerId)
+                $field = "ending_defender_threat";
+            else
+                $field = "ending_challenger_threat";
+            $sql = "UPDATE duel_round SET $field = 0 WHERE duel_id = $duelId AND round = $round";
+            $this->DbQuery($sql);
+
+            //Also make sure the threat read from the database is 0
+            $values[$field] = 0;
+
+            $this->notifyAllPlayers("message", clienttranslate('Due to the challenger and defender not sharing the same location, any threat from ${actor_name} to ${adversary_name} is nullified.'), [
+                'i18n' => ['actor_name', 'adversary_name'],
+                "actor_name" => $actor->Name,
+                "adversary_name" => $adversary->Name
+            ]);
+        }
+        
         $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
         $values = $this->getObjectListFromDB($sql)[0];
-        $actorId = $values['actor_id'];
         $endingChallengerThreat = $values['ending_challenger_threat'];
         $endingDefenderThreat = $values['ending_defender_threat'];
 
@@ -1175,11 +1177,10 @@ trait StatesTrait
             return;
         }
 
-        $sql = "SELECT challenging_player_id, challenger_id, defending_player_id, defender_id FROM duel where duel_id = $duelId";
+        $sql = "SELECT challenging_player_id, defending_player_id FROM duel where duel_id = $duelId";
         $result = $this->getObjectListFromDB($sql)[0];
         $challengingPlayerId = $result['challenging_player_id'];
-        $challengerId = $result['challenger_id'];
-        $defendingPlayerId = $result['defending_player_id'];
+        $defendingPlayerId = $result['defending_player_id'];        
 
         // Change to the next player in the duel
         if ($actorId == $challengerId)
@@ -1194,7 +1195,6 @@ trait StatesTrait
         }
 
         $this->gamestate->nextState("newRound");
-
     }
 
     public function stDuelEnd(): void

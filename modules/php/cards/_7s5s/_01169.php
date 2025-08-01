@@ -3,9 +3,16 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 
 class _01169 extends Risk
 {
+    private bool $EscapeDuel = false;
+
     public function __construct()
     {
         parent::__construct();
@@ -23,5 +30,37 @@ class _01169 extends Risk
         $this->Traits = [
             'Ad Hoc',
         ];
+
+        $this->EscapeDuel = false;
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventDuelCalculateCombatCardStats && $event->combatCardId == $this->Id)
+        {
+            $this->EscapeDuel = true;
+            $this->IsUpdated = true;
+        }
+
+        if ($event instanceof EventDuelEndOfRound && $this->EscapeDuel)
+        {
+            $this->EscapeDuel = false;
+            $this->IsUpdated = true;
+
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>Not Today</strong> activates: ${character_name} is wounded and is moved to Home.'), [
+                "i18n" => ["character_name"],
+                "character_name" => $event->theah->getDuelRoundActor()->Name,
+            ]);
+
+            $actor = $event->theah->getDuelRoundActor();
+
+            $woundEvent = EventFactory::createCharacterWoundedEvent($actor->Id, $this->Id, 1, $this->Name);
+            $event->theah->queueEvent($woundEvent);
+
+            $moveEvent = EventFactory::createCardMovedEvent($actor->ControllerId, $actor->Id, $actor->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $this->Id);
+            $event->theah->queueEvent($moveEvent);
+        }
     }
 }
