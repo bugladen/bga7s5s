@@ -15,12 +15,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 
 trait FrameworkActionsTrait
@@ -280,10 +278,9 @@ trait FrameworkActionsTrait
         $character = $this->getCardObjectFromDb($id);
 
         $this->notifyAllPlayers('yevgeniAdversaryChosen', 
-            clienttranslate('${player_name} has chosen <strong>${character}</strong> as Yevgeni\'s Adversary.'), [
-            'i18n' => ['character'],
+            clienttranslate('${player_name} has chosen ${character_inject_code} as Yevgeni\'s Adversary.'), [
             "player_name" => $playerName,
-            "character" => $character->Name,
+            "character_inject_code" => $character->getInjectCode(),
             "cardId" => $character->Id,
         ]);
 

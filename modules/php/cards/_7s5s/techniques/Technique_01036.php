@@ -43,13 +43,13 @@ class Technique_01036 extends Technique
                 "location" => $this->MoveLocation,
             ]);
 
-            $daniela = $this->getOwningCharacter($event->theah);
-            $moveEvent = EventFactory::createCardMovedEvent($daniela->ControllerId, $daniela->Id, $daniela->Location, $this->MoveLocation, $engage = false, $daniela->Id);
+            $daniella = $this->getOwningCharacter($event->theah);
+            $moveEvent = EventFactory::createCardMovedEvent($daniella->ControllerId, $daniella->Id, $daniella->Location, $this->MoveLocation, $engage = false, $daniella->Id);
             $event->theah->queueEvent($moveEvent);
 
             $this->MoveDaniela = false;
             $this->MoveLocation = "";
-            $daniela->IsUpdated = true;
+            $daniella->IsUpdated = true;
         }
     }
 
@@ -59,8 +59,8 @@ class Technique_01036 extends Technique
 
         if ($state == States::DUEL_CHOOSE_TECHNIQUE_01036)
         {
-            $daniela = $this->getOwningCharacter($game->theah);
-            $args["locationIds"] = $game->theah->getAdjacentCityLocations($daniela->Location, $includeHome = false);
+            $daniella = $this->getOwningCharacter($game->theah);
+            $args["locationIds"] = $game->theah->getAdjacentCityLocations($daniella->Location, $includeHome = false);
    
         }
 
@@ -74,17 +74,17 @@ class Technique_01036 extends Technique
         if ($state == States::DUEL_CHOOSE_TECHNIQUE_01036)
         {
             $location = $ids[0];
-            $daniela = $this->getOwningCharacter($game->theah);
+            $daniella = $this->getOwningCharacter($game->theah);
     
-            $locations = $game->theah->getAdjacentCityLocations($daniela->Location, $includeHome = false);
+            $locations = $game->theah->getAdjacentCityLocations($daniella->Location, $includeHome = false);
             if (! in_array($location, $locations))
             {
-                throw new \BgaUserException(sprintf($game->translate('Location is not adjacent to %s.'), $daniela->Name));
+                throw new \BgaUserException(sprintf($game->translate('Location is not adjacent to %s.'), $daniella->Name));
             }
     
             $this->MoveDaniela = true;
             $this->MoveLocation = $location;
-            $game->updateCardObjectInDb($daniela);
+            $game->updateCardObjectInDb($daniella);
 
             $game->gamestate->nextState();
         }

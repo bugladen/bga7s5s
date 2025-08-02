@@ -105,11 +105,10 @@ trait EventHub
                     $character->IsUpdated = true;
 
                     // Notify players of selected character
-                    $theah->game->notifyAllPlayers("approachCharacterPlayed", clienttranslate('${player_name} plays <strong>${character_name}</strong> as their Approach Character.'), [
-                        'i18n' => ['character_name'],
+                    $theah->game->notifyAllPlayers("approachCharacterPlayed", clienttranslate('${player_name} plays ${character_inject_code} as their Approach Character.'), [
                         "player_id" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "character_name" => $character->Name,
+                        "character_inject_code" => $character->getInjectCode(),
                         "character" => $character->getPropertyArray($theah->game),
                         ]);
                 };
@@ -285,11 +284,10 @@ trait EventHub
                     $theah->upsertCard($card);
     
                     // Notify players that card has been added to hand
-                    $this->game->notifyAllPlayers("cardAddedToHand", clienttranslate('${player_name} added <strong>${card_name}</strong> to their Faction Hand.'), [
-                        'i18n' => ['card_name'],
+                    $this->game->notifyAllPlayers("cardAddedToHand", clienttranslate('${player_name} added ${card_inject_code} to their Faction Hand.'), [
                         "player_id" => $event->playerId,
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "card_name" => $card->Name,
+                        "card_inject_code" => $card->getInjectCode(),
                         "card" => $card->getPropertyArray($this->game),
                     ]);
                 };
@@ -307,9 +305,9 @@ trait EventHub
                     $card->ControllerId = 0;
                     $card->IsUpdated = true;
 
-                    $this->game->notifyAllPlayers("cardAddedToCityDiscardPile", clienttranslate('<strong>${card_name}</strong> added to City Discard pile from ${location}.'), [
-                        'i18n' => ['card_name', 'location'],
-                        "card_name" => $card->Name,
+                    $this->game->notifyAllPlayers("cardAddedToCityDiscardPile", clienttranslate('${card_inject_code} added to City Discard pile from ${location}.'), [
+                        'i18n' => ['location'],
+                        "card_inject_code" => $card->getInjectCode(),
                         "cardId" => $card->Id,
                         "card" => $card->getPropertyArray($theah->game),
                         "location" => $event->fromLocation,
@@ -331,10 +329,9 @@ trait EventHub
                     $deckObject->moveCard($card->Id, $discardPileName);
 
                     // Notify players that card has been discarded from hand
-                    $theah->game->notifyAllPlayers("cardDiscardedFromHand", clienttranslate('${player_name} discarded <strong>${card_name}</strong>.'), [
-                        'i18n' => ['card_name'],
+                    $theah->game->notifyAllPlayers("cardDiscardedFromHand", clienttranslate('${player_name} discarded ${card_inject_code}.'), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "card_name" => $card->Name,
+                        "card_inject_code" => $card->getInjectCode(),
                         "playerId" => $event->playerId,
                         "card" => $card->getPropertyArray($theah->game),
                     ]);
@@ -354,10 +351,10 @@ trait EventHub
                         $card->Location = $discardPileName;
                         $card->IsUpdated = true;
     
-                    $this->game->notifyAllPlayers("cardDiscardedFromPlay", clienttranslate('<strong>${card_name}</strong> discarded from ${location}.'), [
-                        'i18n' => ['card_name', 'location'],
+                    $this->game->notifyAllPlayers("cardDiscardedFromPlay", clienttranslate('${card_inject_code} discarded from ${location}.'), [
+                        'i18n' => ['location'],
                         "playerId" => $event->ownerId,
-                        "card_name" => $card->Name,
+                        "card_inject_code" => $card->getInjectCode(),
                         "cardId" => $event->cardId,
                         "location" => $event->fromLocation,
                     ]);
@@ -530,9 +527,9 @@ trait EventHub
                     $deck->moveCard($event->cardId, $event->location);
                     
                     // Notify players that card has been played
-                    $theah->game->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('<strong>${card_name}</strong> added to ${location} from the city deck'), [
-                        'i18n' => ['card_name', 'location'],
-                        "card_name" => $card->Name,
+                    $theah->game->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_inject_code} added to ${location} from the city deck'), [
+                        'i18n' => ['location'],
+                        "card_inject_code" => $card->getInjectCode(),
                         "location" => $event->location,
                         "card" => $card->getPropertyArray($theah->game)
                     ]);
@@ -736,10 +733,9 @@ trait EventHub
                 $event->scheme->IsUpdated = true;
 
                 // Notify players of selected scheme
-                $this->game->notifyAllPlayers("approachSchemePlayed", clienttranslate('${player_name} plays <strong>${scheme_name}</strong> as their Approach Scheme.'), [
-                    'i18n' => ['scheme_name'],
+                $this->game->notifyAllPlayers("approachSchemePlayed", clienttranslate('${player_name} plays ${scheme_inject_code} as their Approach Scheme.'), [
                     "player_name" => $event->playerName,
-                    "scheme_name" => $event->scheme->Name,
+                    "scheme_inject_code" => $event->scheme->getInjectCode(),
                     "player_id" => $event->playerId,
                     "scheme" => $event->scheme->getPropertyArray($this->game),
                 ]);

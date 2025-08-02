@@ -1229,7 +1229,9 @@ trait StatesTrait
 
         if ($terrellInDuel)
         {
-            $this->notifyAllPlayers("message", clienttranslate('Terrell Brandt is in the duel. Cards in his dueling line will be returned to his hand.'), []);
+            $this->notifyAllPlayers("message", clienttranslate('${terrell_inject_code} is in the duel. Cards in his dueling line will be returned to his hand.'), [
+                "terrell_inject_code" => $terrell->getInjectCode(),
+            ]);
         }
 
         $event = $this->theah->createEvent(Events::DuelEnd);

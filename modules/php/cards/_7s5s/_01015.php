@@ -38,9 +38,8 @@ class _01015 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> now resolves.  Reknown will be added to The Docks and The Grand Bazaar.'), [
-                'i18n' => ['scheme_name'],
-                "scheme_name" => $this->Name,
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves.  Reknown will be added to The Docks and The Grand Bazaar.'), [
+                "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
             $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);

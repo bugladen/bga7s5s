@@ -273,6 +273,14 @@ return declare('seventhseacityoffivesails.setup', null, {
         // Setup game notifications to handle (see "setupNotifications" method below)
         this.setupNotifications();
 
+        // Override the format_string_recursive function to inject card image tooltips
+        this.format_string_recursive_original = this.format_string_recursive;
+        this.format_string_recursive = this.format_string_recursive_with_injection;
+
+        dojo.connect(this.notifqueue, 'addToLog', () => {
+            this.addTooltipsToLog();
+        });
+
         debug( "Ending game setup" );
     },
 })

@@ -1120,3 +1120,11 @@ body {
 .lethal {
     font-size: 14pt;
 }
+
+.log_tooltip {
+    display: inline-block;
+    padding: 5px;
+    background-color: lightgray;
+    border-radius: 5px;
+    padding: 5px;
+}

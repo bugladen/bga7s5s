@@ -466,4 +466,10 @@ abstract class Card
 
         return false;
     }
+
+    //This will return a string that can be used to inject the card tooltip into the game log on the client
+    public function getInjectCode(): string
+    {
+        return sprintf('[%s(%s)]', $this->Name, $this->Image);
+    }
 }

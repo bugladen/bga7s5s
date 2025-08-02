@@ -120,6 +120,54 @@ function (dojo, declare) {
 
             this.inDuel = false;
             this.duelRound = 0;
+
+            this.log_span_num = 0;
+        },
+
+        format_string_recursive_with_injection: function (log, args) 
+        {
+            var result = this.format_string_recursive_original(log, args);
+            return this.logInject(result);
+        },
+
+        logInject: function (log_entry) {
+            const card_regex = /\[([^\[\]]+?)\(([^()]+?)\)\]/g;    // this will catch a card name in the log formatted like so: [card_name(image_path)]
+            const cards_to_replace = log_entry.matchAll(card_regex);
+            for (let card of cards_to_replace) 
+            {
+                console.log(card);
+                const cardName = card[1];
+                const cardImage = card[2];
+                const cardSpan = this.getHTMLForLog(cardName, cardImage, 'card');
+                log_entry = log_entry.replace(card[0], cardSpan);
+            }
+            console.log(log_entry);
+            return log_entry;
+        },
+
+        getHTMLForLog: function (cardName, cardImage, type) 
+        {
+            switch(type) 
+            {
+                case 'card':
+                    this.log_span_num++; // adds a unique num to the span id so that duplicate card names in the log have unique ids
+                    const item_type = 'card_tt';
+                    return `<span id="${this.log_span_num}_${item_type}" image="${cardImage}" class="${item_type} log_tooltip"><strong>${_(cardName)}</strong></span>`;
+            }
+        },        
+
+        addTooltipsToLog: function() 
+        {
+            const item_elements = dojo.query('.log_tooltip:not(.tt_processed)');
+            Array.from(item_elements).forEach(ele => {
+                const ele_id = ele.id;
+                ele.classList.add('tt_processed');  // prevents tooltips being re-added to previous log entries
+                if (ele.classList.contains('card_tt')) 
+                {
+                    const cardImage = ele.getAttribute('image');
+                    this.addTooltipHtml( ele_id, `<img src="${g_gamethemeurl + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
+                }
+            });
         },
     });      
 });

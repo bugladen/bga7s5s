@@ -24,21 +24,21 @@ class Action_01036 extends CharacterAction
         if ( ! parent::isAvailableToPlayer($playerId, $theah))
             return false;
 
-        $daniela = $this->getOwningCharacter($theah);
-        if (! $theah->cardInCity($daniela))
+        $daniella = $this->getOwningCharacter($theah);
+        if (! $theah->cardInCity($daniella))
             return false;
 
-        $characters = $theah->getCharactersAtLocation($daniela->Location);
-        $characters = array_filter($characters, fn($character) => $character->ControllerId == $daniela->ControllerId && $character->hasTrait("Mercenary"));
+        $characters = $theah->getCharactersAtLocation($daniella->Location);
+        $characters = array_filter($characters, fn($character) => $character->ControllerId == $daniella->ControllerId && $character->hasTrait("Mercenary"));
 
         return count($characters) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        $daniela = $this->getOwningCharacter($theah);
-        $performers = $theah->getCharactersAtLocation($daniela->Location);
-        $performers = array_filter($performers, fn($performer) => $performer->ControllerId == $daniela->ControllerId && $performer->hasTrait("Mercenary"));
+        $daniella = $this->getOwningCharacter($theah);
+        $performers = $theah->getCharactersAtLocation($daniella->Location);
+        $performers = array_filter($performers, fn($performer) => $performer->ControllerId == $daniella->ControllerId && $performer->hasTrait("Mercenary"));
 
         return $performers;
     }
@@ -53,8 +53,8 @@ class Action_01036 extends CharacterAction
             $game->globals->set(Game::CHALLENGE_TYPE, Game::DANIELA_DEITRICH_CHALLENGE_TYPE);
             $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
 
-            $daniela = $this->getOwningCharacter($event->theah);
-            $transitionEvent = EventFactory::createTransitionEvent($daniela->ControllerId, $daniela->Id, "01036", $this->Id);
+            $daniella = $this->getOwningCharacter($event->theah);
+            $transitionEvent = EventFactory::createTransitionEvent($daniella->ControllerId, $daniella->Id, "01036", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
     }
