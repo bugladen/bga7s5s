@@ -4,7 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-abstract class SchemeCityAction extends CardAction
+abstract class SchemeCityAction extends SchemeAction
 {
     public function __construct()
     {
@@ -14,12 +14,6 @@ abstract class SchemeCityAction extends CardAction
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
     {
         if ( ! parent::isAvailableToPlayer($playerId, $theah))
-        {
-            return false;
-        }
-
-        $owner = $this->getOwningCard($theah);
-        if ($owner->ControllerId != $playerId)
         {
             return false;
         }

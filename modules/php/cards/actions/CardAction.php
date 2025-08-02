@@ -26,6 +26,12 @@ abstract class CardAction extends Action implements ICardAbility
             return false;
         }
 
+        $owner = $this->getOwningCard($theah);
+        if ($owner->ControllerId != $playerId)
+        {
+            return false;
+        }
+
         return ! $this->Used;
     }
 
