@@ -127,7 +127,6 @@ $machinestates += [
             "recruit" => States::HIGH_DRAMA_PLAYER_TURN_01035_4
         ]
     ],
-
     States::HIGH_DRAMA_PLAYER_TURN_01035_4 => [
         "name" => "highDramaPhase01035_4",
         "description" => clienttranslate('${actplayer} is choosing whether to parley with the revealed mercenary.'),
@@ -143,6 +142,43 @@ $machinestates += [
             "parleyChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY
         ]
     ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01038 => [
+        "name" => "highDramaPhase01038",
+        "description" => clienttranslate('Your opponent(s) must acknowledge revealed cards.'),
+        "descriptionmyturn" => clienttranslate('Otto Streit: ${you} must acknowledge revealed cards:'),
+        "type" => "multipleactiveplayer",
+        "args" => "argsForState",
+        "action" => "stMultiPlayerInit",
+        "possibleactions" => [
+            "actMultipleOk", 
+        ],
+        "transitions" => ["multipleOk" => States::HIGH_DRAMA_PLAYER_TURN_01038_2]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01038_2 => [
+        "name" => "highDramaPhase01038_2",
+        "type" => "game",
+        "action" => "stSetCurrentPlayer",
+        "transitions" => ["" => States::HIGH_DRAMA_PLAYER_TURN_01038_3]
+    ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01038_3 => [
+        "name" => "highDramaPhase01038_3",
+        "description" => clienttranslate('${actplayer} may choose an Attachment to put into their Faction Hand.'),
+        "descriptionmyturn" => clienttranslate('${you} may choose an Attachment to put into your Faction Hand:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actFromCardPass"   
+        ],
+        "transitions" => [
+            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
+
 
     States::HIGH_DRAMA_PLAYER_TURN_01044 => [
         "name" => "highDramaPhase01044",

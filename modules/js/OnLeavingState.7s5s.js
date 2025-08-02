@@ -212,6 +212,22 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 this.chooseList.removeAll();
                 this.chooseList.setSelectionMode(0);
             },
+
+            'highDramaPhase01038' : () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
+            },
+            'highDramaPhase01038_3' : () => {
+                if (this.isCurrentPlayerActive()) 
+                    {
+                        dojo.addClass('choose_container', 'hidden');
+                        dojo.addClass('chooseList', 'hidden');
+                        this.chooseList.removeAll();
+                        this.chooseList.setSelectionMode(0);
+                    }
+            },
     
             'highDramaPhase01044' : () => 
             {

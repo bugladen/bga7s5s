@@ -483,6 +483,57 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 $('choose_container_name').innerHTML = translated;
                 this.chooseList.setSelectionMode(0);
             },
+
+            'highDramaPhase01038' : () => {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                
+                let count = 0;
+                args.args.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                    if (card.type === 'Attachment') 
+                        count++;
+                });
+                var translated = dojo.string.substitute(
+                    _("Otto Streit's Revealed Cards: ( ${count} Attachment(s) Found )"),
+                    {
+                        count: count
+                    }
+                );
+                $('choose_container_name').innerHTML = translated;
+                this.chooseList.setSelectionMode(0);
+            },
+            'highDramaPhase01038_3' : () => {
+                if (this.isCurrentPlayerActive()) 
+                    {
+                        dojo.removeClass('choose_container', 'hidden');
+                        dojo.removeClass('chooseList', 'hidden');
+                        
+                        let count = 0;
+                        args.args.args.cards.forEach((card) => {
+                            this.addCardToDeck(this.chooseList, card);
+                            if (card.type === 'Attachment') 
+                                count++;
+                            else
+                            {
+                                let div = this.chooseList.getItemDivId(card.id);
+                                dojo.addClass(div, 'unselectable');        
+                            }
+        
+                            this.cardProperties[card.id] = card;                
+                        });
+                        var translated = dojo.string.substitute(
+                            _("Otto Streit's Revealed Cards: ( ${count} Attachment(s) Found )"),
+                            {
+                                count: count
+                            }
+                        );
+                        $('choose_container_name').innerHTML = translated;
+                        this.chooseList.setSelectionMode(0);
+                        if (count > 0)
+                            this.chooseList.setSelectionMode(1);
+                    }
+                },
     
             'highDramaPhase01044' : () => {
                 if (this.isCurrentPlayerActive()) {
