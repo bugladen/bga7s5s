@@ -329,7 +329,13 @@ trait EventHub
                     $deckObject->moveCard($card->Id, $discardPileName);
 
                     // Notify players that card has been discarded from hand
-                    $theah->game->notifyAllPlayers("cardDiscardedFromHand", clienttranslate('${player_name} discarded ${card_inject_code}.'), [
+                    $message = '${player_name} discarded ${card_inject_code}.';
+                    if ($event->AsPlayed)
+                        $message = '${player_name} played ${card_inject_code}.';
+                    if ($event->AsPayment)
+                        $message = '${player_name} discarded ${card_inject_code} as payment.';
+
+                    $theah->game->notifyAllPlayers("cardDiscardedFromHand", clienttranslate($message), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "card_inject_code" => $card->getInjectCode(),
                         "playerId" => $event->playerId,
