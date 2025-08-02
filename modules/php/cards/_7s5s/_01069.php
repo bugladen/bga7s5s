@@ -64,10 +64,9 @@ class _01069 extends Character implements IHasActions
 
             if ($ignoreWounds)
             {
-                $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${character_name}</strong> ignores wounds from Sorceries and Sorcerer abilities he performs. ${wounds} wound(s) ignored from <strong>${source_name}</strong>.'), [
-                    "i18n" => ["character_name", "source_name"],
-                    "character_name" => $this->Name,
-                    "source_name" => $source->Name,
+                $event->theah->game->notifyAllPlayers("message", clienttranslate('${character_inject_code} ignores wounds from Sorceries and Sorcerer abilities he performs. ${wounds} wound(s) ignored from ${source_inject_code}.'), [
+                    "character_inject_code" => $this->getInjectCode(),
+                    "source_inject_code" => $source->getInjectCode(),
                     "wounds" => $event->wounds,
                 ]);
             }

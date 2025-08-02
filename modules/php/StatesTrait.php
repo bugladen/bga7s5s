@@ -565,11 +565,11 @@ trait StatesTrait
             $owner = $action->getOwningCard($this->theah);
             $action->SetUsed($this->theah, true);
 
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [
-                'i18n' => ['action', 'owner_name'],
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}.'), [
+                'i18n' => ['action'],
                 'player_name' => $this->getActivePlayerName($playerId),
                 'action' => $action->Name,
-                'owner_name' => $owner->Name,
+                'owner_inject_code' => $owner->getInjectCode(),
             ]);
         }
         
@@ -1621,9 +1621,9 @@ trait StatesTrait
             {
                 $leader = $this->theah->getLeaderByPlayerId($playerId);
 
-                $this->notifyAllPlayers("message", clienttranslate('${player_name}:<strong>${leader_name}</strong> has ${wounds} Wounds.'), [
+                $this->notifyAllPlayers("message", clienttranslate('${player_name}: ${leader_inject_code} has ${wounds} Wounds.'), [
                     "player_name" => $this->getPlayerNameById($playerId),
-                    "leader_name" => $leader->Name,
+                    "leader_inject_code" => $leader->getInjectCode(),
                     "wounds" => $leader->Wounds
                 ]);
 

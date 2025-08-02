@@ -77,10 +77,9 @@ class _01126 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> now resolves. 
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves. 
             ${player_name} may first choose an outermost city location. Then they will choose two locations to place reknown onto. '), [
-                'i18n' => ['scheme_name'],
-                "scheme_name" => $this->Name,
+                "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);
 
@@ -99,10 +98,10 @@ class _01126 extends Scheme
             $deck = $event->theah->game->getGameDeckObject();
 
             $event->theah->game->notifyAllPlayers('01126_2_scheme_moved', 
-                clienttranslate('<strong>${card_name}</strong> moves to ${location}'), [
-                    'i18n' => ['card_name', 'location'],
+                clienttranslate('${scheme_inject_code} moved to ${location}'), [
+                    'i18n' => ['location'],
+                    "scheme_inject_code" => $this->getInjectCode(),
                     "cardId" => $this->Id,
-                    "card_name" => $this->Name,
                     "location" => $event->location,
             ]);    
 

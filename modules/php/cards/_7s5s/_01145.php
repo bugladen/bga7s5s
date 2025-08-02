@@ -40,10 +40,9 @@ class _01145 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('The first part of <strong>${scheme_name}</strong> now resolves. ${player_name} must move a Reknown from one location to another.
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('The first part of ${scheme_inject_code} now resolves. ${player_name} must move a Reknown from one location to another.
             Then, Reknown will be added to all locations that have none.'), [
-                'i18n' => ['scheme_name'],
-                "scheme_name" => $this->Name,
+                "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);
 

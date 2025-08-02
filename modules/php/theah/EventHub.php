@@ -1178,11 +1178,11 @@ trait EventHub
                     $actor = $theah->getCardById($event->actorId);
                     $challenger = $theah->getCardById($event->challengerId);
                     $defender = $theah->getCardById($event->defenderId);
-                    $theah->game->notifyAllPlayers("newDuelRound", clienttranslate('DUEL ROUND #${round} HAS STARTED for ${player_name} and their ${role} character <strong>${character_name}</strong>.'), [
-                        'i18n' => ['role', 'character_name', 'challengerName', 'defenderName'],
+                    $theah->game->notifyAllPlayers("newDuelRound", clienttranslate('DUEL ROUND #${round} HAS STARTED for ${player_name} and their ${role} ${character_inject_code}.'), [
+                        'i18n' => ['role'],
                         "player_name" => $playerName,
-                        "role" => $event->round % 2 == 1 ? "Defending" : "Challenging",
-                        "character_name" => $actor->Name,
+                        "role" => $event->round % 2 == 1 ? "Defending Character" : "Challenging Character",
+                        "character_inject_code" => $actor->getInjectCode(),
                         "round" => $event->round,
                         "playerId" => $event->playerId,
                         "challengerId" => $event->challengerId,

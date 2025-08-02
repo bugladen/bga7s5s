@@ -41,9 +41,8 @@ class _01098 extends Scheme
         //Two locations will each get one Reknown.
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> now resolves. ${player_name} must choose two city locations to place reknown onto.'), [
-                'i18n' => ['scheme_name'],
-                "scheme_name" => $this->Name,
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose two city locations to place reknown onto.'), [
+                "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);
 
@@ -61,9 +60,8 @@ class _01098 extends Scheme
             $playerName = $event->theah->game->getPlayerNameById($this->ControllerId);
 
             //Pick an opponent. That opponent will reveal a random card from their hand.
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> triggers a Forced Reaction for the End of Planning Phase.  ${player_name} must choose an opponent (via their leader) to reveal a random card from their hand.'), [
-                'i18n' => ['scheme_name'],
-                "scheme_name" => $this->Name,
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} triggers a Forced Reaction for the End of Planning Phase.  ${player_name} must choose an opponent (via their leader) to reveal a random card from their hand.'), [
+                "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $playerName,
             ]);
 

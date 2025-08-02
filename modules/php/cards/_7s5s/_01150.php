@@ -43,9 +43,8 @@ class _01150 extends Scheme
 
             $game = $event->theah->game;
 
-            $game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> now resolves. A Reknown will be added to the The Forum.  Opponents MAY then choose a city location. One Reknown will move from chosen location to The Forum.'), [
-                'i18n' => ['scheme_name'],
-                "scheme_name" => $this->Name,
+            $game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves. A Reknown will be added to the The Forum.  Opponents MAY then choose a city location. One Reknown will move from chosen location to The Forum.'), [
+                "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
             $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);

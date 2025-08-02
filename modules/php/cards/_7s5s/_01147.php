@@ -50,11 +50,10 @@ class _01147 extends Scheme implements IHasActions
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id)
         {
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> now resolves.  
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves.  
             Reknown will be added to The Forum and The Grand Bazaar. 
             Cards will be revealed from the City Deck until an Attachment is revealed, then added to The Grand Bazaar.'), [
-                'i18n' => ['scheme_name'],
-                "scheme_name" => $this->Name,
+                "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
             $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);

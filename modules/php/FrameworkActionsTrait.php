@@ -330,11 +330,11 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($schemeMoveEvent);
 
         $this->notifyAllPlayers('message', 
-            clienttranslate('${player_name} has chosen ${location} as the Chosen Location for <strong>${card_name}</strong>.'), [
-            'i18n' => ['location', 'card_name'],
+            clienttranslate('${player_name} has chosen ${location} as the Chosen Location for ${scheme_inject_code}.'), [
+            'i18n' => ['location'],
             "player_name" => $playerName,
             "location" => $leshiyeLocation,
-            "card_name" => $scheme->Name,
+            "scheme_inject_code" => $scheme->getInjectCode(),
         ]);
 
 
@@ -643,11 +643,10 @@ trait FrameworkActionsTrait
         $this->globals->set(GAME::CATS_EMBARGO, $pickedCard->Id);
 
         $this->notifyAllPlayers('message', 
-            clienttranslate('${player_name} reveals <strong>${picked_card}</strong> randomly from <strong>${chosen_player_name}</strong>\'s hand.'), [
-            'i18n' => ['picked_card'],
+            clienttranslate('${player_name} reveals ${picked_card} randomly from <strong>${chosen_player_name}</strong>\'s hand.'), [
             "player_name" => $playerName,
             "chosen_player_name" => $chosenPlayerName,
-            "picked_card" => $pickedCard->Name,
+            "picked_card" => $pickedCard->getInjectCode(),
             "card" => $pickedCard->getPropertyArray($this),
         ]);
 
@@ -794,18 +793,16 @@ trait FrameworkActionsTrait
         $recruitId = $this->globals->get(GAME::CHOSEN_CARD);
         $performer = $this->theah->getCharacterById($performerId);
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} chose <strong>${card_name}</strong> to perform a Recruit Action.'), [
-            'i18n' => ['card_name'],
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} chose ${card_inject_code} to perform a Recruit Action.'), [
             "player_name" => $playerName,
-            "card_name" => $performer->Name,
+            "card_inject_code" => $performer->getInjectCode(),
         ]);
 
         if ($discount > 0)
         {
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} chose to Parley with <strong>${card_name}</strong>.'), [
-                'i18n' => ['card_name'],
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} chose to Parley with ${card_inject_code}.'), [
                 "player_name" => $playerName,
-                "card_name" => $performer->Name,
+                "card_inject_code" => $performer->getInjectCode(),
             ]);
             
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
@@ -995,10 +992,9 @@ trait FrameworkActionsTrait
             $smuggledItemId = $this->globals->get(Game::SMUGGLED_ITEM_ATTACHMENT_ID);
             $smuggledItem = $this->theah->getCardById($smuggledItemId);
 
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} performed the Action from <strong>${card_name}</strong>.'), [
-                'i18n' => ['card_name'],
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} performed the Action from ${card_inject_code}.'), [
                 "player_name" => $this->getPlayerNameById($playerId),
-                "card_name" => $smuggledItem->Name,
+                "card_inject_code" => $smuggledItem->getInjectCode(),
             ]);
 
             $smuggledUnattachedEvent = EventFactory::createAttachmentUnequippedEvent($playerId, $performer->Id, $smuggledItem->Id);
@@ -1011,10 +1007,10 @@ trait FrameworkActionsTrait
         //If the Equip event was caused by Let's Haggle, we need to announce it here
         if ($equipType == Game::LETS_HAGGLE_EQUIP_TYPE)
         {
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} performed the Action from <strong>${card_name}</strong>.'), [
-                'i18n' => ['card_name'],
+            $scheme = $this->instantiateCard("01147");
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} performed the Action from ${scheme_inject_code}.'), [
                 "player_name" => $this->getPlayerNameById($playerId),
-                "card_name" => "Let's Haggle",
+                "scheme_inject_code" => $scheme->getInjectCode(),
             ]);
         }
 
@@ -1251,11 +1247,11 @@ trait FrameworkActionsTrait
             $this->theah->queueEvent($event);
         }
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} is performing the In-Hand Action [${action_name}] from <strong>${card_name}</strong>.'), [
-            "i18n" => ["action_name", "card_name"],
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} is performing the In-Hand Action [${action_name}] from ${card_inject_code}.'), [
+            "i18n" => ["action_name"],
             "player_name" => $this->getActivePlayerName(),
             "action_name" => $action->Name,
-            "card_name" => $risk->Name,
+            "card_inject_code" => $risk->getInjectCode(),
         ]);
 
         $event = EventFactory::createActionTriggeredEvent($playerId, $performerId, $actionId);
@@ -1638,10 +1634,10 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} is playing <strong>${card_name}</strong> as their Combat Card.'), [
+        $this->notifyAllPlayers("message", clienttranslate('${player_name} is playing ${card_inject_code} as their Combat Card.'), [
             "i18n" => ["player_name", "effect_name", "maneuver_name"],
             "player_name" => $this->getActivePlayerName(),
-            "card_name" => $card->Name
+            "card_inject_code" => $card->getInjectCode(),
         ]);
 
         //Move the cards used to pay to the player's discard pile

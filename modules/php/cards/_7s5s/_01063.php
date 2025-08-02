@@ -69,10 +69,10 @@ class _01063 extends Character
                             {
                                 $character->removeTechnique($technique);
 
-                                $event->theah->game->notifyAllPlayers('techniqueRemoved', clienttranslate('<strong>${source_name}:</strong> ${character_name} has lost Technique: ${technique_name}.'), [
-                                    'i18n' => ['source_name', 'character_name', 'technique_name'],
-                                    'source_name' => $this->Name,
-                                    'character_name' => $character->Name,
+                                $event->theah->game->notifyAllPlayers('techniqueRemoved', clienttranslate('${source_inject_code}: ${character_inject_code} has lost Technique: ${technique_name}.'), [
+                                    'i18n' => ['technique_name'],
+                                    'source_inject_code' => $this->getInjectCode(),
+                                    'character_inject_code' => $character->getInjectCode(),
                                     'characterId' => $character->Id,
                                     'techniqueId' => $technique->Id,
                                     'technique_name' => $technique->Name
@@ -99,10 +99,10 @@ class _01063 extends Character
                         {
                             $character->addTechnique($technique);
 
-                            $event->theah->game->notifyAllPlayers('techniqueAdded', clienttranslate('<strong>${source_name}:</strong> ${character_name} has gained Technique: ${technique_name}.'), [
-                                'i18n' => ['source_name', 'character_name', 'technique_name'],
-                                'source_name' => $this->Name,
-                                'character_name' => $character->Name,
+                            $event->theah->game->notifyAllPlayers('techniqueAdded', clienttranslate('${source_inject_code}: ${character_inject_code} has gained Technique: ${technique_name}.'), [
+                                'i18n' => ['technique_name'],
+                                'source_inject_code' => $this->getInjectCode(),
+                                'character_inject_code' => $character->getInjectCode(),
                                 'characterId' => $character->Id,
                                 'technique' => $technique->getPropertyArray($event->theah->game),
                                 'technique_name' => $technique->Name
@@ -123,10 +123,10 @@ class _01063 extends Character
                     $technique->setOwnerId($character->Id);
                     $character->addTechnique($technique);
 
-                    $event->theah->game->notifyAllPlayers('techniqueAdded', clienttranslate('<strong>${source_name}:</strong> ${character_name} has gained Technique: ${technique_name}.'), [
-                        'i18n' => ['source_name', 'character_name', 'technique_name'],
-                        'source_name' => $this->Name,
-                        'character_name' => $character->Name,
+                    $event->theah->game->notifyAllPlayers('techniqueAdded', clienttranslate('${source_inject_code}: ${character_inject_code} has gained Technique: ${technique_name}.'), [
+                        'i18n' => ['technique_name'],
+                        'source_inject_code' => $this->getInjectCode(),
+                        'character_inject_code' => $character->getInjectCode(),
                         'characterId' => $character->Id,
                         'technique' => $technique->getPropertyArray($event->theah->game),
                         'technique_name' => $technique->Name
@@ -145,10 +145,10 @@ class _01063 extends Character
                     {
                         $character->removeTechnique($technique);
 
-                        $event->theah->game->notifyAllPlayers('techniqueRemoved', clienttranslate('<strong>${source_name}:</strong> ${character_name} has lost Technique: ${technique_name}.'), [
-                            'i18n' => ['source_name', 'character_name', 'technique_name'],
-                            'source_name' => $this->Name,
-                            'character_name' => $character->Name,
+                        $event->theah->game->notifyAllPlayers('techniqueRemoved', clienttranslate('${source_inject_code}: ${character_inject_code} has lost Technique: ${technique_name}.'), [
+                            'i18n' => ['technique_name'],
+                            'source_inject_code' => $this->getInjectCode(),
+                            'character_inject_code' => $character->getInjectCode(),
                             'characterId' => $character->Id,
                             'techniqueId' => $technique->Id,
                             'technique_name' => $technique->Name

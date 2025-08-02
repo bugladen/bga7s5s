@@ -57,7 +57,7 @@ class _01043 extends Character implements IHasReactions
             if (in_array("Sorcerer", $adversary->Traits))
             {
                 $event->thrust += 1;
-                $event->explanations[] = "<strong>Uwe Zimmerman</strong> increases his Thrust by 1 when dueling with a Sorcerer.";
+                $event->explanations[] = sprintf($event->theah->game->translate("%s increases the Thrust of his Combat Cards by 1 when dueling with a Sorcerer."), $this->getInjectCode());
             }
         }
 

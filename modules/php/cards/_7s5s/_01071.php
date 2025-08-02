@@ -50,9 +50,8 @@ class _01071 extends Scheme implements IHasActions
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> now resolves. ${player_name} must choose a city location to place reknown onto.'), [
-                'i18n' => ['scheme_name'],
-                "scheme_name" => $this->Name,
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose a city location to place reknown onto.'), [
+                "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);
 

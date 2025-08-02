@@ -57,11 +57,10 @@ class _01045 extends Scheme implements IHasReactions
         parent::handleEvent($event);
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>${scheme_name}</strong> now resolves.  
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves.  
             Reknown will be added to The Forum. 
             ${player_name} will now search the City Deck discard pile for a Mercenary to place on top of the City Deck.'), [
-                'i18n' => ['scheme_name'],
-                "scheme_name" => $this->Name,
+                "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->theah->game->getPlayerNameById($event->playerId),
             ]);
 
