@@ -15,7 +15,7 @@ class SchemeAction extends CardAction
         }
 
         $owner = $this->getOwningCard($theah);
-        if ($owner->Location != Game::LOCATION_APPROACH)
+        if ($owner->Location != Game::LOCATION_PLAYER_HOME)
         {
             return false;
         }

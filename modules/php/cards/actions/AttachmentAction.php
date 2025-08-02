@@ -10,6 +10,22 @@ class AttachmentAction extends CardAction
     {
         parent::__construct();
     }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        {
+            return false;
+        }
+
+        $owner = $this->getOwningCharacter($theah);
+        if ($owner == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
     
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {

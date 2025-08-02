@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01042;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
@@ -1217,13 +1218,27 @@ trait StatesTrait
         $sql = "SELECT challenging_player_id, defending_player_id, challenger_id, defender_id FROM duel where duel_id = $duelId";
         $result = $this->getObjectListFromDB($sql)[0];
 
+        $challengerId = $result['challenger_id'];
+        $defenderId = $result['defender_id'];
+
+        //See if Terrell Brandt is in the duel
+        $challenger = $this->theah->getCharacterById($challengerId);
+        $defender = $this->theah->getCharacterById($defenderId);
+        $terrellInDuel = $challenger instanceof _01042 || $defender instanceof _01042;
+        $terrell = $terrellInDuel ? ($challenger instanceof _01042 ? $challenger : $defender) : null;
+
+        if ($terrellInDuel)
+        {
+            $this->notifyAllPlayers("message", clienttranslate('Terrell Brandt is in the duel. Cards in his dueling line will be returned to his hand.'), []);
+        }
+
         $event = $this->theah->createEvent(Events::DuelEnd);
         if ($event instanceof EventDuelEnd)
         {
             $event->challengingPlayerId = $result['challenging_player_id'];
             $event->defendingPlayerId = $result['defending_player_id'];
-            $event->challengerId = $result['challenger_id'];
-            $event->defenderId = $result['defender_id'];
+            $event->challengerId = $challengerId;
+            $event->defenderId = $defenderId;
         }
         $this->theah->queueEvent($event);
 
@@ -1233,8 +1248,18 @@ trait StatesTrait
         {
             $card = $this->getCardObjectFromDb($purgatoryCard['id']);
             $playerId = $card->ControllerId;
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
-            $this->theah->queueEvent($event);
+
+            //Terrell Brandt's dueling line will be returned to his hand
+            if ($terrellInDuel && $playerId == $terrell->ControllerId)
+            {
+                $event = EventFactory::createCardAddedToHandEvent($playerId, $card->Id);
+                $this->theah->queueEvent($event);
+            }
+            else
+            {
+                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
+                $this->theah->queueEvent($event);
+            }
         }
 
         $this->gamestate->nextState();

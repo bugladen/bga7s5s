@@ -3,7 +3,6 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
