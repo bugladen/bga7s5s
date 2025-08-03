@@ -126,6 +126,19 @@ return declare('seventhseacityoffivesails.setup', null, {
     
         }
 
+        // Display the cheat cards
+        if (! this.isSpectator)
+        {
+            this.getPlayerPanelElement(this.player_id).innerHTML += this.format_block( 'jstpl_help_cards', {
+                path: g_gamethemeurl
+            });
+            this.addTooltipHtml("help_card_1", `<img src="${g_gamethemeurl}/img/cards/help.card.1.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTooltipHtml("help_card_2", `<img src="${g_gamethemeurl}/img/cards/help.card.2.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTooltipHtml("help_card_3", `<img src="${g_gamethemeurl}/img/cards/help.card.3.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTooltipHtml("help_card_4", `<img src="${g_gamethemeurl}/img/cards/help.card.4.jpg" />`, this.CARD_TOOLTIP_DELAY);
+    
+        }
+        
         // Display the first player marker if there is one
         if (gamedatas.firstPlayer) {
             dojo.addClass(`${gamedatas.firstPlayer}-first-player`, 'first-player-home');

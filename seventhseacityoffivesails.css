@@ -1128,3 +1128,11 @@ body {
     border-radius: 5px;
     padding: 5px;
 }
+
+.help-card {
+    width: 30px;
+    border: solid 1px black;
+    margin-right: 1px;
+    margin-top: 2px;
+    cursor: zoom-in;
+}

@@ -71,6 +71,15 @@ var jstpl_player_board = `
 </div>
 `;
 
+var jstpl_help_cards = `
+<div>
+<img id="help_card_1" src="\${path}/img/cards/help.card.1.jpg" class="help-card" />
+<img id="help_card_2" src="\${path}/img/cards/help.card.2.jpg" class="help-card" />
+<img id="help_card_3" src="\${path}/img/cards/help.card.3.jpg" class="help-card" />
+<img id="help_card_4" src="\${path}/img/cards/help.card.4.jpg" class="help-card" />
+</div>
+`;
+
 var jstpl_home=`
 <div id="\${id}" class="home-container home-\${faction}">
     <div class="home-panel">
