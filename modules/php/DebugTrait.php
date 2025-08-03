@@ -110,6 +110,18 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
+    public function debug_EngardeCard(int $cardId, int $playerId)
+    {
+        $this->theah->buildCity();
+        $card = $this->theah->getCardById($cardId);
+        if ($card == null)
+            throw new \BgaUserException(self::_("Card not found"));
+
+        $event = EventFactory::createCardEngardedEvent($playerId, $cardId);
+        $this->theah->queueEvent($event);
+        $this->theah->runEvents($debug = true);
+    }
+
     public function debug_SetReknownOnCard(int $cardId, int $reknown)
     {
         $this->theah->buildCity();

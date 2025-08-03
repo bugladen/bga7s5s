@@ -2,10 +2,16 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01046a;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01046b;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 
-class _01046 extends FactionAttachment
+class _01046 extends FactionAttachment implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -30,6 +36,11 @@ class _01046 extends FactionAttachment
             'Sorcery',
             'Corruption',
             'Unique',
+        ];
+
+        $this->Actions = [
+            new Action_01046a(),
+            new Action_01046b(),
         ];
     }
 

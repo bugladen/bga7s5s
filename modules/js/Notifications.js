@@ -547,6 +547,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
 
         const card = this.cardProperties[args.cardId];
+        card.engaged = true;
         dojo.addClass(`${card.divId}_image`, 'engaged');
     },
 
@@ -558,6 +559,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
 
         const card = this.cardProperties[args.cardId];
+        card.engaged = false;
         dojo.removeClass(`${card.divId}_image`, 'engaged');
     },
 

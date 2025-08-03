@@ -235,6 +235,12 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.addActionButton(`actSendHome`, _('Send Home'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
                 }
             },
+
+            'highDramaPhase01046a': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
     
             'highDramaPhase01068': () => {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
