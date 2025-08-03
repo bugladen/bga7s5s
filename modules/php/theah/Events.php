@@ -85,6 +85,7 @@ class Events
     //Card Manipulation events
     const AttachmentEquipped = 'EventAttachmentEquipped';
     const AttachmentUnequipped = 'EventAttachmentUnequipped';
+    const AttachmentMoved = 'EventAttachmentMoved';
     const CardMoved = 'EventCardMoved';
     const CardDiscardedFromPlay = 'EventCardDiscardedFromPlay';
     const CardDrawn = 'EventCardDrawn';

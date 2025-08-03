@@ -67,4 +67,9 @@ abstract class Attachment extends Card implements IWealthCost
         return $originalTargetId;
     }
 
+    public function hasEquipRestriction(string $type): bool
+    {
+        return true;
+    }
+    
 }

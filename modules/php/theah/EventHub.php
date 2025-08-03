@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
@@ -118,8 +119,8 @@ trait EventHub
             case $event instanceof EventAttachmentEquipped:
                 $handler = function (Theah $theah, EventAttachmentEquipped $event)
                 {
-                    $performer = $theah->getCardById($event->characterId);                    
-                    $attachment = $theah->getCardById($event->attachmentId);
+                    $performer = $theah->getCharacterById($event->characterId);                    
+                    $attachment = $theah->getAttachmentById($event->attachmentId);
                     // If the attachment is not in the world (came from the City Deck), add it
                     if ($attachment == null)
                     {
@@ -127,13 +128,11 @@ trait EventHub
                         $theah->addCardToWorld($attachment);
                     }
 
-                    if ($performer instanceof Character) {
-                        $performer->addAttachment($attachment);
-                        $modifiedResolve = $performer->ModifiedResolve;
-                        $modifiedCombat = $performer->ModifiedCombat;
-                        $modifiedFinesse = $performer->ModifiedFinesse;
-                        $modifiedInfluence = $performer->ModifiedInfluence;
-                    }
+                    $performer->addAttachment($attachment);
+                    $modifiedResolve = $performer->ModifiedResolve;
+                    $modifiedCombat = $performer->ModifiedCombat;
+                    $modifiedFinesse = $performer->ModifiedFinesse;
+                    $modifiedInfluence = $performer->ModifiedInfluence;
 
                     if ($attachment instanceof Attachment) {                        
                         $attachment->ControllerId = $event->playerId;
@@ -154,6 +153,70 @@ trait EventHub
                         "performer_name" => $performer->Name,
                         "discount" => $event->discount,
                         "cost" => $event->cost,
+                        "attachment" => $attachment->getPropertyArray($theah->game),
+                        "performerId" => $performer->Id,
+                        "modifiedResolve" => $modifiedResolve,
+                        "modifiedCombat" => $modifiedCombat,
+                        "modifiedFinesse" => $modifiedFinesse,
+                        "modifiedInfluence" => $modifiedInfluence,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventAttachmentMoved:
+                $handler = function (Theah $theah, EventAttachmentMoved $event)
+                {
+                    $attachment = $theah->getAttachmentById($event->attachmentId);
+                    $attachment->AttachedToId = 0;
+                    $attachment->IsUpdated = true;
+
+                    $character = $theah->getCharacterById($event->fromCharacterId);
+                    $character->removeAttachment($attachment);
+                    $modifiedResolve = $character->ModifiedResolve;
+                    $modifiedCombat = $character->ModifiedCombat;
+                    $modifiedFinesse = $character->ModifiedFinesse;
+                    $modifiedInfluence = $character->ModifiedInfluence;
+
+                    $attachment->AttachedToId = $event->toCharacterId;
+                    $attachment->IsUpdated = true;
+
+                    $theah->game->notifyAllPlayers("attachmentUnequipped", clienttranslate(''), [
+                        "player_id" => $event->playerId,
+                        "attachmentId" => $attachment->Id,
+                        "characterId" => $character->Id,
+                        "modifiedResolve" => $modifiedResolve,
+                        "modifiedCombat" => $modifiedCombat,
+                        "modifiedFinesse" => $modifiedFinesse,
+                        "modifiedInfluence" => $modifiedInfluence,
+                    ]);
+
+                    if ($character->ModifiedResolve <= 0 && ! $character->IsDying)
+                    {
+                        $destroyEvent = EventFactory::createCharacterDestroyedEvent($character->ControllerId, $character->Id, sprintf($this->game->translate("Has unequipped %s"), $attachment->Name));
+                        $this->queueEvent($destroyEvent);
+                    }
+
+                    $performer = $theah->getCharacterById($event->toCharacterId);
+                    $performer->addAttachment($attachment);
+                    $modifiedResolve = $performer->ModifiedResolve;
+                    $modifiedCombat = $performer->ModifiedCombat;
+                    $modifiedFinesse = $performer->ModifiedFinesse;
+                    $modifiedInfluence = $performer->ModifiedInfluence;
+
+                    $attachment->ControllerId = $event->playerId;
+                    $attachment->AttachedToId = $performer->Id;
+                    $attachment->Location = $performer->Location;
+                    $attachment->IsUpdated = true;
+                
+                    // Notify players of attachment equipped
+                    $message = clienttranslate('${player_name} moved ${attachment_inject_code} from ${from_character_code} to ${to_character_code}.');
+                    $theah->game->notifyAllPlayers("attachmentEquipped", $message, [
+                        "player_id" => $event->playerId,
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "attachment_inject_code" => $attachment->getInjectCode(),
+                        "from_character_code" => $character->getInjectCode(),
+                        "to_character_code" => $performer->getInjectCode(),
                         "attachment" => $attachment->getPropertyArray($theah->game),
                         "performerId" => $performer->Id,
                         "modifiedResolve" => $modifiedResolve,

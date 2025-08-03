@@ -954,13 +954,13 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(self::_("Attachment is not at Performer's Location."));
             }
         }
-        if (in_array("Armor", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Armor")) {
+        if (in_array("Armor", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Armor") && $attachment->hasEquipRestriction("Armor")) {
             throw new \BgaUserException(self::_("Character cannot have more than one Armor attachment."));
         }
-        if (in_array("Attire", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Attire")) {
+        if (in_array("Attire", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Attire") && $attachment->hasEquipRestriction("Attire")) {
             throw new \BgaUserException(self::_("Character cannot have more than one Attire attachment."));
         }
-        if (in_array("Weapon", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Weapon")) {
+        if (in_array("Weapon", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Weapon") && $attachment->hasEquipRestriction("Weapon")) {
             throw new \BgaUserException(self::_("Character cannot have more than one Weapon attachment."));
         }
 

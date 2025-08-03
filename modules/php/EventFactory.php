@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
@@ -116,6 +117,20 @@ class EventFactory
             $event->discount = $discount;
             $event->cost = $cost;
             $event->asAction = $asAction;
+        }
+
+        return $event;
+    }
+
+    public static function createAttachmentMovedEvent(int $playerId, int $attachmentId, int $fromCharacterId, int $toCharacterId): EventAttachmentMoved
+    {
+        $event = self::createEvent(Events::AttachmentMoved);
+        if ($event instanceof EventAttachmentMoved)
+        {
+            $event->playerId = $playerId;
+            $event->attachmentId = $attachmentId;
+            $event->fromCharacterId = $fromCharacterId;
+            $event->toCharacterId = $toCharacterId;
         }
 
         return $event;

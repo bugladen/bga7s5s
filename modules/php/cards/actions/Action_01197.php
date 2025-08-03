@@ -192,14 +192,9 @@ class Action_01197 extends CharacterAction
 
             $attachmentId = $game->globals->get(Game::CHOSEN_CARD);
 
-            $unequipAttachment = EventFactory::createAttachmentUnequippedEvent($fromCharacter->ControllerId, $fromCharacter->Id, $attachmentId);
-            $game->theah->eventCheck($unequipAttachment);
-
-            $equipAttachment = EventFactory::createAttachmentEquippedEvent($chosenCharacter->ControllerId, $chosenCharacter->Id, $attachmentId, 0, 0, false);
-            $game->theah->eventCheck($equipAttachment);
-
-            $game->theah->queueEvent($unequipAttachment);
-            $game->theah->queueEvent($equipAttachment);
+            $moveAttachment = EventFactory::createAttachmentMovedEvent($fromCharacter->ControllerId, $attachmentId, $fromCharacter->Id, $chosenCharacter->Id);
+            $game->theah->eventCheck($moveAttachment);
+            $game->theah->queueEvent($moveAttachment);
 
             $game->gamestate->nextState("characterChosen");
         }

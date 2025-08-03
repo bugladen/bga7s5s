@@ -316,14 +316,11 @@ trait UtilitiesTrait
         return false;
     }
 
-    public function characterHasAttachmentOfType($character, $type)
+    public function characterHasAttachmentOfType(Character $character, $type)
     {
-        if ($character instanceof Character)
-            return false;
-        
         foreach ($character->Attachments as $attachment) {
-            $card = $this->getCardObjectFromDb($attachment);
-            if (in_array($type, $card->Traits)) {
+            $attachment = $this->getCardObjectFromDb($attachment);
+            if ($attachment instanceof Attachment && in_array($type, $attachment->Traits) && $attachment->hasEquipRestriction($type)) {
                 return true;
             }
         }

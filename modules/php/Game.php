@@ -13,12 +13,13 @@ declare(strict_types=1);
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\GameFramework\Components\Deck;
+use Bga\GameFramework\Components\Table;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
-class Game extends \Bga\GameFramework\Table
+class Game extends \Table
 {
     // Phases of the day
     final const SETUP_PHASE = 0;

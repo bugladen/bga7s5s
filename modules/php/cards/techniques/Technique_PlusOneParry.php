@@ -19,8 +19,9 @@ class Technique_PlusOneParry extends Technique
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id) 
         {
+            $owner = $this->getOwningCharacter($event->theah);
             $event->parry += 1;
-            $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Parry."), $this->Name);
+            $event->explanations[] = sprintf($event->theah->game->translate("%s: Technique [%s] adds 1 Parry."), $owner->getInjectCode(), $this->Name);
         }        
     }
 }
