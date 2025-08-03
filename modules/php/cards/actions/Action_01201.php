@@ -48,12 +48,12 @@ class Action_01201 extends CharacterAction implements ISorcererAbility
 
             $ravenna = $this->getOwningCard($event->theah);
 
-            $woundEvent = EventFactory::createCharacterWoundedEvent($ravenna->Id, $ravenna->Id, 1, $event->theah->game->translate("Ravenna: Wound and draw card action"));
+            $woundEvent = EventFactory::createCharacterWoundedEvent($ravenna->Id, $ravenna->Id, 1, sprintf($event->theah->game->translate("%s: Wound and draw card action"), $ravenna->getInjectCode()));
             $event->theah->eventCheck($woundEvent);
             $event->theah->queueEvent($woundEvent);
 
             $card = $event->theah->game->playerDrawCard($event->playerId);
-            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $card, $event->theah->game->translate("<strong>Ravenna: Wound and draw card action</strong>"));
+            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $card, sprintf($event->theah->game->translate("%s: Wound and draw card action"), $ravenna->getInjectCode()));
             $event->theah->queueEvent($addEvent);
         }
     }

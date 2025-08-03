@@ -19,8 +19,9 @@ class Technique_PlusOneRiposte extends Technique
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
+            $owner = $this->getOwningCard($event->theah);
             $event->riposte += 1;
-            $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Riposte."), $this->Name);
+            $event->explanations[] = sprintf($event->theah->game->translate("%s: Technique [%s] adds 1 Riposte."), $owner->getInjectCode(), $this->Name);
         }        
     }
 }

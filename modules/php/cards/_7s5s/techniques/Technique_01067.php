@@ -18,7 +18,7 @@ class Technique_01067 extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate("+1 Thrust or +1 Riposte");
+        $this->Name = clienttranslate("+1 Thrust or +1 Riposte if Musketeer at Location");
         $this->UseRiposteInstead = false;
     }
 

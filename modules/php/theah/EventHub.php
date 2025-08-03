@@ -1054,13 +1054,15 @@ trait EventHub
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
                         $effects .= sprintf($theah->game->translate("<p>Defender Threat went from %s to %s. "), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"]);
 
-                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('<strong>${character_name}</strong> adds the Technique [<strong>${effect_name}</strong>]. ${effects}'), [
+                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('Duel Update: ${character_inject_code} adds the Technique [<strong>${effect_name}</strong>] from ${card_inject_code}. ${effects}'), [
                         'i18n' => ['character_name', 'effect_name', 'effects'],
                         "round" => $round,
                         "mode" => "technique",
-                        "character_name" => $actor->Name,
-                        "card_name" => $owningCard->Name,
+                        "character_inject_code" => $actor->getInjectCode(),
+                        "card_inject_code" => $owningCard->getInjectCode(),
+                        "cardName" => $owningCard->Name,
                         "effect_name" => $technique->Name,
+                        "effectName" => $technique->Name,
                         "effects" => $effects,
                         "riposte" => $results["riposte"],
                         "parry" => $results["parry"],
@@ -1156,19 +1158,21 @@ trait EventHub
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
                         $effects .= "<p>" . sprintf($theah->game->translate("Defender Threat went from %s to %s. "), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"]);
 
-                    $message = clienttranslate('<strong>${character_name}</strong> activated the Maneuver [${effect_name}] ${effects}');
+                    $message = clienttranslate('Duel Update: ${character_inject_code} activated the Maneuver [${effect_name}] ${effects}');
                     if (! $maneuverCard instanceof Character)
                     {
-                        $message = clienttranslate('<strong>${character_name}</strong> has activated the Maneuver [${effect_name}] from <strong>${card_name}</strong> ${effects}');
+                        $message = clienttranslate('Duel Update: ${character_inject_code} has activated the Maneuver [${effect_name}] from ${card_inject_code} ${effects}');
                     }
 
                     $theah->game->notifyAllPlayers("updateRoundWithCombatStats", $message, [
                         'i18n' => ['character_name', 'effect_name', 'effects'],
                         "round" => $round,
                         "mode" => "maneuver",
-                        "character_name" => $actor->Name,
+                        "character_inject_code" => $actor->getInjectCode(),
+                        "card_inject_code" => $maneuverCard->getInjectCode(),
                         "effect_name" => $maneuver->Name,
-                        "card_name" => $maneuverCard->Name,
+                        "effectName" => $maneuver->Name,
+                        "cardName" => $maneuverCard->Name,
                         "effects" => $effects,
                         "riposte" => $results["riposte"],
                         "parry" => $results["parry"],
@@ -1217,13 +1221,14 @@ trait EventHub
                         $effects .= "<p>" . sprintf($theah->game->translate("Challenger Threat went from %s to %s. "), $results["endingChallengerThreatBefore"], $results["endingChallengerThreatAfter"]);
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
                         $effects .= "<p>" . sprintf($theah->game->translate("Defender Threat went from %s to %s. "), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"]);
-                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('${player_name} has played <strong>${effect_name}</strong> as their Combat Card. ${effects}'), [
+                    $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('Duel Update: ${player_name} has played ${card_inject_code} as their Combat Card. ${effects}'), [
                         'i18n' => ['effect_name', 'effects'],
                         "round" => $round,
                         "mode" => "combat",
                         "player_name" => $playerName,
                         "playerId" => $playerId,
-                        "effect_name" => $card->Name,
+                        "card_inject_code" => $card->getInjectCode(),
+                        "effectName" => $card->Name,
                         "combatCard" => $card->getPropertyArray($theah->game),
                         "effects" => $effects,
                         "riposte" => $results["riposte"],
