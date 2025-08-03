@@ -55,11 +55,11 @@ class Action_01035 extends CharacterAction
             $event->theah->eventCheck($engageEvent);
             $event->queueEvent($engageEvent);
             
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [
-                'i18n' => ['action', 'owner_name'],
-                'player_name' => $game->getActivePlayerName(),
-                'action' => $this->Name,
-                'owner_name' => $kaspar->Name,
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
+                'i18n' => ['action'],
+                "player_name" => $game->getActivePlayerName(),
+                "action" => $this->Name,
+                "owner_inject_code" => $kaspar->getInjectCode(),
             ]);
 
             $mercenary = $game->revealFirstCardTypeFromCityDeck($playerId, "Mercenary");
@@ -67,8 +67,8 @@ class Action_01035 extends CharacterAction
             if ($mercenary)
             {
                 $game->globals->set(Game::CHOSEN_CARD, $mercenary->Id);
-                $game->notifyAllPlayers("message", clienttranslate('${mercenary} is the first Mercenary revealed in the City Deck.'), [
-                    'mercenary' => $mercenary->Name,
+                $game->notifyAllPlayers("message", clienttranslate('${mercenary_inject_code} is the first Mercenary revealed in the City Deck.'), [
+                    "mercenary_inject_code" => $mercenary->getInjectCode(),
                 ]);
 
                 $addEvent = EventFactory::createCityCardAddedToLocationEvent($mercenary->Id, $kaspar->Location);

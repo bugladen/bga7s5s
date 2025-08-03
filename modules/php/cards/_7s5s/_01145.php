@@ -46,10 +46,9 @@ class _01145 extends Scheme
                 "player_name" => $event->playerName,
             ]);
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('The second part of <strong>${scheme_name}</strong> will happen after. Each player draws a card.
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('The second part of ${scheme_inject_code} will happen after. Each player draws a card.
             Then, the player with the least Reknown draw a card  Then the player with the fewest characters will draw a card.'), [
-                'i18n' => ['scheme_name'],
-                "scheme_name" => $this->Name,
+                "scheme_inject_code" => $this->getInjectCode(),
             ]);
     
             //Transition to the state where player can choose two locations.
@@ -210,7 +209,7 @@ class _01145 extends Scheme
         $players = $game->loadPlayersBasicInfos();
         foreach ($players as $playerId => $player) {
             $card = $game->playerDrawCard($playerId);
-            $addEvent = EventFactory::createCardDrawnEvent($playerId, $card, $game->translate("<strong>Inspire Generosity</strong> effect"));
+            $addEvent = EventFactory::createCardDrawnEvent($playerId, $card, sprintf($game->translate("%s effect"), $this->getInjectCode()));
             //No need for a check
             $game->theah->queueEvent($addEvent);
         }
@@ -236,7 +235,7 @@ class _01145 extends Scheme
         if ($lowestPlayer != 0)
         {
             $card = $game->playerDrawCard($lowestPlayer);
-            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, $card, $game->translate("<strong>Inspire Generosity</strong> effect - player has fewest reknown"));   
+            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, $card, sprintf($game->translate("%s effect - player has fewest reknown"), $this->getInjectCode()));   
             //No need for a check
             $game->theah->queueEvent($addEvent);
         }
@@ -247,7 +246,7 @@ class _01145 extends Scheme
         if ($lowestPlayer != null && $lowestPlayer == $this->ControllerId)
         {
             $card = $game->playerDrawCard($lowestPlayer);
-            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, $card, $game->translate("<strong>Inspire Generosity</strong> effect - player has fewest characters in play"));
+            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, $card, sprintf($game->translate("%s effect - player has fewest characters in play"), $this->getInjectCode()));
             //No need for a check
             $game->theah->queueEvent($addEvent);
         }

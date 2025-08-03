@@ -54,9 +54,11 @@ class _01195 extends CityAttachment
         if ($event instanceof EventDuelCalculateCombatCardStats && $this->isAttached() && $this->AttachedToId == $event->actorId)
         {
             $event->riposte += 1;
-            $event->explanations[] = "<strong>Eager Blade</strong>: +1 Riposte";
+            $event->explanations[] = sprintf($event->theah->game->translate("%s: +1 Riposte"), $this->getInjectCode());
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('Eager Blade was used with a combat card.  Its ability will trigger and it will be destroyed.'), []);
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${card_inject_code} was used with a combat card.  Its ability will trigger and it will be destroyed.'), [
+                "card_inject_code" => $this->getInjectCode(),
+            ]);
 
             $unequipEvent = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $this->AttachedToId, $this->Id);
             $event->queueEvent($unequipEvent);

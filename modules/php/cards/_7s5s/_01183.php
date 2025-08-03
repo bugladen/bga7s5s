@@ -50,7 +50,7 @@ class _01183 extends CityEventCard
             if ($actor->Location == $this->Location || $adversary->Location == $this->Location) 
             {
                 $event->parry -= 1;
-                $event->explanations[] = "<strong>So It Begins</strong>: -1 Parry for being at same location";
+                $event->explanations[] = sprintf($event->theah->game->translate("%s: -1 Parry for being at same location"), $this->getInjectCode());
             }
         }
         

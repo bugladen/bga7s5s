@@ -51,9 +51,9 @@ class _01198 extends CityAttachment implements IHasActions
             $character = $event->theah->getCharacterById($event->characterId);
             $character->addTrait('Duelist');
 
-            $event->theah->game->notifyAllPlayers('traitAdded', clienttranslate('Guild Triskelion effect triggers: ${character_name} gains the <strong>Duelist</strong> trait.'), [
-                'i18n' => ['character_name'],
-                'character_name' => $character->Name,
+            $event->theah->game->notifyAllPlayers('traitAdded', clienttranslate('${card_inject_code} effect triggers: ${character_inject_code} gains the <strong>Duelist</strong> trait.'), [
+                "card_inject_code" => $this->getInjectCode(),
+                "character_inject_code" => $character->getInjectCode(),
                 'characterId' => $character->Id,
                 'trait' => 'Duelist',
             ]);
@@ -64,9 +64,9 @@ class _01198 extends CityAttachment implements IHasActions
             $character = $event->theah->getCharacterById($event->characterId);
             $character->removeTrait('Duelist');
 
-            $event->theah->game->notifyAllPlayers('traitRemoved', clienttranslate('Guild Triskelion effect triggers: ${character_name} loses the <strong>Duelist</strong> trait.'), [
-                'i18n' => ['character_name'],
-                'character_name' => $character->Name,
+            $event->theah->game->notifyAllPlayers('traitRemoved', clienttranslate('${card_inject_code} effect triggers: ${character_inject_code} loses the <strong>Duelist</strong> trait.'), [
+                "card_inject_code" => $this->getInjectCode(),
+                "character_inject_code" => $character->getInjectCode(),
                 'characterId' => $character->Id,
                 'trait' => 'Duelist',
             ]);

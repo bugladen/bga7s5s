@@ -58,7 +58,8 @@ class _01153 extends FactionAttachment
                         $event->wounds = 0;
                     }
         
-                    $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>Breastplate</strong>: blocked a wound. Wounds went from ${oldWounds} to ${newWounds}'), [
+                    $event->theah->game->notifyAllPlayers("message", clienttranslate('${card_inject_code} blocked a wound. Wounds went from ${oldWounds} to ${newWounds}'), [
+                        "card_inject_code" => $this->getInjectCode(),
                         "oldWounds" => $oldWounds,
                         "newWounds" => $event->wounds,
                     ]);
@@ -79,7 +80,9 @@ class _01153 extends FactionAttachment
            if ($event->wounds > 0) 
            {
                 $game = $event->theah->game;
-                $game->notifyAllPlayers("message", clienttranslate('<strong>Breastplate</strong>: Character this is attached to has taken a wound so this will be destroyed.'), []);
+                $game->notifyAllPlayers("message", clienttranslate('${card_inject_code}: Character this is attached to has taken a wound so this will be destroyed.'), [
+                    "card_inject_code" => $this->getInjectCode(),
+                ]);
 
                 $detachEvent = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $event->characterId, $this->Id);
                 $event->theah->queueEvent($detachEvent);

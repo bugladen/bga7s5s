@@ -71,10 +71,11 @@ class Action_01062 extends CharacterAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} used the Action from <strong>Odette Dubois D\'Arrent</strong> to move <strong>${performer_name}</strong> to ${location_name}.'), [
-                "i18n" => ["performer_name", "location_name"],
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} used the Action from ${odette_inject_code} to move ${performer_inject_code} to ${location_name}.'), [
+                "i18n" => ["location_name"],
                 "player_name" => $game->getPlayerNameById($performer->ControllerId),
-                "performer_name" => $performer->Name,
+                "odette_inject_code" => $odette->getInjectCode(),
+                "performer_inject_code" => $performer->getInjectCode(),
                 "location_name" => $odette->Location,
             ]);
 

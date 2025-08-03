@@ -148,17 +148,15 @@ class _01200 extends CityAttachment implements IHasReactions
             ]);
 
             $game->notifyPlayer($activePlayerId, "message", 
-            clienttranslate('Private: You have chosen <strong>${card_name}</strong> as the target for Crystal Eye.'), [
-                'i18n' => ['card_name'],
-                "card_name" => $card->Name,
+            clienttranslate('Private: You have chosen ${card_inject_code} as the target for Crystal Eye.'), [
+                "card_inject_code" => $card->getInjectCode(),
                 ]);
     
 
             $game->notifyPlayer($playerId, 'crystalEyeTargetChosen', 
-            clienttranslate('Private: ${player_name} has chosen <strong>${card_name}</strong> as the target for Crystal Eye.'), [
-                'i18n' => ['card_name'],
+            clienttranslate('Private: ${player_name} has chosen ${card_inject_code} as the target for Crystal Eye.'), [
                 "player_name" => $activePlayerName,
-                "card_name" => $card->Name,
+                "card_inject_code" => $card->getInjectCode(),
                 "cardId" => $card->Id,
                 "playerId" => $playerId,
             ]);

@@ -49,8 +49,8 @@ class _01169 extends Risk
             $this->EscapeDuel = false;
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>Not Today</strong> activates: ${character_name} is wounded and is moved to Home.'), [
-                "i18n" => ["character_name"],
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${card_inject_code} activates: ${character_name} is wounded and is moved to Home.'), [
+                "card_inject_code" => $this->getInjectCode(),
                 "character_name" => $event->theah->getDuelRoundActor()->Name,
             ]);
 

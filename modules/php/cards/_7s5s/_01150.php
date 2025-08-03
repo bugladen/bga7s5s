@@ -86,9 +86,8 @@ class _01150 extends Scheme
             }
             $playerNames = implode(", ", $playerNames);
 
-            $game->notifyAllPlayers("message", clienttranslate('<strong>${card_name}</strong>: ${player_names} has/have added Reknown to The Forums and may intervene this turn.'), [
-                'i18n' => ['card_name'],
-                "card_name" => $this->Name,
+            $game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code}: ${player_names} has/have added Reknown to The Forums and may intervene this turn.'), [
+                "scheme_inject_code" => $this->getInjectCode(),
                 "player_names" => $playerNames
             ]);
         }
