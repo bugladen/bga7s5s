@@ -138,6 +138,16 @@ class Theah
         return $event;
     }
 
+    public function makeEventSubstitutions(Event $event)
+    {
+        $this->buildCity();
+
+        foreach ($this->cards as $card)
+        {
+            $card->makeEventSubstitutions($event);
+        }
+    }
+
     /// <summary>
     /// Run through the cards in the city to see if an event can be run.
     /// A card should throw an exception if it cannot allow the event.
@@ -152,6 +162,7 @@ class Theah
     public function eventCheck(Event $event)
     {
         $this->buildCity();
+        $this->makeEventSubstitutions($event);
         foreach ($this->cards as $card) {
             $event->theah = $this;
             $card->eventCheck($event);
@@ -160,7 +171,9 @@ class Theah
     }
 
     public function queueEvent(Event $event)
-    {
+    {    
+        $this->buildCity();
+        $this->makeEventSubstitutions($event);
         try {
             $this->eventCheck($event);
             $this->db->queueEvent($event);

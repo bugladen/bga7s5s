@@ -708,6 +708,16 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
 
+            'duelResolveManeuver_01051': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+
             'duelResolveManeuver_01077': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

@@ -54,4 +54,5 @@ abstract class Reaction
         return [];
     }
 
+    public function makeEventSubstitutions(Event $event) { }
 }

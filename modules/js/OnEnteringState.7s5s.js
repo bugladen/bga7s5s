@@ -1245,6 +1245,18 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
 
+            'duelResolveManeuver_01051': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    args.args._private.args.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.characterIds = args.args._private.args.characterIds;
+                }
+            },
+
             'duelChooseTechnique_01063': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

@@ -505,6 +505,11 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 this.addActionButton(`actRiposte`, _('+1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
 
+            'duelResolveManeuver_01051': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'duelResolveManeuver_01077': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

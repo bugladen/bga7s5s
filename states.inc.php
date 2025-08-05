@@ -1965,11 +1965,13 @@ $machinestates = [
                     "back" => States::DUEL_CHOOSE_ACTION
                 ]
             ],
+                // Add maneuver transitions here
                 States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS => [
                     "name" => "duelUseManeuverFromCombatCardEvents",
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "01051" => States::DUEL_RESOLVE_MANEUVER_01051,
                         "01077" => States::DUEL_RESOLVE_MANEUVER_01077,
                         "01079" => States::DUEL_RESOLVE_MANEUVER_01079,
                         "01079_2" => States::DUEL_RESOLVE_MANEUVER_01079_2,

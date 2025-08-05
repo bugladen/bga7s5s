@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01063 extends Technique
 {
@@ -22,6 +23,15 @@ class Technique_01063 extends Technique
 
         $this->IsActive = false;
         $this->BastienWoundedThisRound = false;
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if (! parent::isAvailableToPlayer($playerId, $theah))
+            return false;
+
+        $inDuel = $theah->game->globals->get(Game::IN_DUEL);
+        return $inDuel;
     }
 
     public function handleEvent(Event $event)

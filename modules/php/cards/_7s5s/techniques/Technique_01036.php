@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01036 extends Technique
 {
@@ -24,6 +25,15 @@ class Technique_01036 extends Technique
 
         $this->MoveDaniela = false;
         $this->MoveLocation = "";
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if (! parent::isAvailableToPlayer($playerId, $theah))
+            return false;
+
+        $inDuel = $theah->game->globals->get(Game::IN_DUEL);
+        return $inDuel;
     }
 
     public function handleEvent(Event $event)
