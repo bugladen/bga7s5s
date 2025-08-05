@@ -65,7 +65,7 @@ class Action_01081 extends RiskCityAction
             $args['performerId'] = $performerId;
 
             $charactersAtLocation = $game->theah->getCharactersAtLocation($performer->Location);
-            $charactersAtLocation = array_values(array_filter($charactersAtLocation, fn($character) => $character->ControllerId != $performer->ControllerId && $character->Engaged));
+            $charactersAtLocation = array_values(array_filter($charactersAtLocation, fn($character) => $character->isNotControlledByPlayer($performer->ControllerId) && $character->Engaged));
 
             $args['characterIds'] = array_map(fn($character) => $character->Id, $charactersAtLocation);
         }

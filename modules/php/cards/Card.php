@@ -434,6 +434,11 @@ abstract class Card
         return $this->ControllerId != 0;
     }
 
+    public function isNotControlledByPlayer(int $playerId): bool
+    {
+        return $this->isControlled() && $this->ControllerId != $playerId;
+    }
+
     public function addTrait(string $trait): void
     {
         $this->Traits[] = $trait;

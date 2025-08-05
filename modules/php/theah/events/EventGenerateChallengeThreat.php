@@ -11,6 +11,7 @@ class EventGenerateChallengeThreat extends Event
     public string $techniqueId;
     public int $actorThreat;
     public int $adversaryThreat;
+    public bool $adversaryThreatIsLethal;
     public Array $explanations;
     public string $statUsed;
 
@@ -23,6 +24,7 @@ class EventGenerateChallengeThreat extends Event
         $this->techniqueId = 0;
         $this->actorThreat = 0;
         $this->adversaryThreat = 0;
+        $this->adversaryThreatIsLethal = false;
         $this->explanations = [];
         $this->statUsed = Game::STAT_COMBAT;
         $this->runEventHubAfterCards = true;

@@ -37,7 +37,7 @@ class _01177 extends CityEventCard
             //Get the characters at the same location
             $characters = $game->theah->getCharactersAtLocation($this->Location);
             
-            //Filter out the characters that are not controlled by the current player
+            //Filter the characters that are not controlled by the current player
             $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId == $game->getActivePlayerId()));
 
             $args['sourceId'] = $this->Id;

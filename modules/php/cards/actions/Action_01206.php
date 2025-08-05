@@ -50,7 +50,7 @@ class Action_01206 extends AttachmentAction
 
             $this->setUsed($event->theah, true);
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${player_name} is using Captain\'s Coat Action to claim a location.'), [
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${player_name} used Captain\'s Coat Action to claim a location.'), [
                 'player_name' => $performer->Name,
             ]);
 

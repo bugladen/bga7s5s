@@ -1,0 +1,155 @@
+<?php
+
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
+
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+
+class Action_01049 extends AttachmentAction
+{
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->Name = clienttranslate("Wound Character if they do not Engage");
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+            return false;
+
+        $owner = $this->getOwningAttachment($theah);
+
+        if ($owner->Engaged)
+        {
+            return false;
+        }
+
+        $owningCharacter = $this->getOwningCharacter($theah);
+        if ( ! $theah->cardInCity($owningCharacter))
+        {
+            return false;
+        }
+
+        $characters = $theah->getCharactersAtLocation($owningCharacter->Location);
+        $characters = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($owningCharacter->ControllerId) && ! $character->Engaged);
+
+        return count($characters) > 0;
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
+        {
+            $owner = $this->getOwningAttachment($event->theah);
+            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01049", $this->Id);
+            $event->theah->queueEvent($transitionEvent);
+        }
+    }
+
+    public function getArgsFromAction(Game $game, int $state, string $stateName): array
+    {
+        $args = parent::getArgsFromAction($game, $state, $stateName);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01049)
+        {
+            $owningCharacter = $this->getOwningCharacter($game->theah);
+            $characters = $game->theah->getCharactersAtLocation($owningCharacter->Location);
+            $characters = array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($owningCharacter->ControllerId) && ! $character->Engaged));
+            $args["characterIds"] = array_map(fn($character) => $character->Id, $characters);
+        }
+
+        return $args;
+    }
+
+    public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
+    {
+        parent::actFromActionWithId($game, $state, $stateName, $id);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01049)
+        {
+            $character = $game->theah->getCharacterById($id);            
+            $owner = $this->getOwningAttachment($game->theah);
+
+            if (! $character->isControlled())
+            {
+                throw new \BgaUserException($game->translate("You cannot manipulate a character that is not controlled."));
+            }
+
+            if ($character->ControllerId == $owner->ControllerId)
+            {
+                throw new \BgaUserException($game->translate("You cannot manipulate a character that you control."));
+            }
+
+            if ($character->Engaged)
+            {
+                throw new \BgaUserException($game->translate("You cannot manipulate a character that is already engaged."));
+            }
+
+            if ($character->Location != $owner->Location)
+            {
+                throw new \BgaUserException($game->translate("You cannot manipulate a character that is not at the same location as the attachment."));
+            }
+
+            $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
+
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} used the Action [${action_name}] from ${card_inject_code}'), [
+                'i18n' => ['action_name'],
+                'player_name' => $game->getPlayerNameById($owner->ControllerId),
+                'action_name' => $this->Name,
+                'card_inject_code' => $owner->getInjectCode(),
+            ]);
+
+            $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "01049_2", $this->Id);
+            $game->theah->queueEvent($transitionEvent);
+
+            $this->setUsed($game->theah, true);
+
+            $game->gamestate->nextState("characterChosen");
+        }
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01049_2)
+        {
+            $targetCharacterId = $game->globals->get(Game::CHOSEN_TARGET);
+            $targetCharacter = $game->theah->getCharacterById($targetCharacterId);
+            $owner = $this->getOwningAttachment($game->theah);
+
+            // Engage the target character
+            if ($id == 1)
+            {
+                $game->notifyAllPlayers("message", clienttranslate('${player_name} decided to engage ${character_inject_code}'), [
+                    'player_name' => $game->getPlayerNameById($targetCharacter->ControllerId),
+                    'character_inject_code' => $targetCharacter->getInjectCode(),
+                ]);
+
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $targetCharacter->Id, $owner->Id);
+                $game->theah->queueEvent($engageEvent);
+            }
+
+            // Wound the target character
+            if ($id == 2)
+            {
+                $game->notifyAllPlayers("message", clienttranslate('${player_name} decided to wound ${character_inject_code}'), [
+                    'player_name' => $game->getPlayerNameById($targetCharacter->ControllerId),
+                    'character_inject_code' => $targetCharacter->getInjectCode(),
+                ]);
+
+                $woundEvent = EventFactory::createCharacterWoundedEvent($targetCharacter->Id, $owner->Id, 1, $owner->Name, $this->Name);
+                $game->theah->queueEvent($woundEvent);
+
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id);
+                $game->theah->queueEvent($engageEvent);
+            }
+
+            $game->gamestate->nextState();
+        }
+    }
+}

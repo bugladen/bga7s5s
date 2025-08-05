@@ -534,12 +534,37 @@ trait StatesTrait
             return;
         }
 
-        //Set the turn to the target player
+        $this->stIssueChallenge();
+
+        //Set the turn to the target player since now they are going to accept or reject the challenge
         $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
         $target = $this->getCardObjectFromDb($targetId);
         $this->gamestate->changeActivePlayer($target->ControllerId);
 
         $this->gamestate->nextState("noTechnique");
+    }
+
+    public function stIssueChallenge()
+    {
+        $playerId = $this->globals->get(GAME::CURRENT_PLAYER);
+        $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
+        $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
+        $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE, "");
+
+        $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
+        $this->theah->queueEvent($engageEvent);
+
+        $this->globals->set(Game::CHALLENGE_CANCELLED, false);
+
+        $challengeEvent = $this->theah->createEvent(Events::ChallengeIssued);
+        if ($challengeEvent instanceof EventChallengeIssued)
+        {
+            $challengeEvent->playerId = $playerId;
+            $challengeEvent->challengerId = $performer->Id;
+            $challengeEvent->defenderId = $target->Id;
+            $challengeEvent->activatedTechniqueId = $techniqueId;
+        }
+        $this->theah->queueEvent($challengeEvent);
     }
 
     public function stSetupChallenge()
@@ -557,7 +582,6 @@ trait StatesTrait
             Game::DANIELA_DEITRICH_CHALLENGE_TYPE,
         ];
 
-        $challengeType = $this->globals->get(GAME::CHALLENGE_TYPE);
         if (in_array($this->globals->get(GAME::CHALLENGE_TYPE), $types))
         {
             $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
@@ -573,27 +597,9 @@ trait StatesTrait
             ]);
         }
         
-        $this->globals->set(Game::CHALLENGE_CANCELLED, false);
-
         //Set the location of the challenge
         $this->globals->set(GAME::CHOSEN_LOCATION, $performer->Location);
 
-        $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE, "");
-
-        $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
-        $this->theah->queueEvent($engageEvent);
-
-        $challengeEvent = $this->theah->createEvent(Events::ChallengeIssued);
-        if ($challengeEvent instanceof EventChallengeIssued)
-        {
-            $challengeEvent->playerId = $playerId;
-            $challengeEvent->challengerId = $performer->Id;
-            $challengeEvent->defenderId = $target->Id;
-            $challengeEvent->activatedTechniqueId = $techniqueId;
-        }
-
-        $this->theah->eventCheck($challengeEvent);
-        $this->theah->queueEvent($challengeEvent);
         $changeEvent = EventFactory::createChangeActivePlayerEvent($target->ControllerId);
         $this->theah->queueEvent($changeEvent);
         $this->gamestate->nextState();
@@ -642,16 +648,6 @@ trait StatesTrait
             $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
             $target = $this->theah->getCharacterById($targetId);
 
-            $technique = $this->theah->getTechniqueById($techniqueId);
-            $owner = $technique->getOwningCard($this->theah);
-    
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} activates Technique [${technique_name}] from ${owner_name}.'), [
-                "i18n" => ["owner_name", "technique_name"],
-                "player_name" => $this->getActivePlayerName(),
-                "owner_name" => $owner->Name,
-                "technique_name" => $technique->Name,
-            ]);    
-
             $event = $this->theah->createEvent(Events::ResolveTechnique);
             if ($event instanceof EventResolveTechnique)
             {
@@ -698,7 +694,7 @@ trait StatesTrait
         }
         else
         {
-            //Challenge was rejected, wound the target by the threat value.  Limit amount done by Restricted Hostilities.
+            //Challenge was rejected, wound the target by the threat value.  
             $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
             $performer = $this->getCardObjectFromDb($performerId);
             $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
@@ -706,6 +702,7 @@ trait StatesTrait
 
             $challengerThreat = $this->globals->get(GAME::CHALLENGER_THREAT);
             $defenderThreat = $this->globals->get(GAME::DEFENDER_THREAT);
+            $defenderThreatIsLethal = $this->globals->get(GAME::DEFENDER_THREAT_IS_LETHAL);
             $combatStatUsed = $this->globals->get(GAME::CHALLENGE_STAT);
 
             if ($challengerThreat > 0)
@@ -766,7 +763,7 @@ trait StatesTrait
 
                 $wounds = $defenderThreat;
                 $reason .= "<p>" . $this->translate("Challenge was Rejected. Generated Threat was ") . $defenderThreat . ".";
-                if ($defenderThreat > $stat)
+                if ($defenderThreat > $stat && ! $defenderThreatIsLethal)
                 {
                     $wounds = $stat;
                     $reduction = $defenderThreat - $stat;
@@ -1209,6 +1206,7 @@ trait StatesTrait
         $this->globals->delete(Game::CHALLENGE_STAT);
         $this->globals->delete(Game::CHALLENGER_THREAT);
         $this->globals->delete(Game::DEFENDER_THREAT);
+        $this->globals->delete(Game::DEFENDER_THREAT_IS_LETHAL);
         $this->globals->delete(Game::CHALLENGE_ACCEPTED);
         $this->globals->delete(Game::DUEL_ID);
         $this->globals->delete(Game::DUEL_ROUND);

@@ -144,7 +144,7 @@ trait EventHub
                     // Notify players of attachment equipped
                     $message = clienttranslate('${player_name} equipped <strong>${attachment_name}</strong> to <strong>${performer_name}</strong>. ');
                     if ($event->asAction)
-                        $message .= clienttranslate('This was done at a discount of ${discount} for a cost of ${cost} Wealth.');
+                        $message .= clienttranslate('This was done at a cost of ${cost} Wealth (discount of ${discount}).');
                     $theah->game->notifyAllPlayers("attachmentEquipped", $message, [
                         'i18n' => ['attachment_name', 'performer_name'],
                         "player_id" => $event->playerId,
@@ -573,7 +573,7 @@ trait EventHub
                 $character->IsUpdated = true;
 
                 // Notify players of recruited character
-                $this->game->notifyAllPlayers("characterRecruited", clienttranslate('${player_name} recruits <strong>${character_name}</strong> at a discount of ${discount} for a cost of ${cost} Wealth.'), [
+                $this->game->notifyAllPlayers("characterRecruited", clienttranslate('${player_name} recruits <strong>${character_name}</strong> at a cost of ${cost} Wealth (discount of ${discount}).'), [
                     'i18n' => ['character_name'],
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
@@ -843,7 +843,7 @@ trait EventHub
 
                     $statUsed = $theah->game->globals->get(Game::CHALLENGE_STAT);
                     
-                    $message = clienttranslate('${player_name} has chosen <strong>${challenger_name}</strong> to Challenge <strong>${defender_name}</strong>. ');
+                    $message = clienttranslate('${player_name} has chosen ${challenger_inject_code} to Challenge ${defender_inject_code}. ');
 
                     switch ($statUsed)
                     {
@@ -859,10 +859,12 @@ trait EventHub
                             
                     }
                     $technique = null;
+                    $techniqueOwner = null;
                     if ($event->activatedTechniqueId)
                     {
-                        $message .= clienttranslate('<br>${player_name} will activate Technique <strong>${technique_name}</strong> for the Challenge.');
+                        $message .= clienttranslate('<br>${player_name} will activate Technique [${technique_name}] from ${technique_inject_code} for the Challenge.');
                         $technique = $theah->getTechniqueById($event->activatedTechniqueId);
+                        $techniqueOwner = $technique->getOwningCard($theah);
                     }
                     else
                     {
@@ -872,9 +874,10 @@ trait EventHub
                     $theah->game->notifyAllPlayers("challengeIssued", $message, [
                         'i18n' => ['challenger_name', 'defender_name', 'technique_name'],
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "challenger_name" => $challenger->Name,
-                        "defender_name" => $defender->Name,
+                        "challenger_inject_code" => $challenger->getInjectCode(),
+                        "defender_inject_code" => $defender->getInjectCode(),
                         "technique_name" => $technique?->Name,
+                        "technique_inject_code" => $techniqueOwner?->getInjectCode(),
                         "challengerId" => $challenger->Id,
                         "defenderId" => $defender->Id,
                     ]);
@@ -971,10 +974,18 @@ trait EventHub
                     
                     $theah->game->globals->set(Game::CHALLENGER_THREAT, $event->actorThreat);
                     $theah->game->globals->set(Game::DEFENDER_THREAT, $event->adversaryThreat);
+                    $theah->game->globals->set(Game::DEFENDER_THREAT_IS_LETHAL, $event->adversaryThreatIsLethal);
+
                     $actor = $theah->cards[$event->actorId];
                     $adversary = $theah->cards[$event->adversaryId];
-                    
-                    $theah->game->notifyAllPlayers("message", clienttranslate('${actor_name} has ${actor_threat} total Threat for the Challenge. ${adversary_name} has ${adversary_threat} total Threat.'), [
+
+                    $message = clienttranslate('${actor_name} has ${actor_threat} total Threat for the Challenge. ${adversary_name} has ${adversary_threat} total Threat. ');
+                    if ($event->adversaryThreatIsLethal)
+                    {
+                        $message .= clienttranslate('${adversary_name} has LETHAL Threat.');
+                    }
+
+                    $theah->game->notifyAllPlayers("message", $message, [
                         "actor_name" => $actor->Name,
                         "actor_threat" => $event->actorThreat,
                         "adversary_name" => $adversary->Name,

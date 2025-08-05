@@ -962,6 +962,8 @@ $machinestates = [
                 "01038" => States::HIGH_DRAMA_PLAYER_TURN_01038,
                 "01044" => States::HIGH_DRAMA_PLAYER_TURN_01044,
                 "01046a" => States::HIGH_DRAMA_PLAYER_TURN_01046a,
+                "01049" => States::HIGH_DRAMA_PLAYER_TURN_01049,
+                "01049_2" => States::HIGH_DRAMA_PLAYER_TURN_01049_2,
                 "01068" => States::HIGH_DRAMA_PLAYER_TURN_01068,
                 "01069" => States::HIGH_DRAMA_PLAYER_TURN_01069,
                 "01071" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
@@ -1140,7 +1142,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_REACTIONS,
-                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED,
+                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE,
                     "endOfGame" => States::END_GAME
                 ]
             ],
@@ -1174,31 +1176,6 @@ $machinestates = [
                 ]
             ],
 
-        States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED => [
-            "name" => "highChallengeActionCheckCancelled",
-            "type" => "game",
-            "action" => "stChallengeActionCheckCancelled",
-            "transitions" => [
-                "notCancelled" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE,
-                "cancelled" => States::NEXT_PLAYER,
-            ]
-        ],
-    
-        States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE => [
-            "name" => "highDramaChallengeActionAcceptChallenge",
-            "description" => clienttranslate('${actplayer} is choosing to accept Challenge.'),
-            "descriptionmyturn" => clienttranslate('${you} must choose to accept Challenge, or Intervene:'),
-            "type" => "activeplayer",
-            "args" => "argsHighDramaChallengeActionAcceptChallenge",
-            "possibleactions" => [
-                "actHighDramaChallengeActionAccept",
-                "actHighDramaChallengeActionReject",
-                "actHighDramaChallengeActionIntervene"
-            ],
-            "transitions" => [
-                "" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE,
-            ]
-        ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE => [
             "name" => "highDramaChallengeActionResolveTechnique",
             "type" => "game",
@@ -1213,7 +1190,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_REACTIONS,
-                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
+                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED,
                     "endOfGame" => States::END_GAME
                     ]
             ],
@@ -1246,6 +1223,33 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS, 
                 ]
             ],
+
+        States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED => [
+            "name" => "highChallengeActionCheckCancelled",
+            "type" => "game",
+            "action" => "stChallengeActionCheckCancelled",
+            "transitions" => [
+                "notCancelled" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE,
+                "cancelled" => States::NEXT_PLAYER,
+            ]
+        ],
+        
+        States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE => [
+            "name" => "highDramaChallengeActionAcceptChallenge",
+            "description" => clienttranslate('${actplayer} is choosing to accept Challenge.'),
+            "descriptionmyturn" => clienttranslate('${you} must choose to accept Challenge, or Intervene:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaChallengeActionAcceptChallenge",
+            "possibleactions" => [
+                "actHighDramaChallengeActionAccept",
+                "actHighDramaChallengeActionReject",
+                "actHighDramaChallengeActionIntervene"
+            ],
+            "transitions" => [
+                "" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
+            ]
+        ],
+
         States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT => [
             "name" => "highDramaChallengeActionGenerateThreat",
             "type" => "game",

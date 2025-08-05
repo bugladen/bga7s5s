@@ -88,7 +88,7 @@ class Action_01179 extends EventCityAction
             $playerId = $performer->ControllerId;
             $this->playersUsed[] = $playerId;
     
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${player_name} is using Siren\'s Scream to take a Reknown.'), [
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${player_name} used Siren\'s Scream to take a Reknown.'), [
                 "player_name" => $event->theah->game->getPlayerNameById($playerId),
             ]);    
     

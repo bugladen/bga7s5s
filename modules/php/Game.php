@@ -103,6 +103,7 @@ class Game extends \Table
     final const CHOSEN_MANEUVER = "chosenManeuver";
     final const CHALLENGER_THREAT = "challengerThreat";
     final const DEFENDER_THREAT = "defenderThreat";
+    final const DEFENDER_THREAT_IS_LETHAL = "defenderThreatIsLethal";
     final const CHALLENGE_ACCEPTED = "challengeAccepted";
     final const TRANSITION_SOURCE_ID = "transitionSourceId";
     final const TRANSITION_INTERNAL_ID = "transitionInternalId";

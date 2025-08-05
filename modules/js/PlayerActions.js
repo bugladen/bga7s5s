@@ -115,6 +115,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
             'highDramaPhase01029'                                   : 'actFromCardWithId',
             'highDramaPhase01044_2'                                 : 'actFromCardWithId',
+            'highDramaPhase01049'                                   : 'actFromCardWithId',
             'highDramaPhase01068'                                   : 'actFromCardWithId',
             'highDramaPhase01072_2'                                 : 'actFromCardWithId',
             'highDramaPhase01076_2'                                 : 'actFromCardWithId',

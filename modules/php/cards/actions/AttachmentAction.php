@@ -29,7 +29,7 @@ class AttachmentAction extends CardAction
     
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        //Attachment actions are always performed by the character card the attachment is attached to
+        //Attachment actions are usually always performed by the character card the attachment is attached to
         $card = $this->getOwningCharacter($theah);
         return [$card];
     }

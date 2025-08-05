@@ -2,13 +2,17 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01049;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01049;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01049;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 
-class _01049 extends FactionAttachment implements IHasTechniques
+class _01049 extends FactionAttachment implements IHasActions, IHasTechniques
 {
+    use ActionTrait;
     use TechniqueTrait;
 
     public function __construct()
@@ -39,6 +43,10 @@ class _01049 extends FactionAttachment implements IHasTechniques
 
         $this->Techniques = [
             new Technique_01049(),
+        ];
+
+        $this->Actions = [
+            new Action_01049(),
         ];
     }
 }

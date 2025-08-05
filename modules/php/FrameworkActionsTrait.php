@@ -1339,23 +1339,23 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Technique not found."));
         }
 
-        $owner = $technique->getOwningCard($this->theah);
-        if ($owner->Id != $performer->Id) {
-            throw new \BgaUserException(self::_("Technique does not belong to the Card."));
-        }
+        $this->globals->set(GAME::CHOSEN_TECHNIQUE, $technique->Id);
+        $this->globals->set(GAME::TRANSITION_INTERNAL_ID, $technique->Id);
 
+        $owner = $technique->getOwningCard($this->theah);
         $event = EventFactory::createTechniqueActivatedEvent($playerId, $owner->Id, $technique->Id);
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
-        $this->globals->set(GAME::CHOSEN_TECHNIQUE, $technique->Id);
-        $this->globals->set(GAME::TRANSITION_INTERNAL_ID, $technique->Id);
+        $this->stIssueChallenge();
 
         $this->gamestate->nextState("techniqueActivated");
     }
 
     public function actHighDramaChallengeActionActivateTechnique_Pass()
     {
+        $this->stIssueChallenge();
+
         $this->gamestate->nextState("pass");
     }
 
