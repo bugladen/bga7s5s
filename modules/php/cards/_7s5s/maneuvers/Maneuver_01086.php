@@ -44,7 +44,7 @@ class Maneuver_01086 extends Maneuver
             }
             else
             {
-                $woundEvent = EventFactory::createCharacterWoundedEvent($event->adversaryId, $owner->Id, 1, $event->theah->game->translate($owner->Name), $this->Id);
+                $woundEvent = EventFactory::createCharacterWoundedEvent($event->adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $event->theah->queueEvent($woundEvent);
             }
         }

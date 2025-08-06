@@ -112,7 +112,7 @@ class Action_01076 extends RiskAction
                     throw new \BgaUserException($game->translate("Character not found"));
                 }
 
-                $event = EventFactory::createCharacterWoundedEvent($performer->Id, $bloodMark->Id, 1, $game->translate("Blood Mark"));
+                $event = EventFactory::createCharacterWoundedEvent($performer->Id, $bloodMark->Id, 1, $bloodMark->getInjectCode());
                 $game->theah->queueEvent($event);
             }
 

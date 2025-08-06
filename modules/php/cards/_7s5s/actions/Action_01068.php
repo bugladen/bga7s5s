@@ -149,7 +149,7 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
                 throw new \BgaUserException($game->translate("Léontine cannot move character to the same location as herself."));
             }
 
-            $woundEvent = EventFactory::createCharacterWoundedEvent($leontine->Id, $leontine->Id, 1, $game->translate("Léontine Action"));
+            $woundEvent = EventFactory::createCharacterWoundedEvent($leontine->Id, $leontine->Id, 1, $leontine->getInjectCode());
             $game->theah->eventCheck($woundEvent);
             $game->theah->queueEvent($woundEvent);
 

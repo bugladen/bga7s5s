@@ -171,14 +171,8 @@ abstract class Character extends Card implements IHasTechniques
 
         if ($event instanceof EventCharacterWounded && $event->characterId == $this->Id)
         {
-            $this->Wounds += $event->wounds;
-            
-            $this->ModifiedResolve -= $event->wounds;    
-            if ($this->ModifiedResolve < 0) 
-            {
-                $this->ModifiedResolve = 0;
-            }
-
+            $this->Wounds += $event->wounds;            
+            $this->ModifiedResolve = $this->getModifiedResolve($event->theah);
             $this->IsUpdated = true;
 
             $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_inject_code} has received ${wounds} wound(s) due to: ${reason} 
@@ -220,9 +214,10 @@ abstract class Character extends Card implements IHasTechniques
         if ($event instanceof EventCharacterHealed && $event->characterId == $this->Id)
         {
             $this->ModifiedResolve += $event->wounds;
-            if ($this->ModifiedResolve > $this->Resolve) 
+            $modifiedResolve = $this->getModifiedResolve($event->theah);
+            if ($this->ModifiedResolve > $modifiedResolve) 
             {
-                $this->ModifiedResolve = $this->Resolve;
+                $this->ModifiedResolve = $modifiedResolve;
             }
             
             $this->Wounds -= $event->wounds;
@@ -282,5 +277,17 @@ abstract class Character extends Card implements IHasTechniques
     public function hasTrait(string $trait): bool
     {
         return in_array($trait, $this->Traits);
+    }
+
+    public function getModifiedResolve(Theah $theah): int
+    {
+        $resolve = $this->Resolve - $this->Wounds;
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getAttachmentById($attachmentId);
+            $resolve += $attachment->ResolveModifier;
+        }
+
+        return $resolve;
     }
 }

@@ -142,7 +142,7 @@ class Action_01049 extends AttachmentAction
                     'character_inject_code' => $targetCharacter->getInjectCode(),
                 ]);
 
-                $woundEvent = EventFactory::createCharacterWoundedEvent($targetCharacter->Id, $owner->Id, 1, $owner->Name, $this->Name);
+                $woundEvent = EventFactory::createCharacterWoundedEvent($targetCharacter->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
                 $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id);

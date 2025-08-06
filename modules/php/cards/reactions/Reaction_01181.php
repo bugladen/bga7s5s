@@ -91,7 +91,7 @@ class Reaction_01181 extends AttachmentReaction
         $engageEvent = EventFactory::createCardEngagedEvent($attachment->ControllerId, $attachment->Id);
         $game->theah->queueEvent($engageEvent);
 
-        $healedEvent = EventFactory::createCharacterHealedEvent($this->HealTargetId, $attachment->Id, $wounds, $game->translate("Sorte Deck"));
+        $healedEvent = EventFactory::createCharacterHealedEvent($this->HealTargetId, $attachment->Id, $wounds, $attachment->getInjectCode());
         $game->theah->queueEvent($healedEvent);
     }
 }

@@ -616,7 +616,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
         
         card.wounds += args.wounds;
-        card.modifiedResolve -= args.wounds;
+        card.modifiedResolve = args.resolve;
 
         const woundChip = $(`${card.divId}_wounds`);
         woundChip.innerHTML = card.wounds;
@@ -645,9 +645,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             dojo.destroy(woundChip);
         }
 
-        card.modifiedResolve += args.wounds;
-        if (card.modifiedResolve > card.resolve)
-            card.modifiedResolve = card.resolve;
+        card.modifiedResolve = args.resolve;
 
         const element = $(`${card.divId}_resolve_value`);
         element.innerHTML = card.modifiedResolve;

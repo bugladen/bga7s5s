@@ -56,7 +56,7 @@ class _01169 extends Risk
 
             $actor = $event->theah->getDuelRoundActor();
 
-            $woundEvent = EventFactory::createCharacterWoundedEvent($actor->Id, $this->Id, 1, $this->Name);
+            $woundEvent = EventFactory::createCharacterWoundedEvent($actor->Id, $this->Id, 1, $this->getInjectCode());
             $event->theah->queueEvent($woundEvent);
 
             $moveEvent = EventFactory::createCardMovedEvent($actor->ControllerId, $actor->Id, $actor->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $this->Id);

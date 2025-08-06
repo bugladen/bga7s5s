@@ -163,7 +163,7 @@ class Maneuver_01079 extends Maneuver
             if ($id == 2)
             {
                 $owner = $this->getOwningCard($game->theah);
-                $woundEvent = EventFactory::createCharacterWoundedEvent($adversary->Id, $owner->Id, 1, $game->translate("Chose to take a wound from Disarm Maneuver."));
+                $woundEvent = EventFactory::createCharacterWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode());
                 $game->theah->eventCheck($woundEvent);
                 $game->theah->queueEvent($woundEvent);
 

@@ -114,7 +114,7 @@ class Action_01085 extends RiskAction
                 "performer_name" => $performer->Name,
             ]);
 
-            $event = EventFactory::createCharacterWoundedEvent($performer->Id, $porteTravel->Id, 1, $game->translate($this->Name));
+            $event = EventFactory::createCharacterWoundedEvent($performer->Id, $porteTravel->Id, 1, $porteTravel->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 

@@ -65,7 +65,7 @@ class Reaction_01182 extends CardReaction
         if ($reactionId == 'woundCharacter')
         {
             $ekko = $this->getOwningCard($game->theah);
-            $woundEvent = EventFactory::createCharacterWoundedEvent($this->TargetCharacterId, $ekko->Id, 1, $game->translate("Has left Eko Sorridi's Location"));
+            $woundEvent = EventFactory::createCharacterWoundedEvent($this->TargetCharacterId, $ekko->Id, 1, $ekko->getInjectCode());
             $game->theah->queueEvent($woundEvent);
     
             $this->TargetCharacterId = 0;
