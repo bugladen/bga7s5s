@@ -15,16 +15,10 @@ trait DeckTrait
 
         // Load the city deck JSON
         $city_decks = json_decode($this->city_decks);
+        $cityDeckChoice = $this->tableOptions->get(Game::OPTIONS_CITY_DECK);
+        $cityDeck = $city_decks->decks[$cityDeckChoice];
 
-        // TODO: City deck loaded should be based on option
-        // Pull the city deck with id of '7s5s'
-        $city = current(array_filter($city_decks->decks, 
-            function($deck) {
-                return $deck->id === '7s5s';
-            }
-        ));
-
-        foreach ($city->cards as $cityCard) {
+        foreach ($cityDeck->cards as $cityCard) {
             $location = Game::LOCATION_CITY_DECK;
             $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$cityCard}', 0, '{$location}', 0)";
             $this->DbQuery($sql);

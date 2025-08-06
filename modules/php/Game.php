@@ -31,6 +31,9 @@ class Game extends \Table
 
     final const THEAH_ID = 777777;
 
+    //Game options
+    final const OPTIONS_CITY_DECK = 100;
+
     //Card locations
     final const LOCATION_CITY_DECK = 'City Deck';
     final const LOCATION_CITY_DISCARD = 'City Discard';

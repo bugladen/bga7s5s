@@ -1,1 +1,11 @@
-{}
+{
+    "100": {
+        "name": "City Deck",
+        "values": {
+            "0": {
+                "name": "Core Set",
+                "description": "City Deck will be used from the Core Set"
+            }
+        }
+    }
+}
