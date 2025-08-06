@@ -41,6 +41,4 @@ abstract class Action
     {
         return [];
     }
-
-    public function makeEventSubstitutions(Event $event) { }
 }

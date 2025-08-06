@@ -53,6 +53,22 @@ class Maneuver_01051 extends Maneuver
             $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01051", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
+
+        if ($event instanceof EventDuelNewRound && $event->actorId == $this->characterToPreventWoundsFrom)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $this->CharacterCurrentlyTakingWounds = 0;
+            $this->characterToPreventWoundsFrom = 0;
+            $owner->IsUpdated = true;
+        }
+
+        if ($event instanceof EventDuelEnd)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $this->CharacterCurrentlyTakingWounds = 0;
+            $this->characterToPreventWoundsFrom = 0;
+            $owner->IsUpdated = true;
+        }        
     }
 
     public function getArgsFromManeuver(Game $game, int $state, string $stateName): array
@@ -109,30 +125,14 @@ class Maneuver_01051 extends Maneuver
         }
     }
 
-    public function makeEventSubstitutions(Event $event)
+    public function eventCheck(Event $event)
     {
-        parent::makeEventSubstitutions($event);
+        parent::eventCheck($event);
 
+        // If activate, substitute the character that is taking wounds
         if ($event instanceof EventCharacterWounded && $event->characterId == $this->characterToPreventWoundsFrom)
         {
             $event->characterId = $this->CharacterCurrentlyTakingWounds;
         }
-
-        if ($event instanceof EventDuelNewRound && $event->actorId == $this->characterToPreventWoundsFrom)
-        {
-            $owner = $this->getOwningCard($event->theah);
-            $this->CharacterCurrentlyTakingWounds = 0;
-            $this->characterToPreventWoundsFrom = 0;
-            $owner->IsUpdated = true;
-        }
-
-        if ($event instanceof EventDuelEnd)
-        {
-            $owner = $this->getOwningCard($event->theah);
-            $this->CharacterCurrentlyTakingWounds = 0;
-            $this->characterToPreventWoundsFrom = 0;
-            $owner->IsUpdated = true;
-        }
     }
-
 }

@@ -56,6 +56,4 @@ abstract class Maneuver implements ICardAbility
     public function stateFromManeuver(Game $game, int $state, string $stateName): void { }
 
     public function actFromManeuverWithIds(Game $game, int $state, string $stateName, array $ids): void { }
-
-    public function makeEventSubstitutions(Event $event) { }
 }

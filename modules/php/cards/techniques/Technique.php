@@ -63,6 +63,4 @@ abstract class Technique implements ICardAbility
 
     public function stateFromTechnique(Game $game, int $state, string $stateName): void { }
 
-    public function makeEventSubstitutions(Event $event) { }
-
 }

@@ -477,39 +477,4 @@ abstract class Card
     {
         return sprintf('[%s(%s)]', $this->Name, $this->Image);
     }
-
-    public function makeEventSubstitutions(Event $event) 
-    { 
-        if ($this instanceof IHasActions)
-        {
-            foreach ($this->getActions() as $action)
-            {
-                $action->makeEventSubstitutions($event);
-            }
-        }
-
-        if ($this instanceof IHasManeuvers)
-        {
-            foreach ($this->getManeuvers() as $maneuver)
-            {
-                $maneuver->makeEventSubstitutions($event);
-            }
-        }
-
-        if ($this instanceof IHasTechniques)
-        {
-            foreach ($this->getTechniques() as $technique)
-            {
-                $technique->makeEventSubstitutions($event);
-            }
-        }
-
-        if ($this instanceof IHasReactions)
-        {
-            foreach ($this->getReactions() as $reaction)
-            {
-                $reaction->makeEventSubstitutions($event);
-            }
-        }
-    }
 }
