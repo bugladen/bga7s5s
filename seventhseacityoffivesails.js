@@ -135,7 +135,6 @@ function (dojo, declare) {
             const cards_to_replace = log_entry.matchAll(card_regex);
             for (let card of cards_to_replace) 
             {
-                console.log(card);
                 const cardName = card[1];
                 const cardImage = card[2];
                 const cardSpan = this.getHTMLForLog(cardName, cardImage, 'card');

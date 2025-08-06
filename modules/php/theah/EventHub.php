@@ -142,15 +142,14 @@ trait EventHub
                     }
                     
                     // Notify players of attachment equipped
-                    $message = clienttranslate('${player_name} equipped <strong>${attachment_name}</strong> to <strong>${performer_name}</strong>. ');
+                    $message = clienttranslate('${player_name} equipped ${attachment_inject_code} to ${performer_inject_code}. ');
                     if ($event->asAction)
                         $message .= clienttranslate('This was done at a cost of ${cost} Wealth (discount of ${discount}).');
                     $theah->game->notifyAllPlayers("attachmentEquipped", $message, [
-                        'i18n' => ['attachment_name', 'performer_name'],
                         "player_id" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "attachment_name" => $attachment->Name,
-                        "performer_name" => $performer->Name,
+                        "attachment_inject_code" => $attachment->getInjectCode(),
+                        "performer_inject_code" => $performer->getInjectCode(),
                         "discount" => $event->discount,
                         "cost" => $event->cost,
                         "attachment" => $attachment->getPropertyArray($theah->game),
@@ -242,11 +241,10 @@ trait EventHub
                     $modifiedFinesse = $character->ModifiedFinesse;
                     $modifiedInfluence = $character->ModifiedInfluence;
 
-                    $theah->game->notifyAllPlayers("attachmentUnequipped", clienttranslate('<strong>${attachment_name}</strong> has been unequipped from <strong>${character_name}</strong>.'), [
-                        'i18n' => ['attachment_name', 'character_name'],
+                    $theah->game->notifyAllPlayers("attachmentUnequipped", clienttranslate('${attachment_inject_code} has been unequipped from ${character_inject_code}.'), [
                         "player_id" => $event->playerId,
-                        "attachment_name" => $attachment->Name,
-                        "character_name" => $character->Name,
+                        "attachment_inject_code" => $attachment->getInjectCode(),
+                        "character_inject_code" => $character->getInjectCode(),
                         "attachmentId" => $attachment->Id,
                         "characterId" => $character->Id,
                         "modifiedResolve" => $modifiedResolve,
@@ -268,9 +266,9 @@ trait EventHub
                 $event->card->Location = Game::LOCATION_HAND;
                 $event->card->IsUpdated = true;
 
-                $this->game->notifyPlayer($event->playerId, "drawCard", clienttranslate('Private: You drew <strong>${card_name}</strong> because of ${reason}.'), [
+                $this->game->notifyPlayer($event->playerId, "drawCard", clienttranslate('Private: You drew ${card_inject_code} because of ${reason}.'), [
                     'i18n' => ['card_name', 'reason'],
-                    "card_name" => $event->card->Name,
+                    "card_inject_code" => $event->card->getInjectCode(),
                     "card" => $event->card->getPropertyArray($this->game),
                     "reason" => $event->reason,
                 ]);
@@ -295,13 +293,12 @@ trait EventHub
                     $deck->insertCardOnExtremePosition($event->cardId, Game::LOCATION_CITY_DECK, $event->onTop);
 
                     $message = $event->onTop 
-                        ? clienttranslate('${player_name} added <strong>${card_name}</strong> to the top of the City Deck.') 
-                        : clienttranslate('${player_name} sunk <strong>${card_name}</strong> to the bottom of the City Deck.');
+                        ? clienttranslate('${player_name} added ${card_inject_code} to the top of the City Deck.') 
+                        : clienttranslate('${player_name} sunk ${card_inject_code} to the bottom of the City Deck.');
 
                     $this->game->notifyAllPlayers("cardAddedToCityDeck", $message, [
-                        'i18n' => ['card_name'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "card_name" => $card->Name,
+                        "card_inject_code" => $card->getInjectCode(),
                         "cardId" => $card->Id,
                     ]);
                 };
@@ -320,13 +317,12 @@ trait EventHub
                     $deck->insertCardOnExtremePosition($event->cardId, $deckName, $event->onTop);
 
                     $message = $event->onTop 
-                        ? clienttranslate('${player_name} added <strong>${card_name}</strong> to the top of their Faction Deck.') 
-                        : clienttranslate('${player_name} sunk <strong>${card_name}</strong> to the bottom of their Faction Deck.');
+                        ? clienttranslate('${player_name} added ${card_inject_code} to the top of their Faction Deck.') 
+                        : clienttranslate('${player_name} sunk ${card_inject_code} to the bottom of their Faction Deck.');
 
                     $this->game->notifyAllPlayers("message", $message, [
-                        'i18n' => ['card_name'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "card_name" => $card->Name
+                        "card_inject_code" => $card->getInjectCode(),
                     ]);
                 };
                 $handler($this, $event);
@@ -438,10 +434,9 @@ trait EventHub
                     $card->Engaged = true;
                     $card->IsUpdated = true;
 
-                    $theah->game->notifyAllPlayers("cardEngaged", clienttranslate('${player_name} Engages <strong>${card_name}</strong>.'), [
-                        'i18n' => ['card_name'],
+                    $theah->game->notifyAllPlayers("cardEngaged", clienttranslate('${player_name} Engages ${card_inject_code}.'), [
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "card_name" => $card->Name,
+                        "card_inject_code" => $card->getInjectCode(),
                         "cardId" => $card->Id,
                     ]);
                 };
@@ -455,10 +450,9 @@ trait EventHub
                         $card->Engaged = false;
                     $card->IsUpdated = true;
     
-                    $this->game->notifyAllPlayers("cardEngarded", clienttranslate('${player_name} En gardes <strong>${card_name}</strong>.'), [
-                        'i18n' => ['card_name'],
+                    $this->game->notifyAllPlayers("cardEngarded", clienttranslate('${player_name} En gardes ${card_inject_code}.'), [
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "card_name" => $card->Name,
+                        "card_inject_code" => $card->getInjectCode(),
                         "cardId" => $card->Id,
                     ]);
                 };
@@ -482,9 +476,9 @@ trait EventHub
                         }
                     }
 
-                    $this->game->notifyAllPlayers("cardMoved", clienttranslate('<strong>${card_name}</strong> moved from ${fromLocation} to ${toLocation}.'), [
-                        'i18n' => ['card_name', 'fromLocation', 'toLocation'],
-                        "card_name" => $card->Name,
+                    $this->game->notifyAllPlayers("cardMoved", clienttranslate('${card_inject_code} moved from ${fromLocation} to ${toLocation}.'), [
+                        'i18n' => ['fromLocation', 'toLocation'],
+                        "card_inject_code" => $card->getInjectCode(),
                         "cardId" => $card->Id,
                         "fromLocation" => $event->fromLocation,
                         "toLocation" => $event->toLocation,
@@ -512,11 +506,10 @@ trait EventHub
                 $handler = function (Theah $theah, EventCardRemovedFromPlayerDiscardPile $event)
                 {
                     $card = $theah->getCardById($event->cardId);
-                    $this->game->notifyAllPlayers("cardRemovedFromPlayerDiscardPile", clienttranslate('<strong>${card_name}</strong> removed from ${player_name}\'s discard pile.'), [
-                        'i18n' => ['card_name'],
+                    $this->game->notifyAllPlayers("cardRemovedFromPlayerDiscardPile", clienttranslate('${card_inject_code} removed from ${player_name}\'s discard pile.'), [
                         "player_id" => $event->playerId,
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "card_name" => $card->Name,
+                        "card_inject_code" => $card->getInjectCode(),
                         "card" => $card->getPropertyArray($this->game),
                     ]);
                 };
@@ -555,11 +548,11 @@ trait EventHub
                         $theah->upsertCard($character);        
         
                         // Notify players of mustered character
-                        $theah->game->notifyAllPlayers("characterMustered", clienttranslate('${player_name} musters <strong>${character_name}</strong> at ${location}.'), [
-                            'i18n' => ['character_name', 'location'],
+                        $theah->game->notifyAllPlayers("characterMustered", clienttranslate('${player_name} musters ${character_inject_code} at ${location}.'), [
+                            'i18n' => ['location'],
                             "player_id" => $event->playerId,
                             "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                            "character_name" => $character->Name,
+                            "character_inject_code" => $character->getInjectCode(),
                             "location" => $event->location,
                             "character" => $character->getPropertyArray($theah->game),
                         ]);
@@ -573,11 +566,10 @@ trait EventHub
                 $character->IsUpdated = true;
 
                 // Notify players of recruited character
-                $this->game->notifyAllPlayers("characterRecruited", clienttranslate('${player_name} recruits <strong>${character_name}</strong> at a cost of ${cost} Wealth (discount of ${discount}).'), [
-                    'i18n' => ['character_name'],
+                $this->game->notifyAllPlayers("characterRecruited", clienttranslate('${player_name} recruits ${character_inject_code} at a cost of ${cost} Wealth (discount of ${discount}).'), [
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "character_name" => $event->character->Name,
+                    "character_inject_code" => $event->character->getInjectCode(),
                     "characterId" => $event->character->Id,
                     "discount" => $event->discount,
                     "cost" => $event->cost,
@@ -1210,6 +1202,7 @@ trait EventHub
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
+                    var_dump($event->riposte);
 
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "combat", $event->riposte, $event->parry, $event->thrust);
                     $effects = "";  

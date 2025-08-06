@@ -167,19 +167,19 @@ class DB extends \APP_DbObject
                 $riposte = $endingChallengerThreat;
             $endingChallengerThreat -= $riposte;
             $endingDefenderThreat += $riposte;
-            $results['riposte'] = $riposte;
+            $results['riposte'] = $eventRiposte;
 
             //Parry reduces threat
             $parry = $eventParry < 0 ? 0 : $eventParry;
             if ($parry > $endingChallengerThreat) 
                 $parry = $endingChallengerThreat;
             $endingChallengerThreat -= $parry;
-            $results['parry'] = $parry;
+            $results['parry'] = $eventParry;
 
             //Thrust adds threat
             $thrust = $eventThrust < 0 ? 0 : $eventThrust;
             $endingDefenderThreat += $thrust;
-            $results['thrust'] = $thrust;
+            $results['thrust'] = $eventThrust;
 
             $wounds = $endingChallengerThreat;
         }
@@ -191,19 +191,19 @@ class DB extends \APP_DbObject
                 $riposte = $endingDefenderThreat;
             $endingDefenderThreat -= $riposte;
             $endingChallengerThreat += $riposte;
-            $results['riposte'] = $riposte;
+            $results['riposte'] = $eventRiposte;
          
             //Parry reduces threat
             $parry = $eventParry < 0 ? 0 : $eventParry;
             if ($parry > $endingDefenderThreat) 
                 $parry = $endingDefenderThreat;
             $endingDefenderThreat -= $parry;
-            $results['parry'] = $parry;
+            $results['parry'] = $eventParry;
 
             //Thrust adds threat
             $thrust = $eventThrust < 0 ? 0 : $eventThrust;
             $endingChallengerThreat += $thrust;
-            $results['thrust'] = $thrust;
+            $results['thrust'] = $eventThrust;
 
             $wounds = $endingDefenderThreat;
         }

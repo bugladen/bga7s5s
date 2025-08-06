@@ -1108,9 +1108,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
             element.innerHTML += `<p>${args.cardName}: ${args.effectName}</p>`;
         }
 
-        let riposte = parseInt($(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML) + args.riposte;
-        let parry = parseInt($(`duel_round_${args.round}_${args.mode}_parry`).innerHTML) + args.parry;
-        let thrust = parseInt($(`duel_round_${args.round}_${args.mode}_thrust`).innerHTML) + args.thrust;
+        let riposte = parseInt($(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML) + parseInt(args.riposte);
+        let parry = parseInt($(`duel_round_${args.round}_${args.mode}_parry`).innerHTML) + parseInt(args.parry);
+        let thrust = parseInt($(`duel_round_${args.round}_${args.mode}_thrust`).innerHTML) + parseInt(args.thrust);
         $(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML = riposte;
         $(`duel_round_${args.round}_${args.mode}_parry`).innerHTML = parry;
         $(`duel_round_${args.round}_${args.mode}_thrust`).innerHTML = thrust;

@@ -46,7 +46,7 @@ class Maneuver_01084 extends Maneuver
             if ($adversary->Engaged)
             {
                 $event->discount += 1;
-                $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the cost of Maneuver by 1 because your Adversary is engaged."), $owner->Name);
+                $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the cost of Maneuver by 1 because your Adversary is engaged."), $owner->getInjectCode());
             }
         }
 

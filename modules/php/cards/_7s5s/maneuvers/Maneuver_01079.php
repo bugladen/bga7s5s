@@ -58,7 +58,7 @@ class Maneuver_01079 extends Maneuver
             if ($actor->ModifiedFinesse > $adversary->ModifiedFinesse)
             {
                 $event->discount += 1;
-                $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the cost of Maneuver by 1 because your participant has a higher Finesse Stat."), $owner->Name);
+                $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the cost of Maneuver by 1 because your participant has a higher Finesse Stat."), $owner->getInjectCode());
             }
         }
 
