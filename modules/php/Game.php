@@ -50,6 +50,7 @@ class Game extends \Table
     //Global variable names
     final const FIRST_PLAYER = "firstPlayer";
     final const CURRENT_PLAYER = "currentPlayer";
+    final const DAY = "day";
     final const TURN_PHASE = "turnPhase";
     final const PLAYER_COUNT = "playerCount";
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
@@ -164,7 +165,7 @@ class Game extends \Table
         parent::__construct();
 
         $this->initGameStateLabels([
-            "day" => 10,
+            Game::DAY => 10,
             Game::TURN_PHASE => 11,
         ]);
 
@@ -196,7 +197,7 @@ class Game extends \Table
     public function getGameProgression()
     {
         //Progression will only happen each day.  There are 5 days in the game.
-        $day = (int) $this->getGameStateValue("day");
+        $day = (int) $this->getGameStateValue(Game::DAY);
         return round(($day - 1) / 5 * 100);
     }
 
@@ -267,7 +268,7 @@ class Game extends \Table
         }        
         $result["players"] = $players;
 
-        $result["day"] = $this->getGameStateValue("day");
+        $result["day"] = $this->getGameStateValue(Game::DAY);
         $result["turnPhase"] = (int) $this->getGameStateValue(Game::TURN_PHASE);
         $result["firstPlayer"] = $this->globals->get(Game::FIRST_PLAYER, 0);
         $result["homeCards"] = $this->theah->getCardPropertiesAtLocation(Game::LOCATION_PLAYER_HOME);
@@ -353,7 +354,7 @@ class Game extends \Table
 
         // Init global values with their initial values.
 
-        $this->setGameStateInitialValue("day", 0);
+        $this->setGameStateInitialValue(Game::DAY, 0);
         $this->setGameStateInitialValue(Game::TURN_PHASE, Game::SETUP_PHASE);
 
         $playerCount = count($players);

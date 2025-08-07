@@ -49,8 +49,8 @@ trait StatesTrait
 
     public function stDawnNewDay() {
         // Increment the day
-        $day = $this->getGameStateValue("day") + 1;
-        $this->setGameStateValue("day", $day);
+        $day = $this->getGameStateValue(Game::DAY) + 1;
+        $this->setGameStateValue(Game::DAY, $day);
 
         //Notify players that it is Dawn, New Day
         $this->notifyAllPlayers("newDay", clienttranslate('It is the start of <strong>DAY #${day}</strong> in the city of Theah.'), [
@@ -1416,7 +1416,7 @@ trait StatesTrait
         }
         else if (count($winners) > 1)
         {
-            $day = $this->getGameStateValue("day");
+            $day = $this->getGameStateValue(Game::DAY);
             if ($day < 5)
             {
                 $this->notifyAllPlayers("message", clienttranslate('Multiple players have achieved an ECONOMIC VICTORY by gaining 7 or more reknown. Another day will be played.'), []);
@@ -1431,7 +1431,7 @@ trait StatesTrait
     public function stPlunderCheckFifthDayVictory(): void
     {
         $this->theah->buildCity();
-        $day = $this->getGameStateValue("day");
+        $day = $this->getGameStateValue(Game::DAY);
         if ($day == 5)
         {
             $this->notifyAllPlayers("message", clienttranslate('IT IS THE END OF THE FIFTH DAY.'), []);

@@ -135,7 +135,7 @@ trait DebugTrait
 
     public function debug_SetDay(int $day)
     {
-        $this->setGameStateValue("day", $day);
+        $this->setGameStateValue(Game::DAY, $day);
     }
 
     public function debug_SetPlayerReknown(int $playerId, int $score)

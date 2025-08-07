@@ -45,7 +45,7 @@ class Reaction_01088 extends RiskReaction
                 $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
                 $performer = $game->theah->getCharacterById($performerId);
 
-                if ($performer->hasTrait("Mercenary"))
+                if ($performer->hasTrait("Mercenary") && $performer->isNotControlledByPlayer($risk->ControllerId))
                 {
                     $transition = EventFactory::createReactionTransitionEvent($risk->ControllerId, $risk->Id, $this->Id);
                     $event->theah->queueEvent($transition);

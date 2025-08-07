@@ -271,6 +271,36 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01055 => [
+        "name" => "highDramaPhase01055",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Last Word: ${you} must choose a character to move: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_01055_2
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01055_2 => [
+        "name" => "highDramaPhase01055_2",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Last Word: ${you} must choose a location to move the target character to: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithLocations"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01055,
+            "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01068 => [
         "name" => "highDramaPhase01068",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -289,7 +319,7 @@ $machinestates += [
     States::HIGH_DRAMA_PLAYER_TURN_01068_2 => [
         "name" => "highDramaPhase01068_2",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Léontine Giroux: ${you} must choose a location to move the chosen character to: '),
+        "descriptionmyturn" => clienttranslate('Léontine Giroux: ${you} must choose a location to move the target character to: '),
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [

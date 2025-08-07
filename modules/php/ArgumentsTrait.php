@@ -480,11 +480,22 @@ trait ArgumentsTrait
 
         $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
         
-        //Filter out those characters that can challenge
-        $characters = array_values(array_filter($characters, fn($character) => $character->canChallenge() ));
+        //Filter those characters that can challenge
+        $characters = array_filter($characters, fn($character) => $character->canChallenge());
 
+        $charactersThatCanChallenge = [];
+        foreach ($characters as $character)
+        {
+            $opponents = $this->theah->getCharactersAtLocation($character->Location);
+            $opponents = array_filter($opponents, fn($opponent) => $opponent->isNotControlledByPlayer($playerId));
+            if (count($opponents) > 0)
+            {
+                $charactersThatCanChallenge[] = $character;
+            }
+        }
+        
         //Select the Ids of the characters
-        $characterIds = array_map(fn($character) => $character->Id, $characters);
+        $characterIds = array_map(fn($character) => $character->Id, $charactersThatCanChallenge);
 
         return [
             "ids" => $characterIds

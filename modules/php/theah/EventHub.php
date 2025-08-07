@@ -1202,7 +1202,6 @@ trait EventHub
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
-                    var_dump($event->riposte);
 
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "combat", $event->riposte, $event->parry, $event->thrust);
                     $effects = "";  
