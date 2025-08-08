@@ -144,7 +144,8 @@ class DB extends \APP_DbObject
 
     function updateRoundWithCombatStats(int $duelId, int $round, string $mode, int $eventRiposte, int $eventParry, int $eventThrust): array
     {
-        $sql = "SELECT r.actor_id, d.challenger_id, d.defender_id, r.ending_challenger_threat, r.ending_defender_threat
+        $sql = "SELECT r.actor_id, d.challenger_id, d.defender_id, 
+        r.ending_challenger_threat, r.ending_defender_threat, r.challenger_threat_is_lethal, r.defender_threat_is_lethal
         FROM duel_round r JOIN duel d ON r.duel_id = d.duel_id WHERE r.duel_id = $duelId AND r.round = $round";
 
         $result = $this->getObjectList($sql)[0];
@@ -153,11 +154,15 @@ class DB extends \APP_DbObject
         $defenderId = $result['defender_id'];
         $endingChallengerThreat = $result['ending_challenger_threat'];
         $endingDefenderThreat = $result['ending_defender_threat'];
+        $challengerThreatIsLethal = $result['challenger_threat_is_lethal'];
+        $defenderThreatIsLethal = $result['defender_threat_is_lethal'];
         $wounds = 0;
 
         $results = [];
         $results['endingChallengerThreatBefore'] = $endingChallengerThreat;
         $results['endingDefenderThreatBefore'] = $endingDefenderThreat;
+        $results['challengerThreatIsLethal'] = $challengerThreatIsLethal;
+        $results['defenderThreatIsLethal'] = $defenderThreatIsLethal;
 
         if ($actorId == $challengerId)
         {

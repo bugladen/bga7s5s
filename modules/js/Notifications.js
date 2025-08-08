@@ -1123,10 +1123,16 @@ return declare('seventhseacityoffivesails.notifications', null, {
         else
             dojo.removeClass(`duel_round_${args.round}_ending_challenger_threat`, 'threat-chip-threatened');
 
+        if (args.challengerThreatIsLethal == 1)
+            $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
+
         if (args.endingDefenderThreatAfter > 0)
             dojo.addClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');
         else
             dojo.removeClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');
+
+        if (args.defenderThreatIsLethal == 1)
+            $(`duel_round_${args.round}_ending_defender_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
 
         dojo.removeClass(`duel_round_${args.round}_${args.mode}`, 'ability-not-chosen');
         dojo.removeClass(`duel_round_${args.round}_${args.mode}_stats`, 'ability-not-chosen');
@@ -1147,8 +1153,6 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         if (args.challengerThreatIsLethal == 1)
             $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
-        if (args.defenderThreatIsLethal == 1)
-            $(`duel_round_${args.round}_ending_defender_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
     
         $(`duel_round_${args.round}_ending_defender_threat`).innerHTML = args.defender_threat;
         if (args.defender_threat > 0)
@@ -1156,6 +1160,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         else
             dojo.removeClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');
 
+        if (args.defenderThreatIsLethal == 1)
+            $(`duel_round_${args.round}_ending_defender_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
+        
         $(`duel_round_${args.round}_wounds`).innerHTML = args.wounds;
     },
 

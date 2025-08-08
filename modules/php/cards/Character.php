@@ -185,7 +185,7 @@ abstract class Character extends Card implements IHasTechniques
                 'resolve' => $this->ModifiedResolve
             ]);
 
-            if ($this->ModifiedResolve == 0)
+            if ($this->ModifiedResolve <= 0)
             {
                 $this->IsDying = true;
                 
