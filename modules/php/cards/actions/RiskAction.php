@@ -26,7 +26,7 @@ class RiskAction extends CardAction
         {
             return false;
         }
-        
+
         return true;
     }
 
