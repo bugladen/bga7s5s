@@ -301,6 +301,34 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01056 => [
+        "name" => "highDramaPhase01056",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Move Along: ${you} must choose a character to confront: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01056_2 => [
+        "name" => "highDramaPhase01056_2",
+        "description" => clienttranslate('${actplayer} is choosing whether to have their target character Move Home or continue with Challenge.'),
+        "descriptionmyturn" => clienttranslate('Move Along: ${you} must choose whether to have your target character Move Home or continue with Challenge: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01068 => [
         "name" => "highDramaPhase01068",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

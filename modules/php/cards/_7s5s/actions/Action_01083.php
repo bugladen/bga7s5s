@@ -27,6 +27,7 @@ class Action_01083 extends RiskCityAction
         }
 
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
+        $characters = array_filter($characters, fn($character) => $character->canChallenge());
         foreach ($characters as $character)
         {
             $adversaries = $theah->getCharactersAtLocation($character->Location);

@@ -653,6 +653,23 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
 
+            'highDramaPhase01056': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    args.args.args.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.characterIds = args.args.args.characterIds;
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, 'chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
             'highDramaPhase01068': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

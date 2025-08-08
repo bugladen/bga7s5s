@@ -30,7 +30,7 @@ class Action_01071 extends SchemeCityAction
         }
 
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $characters = array_filter($characters, fn($character) => in_array("Musketeer", $character->Traits));
+        $characters = array_filter($characters, fn($character) => $character->hasTrait("Musketeer") && $character->canChallenge());
 
         return count($characters) > 0;
     }
@@ -39,7 +39,7 @@ class Action_01071 extends SchemeCityAction
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
 
-        $performers = array_filter($performers, fn($performer) => in_array("Musketeer", $performer->Traits));
+        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Musketeer") && $performer->canChallenge());
 
         return $performers;
     }

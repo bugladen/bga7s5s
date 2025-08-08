@@ -23,7 +23,7 @@ class Action_01078 extends RiskAction
     {
         // Get enemy characters in the city
         $characters = $theah->getCharactersInPlay();
-        $characters = array_filter($characters, fn($character) => $character->ControllerId != $playerId && $theah->cardInCity($character));
+        $characters = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($playerId) && $theah->cardInCity($character) && $character->canChallenge());
 
         //Filter characters that have a friendly character opposing them
         $qualifiedCharacters = [];

@@ -140,7 +140,6 @@ function (dojo, declare) {
                 const cardSpan = this.getHTMLForLog(cardName, cardImage, 'card');
                 log_entry = log_entry.replace(card[0], cardSpan);
             }
-            console.log(log_entry);
             return log_entry;
         },
 

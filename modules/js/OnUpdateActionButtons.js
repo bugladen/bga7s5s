@@ -53,62 +53,52 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaPlayerTurn': () => {
-            if (this.isCurrentPlayerActive()) {
-                if (args._private.canChallenge)
-                    this.addActionButton(`actChallengeAction`, _('Challenge'), () => this.bgaPerformAction('actHighDramaChallengeActionStart', {}));
-                if (args._private.canClaim)
-                    this.addActionButton(`actClaimAction`, _('Claim'), () => this.bgaPerformAction('actHighDramaClaimActionStart', {}));
-                if (args._private.canEquip)
-                    this.addActionButton(`actEquipAction`, _('Equip'), () => this.bgaPerformAction('actHighDramaEquipActionStart', {}));
-                if (args._private.canMove)
-                    this.addActionButton(`actMoveAction`, _('Move'), () => this.bgaPerformAction('actHighDramaMoveActionStart', {}));
-                if (args._private.canRecruit)
-                    this.addActionButton(`actRecruitAction`, _('Recruit'), () => this.bgaPerformAction('actHighDramaRecruitActionStart', {}));
-                if (args._private.hasInPlayActions)
-                {
-                    this.addActionButton(`btnInPlayAction`, _('In-Play Action'), () => this.bgaPerformAction('actHighDramaChooseInPlayActionStart', {})) 
-                    this.addTooltipHtml( 'btnInPlayAction', `<div class='basic-tooltip'>${_("Use an In-Play Action")}</div>` );
-                }
-                if (args._private.hasInHandActions)
-                    {
-                        this.addActionButton(`btnInHandAction`, _('In-Hand Action'), () => this.bgaPerformAction('actHighDramaChooseInHandActionStart', {})) 
-                        this.addTooltipHtml( 'btnInHandAction', `<div class='basic-tooltip'>${_("Use an In-Hand Action")}</div>` );
-                    }
-                            
-                this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
+            if (args._private.canChallenge)
+                this.addActionButton(`actChallengeAction`, _('Challenge'), () => this.bgaPerformAction('actHighDramaChallengeActionStart', {}));
+            if (args._private.canClaim)
+                this.addActionButton(`actClaimAction`, _('Claim'), () => this.bgaPerformAction('actHighDramaClaimActionStart', {}));
+            if (args._private.canEquip)
+                this.addActionButton(`actEquipAction`, _('Equip'), () => this.bgaPerformAction('actHighDramaEquipActionStart', {}));
+            if (args._private.canMove)
+                this.addActionButton(`actMoveAction`, _('Move'), () => this.bgaPerformAction('actHighDramaMoveActionStart', {}));
+            if (args._private.canRecruit)
+                this.addActionButton(`actRecruitAction`, _('Recruit'), () => this.bgaPerformAction('actHighDramaRecruitActionStart', {}));
+            if (args._private.hasInPlayActions)
+            {
+                this.addActionButton(`btnInPlayAction`, _('In-Play Action'), () => this.bgaPerformAction('actHighDramaChooseInPlayActionStart', {})) 
+                this.addTooltipHtml( 'btnInPlayAction', `<div class='basic-tooltip'>${_("Use an In-Play Action")}</div>` );
             }
+            if (args._private.hasInHandActions)
+                {
+                    this.addActionButton(`btnInHandAction`, _('In-Hand Action'), () => this.bgaPerformAction('actHighDramaChooseInHandActionStart', {})) 
+                    this.addTooltipHtml( 'btnInHandAction', `<div class='basic-tooltip'>${_("Use an In-Hand Action")}</div>` );
+                }
+                        
+            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
         },
 
         'highDramaMoveActionChoosePerformer': () => {
-            if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
-            }
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaMoveActionChooseLocation': () => {
-            if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
-                dojo.addClass('actCityLocationsSelected', 'disabled');
-            }
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
+            dojo.addClass('actCityLocationsSelected', 'disabled');
         },
 
         'highDramaRecruitActionChoosePerformer': () => {
-            if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
-            }
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaRecruitActionParley': () => {
-            if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actChooseYes`, _('Yes'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyYes', {}));
-                this.addActionButton(`actChooseNo`, _('No'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyNo', {}));
-            }
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseYes`, _('Yes'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyYes', {}));
+            this.addActionButton(`actChooseNo`, _('No'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyNo', {}));
         },
 
         'highDramaRecruitActionChooseMercenary': () => {
@@ -162,11 +152,9 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaEquipActionChoosePerformer': () => {
-            if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
-            }
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaEquipActionChooseAttachmentLocation': () => {
@@ -208,46 +196,38 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaClaimActionChoosePerformer': () => {
-            if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
-            }
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaChallengeActionChoosePerformer': () => {
-            if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
-            }
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaChallengeActionChooseTarget': () => {
-            if (this.isCurrentPlayerActive()) {
-                if (args.challengeType == this.NORMAL_CHALLENGE_TYPE)
-                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                else if (args.challengeType == this.TRISKELION_CHALLENGE_TYPE)
-                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backTriskelion'}));
-                else if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE)
-                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backEpeeSanglante'}));
-                else if (args.challengeType == this.CAVALIER_HAT_CHALLENGE_TYPE)
-                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backCavalierHat'}));
+            if (args.challengeType == this.NORMAL_CHALLENGE_TYPE)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            else if (args.challengeType == this.TRISKELION_CHALLENGE_TYPE)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backTriskelion'}));
+            else if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backEpeeSanglante'}));
+            else if (args.challengeType == this.CAVALIER_HAT_CHALLENGE_TYPE)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backCavalierHat'}));
 
-                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
-            }
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+            dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaChallengeActionActivateTechnique': () => {
-            if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                args.techniques.forEach((technique) => { 
-                    this.addActionButton(
-                        `actChooseTechnique${technique.id}-btn`, technique.name, () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 
-                    });
-                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
-            }
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            args.techniques.forEach((technique) => { 
+                this.addActionButton(
+                    `actChooseTechnique${technique.id}-btn`, technique.name, () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 
+            });
+            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
         },
         
         'highDramaChallengeActionAcceptChallenge': () => {
@@ -260,18 +240,14 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'playerReaction': () => {
-            if (this.isCurrentPlayerActive()) {
-                args._private.args.buttons.forEach((button, index) => {
-                    this.addActionButton(`actReaction-${index}`, button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}));
-                });
-            }
+            args._private.args.buttons.forEach((button, index) => {
+                this.addActionButton(`actReaction-${index}`, button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}));
+            });
         },
 
         'playerPayForReaction': () => {
-            if (this.isCurrentPlayerActive()) {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onReactionPaymentConfirmed());
-            }
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onReactionPaymentConfirmed());
         },
 
         'duelChooseAction': () => {

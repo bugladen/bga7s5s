@@ -36,6 +36,11 @@ class Action_01073 extends AttachmentAction
             return false;
         }
 
+        if (! $owner->canChallenge())
+        {
+            return false;
+        }
+
         $characters = $theah->getCharactersAtLocation($owner->Location);
         $characters = array_filter($characters, fn($character) => $character->ControllerId != $owner->ControllerId);
 
