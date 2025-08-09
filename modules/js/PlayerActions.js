@@ -71,18 +71,6 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01152_2': 'actPlanningPhase_01152_2',
             'planningPhaseResolveSchemes_01152_3': 'actPlanningPhase_01152_3',
             'highDramaMoveActionChooseLocation': 'actHighDramaMoveActionDestinationChosen',
-            'highDramaPhase01046a': 'actFromCardWithLocations',
-            'highDramaPhase01055_2': 'actFromCardWithLocations',
-            'highDramaPhase01059': 'actFromCardWithLocations',
-            'highDramaPhase01068_2': 'actFromCardWithLocations',
-            'highDramaPhase01076': 'actFromCardWithLocations',
-            'highDramaPhase01086': 'actFromCardWithLocations',
-            'highDramaPhase01149': 'actFromCardWithLocations',
-            'highDramaPhase01189a': 'actFromCardWithLocations',
-            'highDramaPhase01189b': 'actFromCardWithLocations',
-            'highDramaPhase01205_2': 'actFromCardWithLocations',
-            'duelChooseTechnique_01036': 'actFromCardWithLocations',
-            'duelResolveManeuver_01059': 'actFromCardWithLocations',
         };
 
         const clientMessageArray = {
@@ -90,7 +78,10 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01145_2_client': _("Inspire Generosity: ${you} must choose a location to move the Reknown to: "),
         };
 
-        const action = actionMap[this.gamedatas.gamestate.name];
+        let action = actionMap[this.gamedatas.gamestate.name];
+        if (action === undefined)
+            action = 'actFromCardWithLocations';
+
         const locations = this.selectedCityLocations.map((loc) => $(loc).getAttribute('data-location'));
         
         //If the action ends with _client, we need to call a client side function
@@ -116,23 +107,6 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01125_4'                   : 'actPlanningPhase_01125_4',
             'planningPhaseEnd_01098'                                : 'actPlanningPhaseEnd_01098',
             'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
-            'highDramaPhase01029'                                   : 'actFromCardWithId',
-            'highDramaPhase01044_2'                                 : 'actFromCardWithId',
-            'highDramaPhase01049'                                   : 'actFromCardWithId',
-            'highDramaPhase01055'                                   : 'actFromCardWithId',
-            'highDramaPhase01056'                                   : 'actFromCardWithId',
-            'highDramaPhase01058'                                   : 'actFromCardWithId',
-            'highDramaPhase01068'                                   : 'actFromCardWithId',
-            'highDramaPhase01072_2'                                 : 'actFromCardWithId',
-            'highDramaPhase01076_2'                                 : 'actFromCardWithId',
-            'highDramaPhase01081'                                   : 'actFromCardWithId',
-            'highDramaPhase01085'                                   : 'actFromCardWithId',
-            'highDramaPhase01147'                                   : 'actFromCardWithId',
-            'highDramaPhase01180_4'                                 : 'actFromCardWithId',
-            'highDramaPhase01194_2'                                 : 'actFromCardWithId',
-            'highDramaPhase01197'                                   : 'actFromCardWithId',
-            'highDramaPhase01197_3'                                 : 'actFromCardWithId',
-            'highDramaPhase01205'                                   : 'actFromCardWithId',
             'highDramaMoveActionChoosePerformer'                    : 'actHighDramaMoveActionPerformerChosen',
             'highDramaInPlayActionChoosePerformer'                  : 'actHighDramaInPlayActionPerformerChosen',  
             'highDramaInHandActionChoosePerformer'                  : 'actHighDramaInHandActionPerformerChosen',  
@@ -144,18 +118,16 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaChallengeActionChoosePerformer'               : 'actHighDramaChallengeActionPerformerChosen',
             'highDramaChallengeActionChooseTarget'                  : 'actHighDramaChallengeActionTargetChosen',
             'highDramaChallengeActionAcceptChallenge'               : 'actHighDramaChallengeActionIntervene', 
-            'highDramaChallengeActionActivateTechnique_01063'       : 'actFromCardWithId',
-            'duelChooseTechnique_01063'                             : 'actFromCardWithId',
-            'duelResolveManeuver_01051'                             : 'actFromCardWithId',
-            'duelApplyCombatCardStats_01085'                        : 'actFromCardWithId',
-            'duskPhaseBegin01177'                                   : 'actFromCardWithId',
+            'highDramaPhase01060_2'                                 : 'actFromCardWithIds',
         };
 
         const clientMessages = {
             'highDramaBeginning_01144_client'                       : _("${you} must choose cards from your Faction Hand to pay for selected Mercenary: "),
         };
 
-        const action = actions[this.gamedatas.gamestate.name];
+        let action = actions[this.gamedatas.gamestate.name];
+        if (action === undefined)
+            action = 'actFromCardWithId';
 
         //If the action ends with _client, we need to call a client side function
         if (action.includes('_client')) {
@@ -169,6 +141,32 @@ return declare('seventhseacityoffivesails.actions', null, {
                 'id' : this.selectedCards[0],
             });
         }
+    },
+
+    onChooseMultipleInPlayCardsConfirmed: function()
+    {
+        if (this.selectedCards.length < this.numberOfCardsSelectable )
+            this.confirmationDialog(_("You did not select as many cards as you are allowed. Are you sure you want to continue?"),
+               () => {this.submitInPlayCards();}
+           );
+           else
+               this.submitInPlayCards();
+    },
+
+    submitInPlayCards: function()
+    {
+        const actionMap = {
+        };
+
+        let action = actionMap[this.gamedatas.gamestate.name];
+        if (action === undefined)
+            action = 'actFromCardWithIds';
+
+        this.bgaPerformAction(action, { 
+            'ids': JSON.stringify(this.selectedCards),
+        }).then(() =>  {                
+            // What to do after the server call if it succeeded
+        });
     },
 
     onMusterCardSelected: function()

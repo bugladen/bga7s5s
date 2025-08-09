@@ -57,7 +57,7 @@ class Action_01046a extends AttachmentAction
             $attachedTo = $this->getOwningCharacter($game->theah);
             $args["performerId"] = $attachedTo->Id;
 
-            $args["locationIds"] = $game->theah->getAdjacentCityLocations($attachedTo->Location, $includeHome = false);
+            $args["locationIds"] = $game->theah->getAdjacentCityLocations($attachedTo->Location);
         }
 
         return $args;
@@ -72,7 +72,7 @@ class Action_01046a extends AttachmentAction
             $location = $ids[0];
             $darkGift = $this->getOwningCard($game->theah);
 
-            $locations = $game->theah->getAdjacentCityLocations($darkGift->Location, $includeHome = false);
+            $locations = $game->theah->getAdjacentCityLocations($darkGift->Location);
             if ( ! in_array($location, $locations))
             {
                 throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to %s."), $location, $darkGift->Location));

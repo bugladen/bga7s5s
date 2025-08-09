@@ -27,7 +27,7 @@ class Reaction_01039 extends CardReaction
         $array = parent::getReactionButtonProperties($theah);
 
         $philip = $this->getOwningCharacter($theah);
-        $adjacentLocations = $theah->getAdjacentCityLocations($philip->Location, $includeHome = false);
+        $adjacentLocations = $theah->getAdjacentCityLocations($philip->Location);
         foreach ($adjacentLocations as $locationName)
         {
             $location = $theah->getCityLocation($locationName);

@@ -480,8 +480,8 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             this.selectedCards.push(card.id);
         }
 
-        //Enable the confirm button if we have the right number of locations selected
-        if (this.selectedCards.length === this.numberOfCardsSelectable) {
+        //Enable the confirm button if we have at least once card selected
+        if (this.selectedCards.length > 0) {
             dojo.removeClass('actChooseCardSelected', 'disabled');
         } else {
             dojo.addClass('actChooseCardSelected', 'disabled');

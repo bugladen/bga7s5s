@@ -359,6 +359,51 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01060 => [
+        "name" => "highDramaPhase01060",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Stratege: ${you} must choose a location with Performers to move: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithLocations"
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_01060_2
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01060_2 => [
+        "name" => "highDramaPhase01060_2",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Stratege: ${you} must choose up to two Performers to move: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithIds"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01060,
+            "performersChosen" => States::HIGH_DRAMA_PLAYER_TURN_01060_3
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01060_3 => [
+        "name" => "highDramaPhase01060_3",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Stratege: ${you} must choose a new location for your Performers: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithLocations"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01060_2,
+            "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01068 => [
         "name" => "highDramaPhase01068",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

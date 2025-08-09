@@ -31,7 +31,7 @@ class Action_01062 extends CharacterAction
 
         //Check if there is a duelist adjacent to Odette
         $count = 0;
-        $adjacentLocations = $theah->getAdjacentCityLocations($odette->Location, $includeHome = false);
+        $adjacentLocations = $theah->getAdjacentCityLocations($odette->Location);
         foreach ($adjacentLocations as $location)
         {
             $characters = $theah->getCharactersAtLocation($location);
@@ -46,7 +46,7 @@ class Action_01062 extends CharacterAction
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $odette = $this->getOwningCharacter($theah);
-        $adjacentLocations = $theah->getAdjacentCityLocations($odette->Location, $includeHome = false);
+        $adjacentLocations = $theah->getAdjacentCityLocations($odette->Location);
         $performers = [];
         foreach ($adjacentLocations as $location)
         {
