@@ -352,6 +352,15 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
 
+            'highDramaPhase01059': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, 'chosen');
+                }
+            },
+
             'highDramaPhase01068': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.clientStateArgs.characterIds.forEach((characterId) => {
@@ -771,6 +780,15 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                         const image = $(`${card.divId}_image`);
                         this.clearCardAsSelectable(image);
                     });
+                }
+            },
+
+            'duelResolveManeuver_01059': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, 'chosen');
                 }
             },
 

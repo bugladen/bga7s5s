@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 abstract class Maneuver implements ICardAbility
@@ -28,6 +29,11 @@ abstract class Maneuver implements ICardAbility
 
     public function handleEvent(Event $event)
     {
+        if ($event instanceof EventManeuverActivated && $event->maneuverId == $this->Id)
+        {
+            $this->setUsed($event->theah, true);
+        }
+
         if ($event instanceof EventDuskEndOfDay && $this->ResetOnDayEnd)
         {
             $this->setUsed($event->theah, false);

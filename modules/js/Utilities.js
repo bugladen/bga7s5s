@@ -510,6 +510,11 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.removeClass(location, 'selected');
             dojo.style(location, 'cursor', 'default');
         });
+
+        const playerHome = this.getCityLocationElement(this.LOCATION_PLAYER_HOME);
+        dojo.removeClass(playerHome, 'selectable');
+        dojo.removeClass(playerHome, 'selected');
+        dojo.style(playerHome, 'cursor', 'default');
     },
     
     clearCardAsSelectable: function(image) {

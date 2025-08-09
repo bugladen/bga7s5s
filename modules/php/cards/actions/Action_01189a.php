@@ -29,7 +29,7 @@ class Action_01189a extends EventCityAction
         }
 
         $poo = $this->getOwningCard($theah);
-        $locations = $theah->getAdjacentCityLocations($poo->Location);
+        $locations = $theah->getAdjacentCityLocations($poo->Location, $includeHome = false);
         $locations = array_filter($locations, fn($location) => $theah->game->getReknownForLocation($location) > 0);
 
         if (count($locations) == 0)

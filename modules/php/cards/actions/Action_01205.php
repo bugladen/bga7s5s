@@ -71,7 +71,7 @@ class Action_01205 extends CharacterAction
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01205_2)
         {
             $giacinto = $this->getOwningCharacter($game->theah);
-            $locations = $game->theah->getAdjacentCityLocations($giacinto->Location);
+            $locations = $game->theah->getAdjacentCityLocations($giacinto->Location, $includeHome = false);
 
             $victimId = $game->globals->get(Game::CHOSEN_CARD);
 

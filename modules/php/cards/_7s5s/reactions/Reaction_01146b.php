@@ -45,31 +45,41 @@ class Reaction_01146b extends CardReaction
 
         if ($event instanceof EventTechniqueActivated)
         {
-            $scheme = $this->getOwningCard($event->theah);
-            $owner = $event->theah->getCardById($event->ownerId);
-            if ($owner->ControllerId != $scheme->ControllerId)
+            $game = $event->theah->game;
+            $inDuel = $game->globals->get(Game::IN_DUEL);
+            //Only can react if in duel, per rules team
+            //https://discord.com/channels/643518732999589892/1195443554944815114
+            if ($inDuel)
             {
-                $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
-                $reactionEvent->priority = Event::HIGH_PRIORITY;
-                $event->theah->queueEvent($reactionEvent);
-
-                $this->TechniqueId = $event->techniqueId;
-                $scheme->IsUpdated = true;
+                $scheme = $this->getOwningCard($event->theah);
+                $owner = $event->theah->getCardById($event->ownerId);
+                if ($owner->ControllerId != $scheme->ControllerId)
+                {
+                    $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
+                    $event->theah->queueEvent($reactionEvent);
+    
+                    $this->TechniqueId = $event->techniqueId;
+                }
             }
         }
 
         if ($event instanceof EventManeuverActivated)
         {
-            $scheme = $this->getOwningCard($event->theah);
-            $owner = $event->theah->getCardById($event->ownerId);
-            if ($owner->ControllerId != $scheme->ControllerId)
+            $game = $event->theah->game;
+            $inDuel = $game->globals->get(Game::IN_DUEL);
+            //Only can react if in duel, per rules team
+            //https://discord.com/channels/643518732999589892/1195443554944815114
+            if ($inDuel)
             {
-                $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
-                $reactionEvent->priority = Event::HIGH_PRIORITY;
-                $event->theah->queueEvent($reactionEvent);
-
-                $this->ManeuverId = $event->maneuverId;
-                $scheme->IsUpdated = true;
+                $scheme = $this->getOwningCard($event->theah);
+                $owner = $event->theah->getCardById($event->ownerId);
+                if ($owner->ControllerId != $scheme->ControllerId)
+                {
+                    $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
+                    $event->theah->queueEvent($reactionEvent);
+    
+                    $this->ManeuverId = $event->maneuverId;
+                }
             }
         }
     }

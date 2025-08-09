@@ -73,6 +73,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaMoveActionChooseLocation': 'actHighDramaMoveActionDestinationChosen',
             'highDramaPhase01046a': 'actFromCardWithLocations',
             'highDramaPhase01055_2': 'actFromCardWithLocations',
+            'highDramaPhase01059': 'actFromCardWithLocations',
             'highDramaPhase01068_2': 'actFromCardWithLocations',
             'highDramaPhase01076': 'actFromCardWithLocations',
             'highDramaPhase01086': 'actFromCardWithLocations',
@@ -81,6 +82,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaPhase01189b': 'actFromCardWithLocations',
             'highDramaPhase01205_2': 'actFromCardWithLocations',
             'duelChooseTechnique_01036': 'actFromCardWithLocations',
+            'duelResolveManeuver_01059': 'actFromCardWithLocations',
         };
 
         const clientMessageArray = {

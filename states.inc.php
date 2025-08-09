@@ -969,6 +969,7 @@ $machinestates = [
                 "01056_2" => States::HIGH_DRAMA_PLAYER_TURN_01056_2,
                 "01056_3" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
                 "01058" => States::HIGH_DRAMA_PLAYER_TURN_01058,
+                "01059" => States::HIGH_DRAMA_PLAYER_TURN_01059,
                 "01068" => States::HIGH_DRAMA_PLAYER_TURN_01068,
                 "01069" => States::HIGH_DRAMA_PLAYER_TURN_01069,
                 "01071" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
@@ -1970,13 +1971,14 @@ $machinestates = [
                     "back" => States::DUEL_CHOOSE_ACTION
                 ]
             ],
-                // Add maneuver transitions here
+                // Add custom maneuver transitions here
                 States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS => [
                     "name" => "duelUseManeuverFromCombatCardEvents",
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
                         "01051" => States::DUEL_RESOLVE_MANEUVER_01051,
+                        "01059" => States::DUEL_RESOLVE_MANEUVER_01059,
                         "01077" => States::DUEL_RESOLVE_MANEUVER_01077,
                         "01079" => States::DUEL_RESOLVE_MANEUVER_01079,
                         "01079_2" => States::DUEL_RESOLVE_MANEUVER_01079_2,

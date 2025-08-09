@@ -106,7 +106,7 @@ class Action_01055 extends RiskCityAction
 
             $args["targetId"] = $target->Id;
 
-            $args["locationIds"] = $game->theah->getAdjacentCityLocations($target->Location);
+            $args["locationIds"] = $game->theah->getAdjacentCityLocations($target->Location, $includeHome = false);
         }
 
         return $args;
@@ -156,7 +156,7 @@ class Action_01055 extends RiskCityAction
             $target = $game->theah->getCharacterById($targetId);
 
             $location = $ids[0];
-            $locations = $game->theah->getAdjacentCityLocations($target->Location);
+            $locations = $game->theah->getAdjacentCityLocations($target->Location, $includeHome = false);
             if (!in_array($location, $locations))
             {
                 throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to %s."), $location, $target->Location));

@@ -344,6 +344,21 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01059 => [
+        "name" => "highDramaPhase01059",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Regroup: ${you} must choose a location to move to: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithLocations"
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01068 => [
         "name" => "highDramaPhase01068",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -916,6 +931,20 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "args" => "argsForStatePrivate",
         "possibleactions" => [
             "actFromCardWithId", 
+        ],
+        "transitions" => [
+            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+        ]
+    ],
+
+    States::DUEL_RESOLVE_MANEUVER_01059 => [
+        "name" => "duelResolveManeuver_01059",
+        "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+        "descriptionmyturn" => clienttranslate('Regroup: ${you} must choose a location to move to:'),
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actFromCardWithLocations", 
         ],
         "transitions" => [
             "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,

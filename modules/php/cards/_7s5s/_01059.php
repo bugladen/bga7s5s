@@ -3,12 +3,16 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver_01059;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01059;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01059;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 
-class _01059 extends Risk implements IHasManeuvers
+class _01059 extends Risk implements IHasActions, IHasManeuvers
 {
+    use ActionTrait;
     use ManeuverTrait;
     
     public function __construct()
@@ -29,6 +33,10 @@ class _01059 extends Risk implements IHasManeuvers
         $this->Traits = [
             'Flourish',
             'Prepared',
+        ];
+
+        $this->Actions = [
+            new Action_01059(),
         ];
 
         $this->Maneuvers = [
