@@ -262,12 +262,12 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardMovedEvent(int $playerId, int $cardId, string $fromLocation, string $toLocation, bool $engage = true, int $sourceId = 0): EventCardMoved
+    public static function createCardMovedEvent(int $initiatingPlayerId, int $cardId, string $fromLocation, string $toLocation, bool $engage = true, int $sourceId = 0): EventCardMoved
     {
         $event = self::createEvent(Events::CardMoved);
         if ($event instanceof EventCardMoved)
         {
-            $event->playerId = $playerId;
+            $event->initiatingPlayerId = $initiatingPlayerId;
             $event->cardId = $cardId;
             $event->fromLocation = $fromLocation;
             $event->toLocation = $toLocation;

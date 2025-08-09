@@ -255,6 +255,11 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 this.addActionButton(`actMoveHome`, _('Move Home'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
                 this.addActionButton(`actContinue`, _('Continue with Challenge'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
+
+            'highDramaPhase01058': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
     
             'highDramaPhase01068': () => {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));

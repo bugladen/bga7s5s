@@ -60,7 +60,7 @@ class _01071 extends Scheme implements IHasActions
             $event->theah->queueEvent($transition);
         }
 
-        if ($event instanceof EventCardMoved && $this->Location == Game::LOCATION_PLAYER_HOME && $event->playerId == $this->ControllerId)
+        if ($event instanceof EventCardMoved && $this->Location == Game::LOCATION_PLAYER_HOME && $event->initiatingPlayerId == $this->ControllerId)
         {
             $character = $event->theah->getCharacterById($event->cardId);
             if (in_array("Musketeer", $character->Traits))
@@ -111,12 +111,12 @@ class _01071 extends Scheme implements IHasActions
 
                 if ($addInfluence)
                 {
-                    $this->addInfluence($event->theah, $event->playerId, $character);
+                    $this->addInfluence($event->theah, $event->initiatingPlayerId, $character);
                 }
 
                 if ($removeInfluence)
                 {
-                    $this->removeInfluence($event->theah, $event->playerId, $character);
+                    $this->removeInfluence($event->theah, $event->initiatingPlayerId, $character);
                 }
             }
         }

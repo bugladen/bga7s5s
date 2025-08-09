@@ -4,7 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
 class EventCardMoved extends Event
 {
-    public int $playerId;
+    public int $initiatingPlayerId;
     public int $cardId;
     public string $fromLocation;
     public string $toLocation;

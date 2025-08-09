@@ -55,7 +55,7 @@ class _01065 extends Character implements IHasReactions
                 $event->fromLocation == $this->Location && 
                 $card->ControllerId == $this->ControllerId && 
                 $card->hasTrait("Musketeer") &&
-                $event->playerId != $this->ControllerId)
+                $event->initiatingPlayerId != $this->ControllerId)
             {
                 throw new \BgaUserException($event->theah->game->translate("Henri Michelet: other Musketeers at his location cannot be moved by opponent abilities."));
             }           
