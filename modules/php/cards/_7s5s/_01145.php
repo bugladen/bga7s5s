@@ -210,7 +210,6 @@ class _01145 extends Scheme
         foreach ($players as $playerId => $player) {
             $card = $game->playerDrawCard($playerId);
             $addEvent = EventFactory::createCardDrawnEvent($playerId, $card, sprintf($game->translate("%s effect"), $this->getInjectCode()));
-            //No need for a check
             $game->theah->queueEvent($addEvent);
         }
 

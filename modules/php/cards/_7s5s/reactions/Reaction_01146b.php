@@ -56,9 +56,11 @@ class Reaction_01146b extends CardReaction
                 if ($owner->ControllerId != $scheme->ControllerId)
                 {
                     $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
+                    $reactionEvent->priority = Event::HIGH_PRIORITY;
                     $event->theah->queueEvent($reactionEvent);
     
                     $this->TechniqueId = $event->techniqueId;
+                    $scheme->IsUpdated = true;
                 }
             }
         }
@@ -76,9 +78,11 @@ class Reaction_01146b extends CardReaction
                 if ($owner->ControllerId != $scheme->ControllerId)
                 {
                     $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
+                    $reactionEvent->priority = Event::HIGH_PRIORITY;
                     $event->theah->queueEvent($reactionEvent);
     
                     $this->ManeuverId = $event->maneuverId;
+                    $scheme->IsUpdated = true;
                 }
             }
         }
@@ -108,6 +112,7 @@ class Reaction_01146b extends CardReaction
                 $game->theah->queueEvent($canceledEvent);
 
                 $this->TechniqueId = '';
+                $scheme->IsUpdated = true;
             }
 
             if ($this->ManeuverId != '')
@@ -125,6 +130,7 @@ class Reaction_01146b extends CardReaction
                 $game->theah->queueEvent($canceledEvent);
 
                 $this->ManeuverId = '';
+                $scheme->IsUpdated = true;
             }
 
             $this->setUsed($game->theah, true);
