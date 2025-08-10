@@ -1559,9 +1559,6 @@ trait FrameworkActionsTrait
         }
         else
         {
-            //Remove card from hand
-            $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
-
             $this->gamestate->nextState("applyCombatCardStats");
         }   
     }
@@ -1594,6 +1591,8 @@ trait FrameworkActionsTrait
         $card = $this->theah->game->getCardObjectFromDb($cardId);
 
         //Remove card from hand
+        $card->Location = Game::LOCATION_PURGATORY;
+        $this->updateCardObjectInDb($card);
         $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
 
         $this->gamestate->nextState("maneuverDeclined");
@@ -1675,6 +1674,8 @@ trait FrameworkActionsTrait
         $this->theah->queueEvent($threatEvent);
 
         //Remove card from hand
+        $card->Location = Game::LOCATION_PURGATORY;
+        $this->updateCardObjectInDb($card);
         $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
 
         $this->gamestate->nextState("maneuverPaidFor");
@@ -1731,6 +1732,8 @@ trait FrameworkActionsTrait
         $this->theah->queueEvent($event);        
 
         $card = $this->getCardObjectFromDb($id);
+        $card->Location = Game::LOCATION_PURGATORY;
+        $this->updateCardObjectInDb($card);
         $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
 
         $this->gamestate->nextState();

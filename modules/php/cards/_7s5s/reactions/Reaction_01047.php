@@ -42,16 +42,20 @@ class Reaction_01047 extends AttachmentReaction
 
         if ($event instanceof EventTechniqueActivated)
         {
-            $scheme = $this->getOwningCard($event->theah);
-            $owner = $event->theah->getCardById($event->ownerId);
-            if ($owner->ControllerId != $scheme->ControllerId)
+            $inDuel = $event->theah->game->globals->get(Game::IN_DUEL);
+            if ($inDuel)
             {
-                $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
-                $reactionEvent->priority = Event::HIGH_PRIORITY;
-                $event->theah->queueEvent($reactionEvent);
-
-                $this->TechniqueId = $event->techniqueId;
-                $scheme->IsUpdated = true;
+                $scheme = $this->getOwningCard($event->theah);
+                $owner = $event->theah->getCardById($event->ownerId);
+                if ($owner->ControllerId != $scheme->ControllerId)
+                {
+                    $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
+                    $reactionEvent->priority = Event::HIGH_PRIORITY;
+                    $event->theah->queueEvent($reactionEvent);
+    
+                    $this->TechniqueId = $event->techniqueId;
+                    $scheme->IsUpdated = true;
+                }
             }
         }
     }

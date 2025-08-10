@@ -2,19 +2,22 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01155;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver_01155;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01155;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver_PlusOneParry;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01155;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 
-
-class _01155 extends FactionAttachment implements IHasManeuvers, IHasTechniques
+class _01155 extends FactionAttachment implements IHasManeuvers, IHasTechniques, IHasReactions
 {
     use ManeuverTrait;
     use TechniqueTrait;
+    use ReactionTrait;
 
     public function __construct()
     {
@@ -46,8 +49,14 @@ class _01155 extends FactionAttachment implements IHasManeuvers, IHasTechniques
             new Technique_01155(),
         ];
 
+        $maneuver = new Maneuver_PlusOneParry();
+        $maneuver->setId("Maneuver_01155");
         $this->Maneuvers = [
-            new Maneuver_01155(),
+            $maneuver,
+        ];
+
+        $this->Reactions = [
+            new Reaction_01155(),
         ];
     }
 }

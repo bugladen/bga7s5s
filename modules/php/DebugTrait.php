@@ -27,7 +27,6 @@ trait DebugTrait
         $this->updateCardObjectInDb($card);
 
         $this->notifyPlayer($playerId, "drawCard", 'Debug Draw', [
-            'i18n' => ['card'],
             "card" => $card->getPropertyArray($this),
         ]);
     }
