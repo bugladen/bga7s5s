@@ -15,7 +15,7 @@ class Action_01062 extends CharacterAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Move adjacent Duelist to Odette's location");
+        $this->Name = clienttranslate("Move adjacent Duelist to Odette's Location");
         $this->RequiresPerformerSelected = true;
     }
 

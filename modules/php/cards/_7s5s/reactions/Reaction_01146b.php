@@ -19,7 +19,7 @@ class Reaction_01146b extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Cancel adversary's Maneuver or Technique");
+        $this->Name = clienttranslate("Cancel Adversary's Maneuver or Technique");
         $this->TechniqueId = '';
         $this->ManeuverId = '';
     }

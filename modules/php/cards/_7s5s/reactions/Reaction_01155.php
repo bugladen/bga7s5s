@@ -15,7 +15,7 @@ class Reaction_01155 extends RiskReaction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Equip this card to your Faction Hand from the Duel card line");
+        $this->Name = clienttranslate("Equip to Faction Hand from Duel Card Line");
     }
 
     public function getReactionDescription(Theah $theah): string

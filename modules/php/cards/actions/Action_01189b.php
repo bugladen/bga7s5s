@@ -16,7 +16,7 @@ class Action_01189b extends EventCityAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Move Reknown To Adjacent Location");
+        $this->Name = clienttranslate("Move Reknown to Adjacent Location");
 
         $this->RequiresPerformerSelected = true;
     }

@@ -15,7 +15,7 @@ class Action_01083 extends RiskCityAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Issue Challenge only Leaders can Intervene");
+        $this->Name = clienttranslate("Issue Challenge Only Leaders Can Intervene");
         $this->RequiresPerformerSelected = true;
     }
 

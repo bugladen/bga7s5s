@@ -15,7 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
         {
             parent::__construct();
 
-            $this->Name = clienttranslate("Move adjacent Reknown to Odette's location");
+            $this->Name = clienttranslate("Move Adjacent Reknown to Odette's Location");
         }
 
         public function getReactionDescription(Theah $theah): string

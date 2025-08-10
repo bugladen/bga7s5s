@@ -16,7 +16,7 @@ class Action_01159 extends CardAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("En Garde Your Performer at controlled location");
+        $this->Name = clienttranslate("En Garde Your Performer at Controlled Location");
         $this->RequiresPerformerSelected = true;
     }
 

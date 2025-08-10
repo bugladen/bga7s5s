@@ -16,7 +16,7 @@ class Reaction_01196 extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate('Discard a Card instead of Engaging');
+        $this->Name = clienttranslate('Discard a Card Instead of Engaging');
     }
 
     public function getReactionDescription(Theah $theah): string

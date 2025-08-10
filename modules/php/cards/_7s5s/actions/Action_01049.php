@@ -16,7 +16,7 @@ class Action_01049 extends AttachmentAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Wound Character if they do not Engage");
+        $this->Name = clienttranslate("Wound Character If They Do Not Engage");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

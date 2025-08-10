@@ -17,7 +17,7 @@ class Action_01072 extends CardAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Pressure location with non-mercenaries");
+        $this->Name = clienttranslate("Pressure Location with Non-Mercenaries");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

@@ -14,7 +14,7 @@ class Action_01060 extends RiskAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Move Characters to an adjacent location");
+        $this->Name = clienttranslate("Move Characters to an Adjacent Location");
     }
 
     public function handleEvent(Event $event)

@@ -17,7 +17,7 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Move Character you control");
+        $this->Name = clienttranslate("Move Character You Control");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

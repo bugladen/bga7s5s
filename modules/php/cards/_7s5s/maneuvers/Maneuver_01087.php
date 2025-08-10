@@ -14,7 +14,7 @@ class Maneuver_01087 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("En Garde your non-Mercenary Participant");
+        $this->Name = clienttranslate("En Garde Your Non-Mercenary Participant");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

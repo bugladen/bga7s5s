@@ -15,7 +15,7 @@ class Action_01087 extends RiskAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("En Garde your non-Mercenary Performer");
+        $this->Name = clienttranslate("En Garde Your Non-Mercenary Performer");
         $this->RequiresPerformerSelected = true;
     }
 

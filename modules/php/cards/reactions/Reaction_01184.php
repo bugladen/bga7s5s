@@ -14,7 +14,7 @@ class Reaction_01184 extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate('Count only Performers and En Garde Characters for Pressures');
+        $this->Name = clienttranslate('Count Only Performers and En Garde Characters for Pressures');
     }
 
     public function getReactionDescription(Theah $theah): string

@@ -14,7 +14,7 @@ class Action_01201 extends CharacterAction implements ISorcererAbility
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Wound and draw a card");
+        $this->Name = clienttranslate("Wound and Draw a Card");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

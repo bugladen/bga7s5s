@@ -18,7 +18,7 @@ class Action_01149 extends SchemeCityAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Move Performer to any City location From City Docks");
+        $this->Name = clienttranslate("Move Performer to any City Location from City Docks");
         $this->RequiresPerformerSelected = true;
     }
 

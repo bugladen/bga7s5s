@@ -15,7 +15,7 @@ class Action_01046a extends AttachmentAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Wound and move to adjacent Location");
+        $this->Name = clienttranslate("Wound and Move to Adjacent Location");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool

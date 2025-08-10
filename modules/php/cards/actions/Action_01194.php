@@ -15,7 +15,7 @@ class Action_01194 extends CharacterAction
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate("Wound target opposing character");
+        $this->Name = clienttranslate("Wound Target Opposing Character");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
