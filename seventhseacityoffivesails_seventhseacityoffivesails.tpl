@@ -209,8 +209,7 @@ var jstpl_duel_table = `
 var jstpl_duel_round = `
 <tr>
     <td class="duel-round-indicator">\${round}</td>
-    <td id="duel_round_\${round}_actor"></td>
-    <td>
+    <td><div class="duel-round-actor" id="duel_round_\${round}_actor"></div></td><td>
     <table class="threat-table">
         <tr id="duel_round_\${round}_starting_challenger_threat_row">
             <td><div id="duel_round_\${round}_challenger_name">\${challengerName}</div></td>

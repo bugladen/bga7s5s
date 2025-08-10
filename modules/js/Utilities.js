@@ -110,14 +110,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
         {
             this.createEventCard(divId, card, targetDiv);
         }
-        else if (card.type === 'Attachment') {
-            if (card.controllerId !== 0) {
-                const playerInfo = this.gamedatas.players[card.controllerId];
-                this.createAttachmentCard(divId, card, targetDiv);
-            }
-            else {
-                this.createAttachmentCard(divId, card, targetDiv);
-            }
+        else if (card.type === 'Attachment') 
+        {
+            this.createAttachmentCard(divId, card, targetDiv, inDuel);
         }
         else if (card.type === 'Scheme') {
             this.createSchemeCard(divId, card, targetDiv);
@@ -229,16 +224,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
             this.addTooltipHtml( woundChip, `<div class='basic-tooltip'>${_("Wounds")}</div>` );
         }
 
-        if (character.engaged && !inDuel) 
+        if (character.engaged) 
             dojo.addClass(`${divId}_image`, 'engaged');
-
-        if (inDuel)
-            dojo.addClass(`${divId}_image`, 'duel-character');
 
         //Display the attachments in front of the character, offset
         character.attachedCards?.forEach((attachment) => {
             const divId = this.createCardId(attachment, attachment.location);
-            this.createAttachmentCard(divId, attachment, character.divId);
+            this.createAttachmentCard(divId, attachment, character.divId, inDuel);
         });
 
     },  
@@ -306,13 +298,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.createTooltipForCard(scheme);
     },  
 
-    createAttachmentCard: function( divId, attachment, targetDiv )
+    createAttachmentCard: function( divId, attachment, targetDiv, inDuel = false )
     {
         //Set the divId of the card
         attachment.divId = divId;
 
         //Add to the card properties cache
-        this.cardProperties[attachment.id] = attachment;
+        if (!inDuel)
+            this.cardProperties[attachment.id] = attachment;
 
         //Get the attached character and set up as a container
         if (attachment.attachedToId) {
@@ -320,7 +313,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.addClass(character.divId, 'attachment-container');
         }
 
-        let placement = attachment.attachedToId ? 'last' : 'before';
+        let placement = inDuel ? 'last' : attachment.attachedToId ? 'last' : 'before';
         let attachmentIndex = attachment.attachmentIndex ?? 0;
 
         dojo.place( this.format_block( 'jstpl_card_attachment', {
@@ -624,7 +617,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
             wounds: row.wounds,
         }),  headerRow, 'after');
 
-        this.createCard(`duel_${row.round}_${row.actor.id}`, row.actor, `duel_round_${row.round}_actor`, true);
+        let containerDivId = `duel_round_${row.round}_actor`;
+        let actorDivId = `duel_${row.round}_${row.actor.id}`;
+        row.actor.attachments.forEach((attachmentId) => {
+            const attachment = { ...this.cardProperties[attachmentId] };
+            this.attachCard(row.actor, attachment);
+        });
+        this.createCard(actorDivId, row.actor, containerDivId, true);
+        dojo.addClass(actorDivId, 'attachment-container');
 
         const combatCards = row.combatCards;
         if (combatCards)

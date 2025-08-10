@@ -633,10 +633,6 @@ body {
     z-index: 10;
 }
 
-.duel-character  {
-    margin-left:0px;
-}
-
 .card-resolve {
     background-image: url('img/boardResources.png');
     position: absolute;
@@ -1055,6 +1051,11 @@ body {
 
 .duel-round-indicator {
     font-size:18pt;
+}
+
+.duel-round-actor {
+    position: relative;
+    width: 150px;
 }
 
 .combat-chip {
