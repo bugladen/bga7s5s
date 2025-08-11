@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01063Sw
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 
 class _01063 extends Character
 {
@@ -46,6 +47,28 @@ class _01063 extends Character
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($event instanceof EventCharacterRecruited)
+        {
+            $character = $event->theah->getCharacterById($event->characterId);
+            if ($character->ControllerId == $this->ControllerId && $character->Location == $this->Location && $character instanceof IHasTechniques)
+            {
+                $technique = new Technique_01063Swap();
+                $technique->setId("Technique_01063Swap");
+                $technique->setOwnerId($character->Id);
+                $character->addTechnique($technique);
+
+                $event->theah->game->notifyAllPlayers('techniqueAdded', clienttranslate('${source_inject_code}: ${character_inject_code} has gained Technique: ${technique_name}.'), [
+                    'i18n' => ['technique_name'],
+                    'source_inject_code' => $this->getInjectCode(),
+                    'character_inject_code' => $character->getInjectCode(),
+                    'characterId' => $character->Id,
+                    'technique' => $technique->getPropertyArray($event->theah->game),
+                    'technique_name' => $technique->Name
+                ]);
+                $character->IsUpdated = true;
+            }
+        }
 
         if ($event instanceof EventCardMoved)
         {
