@@ -374,7 +374,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
-    onCardsDiscarded_01069: function()
+    onCardDiscarded: function()
     {
         let items = this.factionHand.getSelectedItems();
         let item = items[0].id;
@@ -385,7 +385,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
-            if (!errors) items.forEach((item) => this.factionHand.removeFromStockById(item));
+            if (!errors) this.factionHand.removeFromStockById(item);
         });        
     },
 

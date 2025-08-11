@@ -2,10 +2,14 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01156;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 
-class _01156 extends FactionAttachment
+class _01156 extends FactionAttachment implements IHasActions
 {
+    use ActionTrait;
     public function __construct()
     {
         parent::__construct();
@@ -29,6 +33,10 @@ class _01156 extends FactionAttachment
             'Weapon',
             'Ranged',
             'Rifle',
+        ];
+
+        $this->Actions = [
+            new Action_01156(),
         ];
     }
 }

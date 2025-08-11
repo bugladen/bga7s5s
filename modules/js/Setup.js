@@ -56,7 +56,6 @@ return declare('seventhseacityoffivesails.setup', null, {
             const player = gamedatas.players[playerId];
 
             dojo.style( `player_score_${playerId}`, 'display', 'none' );
-            //dojo.style( `icon_point_${playerId}`, 'display', 'none' );
 
             // Override the score with the reknown
             this.getPlayerPanelElement(playerId).innerHTML = this.format_block( 'jstpl_player_board', {

@@ -552,6 +552,43 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     dojo.removeClass(schemeImage, 'chosen');
                 }
             },
+
+            'highDramaPhase01156': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode(0);
+                    this.showHandAtBottom();
+                    $('faction_hand_info').innerHTML = '';
+
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);   
+                }
+            },
+            'highDramaPhase01156_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, 'chosen');
+
+                    this.clientStateArgs.charactersIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+            'highDramaPhase01156_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    let image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, 'chosen');
+
+                    card = this.cardProperties[this.clientStateArgs.targetId];
+                    image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, 'chosen');
+                }
+            },
     
             'highDramaPhase01180' : () => {
                 //Exposed to all players

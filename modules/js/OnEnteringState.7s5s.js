@@ -924,18 +924,6 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
 
-            'duelApplyCombatCardStats_01085': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.numberOfCardsSelectable = 1;
-                    args.args.args.characterIds.forEach((characterId) => {
-                        card = this.cardProperties[characterId];
-                        const image = $(`${card.divId}_image`);
-                        this.makeCardSelectable(image);
-                    });
-                    this.clientStateArgs.characterIds = args.args.args.characterIds;
-                }
-            },
-    
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
@@ -976,6 +964,55 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     const schemeImage = $(`${card.divId}_image`);
                     dojo.addClass(schemeImage, 'chosen');
                     this.clientStateArgs.schemeId = args.args.args.schemeId;
+                }
+            },
+
+            'highDramaPhase01156': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.showHandAtTop();
+                    var translated = dojo.string.substitute(
+                        _("(${amount} card(s) to discard)"),
+                        {
+                            amount: 1
+                        }
+                    );
+                    $('faction_hand_info').innerHTML = translated;
+                    this.factionHand.setSelectionMode(1);
+    
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, 'chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+            'highDramaPhase01156_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, 'chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.numberOfCardsSelectable = 1;
+                    args.args.args.charactersIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.charactersIds = args.args.args.charactersIds;
+                }
+            },
+            'highDramaPhase01156_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[args.args.args.performerId];
+                    let image = $(`${card.divId}_image`);
+                    dojo.addClass(image, 'chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    card = this.cardProperties[args.args.args.targetId];
+                    image = $(`${card.divId}_image`);
+                    dojo.addClass(image, 'chosen');
+                    this.clientStateArgs.targetId = args.args.args.targetId;
                 }
             },
     
@@ -1426,6 +1463,18 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 }
             },
         
+            'duelApplyCombatCardStats_01085': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    args.args.args.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.characterIds = args.args.args.characterIds;
+                }
+            },
+    
             'duskPhaseBegin01177' : () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

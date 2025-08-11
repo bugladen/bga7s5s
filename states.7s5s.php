@@ -609,6 +609,50 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01156 => [
+        "name" => "highDramaPhase01156",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Matchlock Musket: ${you} must choose a card to discard: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actBack"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
+            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_01156_2
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01156_2 => [
+        "name" => "highDramaPhase01156_2",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Matchlock Musket: ${you} must choose a character to target: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actBack"
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01156_3 => [
+        "name" => "highDramaPhase01156_3",
+        "description" => clienttranslate('${actplayer} is choosing whether to Engage targeted Character or Wound them.'),
+        "descriptionmyturn" => clienttranslate('Matchlock Musket: ${you} must choose whether to Engage or Wound your targeted Character: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actBack"
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01180 => [
         "name" => "highDramaPhase01180",
         "description" => clienttranslate('Your opponent(s) must acknowledge revealed cards.'),
