@@ -561,7 +561,7 @@ trait EventHub
                     break;
 
             case $event instanceof EventCharacterRecruited:
-                $character = $this->cards[$event->character->Id];
+                $character = $this->cards[$event->characterId];
                 $character->ControllerId = $event->playerId;
                 $character->IsUpdated = true;
 
@@ -569,8 +569,8 @@ trait EventHub
                 $this->game->notifyAllPlayers("characterRecruited", clienttranslate('${player_name} recruits ${character_inject_code} at a cost of ${cost} Wealth (discount of ${discount}).'), [
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "character_inject_code" => $event->character->getInjectCode(),
-                    "characterId" => $event->character->Id,
+                    "character_inject_code" => $character->getInjectCode(),
+                    "characterId" => $character->Id,
                     "discount" => $event->discount,
                     "cost" => $event->cost,
                 ]);

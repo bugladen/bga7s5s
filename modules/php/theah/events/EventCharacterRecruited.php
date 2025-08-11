@@ -2,12 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
-
 class EventCharacterRecruited extends Event
 {
     public int $playerId;
-    public CityCharacter $character;
+    public int $characterId;
     public int $discount;
     public int $cost;
 

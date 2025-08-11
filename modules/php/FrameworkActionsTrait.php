@@ -592,7 +592,7 @@ trait FrameworkActionsTrait
         //Recruit the character
         $recruitCharacterEvent = $this->theah->createEvent(Events::CharacterRecruited);
         if ($recruitCharacterEvent instanceof EventCharacterRecruited) {
-            $recruitCharacterEvent->character = $character;
+            $recruitCharacterEvent->characterId = $character->Id;
             $recruitCharacterEvent->playerId = $playerId;
             $recruitCharacterEvent->discount = $discount;
             $recruitCharacterEvent->cost = $cost;
@@ -723,7 +723,7 @@ trait FrameworkActionsTrait
         $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
         $charactersThatCanReruit = [];
         foreach ($characters as $character) {
-            $charactersAtLocation = $this->theah->getCharactersAtLocation($character->Location);
+            $charactersAtLocation = $this->theah->getCharactersAtLocation($character->Location, $includeUncontrolled = true);
             $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return $character->hasTrait("Mercenary"); });
             if (count($mercenariesAtLocation) > 0) {
                 $charactersThatCanReruit[] = $character;
@@ -771,7 +771,7 @@ trait FrameworkActionsTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
-        $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
+        $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location, $includeUncontrolled = true);
         $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return $character->hasTrait("Mercenary"); });        
         $mercenaryIds = array_map(function($character) { return $character->Id; }, $mercenariesAtLocation);
         if (!in_array($recruitId, $mercenaryIds)) {

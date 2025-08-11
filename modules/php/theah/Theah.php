@@ -513,7 +513,7 @@ class Theah
         return $characters;
     }
 
-    function getCharactersAtHome($playerId): array
+    function getCharactersAtHome(int $playerId): array
     {
         $characters = [];
         foreach ($this->cards as $card) {
@@ -524,11 +524,11 @@ class Theah
         return $characters;
     }
 
-    function getCharactersAtLocation($location)
+    function getCharactersAtLocation(string $location, bool $includeUncontrolled = false)
     {
         $characters = [];
         foreach ($this->cards as $card) {
-            if ($card instanceof Character && $card->isControlled() && $card->Location == $location) {
+            if ($card instanceof Character && ($card->isControlled() || $includeUncontrolled) && $card->Location == $location) {
                 $characters[] = $card;
             }
         }
@@ -847,7 +847,7 @@ class Theah
         $charactersInCity = $this->getCharactersInCityByPlayerId($playerId);
 
         foreach ($charactersInCity as $character) {
-            $charactersAtLocation = $this->getCharactersAtLocation($character->Location);
+            $charactersAtLocation = $this->getCharactersAtLocation($character->Location, $includeUncontrolled = true);
             $mercenariesAtLocation = array_filter($charactersAtLocation, fn($character) => ! $character->ControllerId && $character->hasTrait("Mercenary"));
             if (count($mercenariesAtLocation) > 0) {
                 $charactersThatCanReruit[] = $character;
