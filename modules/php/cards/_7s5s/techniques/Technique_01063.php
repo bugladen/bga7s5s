@@ -30,7 +30,7 @@ class Technique_01063 extends Technique
         if (! parent::isAvailableToPlayer($playerId, $theah))
             return false;
 
-        $inDuel = $theah->game->globals->get(Game::IN_DUEL);
+        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
         return $inDuel;
     }
 

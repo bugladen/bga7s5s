@@ -1,13 +1,12 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 
-class Technique_01155 extends Technique
+class Technique_DestroyPlusOneThrust extends Technique
 {
     public function __construct()
     {

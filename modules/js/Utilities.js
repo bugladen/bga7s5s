@@ -229,7 +229,11 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         //Display the attachments in front of the character, offset
         character.attachedCards?.forEach((attachment) => {
-            const divId = this.createCardId(attachment, attachment.location);
+            let divId = this.createCardId(attachment, attachment.location);
+            //If this is a duel character then the attachment will have a different divId 
+            // so that it doesn't interfere with the actual attachment in play
+            if (character.duelPrefix)
+                divId = `${character.duelPrefix}_${attachment.id}`;
             this.createAttachmentCard(divId, attachment, character.divId, inDuel);
         });
 
@@ -461,6 +465,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 return card.controllerId ? `${card.controllerId}-${card.id}` : `garden-${card.id}`;
             case this.LOCATION_PLAYER_HOME:
                 return `${card.controllerId}-${card.id}`;
+            default:
+                return `${card.location}-${card.id}`;
         }
     },
 
@@ -617,10 +623,20 @@ return declare('seventhseacityoffivesails.utilities', null, {
             wounds: row.wounds,
         }),  headerRow, 'after');
 
+        if (row.attachments)
+            row.attachments.forEach((attachment) => {
+                if (!this.cardProperties[attachment.id])
+                    this.cardProperties[attachment.id] = attachment;
+            });
+
         let containerDivId = `duel_round_${row.round}_actor`;
-        let actorDivId = `duel_${row.round}_${row.actor.id}`;
+        row.actor.duelPrefix = `duel_${row.round}`;
+        let actorDivId = `${row.actor.duelPrefix}_${row.actor.id}`;
+
         row.actor.attachments.forEach((attachmentId) => {
             const attachment = { ...this.cardProperties[attachmentId] };
+            if (!attachment.attachedToId)
+                attachment.attachedToId = row.actor.id;
             this.attachCard(row.actor, attachment);
         });
         this.createCard(actorDivId, row.actor, containerDivId, true);

@@ -27,6 +27,12 @@ class Technique_01039 extends Technique
             return false;
 
         $actor = $theah->getDuelRoundActor();
+
+        $characters = $theah->getCharactersAtLocation($actor->Location);
+        $characters = array_filter($characters, fn($c) => $c->ControllerId == $playerId && $c->hasTrait("Mercenary"));
+        if (count($characters) == 0)
+            return false;
+
         $adversaryId = $theah->getDuelOpponentId($actor->Id);
         $adversary = $theah->getCharacterById($adversaryId);
 

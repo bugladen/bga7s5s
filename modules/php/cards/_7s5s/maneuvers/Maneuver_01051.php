@@ -32,7 +32,7 @@ class Maneuver_01051 extends Maneuver
         if (! parent::isAvailableToPlayer($playerId, $theah))
             return false;
 
-        $inDuel = $theah->game->globals->get(Game::IN_DUEL);
+        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
         if (! $inDuel)
             return false;
 

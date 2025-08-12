@@ -9,9 +9,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver_PlusOneParry;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01155;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_DestroyPlusOneThrust;
 
 class _01155 extends FactionAttachment implements IHasManeuvers, IHasTechniques, IHasReactions
 {
@@ -45,8 +45,10 @@ class _01155 extends FactionAttachment implements IHasManeuvers, IHasTechniques,
             'Ad Hoc',
         ];
 
+        $technique = new Technique_DestroyPlusOneThrust();
+        $technique->setId("Technique_01155");
         $this->Techniques = [
-            new Technique_01155(),
+            $technique,
         ];
 
         $maneuver = new Maneuver_PlusOneParry();

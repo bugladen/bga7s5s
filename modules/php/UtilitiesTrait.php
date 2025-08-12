@@ -104,6 +104,16 @@ trait UtilitiesTrait
             $actor = unserialize($round['actorSerialized']);
             $row['actor'] = $actor->getPropertyArray($this);
 
+            //Some attachements have been destroyed from play so we need to buffer them
+            //so they can be displayed
+            $attachments = [];
+            foreach ($actor->Attachments as $attachmentId)
+            {
+                $attachment = $this->theah->getCardById($attachmentId);
+                $attachments[] = $attachment->getPropertyArray($this);
+            }
+            $row['attachments'] = $attachments;
+
             $challenger = $this->theah->getCardById($round['challengerId']);
             if ( ! $challenger)
                 $challenger = $this->getCardObjectFromDb($round['challengerId']);
