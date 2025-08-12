@@ -91,12 +91,12 @@ class Events
     const CardDrawn = 'EventCardDrawn';
     const CardEngaged = 'EventCardEngaged';
     const CardEngarded = 'EventCardEngarded';
+    const CardSentToLocker = 'EventCardSentToLocker';
     const CharacterDestroyed = 'EventCharacterDestroyed';
     const CharacterHealed = 'EventCharacterHealed';
     const CharacterPutIntoApproachDeck = 'EventCharacterPutIntoApproachDeck';
     const CharacterWounded = 'EventCharacterWounded';
     const ManeuverCanceled = 'EventManeuverCanceled';
-    const SchemeSentToLocker = 'EventSchemeSentToLocker';
     const TechniqueCanceled = 'EventTechniqueCanceled';
 
     //Character events

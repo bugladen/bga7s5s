@@ -58,7 +58,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['reknownAddedToLocation', 500],
             ['reknownRemovedFromLocation', 500],
             ['reknownUpdatedOnCard', 500],
-            ['schemeSentToLocker', 1000],
+            ['cardSentToLocker', 500],
             ['techniqueAdded', 1],
             ['techniqueRemoved', 1],
             ['techniqueUsed', 1],
@@ -690,13 +690,13 @@ return declare('seventhseacityoffivesails.notifications', null, {
             dojo.removeClass(element, 'modified-stat-value');
     },
 
-    notif_schemeSentToLocker: function( notif )
+    notif_cardSentToLocker: function( notif )
     {
-        debug( 'notif_schemeSentToLocker' );
+        debug( 'notif_cardSentToLocker' );
         debug( notif );
 
         const args = notif.args;
-        const card = this.cardProperties[args.scheme.id];
+        const card = this.cardProperties[args.card.id];
         card.location = this.LOCATION_PLAYER_LOCKER;
 
         dojo.destroy(card.divId);

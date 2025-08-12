@@ -2,14 +2,16 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventSchemeSentToLocker extends Event
+class EventCardSentToLocker extends Event
 {
-    public int $schemeId;
+    public int $playerId;
+    public int $cardId;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->schemeId = 0;
+        $this->playerId = 0;
+        $this->cardId = 0;
     }
 }

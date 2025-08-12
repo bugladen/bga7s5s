@@ -21,7 +21,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTakeReknownForCo
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeSentToLocker;
 
 trait StatesTrait
 {
@@ -1741,16 +1740,8 @@ trait StatesTrait
             $sql = "UPDATE player SET selected_scheme_id = NULL, selected_character_id = NULL WHERE player_id = $playerId";
             $this->DbQuery($sql);
 
-            $locker = $this->getPlayerLockerName($playerId);
-            $this->cards->moveCard($schemeId, $locker);
-
-            $event = $this->theah->createEvent(Events::SchemeSentToLocker);
-            if ($event instanceof EventSchemeSentToLocker)
-            {
-                $event->schemeId = $schemeId;
-            }
+            $event = EventFactory::createCardSentToLockerEvent($playerId, $schemeId);
             $this->theah->queueEvent($event);
-
         }
 
         $this->gamestate->nextState();

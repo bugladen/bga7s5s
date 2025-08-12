@@ -24,6 +24,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerFactionDeck;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeAccepted;
 use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
@@ -306,6 +307,18 @@ class EventFactory
     {
         $event = self::createEvent(Events::CardRemovedFromPlayerFactionDeck);
         if ($event instanceof EventCardRemovedFromPlayerFactionDeck)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+        }
+
+        return $event;
+    }
+
+    public static function createCardSentToLockerEvent(int $playerId, int $cardId): EventCardSentToLocker
+    {
+        $event = self::createEvent(Events::CardSentToLocker);
+        if ($event instanceof EventCardSentToLocker)
         {
             $event->playerId = $playerId;
             $event->cardId = $cardId;

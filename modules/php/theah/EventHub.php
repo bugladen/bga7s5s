@@ -66,7 +66,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventThreatModified;
@@ -588,7 +588,7 @@ trait EventHub
                     $deck->moveCard($event->cardId, $event->location);
                     
                     // Notify players that card has been played
-                    $theah->game->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_inject_code} added to ${location} from the city deck'), [
+                    $theah->game->notifyAllPlayers("cityCardAddedToLocation", clienttranslate('${card_inject_code} added to ${location}.'), [
                         'i18n' => ['location'],
                         "card_inject_code" => $card->getInjectCode(),
                         "location" => $event->location,
@@ -1403,18 +1403,22 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
-            case $event instanceof EventSchemeSentToLocker:
-                $handler = function ($theah, EventSchemeSentToLocker $event)
+            case $event instanceof EventCardSentToLocker:
+                $handler = function ($theah, EventCardSentToLocker $event)
                 {
-                    $scheme = $theah->cards[$event->schemeId];
-                    $locker = $theah->game->getPlayerLockerName($scheme->ControllerId);
-                    $scheme->Location = $locker;
+                    $card = $theah->getCardById($event->cardId);
+                    $locker = $theah->game->getPlayerLockerName($event->playerId);
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->moveCard($event->cardId, $locker);
 
-                    $theah->game->notifyAllPlayers("schemeSentToLocker", clienttranslate('<strong>${scheme_name}</strong> has been sent to the locker.'), [
-                        'i18n' => ['scheme_name'],
-                        "playerId" => $scheme->ControllerId,
-                        "scheme_name" => $scheme->Name,
-                        "scheme" => $scheme->getPropertyArray($theah->game),
+                    $card->Location = $locker;
+                    $card->IsUpdated = true;
+
+                    $theah->game->notifyAllPlayers("cardSentToLocker", clienttranslate('<strong>${card_name}</strong> has been sent to the locker.'), [
+                        'i18n' => ['card_name'],
+                        "playerId" => $card->ControllerId,
+                        "card_name" => $card->Name,
+                        "card" => $card->getPropertyArray($theah->game),
                     ]);
                 };
                 $handler($this, $event);

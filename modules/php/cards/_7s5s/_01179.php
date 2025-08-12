@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01179;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityEventCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
@@ -66,12 +67,8 @@ class _01179 extends CityEventCard implements IHasActions
                 if ($reknown > 0) {
     
                     //Player loses 1 reknown
-                    $reknown = $theah->createEvent(Events::PlayerLosesReknown);
-                    if ($reknown instanceof EventPlayerLosesReknown) {
-                        $reknown->playerId = $playerId;
-                        $reknown->amount = 1;
-                    }
-                    $theah->queueEvent($reknown);
+                    $reknownEvent = EventFactory::createPlayerLosesReknownEvent($playerId, 1);
+                    $theah->queueEvent($reknownEvent);
     
                     // Add it to this card
                     $reknown = $theah->createEvent(Events::ReknownAddedToCard);

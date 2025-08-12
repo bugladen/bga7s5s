@@ -108,6 +108,8 @@ class Action_01069 extends CharacterAction
                 throw new \BgaUserException($game->translate("Card not in your hand"));
             }
 
+            $deck = $game->getGameDeckObject();
+            $deck->moveCard($card->Id, Game::LOCATION_PURGATORY);
             $game->globals->set(Game::CHOSEN_CARD, $card->Id);
             
             $game->gamestate->nextState("cardChosen");
