@@ -58,7 +58,8 @@ class Maneuver_01084 extends Maneuver
 
             $game = $event->theah->game;
             $card = $game->playerDrawCard($event->playerId);
-            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $card, $game->translate("<strong>Master of the Valroux Style</strong> Maneuver effect"));
+            $owner = $this->getOwningCard($event->theah);
+            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $card, sprintf($game->translate("%s Maneuver effect"), $owner->getInjectCode()));
             $event->theah->queueEvent($addEvent);
         }
 
@@ -79,7 +80,7 @@ class Maneuver_01084 extends Maneuver
             if ($adversary->ControllerId == $owner->ControllerId)
             {
                 $event->thrust += 1;
-                $event->explanations[] = sprintf($event->theah->game->translate("<strong>%s</strong> increases the Adversary's Thrust by %d"), $owner->Name, 1);
+                $event->explanations[] = sprintf($event->theah->game->translate("%s increases the Adversary's Thrust by %d"), $owner->getInjectCode(), 1);
                 $this->IncreaseAdversaryThrust = false;
                 $owner->IsUpdated = true;
             }

@@ -78,14 +78,18 @@ class Action_01071 extends SchemeCityAction
                         $loseEvent = EventFactory::createPlayerLosesReknownEvent($woundedCharacter->ControllerId, 1);
                         $event->theah->queueEvent($loseEvent);
                         
-                        $game->notifyAllPlayers("message", clienttranslate('Épée Sanglante: <strong>${agressor_name}</strong> is the first player to wound in this duel. They will steal 1 Reknown from <strong>${player_name}</strong>.'), [
+                        $owner = $this->getOwningCard($event->theah);
+                        $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${agressor_name} is the first player to wound in this duel. They will steal 1 Reknown from ${player_name}.'), [
+                            "action_inject_code" => $owner->getInjectCode(),
                             "agressor_name" => $game->getPlayerNameById($agressor->ControllerId),
                             "player_name" => $game->getPlayerNameById($woundedCharacter->ControllerId),
                         ]);
                     }
                     else
                     {
-                        $game->notifyAllPlayers("message", clienttranslate('Épée Sanglante: <strong>${agressor_name}</strong> is the first player to wound in this duel. However, <strong>${player_name}</strong> has no Reknown to steal.'), [
+                        $owner = $this->getOwningCard($event->theah);
+                        $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${agressor_name} is the first player to wound in this duel. However, ${player_name} has no Reknown to steal.'), [
+                            "action_inject_code" => $owner->getInjectCode(),
                             "agressor_name" => $game->getPlayerNameById($agressor->ControllerId),
                             "player_name" => $game->getPlayerNameById($woundedCharacter->ControllerId),
                         ]);

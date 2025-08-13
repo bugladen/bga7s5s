@@ -178,11 +178,12 @@ class Action_01044 extends SchemeCityAction
                 $attachmentId = $game->globals->get(Game::CHOSEN_ATTACHMENT);
                 $attachment = $game->theah->getAttachmentById($attachmentId);
 
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} uses <strong>Armed and Marshaled</strong> to Engage <strong>${attachment_name}</strong> and <strong>${character_name}</strong>'), [
-                    "i18n" => ["attachment_name", "character_name"],
-                    "player_name" => $game->getActivePlayerName(),
-                    "attachment_name" => $attachment->Name,
-                    "character_name" => $character->Name,
+                $owner = $this->getOwningCard($game->theah);
+                $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${player_name} uses Action to Engage ${attachment_inject_code} and ${character_inject_code}'), [
+                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                    "action_inject_code" => $owner->getInjectCode(),
+                    "attachment_inject_code" => $attachment->getInjectCode(),
+                    "character_inject_code" => $character->getInjectCode(),
                 ]);
 
                 $aam = $this->getOwningCard($game->theah);
@@ -201,11 +202,12 @@ class Action_01044 extends SchemeCityAction
                 $attachmentId = $game->globals->get(Game::CHOSEN_ATTACHMENT);
                 $attachment = $game->theah->getAttachmentById($attachmentId);
 
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} uses <strong>Armed and Marshaled</strong> to Engage <strong>${attachment_name}</strong> and send <strong>${character_name}</strong> Home'), [
-                    "i18n" => ["attachment_name", "character_name"],
-                    "player_name" => $game->getActivePlayerName(),
-                    "attachment_name" => $attachment->Name,
-                    "character_name" => $character->Name,
+                $owner = $this->getOwningCard($game->theah);
+                $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${player_name} uses Action to Engage ${attachment_inject_code} and send ${character_inject_code} Home'), [
+                    "action_inject_code" => $owner->getInjectCode(),
+                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                    "attachment_inject_code" => $attachment->getInjectCode(),
+                    "character_inject_code" => $character->getInjectCode(),
                 ]);
 
                 $aam = $this->getOwningCard($game->theah);

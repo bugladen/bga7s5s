@@ -92,10 +92,12 @@ class Maneuver_01077 extends Maneuver
 
             $card = $game->getCardObjectFromDb($id);
 
-            $game->notifyAllPlayers("message", clienttranslate('Broken Time: ${player_name} has chosen <strong>${card_name}</strong> as a new combat card to play from ${count} choices.  The rest of the cards have been sunk.'), [
+            $owner = $this->getOwningCard($game->theah);
+            $game->notifyAllPlayers("message", clienttranslate('${card_inject_code}: ${player_name} has chosen ${combat_card_inject_code} as a new combat card to play from ${count} choices.  The rest of the cards have been sunk.'), [
+                "card_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($actor->ControllerId),
                 "count" => $actor->ModifiedFinesse,
-                "card_name" => $card->Name,
+                "combat_card_inject_code" => $card->getInjectCode(),
             ]);
 
             $game->globals->set(Game::NEXT_COMBAT_CARD, $id);

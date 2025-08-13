@@ -111,10 +111,10 @@ class Reaction_01065 extends CardReaction
 
             $this->preventedCharacterId = $characterId;
 
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Henri Michelet</strong>: ${player_name} used Reaction and prevented ${character_name} from intervening.'), [
-                "i18n" => ["player_name", "character_name"],
+            $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and prevented ${character_name} from intervening.'), [
+                "reaction_inject_code" => $henri->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($henri->ControllerId),
-                "character_name" => $character->Name,
+                "character_name" => $character->getInjectCode(),
             ]);
 
             $this->setUsed($game->theah, true);

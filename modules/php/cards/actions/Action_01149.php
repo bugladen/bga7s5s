@@ -125,11 +125,9 @@ class Action_01149 extends SchemeCityAction
             $game->theah->queueEvent($moveEvent);
 
             $scheme = $this->getOwningCard($game->theah);
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [
-                'i18n' => ['action', 'owner_name'],
-                'player_name' => $game->getActivePlayerName(),
-                'action' => $this->Name,
-                'owner_name' => $scheme->Name,
+            $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${player_name} has used Action.'), [
+                'action_inject_code' => $scheme->getInjectCode(),
+                'player_name' => $game->getPlayerNameById($performer->ControllerId),
             ]);
 
             $this->SetUsed($game->theah, true);

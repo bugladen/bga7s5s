@@ -49,7 +49,11 @@ class Technique_01036 extends Technique
 
         if ($event instanceof EventDuelEndOfRound && $this->MoveDaniela)
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('<strong>Daniella Dietrich</strong> Technique triggers and she moves to ${location}.'), [
+            $owner = $this->getOwningCharacter($event->theah);
+            $event->theah->game->notifyAllPlayers("message", clienttranslate('${technique_inject_code}: ${player_name} triggers Technique and she moves to ${location}.'), [
+                "i18n" => ["location"],
+                "technique_inject_code" => $owner->getInjectCode(),
+                "player_name" => $event->theah->game->getPlayerNameById($owner->ControllerId),
                 "location" => $this->MoveLocation,
             ]);
 

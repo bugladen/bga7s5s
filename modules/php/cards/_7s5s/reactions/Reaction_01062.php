@@ -81,8 +81,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
                 $event = EventFactory::createReknownAddedToLocationEvent($odette->ControllerId, $odette->Location, 1, $this->Id);
                 $game->theah->queueEvent($event);
 
-                $game->notifyAllPlayers("message", clienttranslate('<strong>Odette Dubois D\'Arrent</strong>: ${player_name} used Reaction and moved 1 Reknown from ${location_name} to ${odette_location}.'), [
-                    "i18n" => ["player_name"],
+                $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and moved 1 Reknown from ${location_name} to ${odette_location}.'), [
+                    "i18n" => ["location_name", "odette_location"],
+                    "reaction_inject_code" => $odette->getInjectCode(),
                     "player_name" => $game->getPlayerNameById($odette->ControllerId),
                     "location_name" => $locationName,
                     "odette_location" => $odette->Location,

@@ -107,11 +107,10 @@ class Action_01085 extends RiskAction
                 throw new \BgaUserException($game->translate("Character is already at the performer's location"));
             }
 
-            $game->notifyAllPlayers("message", $game->translate('Porté Travel: ${player_name} has chosen to move <strong>${character_name}</strong> to <strong>${performer_name}</strong>\'s location.'), [
-                "i18n" => ["character_name", "performer_name"],
+            $game->notifyAllPlayers("message", $game->translate('Porté Travel: ${player_name} has chosen to move ${character_inject_code} to ${performer_inject_code}\'s location.'), [
                 "player_name" => $game->getActivePlayerName(),
-                "character_name" => $target->Name,
-                "performer_name" => $performer->Name,
+                "character_inject_code" => $target->getInjectCode(),
+                "performer_inject_code" => $performer->getInjectCode(),
             ]);
 
             $event = EventFactory::createCharacterWoundedEvent($performer->Id, $porteTravel->Id, 1, $porteTravel->getInjectCode());

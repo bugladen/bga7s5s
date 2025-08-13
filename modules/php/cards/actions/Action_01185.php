@@ -75,11 +75,9 @@ class Action_01185 extends EventCityAction
             $riskyUndertaking = $this->getOwningCard($game->theah);
             $playerName = $game->getActivePlayerName();
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [
-                'i18n' => ['action', 'owner_name'],
+            $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${player_name} has used the Action.'), [
+                'action_inject_code' => $riskyUndertaking->getInjectCode(),
                 'player_name' => $playerName,
-                'action' => $this->Name,
-                'owner_name' => $riskyUndertaking->Name,
             ]);
 
             //Move the cards used to pay to the player's discard pile

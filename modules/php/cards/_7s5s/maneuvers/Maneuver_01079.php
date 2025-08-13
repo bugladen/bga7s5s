@@ -119,9 +119,11 @@ class Maneuver_01079 extends Maneuver
                 throw new \BgaUserException($game->translate("Attachment is not equipped to Adversary."));
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Disarm:</strong> ${player_name} has chosen <strong>${attachment_name}</strong>.'), [
+            $owner = $this->getOwningCard($game->theah);
+            $game->notifyAllPlayers("message", clienttranslate('${maneuver_inject_code}: ${player_name} has chosen ${attachment_inject_code}.'), [
+                "maneuver_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getActivePlayerName(),
-                "attachment_name" => $attachment->Name,
+                "attachment_inject_code" => $attachment->getInjectCode(),
             ]);
 
             $game->globals->set(Game::CHOSEN_ATTACHMENT, $attachment->Id);
@@ -138,6 +140,7 @@ class Maneuver_01079 extends Maneuver
             $actor = $game->theah->getDuelRoundActor();
             $adversaryId = $game->theah->getDuelOpponentId($actor->Id);
             $adversary = $game->theah->getCharacterById($adversaryId);
+            $owner = $this->getOwningCard($game->theah);
 
             //Destroy Weapon
             if ($id == 1)
@@ -153,9 +156,10 @@ class Maneuver_01079 extends Maneuver
                 $game->theah->eventCheck($discardEvent);
                 $game->theah->queueEvent($discardEvent);
 
-                $game->notifyAllPlayers("message", clienttranslate('<strong>Disarm:</strong> ${player_name} has destroyed <strong>${attachment_name}</strong>.'), [
+                $game->notifyAllPlayers("message", clienttranslate('${maneuver_inject_code}: ${player_name} has destroyed ${attachment_inject_code}.'), [
+                    "maneuver_inject_code" => $owner->getInjectCode(),
                     "player_name" => $game->getActivePlayerName(),
-                    "attachment_name" => $attachment->Name,
+                    "attachment_inject_code" => $attachment->getInjectCode(),
                 ]);
             }
 
@@ -167,7 +171,8 @@ class Maneuver_01079 extends Maneuver
                 $game->theah->eventCheck($woundEvent);
                 $game->theah->queueEvent($woundEvent);
 
-                $game->notifyAllPlayers("message", clienttranslate('<strong>Disarm:</strong> ${player_name} has chosen to take a wound.'), [
+                $game->notifyAllPlayers("message", clienttranslate('${maneuver_inject_code}: ${player_name} has chosen to take a wound.'), [
+                    "maneuver_inject_code" => $owner->getInjectCode(),
                     "player_name" => $game->getActivePlayerName(),
                 ]);
             }

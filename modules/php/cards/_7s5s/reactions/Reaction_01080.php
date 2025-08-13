@@ -115,10 +115,12 @@ class Reaction_01080 extends RiskReaction
             $event  = EventFactory::createPressureOccuringEvent($game->getActivePlayerId(), $performer->Id, $performer->Location, $pressureTypes);
             $game->theah->queueEvent($event);
 
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Friends In Court</strong>: ${player_name} used the Reaction to Pressure ${location_name}'), [
-                'i18n' => ['location_name'],
+            $owner = $this->getOwningCard($game->theah);
+            $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used the Reaction to Pressure ${location_name}'), [
+                "i18n" => ["location_name"],
+                "reaction_inject_code" => $owner->getInjectCode(),
                 'player_name' => $game->getPlayerNameById($performer->ControllerId),
-                'location_name' => $performer->Location
+                'location_name' => $performer->Location,
             ]);
 
             $game->gamestate->nextState("01080");

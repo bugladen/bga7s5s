@@ -74,10 +74,9 @@ class Reaction_01088 extends RiskReaction
         if ($reactionId == 'cancelChallenge')
         {
             $owner = $this->getOwningCard($game->theah);
-            $game->notifyAllPlayers("message", clienttranslate('<strong>${card_name}</strong>: ${player_name} used Reaction and cancelled the Mercenary Challenge.'), [
-                "i18n" => ["card_name"],
+            $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and cancelled the Mercenary Challenge.'), [
+                "reaction_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                "card_name" => $owner->Name,
             ]);
 
             $game->globals->set(Game::CHALLENGE_CANCELLED, true);

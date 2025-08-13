@@ -47,9 +47,9 @@ class Action_01180 extends CharacterAction
                     $count++;
             }
 
-            $event->theah->game->notifyAllPlayers('message', clienttranslate('<strong>${card_name}</strong> found ${count} Artifacts in the top 4 cards of the City Deck. (${names})'), [
-                'i18n' => ['card_name'],
-                'card_name' => $this->Name,
+            $kaj = $this->getOwningCard($event->theah);
+            $event->theah->game->notifyAllPlayers('message', clienttranslate('${action_inject_code}: ${count} Artifacts found in the top 4 cards of the City Deck. (${names})'), [
+                'action_inject_code' => $kaj->getInjectCode(),
                 'count' => $count,
                 'names' => implode(', ', $names)
             ]);
@@ -248,10 +248,9 @@ class Action_01180 extends CharacterAction
     
             $playerId = $game->getActivePlayerId();
     
-            $game->notifyAllPlayers('message', clienttranslate('${player_name} has chosen to Equip <strong>${card_name}</strong> from the top 4 cards of the City Deck.'), [
-                'i18n' => ['card_name'],
+            $game->notifyAllPlayers('message', clienttranslate('${player_name} has chosen to Equip ${card_inject_code} from the top 4 cards of the City Deck.'), [
                 'player_name' => $game->getActivePlayerName(),
-                'card_name' => $attachment->Name,
+                'card_inject_code' => $attachment->getInjectCode(),
             ]);
 
             $deckCards = $game->getCardsOnTopOfCityDeck(4);

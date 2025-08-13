@@ -36,7 +36,7 @@ class Maneuver_01088 extends Maneuver
         {
             $owner = $this->getOwningCard($event->theah);
             $event->riposte += 1;
-            $event->explanations[] = sprintf($event->theah->game->translate("<strong>%s</strong> increases the Adversary's Riposte by %d"), $owner->Name, 1);
+            $event->explanations[] = sprintf($event->theah->game->translate("%s increases the Adversary's Riposte by %d"), $owner->getInjectCode(), 1);
         }
     }
 }

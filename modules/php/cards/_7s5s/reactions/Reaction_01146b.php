@@ -99,9 +99,11 @@ class Reaction_01146b extends CardReaction
             if ($this->TechniqueId != '')
             {
                 $technique = $game->theah->getTechniqueById($this->TechniqueId);
-                $game->notifyAllPlayers('message', clienttranslate('<strong>Let The Sword Decide:</strong> ${player_name} chose to cancel Technique: [${technique}]'), [
+                $game->notifyAllPlayers('message', clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and chose to cancel Technique: [${technique}]'), [
+                    "i18n" => ["technique"],
+                    'reaction_inject_code' => $scheme->getInjectCode(),
                     'player_name' => $game->getActivePlayerName(),
-                    'technique' => $technique->Name
+                    'technique' => $technique->Name,
                 ]);
                 $game->globals->delete(Game::CHOSEN_TECHNIQUE);
                 $game->globals->delete(Game::CHOSEN_TECHNIQUE_IS_MAIN);
@@ -118,9 +120,11 @@ class Reaction_01146b extends CardReaction
             if ($this->ManeuverId != '')
             {
                 $maneuver = $game->theah->getManeuverById($this->ManeuverId);
-                $game->notifyAllPlayers('message', clienttranslate('<strong>Let The Sword Decide:</strong> ${player_name} chose to cancel Maneuver: [${maneuver}]'), [
+                $game->notifyAllPlayers('message', clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and chose to cancel Maneuver: [${maneuver}]'), [
+                    "i18n" => ["maneuver"],
+                    'reaction_inject_code' => $scheme->getInjectCode(),
                     'player_name' => $game->getActivePlayerName(),
-                    'maneuver' => $maneuver->Name
+                    'maneuver' => $maneuver->Name,
                 ]);
                 $game->globals->delete(Game::CHOSEN_MANEUVER);
                 $game->theah->deleteManeuverEvents($this->ManeuverId);

@@ -55,9 +55,11 @@ class Maneuver_01082 extends Maneuver
                 $threatModifiedEvent = EventFactory::createThreatModifiedEvent($challengerThreatAdded, $defenderThreatAdded, $challengerThreatIsLethal, $defenderThreatIsLethal);
                 $event->theah->queueEvent($threatModifiedEvent);
 
-                $game->notifyAllPlayers("message", clienttranslate('<strong>A Heroic End:</strong> ${character_name} used Final Strike to add 2 Threat to <strong>${adversary_name}</strong> and gain Lethal.'), [
-                    'i18n' => ['adversary_name', 'character_name'],
-                    "character_name" => $character->Name,
+                $owner = $this->getOwningCard($game->theah);
+                $game->notifyAllPlayers("message", clienttranslate('${maneuver_inject_code}: ${character_inject_code} used Final Strike to add 2 Threat to ${adversary_inject_code} and gain Lethal.'), [
+                    "maneuver_inject_code" => $owner->getInjectCode(),
+                    "character_inject_code" => $character->getInjectCode(),
+                    "adversary_inject_code" => $adversary->getInjectCode(),
                     "adversary_name" => $adversary->Name,
                 ]);
             }
