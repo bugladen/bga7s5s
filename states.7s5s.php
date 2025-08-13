@@ -942,8 +942,8 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
-    States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01063 => [
-        "name" => "highDramaChallengeActionActivateTechnique_01063",
+    States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01063 => [
+        "name" => "highDramaChallengeActionResolveTechnique_01063",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
         "descriptionmyturn" => clienttranslate('Bastien\'s Technique: Swap with a Musketeer: ${you} must choose a Musketeer:'),
         "type" => "activeplayer",
@@ -952,7 +952,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithId", 
         ],
         "transitions" => [
-            "" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS,
+            "" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS,
         ]
     ],
 

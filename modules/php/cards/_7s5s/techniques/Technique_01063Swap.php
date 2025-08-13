@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -47,6 +48,26 @@ class Technique_01063Swap extends Technique
             $event->theah->queueEvent($transition);
         }
 
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
+        {
+            //If not in a duel, this will only happen during a duel challenge, so player is the challenger
+            $game = $event->theah->game;
+            $owner = $this->getOwningCharacter($game->theah);
+            $newChallenger = $game->theah->getCharacterById($this->swapId);
+
+            //Reset the conditions for challenger
+            $owner->removeCondition(Game::DUEL_CHALLENGER);
+            $owner->IsUpdated = true;
+
+            $newChallenger->addCondition(Game::DUEL_CHALLENGER);
+            $newChallenger->IsUpdated = true;
+
+            $game->globals->set(Game::CHOSEN_PERFORMER, $newChallenger->Id);
+
+            $challengerSwappedEvent = EventFactory::createChallengerSwappedEvent($owner->ControllerId, $owner->Id, $newChallenger->Id);
+            $game->theah->queueEvent($challengerSwappedEvent);
+        }
+
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)    
         {
             $game = $event->theah->game;
@@ -61,24 +82,6 @@ class Technique_01063Swap extends Technique
 
                 $game->theah->swapParticipantsInDuel($duelId, $round, $owner->Id, $this->swapId);
             }
-            else
-            {
-                //If not in a duel, this will only happen during a duel challenge, so player is the challenger
-                $owner = $this->getOwningCharacter($game->theah);
-                $newChallenger = $game->theah->getCharacterById($this->swapId);
-
-                //Reset the conditions for challenger
-                $owner->removeCondition(Game::DUEL_CHALLENGER);
-                $owner->IsUpdated = true;
-
-                $newChallenger->addCondition(Game::DUEL_CHALLENGER);
-                $newChallenger->IsUpdated = true;
-
-                $game->globals->set(Game::CHOSEN_PERFORMER, $newChallenger->Id);
-
-                $challengerSwappedEvent = EventFactory::createChallengerSwappedEvent($owner->ControllerId, $owner->Id, $newChallenger->Id);
-                $game->theah->queueEvent($challengerSwappedEvent);
-            }
         }
     }
 
@@ -86,7 +89,7 @@ class Technique_01063Swap extends Technique
     {
         $args =  parent::getArgsFromTechnique($game, $state, $stateName);
 
-        if ($state == States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01063 || $state == States::DUEL_CHOOSE_TECHNIQUE_01063)
+        if ($state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01063 || $state == States::DUEL_CHOOSE_TECHNIQUE_01063)
         {
             $owner = $this->getOwningCharacter($game->theah);
             $args["performerId"] = $owner->Id;
@@ -105,7 +108,7 @@ class Technique_01063Swap extends Technique
     {
         parent::actFromTechniqueWithId($game, $state, $stateName, $id);
 
-        if ($state == States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01063 || $state == States::DUEL_CHOOSE_TECHNIQUE_01063)
+        if ($state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01063 || $state == States::DUEL_CHOOSE_TECHNIQUE_01063)
         {
             $owner = $this->getOwningCharacter($game->theah);
             $musketeer = $game->theah->getCharacterById($id);
@@ -129,17 +132,16 @@ class Technique_01063Swap extends Technique
                 throw new \Exception(sprintf($game->translate("Character is not at the same location as %s."), $owner->Name));
             }
 
-            if ($state == States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01063)
-                $game->notifyAllPlayers("message", $game->translate('${player_name} has used Technique [${technique_name}] to swap <strong>${challenger_name}</strong> with <strong>${musketeer_name}</strong>.'), [
-                    "i18n" => ["technique_name", "player_name", "musketeer_name", "challenger_name"],
-                    "player_name" => $owner->Name,
-                    "technique_name" => $this->Name,
-                    "musketeer_name" => $musketeer->Name,
-                    "challenger_name" => $owner->Name,
-                ]);
+            $game->notifyAllPlayers("message", $game->translate('${player_name} has used Technique [${technique_name}] to swap ${challenger_inject_code} with ${musketeer_inject_code}.'), [
+                "i18n" => ["technique_name"],
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                "technique_name" => $this->Name,
+                "musketeer_inject_code" => $musketeer->getInjectCode(),
+                "challenger_inject_code" => $owner->getInjectCode(),
+            ]);
 
             $this->swapId = $musketeer->Id;
-            $owner->IsUpdated = true;
+            $game->updateCardObjectInDb($owner);
 
             $game->gamestate->nextState();
         }

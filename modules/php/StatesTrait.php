@@ -606,6 +606,10 @@ trait StatesTrait
 
     public function stChallengeActionCheckCancelled()
     {
+        $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
+        $target = $this->theah->getCharacterById($targetId);
+        $this->gamestate->changeActivePlayer($target->ControllerId);
+
         $cancelled = $this->globals->get(Game::CHALLENGE_CANCELLED);
         if ($cancelled)
         {

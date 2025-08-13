@@ -804,7 +804,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
             },
 
 
-            'highDramaChallengeActionActivateTechnique_01063': () => {
+            'highDramaChallengeActionResolveTechnique_01063': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.clientStateArgs.characterIds.forEach((characterId) => {
                         card = this.cardProperties[characterId];

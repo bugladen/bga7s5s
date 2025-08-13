@@ -485,7 +485,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
-            'highDramaChallengeActionActivateTechnique_01063': () => {
+            'highDramaChallengeActionResolveTechnique_01063': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
