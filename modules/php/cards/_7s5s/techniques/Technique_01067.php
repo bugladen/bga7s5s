@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechnique
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01067 extends Technique
 {
@@ -20,6 +21,28 @@ class Technique_01067 extends Technique
         parent::__construct();
         $this->Name = clienttranslate("+1 Thrust or +1 Riposte if Musketeer at Location");
         $this->UseRiposteInstead = false;
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if (! parent::isAvailableToPlayer($playerId, $theah))
+            return false;
+
+        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
+        $performer = null;
+        if ($inDuel)
+        {
+            $performer = $theah->getDuelRoundActor();
+        }
+        else
+        {
+            $performerId = $theah->game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $theah->getCharacterById($performerId);
+        }
+
+        $characters = $theah->getCharactersAtLocation($performer->Location);
+        $characters = array_filter($characters, fn($character) => $character->Id != $performer->Id && $character->ControllerId == $playerId && $character->hasTrait("Musketeer"));
+        return count($characters) > 0;        
     }
 
     public function handleEvent(Event $event)
