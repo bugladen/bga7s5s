@@ -46,7 +46,7 @@ class Reaction_01045 extends CardReaction
                 foreach ($locations as $location)
                 {
                     $attachments = $event->theah->getAvailableAttachmentsAtLocation($location->Name);
-                    $characters = $event->theah->getCharactersAtLocation($location->Name);
+                    $characters = $event->theah->getCharactersAtLocation($location->Name, $includeUncontrolled = true);
                     $mercenarys = array_filter($characters, fn($character) => $character->hasTrait("Mercenary") && ! $character->isControlled());
 
                     if (count($mercenarys) > 0 || count($attachments) > 0)
