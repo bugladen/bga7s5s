@@ -51,8 +51,8 @@ onLeavingState: function( stateName )
                     }
                 }
                 var home = $(`${this.getActivePlayerId()}-home-anchor`);
-                dojo.removeClass(home, 'selectable');
-                dojo.removeClass(home, 'selected');
+                dojo.removeClass(home, '_7sfs-selectable');
+                dojo.removeClass(home, '_7sfs-selected');
                 dojo.style(home, 'cursor', 'default');
             }
         },
@@ -94,7 +94,7 @@ onLeavingState: function( stateName )
 
                         const cost = $(`${card.divId}_wealth_cost`);
                         cost.innerHTML = card.wealthCost;
-                        dojo.removeClass(cost, 'discounted-wealth-cost');
+                        dojo.removeClass(cost, '_7sfs-discounted-wealth-cost');
                     }
                 }
             }
@@ -117,7 +117,7 @@ onLeavingState: function( stateName )
     
                 const cost = $(`${card.divId}_wealth_cost`);
                 cost.innerHTML = card.wealthCost;
-                dojo.removeClass(cost, 'discounted-wealth-cost');
+                dojo.removeClass(cost, '_7sfs-discounted-wealth-cost');
             }                
         },
 
@@ -126,7 +126,7 @@ onLeavingState: function( stateName )
             {
                 let card = this.cardProperties[this.clientStateArgs.actionCardId];
                 const image = $(`${card.divId}_image`);
-                dojo.removeClass(image, 'chosen');
+                dojo.removeClass(image, '_7sfs-chosen');
 
                 this.clientStateArgs.ids.forEach((cardId) => {
                     card = this.cardProperties[cardId];
@@ -141,8 +141,8 @@ onLeavingState: function( stateName )
             {
                 this.factionHand.getAllItems().forEach((card, index) => {
                     let div = this.factionHand.getItemDivId(card.id);
-                    if (dojo.hasClass(div, 'selectable')) {
-                        dojo.removeClass(div, 'selectable');
+                    if (dojo.hasClass(div, '_7sfs-selectable')) {
+                        dojo.removeClass(div, '_7sfs-selectable');
                     }
                 });
                 this.showHandAtBottom();
@@ -153,7 +153,7 @@ onLeavingState: function( stateName )
             if (this.isCurrentPlayerActive()) 
             {                
                 let div = this.factionHand.getItemDivId(this.clientStateArgs.actionCardId);
-                dojo.removeClass(div, 'selected');
+                dojo.removeClass(div, '_7sfs-selected');
 
                 for ( const cardId in this.cardProperties ) {
                     card = this.cardProperties[cardId];
@@ -171,8 +171,8 @@ onLeavingState: function( stateName )
             {
                 this.factionHand.getAllItems().forEach((card, index) => {
                     let div = this.factionHand.getItemDivId(card.id);
-                    if (dojo.hasClass(div, 'unselectable')) {
-                        dojo.removeClass(div, 'unselectable');
+                    if (dojo.hasClass(div, '_7sfs-unselectable')) {
+                        dojo.removeClass(div, '_7sfs-unselectable');
                         dojo.destroy(`${div}_wealth_cost`);
                     }
                 });
@@ -207,7 +207,7 @@ onLeavingState: function( stateName )
             {
                 this.factionHand.getAllItems().forEach((card, index) => {
                     let div = this.factionHand.getItemDivId(card.id);
-                    dojo.removeClass(div, 'selectable');
+                    dojo.removeClass(div, '_7sfs-selectable');
                 });
                 this.showHandAtBottom();
                 this.factionHand.setSelectionMode(0);
@@ -232,8 +232,8 @@ onLeavingState: function( stateName )
             {
                 this.factionHand.getAllItems().forEach((card, index) => {
                     let div = this.factionHand.getItemDivId(card.id);
-                    if (dojo.hasClass(div, 'unselectable')) {
-                        dojo.removeClass(div, 'unselectable');
+                    if (dojo.hasClass(div, '_7sfs-unselectable')) {
+                        dojo.removeClass(div, '_7sfs-unselectable');
                         dojo.destroy(`${div}_wealth_cost`);
                     }
                 });
@@ -256,15 +256,15 @@ onLeavingState: function( stateName )
             {
                 let performer = this.cardProperties[this.clientStateArgs.performerId];
                 const performerImage = $(`${performer.divId}_image`);
-                dojo.removeClass(performerImage, 'chosen');
+                dojo.removeClass(performerImage, '_7sfs-chosen');
 
                 let card = this.cardProperties[this.clientStateArgs.chosenAttachmentId];
                 const image = $(`${card.divId}_image`);
-                dojo.removeClass(image, 'chosen');
+                dojo.removeClass(image, '_7sfs-chosen');
 
                 const cost = $(`${card.divId}_wealth_cost`);
                 cost.innerHTML = card.wealthCost;
-                dojo.removeClass(cost, 'discounted-wealth-cost');
+                dojo.removeClass(cost, '_7sfs-discounted-wealth-cost');
 
                 this.factionHand.setSelectionMode(0);
                 $('faction_hand_info').innerHTML = '';
@@ -366,8 +366,8 @@ onLeavingState: function( stateName )
             {
                 this.factionHand.getAllItems().forEach((card, index) => {
                     let div = this.factionHand.getItemDivId(card.id);
-                    if (dojo.hasClass(div, 'unselectable')) {
-                        dojo.removeClass(div, 'unselectable');
+                    if (dojo.hasClass(div, '_7sfs-unselectable')) {
+                        dojo.removeClass(div, '_7sfs-unselectable');
                         dojo.destroy(`${div}_wealth_cost`);
                     }
                 });
@@ -389,9 +389,9 @@ onLeavingState: function( stateName )
             {
                 this.factionHand.getAllItems().forEach((card, index) => {
                     let div = this.factionHand.getItemDivId(card.id);
-                    if (dojo.hasClass(div, 'unselectable')) 
+                    if (dojo.hasClass(div, '_7sfs-unselectable')) 
                         {
-                        dojo.removeClass(div, 'unselectable');
+                        dojo.removeClass(div, '_7sfs-unselectable');
                         dojo.destroy(`${div}_wealth_cost`);
                     }
                 });

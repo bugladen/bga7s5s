@@ -96,8 +96,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.createCard(cardId, args.leader, target);
 
         // Update the player panel
-        dojo.addClass( `overall_player_board_${args.player_id}`, `home-${args.leader.faction.toLowerCase()}` );
-        dojo.addClass( `${args.player_id}-score-seal`, `seal-score seal-${args.leader.faction.toLowerCase()}-score` );
+        dojo.addClass( `overall_player_board_${args.player_id}`, `_7sfs-home-${args.leader.faction.toLowerCase()}` );
+        dojo.addClass( `${args.player_id}-score-seal`, `_7sfs-seal-score _7sfs-seal-${args.leader.faction.toLowerCase()}-score` );
         $(`${args.player_id}-score-crewcap`).innerHTML = args.leader.crewCap;
         $(`${args.player_id}-score-panache`).innerHTML = args.leader.panache;
 
@@ -548,7 +548,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const card = this.cardProperties[args.cardId];
         card.engaged = true;
-        dojo.addClass(`${card.divId}_image`, 'engaged');
+        dojo.addClass(`${card.divId}_image`, '_7sfs-engaged');
     },
 
     notif_cardEngarded: function( notif )
@@ -560,7 +560,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const card = this.cardProperties[args.cardId];
         card.engaged = false;
-        dojo.removeClass(`${card.divId}_image`, 'engaged');
+        dojo.removeClass(`${card.divId}_image`, '_7sfs-engaged');
     },
 
     notif_characterMustered: function (notif) 
@@ -610,9 +610,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
             const woundChip = `${card.divId}_wounds`;
             dojo.place( this.format_block( 'jstpl_generic_chip', {
                 id: woundChip,
-                class: 'wound-chip',
+                class: '_7sfs-wound-chip',
             }),  characterImage, 'last');
-            this.addTooltipHtml( woundChip, `<div class='basic-tooltip'>${_("Wounds")}</div>` );
+            this.addTooltipHtml( woundChip, `<div class='_7sfs-basic-tooltip'>${_("Wounds")}</div>` );
         }
         
         card.wounds += args.wounds;
@@ -624,7 +624,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const element = $(`${card.divId}_resolve_value`);
         element.innerHTML = card.modifiedResolve;
         if (card.modifiedResolve != card.resolve)
-            dojo.addClass(element, 'modified-stat-value');
+            dojo.addClass(element, '_7sfs-modified-stat-value');
     },
 
     notif_characterHealed: function( notif )
@@ -650,7 +650,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const element = $(`${card.divId}_resolve_value`);
         element.innerHTML = card.modifiedResolve;
         if (card.modifiedResolve == card.resolve)
-            dojo.removeClass(element, 'modified-stat-value');
+            dojo.removeClass(element, '_7sfs-modified-stat-value');
     },
 
     notif_characterDestroyed: function( notif )
@@ -685,9 +685,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const element = $(`${card.divId}_influence_value`);
         element.innerHTML = card.modifiedInfluence;
         if (card.modifiedInfluence != card.influence)
-            dojo.addClass(element, 'modified-stat-value');
+            dojo.addClass(element, '_7sfs-modified-stat-value');
         else
-            dojo.removeClass(element, 'modified-stat-value');
+            dojo.removeClass(element, '_7sfs-modified-stat-value');
     },
 
     notif_cardSentToLocker: function( notif )
@@ -770,8 +770,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
         //Find the image element with the attribute data-location that matches arg.location
         const imageElement = dojo.query(`[data-location="${args.location}"]`)[0];
-        //Find the element with the class city-reknown-chip that is a child of the element's parent
-        const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+        //Find the element with the class _7sfs-city-reknown-chip that is a child of the element's parent
+        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
         const reknown = parseInt(reknownElement.innerHTML) + args.amount;
         reknownElement.innerHTML = reknown;
     },
@@ -784,8 +784,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
         //Find the image element with the attribute data-location that matches arg.location
         const imageElement = dojo.query(`[data-location="${args.location}"]`)[0];
-        //Find the element with the class city-reknown-chip that is a child of the element's parent
-        const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+        //Find the element with the class _7sfs-city-reknown-chip that is a child of the element's parent
+        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
         const reknown = parseInt(reknownElement.innerHTML) - args.amount;
         reknownElement.innerHTML = reknown;
     },
@@ -796,14 +796,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         //Remove any existing first player classes
-        dojo.query('.first-player-home').removeClass('first-player-home');
-        dojo.query('.first-player-score').removeClass('first-player-score');
+        dojo.query('._7sfs-first-player-home').removeClass('_7sfs-first-player-home');
+        dojo.query('._7sfs-first-player-score').removeClass('_7sfs-first-player-score');
 
         //Add the new classes
         const args = notif.args;
-        dojo.addClass(`${args.playerId}-first-player`, 'first-player-home');
-        dojo.removeClass(`${args.playerId}-score-seal-first-player`, 'first-player-hidden');
-        dojo.addClass(`${args.playerId}-score-seal-first-player`, 'first-player-score');
+        dojo.addClass(`${args.playerId}-first-player`, '_7sfs-first-player-home');
+        dojo.removeClass(`${args.playerId}-score-seal-first-player`, '_7sfs-first-player-hidden');
+        dojo.addClass(`${args.playerId}-score-seal-first-player`, '_7sfs-first-player-score');
 
         var translated = dojo.string.substitute(
             _("${player_name} is now the First Player"),
@@ -842,14 +842,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const card = this.cardProperties[args.cardId];
         card.conditions.push(this.ADVERSARY_OF_YEVGENI);
 
-        const imageElement = dojo.query('.card', card.divId)[0];
+        const imageElement = dojo.query('._7sfs-card', card.divId)[0];
         const id = `${card.divId}_yevgeni_adversary`;
         dojo.place( this.format_block( 'jstpl_generic_chip', {
             id: id,
-            class: 'yevgeni-adversary-chip',
+            class: '_7sfs-yevgeni-adversary-chip',
         }),  imageElement, 'last');
 
-        this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
+        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
     },
 
     notif_crystalEyeTargetChosen: function( notif )
@@ -865,10 +865,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const id = `${args.cardId}_crystal_eye_target`;
         dojo.place( this.format_block( 'jstpl_generic_chip', {
             id: id,
-            class: 'crystal-eye-target-chip',
+            class: '_7sfs-crystal-eye-target-chip',
         }),  div, 'last');
 
-        this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
+        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
     },
 
     notif_01126_2_scheme_moved: function( notif )
@@ -927,9 +927,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const challengerChipId = `${challenger.divId}_challenger`;
         dojo.place( this.format_block( 'jstpl_generic_chip', {
             id: challengerChipId,
-            class: 'challenger-chip',
+            class: '_7sfs-challenger-chip',
         }),  challengerImage, 'last');
-        this.addTooltipHtml( challengerChipId, `<div class='basic-tooltip'>${_("Duel Challenger")}</div>` );
+        this.addTooltipHtml( challengerChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
 
         const defender = this.cardProperties[args.defenderId];
         defender.conditions.push(this.DEFENDER);
@@ -937,9 +937,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const defenderChipId = `${defender.divId}_defender`;
         dojo.place( this.format_block( 'jstpl_generic_chip', {
             id: defenderChipId,
-            class: 'defender-chip',
+            class: '_7sfs-defender-chip',
         }),  defenderImage, 'last');
-        this.addTooltipHtml( defenderChipId, `<div class='basic-tooltip'>${_("Duel Defender")}</div>` );
+        this.addTooltipHtml( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
     },
 
     notif_challengerSwapped: function( notif )
@@ -960,9 +960,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const challengerChipId = `${newChallenger.divId}_challenger`;
         dojo.place( this.format_block( 'jstpl_generic_chip', {
             id: challengerChipId,
-            class: 'challenger-chip',
+            class: '_7sfs-challenger-chip',
         }),  challengerImage, 'last');
-        this.addTooltipHtml( challengerChipId, `<div class='basic-tooltip'>${_("Duel Challenger")}</div>` );
+        this.addTooltipHtml( challengerChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
     },
 
     notif_defenderSwapped: function( notif )
@@ -983,9 +983,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const defenderChipId = `${newDefender.divId}_defender`;
         dojo.place( this.format_block( 'jstpl_generic_chip', {
             id: defenderChipId,
-            class: 'defender-chip',
+            class: '_7sfs-defender-chip',
         }),  defenderImage, 'last');
-        this.addTooltipHtml( defenderChipId, `<div class='basic-tooltip'>${_("Duel Defender")}</div>` );
+        this.addTooltipHtml( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
     },
 
     notif_characterIntervened: function( notif )
@@ -1006,9 +1006,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const defenderChipId = `${newTarget.divId}_defender`;
         dojo.place( this.format_block( 'jstpl_generic_chip', {
             id: defenderChipId,
-            class: 'defender-chip',
+            class: '_7sfs-defender-chip',
         }),  defenderImage, 'last');
-        this.addTooltipHtml( defenderChipId, `<div class='basic-tooltip'>${_("Duel Defender")}</div>` );
+        this.addTooltipHtml( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
     },
 
     notif_duelStarted: function( notif )
@@ -1049,7 +1049,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         dojo.empty(divId);
         this.createCard(`duel_${args.round}_${args.actor.id}`, args.actor, divId, true);
 
-        if (dojo.hasClass(`duel_round_${args.round}_starting_challenger_threat_row`, 'duel-acting-character'))
+        if (dojo.hasClass(`duel_round_${args.round}_starting_challenger_threat_row`, '_7sfs-duel-acting-character'))
         {
             divId = `duel_round_${args.round}_challenger_name`;
             $(divId).innerHTML = args.actor.name;
@@ -1088,8 +1088,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
     
             if (args.gambled)
             {
-                dojo.addClass(cardDivId, 'engaged');
-                dojo.addClass(cardDivId, 'duel-row-combat-card-gambled');
+                dojo.addClass(cardDivId, '_7sfs-engaged');
+                dojo.addClass(cardDivId, '_7sfs-duel-row-combat-card-gambled');
             }
             else if (this.player_id == combatCard.controllerId)
             {
@@ -1119,23 +1119,23 @@ return declare('seventhseacityoffivesails.notifications', null, {
         $(`duel_round_${args.round}_wounds`).innerHTML = args.wounds;
 
         if (args.endingChallengerThreatAfter > 0)
-            dojo.addClass(`duel_round_${args.round}_ending_challenger_threat`, 'threat-chip-threatened');
+            dojo.addClass(`duel_round_${args.round}_ending_challenger_threat`, '_7sfs-threat-chip-threatened');
         else
-            dojo.removeClass(`duel_round_${args.round}_ending_challenger_threat`, 'threat-chip-threatened');
+            dojo.removeClass(`duel_round_${args.round}_ending_challenger_threat`, '_7sfs-threat-chip-threatened');
 
         if (args.challengerThreatIsLethal == 1)
-            $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
+            $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML += '<span class="_7sfs-lethal">&#9760;</span>';
 
         if (args.endingDefenderThreatAfter > 0)
-            dojo.addClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');
+            dojo.addClass(`duel_round_${args.round}_ending_defender_threat`, '_7sfs-threat-chip-threatened');
         else
-            dojo.removeClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');
+            dojo.removeClass(`duel_round_${args.round}_ending_defender_threat`, '_7sfs-threat-chip-threatened');
 
         if (args.defenderThreatIsLethal == 1)
-            $(`duel_round_${args.round}_ending_defender_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
+            $(`duel_round_${args.round}_ending_defender_threat`).innerHTML += '<span class="_7sfs-lethal">&#9760;</span>';
 
-        dojo.removeClass(`duel_round_${args.round}_${args.mode}`, 'ability-not-chosen');
-        dojo.removeClass(`duel_round_${args.round}_${args.mode}_stats`, 'ability-not-chosen');
+        dojo.removeClass(`duel_round_${args.round}_${args.mode}`, '_7sfs-ability-not-chosen');
+        dojo.removeClass(`duel_round_${args.round}_${args.mode}_stats`, '_7sfs-ability-not-chosen');
     },
 
     notif_updateRoundThreats: function( notif )
@@ -1147,21 +1147,21 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML = args.challenger_threat;
         if (args.challenger_threat > 0)
-            dojo.addClass(`duel_round_${args.round}_ending_challenger_threat`, 'threat-chip-threatened');
+            dojo.addClass(`duel_round_${args.round}_ending_challenger_threat`, '_7sfs-threat-chip-threatened');
         else
-            dojo.removeClass(`duel_round_${args.round}_ending_challenger_threat`, 'threat-chip-threatened');
+            dojo.removeClass(`duel_round_${args.round}_ending_challenger_threat`, '_7sfs-threat-chip-threatened');
 
         if (args.challengerThreatIsLethal == 1)
-            $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
+            $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML += '<span class="_7sfs-lethal">&#9760;</span>';
     
         $(`duel_round_${args.round}_ending_defender_threat`).innerHTML = args.defender_threat;
         if (args.defender_threat > 0)
-            dojo.addClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');
+            dojo.addClass(`duel_round_${args.round}_ending_defender_threat`, '_7sfs-threat-chip-threatened');
         else
-            dojo.removeClass(`duel_round_${args.round}_ending_defender_threat`, 'threat-chip-threatened');
+            dojo.removeClass(`duel_round_${args.round}_ending_defender_threat`, '_7sfs-threat-chip-threatened');
 
         if (args.defenderThreatIsLethal == 1)
-            $(`duel_round_${args.round}_ending_defender_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
+            $(`duel_round_${args.round}_ending_defender_threat`).innerHTML += '<span class="_7sfs-lethal">&#9760;</span>';
         
         $(`duel_round_${args.round}_wounds`).innerHTML = args.wounds;
     },

@@ -10,7 +10,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     const locations = this.getListofAvailableCityLocationImages();
                     this.numberOfCityLocationsSelectable = 2;
                     locations.forEach((location) => {
-                        dojo.addClass(location, 'selectable');
+                        dojo.addClass(location, '_7sfs-selectable');
                         dojo.style(location, 'cursor', 'pointer');
     
                         const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
@@ -100,7 +100,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.numberOfCityLocationsSelectable = 1;
                     locations.forEach((location) => {
                         const imageElement = $(location);
-                        const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
                         const reknown = parseInt(reknownElement.innerHTML);
                         if (reknown > 0) return;
     
@@ -136,7 +136,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.numberOfCityLocationsSelectable = 1;
                     locations.forEach((location) => {
                         const imageElement = $(location);
-                        const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
                         const reknown = parseInt(reknownElement.innerHTML);
                         if (reknown == 0) return;
     
@@ -173,7 +173,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                         card = this.cardProperties[cardId];
                         if (card.type === 'Character' && card.controllerId && card.controllerId != this.getActivePlayerId()) {
                             //Get the element that is a child of card.divId with the class 'card'
-                            const image = dojo.query('.card', card.divId)[0];
+                            const image = dojo.query('._7sfs-card', card.divId)[0];
                             this.makeCardSelectable(image);
     
                             count++;
@@ -253,7 +253,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.numberOfCityLocationsSelectable = 1;
                     locations.forEach((location) => {
                         const imageElement = $(location);
-                        const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
                         const reknown = parseInt(reknownElement.innerHTML);
                         if (reknown == 0) return;
     
@@ -291,7 +291,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
     
                 card = this.cardProperties[args.args.args.letsHaggleId];
                 let image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
                 this.clientStateArgs.letsHaggleId = args.args.args.letsHaggleId;
     
                 var translated = _("Let's Haggle: Revealed Cards: ");
@@ -306,12 +306,12 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     locations.forEach((location) => {
                         if (location == 'forum-image')
                         {
-                            dojo.addClass(location, 'darkened');
+                            dojo.addClass(location, '_7sfs-darkened');
                             return;
                         } 
     
                         const imageElement = $(location);
-                        const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
                         const reknown = parseInt(reknownElement.innerHTML);
                         if (reknown === 0) return;
     
@@ -337,7 +337,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.numberOfCityLocationsSelectable = 1;
                     locations.forEach((location) => {
                         const imageElement = $(location);
-                        const reknownElement = dojo.query('.city-reknown-chip', imageElement.parentElement)[0];
+                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
                         const reknown = parseInt(reknownElement.innerHTML);
                         if (reknown == 0) return;
     
@@ -409,7 +409,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                             let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
                             discountedCost = discountedCost < 0 ? 0 : discountedCost;
                             cost.innerHTML = parseInt(discountedCost);
-                            dojo.addClass(cost, 'discounted-wealth-cost');
+                            dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
                         }
                     }
                 }
@@ -418,14 +418,14 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
             'highDramaBeginning_01144_client': () => {
                 const card = this.cardProperties[this.clientStateArgs.selectedCards[0]];
                 const image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'selectable');
+                dojo.addClass(image, '_7sfs-selectable');
     
                 const cost = $(`${card.divId}_wealth_cost`);
                 let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
                 discountedCost = discountedCost < 0 ? 0 : discountedCost;
                 this.clientStateArgs.discountedCost = discountedCost;
                 cost.innerHTML = parseInt(discountedCost);
-                dojo.addClass(cost, 'discounted-wealth-cost');
+                dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
     
                 this.factionHand.setSelectionMode(2);
             },
@@ -453,7 +453,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
     
                 card = this.cardProperties[args.args.args.kasparId];
                 let image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
                 this.clientStateArgs.kasparId = args.args.args.kasparId;
     
                 var translated = _("Kaspar's Revealed Cards: ");
@@ -517,7 +517,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                             else
                             {
                                 let div = this.chooseList.getItemDivId(card.id);
-                                dojo.addClass(div, 'unselectable');        
+                                dojo.addClass(div, '_7sfs-unselectable');        
                             }
         
                             this.cardProperties[card.id] = card;                
@@ -539,12 +539,12 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 if (this.isCurrentPlayerActive()) {
                     let card = this.cardProperties[args.args.args.performerId ];
                     let image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
     
                     card = this.cardProperties[args.args.args.actionCardId];
                     image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.actionCardId = args.args.args.actionCardId;
                 }
             },
@@ -553,12 +553,12 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 if (this.isCurrentPlayerActive()) {
                     let card = this.cardProperties[args.args.args.performerId];
                     let image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
     
                     card = this.cardProperties[args.args.args.actionCardId];
                     image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.actionCardId = args.args.args.actionCardId;
     
                     this.numberOfCardsSelectable = 1;
@@ -575,17 +575,17 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 if (this.isCurrentPlayerActive()) {
                     let card = this.cardProperties[args.args.args.performerId];
                     let image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
     
                     card = this.cardProperties[args.args.args.actionCardId];
                     image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.actionCardId = args.args.args.actionCardId;
     
                     card = this.cardProperties[args.args.args.opposingCharacterId];
                     image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.opposingCharacterId = args.args.args.opposingCharacterId;
                 }
             },
@@ -600,7 +600,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
             },
@@ -630,7 +630,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 
                 card = this.cardProperties[args.args.args.performerId];
                 const image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
                 this.clientStateArgs.performerId = args.args.args.performerId;
             },
             'highDramaPhase01055_2': () => {
@@ -643,12 +643,12 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 
                     card = this.cardProperties[args.args.args.performerId];
                     let image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
 
                     card = this.cardProperties[args.args.args.targetId];
                     image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.targetId = args.args.args.targetId;
                 }
             },
@@ -665,7 +665,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
             },
@@ -682,7 +682,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
             },
@@ -697,7 +697,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
             },
@@ -734,7 +734,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     args.args.args.characterIds.forEach((characterId) => {
                         card = this.cardProperties[characterId];
                         const image = $(`${card.divId}_image`);
-                        dojo.addClass(image, 'chosen');
+                        dojo.addClass(image, '_7sfs-chosen');
                     });
                     this.clientStateArgs.characterIds = args.args.args.characterIds;
                 }
@@ -778,7 +778,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
     
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
             },
@@ -813,7 +813,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
     
                     card = this.cardProperties[args.args.args.schemeId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
     
                     this.clientStateArgs.schemeId = args.args.args.schemeId;
                 }
@@ -825,13 +825,13 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     if (card)
                     {
                         const image = $(`${card.divId}_image`);
-                        dojo.addClass(image, 'chosen');
+                        dojo.addClass(image, '_7sfs-chosen');
                         this.clientStateArgs.chosenCardId = args.args.args.chosenCardId;
                     }
     
                     card = this.cardProperties[args.args.args.schemeId];
                     const schemeImage = $(`${card.divId}_image`);
-                    dojo.addClass(schemeImage, 'chosen');
+                    dojo.addClass(schemeImage, '_7sfs-chosen');
                     this.clientStateArgs.schemeId = args.args.args.schemeId;
     
                     this.showApproachDeckAtTop();
@@ -842,7 +842,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                         card = this.cardProperties[item.id];
                         if (card.type === 'Scheme') {
                             let div = this.approachDeck.getItemDivId(item.id);
-                            dojo.addClass(div, 'unselectable');
+                            dojo.addClass(div, '_7sfs-unselectable');
                         }
                     });
                 }
@@ -858,7 +858,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
             },
@@ -876,7 +876,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 
                 card = this.cardProperties[args.args.args.performerId];
                 const image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
                 this.clientStateArgs.performerId = args.args.args.performerId;
             },
 
@@ -884,7 +884,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 if (this.isCurrentPlayerActive()) {
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
 
                     this.numberOfCardsSelectable = 1;
@@ -901,7 +901,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 if (this.isCurrentPlayerActive()) {
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
 
                     this.numberOfCardsSelectable = 1;
@@ -931,7 +931,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
                     this.clearCardAsSelectable(image);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
     
                     args.args.args.attachmentsInPlay.forEach((cardId) => {
@@ -958,11 +958,11 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.clientStateArgs.performerId = performerId;
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
     
                     card = this.cardProperties[args.args.args.schemeId];
                     const schemeImage = $(`${card.divId}_image`);
-                    dojo.addClass(schemeImage, 'chosen');
+                    dojo.addClass(schemeImage, '_7sfs-chosen');
                     this.clientStateArgs.schemeId = args.args.args.schemeId;
                 }
             },
@@ -982,7 +982,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
     
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
             },
@@ -990,7 +990,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 if (this.isCurrentPlayerActive()) {
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
 
                     this.numberOfCardsSelectable = 1;
@@ -1006,12 +1006,12 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                 if (this.isCurrentPlayerActive()) {
                     card = this.cardProperties[args.args.args.performerId];
                     let image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
 
                     card = this.cardProperties[args.args.args.targetId];
                     image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.targetId = args.args.args.targetId;
                 }
             },
@@ -1051,7 +1051,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                         else
                         {
                             let div = this.chooseList.getItemDivId(card.id);
-                            dojo.addClass(div, 'unselectable');        
+                            dojo.addClass(div, '_7sfs-unselectable');        
                         }
     
                         this.cardProperties[card.id] = card;                
@@ -1113,14 +1113,14 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                         if (discountedCost !== cost)
                         {
                             costDiv.innerHTML = parseInt(discountedCost);
-                            dojo.addClass(costDiv, 'discounted-wealth-cost');
+                            dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
                         }
     
                     }, 500);
     
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
     
                     $('choose_container_name').innerHTML = _(`Chosen Artifact to Equip`);
                     this.chooseList.setSelectionMode(0);
@@ -1146,7 +1146,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
     
                     card = this.cardProperties[args.args.args.id];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.id = args.args.args.id;
                 }
             },
@@ -1162,7 +1162,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.clientStateArgs.performerId = performerId;
                     card = this.cardProperties[performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                 }
             },
     
@@ -1177,7 +1177,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.clientStateArgs.performerId = performerId;
                     card = this.cardProperties[performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                 }
             },
     
@@ -1215,7 +1215,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                         else
                         {
                             let div = this.chooseList.getItemDivId(card.id);
-                            dojo.addClass(div, 'unselectable');        
+                            dojo.addClass(div, '_7sfs-unselectable');        
                         }
     
                         this.cardProperties[card.id] = card;                
@@ -1239,7 +1239,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     card = this.cardProperties[args.args.args.characterId];
                     const image = $(`${card.divId}_image`);
                     this.clearCardAsSelectable(image);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.characterId = args.args.args.characterId;
                 }
             },
@@ -1249,7 +1249,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     card = this.cardProperties[args.args.args.characterId];
                     const image = $(`${card.divId}_image`);
                     this.clearCardAsSelectable(image);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.characterId = args.args.args.characterId;
     
                     this.numberOfCardsSelectable = 1;
@@ -1268,7 +1268,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.numberOfCardsSelectable = 1;
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
     
                     args.args.args.targetCharacterIds.forEach((characterId) => {
                         card = this.cardProperties[characterId];
@@ -1285,11 +1285,11 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.numberOfCardsSelectable = 1;
                     card = this.cardProperties[args.args.args.performerId];
                     let image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
     
                     card = this.cardProperties[args.args.args.chosenCharacterId];
                     image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
     
                     this.clientStateArgs.performerId = args.args.args.performerId;
                     this.clientStateArgs.chosenCharacterId = args.args.args.chosenCharacterId;
@@ -1301,11 +1301,11 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.numberOfCardsSelectable = 1;
                     card = this.cardProperties[args.args.args.performerId];
                     let image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
     
                     card = this.cardProperties[args.args.args.chosenCharacterId];
                     image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
     
                     args.args.args.targetCharacterIds.forEach((characterId) => {
                         card = this.cardProperties[characterId];
@@ -1343,7 +1343,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     card = this.cardProperties[args.args.args.characterId];
                     const image = $(`${card.divId}_image`);
                     this.clearCardAsSelectable(image);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.characterId = args.args.args.characterId;
     
                     this.numberOfCardsSelectable = 1;
@@ -1368,13 +1368,13 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
                     this.clientStateArgs.characterId = characterId;
                     card = this.cardProperties[characterId];
                     let image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
     
                     const victimId = args.args.args.victimId;
                     this.clientStateArgs.victimId = victimId;
                     card = this.cardProperties[victimId];
                     image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                 }
             },
 
@@ -1390,7 +1390,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
             },
@@ -1429,7 +1429,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
             },
@@ -1444,7 +1444,7 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 
                     card = this.cardProperties[args.args._private.args.performerId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args._private.args.performerId;
                 }
             },

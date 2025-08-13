@@ -20,16 +20,16 @@ return declare('seventhseacityoffivesails.setup', null, {
         dojo.connect($('city-discard'), 'onclick', this, 'onCityDiscardClicked');
 
         // Set up the city tooltips
-        this.addTooltipHtml( 'oles-inn-image', `<div class='basic-tooltip'>${_("Ole's Inn")}</div>` );
-        this.addTooltipHtml( 'dock-image', `<div class='basic-tooltip'>${_('The City Docks')}</div>` );
-        this.addTooltipHtml( 'forum-image', `<div class='basic-tooltip'>${_('The City Forum')}</div>` );
-        this.addTooltipHtml( 'bazaar-image', `<div class='basic-tooltip'>${_('The Grand Bazaar')}</div>` );
-        this.addTooltipHtml( 'garden-image', `<div class='basic-tooltip'>${_("Governor's Garden")}</div>` );
+        this.addTooltipHtml( 'oles-inn-image', `<div class='_7sfs-basic-tooltip'>${_("Ole's Inn")}</div>` );
+        this.addTooltipHtml( 'dock-image', `<div class='_7sfs-basic-tooltip'>${_('The City Docks')}</div>` );
+        this.addTooltipHtml( 'forum-image', `<div class='_7sfs-basic-tooltip'>${_('The City Forum')}</div>` );
+        this.addTooltipHtml( 'bazaar-image', `<div class='_7sfs-basic-tooltip'>${_('The Grand Bazaar')}</div>` );
+        this.addTooltipHtml( 'garden-image', `<div class='_7sfs-basic-tooltip'>${_("Governor's Garden")}</div>` );
 
-        this.addTooltipHtml( 'city-discard', `<div class='basic-tooltip'>${_('City Discard Pile')}</div>` );
-        this.addTooltipHtml( 'day-indicator', `<div class='basic-tooltip'>${_('The Current Day')}</div>` );
-        this.addTooltipHtml( 'city-day-phase', `<div class='basic-tooltip'>${_('The Current Phase of the Day')}</div>` );
-        this.addTooltipHtmlToClass('city-reknown-chip', `<div class='basic-tooltip'>${_('Current Reknown on this City Location')}</div>` );
+        this.addTooltipHtml( 'city-discard', `<div class='_7sfs-basic-tooltip'>${_('City Discard Pile')}</div>` );
+        this.addTooltipHtml( 'day-indicator', `<div class='_7sfs-basic-tooltip'>${_('The Current Day')}</div>` );
+        this.addTooltipHtml( 'city-day-phase', `<div class='_7sfs-basic-tooltip'>${_('The Current Phase of the Day')}</div>` );
+        this.addTooltipHtmlToClass('_7sfs-city-reknown-chip', `<div class='_7sfs-basic-tooltip'>${_('Current Reknown on this City Location')}</div>` );
 
         //Update the day
         if (gamedatas.day > 0) {
@@ -66,17 +66,17 @@ return declare('seventhseacityoffivesails.setup', null, {
                 handCount: player.handCount,
                 faction: player.leader?.faction.toLowerCase() ?? '',
             });
-            this.addTooltipHtml( `${playerId}-score-reknown`, `<div class='basic-tooltip'>${_('Current Reknown')}</div>` );
-            this.addTooltipHtml( `${playerId}-score-crewcap`, `<div class='basic-tooltip'>${_('Current Crew Cap')}</div>` );
-            this.addTooltipHtml( `${playerId}-score-panache`, `<div class='basic-tooltip'>${_('Current Panache')}</div>` );
-            this.addTooltipHtml( `${playerId}-score-hand-count`, `<div class='basic-tooltip'>${_('Number of cards in Faction Hand')}</div>` );
+            this.addTooltipHtml( `${playerId}-score-reknown`, `<div class='_7sfs-basic-tooltip'>${_('Current Reknown')}</div>` );
+            this.addTooltipHtml( `${playerId}-score-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Cap')}</div>` );
+            this.addTooltipHtml( `${playerId}-score-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
+            this.addTooltipHtml( `${playerId}-score-hand-count`, `<div class='_7sfs-basic-tooltip'>${_('Number of cards in Faction Hand')}</div>` );
 
             //Display only if we are out of pre-game setup
             if (gamedatas.turnPhase > 0) {
                 // Home
                 this.createHome(playerId, player.color, player.leader);
-                dojo.addClass( `overall_player_board_${playerId}`, `home-${player.leader.faction.toLowerCase()}` );
-                dojo.addClass( `${playerId}-score-seal`, `seal-score seal-${player.leader.faction.toLowerCase()}-score` );
+                dojo.addClass( `overall_player_board_${playerId}`, `_7sfs-home-${player.leader.faction.toLowerCase()}` );
+                dojo.addClass( `${playerId}-score-seal`, `_7sfs-seal-score _7sfs-seal-${player.leader.faction.toLowerCase()}-score` );
 
                 // Discard Pile
                 dojo.style(`${playerId}-discard`, 'cursor', 'zoom-in');
@@ -140,13 +140,13 @@ return declare('seventhseacityoffivesails.setup', null, {
         
         // Display the first player marker if there is one
         if (gamedatas.firstPlayer) {
-            dojo.addClass(`${gamedatas.firstPlayer}-first-player`, 'first-player-home');
+            dojo.addClass(`${gamedatas.firstPlayer}-first-player`, '_7sfs-first-player-home');
 
-            dojo.removeClass(`${gamedatas.firstPlayer}-score-seal-first-player`, 'first-player-hidden');
-            dojo.addClass(`${gamedatas.firstPlayer}-score-seal-first-player`, 'first-player-score');
+            dojo.removeClass(`${gamedatas.firstPlayer}-score-seal-first-player`, '_7sfs-first-player-hidden');
+            dojo.addClass(`${gamedatas.firstPlayer}-score-seal-first-player`, '_7sfs-first-player-score');
 
-            this.addTooltipHtmlToClass('first-player-home', `<div class='basic-tooltip'>${_('First Player')}</div>` );
-            this.addTooltipHtmlToClass('first-player-score', `<div class='basic-tooltip'>${_('First Player')}</div>` );
+            this.addTooltipHtmlToClass('_7sfs-first-player-home', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
+            this.addTooltipHtmlToClass('_7sfs-first-player-score', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
         }
 
         // Set up Ole's inn
@@ -231,9 +231,9 @@ return declare('seventhseacityoffivesails.setup', null, {
                 const id = `${card.id}_crystal_eye_target`;
                 dojo.place( this.format_block( 'jstpl_generic_chip', {
                     id: id,
-                    class: 'crystal-eye-target-chip',
+                    class: '_7sfs-crystal-eye-target-chip',
                 }),  div, 'last');
-                this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
+                this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
             }
 
         });

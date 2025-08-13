@@ -45,7 +45,7 @@ onEnteringState: function( stateName, args )
                     if (location == this.LOCATION_PLAYER_HOME)
                     {
                         var home = $(`${this.getActivePlayerId()}-home-anchor`);
-                        dojo.addClass(home, 'selectable');
+                        dojo.addClass(home, '_7sfs-selectable');
                         dojo.style(home, 'cursor', 'pointer');
                         const handle = dojo.connect($(home), 'onclick', this, 'onCityLocationClicked');
                         this.connects.push(handle);                
@@ -58,7 +58,7 @@ onEnteringState: function( stateName, args )
                 });
                 card = this.cardProperties[args.args.performerId];
                 const image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
             }
         },
 
@@ -78,7 +78,7 @@ onEnteringState: function( stateName, args )
             if (this.isCurrentPlayerActive()) {
                 card = this.cardProperties[args.args.performerId];
                 const image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
             }
         },
 
@@ -87,7 +87,7 @@ onEnteringState: function( stateName, args )
                 const performer = this.cardProperties[args.args.performerId];
                 this.clientStateArgs.performerId = performer.id;
                 const image = $(`${performer.divId}_image`);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
 
                 this.numberOfCardsSelectable = 1;
                 this.clientStateArgs.discount = args.args.discount;
@@ -104,7 +104,7 @@ onEnteringState: function( stateName, args )
                             let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
                             discountedCost = discountedCost < 0 ? 0 : discountedCost;
                             cost.innerHTML = parseInt(discountedCost);
-                            dojo.addClass(cost, 'discounted-wealth-cost');
+                            dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
                         }
                     }
                 }
@@ -116,12 +116,12 @@ onEnteringState: function( stateName, args )
             {
                 let card = this.cardProperties[args.args.performerId];
                 let image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
                 this.clientStateArgs.performerId = card.id;
     
                 card = this.cardProperties[args.args.recruitId];
                 image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
                 this.clientStateArgs.recruitId = card.id;
     
                 const cost = $(`${card.divId}_wealth_cost`);
@@ -129,7 +129,7 @@ onEnteringState: function( stateName, args )
                 discountedCost = discountedCost < 0 ? 0 : discountedCost;
                 this.clientStateArgs.discountedCost = discountedCost;
                 cost.innerHTML = parseInt(discountedCost);
-                dojo.addClass(cost, 'discounted-wealth-cost');
+                dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
     
                 this.showHandAtTop();
                 this.factionHand.setSelectionMode(2);
@@ -143,7 +143,7 @@ onEnteringState: function( stateName, args )
                 {
                     const card = this.cardProperties[args.args.actionCardId];
                     const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                 }
                 this.clientStateArgs.actionCardId = args.args.actionCardId;
 
@@ -175,7 +175,7 @@ onEnteringState: function( stateName, args )
                 card = this.cardProperties[args.args._private.performerId];
                 const image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
             }
         },
 
@@ -185,11 +185,11 @@ onEnteringState: function( stateName, args )
                 card = this.cardProperties[args.args._private.performerId];
                 const image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
 
                 args.args._private.attachmentsInHand.forEach((cardId) => {
                     let div = this.factionHand.getItemDivId(cardId);
-                    dojo.addClass(div, 'selectable');
+                    dojo.addClass(div, '_7sfs-selectable');
                 });
                 this.showHandAtTop();
                 this.factionHand.setSelectionMode(2);
@@ -203,7 +203,7 @@ onEnteringState: function( stateName, args )
                 card = this.cardProperties[args.args.performerId];
                 const image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
 
                 args.args.attachmentsInPlay.forEach((cardId) => {
                     card = this.cardProperties[cardId];
@@ -219,7 +219,7 @@ onEnteringState: function( stateName, args )
                 performer = this.cardProperties[args.args._private.performerId];
                 const image = $(`${performer.divId}_image`);
                 this.clearCardAsSelectable(image);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
 
                 const chosenAttachmentId = args.args._private.chosenAttachmentId;
                 const card = args.args._private.chosenAttachment;
@@ -227,7 +227,7 @@ onEnteringState: function( stateName, args )
                 let items = this.factionHand.getAllItems();
 
                 let div = this.factionHand.getItemDivId(chosenAttachmentId);
-                dojo.addClass(div, 'unselectable');
+                dojo.addClass(div, '_7sfs-unselectable');
 
                 dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
                     id: div,
@@ -242,7 +242,7 @@ onEnteringState: function( stateName, args )
                 {
                     this.clientStateArgs.discountedCost = discountedCost;
                     costDiv.innerHTML = parseInt(discountedCost);
-                    dojo.addClass(costDiv, 'discounted-wealth-cost');
+                    dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
                 }
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
@@ -257,12 +257,12 @@ onEnteringState: function( stateName, args )
                 const performer = this.cardProperties[args.args._private.performerId];
                 let image = $(`${performer.divId}_image`);
                 this.clearCardAsSelectable(image);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
                 this.clientStateArgs.performerId = performer.id;
     
                 const card = this.cardProperties[args.args._private.chosenAttachmentId];
                 image = $(`${card.divId}_image`);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
                 this.clientStateArgs.chosenAttachmentId = card.id;
     
                 const costDiv = $(`${card.divId}_wealth_cost`);
@@ -272,7 +272,7 @@ onEnteringState: function( stateName, args )
                 if (discountedCost !== cost)
                 {
                     costDiv.innerHTML = parseInt(discountedCost);
-                    dojo.addClass(costDiv, 'discounted-wealth-cost');
+                    dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
                 }
         
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
@@ -298,7 +298,7 @@ onEnteringState: function( stateName, args )
                 this.showHandAtTop();
                 args.args._private.ids.forEach((id) => { 
                     const div = this.factionHand.getItemDivId(id);
-                    dojo.addClass(div, 'selectable');
+                    dojo.addClass(div, '_7sfs-selectable');
                 });
             }
         },
@@ -308,7 +308,7 @@ onEnteringState: function( stateName, args )
                 this.showHandAtTop();
                 this.clientStateArgs.actionCardId = args.args._private.actionCardId;
                 const div = this.factionHand.getItemDivId(args.args._private.actionCardId);
-                dojo.addClass(div, 'selected');
+                dojo.addClass(div, '_7sfs-selected');
 
                 this.numberOfCardsSelectable = 1;
                 args.args._private.ids.forEach((cardId) => {
@@ -327,7 +327,7 @@ onEnteringState: function( stateName, args )
                     performer = this.cardProperties[args.args._private.performerId];
                     const image = $(`${performer.divId}_image`);
                     this.clearCardAsSelectable(image);
-                    dojo.addClass(image, 'chosen');
+                    dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = performer.id;
                 }
 
@@ -337,7 +337,7 @@ onEnteringState: function( stateName, args )
                 let items = this.factionHand.getAllItems();
 
                 let div = this.factionHand.getItemDivId(chosenActionCardId);
-                dojo.addClass(div, 'unselectable');
+                dojo.addClass(div, '_7sfs-unselectable');
 
                 dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
                     id: div,
@@ -352,7 +352,7 @@ onEnteringState: function( stateName, args )
                 {
                     this.clientStateArgs.discountedCost = discountedCost;
                     costDiv.innerHTML = parseInt(discountedCost);
-                    dojo.addClass(costDiv, 'discounted-wealth-cost');
+                    dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
                 }
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
@@ -380,7 +380,7 @@ onEnteringState: function( stateName, args )
                 card = this.cardProperties[args.args.performerId];
                 const image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
 
                 args.args.ids.forEach((cardId) => {
                     card = this.cardProperties[cardId];
@@ -396,12 +396,12 @@ onEnteringState: function( stateName, args )
                 card = this.cardProperties[args.args.performerId];
                 image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
 
                 card = this.cardProperties[args.args.targetId];
                 image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
             }
         },
 
@@ -411,12 +411,12 @@ onEnteringState: function( stateName, args )
                 card = this.cardProperties[args.args.performerId];
                 image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
 
                 card = this.cardProperties[args.args.targetId];
                 image = $(`${card.divId}_image`);
                 this.clearCardAsSelectable(image);
-                dojo.addClass(image, 'chosen');
+                dojo.addClass(image, '_7sfs-chosen');
 
                 args.args.ids.forEach((cardId) => {
                     card = this.cardProperties[cardId];
@@ -445,7 +445,7 @@ onEnteringState: function( stateName, args )
                 let items = this.factionHand.getAllItems();
 
                 let div = this.factionHand.getItemDivId(reactionId);
-                dojo.addClass(div, 'unselectable');
+                dojo.addClass(div, '_7sfs-unselectable');
 
                 dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
                     id: div,
@@ -460,7 +460,7 @@ onEnteringState: function( stateName, args )
                 {
                     this.clientStateArgs.discountedCost = discountedCost;
                     costDiv.innerHTML = parseInt(discountedCost);
-                    dojo.addClass(costDiv, 'discounted-wealth-cost');
+                    dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
                 }
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
@@ -486,7 +486,7 @@ onEnteringState: function( stateName, args )
                 const cardId = args.args._private.combatCardId;
                 const card = this.cardProperties[cardId];
                 let div = this.factionHand.getItemDivId(cardId);
-                dojo.addClass(div, 'unselectable');
+                dojo.addClass(div, '_7sfs-unselectable');
     
                 dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
                     id: div,
@@ -500,7 +500,7 @@ onEnteringState: function( stateName, args )
                 if (discountedCost !== cost)
                 {
                     costDiv.innerHTML = parseInt(discountedCost);
-                    dojo.addClass(costDiv, 'discounted-wealth-cost');
+                    dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
                 }
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
@@ -531,7 +531,7 @@ onEnteringState: function( stateName, args )
 
         'duskPhaseCleanup': () => {
             //Remove all control chips from locations
-            dojo.query('.location-control-chip').forEach((element) => {
+            dojo.query('._7sfs-location-control-chip').forEach((element) => {
                 element.remove();
             });
         },

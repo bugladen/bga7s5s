@@ -2,9 +2,9 @@ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 return declare('seventhseacityoffivesails.utilities', null, {
 
     deckPickerShowTab: function(tabIndex) {
-        const tabs = document.querySelectorAll('.deck-picker-tab-content');
+        const tabs = document.querySelectorAll('._7sfs-deck-picker-tab-content');
         tabs.forEach((tab, i) => {
-          tab.classList.toggle('deck-picker-active', i === tabIndex);
+          tab.classList.toggle('_7sfs-deck-picker-active', i === tabIndex);
 
           //If tableIndex matches get the deck name from the data-deck-name attribute
           if (tabIndex === i) {
@@ -20,7 +20,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     deckPickerDeckSelected: function() {
-        const tabs = document.querySelectorAll('.deck-picker-tab-content');
+        const tabs = document.querySelectorAll('._7sfs-deck-picker-tab-content');
         tabs.forEach((tab, i) => {
             if (this.selectedDeck === i) {
                 var deckPickerButtons = document.querySelectorAll('.deck-picker-button');
@@ -62,10 +62,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         playerId == this.player_id ? 'city' : 'home_anchor', 
         playerId == this.player_id ? 'after' : 'before' );
 
-        this.addTooltipHtml( `${playerId}-crewcap`, `<div class='basic-tooltip'>${_('Current Crew Capacity')}</div>` );
-        this.addTooltipHtml( `${playerId}-discard`, `<div class='basic-tooltip'>${_('Faction Deck Discard Pile')}</div>` );
-        this.addTooltipHtml( `${playerId}-locker`, `<div class='basic-tooltip'>${_('Player Locker')}</div>` );
-        this.addTooltipHtml( `${playerId}-panache`, `<div class='basic-tooltip'>${_('Current Panache')}</div>` );
+        this.addTooltipHtml( `${playerId}-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Capacity')}</div>` );
+        this.addTooltipHtml( `${playerId}-discard`, `<div class='_7sfs-basic-tooltip'>${_('Faction Deck Discard Pile')}</div>` );
+        this.addTooltipHtml( `${playerId}-locker`, `<div class='_7sfs-basic-tooltip'>${_('Player Locker')}</div>` );
+        this.addTooltipHtml( `${playerId}-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
     },
 
     getCardPropertiesByDivId: function( divId )
@@ -103,7 +103,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }
             else {
                 this.createCharacterCard(divId, '', card, targetDiv, inDuel);
-                dojo.removeClass(`${divId}-player-color`, 'character-player-color');
+                dojo.removeClass(`${divId}-player-color`, '_7sfs-character-player-color');
             }
         }
         else if (card.type === 'Event')
@@ -129,7 +129,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const html = `
         <div style="position:relative;">
             <img src="${g_gamethemeurl + card.image}" />
-            <div class="available-card-ability">
+            <div class="_7sfs-available-card-ability">
                 ${card.actions?.map((action) => `<div style="background-color:${action.available ? 'green' : 'red'};">${_('Action:')} ${_(action.shortName)}</div>`).join('') ?? ''}
                 ${card.reactions?.map((reaction) => `<div style="background-color:${reaction.available ? 'green' : 'red'};">${_('Reaction:')} ${_(reaction.shortName)}</div>`).join('') ?? ''}
                 ${card.maneuvers?.map((maneuver) => `<div style="background-color:${maneuver.available ? 'green' : 'red'};">${_('Maneuver:')} ${_(maneuver.shortName)}</div>`).join('') ?? ''}
@@ -170,16 +170,16 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }), targetDiv, placement );
 
         if (character.combat != character.modifiedCombat) 
-            dojo.addClass(`${divId}_combat_value`, 'modified-stat-value');
+            dojo.addClass(`${divId}_combat_value`, '_7sfs-modified-stat-value');
 
         if (character.finesse != character.modifiedFinesse) 
-            dojo.addClass(`${divId}_finesse_value`, 'modified-stat-value');
+            dojo.addClass(`${divId}_finesse_value`, '_7sfs-modified-stat-value');
 
         if (character.resolve != character.modifiedResolve || character.wounds > 0)
-            dojo.addClass(`${divId}_resolve_value`, 'modified-stat-value');
+            dojo.addClass(`${divId}_resolve_value`, '_7sfs-modified-stat-value');
 
         if (character.influence != character.modifiedInfluence)
-            dojo.addClass(`${divId}_influence_value`, 'modified-stat-value');
+            dojo.addClass(`${divId}_influence_value`, '_7sfs-modified-stat-value');
 
         if (!character.wealthCost || character.controllerId) {
             dojo.style( `${divId}_wealth_cost`, 'display', 'none' );
@@ -193,39 +193,39 @@ return declare('seventhseacityoffivesails.utilities', null, {
             const id = `${divId}_yevgeni_adversary`;
             dojo.place( this.format_block( 'jstpl_generic_chip', {
                 id: id,
-                class: 'yevgeni-adversary-chip',
+                class: '_7sfs-yevgeni-adversary-chip',
             }),  `${divId}_image`, 'last');
-            this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
+            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
         }
         if (character.conditions.includes(this.CHALLENGER)) {
             id = `${divId}_challenger`;
             dojo.place( this.format_block( 'jstpl_generic_chip', {
                 id: id,
-                class: 'challenger-chip',
+                class: '_7sfs-challenger-chip',
             }),  `${divId}_image`, 'last');
-            this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Duel Challenger")}</div>` );
+            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
         }
         if (character.conditions.includes(this.DEFENDER)) {
             id = `${divId}_defender`;
             dojo.place( this.format_block( 'jstpl_generic_chip', {
                 id: id,
-                class: 'defender-chip',
+                class: '_7sfs-defender-chip',
             }),  `${divId}_image`, 'last');
-            this.addTooltipHtml( id, `<div class='basic-tooltip'>${_("Duel Defender")}</div>` );
+            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
         }
         if (character.wounds > 0)
         {
             const woundChip = `${divId}_wounds`;
             dojo.place( this.format_block( 'jstpl_generic_chip', {
                 id: woundChip,
-                class: 'wound-chip',
+                class: '_7sfs-wound-chip',
             }),  `${divId}_image`, 'last');
             $(woundChip).innerHTML = character.wounds;
-            this.addTooltipHtml( woundChip, `<div class='basic-tooltip'>${_("Wounds")}</div>` );
+            this.addTooltipHtml( woundChip, `<div class='_7sfs-basic-tooltip'>${_("Wounds")}</div>` );
         }
 
         if (character.engaged) 
-            dojo.addClass(`${divId}_image`, 'engaged');
+            dojo.addClass(`${divId}_image`, '_7sfs-engaged');
 
         //Display the attachments in front of the character, offset
         character.attachedCards?.forEach((attachment) => {
@@ -291,12 +291,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }), location, position );
 
         if (schemeInCity) {
-            dojo.addClass(divId, 'scheme-container-in-city');
+            dojo.addClass(divId, '_7sfs-scheme-container-in-city');
             const img = $(`${divId}_image`);
-            dojo.addClass(img, 'scheme-in-city');
+            dojo.addClass(img, '_7sfs-scheme-in-city');
         }
         else {
-            dojo.removeClass(`${divId}-player-color`, 'scheme-player-color');
+            dojo.removeClass(`${divId}-player-color`, '_7sfs-scheme-player-color');
         }
         
         this.createTooltipForCard(scheme);
@@ -314,7 +314,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         //Get the attached character and set up as a container
         if (attachment.attachedToId) {
             const character = this.cardProperties[attachment.attachedToId];
-            dojo.addClass(character.divId, 'attachment-container');
+            dojo.addClass(character.divId, '_7sfs-attachment-container');
         }
 
         let placement = inDuel ? 'last' : attachment.attachedToId ? 'last' : 'before';
@@ -334,12 +334,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
         
         if (attachment.controllerId)
         {
-            dojo.addClass(divId, 'attached-card');
+            dojo.addClass(divId, '_7sfs-attached-card');
             dojo.addClass(`${divId}_wealth_cost`, 'hidden');
         } 
 
         if (attachment.engaged) 
-            dojo.addClass(`${divId}_image`, 'engaged');
+            dojo.addClass(`${divId}_image`, '_7sfs-engaged');
 
         this.createTooltipForCard(attachment);
     },
@@ -489,14 +489,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     makeCityLocationSelectable: function(location) {
-        dojo.addClass(location, 'selectable');
+        dojo.addClass(location, '_7sfs-selectable');
         dojo.style(location, 'cursor', 'pointer');
         const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
         this.connects.push(handle);
     },
     
     makeCardSelectable: function(image) {
-        dojo.addClass(image, 'selectable');
+        dojo.addClass(image, '_7sfs-selectable');
         dojo.style(image, 'cursor', 'pointer');
         const handle = dojo.connect(image, 'onclick', this, 'onCardInPlayClicked');
         this.connects.push(handle);                        
@@ -505,21 +505,21 @@ return declare('seventhseacityoffivesails.utilities', null, {
     resetCityLocations: function() {
         const locations = this.getListofAvailableCityLocationImages();
         locations.forEach((location) => {
-            dojo.removeClass(location, 'selectable');
-            dojo.removeClass(location, 'selected');
+            dojo.removeClass(location, '_7sfs-selectable');
+            dojo.removeClass(location, '_7sfs-selected');
             dojo.style(location, 'cursor', 'default');
         });
 
         const playerHome = this.getCityLocationElement(this.LOCATION_PLAYER_HOME);
-        dojo.removeClass(playerHome, 'selectable');
-        dojo.removeClass(playerHome, 'selected');
+        dojo.removeClass(playerHome, '_7sfs-selectable');
+        dojo.removeClass(playerHome, '_7sfs-selected');
         dojo.style(playerHome, 'cursor', 'default');
     },
     
     clearCardAsSelectable: function(image) {
-        dojo.removeClass(image, 'selectable');
-        dojo.removeClass(image, 'selected');
-        dojo.removeClass(image, 'chosen');
+        dojo.removeClass(image, '_7sfs-selectable');
+        dojo.removeClass(image, '_7sfs-selected');
+        dojo.removeClass(image, '_7sfs-chosen');
         dojo.style(image, 'cursor', 'default');
     },
 
@@ -582,14 +582,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
             maneuvers = [];
         else
             //Surround the maneuver names with div tags
-            maneuvers = maneuvers.map((maneuver) => `<div class="duel-maneuver">${maneuver}</div>`);
+            maneuvers = maneuvers.map((maneuver) => `<div>${maneuver}</div>`);
 
         var techniques = row.techniqueNames;
         if (!techniques)
             techniques = [];
         else
             //Surround the technique names with div tags
-            techniques = techniques.map((technique) => `<div class="duel-technique">${technique}</div>`);
+            techniques = techniques.map((technique) => `<div>${technique}</div>`);
 
         let techniqueMarkup = '';
         techniques.forEach((technique) => {
@@ -640,7 +640,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             this.attachCard(row.actor, attachment);
         });
         this.createCard(actorDivId, row.actor, containerDivId, true);
-        dojo.addClass(actorDivId, 'attachment-container');
+        dojo.addClass(actorDivId, '_7sfs-attachment-container');
 
         const combatCards = row.combatCards;
         if (combatCards)
@@ -658,55 +658,55 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 this.addTooltipHtml(cardDivId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
                 if (row.gambled)
                 {
-                    dojo.addClass(divId, 'engaged');
-                    dojo.addClass(divId, 'duel-row-combat-card-gambled');
+                    dojo.addClass(divId, '_7sfs-engaged');
+                    dojo.addClass(divId, '_7sfs-duel-row-combat-card-gambled');
                 }
             });
         }
 
         if (!row.combatCards)
         {
-            dojo.addClass(`duel_round_${row.round}_combat`, 'ability-not-chosen');
-            dojo.addClass(`duel_round_${row.round}_combat_stats`, 'ability-not-chosen');
+            dojo.addClass(`duel_round_${row.round}_combat`, '_7sfs-ability-not-chosen');
+            dojo.addClass(`duel_round_${row.round}_combat_stats`, '_7sfs-ability-not-chosen');
         }
         if (!row.techniqueNames)
         {
-            dojo.addClass(`duel_round_${row.round}_technique`, 'ability-not-chosen');
-            dojo.addClass(`duel_round_${row.round}_technique_stats`, 'ability-not-chosen');
+            dojo.addClass(`duel_round_${row.round}_technique`, '_7sfs-ability-not-chosen');
+            dojo.addClass(`duel_round_${row.round}_technique_stats`, '_7sfs-ability-not-chosen');
         }
         if (!row.maneuverNames)
         {
-            dojo.addClass(`duel_round_${row.round}_maneuver`, 'ability-not-chosen');
-            dojo.addClass(`duel_round_${row.round}_maneuver_stats`, 'ability-not-chosen');
+            dojo.addClass(`duel_round_${row.round}_maneuver`, '_7sfs-ability-not-chosen');
+            dojo.addClass(`duel_round_${row.round}_maneuver_stats`, '_7sfs-ability-not-chosen');
         }
 
         if (row.startingChallengerThreat > 0)
-            dojo.addClass(`duel_round_${row.round}_starting_challenger_threat`, 'threat-chip-threatened');
+            dojo.addClass(`duel_round_${row.round}_starting_challenger_threat`, '_7sfs-threat-chip-threatened');
         if (row.startingDefenderThreat > 0)
-            dojo.addClass(`duel_round_${row.round}_starting_defender_threat`, 'threat-chip-threatened');
+            dojo.addClass(`duel_round_${row.round}_starting_defender_threat`, '_7sfs-threat-chip-threatened');
         if (row.endingChallengerThreat > 0)
-            dojo.addClass(`duel_round_${row.round}_ending_challenger_threat`, 'threat-chip-threatened');
+            dojo.addClass(`duel_round_${row.round}_ending_challenger_threat`, '_7sfs-threat-chip-threatened');
         if (row.endingDefenderThreat > 0)
-            dojo.addClass(`duel_round_${row.round}_ending_defender_threat`, 'threat-chip-threatened');
+            dojo.addClass(`duel_round_${row.round}_ending_defender_threat`, '_7sfs-threat-chip-threatened');
 
         if (row.challengerThreatIsLethal == 1)
-            $(`duel_round_${row.round}_ending_challenger_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
+            $(`duel_round_${row.round}_ending_challenger_threat`).innerHTML += '<span class="_7sfs-lethal">&#9760;</span>';
         if (row.defenderThreatIsLethal == 1)
-            $(`duel_round_${row.round}_ending_defender_threat`).innerHTML += '<span class="lethal">&#9760;</span>';
+            $(`duel_round_${row.round}_ending_defender_threat`).innerHTML += '<span class="_7sfs-lethal">&#9760;</span>';
 
         if (row.actorId === row.challengerId)
         {
-            dojo.addClass(`duel_round_${row.round}_starting_challenger_threat_row`, 'duel-acting-character');
-            dojo.addClass(`duel_round_${row.round}_ending_challenger_threat_row`, 'duel-acting-character');
+            dojo.addClass(`duel_round_${row.round}_starting_challenger_threat_row`, '_7sfs-duel-acting-character');
+            dojo.addClass(`duel_round_${row.round}_ending_challenger_threat_row`, '_7sfs-duel-acting-character');
             
         }
         if (row.actorId == row.defenderId)
         {
-            dojo.addClass(`duel_round_${row.round}_starting_defender_threat_row`, 'duel-acting-character');
-            dojo.addClass(`duel_round_${row.round}_ending_defender_threat_row`, 'duel-acting-character');
+            dojo.addClass(`duel_round_${row.round}_starting_defender_threat_row`, '_7sfs-duel-acting-character');
+            dojo.addClass(`duel_round_${row.round}_ending_defender_threat_row`, '_7sfs-duel-acting-character');
         }
 
-        this.addTooltipHtml(`duel_round_${row.round}_wounds`, `<div class='basic-tooltip'>${_("The amount of wounds the Actor took, or will take, for this round")}</div>` );        
+        this.addTooltipHtml(`duel_round_${row.round}_wounds`, `<div class='_7sfs-basic-tooltip'>${_("The amount of wounds the Actor took, or will take, for this round")}</div>` );        
     },
 
     showHandAtTop: () => {

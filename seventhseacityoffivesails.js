@@ -150,13 +150,13 @@ function (dojo, declare) {
                 case 'card':
                     this.log_span_num++; // adds a unique num to the span id so that duplicate card names in the log have unique ids
                     const item_type = 'card_tt';
-                    return `<span id="${this.log_span_num}_${item_type}" image="${cardImage}" class="${item_type} log_tooltip"><strong>${_(cardName)}</strong></span>`;
+                    return `<span id="${this.log_span_num}_${item_type}" image="${cardImage}" class="_7sfs-${item_type} _7sfs-log_tooltip"><strong>${_(cardName)}</strong></span>`;
             }
         },        
 
         addTooltipsToLog: function() 
         {
-            const item_elements = dojo.query('.log_tooltip:not(.tt_processed)');
+            const item_elements = dojo.query('._7sfs-log_tooltip:not(.tt_processed)');
             Array.from(item_elements).forEach(ele => {
                 const ele_id = ele.id;
                 ele.classList.add('tt_processed');  // prevents tooltips being re-added to previous log entries

@@ -166,7 +166,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     this.chooseList.unselectAll();
 
                     // Remove all the red square html elements
-                    dojo.query('.number-order-chip').forEach((element) => {
+                    dojo.query('._7sfs-number-order-chip').forEach((element) => {
                         //Delete the data element named order on the parent div
                         element.parentNode.removeAttribute('order');                        
                         
@@ -273,7 +273,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 var items = this.factionHand.getSelectedItems();
                 let wealth = 0;
                 const div = this.factionHand.getItemDivId(item_id);                
-                if (item_id !== undefined && dojo.hasClass(div, 'unselectable')) {
+                if (item_id !== undefined && dojo.hasClass(div, '_7sfs-unselectable')) {
                     this.factionHand.unselectItem(item_id);
                     return;
                 }
@@ -312,7 +312,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 var items = this.factionHand.getSelectedItems();
                 let wealth = 0;
                 const div = this.factionHand.getItemDivId(item_id);                
-                if (item_id !== undefined && dojo.hasClass(div, 'unselectable')) {
+                if (item_id !== undefined && dojo.hasClass(div, '_7sfs-unselectable')) {
                     this.factionHand.unselectItem(item_id);
                     return;
                 }
@@ -370,7 +370,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 var items = this.factionHand.getSelectedItems();
                 let wealth = 0;
                 const div = this.factionHand.getItemDivId(item_id);                
-                if (item_id !== undefined && dojo.hasClass(div, 'unselectable')) {
+                if (item_id !== undefined && dojo.hasClass(div, '_7sfs-unselectable')) {
                     this.factionHand.unselectItem(item_id);
                     return;
                 }
@@ -400,7 +400,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 var items = this.factionHand.getSelectedItems();
                 let wealth = 0;
                 const div = this.factionHand.getItemDivId(item_id);                
-                if (item_id !== undefined && dojo.hasClass(div, 'unselectable')) {
+                if (item_id !== undefined && dojo.hasClass(div, '_7sfs-unselectable')) {
                     this.factionHand.unselectItem(item_id);
                     return;
                 }
@@ -430,22 +430,22 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
     {
         const location = event.target.id;
         //Check to see if we are selecting or deselecting
-        if (dojo.hasClass(location, 'selected')) 
+        if (dojo.hasClass(location, '_7sfs-selected')) 
         {
-            dojo.removeClass(location, 'selected');
+            dojo.removeClass(location, '_7sfs-selected');
             this.selectedCityLocations = this.selectedCityLocations.filter((loc) => loc !== location);
         } 
         else if (this.selectedCityLocations.length == this.numberOfCityLocationsSelectable == 1)
         {
             this.selectedCityLocations.forEach((loc) => {
-                dojo.removeClass(loc, 'selected');
+                dojo.removeClass(loc, '_7sfs-selected');
             });
             this.selectedCityLocations = [];
-            dojo.addClass(location, 'selected');
+            dojo.addClass(location, '_7sfs-selected');
             this.selectedCityLocations.push(location);
         }
         else if (this.selectedCityLocations.length < this.numberOfCityLocationsSelectable) {
-            dojo.addClass(location, 'selected');
+            dojo.addClass(location, '_7sfs-selected');
             this.selectedCityLocations.push(location);
         }
 
@@ -469,25 +469,25 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
         const card = this.getCardPropertiesByDivId(divId);
         let image = $(id);
-        if (dojo.hasClass(image, 'selected')) 
+        if (dojo.hasClass(image, '_7sfs-selected')) 
         {
-            dojo.removeClass(image, 'selected');
+            dojo.removeClass(image, '_7sfs-selected');
             this.selectedCards = this.selectedCards.filter((char) => char !== card.id);
         } 
         else if (this.selectedCards.length == this.numberOfCardsSelectable == 1)
         {
             this.selectedCards.forEach((unsetId) => {
                 unsetCard = this.cardProperties[unsetId];
-                unsetImageElement = dojo.query('.card', unsetCard.divId)[0];
-                dojo.removeClass(unsetImageElement, 'selected');
+                unsetImageElement = dojo.query('._7sfs-card', unsetCard.divId)[0];
+                dojo.removeClass(unsetImageElement, '_7sfs-selected');
             });
             this.selectedCards = [];
 
-            dojo.addClass(image, 'selected');
+            dojo.addClass(image, '_7sfs-selected');
             this.selectedCards.push(card.id);
         }
         else if (this.selectedCards.length < this.numberOfCardsSelectable) {
-            dojo.addClass(image, 'selected');
+            dojo.addClass(image, '_7sfs-selected');
             this.selectedCards.push(card.id);
         }
 
