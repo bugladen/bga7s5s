@@ -26,14 +26,14 @@ class Technique_01039 extends Technique
         if (!$inDuel)
             return false;
 
-        $actor = $theah->getDuelRoundActor();
+        $philip = $theah->getDuelRoundActor();
 
-        $characters = $theah->getCharactersAtLocation($actor->Location);
-        $characters = array_filter($characters, fn($c) => $c->ControllerId == $playerId && $c->hasTrait("Mercenary"));
+        $characters = $theah->getCharactersAtLocation($philip->Location);
+        $characters = array_filter($characters, fn($c) => $c->ControllerId == $playerId && $c->hasTrait("Mercenary", $philip));
         if (count($characters) == 0)
             return false;
 
-        $adversaryId = $theah->getDuelOpponentId($actor->Id);
+        $adversaryId = $theah->getDuelOpponentId($philip->Id);
         $adversary = $theah->getCharacterById($adversaryId);
 
         if ( ! $adversary->Engaged)
@@ -65,7 +65,7 @@ class Technique_01039 extends Technique
             $adversary = $event->theah->getCharacterById($adversaryId);
 
             $mercenaries = $event->theah->getCharactersAtLocation($philip->Location);
-            $mercenaries = array_filter($mercenaries, fn($character) => $character->ControllerId == $philip->ControllerId && $character->hasTrait("Mercenary"));
+            $mercenaries = array_filter($mercenaries, fn($character) => $character->ControllerId == $philip->ControllerId && $character->hasTrait("Mercenary", $philip));
 
             if ($adversary->Engaged && count($mercenaries) > 0)
             {

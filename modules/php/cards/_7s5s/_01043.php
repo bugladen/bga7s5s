@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction_01043;
@@ -68,6 +69,23 @@ class _01043 extends Character implements IHasReactions
             $this->Traits = array_filter($this->Traits, fn($trait) => $trait != "Mercenary");
             $this->IsUpdated = true;
         }
+    }
+
+    // When adding new cards that query for Mercenary traits, add here if it would benefit player
+    public function hasTrait(string $trait, ?Card $queryCard = null): bool
+    {
+        if ($trait == "Mercenary")
+        {
+            return
+            (
+                parent::hasTrait($trait, $queryCard)
+             || $queryCard instanceof _01036
+             || $queryCard instanceof _01039
+             || $queryCard instanceof _01051
+            );
+        }
+
+        return parent::hasTrait($trait, $queryCard);
     }
 
 }

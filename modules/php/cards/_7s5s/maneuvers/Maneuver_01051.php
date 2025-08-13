@@ -37,8 +37,9 @@ class Maneuver_01051 extends Maneuver
             return false;
 
         $actor = $theah->getDuelRoundActor();
+        $owner = $this->getOwningCard($theah);
         $characters = $theah->getCharactersAtLocation($actor->Location);
-        $characters = array_filter($characters, fn($character) => $character->hasTrait('Mercenary') && $character->ControllerId == $actor->ControllerId);
+        $characters = array_filter($characters, fn($character) => $character->hasTrait('Mercenary', $owner) && $character->ControllerId == $actor->ControllerId);
 
         return count($characters) > 0;
     }
@@ -78,8 +79,9 @@ class Maneuver_01051 extends Maneuver
         if ($state == States::DUEL_RESOLVE_MANEUVER_01051)
         {
             $actor = $game->theah->getDuelRoundActor();
+            $owner = $this->getOwningCard($game->theah);
             $characters = $game->theah->getCharactersAtLocation($actor->Location);
-            $characters = array_values(array_filter($characters, fn($character) => $character->hasTrait('Mercenary') && $character->ControllerId == $actor->ControllerId));
+            $characters = array_values(array_filter($characters, fn($character) => $character->hasTrait('Mercenary', $owner) && $character->ControllerId == $actor->ControllerId));
             $characterIds = array_map(fn($character) => $character->Id, $characters);
     
             $args['characterIds'] = $characterIds;
@@ -96,6 +98,7 @@ class Maneuver_01051 extends Maneuver
         {
             $actor = $game->theah->getDuelRoundActor();
             $character = $game->theah->getCharacterById($id);
+            $owner = $this->getOwningCard($game->theah);
             if (! $character)
             {
                 throw new \BgaUserException($game->translate("Character not found"));
@@ -106,7 +109,7 @@ class Maneuver_01051 extends Maneuver
                 throw new \BgaUserException($game->translate("You cannot choose a character that is not yours"));
             }
 
-            if (! $character->hasTrait('Mercenary'))
+            if (! $character->hasTrait('Mercenary', $owner))
             {
                 throw new \BgaUserException($game->translate("Character is not a Mercenary"));
             }

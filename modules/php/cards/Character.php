@@ -274,11 +274,6 @@ abstract class Character extends Card implements IHasTechniques
         return $properties;
     }
 
-    public function hasTrait(string $trait): bool
-    {
-        return in_array($trait, $this->Traits);
-    }
-
     public function getModifiedResolve(Theah $theah): int
     {
         $resolve = $this->Resolve - $this->Wounds;

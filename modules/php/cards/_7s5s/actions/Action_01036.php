@@ -29,7 +29,7 @@ class Action_01036 extends CharacterAction
             return false;
 
         $characters = $theah->getCharactersAtLocation($daniella->Location);
-        $characters = array_filter($characters, fn($character) => $character->ControllerId == $daniella->ControllerId && $character->hasTrait("Mercenary"));
+        $characters = array_filter($characters, fn($character) => $character->ControllerId == $daniella->ControllerId && $character->hasTrait("Mercenary", $daniella));
 
         return count($characters) > 0;
     }
@@ -38,7 +38,7 @@ class Action_01036 extends CharacterAction
     {
         $daniella = $this->getOwningCharacter($theah);
         $performers = $theah->getCharactersAtLocation($daniella->Location);
-        $performers = array_filter($performers, fn($performer) => $performer->ControllerId == $daniella->ControllerId && $performer->hasTrait("Mercenary"));
+        $performers = array_filter($performers, fn($performer) => $performer->ControllerId == $daniella->ControllerId && $performer->hasTrait("Mercenary", $daniella));
 
         return $performers;
     }

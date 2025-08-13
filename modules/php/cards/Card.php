@@ -424,7 +424,7 @@ abstract class Card
         return $discount;
     }
 
-    public function hasTrait(string $trait): bool
+    public function hasTrait(string $trait, ?Card $queryCard = null): bool
     {
         return in_array($trait, $this->Traits);
     }

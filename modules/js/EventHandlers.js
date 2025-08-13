@@ -355,6 +355,9 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duelChooseAction': () => {
+                if (!$('actChooseDiscardCards'))
+                    return;
+                
                 const items = this.factionHand.getSelectedItems();
                 if (items.length === 1) {
                     dojo.removeClass('btnCombatCard', 'disabled');
