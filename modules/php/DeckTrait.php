@@ -1,6 +1,16 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails;
+/**
+ *------
+ * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
+ * SeventhSeaCityOfFiveSails implementation : © Edward Mittelstedt bugbucket@comcast.net
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ */
+
+ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;

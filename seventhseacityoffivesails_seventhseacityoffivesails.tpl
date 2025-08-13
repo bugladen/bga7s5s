@@ -52,9 +52,9 @@ var jstpl_deck_picker = `
     </div>
 
     <div class="_7sfs-deck-picker-tab-buttons">
-      <button onclick="gameui.deckPickerShowTab(1)">Eisen</button>
-      <button onclick="gameui.deckPickerShowTab(2)">Montaigne</button>
-      <button id="btnDeckSelect" disabled onclick="gameui.deckPickerDeckSelected()">\${select_description}</button>
+      <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(1)">Eisen</button>
+      <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(2)">Montaigne</button>
+      <button id="btnDeckSelect" class="deck-picker-button" disabled onclick="gameui.deckPickerDeckSelected()">\${select_description}</button>
     </div>
   </div>
 </div>
@@ -191,7 +191,7 @@ var jstpl_number_order_chip = `
 
 var jstpl_duel_table = `
 <div id="duel">
-<table id="duel_table">
+<table id="duel_table" class="duel">
 <tr id="duel_header_row">
     <th>Duel Round</th>
     <th>Actor</th>
