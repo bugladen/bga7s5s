@@ -24,20 +24,19 @@ SFTP Upload the entire project directory up into the BGA server.
 ## State of the Project 
 
 - The core game mechanics are complete.
-- All core actions are implemented.
-- The game handles duels to completion.
-- The game can declare a winner at the end of the fifth day using all win conditions described in the Core Rulebook.
-- The game can declare a winner if, in a two-player game, a Leader is sent to the Locker.
+    - All core actions are implemented.
+    - The game handles duels to completion.
+    - The game can declare a winner at the end of the fifth day using all win conditions described in the Core Rulebook.
+    - The game can declare a winner if, in a two-player game, a Leader is sent to the Locker.
+- Montaigne Starter Deck implemented
+- Eisen Starter Deck implemented
 
 ## Sets Implemented 
 - Core (In Progress)
 
 ## Going Forward 
-Since The core framework for The game is complete, only cards will need to be implemented. The wiki in this project will have more details on how to implement specific cards.
+As mentioned above, the core framework for the game is complete.  Only cards will need to be implemented now. 
+The wiki in this project will have more details on how to implement specific cards.
 
-The BGA Framework is completely state-based. Therefore every single step of every card needs to be programmed in order to be integrated into the game 
-
-The upside to this is that the game is completely automated.
-
-The downside to this is that development will progress very slowly unless more developers contribute. That is where you come in!
+The BGA Framework is completely state-based. Therefore every single step of every card needs to be programmed in order to be integrated into the game. The upside to this is that the game is completely automated. The downside to this is that development will progress very slowly unless more developers contribute. That is where you come in!
 

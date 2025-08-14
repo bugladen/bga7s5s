@@ -75,7 +75,8 @@ class Reaction_01045 extends CardReaction
             $event = EventFactory::createPlayerGainsReknownEvent($soe->ControllerId, 1);
             $game->theah->queueEvent($event);
 
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Song of Eisen</strong>: ${player_name} activates Reaction and gains 1 Reknown'), [
+            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} activates Reaction and gains 1 Reknown'), [
+                'owner_inject_code' => $soe->getInjectCode(),
                 'player_name' => $game->getPlayerNameById($soe->ControllerId),
             ]);
 

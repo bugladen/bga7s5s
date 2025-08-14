@@ -53,7 +53,7 @@ class Technique_01204 extends Technique
                     {
                         $event->parry = 0;
                     }
-                    $event->explanations[] = sprintf($event->theah->game->translate("<strong>%s</strong> reduces the Adversary's Parry by %d"), $attachment->Name, 2);
+                    $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the Adversary's Parry by %d"), $attachment->getInjectCode(), 2);
                     $this->ReduceAdversaryParry = false;
                     $attachment->IsUpdated = true;
                 }

@@ -59,10 +59,9 @@ class Reaction_01184 extends CardReaction
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::CLAUDE_PRESSURE_TYPE);
             $game->globals->set(Game::CLAUD_ID, $claude->Id);
 
-            $game->notifyAllPlayers('message', clienttranslate('<strong>${card_name}:</strong> ${player_name} used Reaction to count only the Performer and En Garde Characters for this Pressure.'), [
-                'i18n' => ['card_name'],
+            $game->notifyAllPlayers('message', clienttranslate('${owner_inject_code}: ${player_name} used Reaction to count only the Performer and En Garde Characters for this Pressure.'), [
+                'owner_inject_code' => $claude->getInjectCode(),
                 'player_name' => $game->getActivePlayerName(),
-                'card_name' => $claude->Name,
             ]);
 
             $this->setUsed($game->theah, true);

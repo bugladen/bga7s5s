@@ -24,7 +24,7 @@ class Reaction_01202 extends AttachmentReaction
     public function getReactionDescription(Theah $theah): string
     {
         $character = $theah->getCardById($this->SavedCharacterId);
-        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} may choose to save <strong>%s</strong> and put them into your Approach Deck: '), $character->Name);
+        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} may choose to save %s and put them into your Approach Deck: '), $character->Name);
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -77,11 +77,12 @@ class Reaction_01202 extends AttachmentReaction
             $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->ControllerId, $attachment->Id, $attachment->Location);
             $game->theah->eventCheck($discardEvent);
 
+            $owner = $this->getOwningCard($game->theah);
             $targetCharacter = $game->theah->getCharacterById($this->SavedCharacterId);
-            $game->notifyAllPlayers('message', clienttranslate('<strong>Object of Wonder:</strong> ${player_name} used Reaction to put <strong>${character_name}</strong> into their Approach Deck.'), [
-                'i18n' => ['character_name'],
+            $game->notifyAllPlayers('message', clienttranslate('${owner_inject_code}: ${player_name} used Reaction to put ${character_inject_code} into their Approach Deck.'), [
+                'owner_inject_code' => $owner->getInjectCode(),
                 'player_name' => $game->getActivePlayerName(),
-                'character_name' => $targetCharacter->Name,
+                'character_inject_code' => $targetCharacter->getInjectCode(),
             ]);
 
             $game->theah->queueEvent($approachDeckEvent);

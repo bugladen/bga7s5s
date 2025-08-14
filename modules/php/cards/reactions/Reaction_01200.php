@@ -71,9 +71,12 @@ class Reaction_01200 extends AttachmentReaction
 
         if ($reactionId == "gainReknown")
         {
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Crystal Eye:</strong> ${player_name} used Reaction to gain a Reknown.'), [
+            $owner = $this->getOwningCard($game->theah);
+            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to gain a Reknown.'), [
+                "owner_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getActivePlayerName(), 
             ]);
+
             $reknownEvent = EventFactory::createPlayerGainsReknownEvent($game->getActivePlayerId(), 1);
             $game->theah->eventCheck($reknownEvent);
             $game->theah->queueEvent($reknownEvent);

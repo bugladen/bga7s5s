@@ -17,7 +17,7 @@ abstract class RiskReaction extends CardReaction
         $announcement = parent::getReactionAnnouncement($game, $state, $internalId, $reactionId);
 
         $risk = $this->getOwningCard($game->theah);
-        $announcement .= sprintf($game->translate("Played <strong>%s</strong>."), $game->translate($risk->Name));
+        $announcement .= sprintf($game->translate("Played %s"), $risk->getInjectCode());
 
         return $announcement;
     }

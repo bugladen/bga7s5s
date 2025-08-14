@@ -113,11 +113,11 @@ class Action_01189a extends EventCityAction
             $game->theah->queueEvent($toEvent);
             $game->theah->queueEvent($discardEvent);
     
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from <strong>${owner_name}</strong>'), [
-                'i18n' => ['action', 'owner_name'],
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
+                'i18n' => ['action'],
                 'player_name' => $game->getActivePlayerName(),
                 'action' => $this->Name,
-                'owner_name' => $poo->Name,
+                'owner_inject_code' => $poo->getInjectCode(),
             ]);
     
             $game->gamestate->nextState("locationChosen");

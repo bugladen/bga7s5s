@@ -88,10 +88,10 @@ class Reaction_01203 extends CardReaction
 
         if ($reactionId == 'addThreatChallenger')
         {
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Leja Juska:</strong> ${player_name} used Reaction to add 1 Threat to <strong>${challenger_name}</strong>.'), [
-                'i18n' => ['challenger_name'],
+            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to add 1 Threat to ${challenger_inject_code}.'), [
+                "owner_inject_code" => $leja->getInjectCode(),
                 "player_name" => $playerName,
-                "challenger_name" => $challenger->Name,
+                "challenger_inject_code" => $challenger->getInjectCode(),
             ]);
 
             $event = EventFactory::createThreatModifiedEvent(1, 0);
@@ -100,10 +100,10 @@ class Reaction_01203 extends CardReaction
 
         if ($reactionId == 'addThreatDefender')
         {
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Leja Junka:</strong> ${player_name} used Reaction to add 1 Threat to <strong>${defender_name}</strong>.'), [
-                'i18n' => ['defender_name'],
+            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to add 1 Threat to ${defender_inject_code}.'), [
+                "owner_inject_code" => $leja->getInjectCode(),
                 "player_name" => $playerName,
-                "defender_name" => $defender->Name,
+                "defender_inject_code" => $defender->getInjectCode(),
             ]);
 
             $event = EventFactory::createThreatModifiedEvent(0, 1);
@@ -112,10 +112,10 @@ class Reaction_01203 extends CardReaction
         
         if ($reactionId == 'removeThreatChallenger')
         {
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Leja Juska:</strong> ${player_name} used Reaction to remove 1 Threat to <strong>${challenger_name}</strong>.'), [
-                'i18n' => ['challenger_name'],
+            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to remove 1 Threat to ${challenger_inject_code}.'), [
+                "owner_inject_code" => $leja->getInjectCode(),
                 "player_name" => $playerName,
-                "challenger_name" => $challenger->Name,
+                "challenger_inject_code" => $challenger->getInjectCode(),
             ]);
 
             $event = EventFactory::createThreatModifiedEvent(-1, 0);
@@ -124,10 +124,10 @@ class Reaction_01203 extends CardReaction
         
         if ($reactionId == 'removeThreatDefender')
         {
-            $game->notifyAllPlayers("message", clienttranslate('<strong>Leja Juska:</strong> ${player_name} used Reaction to remove 1 Threat to <strong>${defender_name}</strong>.'), [
-                'i18n' => ['defender_name'],
+            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to remove 1 Threat to ${defender_inject_code}.'), [
+                "owner_inject_code" => $leja->getInjectCode(),
                 "player_name" => $playerName,
-                "defender_name" => $defender->Name,
+                "defender_inject_code" => $defender->getInjectCode(),
             ]);
 
             $event = EventFactory::createThreatModifiedEvent(0, -1);

@@ -618,12 +618,12 @@ trait EventHub
                 $handler = function (Theah $theah, EventLocationPressured $event)
                 {
                     $performer = $theah->getCharacterById($event->performerId);
-                    $theah->game->notifyAllPlayers("locationPressured", clienttranslate('${player_name} chose <strong>${performer_name}</strong> to ${result} Pressure <strong>${location}</strong>.
+                    $theah->game->notifyAllPlayers("locationPressured", clienttranslate('${player_name} chose ${performer_inject_code} to ${result} Pressure ${location}.
                     <br>Pressure Type: ${pressureType}
                     <br>Influence Totals: ${totals}'), [
-                        'i18n' => ['performer_name', 'location', 'pressureType'],
+                        'i18n' => ['location', 'pressureType'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "performer_name" => $performer->Name,
+                        "performer_inject_code" => $performer->getInjectCode(),
                         "result" => $event->success ? clienttranslate("SUCCESSFULLY") : clienttranslate("UNSUCCESSFULLY"),
                         "totals" => $event->totalsExplanation,
                         "pressureType" => $event->pressureType,
@@ -864,7 +864,7 @@ trait EventHub
                     }
                                             
                     $theah->game->notifyAllPlayers("challengeIssued", $message, [
-                        'i18n' => ['challenger_name', 'defender_name', 'technique_name'],
+                        'i18n' => ['technique_name'],
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "challenger_inject_code" => $challenger->getInjectCode(),
                         "defender_inject_code" => $defender->getInjectCode(),
@@ -883,11 +883,10 @@ trait EventHub
                     $challenger = $theah->getCharacterById($event->oldChallengerId);
                     $newChallenger = $theah->getCharacterById($event->newChallengerId);
 
-                    $theah->game->notifyAllPlayers("challengerSwapped", clienttranslate('${player_name} has swapped <strong>${challenger_name}</strong> for <strong>${new_challenger_name}</strong>.'), [
-                        'i18n' => ['challenger_name', 'new_challenger_name'],
+                    $theah->game->notifyAllPlayers("challengerSwapped", clienttranslate('${player_name} has swapped ${challenger_inject_code} for ${new_challenger_inject_code}.'), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "challenger_name" => $challenger->Name,
-                        "new_challenger_name" => $newChallenger->Name,
+                        "challenger_inject_code" => $challenger->getInjectCode(),
+                        "new_challenger_inject_code" => $newChallenger->getInjectCode(),
                         "oldChallengerId" => $event->oldChallengerId,
                         "newChallengerId" => $event->newChallengerId,
                     ]);
@@ -907,9 +906,8 @@ trait EventHub
                     $character->ControllerId = $event->playerId;
                     $character->IsUpdated = true;
 
-                    $theah->game->notifyAllPlayers("message", clienttranslate('<strong>${character_name}</strong> has been put into ${player_name}\'s Approach Deck.'), [
-                        'i18n' => ['character_name'],
-                        "character_name" => $character->Name,
+                    $theah->game->notifyAllPlayers("message", clienttranslate('${character_inject_code} has been put into ${player_name}\'s Approach Deck.'), [
+                        "character_inject_code" => $character->getInjectCode(),
                         "player_name" => $theah->game->getPlayerNameById($event->playerId)
                     ]);
 
@@ -927,11 +925,10 @@ trait EventHub
                 {
                     $oldTarget = $theah->cards[$event->oldTargetId];
                     $newTarget = $theah->cards[$event->newTargetId];
-                    $this->game->notifyAllPlayers("characterIntervened", clienttranslate('${player_name} has chosen to have <strong>${intervener_name}</strong> INTERVENE in the Challenge in place of <strong>${target_name}</strong>.'), [
-                        'i18n' => ['intervener_name', 'target_name'],
+                    $this->game->notifyAllPlayers("characterIntervened", clienttranslate('${player_name} has chosen to have ${intervener_inject_code} INTERVENE in the Challenge in place of ${target_inject_code}.'), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "intervener_name" => $newTarget->Name,
-                        "target_name" => $oldTarget->Name,
+                        "intervener_inject_code" => $newTarget->getInjectCode(),
+                        "target_inject_code" => $oldTarget->getInjectCode(),
                         "oldTargetId" => $oldTarget->Id,
                         "newTargetId" => $newTarget->Id,
                     ]);
@@ -945,11 +942,10 @@ trait EventHub
                     $defender = $theah->getCharacterById($event->oldDefenderId);
                     $newDefender = $theah->getCharacterById($event->newDefenderId);
 
-                    $theah->game->notifyAllPlayers("defenderSwapped", clienttranslate('${player_name} has swapped <strong>${defender_name}</strong> for <strong>${new_defender_name}</strong>.'), [
-                        'i18n' => ['defender_name', 'new_defender_name'],
+                    $theah->game->notifyAllPlayers("defenderSwapped", clienttranslate('${player_name} has swapped ${defender_inject_code} for ${new_defender_inject_code}.'), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "defender_name" => $defender->Name,
-                        "new_defender_name" => $newDefender->Name,
+                        "defender_inject_code" => $defender->getInjectCode(),
+                        "new_defender_inject_code" => $newDefender->getInjectCode(),
                         "oldDefenderId" => $event->oldDefenderId,
                         "newDefenderId" => $event->newDefenderId,
                     ]);
@@ -1312,10 +1308,9 @@ trait EventHub
                 $handler = function(Theah $theah, EventDuelPlayerGambled $event) {
                     $card = $theah->game->getCardObjectFromDb($event->chosenCardId);
                     $theah->upsertCard($card);
-                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has gambled with <strong>${card_name}</strong>.'), [
-                        'i18n' => ['card_name'],
+                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has gambled with ${card_inject_code}.'), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
-                        "card_name" => $card->Name,
+                        "card_inject_code" => $card->getInjectCode(),
                     ]);
                 };
                 $handler($this, $event);
@@ -1392,10 +1387,10 @@ trait EventHub
                     $character->IsUpdated = true;
                     $theah->upsertCard($character);
 
-                    $theah->game->notifyAllPlayers("characterDestroyed", clienttranslate('<strong>${target_name}</strong> has been destroyed and sent to the locker due to: ${reason} '), [
-                        'i18n' => ['target_name', 'reason'],
+                    $theah->game->notifyAllPlayers("characterDestroyed", clienttranslate('${target_inject_code} has been destroyed and sent to the locker due to: ${reason} '), [
+                        'i18n' => ['reason'],
                         "playerId" => $event->playerId,
-                        "target_name" => $character->Name,
+                        "target_inject_code" => $character->getInjectCode(),
                         "characterId" => $event->characterId,
                         "reason" => $event->reason,
                     ]);
@@ -1414,10 +1409,9 @@ trait EventHub
                     $card->Location = $locker;
                     $card->IsUpdated = true;
 
-                    $theah->game->notifyAllPlayers("cardSentToLocker", clienttranslate('<strong>${card_name}</strong> has been sent to the locker.'), [
-                        'i18n' => ['card_name'],
+                    $theah->game->notifyAllPlayers("cardSentToLocker", clienttranslate('${card_inject_code} has been sent to the locker.'), [
                         "playerId" => $card->ControllerId,
-                        "card_name" => $card->Name,
+                        "card_inject_code" => $card->getInjectCode(),
                         "card" => $card->getPropertyArray($theah->game),
                     ]);
                 };
@@ -1497,16 +1491,15 @@ trait EventHub
                     $defenderThreatIsLethalText = $defenderThreatIsLethal ? clienttranslate("<br><strong>Defender Threat is LETHAL</strong>") : "";
 
                     $theah->game->notifyAllPlayers("updateRoundThreats", clienttranslate(
-                        'Threat for <strong>${challenger_name}</strong> has been modified by ${challenger_modification}.
+                        'Threat for ${challenger_inject_code} has been modified by ${challenger_modification}.
                         <br>
-                        Threat for <strong>${defender_name}</strong> has been modified by ${defender_modification}.
+                        Threat for ${defender_inject_code} has been modified by ${defender_modification}.
                         <br>
                         Current Challenger Threat: ${challenger_threat}. ${challenger_lethal_text}
                         <br>
                         Current Defender Threat: ${defender_threat}. ${defender_lethal_text}'), [
-                        'i18n' => ['challenger_name', 'defender_name'],
-                        "challenger_name" => $challenger->Name,
-                        "defender_name" => $defender->Name,
+                        "challenger_inject_code" => $challenger->getInjectCode(),
+                        "defender_inject_code" => $defender->getInjectCode(),
                         "challenger_modification" => $event->challengerThreat,
                         "defender_modification" => $event->defenderThreat,
                         "challenger_threat" => $endingChallengerThreat,

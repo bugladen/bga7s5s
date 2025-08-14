@@ -100,6 +100,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             args.player_color, 
             args.leader
         );
+        $(`${args.player_id}-home-anchor`).setAttribute('data-location', this.LOCATION_PLAYER_HOME);                
 
         const target = this.getTargetElementForLocation(this.LOCATION_PLAYER_HOME, args.player_id);
         const cardId = this.createCardId(args.leader, this.LOCATION_PLAYER_HOME);
