@@ -1,0 +1,271 @@
+<?php
+
+/**
+ *------
+ * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
+ * SeventhSeaCityOfFiveSails implementation : © Edward Mittelstedt bugbucket@comcast.net
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ */
+
+ namespace Bga\Games\SeventhSeaCityOfFiveSails;
+
+trait ZombieTrait
+{
+    /**
+     * This method is called each time it is the turn of a player who has quit the game (= "zombie" player).
+     * You can do whatever you want in order to make sure the turn of this player ends appropriately
+     * (ex: pass).
+     *
+     * Important: your zombie code will be called when the player leaves the game. This action is triggered
+     * from the main site and propagated to the gameserver from a server, not from a browser.
+     * As a consequence, there is no current player associated to this action. In your zombieTurn function,
+     * you must _never_ use `getCurrentPlayerId()` or `getCurrentPlayerName()`, otherwise it will fail with a
+     * "Not logged" error message.
+     *
+     * @param array{ type: string, name: string } $state
+     * @param int $active_player
+     * @return void
+     * @throws feException if the zombie mode is not supported at this game state.
+     */
+    protected function doZombieTurn(array $state, int $playerId): void
+    {
+        $stateName = $state["name"];
+
+        if ($state["type"] === "activeplayer") {
+            switch ($stateName) {
+                // Planning Phase States
+                case "planningPhaseResolveSchemes_01016":
+                case "planningPhaseResolveSchemes_01016_2":
+                case "planningPhaseResolveSchemes_01016_3":
+                case "planningPhaseResolveSchemes_01044":
+                case "planningPhaseResolveSchemes_01045":
+                case "planningPhaseResolveSchemes_01071":
+                case "planningPhaseResolveSchemes_01072":
+                case "planningPhaseResolveSchemes_01098":
+                case "planningPhaseResolveSchemes_01125":
+                case "planningPhaseResolveSchemes_01125_2":
+                case "planningPhaseResolveSchemes_01125_3":
+                case "planningPhaseResolveSchemes_01125_4":
+                case "planningPhaseResolveSchemes_01126":
+                case "planningPhaseResolveSchemes_01143":
+                case "planningPhaseResolveSchemes_01144":
+                case "planningPhaseResolveSchemes_01144_2":
+                case "planningPhaseResolveSchemes_01145":
+                case "planningPhaseResolveSchemes_01147_2":
+                case "planningPhaseResolveSchemes_01150":
+                case "planningPhaseResolveSchemes_01152":
+                case "planningPhaseResolveSchemes_01152_2":
+                case "planningPhaseResolveSchemes_01152_3":
+                case "planningPhaseEnd_01098":
+                case "planningPhaseEnd_01098_2":
+                    // Default action: Pass or take first available option
+                    $this->actPass();
+                    break;
+
+                // High Drama Player Turn States
+                case "highDramaPlayerTurn":
+                    // Default action: Pass turn
+                    $this->actHighDramaPass();
+                    break;
+
+                case "highDramaChallengeActionChoosePerformer":
+                case "highDramaChallengeActionChooseTarget":
+                case "highDramaChallengeActionActivateTechnique":
+                    // Default action: Go back or reject
+                    $this->actBack();
+                    break;
+
+                case "highDramaChallengeActionAcceptChallenge":
+                    // Default action: Reject
+                    $this->actHighDramaChallengeActionReject();
+                    break;
+
+                case "highDramaClaimActionChoosePerformer":
+                case "highDramaEquipActionChoosePerformer":
+                case "highDramaEquipActionChooseAttachmentLocation":
+                case "highDramaEquipActionChooseAttachmentFromHand":
+                case "highDramaEquipActionPayForAttachmentFromHand":
+                case "highDramaEquipActionChooseAttachmentFromPlay":
+                case "highDramaEquipActionPayForAttachmentFromPlay":
+                case "highDramaMoveActionChoosePerformer":
+                case "highDramaMoveActionChooseLocation":
+                case "highDramaRecruitActionChoosePerformer":
+                case "highDramaRecruitActionParley":
+                case "highDramaRecruitActionChooseMercenary":
+                case "highDramaRecruitActionPayForMercenary":
+                case "highDramaInPlayActionChooseAction":
+                case "highDramaInPlayActionChoosePerformer":
+                case "highDramaInHandActionChooseAction":
+                case "highDramaInHandActionChoosePerformer":
+                case "highDramaInHandActionPay":
+                    // Default action: Go back to main turn
+                    $this->actBack();
+                    break;
+
+                // High Drama Player Turn Event States (Card-Specific)
+                case "highDramaPhase01029": // The Pressure Is On
+                case "highDramaPhase01035_3": // Kaspar recruit choice
+                case "highDramaPhase01035_4": // Kaspar parley choice
+                case "highDramaPhase01038_3": // Otto Streit attachment choice
+                case "highDramaPhase01044": // Armed and Marshaled
+                case "highDramaPhase01044_2": // Armed and Marshaled target
+                case "highDramaPhase01044_3": // Armed and Marshaled manipulation
+                case "highDramaPhase01046a": // Dark Gift location
+                case "highDramaPhase01049": // Polished Flintlock
+                case "highDramaPhase01049_2": // Polished Flintlock engage
+                case "highDramaPhase01055": // Last Word character
+                case "highDramaPhase01055_2": // Last Word location
+                case "highDramaPhase01056": // Move Along
+                case "highDramaPhase01056_2": // Move Along choice
+                case "highDramaPhase01056_3": // Move Along technique
+                case "highDramaPhase01058": // Press the Advantage
+                case "highDramaPhase01059": // Regroup
+                case "highDramaPhase01060": // Stratege location
+                case "highDramaPhase01060_2": // Stratege performers
+                case "highDramaPhase01060_3": // Stratege destination
+                case "highDramaPhase01068": // Léontine Giroux character
+                case "highDramaPhase01068_2": // Léontine Giroux location
+                case "highDramaPhase01069": // Maxime De Lafayette discard
+                case "highDramaPhase01069_2": // Maxime De Lafayette attachment
+                case "highDramaPhase01072": // Réputation Méritée
+                case "highDramaPhase01072_2": // Réputation Méritée city card
+                case "highDramaPhase01072_3": // Réputation Méritée muster
+                case "highDramaPhase01076": // Blood Mark location
+                case "highDramaPhase01076_2": // Blood Mark character
+                case "highDramaPhase01081": // Gallant Deeds
+                case "highDramaPhase01085": // Porté Travel
+                case "highDramaPhase01086": // Status Matters
+                case "highDramaPhase01147": // Let's Haggle
+                case "highDramaPhase01149": // Midnight Shipment
+                case "highDramaPhase01156": // Matchlock Musket discard
+                case "highDramaPhase01156_2": // Matchlock Musket target
+                case "highDramaPhase01156_3": // Matchlock Musket choice
+                case "highDramaPhase01180": // Kaj Kousei
+                case "highDramaPhase01180_2": // Kaj Kousei
+                case "highDramaPhase01180_3": // Kaj Kousei artifact choice
+                case "highDramaPhase01180_4": // Kaj Kousei performer
+                case "highDramaPhase01180_5": // Kaj Kousei payment
+                case "highDramaPhase01185": // Risky Undertaking
+                case "highDramaPhase01189a": // Move reknown from
+                case "highDramaPhase01189b": // Move reknown to
+                case "highDramaPhase01192": // Gustavo
+                case "highDramaPhase01192_2": // Gustavo
+                case "highDramaPhase01192_3": // Gustavo risk choice
+                case "highDramaPhase01194": // Adelheide attachment
+                case "highDramaPhase01194_2": // Adelheide character
+                case "highDramaPhase01197": // Kalla character from
+                case "highDramaPhase01197_2": // Kalla attachment
+                case "highDramaPhase01197_3": // Kalla character to
+                case "highDramaPhase01200": // Crystal Eye opponent
+                case "highDramaPhase01200_2": // Crystal Eye card
+                case "highDramaPhase01205": // Kidnap character
+                case "highDramaPhase01205_2": // Kidnap location
+                    // Default action: Pass or take first available option
+                    $this->actPass();
+                    break;
+
+                // Duel States
+                case "duelChooseAction":
+                case "duelChooseTechnique":
+                case "duelUseManeuverFromCombatCard":
+                case "duelPayForManeuverFromCombatCard":
+                case "duelChooseGambleCard":
+                    // Default action: End round or pass
+                    $this->actDuelDoneRound();
+                    break;
+
+                case "duelChooseTechnique_01036": // Daniela's Technique
+                case "duelChooseTechnique_01063": // Bastien's Technique
+                case "duelChooseTechnique_01067": // Jean Urbain's Technique
+                case "duelResolveManeuver_01051": // Answering the Call
+                case "duelResolveManeuver_01059": // Regroup
+                case "duelResolveManeuver_01077": // Broken Time
+                case "duelResolveManeuver_01079": // Disarm
+                case "duelResolveManeuver_01079_2": // Disarm choice
+                case "duelResolveManeuver_01165": // Copy Technique
+                case "duelApplyCombatCardStats_01085": // Porté Travel
+                    // Default action: Pass or take first available option
+                    $this->actPass();
+                    break;
+
+                // Challenge Action States
+                case "highDramaChallengeActionResolveTechnique_01063": // Bastien's Technique
+                case "highDramaChallengeActionActivateTechnique_01067": // Jean Urbain's Technique
+                    // Default action: Pass or take first available option
+                    $this->actPass();
+                    break;
+
+                // Duel End States
+                case "duelEnd_01080":
+                    // Default action: Handle duel end
+                    $this->gamestate->nextState("");
+                    break;
+
+                // Dusk Phase States
+                case "duskPhaseBegin01177": // Penya choice
+                case "duskPhaseBegin01177_2": // Penya card order
+                    // Default action: Pass
+                    $this->actPass();
+                    break;
+
+                // Generic Reaction States
+                case "playerReaction":
+                    // Default action: Done with reaction
+                    $this->gamestate->nextState("done");
+                    break;
+
+                case "playerPayForReaction":
+                    // Default action: Go back
+                    $this->actBack();
+                    break;
+
+                default:
+                    throw new \feException("Zombie mode not supported at this game state: \"{$stateName}\".");
+            }
+            return;
+        }
+
+        if ($state["type"] === "multipleactiveplayer") {
+            switch ($stateName) {
+                // Deck Picking
+                case "pickDecks":
+                    // Default action: Pick first available deck
+                    $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked');
+                    break;
+
+                // Planning Phase
+                case "planningPhase":
+                    // Default action: Mark as planned (auto-pick first available)
+                    $this->gamestate->setPlayerNonMultiactive($playerId, 'dayPlanned');
+                    break;
+
+                // Acknowledgment States
+                case "planningPhaseResolveSchemes_01147": // Let's Haggle
+                case "planningPhaseEnd_01098_2": // The Cat's Embargo
+                case "highDramaPhase01035": // Kaspar
+                case "highDramaPhase01038": // Otto Streit
+                case "highDramaPhase01072": // Réputation Méritée
+                case "highDramaPhase01180": // Kaj Kousei
+                case "highDramaPhase01192": // Gustavo
+                    // Default action: Acknowledge
+                    $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
+                    break;
+
+                // Dusk Phase Discard
+                case "duskPhaseDiscard":
+                    // Default action: Auto-discard to panache limit
+                    $this->gamestate->setPlayerNonMultiactive($playerId, 'cardsDiscarded');
+                    break;
+
+                default:
+                    throw new \feException("Zombie mode not supported at this game state: \"{$stateName}\".");
+            }
+            return;
+        }
+
+        throw new \feException("Zombie mode not supported at this game state: \"{$stateName}\".");
+    }
+}
