@@ -719,20 +719,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.addTooltipHtml(`duel_round_${row.round}_wounds`, `<div class='_7sfs-basic-tooltip'>${_("The amount of wounds the Actor took, or will take, for this round")}</div>` );        
     },
 
-    showHandAtTop: () => {
-        dojo.place('factionHand-container', 'city', 'before');
-    },
-
-    showHandAtBottom: () => {
-        dojo.place('factionHand-container', 'approachDeck-container', 'after');
-    },
-
     showApproachDeckAtTop: () => {
-        dojo.place('approachDeck-container', 'city', 'before');
+        dojo.place('approachDeck-container', 'factionHand-container', 'before');
     },
 
     showApproachDeckAtBottom: () => {
-        dojo.place('approachDeck-container', 'factionHand-container', 'before');
+        dojo.place('approachDeck-container', 'hand_anchor', 'before');
     },
 
     getCityLocationElement: function(location) {

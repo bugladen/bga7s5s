@@ -147,8 +147,8 @@ function (dojo, declare) {
             {
                 case 'card':
                     this.log_span_num++; // adds a unique num to the span id so that duplicate card names in the log have unique ids
-                    const item_type = 'card_tt';
-                    return `<span id="${this.log_span_num}_${item_type}" image="${cardImage}" class="_7sfs-${item_type} _7sfs-log_tooltip"><strong>${_(cardName)}</strong></span>`;
+                    const item_type = '_7sfs-card_tt';
+                    return `<span id="${this.log_span_num}_${item_type}" image="${cardImage}" class="${item_type} _7sfs-log_tooltip"><strong>${_(cardName)}</strong></span>`;
             }
         },        
 
@@ -158,7 +158,7 @@ function (dojo, declare) {
             Array.from(item_elements).forEach(ele => {
                 const ele_id = ele.id;
                 ele.classList.add('tt_processed');  // prevents tooltips being re-added to previous log entries
-                if (ele.classList.contains('card_tt')) 
+                if (ele.classList.contains('_7sfs-card_tt')) 
                 {
                     const cardImage = ele.getAttribute('image');
                     this.addTooltipHtml( ele_id, `<img src="${g_gamethemeurl + cardImage}" />`, this.CARD_TOOLTIP_DELAY);

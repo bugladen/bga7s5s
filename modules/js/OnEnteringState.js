@@ -141,7 +141,6 @@ onEnteringState: function( stateName, args )
                 cost.innerHTML = parseInt(discountedCost);
                 dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
     
-                this.showHandAtTop();
                 this.factionHand.setSelectionMode(2);
             }
         },    
@@ -201,7 +200,6 @@ onEnteringState: function( stateName, args )
                     let div = this.factionHand.getItemDivId(cardId);
                     dojo.addClass(div, '_7sfs-selectable');
                 });
-                this.showHandAtTop();
                 this.factionHand.setSelectionMode(2);
             }
         },
@@ -256,7 +254,6 @@ onEnteringState: function( stateName, args )
                 }
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
-                this.showHandAtTop();
                 this.factionHand.setSelectionMode(2);
             }
         },
@@ -286,7 +283,6 @@ onEnteringState: function( stateName, args )
                 }
         
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
-                this.showHandAtTop();
                 this.factionHand.setSelectionMode(2);
             }
         },
@@ -305,7 +301,6 @@ onEnteringState: function( stateName, args )
 
         'highDramaInHandActionChooseAction': () => {
             if (this.isCurrentPlayerActive()) {
-                this.showHandAtTop();
                 args.args._private.ids.forEach((id) => { 
                     const div = this.factionHand.getItemDivId(id);
                     dojo.addClass(div, '_7sfs-selectable');
@@ -315,7 +310,6 @@ onEnteringState: function( stateName, args )
 
         'highDramaInHandActionChoosePerformer': () => {
             if (this.isCurrentPlayerActive()) {
-                this.showHandAtTop();
                 this.clientStateArgs.actionCardId = args.args._private.actionCardId;
                 const div = this.factionHand.getItemDivId(args.args._private.actionCardId);
                 dojo.addClass(div, '_7sfs-selected');
@@ -366,7 +360,6 @@ onEnteringState: function( stateName, args )
                 }
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
-                this.showHandAtTop();
                 this.factionHand.setSelectionMode(2);
             }
         },
@@ -474,7 +467,6 @@ onEnteringState: function( stateName, args )
                 }
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
-                this.showHandAtTop();
                 this.factionHand.setSelectionMode(2);
             }
         },

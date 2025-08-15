@@ -776,7 +776,6 @@
             'highDramaPhase01069': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.showHandAtTop();
                     var translated = dojo.string.substitute(
                         _("(${amount} card(s) to discard)"),
                         {
@@ -980,7 +979,6 @@
             'highDramaPhase01156': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.showHandAtTop();
                     var translated = dojo.string.substitute(
                         _("(${amount} card(s) to discard)"),
                         {
@@ -1136,7 +1134,6 @@
                     this.chooseList.setSelectionMode(0);
         
                     $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
-                    this.showHandAtTop();
                     this.factionHand.setSelectionMode(2);
                 }
             },
@@ -1144,7 +1141,6 @@
             'highDramaPhase01185': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.showHandAtTop();
                     var translated = dojo.string.substitute(
                         _("(${amount} card(s) to discard)"),
                         {

@@ -417,7 +417,6 @@
                 if (this.isCurrentPlayerActive()) 
                 {
                     this.factionHand.setSelectionMode(0);
-                    this.showHandAtBottom();
                     $('faction_hand_info').innerHTML = '';
 
                     card = this.cardProperties[this.clientStateArgs.performerId];
@@ -567,7 +566,6 @@
                 if (this.isCurrentPlayerActive()) 
                 {
                     this.factionHand.setSelectionMode(0);
-                    this.showHandAtBottom();
                     $('faction_hand_info').innerHTML = '';
 
                     card = this.cardProperties[this.clientStateArgs.performerId];
@@ -644,7 +642,6 @@
                     this.chooseList.removeAll();
                     this.chooseList.setSelectionMode(0);
     
-                    this.showHandAtBottom();
                     this.factionHand.setSelectionMode(0);
                     for( const cardId in this.cardProperties ) {
                         card = this.cardProperties[cardId];
@@ -660,7 +657,6 @@
                 if (this.isCurrentPlayerActive()) 
                 {
                     this.factionHand.setSelectionMode(0);
-                    this.showHandAtBottom();
                     $('faction_hand_info').innerHTML = '';
 
                     card = this.cardProperties[this.clientStateArgs.id];

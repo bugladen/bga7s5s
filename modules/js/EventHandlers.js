@@ -370,7 +370,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duelChooseAction': () => {
-                if (!$('actChooseDiscardCards'))
+                if (!$('btnCombatCard'))
                     return;
                 
                 const items = this.factionHand.getSelectedItems();

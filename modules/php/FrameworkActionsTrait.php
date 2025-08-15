@@ -1569,6 +1569,10 @@ trait FrameworkActionsTrait
         }
         else
         {
+            $card->Location = Game::LOCATION_PURGATORY;
+            $this->updateCardObjectInDb($card);
+            $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
+
             $this->gamestate->nextState("applyCombatCardStats");
         }   
     }

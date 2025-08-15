@@ -1250,11 +1250,6 @@ return declare('seventhseacityoffivesails.notifications', null, {
             const defenderChipId = `${defender.divId}_defender`;
             dojo.destroy(defenderChipId);
         }
-
-        if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)
-        {
-            this.showHandAtBottom();
-        }
     },
 
     notif_cityDiscardShuffled: function( notif )

@@ -274,6 +274,12 @@ var jstpl_row_combat_card = `
     </div>
 </div>
 
+<div id="factionHand-container" class="whiteblock _7sfs-hand">
+    <div class="_7sfs-hand-label"><span><b>Your Faction Hand</b></span> <span id="faction_hand_info"></span></div>
+    <div id="factionHand">
+    </div>
+</div>
+
 <!-- Begin City -->
 <div id="city">
     <div id="city-ul-tower">
@@ -340,10 +346,6 @@ var jstpl_row_combat_card = `
     </div>
 </div>
 
-<div id="factionHand-container" class="whiteblock _7sfs-hand">
-    <div class="_7sfs-hand-label"><span><b>Your Faction Hand</b></span> <span id="faction_hand_info"></span></div>
-    <div id="factionHand">
-    </div>
-</div>
+<div id="hand_anchor"></div>
 
 {OVERALL_GAME_FOOTER}

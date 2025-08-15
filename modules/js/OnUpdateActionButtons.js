@@ -322,8 +322,6 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actChooseDiscardCards', 'disabled');
 
             //Code here instead of onEnteringState because multiactive client states are not ready at that point
-            this.showHandAtTop();
-    
             const player = this.gamedatas.players[this.player_id];
             const leader = player.leader;
             const panache = leader.panache;

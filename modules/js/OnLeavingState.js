@@ -113,7 +113,6 @@ onLeavingState: function( stateName )
         'highDramaRecruitActionPayForMercenary': () => {
             if (this.isCurrentPlayerActive()) 
             {
-                this.showHandAtBottom();
                 this.factionHand.setSelectionMode(0);
                 let card = this.cardProperties[this.clientStateArgs.performerId];
                 let image = $(`${card.divId}_image`);
@@ -155,7 +154,6 @@ onLeavingState: function( stateName )
                         dojo.removeClass(div, '_7sfs-selectable');
                     }
                 });
-                this.showHandAtBottom();
             }
         },
 
@@ -188,7 +186,6 @@ onLeavingState: function( stateName )
                 });
                 this.factionHand.setSelectionMode(0);
                 $('faction_hand_info').innerHTML = '';
-                this.showHandAtBottom();
 
                 if (this.clientStateArgs.performerId)
                 {
@@ -219,7 +216,6 @@ onLeavingState: function( stateName )
                     let div = this.factionHand.getItemDivId(card.id);
                     dojo.removeClass(div, '_7sfs-selectable');
                 });
-                this.showHandAtBottom();
                 this.factionHand.setSelectionMode(0);
             }
         },
@@ -249,7 +245,6 @@ onLeavingState: function( stateName )
                 });
                 this.factionHand.setSelectionMode(0);
                 $('faction_hand_info').innerHTML = '';
-                this.showHandAtBottom();
 
                 for ( const cardId in this.cardProperties ) {
                     card = this.cardProperties[cardId];
@@ -278,7 +273,6 @@ onLeavingState: function( stateName )
 
                 this.factionHand.setSelectionMode(0);
                 $('faction_hand_info').innerHTML = '';
-                this.showHandAtBottom();
             }
         },
 
@@ -389,7 +383,6 @@ onLeavingState: function( stateName )
         'duskPhaseDiscard': () => {
             if (this.isCurrentPlayerActive()) {
                 this.factionHand.setSelectionMode(0);
-                this.showHandAtBottom();
                 $('faction_hand_info').innerHTML = '';
             }
         },
@@ -407,7 +400,6 @@ onLeavingState: function( stateName )
                 });
                 this.factionHand.setSelectionMode(0);
                 $('faction_hand_info').innerHTML = '';
-                    this.showHandAtBottom();
             }
         }
     };
