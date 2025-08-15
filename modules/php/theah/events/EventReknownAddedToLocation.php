@@ -7,7 +7,7 @@ class EventReknownAddedToLocation extends Event
     public int $playerId;
     public string $location;
     public int $amount;
-    public string $source;
+    public string $description;
 
     public function __construct()
     {
@@ -16,7 +16,7 @@ class EventReknownAddedToLocation extends Event
         $this->playerId = 0;
         $this->location = "";
         $this->amount = 0;
-        $this->source = "";
+        $this->description = "";
 
     }
 }

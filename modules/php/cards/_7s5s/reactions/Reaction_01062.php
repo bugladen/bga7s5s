@@ -75,10 +75,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
                 $odette = $this->getOwningCharacter($game->theah);
                 $location = $game->theah->getCityLocation($locationName);
 
-                $event = EventFactory::createReknownRemovedFromLocationEvent($odette->ControllerId, $locationName, 1, $odette->Id);
+                $event = EventFactory::createReknownRemovedFromLocationEvent($odette->ControllerId, $locationName, 1, $odette->getInjectCode());
                 $game->theah->queueEvent($event);
 
-                $event = EventFactory::createReknownAddedToLocationEvent($odette->ControllerId, $odette->Location, 1, $this->Id);
+                $event = EventFactory::createReknownAddedToLocationEvent($odette->ControllerId, $odette->Location, 1, $odette->getInjectCode());
                 $game->theah->queueEvent($event);
 
                 $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and moved 1 Reknown from ${location_name} to ${odette_location}.'), [

@@ -96,7 +96,7 @@ class _01145 extends Scheme
                 $playerAdded->playerId = $playerId;
                 $playerAdded->location = $toLocation;
                 $playerAdded->amount = 1;
-                $playerAdded->source = $playerName;
+                $playerAdded->description = $playerName;
             }
             $game->theah->eventCheck($playerAdded);
             $game->theah->queueEvent($playerAdded);
@@ -119,7 +119,7 @@ class _01145 extends Scheme
                 $docksAdded->playerId = $playerId;
                 $docksAdded->location = Game::LOCATION_CITY_DOCKS;
                 $docksAdded->amount = 1;
-                $docksAdded->source = "{$scheme->Name} - location had no reknown";
+                $docksAdded->description = "{$scheme->getInjectCode()} - location had no reknown";
             }
             // No pre-event check needed - not a player choice
             $game->theah->queueEvent($docksAdded);
@@ -139,7 +139,7 @@ class _01145 extends Scheme
                 $forumAdded->playerId = $playerId;
                 $forumAdded->location = Game::LOCATION_CITY_FORUM;
                 $forumAdded->amount = 1;
-                $forumAdded->source = "{$scheme->Name} - location had no reknown";
+                $forumAdded->description = "{$scheme->getInjectCode()} - location had no reknown";
             }
             // No pre-event check needed - not a player choice
             $game->theah->queueEvent($forumAdded);
@@ -159,7 +159,7 @@ class _01145 extends Scheme
                 $forumAdded->playerId = $playerId;
                 $forumAdded->location = Game::LOCATION_CITY_BAZAAR;
                 $forumAdded->amount = 1;
-                $forumAdded->source = "{$scheme->Name} - location had no reknown";
+                $forumAdded->description = "{$scheme->getInjectCode()} - location had no reknown";
             }
             // No pre-event check needed - not a player choice
             $game->theah->queueEvent($forumAdded);
@@ -179,7 +179,7 @@ class _01145 extends Scheme
                 $forumAdded->playerId = $playerId;
                 $forumAdded->location = Game::LOCATION_CITY_OLES_INN;
                 $forumAdded->amount = 1;
-                $forumAdded->source = "{$scheme->Name} - location had no reknown";
+                $forumAdded->description = "{$scheme->getInjectCode()} - location had no reknown";
             }
             // No pre-event check needed - not a player choice
             $game->theah->queueEvent($forumAdded);
@@ -199,7 +199,7 @@ class _01145 extends Scheme
                 $forumAdded->playerId = $playerId;
                 $forumAdded->location = Game::LOCATION_CITY_GOVERNORS_GARDEN;
                 $forumAdded->amount = 1;
-                $forumAdded->source = "{$scheme->Name} - location had no reknown";
+                $forumAdded->description = "{$scheme->getInjectCode()} - location had no reknown";
             }
             // No pre-event check needed - not a player choice
             $game->theah->queueEvent($forumAdded);

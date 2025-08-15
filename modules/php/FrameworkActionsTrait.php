@@ -205,7 +205,7 @@ trait FrameworkActionsTrait
             $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
-            $event->source = "The Boar's Guile: Adding Reknown to Location";
+            $event->description = "The Boar's Guile: Adding Reknown to Location";
         }
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
@@ -268,7 +268,7 @@ trait FrameworkActionsTrait
             $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
-            $event->source = "The Boar's Guile: Moving Reknown from one Location to an adjacent location";
+            $event->description = "The Boar's Guile: Moving Reknown from one Location to an adjacent location";
         }
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
@@ -322,7 +322,7 @@ trait FrameworkActionsTrait
                 $event->playerId = $this->getActivePlayerId();
                 $event->location = $location;
                 $event->amount = 1;
-                $event->source = "Leshiye of the Wood: Adding Reknown to Location";
+                $event->description = "Leshiye of the Wood: Adding Reknown to Location";
             }
             $this->theah->eventCheck($event);        
         }
@@ -359,7 +359,7 @@ trait FrameworkActionsTrait
                 $event->playerId = $this->getActivePlayerId();
                 $event->location = $location;
                 $event->amount = 1;
-                $event->source = "Leshiye of the Wood: Adding Reknown to Location";
+                $event->description = "Leshiye of the Wood: Adding Reknown to Location";
             }
             $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
@@ -385,7 +385,7 @@ trait FrameworkActionsTrait
             $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
-            $event->source = $playerName;
+            $event->description = $playerName;
         }
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
@@ -425,7 +425,7 @@ trait FrameworkActionsTrait
             $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
-            $event->source = $playerName;
+            $event->description = $playerName;
         }
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
@@ -463,7 +463,7 @@ trait FrameworkActionsTrait
             $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
-            $event->source = $playerName;
+            $event->description = $playerName;
         }
 
         $this->theah->eventCheck($event);
@@ -519,7 +519,7 @@ trait FrameworkActionsTrait
             $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
-            $event->source = "Until Morale Improves: Adding Reknown to Location";
+            $event->description = "Until Morale Improves: Adding Reknown to Location";
         }
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
@@ -555,7 +555,7 @@ trait FrameworkActionsTrait
             $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
-            $event->source = "Until Morale Improves: Moving Reknown from one Location to an adjacent location";
+            $event->description = "Until Morale Improves: Moving Reknown from one Location to an adjacent location";
         }
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);

@@ -52,7 +52,7 @@ class _01150 extends Scheme
                 $reknown->playerId = $this->ControllerId;
                 $reknown->location = Game::LOCATION_CITY_FORUM;
                 $reknown->amount = 1;
-                $reknown->source = $this->Name;
+                $reknown->description = $this->getInjectCode();
             }
             $event->theah->queueEvent($reknown);
 

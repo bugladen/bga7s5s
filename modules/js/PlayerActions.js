@@ -65,7 +65,6 @@ return declare('seventhseacityoffivesails.actions', null, {
         const actionMap = {
             'planningPhaseResolveSchemes_01016': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01071': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_01072': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01098': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01125': 'actPlanningPhase_01125',
             'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2',

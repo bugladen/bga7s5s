@@ -61,7 +61,7 @@ class _01147 extends Scheme implements IHasActions
                 $reknown->playerId = $this->ControllerId;
                 $reknown->location = Game::LOCATION_CITY_FORUM;
                 $reknown->amount = 1;
-                $reknown->source = $this->Name;
+                $reknown->description = $this->getInjectCode();
             }
             $event->theah->queueEvent($reknown);
 
@@ -70,7 +70,7 @@ class _01147 extends Scheme implements IHasActions
                 $reknown->playerId = $this->ControllerId;
                 $reknown->location = Game::LOCATION_CITY_BAZAAR;
                 $reknown->amount = 1;
-                $reknown->source = $this->Name;
+                $reknown->description = $this->getInjectCode();
             }
             $event->theah->queueEvent($reknown);
 

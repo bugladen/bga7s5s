@@ -36,8 +36,8 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsEmpty",
         "possibleactions" => [
-            "actCityLocationsForReknownSelected", 
-            "actPass"
+            "actFromCardWithLocations", 
+            "actFromCardPass"
         ],
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],

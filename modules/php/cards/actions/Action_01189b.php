@@ -99,10 +99,10 @@ class Action_01189b extends EventCityAction
                 throw new \BgaUserException(sprintf($game->translate("%s does not have any reknown to move."), $poo->Location));
             }
     
-            $fromEvent = EventFactory::createReknownRemovedFromLocationEvent($performer->ControllerId, $poo->Location, 1, "Point of Opportunity: Moving Reknown to adjacent location");
+            $fromEvent = EventFactory::createReknownRemovedFromLocationEvent($performer->ControllerId, $poo->Location, 1, "{$poo->getInjectCode()}: Moving Reknown to adjacent location");
             $game->theah->eventCheck($fromEvent);
     
-            $toEvent = EventFactory::createReknownAddedToLocationEvent($performer->ControllerId, $location->Name, 1, "Point of Opportunity: Moving Reknown to adjacent location");
+            $toEvent = EventFactory::createReknownAddedToLocationEvent($performer->ControllerId, $location->Name, 1, "{$poo->getInjectCode()}: Moving Reknown to adjacent location");
             $game->theah->eventCheck($toEvent);
     
             $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($poo->ControllerId, $poo->Id, $poo->Location);
