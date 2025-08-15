@@ -89,6 +89,7 @@ class _01072 extends Scheme implements IHasActions
             }
 
             $reknownEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
+            $game->theah->eventCheck($reknownEvent);
             $game->theah->queueEvent($reknownEvent);
     
             $game->gamestate->nextState("");

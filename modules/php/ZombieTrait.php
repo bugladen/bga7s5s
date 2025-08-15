@@ -36,6 +36,10 @@ trait ZombieTrait
 
         if ($state["type"] === "activeplayer") {
             switch ($stateName) {
+                case "planningPhaseResolveSchemes_01072":
+                    $this->gamestate->nextState("");
+                    break;
+
                 // Planning Phase States
                 case "planningPhaseResolveSchemes_01016":
                 case "planningPhaseResolveSchemes_01016_2":
@@ -43,7 +47,6 @@ trait ZombieTrait
                 case "planningPhaseResolveSchemes_01044":
                 case "planningPhaseResolveSchemes_01045":
                 case "planningPhaseResolveSchemes_01071":
-                case "planningPhaseResolveSchemes_01072":
                 case "planningPhaseResolveSchemes_01098":
                 case "planningPhaseResolveSchemes_01125":
                 case "planningPhaseResolveSchemes_01125_2":
