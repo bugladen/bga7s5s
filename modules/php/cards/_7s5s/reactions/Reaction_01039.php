@@ -43,7 +43,7 @@ class Reaction_01039 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventAttachmentEquipped)
+        if ($event instanceof EventAttachmentEquipped && $this->isAvailable())
         {
             $philip = $this->getOwningCharacter($event->theah);
             if ($event->characterId == $philip->Id && $event->theah->cardInCity($philip))

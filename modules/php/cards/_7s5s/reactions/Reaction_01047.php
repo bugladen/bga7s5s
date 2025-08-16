@@ -40,7 +40,7 @@ class Reaction_01047 extends AttachmentReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventTechniqueActivated)
+        if ($event instanceof EventTechniqueActivated && $this->isAvailable())
         {
             $inDuel = $event->theah->game->globals->get(Game::IN_DUEL);
             if ($inDuel)

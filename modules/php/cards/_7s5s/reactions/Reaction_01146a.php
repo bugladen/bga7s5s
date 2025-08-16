@@ -37,7 +37,7 @@ class Reaction_01146a extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventAttachmentEquipped)
+        if ($event instanceof EventAttachmentEquipped && $this->isAvailable())
         {
             $scheme = $this->getOwningCard($event->theah);
             $attachment = $event->theah->getAttachmentById($event->attachmentId);

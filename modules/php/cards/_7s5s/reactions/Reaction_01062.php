@@ -46,7 +46,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
         {
             parent::handleEvent($event);
 
-            if ($event instanceof EventChallengeAccepted)
+            if ($event instanceof EventChallengeAccepted && $this->isAvailable())
             {
                 $odette = $this->getOwningCharacter($event->theah);
 

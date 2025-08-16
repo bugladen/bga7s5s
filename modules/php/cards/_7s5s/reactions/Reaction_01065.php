@@ -49,7 +49,7 @@ class Reaction_01065 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventChallengeIssued)
+        if ($event instanceof EventChallengeIssued && ! $this->Used)
         {
             $henriHasWeapon = false;
             $henri = $this->getOwningCharacter($event->theah);

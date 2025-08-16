@@ -39,7 +39,7 @@ class Reaction_01202 extends AttachmentReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCharacterDestroyed)
+        if ($event instanceof EventCharacterDestroyed && $this->isAvailable())
         {
             $attachment = $this->getOwningAttachment($event->theah);
             if ($attachment->isAttached())

@@ -464,11 +464,13 @@ trait EventHub
                 {
                     $card = $theah->getCardById($event->cardId);
                     $card->Location = $event->toLocation;
+
+                    if ($event->engage && ! $card->Engaged)
+                        $card->Engaged = true;
+
                     $card->IsUpdated = true;
                     if ($card instanceof Character) 
                     {
-                        $card->Engaged = $event->engage;
-
                         foreach ($card->Attachments as $attachmentId) {
                             $attachment = $theah->getCardById($attachmentId);
                             $attachment->Location = $event->toLocation;
@@ -482,7 +484,7 @@ trait EventHub
                         "cardId" => $card->Id,
                         "fromLocation" => $event->fromLocation,
                         "toLocation" => $event->toLocation,
-                        "engage" => $event->engage
+                        "engage" => $card->Engaged
                     ]);
                 };
                 $handler($this, $event);    

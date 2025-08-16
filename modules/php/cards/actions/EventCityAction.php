@@ -17,7 +17,7 @@ abstract class EventCityAction extends CardAction
         {
             return false;
         }
-        
+
         $card = $this->getOwningCard($theah);
         $location = $card->Location;
 

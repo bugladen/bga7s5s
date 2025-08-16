@@ -43,7 +43,7 @@ class Reaction_01146b extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventTechniqueActivated)
+        if ($event instanceof EventTechniqueActivated && $this->isAvailable())
         {
             $game = $event->theah->game;
             $inDuel = $game->globals->get(Game::IN_DUEL);

@@ -37,7 +37,7 @@ class Reaction_01155 extends RiskReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventDuelEndOfRound)
+        if ($event instanceof EventDuelEndOfRound && $this->isAvailable())
         {
             $game = $event->theah->game;
             $inDuel = $game->globals->get(Game::IN_DUEL);

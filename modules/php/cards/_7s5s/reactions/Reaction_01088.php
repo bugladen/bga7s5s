@@ -36,7 +36,7 @@ class Reaction_01088 extends RiskReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventChallengeIssued)
+        if ($event instanceof EventChallengeIssued && $this->isAvailable())
         {
             $risk = $this->getOwningCard($event->theah);
             if ($risk->Location == Game::LOCATION_HAND)

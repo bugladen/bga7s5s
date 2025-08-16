@@ -54,7 +54,7 @@ class Reaction_01203 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventDuelNewRound && $event->round == 1)
+        if ($event instanceof EventDuelNewRound && $event->round == 1 && $this->isAvailable())
         {
             $leja = $this->getOwningCharacter($event->theah);
 

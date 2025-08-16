@@ -35,7 +35,7 @@ class Reaction_01045 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventHighDramaPhaseEnd)
+        if ($event instanceof EventHighDramaPhaseEnd && $this->isAvailable())
         {
             $soe = $this->getOwningCard($event->theah);
             if ($soe->Location == Game::LOCATION_PLAYER_HOME)
