@@ -12,11 +12,24 @@ $machinestates += [
         "args" => "argsEmpty",
         "possibleactions" => [
             "actFromCardWithId", 
-            "actPass"
+            "actFromCardPass"
         ],
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
 
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01045 => [
+        "name" => "planningPhaseResolveSchemes_01045",
+        "description" => clienttranslate('The Song of Eisen: ${actplayer} must choose a Mercenary from the City Deck discard pile if able.'),
+        "descriptionmyturn" => clienttranslate('The Song of Eisen: ${you} must choose a Mercenary from the City Deck discard pile if able:'),
+        "type" => "activeplayer",
+        "args" => "argsEmpty",
+        "possibleactions" => [
+            "actFromCardWithId", 
+            "actFromCardPass"
+        ],
+        "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+    ],
+    
     States::PLANNING_PHASE_RESOLVE_SCHEMES_01071 => [
         "name" => "planningPhaseResolveSchemes_01071",
         "description" => clienttranslate('Épée Sanglante: ${actplayer} must choose a city location to place Reknown onto.'),
@@ -70,8 +83,8 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsEmpty",
         "possibleactions" => [
-            "actPlanningPhase_01150", 
-            "actPass" 
+            "actFromCardWithLocations", 
+            "actFromCardPass" 
         ],
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],

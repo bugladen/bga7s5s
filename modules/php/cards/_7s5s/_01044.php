@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01044;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
@@ -97,6 +98,30 @@ class _01044 extends Scheme implements IHasActions
             $game->theah->queueEvent($removeEvent);
             $game->theah->queueEvent($addEvent);
     
+            $game->gamestate->nextState("");
+        }
+    }
+
+    public function actFromCardPass(Game $game, int $state, string $stateName, string $internalId): void
+    {
+        parent::actFromCardPass($game, $state, $stateName, $internalId);
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01044)
+        {
+            $playerId = $game->getActivePlayerId();
+            $deck = $game->getGameDeckObject();
+            $discardPileName = $game->getPlayerDiscardDeckName($playerId);
+            $cardObjects = $deck->getCardsInLocation($discardPileName);   
+            $ids = array_column($cardObjects, 'id');
+            foreach ($ids as $id)
+            {
+                $card = $game->getCardObjectFromDb($id);
+                if ($card instanceof Attachment)
+                {
+                    throw new \BgaUserException($game->translate("There are attachments in the discard pile"));
+                }
+            }
+                   
             $game->gamestate->nextState("");
         }
     }

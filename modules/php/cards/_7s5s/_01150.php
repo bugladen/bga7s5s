@@ -4,6 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
@@ -62,11 +64,7 @@ class _01150 extends Scheme
             foreach ($players as $playerId => $player) {
                 if ($player['player_id'] == $this->OwnerId) continue;
 
-                $transition = $event->theah->createEvent(Events::Transition);
-                if ($transition instanceof EventTransition) {
-                    $transition->playerId = $playerId;
-                    $transition->transition = '01150';
-                }
+                $transition = EventFactory::createTransitionEvent($playerId, $this->Id, '01150');
                 $event->theah->queueEvent($transition);
             }
         }
@@ -120,6 +118,48 @@ class _01150 extends Scheme
                     throw new \BgaUserException($game->translate("Parley Gone Wrong: You cannot intervene at The Forum because you did not contribute Reknown to The Forum."));
                 }
             }
+        }
+    }
+    
+    public function actFromCardWithIds(Game $game, int $state, string $stateName, string $internalId, array $ids): void
+    {
+        parent::actFromCardWithIds($game, $state, $stateName, $internalId, $ids);
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01150)
+        {
+            $playerName = $game->getActivePlayerName();
+
+            $location = $ids[0];
+    
+            $playerId = $game->getActivePlayerId();
+            $removeEvent = EventFactory::createReknownRemovedFromLocationEvent($playerId, $location, 1, $playerName);
+            $game->theah->eventCheck($removeEvent);
+    
+            $addEvent = EventFactory::createReknownAddedToLocationEvent($playerId, Game::LOCATION_CITY_FORUM, 1, $playerName);
+            $game->theah->eventCheck($addEvent);
+    
+            $game->theah->queueEvent($removeEvent);
+            $game->theah->queueEvent($addEvent);
+    
+            $game->gamestate->nextState("");
+    
+        }
+    }
+
+    public function actFromCardPass(Game $game, int $state, string $stateName, string $internalId): void
+    {
+        parent::actFromCardPass($game, $state, $stateName, $internalId);
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01150)
+        {
+            $locations = $game->theah->getCityLocations();
+            $locations = array_filter($locations, fn($location) => $location->Reknown > 0);
+            if (count($locations) > 0)
+            {
+                throw new \BgaUserException($game->translate("There are locations with Reknown."));
+            }
+
+            $game->gamestate->nextState("");
         }
     }
 }

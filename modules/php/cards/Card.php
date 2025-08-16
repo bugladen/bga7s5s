@@ -148,6 +148,10 @@ abstract class Card
                 $reaction->actFromReactionPass($game, $state, $stateName);
             }
         }
+
+        $game->notifyAllPlayers("message", clienttranslate('${player_name} passes.'), [
+            "player_name" => $game->getPlayerNameById($this->ControllerId),
+        ]);
     }
 
     public function actFromCardWithId(Game $game, int $state, string $stateName, string $internalId, int $id): void 

@@ -593,18 +593,6 @@ $machinestates = [
                 ],
                 "transitions" => ["multipleOk" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
             ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01045 => [
-                "name" => "planningPhaseResolveSchemes_01045",
-                "description" => clienttranslate('The Song of Eisen: ${actplayer} must choose a Mercenary from the City Deck discard pile if able.'),
-                "descriptionmyturn" => clienttranslate('The Song of Eisen: ${you} must choose a Mercenary from the City Deck discard pile if able:'),
-                "type" => "activeplayer",
-                "args" => "argsEmpty",
-                "possibleactions" => [
-                    "actPlanningPhase_01045", 
-                    "actPass"
-                ],
-                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-            ],
             States::PLANNING_PHASE_RESOLVE_SCHEMES_01098 => [
                 "name" => "planningPhaseResolveSchemes_01098",
                 "description" => clienttranslate('The Cat\'s Embargo: ${actplayer} must choose two city locations to place Reknown onto.'),

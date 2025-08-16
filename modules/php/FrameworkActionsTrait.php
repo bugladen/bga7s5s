@@ -40,7 +40,6 @@ trait FrameworkActionsTrait
 
         // Notify all players about the choice to pass.
         $this->notifyAllPlayers("message", clienttranslate('${player_name} passes.'), [
-            "player_id" => $playerId,
             "player_name" => $this->getActivePlayerName(),
         ]);
 
@@ -176,24 +175,6 @@ trait FrameworkActionsTrait
         $this->globals->set(GAME::CHOSEN_CARD, $card->Id);
 
         $this->gamestate->nextState("cardChosen");
-    }
-
-    public function actPlanningPhase_01045(int $id)
-    {
-        $playerId = $this->getActivePlayerId();
-        $playerName = $this->getActivePlayerName();
-        $card = $this->getCardObjectFromDb($id);
-
-        $removeEvent = EventFactory::createCardRemovedFromCityDiscardPileEvent($playerId, $card->Id);
-        $this->theah->eventCheck($removeEvent);
-
-        $addEvent = EventFactory::createCardAddedToCityDeckEvent($playerId, $card->Id, true);
-        $this->theah->eventCheck($addEvent);
-
-        $this->theah->queueEvent($removeEvent);
-        $this->theah->queueEvent($addEvent);
-
-        $this->gamestate->nextState();
     }
 
     public function actPlanningPhase_01125(string $locations)
@@ -486,26 +467,6 @@ trait FrameworkActionsTrait
         $playerId = $this->getActivePlayerId();
         $scheme = $this->getPlayerChosenScheme($playerId);
         $scheme->planningPhaseAction($this, 'Pass', 'Pass');
-
-        $this->gamestate->nextState("");
-    }
-
-    public function actPlanningPhase_01150(string $locations)
-    {
-        $playerName = $this->getActivePlayerName();
-
-        $locations = json_decode($locations, true);
-        $location = array_shift($locations);
-
-        $playerId = $this->getActivePlayerId();
-        $removeEvent = EventFactory::createReknownRemovedFromLocationEvent($playerId, $location, 1, $playerName);
-        $this->theah->eventCheck($removeEvent);
-
-        $addEvent = EventFactory::createReknownAddedToLocationEvent($playerId, Game::LOCATION_CITY_FORUM, 1, $playerName);
-        $this->theah->eventCheck($addEvent);
-
-        $this->theah->queueEvent($removeEvent);
-        $this->theah->queueEvent($addEvent);
 
         $this->gamestate->nextState("");
     }

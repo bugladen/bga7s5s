@@ -75,7 +75,6 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01144_2': 'actPlanningPhase_01144_2',
             'planningPhaseResolveSchemes_01145': 'planningPhaseResolveSchemes_01145_2_client',
             'planningPhaseResolveSchemes_01145_2_client': 'actPlanningPhase_01145',
-            'planningPhaseResolveSchemes_01150': 'actPlanningPhase_01150',
             'planningPhaseResolveSchemes_01152': 'actPlanningPhase_01152',
             'planningPhaseResolveSchemes_01152_2': 'actPlanningPhase_01152_2',
             'planningPhaseResolveSchemes_01152_3': 'actPlanningPhase_01152_3',
@@ -252,18 +251,12 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const actions = {
             'planningPhaseResolveSchemes_01016_2'   : 'actPlanningPhase_01016_2',
-            'planningPhaseResolveSchemes_01044'     : 'actFromCardWithId',
-            'planningPhaseResolveSchemes_01045'     : 'actPlanningPhase_01045',
-            'highDramaPhase01038_3'                 : 'actFromCardWithId',
-            'highDramaPhase01069_2'                 : 'actFromCardWithId',
-            'highDramaPhase01180_3'                 : 'actFromCardWithId',
-            'highDramaPhase01192_3'                 : 'actFromCardWithId',
-            'highDramaPhase01200_2'                 : 'actFromCardWithId',
             'duelChooseGambleCard'                  : 'actGambleCardChosen',
-            'duelResolveManeuver_01077'             : 'actFromCardWithId',
         };
 
-        const action = actions[this.gamedatas.gamestate.name];
+        let action = actions[this.gamedatas.gamestate.name];
+        if (action === undefined)
+            action = 'actFromCardWithId';
 
         let errors = false;
         this.bgaPerformAction(action, { 

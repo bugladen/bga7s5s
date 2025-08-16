@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
@@ -70,6 +71,52 @@ class _01045 extends Scheme implements IHasReactions
             //Transition to the state where player can choose a mercenary out of the City Deck discard pile
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, '01045');
             $event->theah->queueEvent($transition);
+        }
+    }
+
+    public function actFromCardWithId(Game $game, int $state, string $stateName, string $internalId, int $id): void
+    {
+        parent::actFromCardWithId($game, $state, $stateName, $internalId, $id);
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01045)
+        {
+            $playerId = $game->getActivePlayerId();
+            $card = $game->getCardObjectFromDb($id);
+    
+            $removeEvent = EventFactory::createCardRemovedFromCityDiscardPileEvent($playerId, $card->Id);
+            $game->theah->eventCheck($removeEvent);
+    
+            $addEvent = EventFactory::createCardAddedToCityDeckEvent($playerId, $card->Id, true);
+            $game->theah->eventCheck($addEvent);
+    
+            $game->theah->queueEvent($removeEvent);
+            $game->theah->queueEvent($addEvent);
+    
+            $game->gamestate->nextState("");    
+        }
+    }
+
+    public function actFromCardPass(Game $game, int $state, string $stateName, string $internalId): void
+    {
+        parent::actFromCardPass($game, $state, $stateName, $internalId);
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01045)
+        {
+            $deck = $game->getGameDeckObject();
+            $cardObjects = $deck->getCardsInLocation(Game::LOCATION_CITY_DECK);   
+
+            $ids = array_column($cardObjects, 'id');
+            foreach ($ids as $id)
+            {
+                $card = $game->getCardObjectFromDb($id);
+                if ($card->hasTrait('Mercenary') && $card->Location == Game::LOCATION_CITY_DECK)
+                {
+                    throw new \BgaUserException($game->translate("There are Mercenaries in the City Deck"));
+                }
+            }
+                   
+            $game->gamestate->nextState("");
+ 
         }
     }
 }
