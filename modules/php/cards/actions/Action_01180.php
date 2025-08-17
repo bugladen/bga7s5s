@@ -28,6 +28,11 @@ class Action_01180 extends CharacterAction
 
         $kaj = $this->getOwningCard($theah);
 
+        if (! $kaj->isControlled())
+        {
+            return false;
+        }
+
         return $theah->cardInCity($kaj);
     }
     

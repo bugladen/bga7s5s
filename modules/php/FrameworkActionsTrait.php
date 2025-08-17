@@ -685,9 +685,9 @@ trait FrameworkActionsTrait
     {
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
-        $character = $this->theah->getCharacterById($id);
+        $performer = $this->theah->getCharacterById($id);
 
-        if (!$this->theah->cardInCity($character)) {
+        if (!$this->theah->cardInCity($performer)) {
             throw new \BgaUserException(self::_("Character is not in the City."));
         }
 
@@ -706,8 +706,7 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Character not in a state to recruit mercenaries."));
         }
 
-        $this->globals->set(GAME::CHOSEN_PERFORMER, $character->Id);
-
+        $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
         $this->gamestate->nextState("performerChosen");
     }
 

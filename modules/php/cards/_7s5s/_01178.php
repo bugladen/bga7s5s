@@ -46,7 +46,7 @@ class _01178 extends CityCharacter
 
     public function canChallenge(): bool
     {
-        return $this->isControlled() && ! $this->Engaged || ! $this->AbilityUsed;
+        return $this->isControlled() && (! $this->Engaged || ! $this->AbilityUsed);
     }
 
     public function canIntervene(): bool

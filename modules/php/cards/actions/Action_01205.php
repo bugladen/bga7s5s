@@ -27,6 +27,11 @@ class Action_01205 extends CharacterAction
 
         $giacinto = $this->getOwningCharacter($theah);
 
+        if (! $giacinto->isControlled())
+        {
+            return false;
+        }
+
         if (! $theah->cardInCity($giacinto))
         {
             return false;

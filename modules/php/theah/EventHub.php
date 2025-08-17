@@ -266,6 +266,10 @@ trait EventHub
                 $event->card->Location = Game::LOCATION_HAND;
                 $event->card->IsUpdated = true;
 
+                $deck = $this->game->getGameDeckObject();
+                $hand = $deck->getCardsInLocation(Game::LOCATION_HAND, $event->playerId);
+                $count = count($hand);
+
                 $this->game->notifyPlayer($event->playerId, "drawCard", clienttranslate('Private: You drew ${card_inject_code} because of ${reason}.'), [
                     'i18n' => ['card_name', 'reason'],
                     "card_inject_code" => $event->card->getInjectCode(),
@@ -279,6 +283,7 @@ trait EventHub
                     "playerId" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
                     "reason" => $event->reason,
+                    "count" => $count,
                 ]);
                 break;
 

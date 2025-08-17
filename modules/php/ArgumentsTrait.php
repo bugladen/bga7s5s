@@ -212,12 +212,19 @@ trait ArgumentsTrait
     public function argsHighDramaRecruitActionChooseMercenary(): array
     {
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->theah->getCharacterById($performerId);
         $discount = $this->globals->get(GAME::DISCOUNT);
 
-        return [
-            "performerId" => $performerId,
-            "discount" => $discount,
-        ];
+        $args = [];
+        $args["performerId"] = $performerId;
+        $args["discount"] = $discount;
+
+        $characters = $this->theah->getCharactersAtLocation($performer->Location, $includeUncontrolled = true);
+        $characters = array_filter($characters, fn($character) => $character->hasTrait("Mercenary"));
+        $characterIds = array_map(fn($character) => $character->Id, $characters);
+        $args["characterIds"] = $characterIds;
+
+        return $args;
     }
 
     public function argsHighDramaRecruitActionPayForMercenary(): array
@@ -408,7 +415,7 @@ trait ArgumentsTrait
         $action = $this->theah->getInPlayActionById($actionId);
         $owner = $action->getOwningCard($this->theah);
         
-        $performers = $action->getPerformersForAction($playerId, $this->theah);
+        $performers = array_values($action->getPerformersForAction($playerId, $this->theah));
         
         //Select the Ids of the performers
         $performerIds = array_map(function($performer) { return $performer->Id; }, $performers);

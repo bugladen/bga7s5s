@@ -101,23 +101,22 @@ onEnteringState: function( stateName, args )
 
                 this.numberOfCardsSelectable = 1;
                 this.clientStateArgs.discount = args.args.discount;
-                for( const cardId in this.cardProperties ) {
-                    card = this.cardProperties[cardId];
-                    if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) && card.location == performer.location ) {
-                        const image = $(`${card.divId}_image`);
-                        this.clearCardAsSelectable(image);
-                        this.makeCardSelectable(image);
 
-                        if (card.negotiable)                             
-                        {
-                            const cost = $(`${card.divId}_wealth_cost`);
-                            let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
-                            discountedCost = discountedCost < 0 ? 0 : discountedCost;
-                            cost.innerHTML = parseInt(discountedCost);
-                            dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
-                        }
+                args.args.characterIds.forEach((cardId) => {
+                    card = this.cardProperties[cardId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    this.makeCardSelectable(image);
+
+                    if (card.negotiable)                             
+                    {
+                        const cost = $(`${card.divId}_wealth_cost`);
+                        let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
+                        discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                        cost.innerHTML = parseInt(discountedCost);
+                        dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
                     }
-                }
+                });
             }
         },
 

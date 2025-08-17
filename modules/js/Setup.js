@@ -161,6 +161,7 @@ return declare('seventhseacityoffivesails.setup', null, {
 
         // Set up Ole's inn
         gamedatas.oleCards = this.moveAttachmentsToCharacters(gamedatas.oleCards);
+        gamedatas.oleCards = this.orderCardsInLocation(gamedatas.oleCards);
         for( const index in gamedatas.oleCards )
         {
             const card = gamedatas.oleCards[index];
@@ -175,6 +176,7 @@ return declare('seventhseacityoffivesails.setup', null, {
     
         // Set up The Docks
         gamedatas.dockCards = this.moveAttachmentsToCharacters(gamedatas.dockCards);
+        gamedatas.dockCards = this.orderCardsInLocation(gamedatas.dockCards);
         for( const index in gamedatas.dockCards )
         {
             const card = gamedatas.dockCards[index];
@@ -187,6 +189,7 @@ return declare('seventhseacityoffivesails.setup', null, {
 
         // Set up The Forum
         gamedatas.forumCards = this.moveAttachmentsToCharacters(gamedatas.forumCards);
+        gamedatas.forumCards = this.orderCardsInLocation(gamedatas.forumCards);
         for( const index in gamedatas.forumCards )
         {
             const card = gamedatas.forumCards[index];
@@ -199,6 +202,7 @@ return declare('seventhseacityoffivesails.setup', null, {
             
         // Set up cards in the bazaar
         gamedatas.bazaarCards = this.moveAttachmentsToCharacters(gamedatas.bazaarCards);
+        gamedatas.bazaarCards = this.orderCardsInLocation(gamedatas.bazaarCards);
         for( const index in gamedatas.bazaarCards )
         {
             const card = gamedatas.bazaarCards[index];
@@ -211,6 +215,7 @@ return declare('seventhseacityoffivesails.setup', null, {
 
         // Set up cards in the governors garden
         gamedatas.gardenCards = this.moveAttachmentsToCharacters(gamedatas.gardenCards);
+        gamedatas.gardenCards = this.orderCardsInLocation(gamedatas.gardenCards);
         for( const index in gamedatas.gardenCards )
         {
             const card = gamedatas.gardenCards[index];

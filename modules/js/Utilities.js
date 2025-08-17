@@ -564,6 +564,22 @@ return declare('seventhseacityoffivesails.utilities', null, {
         return list;
     },
 
+    orderCardsInLocation: function(list) {
+        //Move all the leaders to the beginning of the list
+        const leaders = list.filter((card) => card.traits.includes('Leader'));
+        list = leaders.concat(list.filter((card) => !card.traits.includes('Leader')));
+
+        //Move all characters that are not controlled to the beginning of the list
+        const characters = list.filter((card) => card.type === 'Character' && card.controllerId == 0);
+        list = characters.concat(list.filter((card) => card.type !== 'Character' || card.controllerId != 0));
+
+        //Move all the attachments to the beginning of the list
+        const attachments = list.filter((card) => card.type === 'Attachment' && card.attachedToId == 0);
+        list = attachments.concat(list.filter((card) => card.type !== 'Attachment'));
+
+        return list;
+    },
+
     displayLocationControlChip: function( location ) {
         const controllerId = this.gamedatas.locationControllers[location];
         if (controllerId != 0) 

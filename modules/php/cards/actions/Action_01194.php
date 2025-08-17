@@ -27,6 +27,11 @@ class Action_01194 extends CharacterAction
 
         $adelheide = $this->getOwningCharacter($theah);
 
+        if (! $adelheide->isControlled())
+        {
+            return false;
+        }
+
         //She has to be in the city
         if (! $theah->cardInCity($adelheide))
         {

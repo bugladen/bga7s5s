@@ -29,6 +29,11 @@ class Action_01192 extends CharacterAction
 
         $gustavo = $this->getOwningCard($theah);
 
+        if (! $gustavo->isControlled())
+        {
+            return false;
+        }
+
         return $theah->cardInCity($gustavo);
     }
 

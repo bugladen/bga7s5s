@@ -26,6 +26,11 @@ class Action_01201 extends CharacterAction implements ISorcererAbility
 
         $ravenna = $this->getOwningCard($theah);
 
+        if (! $ravenna->isControlled())
+        {
+            return false;
+        }
+
         if (! in_array("Sorcerer", $ravenna->Traits))
         {
             return false;

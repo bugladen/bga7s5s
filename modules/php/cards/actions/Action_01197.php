@@ -26,6 +26,11 @@ class Action_01197 extends CharacterAction
 
         $kalla = $this->getOwningCharacter($theah);
 
+        if (! $kalla->isControlled())
+        {
+            return false;
+        }
+
         //There has to be at least two other friendly characters at her location with an attachment
         $characters = $theah->getCharactersAtLocation($kalla->Location);
         $characters = array_filter($characters, fn($character) => $character->ControllerId == $kalla->ControllerId && count($character->Attachments) > 0);

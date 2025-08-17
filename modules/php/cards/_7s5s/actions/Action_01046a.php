@@ -31,9 +31,7 @@ class Action_01046a extends AttachmentAction
             return false;
         }
 
-        $attachedTo = $this->getOwningCharacter($theah);        
-
-        return $theah->cardInCity($attachedTo);
+        return true;
     }
 
     public function handleEvent(Event $event)

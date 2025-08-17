@@ -46,7 +46,7 @@ class Reaction_01196 extends CardReaction
         if ($event instanceof EventCardMoved && $this->isAvailable())
         {
             $angeline = $this->getOwningCard($event->theah);
-            if ($event->cardId == $angeline->Id && $event->engage && ! $angeline->Engaged)
+            if ($angeline->isControlled() && $event->cardId == $angeline->Id && $event->engage && ! $angeline->Engaged)
             {
                 $transition = EventFactory::createReactionTransitionEvent($angeline->ControllerId, $angeline->Id, $this->Id);
                 $event->queueEvent($transition);
