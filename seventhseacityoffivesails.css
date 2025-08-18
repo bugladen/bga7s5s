@@ -133,6 +133,9 @@ body {
 ._7sfs-deck-picker-faction-image._7sfs-montaigne {
     background-image: url('img/cards/7s5s/062.jpg');
 }    
+._7sfs-deck-picker-faction-image._7sfs-vodacce {
+    background-image: url('img/cards/7s5s/006.jpg');
+}    
 
 #city {
     position: relative;

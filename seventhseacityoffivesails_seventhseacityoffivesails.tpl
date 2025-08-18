@@ -51,9 +51,15 @@ var jstpl_deck_picker = `
       <div class="_7sfs-deck-picker-tab-text">\${montaigne_description}</div>
     </div>
 
+    <div class="_7sfs-deck-picker-tab-content" data-deck-name="Montaigne" id="SDVodacce">
+      <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-vodacce"></div>
+      <div class="_7sfs-deck-picker-tab-text">\${vodacce_description}</div>
+    </div>
+
     <div class="_7sfs-deck-picker-tab-buttons">
       <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(1)">Eisen</button>
       <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(2)">Montaigne</button>
+      <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(3)">Vodacce</button>
       <button id="btnDeckSelect" class="deck-picker-button" disabled onclick="gameui.deckPickerDeckSelected()">\${select_description}</button>
     </div>
   </div>
