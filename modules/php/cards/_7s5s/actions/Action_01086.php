@@ -120,7 +120,7 @@ class Action_01086 extends RiskAction
                 "location" => $location->Name,
             ]);
 
-            $game->gamestate->nextState("locationChosen");
+            $game->gamestate->nextState();
         }
     }
 }

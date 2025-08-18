@@ -100,7 +100,7 @@ trait EventHub
                     $deck->moveCard($event->characterId, Game::LOCATION_PLAYER_HOME, $event->playerId);
 
                     $character = $theah->getCardById($event->characterId);
-                    $theah->upsertCard($character);
+                    $theah->addCardToWorld($character);
 
                     $character->Location = Game::LOCATION_PLAYER_HOME;
                     $character->IsUpdated = true;
@@ -345,7 +345,7 @@ trait EventHub
                     $theah->game->updateCardObjectInDb($card);
 
                     $card->IsUpdated = true;
-                    $theah->upsertCard($card);
+                    $theah->addCardToWorld($card);
     
                     // Notify players that card has been added to hand
                     $this->game->notifyAllPlayers("cardAddedToHand", clienttranslate('${player_name} added ${card_inject_code} to their Faction Hand.'), [
@@ -552,7 +552,7 @@ trait EventHub
                         $character->Location = $event->location;
                         $character->ControllerId = $event->playerId;
                         $character->IsUpdated = true;
-                        $theah->upsertCard($character);        
+                        $theah->addCardToWorld($character);        
         
                         // Notify players of mustered character
                         $theah->game->notifyAllPlayers("characterMustered", clienttranslate('${player_name} musters ${character_inject_code} at ${location}.'), [
@@ -589,7 +589,7 @@ trait EventHub
                     $card = $theah->game->getCardObjectFromDb($event->cardId);
                     $card->Location = $event->location;
                     $card->IsUpdated = true;
-                    $theah->upsertCard($card);
+                    $theah->addCardToWorld($card);
 
                     $deck = $theah->game->getGameDeckObject();
                     $deck->moveCard($event->cardId, $event->location);
@@ -1314,7 +1314,7 @@ trait EventHub
             case $event instanceof EventDuelPlayerGambled:
                 $handler = function(Theah $theah, EventDuelPlayerGambled $event) {
                     $card = $theah->game->getCardObjectFromDb($event->chosenCardId);
-                    $theah->upsertCard($card);
+                    $theah->addCardToWorld($card);
                     $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has gambled with ${card_inject_code}.'), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "card_inject_code" => $card->getInjectCode(),
@@ -1392,7 +1392,7 @@ trait EventHub
                     $character->setId($event->characterId);
                     $character->Location = $locker;
                     $character->IsUpdated = true;
-                    $theah->upsertCard($character);
+                    $theah->addCardToWorld($character);
 
                     $theah->game->notifyAllPlayers("characterDestroyed", clienttranslate('${target_inject_code} has been destroyed and sent to the locker due to: ${reason} '), [
                         'i18n' => ['reason'],

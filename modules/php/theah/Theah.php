@@ -385,7 +385,6 @@ class Theah
 
         $card = $this->db->getCardObject($cardId);
         if ($card) {
-            $this->cards[$cardId] = $card;
             return $card;
         }
 
@@ -461,7 +460,6 @@ class Theah
 
         $card = $this->db->getCardObject($id);
         if ($card) {
-            $this->cards[$id] = $card;
             return $card;
         }
 
@@ -943,11 +941,6 @@ class Theah
         }
 
         return count($actionCards) > 0;
-    }
-
-    public function upsertCard(Card $card)
-    {
-        $this->cards[$card->Id] = $card;
     }
 
     public function deleteManeuverEvents(string $maneuverId)

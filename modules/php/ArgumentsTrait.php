@@ -451,10 +451,10 @@ trait ArgumentsTrait
         $action = $this->theah->getInHandActionById($actionId);
 
         $owner = $action->getOwningCard($this->theah);
-        $performers = $action->getPerformersForAction($playerId, $this->theah);
+        $performers = array_values($action->getPerformersForAction($playerId, $this->theah));
         
         //Select the Ids of the performers
-        $performerIds = array_map(function($performer) { return $performer->Id; }, $performers);
+        $performerIds = array_map(fn($performer) => $performer->Id, $performers);
 
         return [
             "_private" => [

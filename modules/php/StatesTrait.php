@@ -208,17 +208,21 @@ trait StatesTrait
         $currentFirstPlayerExists = $this->globals->has(Game::FIRST_PLAYER);
 
         //Grab the schemes by each player and determine the highest initiative
-        foreach ( $players as $playerId => $player ) {
-            $scheme = $this->theah->getCardById($player['schemeId']);
-            if ($scheme instanceof Scheme)
+        foreach ( $players as $playerId => $player ) 
+        {
+            if ($player['schemeId'])
             {
-                if ($scheme->Initiative == $highInitiative) {
-                    $tiedInitiative = true;
+                $scheme = $this->theah->getCardById($player['schemeId']);
+                if ($scheme instanceof Scheme)
+                {
+                    if ($scheme->Initiative == $highInitiative) {
+                        $tiedInitiative = true;
+                    }
+                    else if ($scheme->Initiative > $highInitiative) {
+                        $highInitiative = $scheme->Initiative;
+                        $highPlayerId = $playerId;
+                    }    
                 }
-                else if ($scheme->Initiative > $highInitiative) {
-                    $highInitiative = $scheme->Initiative;
-                    $highPlayerId = $playerId;
-                }    
             }
         }
 
@@ -374,16 +378,19 @@ trait StatesTrait
         $list = $this->getCollectionFromDB($sql);
         foreach ( $list as $playerId => $player ) {
             $schemeId = $player['schemeId'];
-            $scheme = $this->theah->getCardById($schemeId);
+            if ($schemeId)
+            {
+                $scheme = $this->theah->getCardById($schemeId);
 
-            // Run events that the scheme has been played to a location
-            $event = $this->theah->createEvent(Events::ResolveScheme);
-            if ($event instanceof EventResolveScheme) {
-                $event->playerId = $playerId;
-                $event->playerName = $this->getPlayerNameById($playerId);
-                $event->scheme = $scheme;
+                // Run events that the scheme has been played to a location
+                $event = $this->theah->createEvent(Events::ResolveScheme);
+                if ($event instanceof EventResolveScheme) {
+                    $event->playerId = $playerId;
+                    $event->playerName = $this->getPlayerNameById($playerId);
+                    $event->scheme = $scheme;
+                }
+                $this->theah->queueEvent($event);
             }
-            $this->theah->queueEvent($event);
         }
 
         $this->gamestate->nextState("");
@@ -1751,11 +1758,14 @@ trait StatesTrait
             $sql = "SELECT selected_scheme_id as id FROM player where player_id = $playerId";
             $schemeId = $this->getUniqueValueFromDB($sql);
 
-            $sql = "UPDATE player SET selected_scheme_id = NULL, selected_character_id = NULL WHERE player_id = $playerId";
-            $this->DbQuery($sql);
-
-            $event = EventFactory::createCardSentToLockerEvent($playerId, $schemeId);
-            $this->theah->queueEvent($event);
+            if ($schemeId)
+            {
+                $sql = "UPDATE player SET selected_scheme_id = NULL, selected_character_id = NULL WHERE player_id = $playerId";
+                $this->DbQuery($sql);
+    
+                $event = EventFactory::createCardSentToLockerEvent($playerId, $schemeId);
+                $this->theah->queueEvent($event);
+            }
         }
 
         $this->gamestate->nextState();

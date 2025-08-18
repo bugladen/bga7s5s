@@ -121,7 +121,7 @@ class Action_01085 extends RiskAction
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
             
-            $game->gamestate->nextState("targetChosen");
+            $game->gamestate->nextState();
         }
     }
 }
