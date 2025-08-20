@@ -836,20 +836,18 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState($transition);
     }
 
-    public function actHighDramaEquipActionAttachmentFromHandSelected(int $attachmentId)
+    public function actHighDramaEquipActionAttachmentFromHandSelected(int $id)
     {
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
 
-        //Get the chosen player's hand
-        $handCard = $this->cards->getCard($attachmentId);
-        $card = $this->getCardObjectFromDb($handCard['id']);
-        if ($card->Location != Game::LOCATION_HAND || $card->ControllerId != $playerId) {
+        $attachment = $this->getCardObjectFromDb($id);
+        if ($attachment == null || $attachment->Location != Game::LOCATION_HAND || $attachment->ControllerId != $playerId) 
+        {
             throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
         }
 
-        $attachment = $this->getCardObjectFromDb($attachmentId);
-        $this->globals->set(GAME::CHOSEN_CARD, $attachmentId);
+        $this->globals->set(GAME::CHOSEN_CARD, $id);
 
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
@@ -898,15 +896,11 @@ trait FrameworkActionsTrait
         $equipType = $this->globals->get(Game::EQUIP_TYPE);
 
         //Sanity checks
-        if ($attachment->Location == Game::LOCATION_HAND)
+        if ($attachment->Location != Game::LOCATION_HAND || $attachment->ControllerId != $playerId) 
         {
-            //Get the chosen player's hand
-            $handCard = $this->cards->getCard($attachmentId);
-            $card = $this->getCardObjectFromDb($handCard['id']);
-            if ($card->Location != Game::LOCATION_HAND || $card->ControllerId != $playerId) {
-                throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
-            }
+            throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
         }
+
         // Let's Haggle can equip attachments only from the Bazaar
         if ($equipType == Game::LETS_HAGGLE_EQUIP_TYPE) 
         {
@@ -1233,6 +1227,87 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("actionPaidFor");
+    }
+
+    public function actHighDramaChooseBruteStart()
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+        if ($this->theah->playerHasBrutes($player_id) == false) {
+            throw new \BgaUserException(self::_("Brute is not allowed right now."));
+        }
+
+        $this->gamestate->nextState("bruteStart");
+    }
+
+    public function actHighDramaBruteActionBruteChosen(int $id)
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $brute = $this->getCardObjectFromDb($id);
+        if ($brute == null || $brute->Location != Game::LOCATION_HAND || $brute->ControllerId != $playerId) 
+        {
+            throw new \BgaUserException(self::_("Brute is not in Player's Hand."));
+        }
+
+        $discount = $this->theah->getPlayBruteDiscount($brute);
+        $this->globals->set(Game::DISCOUNT, $discount);
+
+        $this->globals->set(GAME::CHOSEN_CARD, $id);
+
+        $this->gamestate->nextState("bruteChosen");
+    }
+
+    public function actPayForBrute(string $payWithCards)
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+
+        $bruteId = $this->globals->get(GAME::CHOSEN_CARD);
+        $brute = $this->getCardObjectFromDb($bruteId);
+
+        //Sanity checks
+        if ($brute == null || $brute->Location != Game::LOCATION_HAND || $brute->ControllerId != $playerId) 
+        {
+            throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
+        }
+
+        $discount = $this->globals->get(Game::DISCOUNT);
+        $cost = $brute->WealthCost - $discount;
+        if ($cost < 0) $cost = 0;
+
+        $cardIds = json_decode($payWithCards, true);
+        
+        //Total up the wealth of the cards to see if player paid correctly
+        $totalWealth = 0;
+        foreach ($cardIds as $cardId) {
+            $card = $this->getCardObjectFromDb($cardId);
+            if ($card == null)
+                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
+
+            //If $card has wealth in its traits, add it to the total wealth
+            $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+        }
+        if ($totalWealth != $cost) {
+            throw new \BgaUserException(sprintf(self::_("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+        }
+
+        $playerId = $this->getActivePlayerId();
+
+        //Move the cards used to pay to the player's discard pile
+        foreach ($cardIds as $cardId) 
+        {
+            $card = $this->getCardObjectFromDb($cardId);
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $asPayment = true);
+            $this->theah->queueEvent($event);
+        }
+
+        $musterEvent = EventFactory::createCharacterMusteredEvent($playerId, $brute->Id, Game::LOCATION_PLAYER_HOME);
+        $this->theah->queueEvent($musterEvent);
+
+        $this->globals->set(GAME::PASS_COUNT, 0);
+        $this->gamestate->nextState("brutePaidFor");
     }
 
     public function actHighDramaChallengeActionStart()

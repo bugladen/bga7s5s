@@ -594,8 +594,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
+
         const cardId = this.createCardId(args.character, args.location);
-        const target = this.getTargetElementForLocation(args.location, args.playerId);
+        const target = this.getTargetElementForLocation(args.location, args.player_id);
         this.createCard(cardId, args.character, target);
     },
 

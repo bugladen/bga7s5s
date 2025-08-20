@@ -221,13 +221,19 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
-    onChooseHandAttachmentConfirmed: function()
+    onChooseHandCardConfirmed: function()
     {
         var items = this.factionHand.getSelectedItems();
         let id = Object.values(items)[0].id;
 
-        this.bgaPerformAction("actHighDramaEquipActionAttachmentFromHandSelected", { 
-            'attachmentId' : id, 
+        const actionArray = {
+            'highDramaEquipActionChooseAttachmentFromHand'  : 'actHighDramaEquipActionAttachmentFromHandSelected',
+            'highDramaBruteActionChooseBrute'               : 'actHighDramaBruteActionBruteChosen',
+        };
+
+        const action = actionArray[this.gamedatas.gamestate.name];
+        this.bgaPerformAction(action, { 
+            'id' : id, 
         }).then(() =>  {                
             // What to do after the server call if it succeeded
         });        
@@ -311,18 +317,29 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
-    onAttachmentPaymentConfirmed: function()
+    onPaymentConfirmed: function()
     {
         var items = this.factionHand.getSelectedItems();
         items = items.map((item) => item.id);
 
-        this.bgaPerformAction('actHighDramaEquipAttachment', { 
+        const actionArray = {
+            'highDramaEquipActionPayForAttachmentFromHand' : 'actHighDramaEquipAttachment',
+            'highDramaBruteActionPayForBrute'              : 'actPayForBrute',
+        };
+
+        const action = actionArray[this.gamedatas.gamestate.name];
+        let errors = false;
+        this.bgaPerformAction(action, { 
             'payWithCards': JSON.stringify(items),
         }).catch(() =>  {
-        });        
+            errors = true;
+        }).then(() =>  {
+            if (!errors && this.clientStateArgs.chosenCardId) 
+                this.factionHand.removeFromStockById(this.clientStateArgs.chosenCardId);
+        });            
     },
 
-    onAttachmentPaymentConfirmedFromCard: function()
+    onPaymentConfirmedFromCard: function()
     {
         var items = this.factionHand.getSelectedItems();
         items = items.map((item) => item.id);

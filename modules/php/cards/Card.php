@@ -297,6 +297,8 @@ abstract class Card
 
     public function getParleyDiscount(Character $performer, bool $parleying) : int { return 0; }
 
+    public function getPlayBruteDiscount(Theah $theah, Character $brute): int { return 0; }
+
     public function eventCheck(Event $event)
     {
         if ($this instanceof IHasTechniques) {

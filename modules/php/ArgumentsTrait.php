@@ -135,6 +135,7 @@ trait ArgumentsTrait
                     "canRecruit" => $this->theah->playerCanRecruit($playerId),
                     "hasInPlayActions" => $this->theah->playerHasInPlayActions($playerId),
                     "hasInHandActions" => $this->theah->playerHasInHandActions($playerId),
+                    "hasBrutes" => $this->theah->playerHasBrutes($playerId),
                 ]
             ]
         ];
@@ -439,7 +440,6 @@ trait ArgumentsTrait
                 ]
             ]
         ];
-
     }
 
     public function argsHighDramaInHandActionChoosePerformer(): array
@@ -484,6 +484,36 @@ trait ArgumentsTrait
                     "chosenActionId" => $actionId,
                     "choseActionCardId" => $owner->Id,
                     "requiresPerformerSelected" => $action->RequiresPerformerSelected,
+                    "discount" => $this->globals->get(GAME::DISCOUNT)
+                ]
+            ],
+        ];
+    }
+
+    public function argsHighDramaBruteActionChooseBrute(): array
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+
+        return [
+            "_private" => [
+                "active" => [
+                    "ids" => $this->theah->getBrutesAvailableToPlayer($playerId),
+                ]
+            ]
+        ];
+    }
+
+    public function argsHighDramaBruteActionPayForBrute(): array
+    {
+        $bruteId = $this->globals->get(GAME::CHOSEN_CARD);
+        $brute = $this->getCardObjectFromDb($bruteId);
+
+        return [
+            "_private" => [
+                "active" => [
+                    "bruteId" => $bruteId,
+                    "brute" => $brute->getPropertyArray($this),
                     "discount" => $this->globals->get(GAME::DISCOUNT)
                 ]
             ],

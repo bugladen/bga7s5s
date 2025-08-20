@@ -345,6 +345,46 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
             },
 
+            'highDramaBruteActionChooseBrute': () => {
+                var items = this.factionHand.getSelectedItems();
+                items.forEach((item) => {
+                    this.factionHand.unselectItem(item.id);
+                });                
+                const type = this.cardProperties[item_id]?.type;
+                if (type == 'Character' && this.cardProperties[item_id].traits.includes('Brute'))
+                    this.factionHand.selectItem(item_id);
+
+                // Enable the confirm button if we have a card selected
+                items = this.factionHand.getSelectedItems();
+                if (items.length === 1) {
+                    dojo.removeClass('actFactionCardsSelected', 'disabled');
+                } else {
+                    dojo.addClass('actFactionCardsSelected', 'disabled');
+                }
+            },
+
+            'highDramaBruteActionPayForBrute': () => {
+                var items = this.factionHand.getSelectedItems();
+                let wealth = 0;
+                const div = this.factionHand.getItemDivId(item_id);                
+                if (item_id !== undefined && dojo.hasClass(div, '_7sfs-unselectable')) {
+                    this.factionHand.unselectItem(item_id);
+                    return;
+                }
+                items.forEach((item) => {
+                    const card = this.cardProperties[item.type];
+                    wealth += card.traits.includes('Wealth') ? 2 : 1;
+                    
+                });
+                var translated = dojo.string.substitute(
+                    _("(${wealth} Wealth worth of cards selected)"),
+                    {
+                        wealth: wealth
+                    }
+                );
+                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
+            },
+
             'highDramaPhase01069': () => {
                 if (this.factionHand.getSelectedItems().length > 0) {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');

@@ -80,10 +80,12 @@ onUpdateActionButtons: function( stateName, args )
                 this.addTooltipHtml( 'btnInPlayAction', `<div class='_7sfs-basic-tooltip'>${_("Use an In-Play Action")}</div>` );
             }
             if (args._private.hasInHandActions)
-                {
-                    this.addActionButton(`btnInHandAction`, _('In-Hand Action'), () => this.bgaPerformAction('actHighDramaChooseInHandActionStart', {})) 
-                    this.addTooltipHtml( 'btnInHandAction', `<div class='_7sfs-basic-tooltip'>${_("Use an In-Hand Action")}</div>` );
-                }
+            {
+                this.addActionButton(`btnInHandAction`, _('In-Hand Action'), () => this.bgaPerformAction('actHighDramaChooseInHandActionStart', {})) 
+                this.addTooltipHtml( 'btnInHandAction', `<div class='_7sfs-basic-tooltip'>${_("Use an In-Hand Action")}</div>` );
+            }
+            if (args._private.hasBrutes)
+                this.addActionButton(`btnBrute`, _('Play Brute'), () => this.bgaPerformAction('actHighDramaChooseBruteStart', {})) 
                         
             this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
         },
@@ -162,6 +164,17 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onActionCardFromHandPaymentConfirmed());
         },
 
+        'highDramaBruteActionChooseBrute'  : () => {
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onChooseHandCardConfirmed());
+            dojo.addClass('actFactionCardsSelected', 'disabled');
+        },
+
+        'highDramaBruteActionPayForBrute': () => {
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onPaymentConfirmed());
+        },
+
         'highDramaEquipActionChoosePerformer': () => {
             this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
@@ -183,7 +196,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaEquipActionChooseAttachmentFromHand': () => {
             this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onChooseHandAttachmentConfirmed());
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onChooseHandCardConfirmed());
             dojo.addClass('actFactionCardsSelected', 'disabled');
         },
 
@@ -195,7 +208,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaEquipActionPayForAttachmentFromHand': () => {
             this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onPaymentConfirmed());
         },
 
         'highDramaEquipActionPayForAttachmentFromPlay': () => {
@@ -203,7 +216,7 @@ onUpdateActionButtons: function( stateName, args )
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backLetsHaggle'}));
             else
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onPaymentConfirmed());
         },
 
         'highDramaClaimActionChoosePerformer': () => {

@@ -409,7 +409,7 @@
             },
             'highDramaPhase01180_5': () => {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmedFromCard());
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onPaymentConfirmedFromCard());
             },
     
             'highDramaPhase01185': () => {

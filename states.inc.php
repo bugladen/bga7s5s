@@ -923,6 +923,7 @@ $machinestates = [
             "actHighDramaRecruitActionStart",
             "actHighDramaChooseInPlayActionStart",
             "actHighDramaChooseInHandActionStart",
+            "actHighDramaChooseBruteStart",
             "actHighDramaPass",
         ],
         "transitions" => [
@@ -933,6 +934,7 @@ $machinestates = [
             "recruitActionStart" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER,
             "inPlayActionStart" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
             "inHandActionStart" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_ACTION,
+            "bruteStart" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE,
             "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "end" => States::HIGH_DRAMA_END
         ]
@@ -1723,6 +1725,36 @@ $machinestates = [
                     "actionPaidFor" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                     "backPerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                     "backChooseAction" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_ACTION
+                ]
+            ],
+        States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE => [
+            "name" => "highDramaBruteActionChooseBrute",
+            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            "descriptionmyturn" => clienttranslate('${you} must choose a Brute from your Hand to play:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaBruteActionChooseBrute",
+            "possibleactions" => [
+                "actHighDramaBruteActionBruteChosen",
+                "actBack",
+            ],
+            "transitions" => [
+                "bruteChosen" => States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE,
+                "back" => States::HIGH_DRAMA_PLAYER_TURN
+            ]
+        ],
+        States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE => [
+            "name" => "highDramaBruteActionPayForBrute",
+            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            "descriptionmyturn" => clienttranslate('${you} must pay for the chosen Brute:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaBruteActionPayForBrute",
+            "possibleactions" => [
+                "actPayForBrute",
+                "actBack",
+            ],
+            "transitions" => [
+                "brutePaidFor" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "back" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE
                 ]
             ],
     

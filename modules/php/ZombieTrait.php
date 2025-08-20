@@ -98,6 +98,8 @@ trait ZombieTrait
                 case "highDramaInPlayActionChoosePerformer":
                 case "highDramaInHandActionChooseAction":
                 case "highDramaInHandActionChoosePerformer":
+                case "highDramaBruteActionChooseBrute":
+                case "highDramaBruteActionPayForBrute":
                     // Default action: Go back to main turn
                     $this->actBack();
                     break;

@@ -445,7 +445,7 @@ class Theah
     {
         $count = 0;
         foreach ($this->cards as $card) {
-            if ($card instanceof Character && $card->ControllerId == $playerId) {
+            if ($card instanceof Character && $card->ControllerId == $playerId && ! $card->hasTrait("Brute")) {
                 $count++;
             }
         }
@@ -557,6 +557,17 @@ class Theah
         return $discount;
     }
 
+    function getPlayBruteDiscount(Character $brute): int
+    {
+        $discount = 0;
+        foreach ($this->cards as $card) 
+        {
+            $discount += $card->getPlayBruteDiscount($this, $brute);
+        }
+
+        return $discount;
+    }
+
     function getInPlayActionsAvailableToPlayer($playerId)
     {
         $actionsArray = [];
@@ -626,6 +637,22 @@ class Theah
 
         return $actionsArray;
     }
+
+    function getBrutesAvailableToPlayer($playerId): array
+    {
+        $brutes = [];
+        $cards = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
+        foreach ($cards as $card)
+        {
+            if ($card instanceof Character && $card->hasTrait("Brute"))
+            {
+                $brutes[] = $card->Id;
+            }
+        }
+
+        return $brutes;
+    }
+
 
     function getLeaderByPlayerId($playerId)
     {
@@ -941,6 +968,21 @@ class Theah
         }
 
         return count($actionCards) > 0;
+    }
+
+    public function playerHasBrutes($playerId): bool
+    {
+        $bruteCards = [];
+        $cards = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
+        foreach ($cards as $card)
+        {
+            if ($card->hasTrait("Brute"))
+            {
+                $bruteCards[] = $card;
+            }
+        }
+
+        return count($bruteCards) > 0;
     }
 
     public function deleteManeuverEvents(string $maneuverId)
