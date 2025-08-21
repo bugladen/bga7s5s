@@ -163,7 +163,6 @@ class _01006 extends Leader implements IHasReactions
                 throw new \BgaUserException($game->translate("Invalid card ID."));
             }
 
-            $deck = $game->getGameDeckObject();
             $deckName = $game->getPlayerFactionDeckName($this->ControllerId);
             if ($card->Location != $deckName)
             {

@@ -158,25 +158,6 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhase_01016_2(int $id)
-    {
-        $playerId = $this->getActivePlayerId();
-        $card = $this->getCardObjectFromDb($id);
-
-        $removeEvent = EventFactory::createCardRemovedFromPlayerFactionDeckEvent($playerId, $card->Id);
-        $this->theah->eventCheck($removeEvent);
-
-        $addEvent = EventFactory::createCardAddedToHandEvent($playerId, $card->Id);
-        $this->theah->eventCheck($addEvent);
-
-        $this->theah->queueEvent($removeEvent);
-        $this->theah->queueEvent($addEvent);
-
-        $this->globals->set(GAME::CHOSEN_CARD, $card->Id);
-
-        $this->gamestate->nextState("cardChosen");
-    }
-
     public function actPlanningPhase_01125(string $locations)
     {
         $location = json_decode($locations, true)[0];

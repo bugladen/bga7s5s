@@ -61,7 +61,7 @@
                     $('choose_container_name').innerHTML = _('Red Hand Thugs in Your Faction Deck');
     
                     // For each Red Hand Thug card in the players deck, create a stock item
-                    args.args._private.thugs.forEach((card) => {
+                    args.args._private.args.thugs.forEach((card) => {
                         this.addCardToDeck(this.chooseList, card);
                     });
                     this.chooseList.setSelectionMode(1);

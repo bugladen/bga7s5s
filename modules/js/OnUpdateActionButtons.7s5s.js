@@ -32,7 +32,7 @@
     
             'planningPhaseResolveSchemes_01016_2': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
+                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     

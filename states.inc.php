@@ -604,44 +604,7 @@ $machinestates = [
                 "paid" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS, 
             ]
         ],
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01016 => [
-            "name" => "planningPhaseResolveSchemes_01016",
-            "description" => clienttranslate('Plans Within Plans: ${actplayer} must choose two city locations to place Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('Plans Within Plans: ${you} must choose two city locations to place Reknown onto:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actCityLocationsForReknownSelected", 
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_2]
-        ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_2 => [
-                "name" => "planningPhaseResolveSchemes_01016_2",
-                "description" => clienttranslate('Plans Within Plans: ${actplayer} may search their deck for a Red Hand Thug.'),
-                "descriptionmyturn" => clienttranslate('Plans Within Plans: ${you} may choose a Red Hand Thug from Your Deck:'),
-                "type" => "activeplayer",
-                "args" => "argsPlanningPhaseResolveSchemes_01016_2",
-                "possibleactions" => [
-                    "actPassWithPass",
-                    "actPlanningPhase_01016_2", 
-                ],
-                "transitions" => [
-                    "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
-                    "cardChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_3
-                ]
-            ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_3 => [
-                "name" => "planningPhaseResolveSchemes_01016_3",
-                "description" => clienttranslate('Plans Within Plans: Your opponent(s) must acknowlege revealed card.'),
-                "descriptionmyturn" => clienttranslate('Plans Within Plans: ${you} must must acknowlege revealed card:'),
-                "type" => "multipleactiveplayer",
-                "args" => "argsPlanningPhaseResolveSchemes_01016_3",
-                "action" => "stMultiPlayerInit",
-                "possibleactions" => [
-                    "actMultipleOk", 
-                ],
-                "transitions" => ["multipleOk" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-            ],
+
             States::PLANNING_PHASE_RESOLVE_SCHEMES_01098 => [
                 "name" => "planningPhaseResolveSchemes_01098",
                 "description" => clienttranslate('The Cat\'s Embargo: ${actplayer} must choose two city locations to place Reknown onto.'),

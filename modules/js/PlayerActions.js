@@ -256,8 +256,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         const card = Object.values(items)[0];
 
         const actions = {
-            'setupTable_01006'                     : 'actFromCardWithId',
-            'planningPhaseResolveSchemes_01016_2'   : 'actPlanningPhase_01016_2',
+            'setupTable_01006'                      : 'actFromCardWithId',
             'duelChooseGambleCard'                  : 'actGambleCardChosen',
         };
 

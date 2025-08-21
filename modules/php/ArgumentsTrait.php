@@ -46,35 +46,6 @@ trait ArgumentsTrait
         return ["availableDecks" => $decks];
     }
 
-    public function argsPlanningPhaseResolveSchemes_01016_2(): array
-    {
-        //Return all the Red Hand Thug cards in player's deck
-        if ($this->getCurrentPlayerId() == $this->getActivePlayerId()) 
-        {
-            $playerId = $this->getActivePlayerId();
-            $location = $this->getPlayerFactionDeckName($playerId);
-            $deck = $this->cards->getCardsInLocation($location);
-            $thugs = [];
-            foreach ($deck as $deckCard) {
-                $card = $this->getCardObjectFromDb($deckCard['id']);
-                if (in_array("Red Hand", $card->Traits) && in_array("Thug", $card->Traits)) 
-                {
-                    $thugs[] = $card->getPropertyArray($this);
-                }
-            }            
-
-            return [
-                "_private" => [
-                    "active" => [
-                        "thugs" => $thugs
-                    ]
-                ]
-            ];
-        }
-
-        return [];
-    }
-
     public function argsPlanningPhaseResolveSchemes_01016_3(): array
     {
         $id = $this->globals->get(GAME::CHOSEN_CARD);
