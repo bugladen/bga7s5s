@@ -443,13 +443,19 @@ abstract class Card
         return $this->isControlled() && $this->ControllerId != $playerId;
     }
 
-    public function addTrait(string $trait): void
+    public function addTrait(Game $game, string $trait): void
     {
         $this->Traits[] = $trait;
         $this->IsUpdated = true;
+
+        $game->notifyAllPlayers("traitAdded", clienttranslate('${character_inject_code} gains [${trait}].'), [
+            "character_inject_code" => $this->getInjectCode(),
+            "characterId" => $this->Id,
+            'trait' => $trait,
+        ]);
     }
 
-    public function removeTrait(string $trait): void
+    public function removeTrait(Game $game, string $trait): void
     {
         $index = array_search($trait, $this->Traits);
         if ($index !== false)
@@ -458,6 +464,12 @@ abstract class Card
         }
         $this->Traits = array_values($this->Traits);
         $this->IsUpdated = true;
+
+        $game->notifyAllPlayers("traitRemoved", clienttranslate('${character_inject_code} loses [${trait}].'), [
+            "character_inject_code" => $this->getInjectCode(),
+            "characterId" => $this->Id,
+            'trait' => $trait,
+        ]);
     }
 
     public function hasManeuversAvailableToPlayer(int $playerId, Theah $theah): bool
