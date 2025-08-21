@@ -4,6 +4,35 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 $machinestates += [
 
+    States::SETUP_TABLE_01006 => [
+        "name" => "setupTable_01006",
+        "description" => clienttranslate('Don Contanzo Scarpa: ${actplayer} is choosing a Red Hand Thug from their Faction Deck to reveal and place in their Hand.'),
+        "descriptionmyturn" => clienttranslate('Don Contanzo Scarpa: ${you} must choose a Red Hand Thug from your Faction Deck to reveal and place in your Hand:'),
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actFromCardPass"
+        ],
+        "transitions" => [
+            "cardChosen" => States::SETUP_TABLE_01006_2,
+            "pass" => States::SETUP_TABLE_EVENTS
+        ]
+    ],
+
+    States::SETUP_TABLE_01006_2 => [
+        "name" => "setupTable_01006_2",
+        "description" => clienttranslate('Don Contanzo Scarpa: Your opponent(s) must acknowlege revealed card.'),
+        "descriptionmyturn" => clienttranslate('Don Contanzo Scarpa: ${you} must must acknowlege revealed card:'),
+        "type" => "multipleactiveplayer",
+        "args" => "argsForState",
+        "action" => "stMultiPlayerInit",
+        "possibleactions" => [
+            "actMultipleOk", 
+        ],
+        "transitions" => ["multipleOk" => States::SETUP_TABLE_EVENTS]
+    ],
+
     States::PLANNING_PHASE_RESOLVE_SCHEMES_01044 => [
         "name" => "planningPhaseResolveSchemes_01044",
         "description" => clienttranslate('Armed and Marshaled: ${actplayer} must choose an Attachment from their discard pile if able.'),

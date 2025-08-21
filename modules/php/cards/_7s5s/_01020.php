@@ -2,9 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Brute;
 
-class _01020 extends FactionCharacter
+class _01020 extends Brute
 {
     public function __construct()
     {

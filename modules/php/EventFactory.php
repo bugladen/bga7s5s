@@ -63,6 +63,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTableSetup;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -709,6 +710,16 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->actorId = $actorId;
             $event->adversaryId = $adversaryId;
             $event->techniqueId = $techniqueId;
+        }
+
+        return $event;
+    }
+
+    public static function createTableSetupEvent(): EventTableSetup
+    {
+        $event = self::createEvent(Events::TableSetup);
+        if ($event instanceof EventTableSetup)
+        {
         }
 
         return $event;

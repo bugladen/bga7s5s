@@ -32,7 +32,11 @@ class _01183 extends CityEventCard
     {
         parent::getPressureTypes($theah, $performer, $pressureTypes);
 
-        if ($performer->Location == $this->Location) {
+        if ($performer->Location == $this->Location) 
+        {
+            $theah->game->notifyAllPlayers("message", clienttranslate('${card_inject_code} will add Combat to the Pressure.'), [
+                'card_inject_code' => $this->getInjectCode(),
+            ]);
             $pressureTypes[] = Game::STAT_COMBAT;
         }
     }

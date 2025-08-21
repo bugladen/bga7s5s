@@ -56,6 +56,14 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
+    public function stSetupTable() 
+    {
+        $event = EventFactory::createTableSetupEvent();
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState("");
+    }
+
     public function stDawnNewDay() {
         // Increment the day
         $day = $this->getGameStateValue(Game::DAY) + 1;
@@ -1722,13 +1730,22 @@ trait StatesTrait
 
         foreach ($characters as $character)
         {
-            $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false);
-            $this->theah->queueEvent($movedHome);
-
-            if ($character->Engaged)
+            //Brutes get discarded
+            if ($character->hasTrait("Brute"))
             {
-                $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id);
-                $this->theah->queueEvent($engardeEvent);                    
+                $discardedEvent = EventFactory::createCardDiscardedFromPlayEvent($character->ControllerId, $character->Id, $character->Location);
+                $this->theah->queueEvent($discardedEvent);
+            }
+            else
+            {
+                $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $sourceId=0);
+                $this->theah->queueEvent($movedHome);
+    
+                if ($character->Engaged)
+                {
+                    $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id);
+                    $this->theah->queueEvent($engardeEvent);                    
+                }
             }
         }
 

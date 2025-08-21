@@ -16,6 +16,15 @@
     {
         const methods = {            
 
+            'setupTable_01006': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+            'setupTable_01006_2': () => {
+                this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
+            },
+
             'planningPhaseResolveSchemes_01016': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');

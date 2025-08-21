@@ -81,8 +81,8 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.addTooltipHtml( `${playerId}-score-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
             this.addTooltipHtml( `${playerId}-score-hand-count`, `<div class='_7sfs-basic-tooltip'>${_('Number of cards in Faction Hand')}</div>` );
 
-            //Display only if we are out of pre-game setup
-            if (gamedatas.turnPhase > 0) {
+            //Display only if we are out of the faction choosing phase
+            if (gamedatas.homeCards.length > 0) {
                 // Home
                 this.createHome(playerId, player.color, player.leader);
                 dojo.addClass( `overall_player_board_${playerId}`, `_7sfs-home-${player.leader.faction.toLowerCase()}` );

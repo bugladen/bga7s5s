@@ -15,6 +15,31 @@
     onEnteringState_7s5s: function( stateName, args )
     {
         const methods = {
+            'setupTable_01006': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    $('choose_container_name').innerHTML = _('Red Hand Thugs in Your Faction Deck');
+
+                    // For each Brute card in the players deck, create a stock item
+                    args.args._private.args.thugs.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+            'setupTable_01006_2': () => {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = _('Chosen Red Hand Thug');
+    
+                //Wait a second for stock object to catch up?
+                setTimeout(() => {
+                    this.addCardToDeck(this.chooseList, args.args.args.card);
+                    this.chooseList.setSelectionMode(0);
+                }, 500);
+            },
+
             'planningPhaseResolveSchemes_01016': () => {
                 if (this.isCurrentPlayerActive()) {
                     const locations = this.getListofAvailableCityLocationImages();

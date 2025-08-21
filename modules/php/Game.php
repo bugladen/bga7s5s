@@ -82,6 +82,7 @@ class Game extends \Table
 
     //Pressure global variables
     final const CLAUD_ID = "claudeId"; //When Claude is in play, this is the ID of the card that caused the claim type
+    final const CONSTANZO_ID = "constanzoId"; //When Contanzo is in play, this is the ID of the card that caused the claim type
     final const PRESSURE_TYPE = "pressureType";
     final const NORMAL_PRESSURE_TYPE = 0;
     //These must be binary flags
@@ -89,6 +90,7 @@ class Game extends \Table
     final const CAPTAINS_COAT_PRESSURE_TYPE = 2;
     final const REPUTATION_MERITEE_PRESSURE_TYPE = 4;
     final const TABARD_PRESSURE_TYPE = 8;
+    final const CONSTANZO_PRESSURE_TYPE = 16;
 
     //Player action global variables
     //Delete these in stNextPlayer

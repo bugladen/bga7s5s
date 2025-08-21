@@ -405,7 +405,7 @@ trait UtilitiesTrait
         {
             foreach ($charactersAtLocation as $character) 
             {
-                if (!$character->ControllerId) continue;
+                if (!$character->isControlled()) continue;
 
                 $player = $playerInfluences[$character->ControllerId];
 
@@ -422,6 +422,13 @@ trait UtilitiesTrait
                         break;
                 }
                 $playerInfluences[$character->ControllerId] = $player;
+            }
+
+            //If Constanzo is in play, he gets 1 influence for each pressure type
+            if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CONSTANZO_PRESSURE_TYPE))
+            {
+                $constanzo = $this->theah->getCardById($this->globals->get(Game::CONSTANZO_ID));
+                $playerInfluences[$constanzo->ControllerId]['influence'] += 1;
             }
         }
 
@@ -442,16 +449,10 @@ trait UtilitiesTrait
         $ties = array_filter($playerInfluences, fn($player) => $player['influence'] == $maxInfluence);
 
         $pressureType = $this->globals->get(Game::PRESSURE_TYPE);
-        if ($pressureType == Game::NORMAL_PRESSURE_TYPE)
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE) || 
+            $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE))
         {
-            if (count($ties) > 1 || $attemptingPlayerId != $maxPlayerId) 
-                return [false, $totals];
-
-            return [true, $totals];
-        }
-        else if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE) || 
-                 $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE))
-        {
+            //Ties win 
             if ($attemptingPlayerId == $maxPlayerId || array_key_exists($attemptingPlayerId, $ties))
                 return [true, $totals];
 
@@ -459,7 +460,11 @@ trait UtilitiesTrait
         }
         else
         {
-            throw new \Exception("Invalid pressure type: $pressureType");
+            //Ties do not win
+            if (count($ties) > 1 || $attemptingPlayerId != $maxPlayerId) 
+                return [false, $totals];
+
+            return [true, $totals];
         }
     }
 

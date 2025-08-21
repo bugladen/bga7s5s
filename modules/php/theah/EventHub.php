@@ -419,6 +419,8 @@ trait EventHub
     
                         $card = $theah->getCardById($event->cardId);
                         $card->Location = $discardPileName;
+                        $card->Engaged = false;
+                        if ($card instanceof Character) $card->resetModifiedCharacterStats();
                         $card->IsUpdated = true;
     
                     $this->game->notifyAllPlayers("cardDiscardedFromPlay", clienttranslate('${card_inject_code} discarded from ${location}.'), [

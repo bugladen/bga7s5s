@@ -45,7 +45,56 @@ $machinestates = [
         "description" => clienttranslate("Creating the City..."),
         "type" => "game",
         "action" => "stBuildDecks",
-        "transitions" => ["" => States::DAWN_NEW_DAY]
+        "transitions" => ["" => States::SETUP_TABLE]
+    ],
+
+    States::SETUP_TABLE => [
+        "name" => "setupTable",
+        "description" => clienttranslate("Setting up the Table..."),
+        "type" => "game",
+        "action" => "stSetupTable",
+        "transitions" => ["" => States::SETUP_TABLE_EVENTS]
+    ],
+    States::SETUP_TABLE_EVENTS => [
+        "name" => "setupTableEvents",
+        "description" => clienttranslate("Resolving Events for the Table Setup..."),
+        "type" => "game",
+        "action" => "stRunEvents",
+        "transitions" => [
+            "01006" => States::SETUP_TABLE_01006,
+            "reaction" => States::SETUP_TABLE_REACTIONS,
+            "endOfEvents" => States::DAWN_NEW_DAY,
+            "endOfGame" => States::END_GAME
+        ]
+    ],
+    States::SETUP_TABLE_REACTIONS => [
+        "name" => "playerReaction",
+        "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+        "descriptionmyturn" => "",
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actReactionForState", 
+        ],
+        "transitions" => [
+            "done" => States::SETUP_TABLE_EVENTS, 
+            "pay" => States::SETUP_TABLE_PAY_FOR_REACTION,
+        ]
+    ],
+    States::SETUP_TABLE_PAY_FOR_REACTION => [
+        "name" => "playerPayForReaction",
+        "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+        "descriptionmyturn" => "",
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actBack",
+            "actPayForReaction", 
+        ],
+        "transitions" => [
+            "back" => States::SETUP_TABLE_REACTIONS, 
+            "paid" => States::SETUP_TABLE_EVENTS, 
+        ]
     ],
 
     States::DAWN_NEW_DAY => [
@@ -1755,9 +1804,9 @@ $machinestates = [
             "transitions" => [
                 "brutePaidFor" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 "back" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE
-                ]
-            ],
-    
+            ]
+        ],
+
         States::DUEL_STARTED => [
             "name" => "duelStarted",
             "type" => "game",

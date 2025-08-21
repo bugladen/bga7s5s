@@ -4,6 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 class Events
 {
+    const TableSetup = 'EventTableSetup';
+    
     //Phase Events
     const NewDay = 'EventNewDay';
     const PhaseDawnBeginning = 'EventPhaseDawnBeginning';

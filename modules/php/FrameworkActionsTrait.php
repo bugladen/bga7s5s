@@ -1021,6 +1021,10 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Performer cannot Claim because it is engaged."));
         }
 
+        if ($performer->DashedInfluence) {
+            throw new \BgaUserException(self::_("Performer cannot Claim because it has a Dashed Influence."));
+        }
+
         $charactersInCity = $this->theah->getCharactersInCityByPlayerId($activePlayerId);
         $characterIds = array_map(fn($character) => $character->Id, $charactersInCity);
 

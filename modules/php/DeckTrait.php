@@ -71,8 +71,7 @@ trait DeckTrait
                 $this->DbQuery($sql);
 
                 //Notify players about the leaders
-                $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} plays <strong>${player_faction} Faction</strong> and ${leader_inject_code} as their leader.'), [
-                    'i18n' => ['player_faction', 'leader_name'],
+                $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} is playing <strong>${player_faction} Faction</strong> and ${leader_inject_code} as their leader.'), [
                     "player_name" => $player['player_name'],
                     "player_faction" => $card->Faction,
                     "leader_inject_code" => $card->getInjectCode(),

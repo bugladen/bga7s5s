@@ -36,6 +36,11 @@ trait ZombieTrait
 
         if ($state["type"] === "activeplayer") {
             switch ($stateName) {
+                case "setupTable_01006":
+                    // Default action: Pass or take first available option
+                    $this->actPass();
+                    break;
+
                 case "planningPhaseResolveSchemes_01044":
                 case "planningPhaseResolveSchemes_01045":
                 case "planningPhaseResolveSchemes_01145":
@@ -48,7 +53,6 @@ trait ZombieTrait
                 // Planning Phase States
                 case "planningPhaseResolveSchemes_01016":
                 case "planningPhaseResolveSchemes_01016_2":
-                case "planningPhaseResolveSchemes_01016_3":
                 case "planningPhaseResolveSchemes_01098":
                 case "planningPhaseResolveSchemes_01125":
                 case "planningPhaseResolveSchemes_01125_2":
@@ -253,6 +257,11 @@ trait ZombieTrait
                     $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked');
                     break;
 
+                // Setup Table States
+                case "setupTable_01006_2":
+                    $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
+                    break;
+
                 // Planning Phase
                 case "planningPhase":
                     // Default action: Mark as planned (auto-pick first available)
@@ -261,8 +270,12 @@ trait ZombieTrait
                     break;
 
                 // Acknowledgment States
+                case "planningPhaseResolveSchemes_01016_3":
                 case "planningPhaseResolveSchemes_01147": // Let's Haggle
                 case "planningPhaseEnd_01098_2": // The Cat's Embargo
+                    $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
+                    break;
+
                 case "highDramaPhase01035": // Kaspar
                 case "highDramaPhase01038": // Otto Streit
                 case "highDramaPhase01180": // Kaj Kousei

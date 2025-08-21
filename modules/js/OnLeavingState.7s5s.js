@@ -17,6 +17,17 @@
 
         const methods = {
 
+            'setupTable_01006': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+            'setupTable_01006_2': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+
             'planningPhaseResolveSchemes_01016': () => {
                 this.resetCityLocations();
             },

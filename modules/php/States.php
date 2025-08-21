@@ -16,7 +16,13 @@ class States
 {
     const GAME_SETUP = 1;
     const PICK_DECKS = 5;
-    const BUILD_TABLE = 9;
+    const BUILD_TABLE = 8;
+    const SETUP_TABLE = 9;
+        const SETUP_TABLE_EVENTS = 90;
+        const SETUP_TABLE_01006 = 901006;
+        const SETUP_TABLE_01006_2 = 9010062;
+        const SETUP_TABLE_REACTIONS = 91;
+        const SETUP_TABLE_PAY_FOR_REACTION = 92;
     
     const DAWN_NEW_DAY = 10;
         const DAWN_NEW_DAY_EVENTS = 100;
