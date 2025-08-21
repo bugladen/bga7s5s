@@ -74,7 +74,7 @@ class Reaction_01006 extends CardReaction
             //Get the id of the character from the reactionId
             $id = str_replace("loseBrute-", "", $reactionId);
             $character = $game->theah->getCardById($id);
-            $character->removeTrait("Brute");
+            $character->removeTrait($game, "Brute");
             $character->IsUpdated = true;
 
             $don = $this->getOwningCharacter($game->theah);

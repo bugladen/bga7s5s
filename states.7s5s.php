@@ -118,6 +118,20 @@ $machinestates += [
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01015 => [
+        "name" => "highDramaPhase01015",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('The Great Game: ${you} must choose a character to wound:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01029 => [
         "name" => "highDramaPhase01029",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

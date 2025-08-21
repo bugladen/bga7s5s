@@ -20,7 +20,7 @@ abstract class Brute extends FactionCharacter
         {
             if (!$this->hasTrait("Brute"))
             {
-                $this->addTrait("Brute");
+                $this->addTrait($event->theah->game, "Brute");
                 $this->IsUpdated = true;
             }
         }

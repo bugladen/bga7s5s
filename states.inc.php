@@ -995,6 +995,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "01015" => States::HIGH_DRAMA_PLAYER_TURN_01015,
                 "01029" => States::HIGH_DRAMA_PLAYER_TURN_01029,
                 "01035" => States::HIGH_DRAMA_PLAYER_TURN_01035,
                 "01036" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,

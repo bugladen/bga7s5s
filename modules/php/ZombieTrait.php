@@ -142,6 +142,7 @@ trait ZombieTrait
                     $this->actBack();
                     break;
 
+                case "highDramaPhase01015": // The Great Game
                 case "highDramaPhase01049_2": // Polished Flintlock engage
                 case "highDramaPhase01056_2": // Move Along choice
                 case "highDramaPhase01072_2": // Réputation Méritée city card

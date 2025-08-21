@@ -190,6 +190,11 @@
                 this.addActionButton(`actThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
                 this.addActionButton(`actRiposte`, _('+1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
+
+            'highDramaPhase01015': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
     
             'highDramaPhase01029': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());

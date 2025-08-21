@@ -411,18 +411,27 @@ trait EventHub
 
             case $event instanceof EventCardDiscardedFromPlay:
                 $handler = function (Theah $theah, EventCardDiscardedFromPlay $event)
-                    {
-                        $discardPileName = $theah->game->getPlayerDiscardDeckName($event->ownerId);
+                {
+                    $discardPileName = $theah->game->getPlayerDiscardDeckName($event->ownerId);
 
-                        $deck = $theah->game->getGameDeckObject();
-                        $deck->moveCard($event->cardId, $discardPileName);
-    
-                        $card = $theah->getCardById($event->cardId);
-                        $card->Location = $discardPileName;
-                        $card->Engaged = false;
-                        if ($card instanceof Character) $card->resetModifiedCharacterStats();
-                        $card->IsUpdated = true;
-    
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->moveCard($event->cardId, $discardPileName);
+
+                    $card = $theah->getCardById($event->cardId);
+                    if ($card instanceof Character)
+                    {
+                        //Character has been destroyed, so recreate it because it has no memory of past state
+                        $fullClassname = get_class($card);
+                        $pos = strrpos($fullClassname, '\\');
+                        $className = substr($fullClassname, $pos + 2);
+                        $card = $theah->game->instantiateCard($className);            
+                        $card->setId($event->cardId);
+                        $theah->addCardToWorld($card);
+                    }
+                    $card->Location = $discardPileName;
+                    $card->Engaged = false;
+                    $card->IsUpdated = true;
+
                     $this->game->notifyAllPlayers("cardDiscardedFromPlay", clienttranslate('${card_inject_code} discarded from ${location}.'), [
                         'i18n' => ['location'],
                         "playerId" => $event->ownerId,
@@ -430,9 +439,9 @@ trait EventHub
                         "cardId" => $event->cardId,
                         "location" => $event->fromLocation,
                     ]);
-                    };
-                    $handler($this, $event);
-                    break;
+                };
+                $handler($this, $event);
+                break;
 
             case $event instanceof EventCardEngaged:
                 $handler = function (Theah $theah, EventCardEngaged $event)
@@ -1383,26 +1392,47 @@ trait EventHub
                 {
                     $character = $theah->getCardById($event->characterId);
                     $locker = $theah->game->getPlayerLockerName($character->ControllerId);
-                    $deck = $theah->game->getGameDeckObject();
-                    $deck->moveCard($event->characterId, $locker);
+                    $location = $locker;
 
-                    //Card has been moved to the locker, so recreate it because it has no memory of past state
+                    if ($character->hasTrait("Brute"))
+                    {
+                        $discardPileName = $theah->game->getPlayerDiscardDeckName($character->ControllerId);
+                        $location = $discardPileName;
+                        $deck = $theah->game->getGameDeckObject();
+                        $deck->moveCard($event->characterId, $discardPileName);
+
+                        $this->game->notifyAllPlayers("cardDiscardedFromPlay", clienttranslate('${card_inject_code} has been destroyed and sent to the discard pile due to: ${reason} '), [
+                            'i18n' => ['location'],
+                            "playerId" => $character->ControllerId,
+                            "card_inject_code" => $character->getInjectCode(),
+                            "cardId" => $character->Id,
+                            "location" => $character->Location,
+                            "reason" => $event->reason,
+                        ]);
+                        }
+                    else
+                    {
+                        $deck = $theah->game->getGameDeckObject();
+                        $deck->moveCard($event->characterId, $locker);
+
+                        $theah->game->notifyAllPlayers("characterDestroyed", clienttranslate('${target_inject_code} has been destroyed and sent to the locker due to: ${reason} '), [
+                            'i18n' => ['reason'],
+                            "playerId" => $event->playerId,
+                            "target_inject_code" => $character->getInjectCode(),
+                            "characterId" => $event->characterId,
+                            "reason" => $event->reason,
+                        ]);
+                    }
+
+                    //Card has been destroyed, so recreate it because it has no memory of past state
                     $fullClassname = get_class($character);
                     $pos = strrpos($fullClassname, '\\');
                     $className = substr($fullClassname, $pos + 2);
                     $character = $theah->game->instantiateCard($className);            
                     $character->setId($event->characterId);
-                    $character->Location = $locker;
+                    $character->Location = $location;
                     $character->IsUpdated = true;
                     $theah->addCardToWorld($character);
-
-                    $theah->game->notifyAllPlayers("characterDestroyed", clienttranslate('${target_inject_code} has been destroyed and sent to the locker due to: ${reason} '), [
-                        'i18n' => ['reason'],
-                        "playerId" => $event->playerId,
-                        "target_inject_code" => $character->getInjectCode(),
-                        "characterId" => $event->characterId,
-                        "reason" => $event->reason,
-                    ]);
                 };
                 $handler($this, $event);
                 break;
