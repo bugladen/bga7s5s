@@ -30,7 +30,6 @@ class Reaction_01039 extends CardReaction
         $adjacentLocations = $theah->getAdjacentCityLocations($philip->Location);
         foreach ($adjacentLocations as $locationName)
         {
-            $location = $theah->getCityLocation($locationName);
             $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Move to %s'), $locationName), "moveTo-$locationName");
         }
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');

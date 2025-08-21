@@ -1113,13 +1113,14 @@ body {
     pointer-events: none
 }
 
-._7sfs-available-card-ability {
+._7sfs-card-info {
     position:absolute;
     top: 350px;
     left: 5px;
     color:white;
     font-size:12px;
     font-weight:bold;
+    padding:5px;
 }
 
 ._7sfs-lethal {

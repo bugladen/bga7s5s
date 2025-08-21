@@ -136,10 +136,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
             return;
         }
 
+        const traits = card.traits?.join(', ') ?? '';
         const html = `
         <div style="position:relative;">
             <img src="${g_gamethemeurl + card.image}" />
-            <div class="_7sfs-available-card-ability">
+            <div class="_7sfs-card-info">
+                <div style="background-color:white; color:black">Traits: ${traits}</div>
                 ${card.actions?.map((action) => `<div style="background-color:${action.available ? 'green' : 'red'};">${_('Action:')} ${_(action.shortName)}</div>`).join('') ?? ''}
                 ${card.reactions?.map((reaction) => `<div style="background-color:${reaction.available ? 'green' : 'red'};">${_('Reaction:')} ${_(reaction.shortName)}</div>`).join('') ?? ''}
                 ${card.maneuvers?.map((maneuver) => `<div style="background-color:${maneuver.available ? 'green' : 'red'};">${_('Maneuver:')} ${_(maneuver.shortName)}</div>`).join('') ?? ''}

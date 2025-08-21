@@ -248,6 +248,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         {
             //Add the trait to the card
             card.traits.push(args.trait);
+            this.createTooltipForCard(card);
         }
     },
 
@@ -262,6 +263,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         {
             //Remove the trait from the card
             card.traits = card.traits.filter(trait => trait !== args.trait);
+            this.createTooltipForCard(card);
         }
     },
 
