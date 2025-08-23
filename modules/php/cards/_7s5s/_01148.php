@@ -1,8 +1,16 @@
 <?php
 
+/**
+ * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
+ * SeventhSeaCityOfFiveSails implementation : © Edward Mittelstedt bugbucket@comcast.net
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See https://en.doc.boardgamearena.com/Studio for more information.
+ */
+
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01148;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01148;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
