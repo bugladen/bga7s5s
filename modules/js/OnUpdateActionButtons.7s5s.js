@@ -388,6 +388,24 @@
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
+
+            'highDramaPhase01148': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase01148_3': () => {
+                this.addActionButton(`actFactionCardSelected`, _('Confirm'), () => this.onChooseHandCardConfirmed());
+                this.addActionButton(`actFinished`, _('Finished'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
+                dojo.addClass('actFactionCardSelected', 'disabled');
+            },
+
+            'highDramaPhase01148_4': () => {
+                if (!args.args.isEngaged)
+                    this.addActionButton(`actEngage`, _('Engage'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actWound`, _('Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
     
             'highDramaPhase01149': () => {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));

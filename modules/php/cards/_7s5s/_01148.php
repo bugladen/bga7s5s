@@ -2,15 +2,18 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01148;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
-class _01148 extends Scheme
+class _01148 extends Scheme implements IHasActions
 {
+    use ActionTrait;
     public function __construct()
     {
         parent::__construct();
@@ -28,6 +31,10 @@ class _01148 extends Scheme
             "Betrayal", 
             "Solitary",
         ];
+
+        $this->Actions = [
+            new Action_01148(),
+        ];
     }
 
     public function handleEvent(Event $event)
@@ -40,22 +47,10 @@ class _01148 extends Scheme
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
-            $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($reknown instanceof EventReknownAddedToLocation) {
-                $reknown->playerId = $this->ControllerId;
-                $reknown->location = Game::LOCATION_CITY_DOCKS;
-                $reknown->amount = 1;
-                $reknown->description = $this->getInjectCode();
-            }
+            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_DOCKS, 1, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
 
-            $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($reknown instanceof EventReknownAddedToLocation) {
-                $reknown->playerId = $this->ControllerId;
-                $reknown->location = Game::LOCATION_CITY_BAZAAR;
-                $reknown->amount = 1;
-                $reknown->description = $this->getInjectCode();
-            }
+            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
         }
     }

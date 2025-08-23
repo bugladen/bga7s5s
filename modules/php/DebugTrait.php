@@ -14,6 +14,7 @@
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
@@ -96,15 +97,22 @@ trait DebugTrait
         }
     }
 
-    public function debug_SetCardController(int $cardId, int $playerId)
+    public function debug_RecruitMercenary(int $cardId, int $playerId)
     {
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
             throw new \BgaUserException(self::_("Card not found"));
 
-        $card->ControllerId = $playerId;
-        $this->updateCardObjectInDb($card);
+        $recruitCharacterEvent = $this->theah->createEvent(Events::CharacterRecruited);
+        if ($recruitCharacterEvent instanceof EventCharacterRecruited) {
+            $recruitCharacterEvent->characterId = $cardId;
+            $recruitCharacterEvent->playerId = $playerId;
+            $recruitCharacterEvent->discount = 0;
+            $recruitCharacterEvent->cost = 0;
+        }
+        $this->theah->queueEvent($recruitCharacterEvent);
+        $this->theah->runEvents($debug = true);
     }
 
     public function debug_EngageCard(int $cardId, int $playerId)

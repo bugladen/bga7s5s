@@ -688,6 +688,58 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01148 => [
+        "name" => "highDramaPhase01148",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose a Character to Engage or Wound: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
+            "mercenaryChosen" => States::HIGH_DRAMA_PLAYER_TURN_01148_2
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01148_2 => [
+        "name" => "highDramaPhase01148_2",
+        "type" => "game",
+        "action" => "stFromCard",
+        "transitions" => [
+            "proceed" => States::HIGH_DRAMA_PLAYER_TURN_01148_3,
+            "cancel" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01148_3 => [
+        "name" => "highDramaPhase01148_3",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose a card to discard or click Finished: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actFinished"
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01148_4 => [
+        "name" => "highDramaPhase01148_4",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('${you} must must choose an option to manipulate the target Character: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01149 => [
         "name" => "highDramaPhase01149",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

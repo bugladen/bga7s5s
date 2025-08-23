@@ -134,6 +134,7 @@ trait ZombieTrait
                 case "highDramaPhase01076": // Blood Mark location
                 case "highDramaPhase01076_2": // Blood Mark character        
                 case "highDramaPhase01147": // Let's Haggle
+                case "highDramaPhase01148": // Marooned
                 case "highDramaPhase01149": // Midnight Shipment
                 case "highDramaPhase01156": // Matchlock Musket discard
                 case "highDramaPhase01156_2": // Matchlock Musket target
@@ -149,6 +150,8 @@ trait ZombieTrait
                 case "highDramaPhase01081": // Gallant Deeds
                 case "highDramaPhase01085": // Porté Travel
                 case "highDramaPhase01086": // Status Matters
+                case "highDramaPhase01148_3": // Marooned discard
+                case "highDramaPhase01148_4": // Marooned manipulate
 
                     $this->gamestate->nextState("");
                     break;

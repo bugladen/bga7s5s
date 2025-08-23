@@ -996,6 +996,79 @@
                     this.clientStateArgs.attachmentsInPlay = args.args.args.attachmentsInPlay;
                 }
             },
+
+            'highDramaPhase01148': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[args.args.args.schemeId];
+                    const schemeImage = $(`${card.divId}_image`);
+                    dojo.addClass(schemeImage, '_7sfs-chosen');
+                    this.clientStateArgs.schemeId = args.args.args.schemeId;
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.numberOfCardsSelectable = 1;
+                    args.args.args.charactersIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.charactersIds = args.args.args.charactersIds;
+                }
+            },
+            'highDramaPhase01148_3': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    card = this.cardProperties[args.args.args.schemeId];
+                    const schemeImage = $(`${card.divId}_image`);
+                    dojo.addClass(schemeImage, '_7sfs-chosen');
+                    this.clientStateArgs.schemeId = args.args.args.schemeId;
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    card = this.cardProperties[args.args.args.targetId];
+                    if (card)
+                    {
+                        const targetImage = $(`${card.divId}_image`);
+                        dojo.addClass(targetImage, '_7sfs-chosen');
+                        this.clientStateArgs.targetId = args.args.args.targetId;
+                    }
+    
+                    this.factionHand.setSelectionMode(1);
+                }
+            },
+            'highDramaPhase01148_4': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    card = this.cardProperties[args.args.args.schemeId];
+                    const schemeImage = $(`${card.divId}_image`);
+                    dojo.addClass(schemeImage, '_7sfs-chosen');
+                    this.clientStateArgs.schemeId = args.args.args.schemeId;
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    card = this.cardProperties[args.args.args.targetId];
+                    if (card)
+                    {
+                        const targetImage = $(`${card.divId}_image`);
+                        dojo.addClass(targetImage, '_7sfs-chosen');
+                        this.clientStateArgs.targetId = args.args.args.targetId;
+                    }
+    
+                    this.factionHand.setSelectionMode(1);
+                }
+            },
+                
     
             'highDramaPhase01149': () => {
                 if (this.isCurrentPlayerActive()) {

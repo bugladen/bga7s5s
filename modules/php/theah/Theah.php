@@ -703,6 +703,56 @@ class Theah
         return null;
     }
 
+    public function getCharactersInCityWithOpposingCharacters(int $playerId): array
+    {
+        $characters = $this->getCharactersInCityByPlayerId($playerId);
+        $performers = [];
+        foreach ($characters as $character)
+        {
+            $opposingCharacters = $this->getCharactersAtLocation($character->Location);
+            $opposingCharacters = array_filter($opposingCharacters, fn($character) => $character->isNotControlledByPlayer($playerId));
+            if (count($opposingCharacters) > 0)
+            {
+                $performers[] = $character;
+                break;
+            }
+        }
+
+        return $performers;
+    }
+
+    public function getCharactersInCityWithOpposingMercenaries(int $playerId): array
+    {
+        $characters = $this->getCharactersInCityByPlayerId($playerId);
+        $performers = [];
+        foreach ($characters as $character)
+        {
+            $opposingCharacters = $this->getCharactersAtLocation($character->Location);
+            $opposingCharacters = array_filter($opposingCharacters, fn($character) => $character->isNotControlledByPlayer($playerId) && $character->hasTrait("Mercenary"));
+            if (count($opposingCharacters) > 0)
+            {
+                $performers[] = $character;
+                break;
+            }
+        }
+
+        return $performers;
+    }
+
+    public function getOpposingCharactersAtLocation(string $location, int $playerId): array
+    {
+        $characters = $this->getCharactersAtLocation($location);
+        $characters = array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($playerId)));
+        return $characters;
+    }
+
+    public function getOpposingMercenariesAtLocation(string $location, int $playerId): array
+    {
+        $characters = $this->getCharactersAtLocation($location);
+        $characters = array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($playerId) && $character->hasTrait("Mercenary")));
+        return $characters;
+    }
+
     function getPressureTypes(Character $performer, string $startingStatType): Array
     {        
         $pressureTypes = [$startingStatType];
