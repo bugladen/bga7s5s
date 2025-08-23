@@ -91,6 +91,7 @@ class Game extends \Table
     final const REPUTATION_MERITEE_PRESSURE_TYPE = 4;
     final const TABARD_PRESSURE_TYPE = 8;
     final const CONSTANZO_PRESSURE_TYPE = 16;
+    final const CONTEMPT_AND_HATRED_PRESSURE_TYPE = 32;
 
     //Player action global variables
     //Delete these in stNextPlayer

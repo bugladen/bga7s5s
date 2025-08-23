@@ -680,19 +680,6 @@ $machinestates = [
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
 
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01143 => [
-            "name" => "planningPhaseResolveSchemes_01143",
-            "description" => clienttranslate('Contempt and Hatred: ${actplayer} may choose a city location to place Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('Contempt and Hatred: ${you} may choose a city location to place Reknown onto:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actPass",
-                "actPlanningPhase_01143", 
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-        ],
-
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01144 => [
             "name" => "planningPhaseResolveSchemes_01144",
             "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose a city location to place Reknown onto.'),
@@ -986,6 +973,7 @@ $machinestates = [
                 "01083" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01085" => States::HIGH_DRAMA_PLAYER_TURN_01085,
                 "01086" => States::HIGH_DRAMA_PLAYER_TURN_01086,
+                "01143" => States::HIGH_DRAMA_CLAIM_ACTION,
                 "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
                 "01148" => States::HIGH_DRAMA_PLAYER_TURN_01148,
                 "01148_3" => States::HIGH_DRAMA_PLAYER_TURN_01148_4,

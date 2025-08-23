@@ -388,7 +388,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createCharacterInfluenceModifiedEvent(int $playerId, int $characterId, int $oldInfluence, int $newInfluence): EventCharacterInfluenceModified
+    public static function createCharacterInfluenceModifiedEvent(int $playerId, int $characterId, int $oldInfluence, int $newInfluence, string $reason = ''): EventCharacterInfluenceModified
     {
         $event = self::createEvent(Events::CharacterInfluenceModified);
         if ($event instanceof EventCharacterInfluenceModified)
@@ -397,6 +397,7 @@ class EventFactory
             $event->CharacterId = $characterId;
             $event->OldInfluence = $oldInfluence;
             $event->NewInfluence = $newInfluence;
+            $event->Reason = $reason;
         }
         return $event;
     }

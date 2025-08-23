@@ -123,6 +123,19 @@ $machinestates += [
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
 
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01143 => [
+        "name" => "planningPhaseResolveSchemes_01143",
+        "description" => clienttranslate('Contempt and Hatred: ${actplayer} may choose a city location to place Reknown onto.'),
+        "descriptionmyturn" => clienttranslate('Contempt and Hatred: ${you} may choose a city location to place Reknown onto:'),
+        "type" => "activeplayer",
+        "args" => "argsEmpty",
+        "possibleactions" => [
+            "actPass",
+            "actFromCardWithLocations", 
+        ],
+        "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+    ],
+
     States::PLANNING_PHASE_RESOLVE_SCHEMES_01147 => [
         "name" => "planningPhaseResolveSchemes_01147",
         "description" => clienttranslate('Let\'s Haggle: Your opponent(s) must acknowledge revealed cards.'),

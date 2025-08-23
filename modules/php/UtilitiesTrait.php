@@ -449,10 +449,12 @@ trait UtilitiesTrait
         $ties = array_filter($playerInfluences, fn($player) => $player['influence'] == $maxInfluence);
 
         $pressureType = $this->globals->get(Game::PRESSURE_TYPE);
-        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE) || 
-            $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE))
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE)
+            || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE)
+            || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE
+        ))
         {
-            //Ties win 
+            //Ties win
             if ($attemptingPlayerId == $maxPlayerId || array_key_exists($attemptingPlayerId, $ties))
                 return [true, $totals];
 

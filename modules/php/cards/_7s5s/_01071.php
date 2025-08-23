@@ -172,7 +172,9 @@ class _01071 extends Scheme implements IHasActions
             $playerId, 
             $character->Id, 
             $character->ModifiedInfluence, 
-            $character->ModifiedInfluence + 1);
+            $character->ModifiedInfluence + 1,
+            $this->getInjectCode()
+        );
 
         $theah->eventCheck($modifiedEvent);
         $theah->queueEvent($modifiedEvent);
@@ -189,7 +191,9 @@ class _01071 extends Scheme implements IHasActions
             $playerId, 
             $character->Id, 
             $character->ModifiedInfluence, 
-            $character->ModifiedInfluence - 1);
+            $character->ModifiedInfluence - 1,
+            $this->getInjectCode()
+        );
 
         $theah->eventCheck($modifiedEvent);
         $theah->queueEvent($modifiedEvent);

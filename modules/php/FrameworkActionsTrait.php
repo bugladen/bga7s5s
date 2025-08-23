@@ -1,26 +1,22 @@
 <?php
 
 /**
- *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
  * SeventhSeaCityOfFiveSails implementation : © Edward Mittelstedt bugbucket@comcast.net
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
- * See http://en.boardgamearena.com/#!doc/Studio for more information.
- * -----
+ * See https://en.doc.boardgamearena.com/Studio for more information.
  */
 
- namespace Bga\Games\SeventhSeaCityOfFiveSails;
+namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
@@ -332,46 +328,6 @@ trait FrameworkActionsTrait
         $this->theah->queueEvent($schemeMoveEvent);
 
         // Go back and finish running the Scheme events
-        $this->gamestate->nextState("");
-    }
-
-    public function actPlanningPhase_01143(string $locations)
-    {
-        $locations = json_decode($locations, true);
-        $location = array_shift($locations);
-        $playerId = $this->getActivePlayerId();
-        $playerName = $this->getActivePlayerName();
-
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) {
-            $event->playerId = $this->getActivePlayerId();
-            $event->location = $location;
-            $event->amount = 1;
-            $event->description = $playerName;
-        }
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        //Get all cards in the chosen location
-        $this->theah->buildCity();
-        $cards = $this->theah->getCardObjectsAtLocation($location);
-        foreach ($cards as $card)
-        {
-            //Discard all city cards
-            if ($card instanceof ICityDeckCard)
-            {
-                $discard = $this->theah->createEvent(Events::CardAddedToCityDiscardPile);
-                if ($discard instanceof EventCardAddedToCityDiscardPile)
-                {
-                    $discard->cardId = $card->Id;
-                    $discard->fromLocation = $location;
-                    $discard->playerId = $playerId;
-                }
-
-                $this->theah->queueEvent($discard);
-            }
-        }
-
         $this->gamestate->nextState("");
     }
 
