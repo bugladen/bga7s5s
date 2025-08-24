@@ -158,10 +158,10 @@
             'planningPhaseResolveSchemes_01152_2': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
-                dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     
             'planningPhaseResolveSchemes_01152_3': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },

@@ -379,10 +379,6 @@
                         this.makeCityLocationSelectable(location);
                         count++;
                     });
-    
-                    if (count > 0) {
-                        dojo.addClass('actPass', 'disabled');
-                    }
                 }
             },
     

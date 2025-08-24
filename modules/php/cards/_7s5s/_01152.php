@@ -126,10 +126,6 @@ class _01152 extends Scheme implements IHasActions
             if ($reknown <= 0)
                 throw new \BgaUserException(sprintf($game->translate("%s does not have any reknown to move."), $location));
     
-            $event = EventFactory::createReknownRemovedFromLocationEvent($this->ControllerId, $location, 1, sprintf($game->translate("%s: Moving Reknown from one Location to an adjacent location"), $this->getInjectCode()));
-            $game->theah->eventCheck($event);
-            $game->theah->queueEvent($event);
-    
             $game->globals->set(GAME::CHOSEN_LOCATION, $location);
     
             $game->gamestate->nextState("locationChosen");
@@ -139,11 +135,16 @@ class _01152 extends Scheme implements IHasActions
         {
             $location = $ids[0];
 
-            $event = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, sprintf($game->translate("%s: Moving Reknown from one Location to an adjacent location"), $this->getInjectCode()));
+            $fromLocation = $game->globals->get(GAME::CHOSEN_LOCATION);
+            $event = EventFactory::createReknownRemovedFromLocationEvent($this->ControllerId, $fromLocation, 1, $this->getInjectCode());
+            $game->theah->eventCheck($event);
+            $game->theah->queueEvent($event);    
+
+            $event = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
     
-            $game->gamestate->nextState("");
+            $game->gamestate->nextState("locationChosen");
         }
     }
 }

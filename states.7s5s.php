@@ -207,9 +207,13 @@ $machinestates += [
                 "type" => "activeplayer",
                 "args" => "argsForState",
                 "possibleactions" => [
+                    "actBack",
                     "actFromCardWithLocations"
                 ],
-                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+                "transitions" => [
+                    "back" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2,
+                    "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
+                ]
             ],
 
     States::HIGH_DRAMA_PLAYER_TURN_01015 => [
