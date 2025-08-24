@@ -107,7 +107,7 @@ class Action_01015 extends SchemeCityAction
 
             if ($performer->Location != $character->Location)
             {
-                throw new \BgaUserException($game->translate("Character is not at the same location as the performer"));
+                throw new \BgaUserException($game->translate("Character is not at the same location"));
             }
 
             $game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code}: ${player_name} used the [${action_name}] action.'), [

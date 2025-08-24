@@ -232,6 +232,22 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01012 => [
+        "name" => "highDramaPhase01012",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Sibella Scarpa') . clienttranslate(': ${you} must choose an opposing character to wound: '),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [  
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
+            "opposingCharacterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01015 => [
         "name" => "highDramaPhase01015",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

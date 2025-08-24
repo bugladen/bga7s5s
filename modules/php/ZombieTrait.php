@@ -117,6 +117,8 @@ trait ZombieTrait
                     break;
 
                 // High Drama Player Turn Event States (Card-Specific)
+                case "highDramaPhase01011": // Servo Scarpa
+                case "highDramaPhase01012": // Sibella Scarpa
                 case "highDramaPhase01044": // Armed and Marshaled
                 case "highDramaPhase01044_2": // Armed and Marshaled target
                 case "highDramaPhase01044_3": // Armed and Marshaled manipulation

@@ -105,13 +105,7 @@ class Action_01011 extends CharacterAction
             $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
 
             $servo = $this->getOwningCharacter($game->theah);
-
-            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} has used the [${action}] Action.'), [
-                'i18n' => ['action'],
-                'player_name' => $game->getPlayerNameById($servo->ControllerId),
-                'action' => $this->Name,
-                'owner_inject_code' => $servo->getInjectCode(),
-            ]);
+            $this->announceAction($game);
 
             $moveEvent = EventFactory::createCardMovedEvent($servo->ControllerId, $servo->Id, $servo->Location, $target->Location, $engage = false);
             $game->theah->queueEvent($moveEvent);

@@ -120,12 +120,7 @@ class Action_01152a extends SchemeCityAction
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
-            $game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code}: ${player_name} has used the [${action}] Action.'), [
-                'i18n' => ['action'],
-                'player_name' => $game->getPlayerNameById($scheme->ControllerId),
-                'action' => $this->Name,
-                'scheme_inject_code' => $scheme->getInjectCode(),
-            ]);
+            $this->announceAction($game);
 
             $this->setUsed($game->theah, true);
 

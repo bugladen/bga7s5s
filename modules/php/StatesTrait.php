@@ -610,15 +610,8 @@ trait StatesTrait
         {
             $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
             $action = $this->theah->getInPlayActionById($actionId);
-            $owner = $action->getOwningCard($this->theah);
             $action->SetUsed($this->theah, true);
-
-            $this->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} has used the [${action}] Action.'), [
-                'i18n' => ['action'],
-                'player_name' => $this->getActivePlayerName($playerId),
-                'action' => $action->Name,
-                'owner_inject_code' => $owner->getInjectCode(),
-            ]);
+            $action->announceAction($this);
         }
         
         //Set the location of the challenge

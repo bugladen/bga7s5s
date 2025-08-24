@@ -908,6 +908,7 @@ $machinestates = [
             "transitions" => [
                 "01011" => States::HIGH_DRAMA_PLAYER_TURN_01011,
                 "01011_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "01012" => States::HIGH_DRAMA_PLAYER_TURN_01012,
                 "01015" => States::HIGH_DRAMA_PLAYER_TURN_01015,
                 "01029" => States::HIGH_DRAMA_PLAYER_TURN_01029,
                 "01035" => States::HIGH_DRAMA_PLAYER_TURN_01035,

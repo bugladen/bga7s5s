@@ -52,12 +52,7 @@ class Action_01087 extends RiskAction
             $engardeEvent = EventFactory::createCardEngardedEvent($performer->ControllerId, $performer->Id, $owner->Id);
             $event->theah->queueEvent($engardeEvent);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
-                'i18n' => ['action'],
-                'player_name' => $game->getPlayerNameById($owner->ControllerId),
-                'action' => $this->Name,
-                'owner_inject_code' => $owner->getInjectCode(),
-            ]);
+            $this->announceAction($game);
         }
     }
 }

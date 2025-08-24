@@ -54,13 +54,8 @@ class Action_01035 extends CharacterAction
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $kaspar->Id);
             $event->theah->eventCheck($engageEvent);
             $event->queueEvent($engageEvent);
-            
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
-                'i18n' => ['action'],
-                "player_name" => $game->getActivePlayerName(),
-                "action" => $this->Name,
-                "owner_inject_code" => $kaspar->getInjectCode(),
-            ]);
+
+            $this->announceAction($game);
 
             $mercenary = $game->revealFirstCardTypeFromCityDeck($playerId, "Mercenary");
 

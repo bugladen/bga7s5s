@@ -1340,7 +1340,7 @@ trait FrameworkActionsTrait
 
         $target = $this->theah->getCardById($this->globals->get(GAME::CHOSEN_TARGET));
         if ($target->Location != $character->Location) {
-            throw new \BgaUserException(self::_("Character is not at the same location as the target."));
+            throw new \BgaUserException(self::_("Character is not at the same location"));
         }    
 
         if( ! $character->canIntervene()) {

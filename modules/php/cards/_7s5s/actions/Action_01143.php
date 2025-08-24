@@ -39,12 +39,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE);
 
-            $game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code}: ${player_name} has used the [${action}] Action.'), [
-                'i18n' => ['action'],
-                'player_name' => $game->getPlayerNameById($scheme->ControllerId),
-                'action' => $this->Name,
-                'scheme_inject_code' => $scheme->getInjectCode(),
-            ]);
+            $this->announceAction($game);
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
