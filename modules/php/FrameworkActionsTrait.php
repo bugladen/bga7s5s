@@ -408,59 +408,6 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhase_01152(string $locations)
-    {
-        $location = json_decode($locations, true)[0];
-        
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) {
-            $event->playerId = $this->getActivePlayerId();
-            $event->location = $location;
-            $event->amount = 1;
-            $event->description = "Until Morale Improves: Adding Reknown to Location";
-        }
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->gamestate->nextState("reknownPlaced");
-    }
-
-    public function actPlanningPhase_01152_2(string $locations)
-    {
-        $location = json_decode($locations, true)[0];
-
-        //Check if the location actually has reknown to move
-        $reknown = $this->getReknownForLocation($location);
-        if ($reknown <= 0)
-            throw new \BgaUserException(sprintf(self::_("%s does not have any reknown to move."), $location));
-
-        $playerId = $this->getActivePlayerId();
-        $event = EventFactory::createReknownRemovedFromLocationEvent($playerId, $location, 1, "Until Morale Improves: Moving Reknown from one Location to an adjacent location");
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->globals->set(GAME::CHOSEN_LOCATION, $location);
-
-        $this->gamestate->nextState("locationChosen");
-    }
-
-    public function actPlanningPhase_01152_3(string $locations)
-    {
-        $location = json_decode($locations, true)[0];
-
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) {
-            $event->playerId = $this->getActivePlayerId();
-            $event->location = $location;
-            $event->amount = 1;
-            $event->description = "Until Morale Improves: Moving Reknown from one Location to an adjacent location";
-        }
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->gamestate->nextState("");
-    }
-
     private function actRecruitMercenary(int $recruitId, string $payWithCards)
     {
         $character = $this->getCardObjectFromDb($recruitId);

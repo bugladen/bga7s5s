@@ -35,8 +35,7 @@ trait DeckTrait
 
             //Store the card Id in the object, and serialize the card object to the db
             $id = $this->DbGetLastId();
-            $card = $this->instantiateCard($cityCard);
-            $card->setId($id);
+            $card = $this->instantiateCard($cityCard, $id);
             $this->updateCardObjectInDb($card);
         }
         $this->cards->shuffle(Game::LOCATION_CITY_DECK);
@@ -58,28 +57,25 @@ trait DeckTrait
             $id = $this->DbGetLastId();
 
             //Instantiate the leader card and assign it the id from the db
-            $card = $this->instantiateCard($deck->leader);
+            $card = $this->instantiateCard($deck->leader, $id);
             $card->OwnerId = $playerId;
             $card->ControllerId = $playerId;
-            if ($card instanceof Leader) {
-                $card->setId($id);
-                $card->Location = $location;
-                $this->updateCardObjectInDb($card);
+            $card->Location = $location;
+            $this->updateCardObjectInDb($card);
 
-                //Set the id of the leader card in the player record
-                $sql = "UPDATE player SET leader_card_id = $id WHERE player_id = $playerId";
-                $this->DbQuery($sql);
+            //Set the id of the leader card in the player record
+            $sql = "UPDATE player SET leader_card_id = $id WHERE player_id = $playerId";
+            $this->DbQuery($sql);
 
-                //Notify players about the leaders
-                $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} is playing <strong>${player_faction} Faction</strong> and ${leader_inject_code} as their leader.'), [
-                    "player_name" => $player['player_name'],
-                    "player_faction" => $card->Faction,
-                    "leader_inject_code" => $card->getInjectCode(),
-                    "player_id" => $playerId,
-                    "player_color" => $player['player_color'],
-                    "leader" => $card->getPropertyArray($this),
-                ]);
-            }
+            //Notify players about the leaders
+            $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} is playing <strong>${player_faction} Faction</strong> and ${leader_inject_code} as their leader.'), [
+                "player_name" => $player['player_name'],
+                "player_faction" => $card->Faction,
+                "leader_inject_code" => $card->getInjectCode(),
+                "player_id" => $playerId,
+                "player_color" => $player['player_color'],
+                "leader" => $card->getPropertyArray($this),
+            ]);
 
             // *** Create the approach deck and send each card to the player ***
             $approachDeck = $deck->approach_deck;
@@ -91,8 +87,7 @@ trait DeckTrait
 
                 //Create an instance of the card, set the ID, and save it back into the db
                 $id = $this->DbGetLastId();
-                $card = $this->instantiateCard($approachCard);
-                $card->setId($id);
+                $card = $this->instantiateCard($approachCard, $id);
                 $card->OwnerId = $playerId;
                 $card->ControllerId = $playerId;
                 $card->Location = $location;
@@ -119,8 +114,7 @@ trait DeckTrait
 
                     //Create an instance of the card, set the ID, and save it back into the db
                     $id = $this->DbGetLastId();
-                    $card = $this->instantiateCard($factionCard->id);
-                    $card->setId($id);
+                    $card = $this->instantiateCard($factionCard->id, $id);
                     $card->OwnerId = $playerId;
                     $card->ControllerId = $playerId;
                     $card->Location = $location;

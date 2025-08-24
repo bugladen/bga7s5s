@@ -45,6 +45,8 @@ abstract class Card
         $this->Reknown = 0;
     }
 
+    public function addStates(Game $game) {}
+
     public function setId($id)
     {
         $this->Id = $id;

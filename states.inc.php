@@ -719,45 +719,6 @@ $machinestates = [
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
     
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01152 => [
-            "name" => "planningPhaseResolveSchemes_01152",
-            "description" => clienttranslate('Until Morale Improves: ${actplayer} may choose a City Location to place a Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('Until Morale Improves: ${you} may choose a City Location to place a Reknown onto: '),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actPlanningPhase_01152",
-                "actPassWithPass"
-            ],
-            "transitions" => [
-                "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2,
-                "reknownPlaced" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
-                ]
-            ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2 => [
-                "name" => "planningPhaseResolveSchemes_01152_2",
-                "description" => clienttranslate('Until Morale Improves: ${actplayer} must choose a City Location to move a Reknown FROM, if able.'),
-                "descriptionmyturn" => clienttranslate('Until Morale Improves: ${you} must choose a City Location to move a Reknown FROM, if able: '),
-                "type" => "activeplayer",
-                "args" => "argsEmpty",
-                "possibleactions" => [
-                    "actPlanningPhase_01152_2",
-                    "actPassWithPass"
-                ],
-                "transitions" => [
-                    "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
-                    "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3
-                    ]
-                ],
-                States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3 => [
-                    "name" => "planningPhaseResolveSchemes_01152_3",
-                    "description" => clienttranslate('Until Morale Improves: ${actplayer} must choose an adjacent City Location to move the Reknown TO.'),
-                    "descriptionmyturn" => clienttranslate('Until Morale Improves: ${you} must choose an adjacent City Location to move the Reknown TO:'),
-                    "type" => "activeplayer",
-                    "args" => "argsPlanningPhaseResolveSchemes_01152_3",
-                    "possibleactions" => ["actPlanningPhase_01152_3"],
-                    "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-                ],
     States::PLANNING_PHASE_DRAW => [
         "name" => "planningPhaseDraw",
         "description" => clienttranslate('Drawing Cards...'),
@@ -979,6 +940,8 @@ $machinestates = [
                 "01148_3" => States::HIGH_DRAMA_PLAYER_TURN_01148_4,
                 "01148_4" => States::HIGH_DRAMA_PLAYER_TURN_01148_2,
                 "01149" => States::HIGH_DRAMA_PLAYER_TURN_01149,
+                "01152a" => States::HIGH_DRAMA_PLAYER_TURN_01152a,
+                "01152b" => States::HIGH_DRAMA_PLAYER_TURN_01152b,
                 "01156" => States::HIGH_DRAMA_PLAYER_TURN_01156,
                 "01156_3" => States::HIGH_DRAMA_PLAYER_TURN_01156_3,
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,

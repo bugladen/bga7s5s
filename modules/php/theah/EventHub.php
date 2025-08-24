@@ -424,8 +424,7 @@ trait EventHub
                         $fullClassname = get_class($card);
                         $pos = strrpos($fullClassname, '\\');
                         $className = substr($fullClassname, $pos + 2);
-                        $card = $theah->game->instantiateCard($className);            
-                        $card->setId($event->cardId);
+                        $card = $theah->game->instantiateCard($className, $event->cardId);            
                         $theah->addCardToWorld($card);
                     }
                     $card->Location = $discardPileName;
@@ -1429,8 +1428,7 @@ trait EventHub
                     $fullClassname = get_class($character);
                     $pos = strrpos($fullClassname, '\\');
                     $className = substr($fullClassname, $pos + 2);
-                    $character = $theah->game->instantiateCard($className);            
-                    $character->setId($event->characterId);
+                    $character = $theah->game->instantiateCard($className, $event->characterId);            
                     $character->Location = $location;
                     $character->IsUpdated = true;
                     $theah->addCardToWorld($character);

@@ -388,7 +388,7 @@
     
             'planningPhaseResolveSchemes_01152_3': () => {
                 if (this.isCurrentPlayerActive()) {
-                    const selectedLocationElement = dojo.query(`[data-location="${args.args.location}"]`)[0];
+                    const selectedLocationElement = dojo.query(`[data-location="${args.args.args.location}"]`)[0];
     
                     const locations = this.getListOfLocationsAdjacentToLocation(selectedLocationElement.id);
                     this.numberOfCityLocationsSelectable = 1;
@@ -1090,6 +1090,40 @@
                     const schemeImage = $(`${card.divId}_image`);
                     dojo.addClass(schemeImage, '_7sfs-chosen');
                     this.clientStateArgs.schemeId = args.args.args.schemeId;
+                }
+            },
+
+            'highDramaPhase01152a': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.numberOfCardsSelectable = 1;
+                    args.args.args.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.characterIds = args.args.args.characterIds;
+                }
+            },
+
+            'highDramaPhase01152b': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.numberOfCardsSelectable = 1;
+                    args.args.args.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.characterIds = args.args.args.characterIds;
                 }
             },
 

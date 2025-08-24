@@ -12,7 +12,6 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
-use ArrayAccess;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
@@ -277,10 +276,10 @@ trait UtilitiesTrait
         return $count;
     }
 
-    public function instantiateCard($cardId) : Card 
+    public function instantiateCard(string $cardClass, ?int $id) : Card 
     {
         //Pull the first two characters of the card id to get the set
-        $set = substr($cardId, 0, 2);
+        $set = substr($cardClass, 0, 2);
 
         switch ($set) {
             case '01':
@@ -290,8 +289,12 @@ trait UtilitiesTrait
                 $set = "_7s5s";
         }
 
-        $className = "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$cardId";
+        $className = "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$cardClass";
         $card = new $className();
+        if ($id) 
+        {
+            $card->setId($id);
+        }
 
         return $card;
     }
@@ -602,5 +605,17 @@ trait UtilitiesTrait
         
         //Return true if the flag is set
         return ($global & $flag) == $flag;
+    }
+
+    //WIP. 
+    public function inStateMachine(int $state)
+    { 
+        return array_key_exists($state, $this->gamestate->states);
+    }
+
+    //WIP. 
+    public function addState(int $stateNumber, Array $state)
+    {
+        $this->gamestate->states[$stateNumber] = $state;
     }
 }

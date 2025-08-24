@@ -62,13 +62,17 @@ trait ZombieTrait
                 case "planningPhaseResolveSchemes_01143":
                 case "planningPhaseResolveSchemes_01144":
                 case "planningPhaseResolveSchemes_01144_2":
-                case "planningPhaseResolveSchemes_01152":
-                case "planningPhaseResolveSchemes_01152_2":
-                case "planningPhaseResolveSchemes_01152_3":
                 case "planningPhaseEnd_01098":
                 case "planningPhaseEnd_01098_2":
                     // Default action: Pass or take first available option
                     $this->actPass();
+                    break;
+
+                case "planningPhaseResolveSchemes_01152":
+                case "planningPhaseResolveSchemes_01152_2":
+                case "planningPhaseResolveSchemes_01152_3":
+                    // Default action: Pass or take first available option
+                    $this->actPass("pass");
                     break;
 
                 // High Drama Player Turn States
@@ -136,6 +140,8 @@ trait ZombieTrait
                 case "highDramaPhase01147": // Let's Haggle
                 case "highDramaPhase01148": // Marooned
                 case "highDramaPhase01149": // Midnight Shipment
+                case "highDramaPhase01152a": // Until Morale Improves
+                case "highDramaPhase01152b": // Until Morale Improves
                 case "highDramaPhase01156": // Matchlock Musket discard
                 case "highDramaPhase01156_2": // Matchlock Musket target
                 case "highDramaPhase01156_3": // Matchlock Musket choice

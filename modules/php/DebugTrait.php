@@ -23,15 +23,13 @@ trait DebugTrait
 {
     public function debug_AddCardToHand(string $className, int $playerId)
     {
-        $card = $this->instantiateCard($className);
-
         $location = Game::LOCATION_HAND;
         $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$className}', $playerId, '$location', $playerId)";
         $this->DbQuery($sql);
 
         //Create an instance of the card, set the ID, and save it back into the db
         $id = $this->DbGetLastId();
-        $card->setId($id);
+        $card = $this->instantiateCard($className, $id);
         $card->OwnerId = $playerId;
         $card->ControllerId = $playerId;
         $card->Location = $location;
@@ -61,7 +59,7 @@ trait DebugTrait
 
             //Store the card Id in the object, and serialize the card object to the db
             $id = $this->DbGetLastId();
-            $card->setId($id);
+            $card = $this->instantiateCard($className, $id);
             $this->updateCardObjectInDb($card);
             $this->cards->insertCardOnExtremePosition($card->Id, Game::LOCATION_CITY_DECK, true);
         }
