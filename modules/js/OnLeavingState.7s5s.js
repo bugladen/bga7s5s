@@ -194,6 +194,20 @@
                 $('faction_hand_info').innerHTML = '';
             },
 
+            'highDramaPhase01011': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+                }
+            },
+
             'highDramaPhase01015': () => {
                 if (this.isCurrentPlayerActive()) {
                     card = this.cardProperties[this.clientStateArgs.performerId];

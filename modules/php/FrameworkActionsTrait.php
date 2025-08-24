@@ -1158,7 +1158,7 @@ trait FrameworkActionsTrait
         //Sanity checks
         if ($brute == null || $brute->Location != Game::LOCATION_HAND || $brute->ControllerId != $playerId) 
         {
-            throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
+            throw new \BgaUserException(self::_("Brute is not in Player's Hand."));
         }
 
         $discount = $this->globals->get(Game::DISCOUNT);
@@ -1178,7 +1178,7 @@ trait FrameworkActionsTrait
             $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
         }
         if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(self::_("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+            throw new \BgaUserException(sprintf(self::_("Cost of Brute is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         $playerId = $this->getActivePlayerId();

@@ -246,7 +246,8 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaChallengeActionActivateTechnique': () => {
-            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            if (args.challengeType != this.SERVO_SCARPA_CHALLENGE_TYPE)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args.techniques.forEach((technique) => { 
                 this.addActionButton(
                     `actChooseTechnique${technique.id}-btn`, technique.name, () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 

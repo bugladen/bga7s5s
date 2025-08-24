@@ -613,7 +613,7 @@ trait StatesTrait
             $owner = $action->getOwningCard($this->theah);
             $action->SetUsed($this->theah, true);
 
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}.'), [
+            $this->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} has used the [${action}] Action.'), [
                 'i18n' => ['action'],
                 'player_name' => $this->getActivePlayerName($playerId),
                 'action' => $action->Name,

@@ -545,6 +545,7 @@ trait ArgumentsTrait
         return [
             "performerId" => $performerId,
             "targetId" => $targetId,
+            "challengeType" => $this->globals->get(Game::CHALLENGE_TYPE),
             "techniques" => $this->theah->getAvailableCharacterTechniques($performer)
         ];
     }

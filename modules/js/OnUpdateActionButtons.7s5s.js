@@ -191,6 +191,12 @@
                 this.addActionButton(`actRiposte`, _('+1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
 
+            'highDramaPhase01011': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'highDramaPhase01015': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
