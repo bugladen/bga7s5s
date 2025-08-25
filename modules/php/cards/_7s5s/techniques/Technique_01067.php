@@ -23,28 +23,6 @@ class Technique_01067 extends Technique
         $this->UseRiposteInstead = false;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
-    {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
-            return false;
-
-        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
-        $performer = null;
-        if ($inDuel)
-        {
-            $performer = $theah->getDuelRoundActor();
-        }
-        else
-        {
-            $performerId = $theah->game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $theah->getCharacterById($performerId);
-        }
-
-        $characters = $theah->getCharactersAtLocation($performer->Location);
-        $characters = array_filter($characters, fn($character) => $character->Id != $performer->Id && $character->ControllerId == $playerId && $character->hasTrait("Musketeer"));
-        return count($characters) > 0;        
-    }
-
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -68,11 +46,8 @@ class Technique_01067 extends Technique
 
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
-            if ( ! $this->UseRiposteInstead)
-            {
-                $event->adversaryThreat += 1;
-                $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat."), $this->Name);
-            }
+            $event->adversaryThreat += 1;
+            $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat."), $this->Name);
         }
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)

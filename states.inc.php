@@ -1060,7 +1060,6 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "01067" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01067,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_REACTIONS,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE,
                     "endOfGame" => States::END_GAME
@@ -1865,7 +1864,7 @@ $machinestates = [
                     "action" => "stRunEvents",
                     "transitions" => [
                         "reaction" => States::DUEL_CHOOSE_TECHNIQUE_REACTIONS,
-                        "01013" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS_01013,
+                        "01013" => States::DUEL_CHOOSE_TECHNIQUE_01013,
                         "01036" => States::DUEL_CHOOSE_TECHNIQUE_01036,
                         "01063" => States::DUEL_CHOOSE_TECHNIQUE_01063,
                         "01067" => States::DUEL_CHOOSE_TECHNIQUE_01067,
@@ -1900,19 +1899,6 @@ $machinestates = [
                     "transitions" => [
                         "back" => States::DUEL_CHOOSE_TECHNIQUE_REACTIONS, 
                         "paid" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS, 
-                    ]
-                ],
-                States::DUEL_CHOOSE_TECHNIQUE_EVENTS_01013 => [
-                    "name" => "duelActionResolveTechnique_01013",
-                    "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
-                    "descriptionmyturn" => clienttranslate('Vissenta Scarpa: Add Parry or Thrust: ${you} must choose Parry or Thrust:'),
-                    "type" => "activeplayer",
-                    "args" => "argsEmpty",
-                    "possibleactions" => [
-                        "actDuelActionResolveTechnique_01013", 
-                    ],
-                    "transitions" => [
-                        "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
                     ]
                 ],
             States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD => [

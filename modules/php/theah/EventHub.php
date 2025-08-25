@@ -263,28 +263,33 @@ trait EventHub
                 break;
 
             case $event instanceof EventCardDrawn:
-                $event->card->Location = Game::LOCATION_HAND;
-                $event->card->IsUpdated = true;
-
-                $deck = $this->game->getGameDeckObject();
-                $hand = $deck->getCardsInLocation(Game::LOCATION_HAND, $event->playerId);
-                $count = count($hand);
-
-                $this->game->notifyPlayer($event->playerId, "drawCard", clienttranslate('Private: You drew ${card_inject_code} because of ${reason}.'), [
-                    'i18n' => ['card_name', 'reason'],
-                    "card_inject_code" => $event->card->getInjectCode(),
-                    "card" => $event->card->getPropertyArray($this->game),
-                    "reason" => $event->reason,
-                ]);
-
-                // Notify players that card has been added to hand
-                $this->game->notifyAllPlayers("drawCardMessage", clienttranslate('${player_name} drew a card into their Faction Hand because of ${reason}.'), [
-                    'i18n' => ['reason'],
-                    "playerId" => $event->playerId,
-                    "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "reason" => $event->reason,
-                    "count" => $count,
-                ]);
+                $handler = function (Theah $theah, EventCardDrawn $event)
+                {
+                    $card = $theah->game->playerDrawCard($event->playerId);
+                    $card->Location = Game::LOCATION_HAND;
+                    $card->IsUpdated = true;
+    
+                    $deck = $theah->game->getGameDeckObject();
+                    $hand = $deck->getCardsInLocation(Game::LOCATION_HAND, $event->playerId);
+                    $count = count($hand);
+    
+                    $theah->game->notifyPlayer($event->playerId, "drawCard", clienttranslate('Private: You drew ${card_inject_code} because of ${reason}.'), [
+                        'i18n' => ['card_name', 'reason'],
+                        "card_inject_code" => $card->getInjectCode(),
+                        "card" => $card->getPropertyArray($theah->game),
+                        "reason" => $event->reason,
+                    ]);
+    
+                    // Notify players that card has been added to hand
+                    $theah->game->notifyAllPlayers("drawCardMessage", clienttranslate('${player_name} drew a card into their Faction Hand because of ${reason}.'), [
+                        'i18n' => ['reason'],
+                        "playerId" => $event->playerId,
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "reason" => $event->reason,
+                        "count" => $count,
+                    ]);
+                };
+                $handler($this, $event);
                 break;
 
             case $event instanceof EventCardAddedToCityDeck:

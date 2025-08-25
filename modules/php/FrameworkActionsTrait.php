@@ -15,7 +15,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
@@ -1444,22 +1443,6 @@ trait FrameworkActionsTrait
         $this->theah->queueEvent($threatEvent);
 
         $this->gamestate->nextState("techniqueChosen");
-    }
-
-    public function actDuelActionResolveTechnique_01013 (bool $useThrust)
-    {
-        $this->theah->buildCity();
-        $techniqueId = $this->globals->get(Game::CHOSEN_TECHNIQUE);
-        $technique = $this->theah->getTechniqueById($techniqueId);
-
-        if ($technique instanceof Technique_01013)
-        {
-            $technique->UseThrust = $useThrust;
-            $owner = $this->theah->getCharacterById($technique->OwnerId);
-            $owner->IsUpdated = true;        
-        }
-
-        $this->gamestate->nextState("");
     }
 
     public function actDuelActionGamble()

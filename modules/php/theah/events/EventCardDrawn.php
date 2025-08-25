@@ -2,11 +2,8 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
-
 class EventCardDrawn extends Event
 {
-    public Card $card;
     public int $playerId;
     public string $reason;
 
@@ -14,6 +11,7 @@ class EventCardDrawn extends Event
     {
         parent::__construct();
 
+        $this->playerId = 0;
         $this->reason = "";
     }
 

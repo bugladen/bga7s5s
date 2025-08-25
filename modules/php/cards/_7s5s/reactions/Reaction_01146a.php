@@ -57,8 +57,7 @@ class Reaction_01146a extends CardReaction
         if ($reactionId == 'drawCard')
         {
             $scheme = $this->getOwningCard($game->theah);
-            $card = $game->playerDrawCard($scheme->ControllerId);
-            $addEvent = EventFactory::createCardDrawnEvent($scheme->ControllerId, $card, sprintf($game->translate("%s: Reaction: Draw card after equipping weapon"), $scheme->getInjectCode()));
+            $addEvent = EventFactory::createCardDrawnEvent($scheme->ControllerId, sprintf($game->translate("%s: Reaction: Draw card after equipping weapon"), $scheme->getInjectCode()));
             $game->theah->queueEvent($addEvent);
 
             $this->setUsed($game->theah, true);

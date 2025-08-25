@@ -38,12 +38,10 @@ class Action_01168 extends RiskAction
             $game = $event->theah->game;
             $owner = $this->getOwningCard($event->theah);
 
-            $card = $game->playerDrawCard($event->playerId);
-            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $card, sprintf($game->translate("%s effect"), $owner->getInjectCode()));
+            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, sprintf($game->translate("%s effect"), $owner->getInjectCode()));
             $game->theah->queueEvent($addEvent);
 
-            $card = $game->playerDrawCard($event->playerId);
-            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $card, sprintf($game->translate("%s effect"), $owner->getInjectCode()));
+            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, sprintf($game->translate("%s effect"), $owner->getInjectCode()));
             $game->theah->queueEvent($addEvent);
 
             $lockerEvent = EventFactory::createCardSentToLockerEvent($event->playerId, $owner->Id);

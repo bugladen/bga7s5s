@@ -9,17 +9,18 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_01015 extends CardReaction
+class Reaction_01013 extends CardReaction
 {
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate('Draw Card after Character is Destroyed');
+
+        $this->Name = clienttranslate("Draw Card After Red Hand is Destroyed");
     }
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may draw a card after a Character is destroyed: ');
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may Draw a Card: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -28,6 +29,7 @@ class Reaction_01015 extends CardReaction
 
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Draw Card'), 'drawCard');
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
+        
         return $array;
     }
 
@@ -35,14 +37,17 @@ class Reaction_01015 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCharacterDestroyed && $this->isAvailable())
+        if ($event instanceof EventCharacterDestroyed)
         {
-            $scheme = $this->getOwningCard($event->theah);
-            $character = $event->theah->getCharacterById($event->characterId);
-            if ($character->ControllerId == $scheme->ControllerId)
+            $owner = $this->getOwningCharacter($event->theah);
+            if ($event->theah->cardInCity($owner))
             {
-                $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
-                $event->theah->queueEvent($reactionEvent);
+                $character = $event->theah->getCharacterById($event->characterId);
+                if ($character->hasTrait("Red Hand") && $character->Location == $owner->Location)
+                {
+                    $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->queueEvent($reactionEvent);
+                }
             }
         }
     }
@@ -53,13 +58,13 @@ class Reaction_01015 extends CardReaction
 
         if ($reactionId == "drawCard")
         {
-            $scheme = $this->getOwningCard($game->theah);
-            $event = EventFactory::createCardDrawnEvent($scheme->ControllerId, sprintf($game->translate("%s effect"), $scheme->getInjectCode()));
+            $owner = $this->getOwningCharacter($game->theah);
+            $event = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
             $game->theah->queueEvent($event);
 
             $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to draw a card.'), [
-                "reaction_inject_code" => $scheme->getInjectCode(),
-                "player_name" => $game->getPlayerNameById($scheme->ControllerId),
+                "reaction_inject_code" => $owner->getInjectCode(),
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
             ]);
 
             $this->setUsed($game->theah, true);

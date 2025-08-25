@@ -194,7 +194,6 @@ trait ZombieTrait
 
                 // Challenge Action States
                 case "highDramaChallengeActionResolveTechnique_01063": // Bastien's Technique
-                case "highDramaChallengeActionActivateTechnique_01067": // Jean Urbain's Technique
                     $this->gamestate->nextState("");
                     break;
 
@@ -209,6 +208,7 @@ trait ZombieTrait
                     break;
 
                 // Duel Choose Technique States
+                case "duelChooseTechnique_01013": // Vissenta Scarpa's Technique
                 case "duelChooseTechnique_01036": // Daniela's Technique
                 case "duelChooseTechnique_01067": // Jean Urbain's Technique
                 case "duelChooseTechnique_01063": // Bastien's Technique

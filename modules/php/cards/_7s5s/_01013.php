@@ -2,11 +2,19 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01013;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 
-class _01013 extends Character
+class _01013 extends Character implements IHasTechniques, IHasReactions
 {
+    use TechniqueTrait;
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -34,6 +42,10 @@ class _01013 extends Character
 
         $this->Techniques = [
             new Technique_01013(),
+        ];
+
+        $this->Reactions = [
+            new Reaction_01013(),
         ];
     }
 }

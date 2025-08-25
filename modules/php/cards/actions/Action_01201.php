@@ -57,8 +57,7 @@ class Action_01201 extends CharacterAction implements ISorcererAbility
             $event->theah->eventCheck($woundEvent);
             $event->theah->queueEvent($woundEvent);
 
-            $card = $event->theah->game->playerDrawCard($event->playerId);
-            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $card, $ravenna->getInjectCode());
+            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $ravenna->getInjectCode());
             $event->theah->queueEvent($addEvent);
         }
     }

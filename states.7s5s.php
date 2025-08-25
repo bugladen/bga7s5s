@@ -1226,17 +1226,17 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
-    States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01067 => [
-        "name" => "highDramaChallengeActionActivateTechnique_01067",
-        "description" => clienttranslate('${actplayer} is choosing options to resolve Jean Urbain\'s Technique.'),
-        "descriptionmyturn" => clienttranslate('Jean Urbain') . clienttranslate(': +1 Thrust or Riposte: ${you} must choose Thrust or Riposte:'),
+    States::DUEL_CHOOSE_TECHNIQUE_01013 => [
+        "name" => "duelChooseTechnique_01013",
+        "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
+        "descriptionmyturn" => clienttranslate('Vissenta Scarpa') . clienttranslate(': Add Parry or Thrust: ${you} must choose Parry or Thrust:'),
         "type" => "activeplayer",
         "args" => "argsEmpty",
         "possibleactions" => [
             "actFromCardWithId", 
         ],
         "transitions" => [
-            "" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS,
+            "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
         ]
     ],
 

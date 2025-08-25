@@ -40,8 +40,7 @@ class Maneuver_01061 extends Maneuver
             {
                 $owner = $this->getOwningCard($event->theah);
                 $game = $event->theah->game;
-                $card = $game->playerDrawCard($owner->ControllerId);
-                $addEvent = EventFactory::createCardDrawnEvent($owner->ControllerId, $card, $owner->getInjectCode());
+                $addEvent = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
                 $game->theah->queueEvent($addEvent);
             }
         }

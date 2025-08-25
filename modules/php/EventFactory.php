@@ -236,13 +236,12 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardDrawnEvent(int $playerId, Card $card, string $reason): EventCardDrawn
+    public static function createCardDrawnEvent(int $playerId, string $reason): EventCardDrawn
     {
         $event = self::createEvent(Events::CardDrawn);
         if ($event instanceof EventCardDrawn)
         {
             $event->playerId = $playerId;
-            $event->card = $card;
             $event->reason = $reason;
         }
         return $event;
