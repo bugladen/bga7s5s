@@ -59,6 +59,7 @@ class Game extends \Table
     final const STAT_FINESSE = "Finesse";
     final const STAT_INFLUENCE = "Influence";
     final const PASS_COUNT = "passCount";
+    final const MULTI_STATE_INITIATING_PLAYER = "multiStateInitiatingPlayer";
 
     //Conditions
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";

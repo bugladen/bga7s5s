@@ -169,6 +169,7 @@ class _01006 extends Leader implements IHasReactions
                 throw new \BgaUserException($game->translate("Card is not in your Faction Deck."));
             }
 
+            $game->globals->set(Game::MULTI_STATE_INITIATING_PLAYER, $this->ControllerId);
             $game->globals->set(Game::CHOSEN_CARD, $card->Id);
 
             $cardEvent = EventFactory::createCardAddedToHandEvent($this->ControllerId, $card->Id);

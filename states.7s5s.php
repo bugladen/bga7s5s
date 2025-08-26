@@ -26,7 +26,7 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Don Contanzo Scarpa') . clienttranslate(': ${you} must must acknowlege revealed card:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
-        "action" => "stMultiPlayerInit",
+        "action" => "stMultiPlayerInitSansInitiatingPlayer",
         "possibleactions" => [
             "actMultipleOk", 
         ],
@@ -65,7 +65,7 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Plans Within Plans') . clienttranslate(': ${you} must must acknowlege revealed card:'),
         "type" => "multipleactiveplayer",
         "args" => "argsPlanningPhaseResolveSchemes_01016_3",
-        "action" => "stMultiPlayerInit",
+        "action" => "stMultiPlayerInitSansInitiatingPlayer",
         "possibleactions" => [
             "actMultipleOk", 
         ],

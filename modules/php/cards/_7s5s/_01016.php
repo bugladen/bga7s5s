@@ -111,7 +111,14 @@ class _01016 extends Scheme implements IHasReactions
             $game->theah->queueEvent($removeEvent);
             $game->theah->queueEvent($addEvent);
     
+            $game->globals->set(Game::MULTI_STATE_INITIATING_PLAYER, $this->ControllerId);
             $game->globals->set(GAME::CHOSEN_CARD, $card->Id);
+
+            $game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code}: ${player_name} revealed ${card_inject_code}.'), [
+                "scheme_inject_code" => $this->getInjectCode(),
+                "player_name" => $game->getPlayerNameById($this->ControllerId),
+                "card_inject_code" => $card->getInjectCode(),
+            ]);
     
             $game->gamestate->nextState("cardChosen");
         }

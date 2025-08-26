@@ -38,6 +38,13 @@ trait StatesTrait
         $this->gamestate->setAllPlayersMultiactive();
     }
 
+    public function stMultiPlayerInitSansInitiatingPlayer() {
+        $this->gamestate->setAllPlayersMultiactive();
+
+        $playerId = $this->globals->get(Game::MULTI_STATE_INITIATING_PLAYER);
+        $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
+    }
+
     public function stSetCurrentPlayer() 
     {
         $currentPlayerId = $this->globals->get(Game::CURRENT_PLAYER);
