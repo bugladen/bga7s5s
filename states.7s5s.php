@@ -216,6 +216,34 @@ $machinestates += [
                 ]
             ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01008 => [
+        "name" => "highDramaPhase01008",
+        "description" => clienttranslate('Cesca Del Rosso') . clienttranslate(': Your opponent(s) must acknowlege revealed card.'),
+        "descriptionmyturn" => clienttranslate('Cesca Del Rosso') . clienttranslate(': ${you} must must acknowlege revealed card:'),
+        "type" => "multipleactiveplayer",
+        "args" => "argsForState",
+        "action" => "stMultiPlayerInitSansActivePlayer",
+        "possibleactions" => [
+            "actMultipleOk", 
+        ],
+        "transitions" => ["multipleOk" => States::HIGH_DRAMA_PLAYER_TURN_01008_2]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01008_2 => [
+        "name" => "highDramaPhase01008_2",
+        "description" => clienttranslate('Cesca Del Rosso') . clienttranslate(': ${actplayer} may search their deck for a Red Hand Thug.'),
+        "descriptionmyturn" => clienttranslate('Cesca Del Rosso') . clienttranslate(': ${you} may choose a Red Hand Thug from Your Deck:'),
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actFromCardPass",
+            "actFromCardWithId", 
+        ],
+        "transitions" => [
+            "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_01008_3
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01011 => [
         "name" => "highDramaPhase01011",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

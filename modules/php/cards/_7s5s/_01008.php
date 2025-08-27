@@ -2,10 +2,19 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01008;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01008;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 
-class _01008 extends Character
+class _01008 extends Character implements IHasActions, IHasReactions
 {
+    use ActionTrait;
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -30,6 +39,14 @@ class _01008 extends Character
             "Strega",
             "Red Hand",
             "Vodacce",
+        ];
+
+        $this->Actions = [
+            new Action_01008(),
+        ];
+
+        $this->Reactions = [
+            new Reaction_01008(),
         ];
     }
 
