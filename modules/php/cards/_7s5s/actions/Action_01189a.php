@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\EventCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -10,13 +10,13 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01189b extends EventCityAction
+class Action_01189a extends EventCityAction
 {
     public function __construct()
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Move Reknown to Adjacent Location");
+        $this->Name = clienttranslate("Move Reknown from Adjacent Location");
 
         $this->RequiresPerformerSelected = true;
     }
@@ -29,9 +29,10 @@ class Action_01189b extends EventCityAction
         }
 
         $poo = $this->getOwningCard($theah);
+        $locations = $theah->getAdjacentCityLocations($poo->Location, $includeHome = false);
+        $locations = array_filter($locations, fn($location) => $theah->game->getReknownForLocation($location) > 0);
 
-        $reknown = $theah->game->getReknownForLocation($poo->Location);
-        if ($reknown <= 0)
+        if (count($locations) == 0)
         {
             return false;
         }
@@ -42,10 +43,10 @@ class Action_01189b extends EventCityAction
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
-
+        
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01189b", $this->Id);
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01189a", $this->Id);
             $event->theah->queueEvent($transition);
         }
     }
@@ -54,7 +55,7 @@ class Action_01189b extends EventCityAction
     {
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01189b)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01189a)
         {
             $performerId = $game->globals->get(GAME::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
@@ -77,7 +78,7 @@ class Action_01189b extends EventCityAction
     {
         parent::actFromActionWithIds($game, $state, $stateName, $ids);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01189b)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01189a)
         {
             $location = $game->theah->getCityLocation($ids[0]);
 
@@ -93,16 +94,16 @@ class Action_01189b extends EventCityAction
             }
     
             //Check if the origin location has reknown to move
-            $reknown = $game->getReknownForLocation($poo->Location);
+            $reknown = $game->getReknownForLocation($location->Name);
             if ($reknown <= 0)
             {
-                throw new \BgaUserException(sprintf($game->translate("%s does not have any reknown to move."), $poo->Location));
+                throw new \BgaUserException(sprintf($game->translate("%s does not have any reknown to move."), $location->Name));
             }
     
-            $fromEvent = EventFactory::createReknownRemovedFromLocationEvent($performer->ControllerId, $poo->Location, 1, "{$poo->getInjectCode()}: Moving Reknown to adjacent location");
+            $fromEvent = EventFactory::createReknownRemovedFromLocationEvent($performer->ControllerId, $location->Name, 1, "{$poo->getInjectCode()}: Moving Reknown from adjacent location");
             $game->theah->eventCheck($fromEvent);
     
-            $toEvent = EventFactory::createReknownAddedToLocationEvent($performer->ControllerId, $location->Name, 1, "{$poo->getInjectCode()}: Moving Reknown to adjacent location");
+            $toEvent = EventFactory::createReknownAddedToLocationEvent($performer->ControllerId, $poo->Location, 1, "{$poo->getInjectCode()}: Moving Reknown from adjacent location to an adjacent location");
             $game->theah->eventCheck($toEvent);
     
             $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($poo->ControllerId, $poo->Id, $poo->Location);
@@ -121,6 +122,5 @@ class Action_01189b extends EventCityAction
     
             $game->gamestate->nextState("locationChosen");
         }
-
     }
 }
