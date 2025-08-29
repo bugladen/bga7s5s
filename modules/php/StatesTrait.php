@@ -485,19 +485,6 @@ trait StatesTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->getCardObjectFromDb($performerId);
         
-        list($success, $totals) = $this->pressureLocation($claimingPlayerId, $performer, Game::STAT_INFLUENCE);
-        if ( ! $success) 
-        {
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} attempted to claim ${location_name}. They did not have the most influence.  Totals: ${totals}'), [
-                'player_name' => $this->getPlayerNameById($claimingPlayerId),
-                'location_name' => $performer->Location,
-                'totals' => $totals
-            ]);
-
-            $this->gamestate->nextState();
-            return;
-        }
-
         $claimType = $this->globals->get(Game::PRESSURE_TYPE);
         if ($claimType == Game::NORMAL_PRESSURE_TYPE)
         {
@@ -505,17 +492,22 @@ trait StatesTrait
             $this->theah->eventCheck($engageEvent);
             $this->theah->queueEvent($engageEvent);
         }
+        
+        list($success, $totals) = $this->pressureLocation($claimingPlayerId, $performer, Game::STAT_INFLUENCE);
 
         $pressureTypes = $this->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
-        $this->setControllerForLocation($performer->Location, $claimingPlayerId);
-
         $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureTypes), $success, $totals);
         $this->theah->eventCheck($pressuredEvent);
         $this->theah->queueEvent($pressuredEvent);
 
-        $claimEvent = EventFactory::createLocationClaimedEvent($claimingPlayerId, $performer->Id, $performer->Location);
-        $this->theah->eventCheck($claimEvent);
-        $this->theah->queueEvent($claimEvent);
+        if ($success) 
+        {
+            $this->setControllerForLocation($performer->Location, $claimingPlayerId);
+
+            $claimEvent = EventFactory::createLocationClaimedEvent($claimingPlayerId, $performer->Id, $performer->Location);
+            $this->theah->eventCheck($claimEvent);
+            $this->theah->queueEvent($claimEvent);
+        }
 
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState();
