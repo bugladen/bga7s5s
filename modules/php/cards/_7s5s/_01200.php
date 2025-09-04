@@ -4,7 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\Reaction_01200;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01200;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -113,8 +113,8 @@ class _01200 extends CityAttachment implements IHasReactions
                 throw new \BgaUserException($game->translate("Invalid opponent"));
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('${playerName} has chosen to look at ${opponentName}\'s Approach Deck.'), [
-                'playerName' => $game->getActivePlayerName(),
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to look at ${opponentName}\'s Approach Deck.'), [
+                'player_name' => $game->getActivePlayerName(),
                 'opponentName' => $players[$id]['player_name'],
             ]);
 
@@ -140,8 +140,8 @@ class _01200 extends CityAttachment implements IHasReactions
             $game->updateCardObjectInDb($card);
 
             $players = $game->loadPlayersBasicInfos();
-            $game->notifyAllPlayers('crystalEyeTargetMessage', clienttranslate('${playerName} has chosen a card from ${opponentName}\'s Approach Deck as the target for Crystal Eye.'), [
-                "playerName" => $activePlayerName,
+            $game->notifyAllPlayers('crystalEyeTargetMessage', clienttranslate('${player_name} has chosen a card from ${opponentName}\'s Approach Deck as the target for Crystal Eye.'), [
+                "player_name" => $activePlayerName,
                 "opponentName" => $players[$playerId]['player_name'],
                 "choosingPlayerId" => $activePlayerId,
                 "targetplayerId" => $playerId,

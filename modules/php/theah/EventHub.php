@@ -1146,7 +1146,7 @@ trait EventHub
                     $owningCard = $maneuver->getOwningCard($theah);
                     $duelId = $theah->game->globals->get(Game::DUEL_ID);
                     $round = $theah->game->globals->get(Game::DUEL_ROUND);
-                    $name = substr(addslashes($owningCard->Name) . ":" . addslashes($maneuver->Name), 0, 500);
+                    $name = substr(addslashes($owningCard->Name) . ": " . addslashes($maneuver->Name), 0, 500);
                     $sql = "INSERT INTO duel_round_maneuver (duel_id, round, maneuver_id, maneuver_name) VALUES ($duelId, $round, '{$event->maneuverId}', '$name')";
                     $event->theah->game->DbQuery($sql);    
                 };

@@ -500,19 +500,6 @@ trait StatesTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->getCardObjectFromDb($performerId);
         
-        list($success, $totals) = $this->pressureLocation($claimingPlayerId, $performer, Game::STAT_INFLUENCE);
-        if ( ! $success) 
-        {
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} attempted to claim ${location_name}. They did not have the most influence.  Totals: ${totals}'), [
-                'player_name' => $this->getPlayerNameById($claimingPlayerId),
-                'location_name' => $performer->Location,
-                'totals' => $totals
-            ]);
-
-            $this->gamestate->nextState();
-            return;
-        }
-
         $claimType = $this->globals->get(Game::PRESSURE_TYPE);
         if ($claimType == Game::NORMAL_PRESSURE_TYPE)
         {
@@ -520,17 +507,22 @@ trait StatesTrait
             $this->theah->eventCheck($engageEvent);
             $this->theah->queueEvent($engageEvent);
         }
+        
+        list($success, $totals) = $this->pressureLocation($claimingPlayerId, $performer, Game::STAT_INFLUENCE);
 
         $pressureTypes = $this->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
-        $this->setControllerForLocation($performer->Location, $claimingPlayerId);
-
         $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureTypes), $success, $totals);
         $this->theah->eventCheck($pressuredEvent);
         $this->theah->queueEvent($pressuredEvent);
 
-        $claimEvent = EventFactory::createLocationClaimedEvent($claimingPlayerId, $performer->Id, $performer->Location);
-        $this->theah->eventCheck($claimEvent);
-        $this->theah->queueEvent($claimEvent);
+        if ($success) 
+        {
+            $this->setControllerForLocation($performer->Location, $claimingPlayerId);
+
+            $claimEvent = EventFactory::createLocationClaimedEvent($claimingPlayerId, $performer->Id, $performer->Location);
+            $this->theah->eventCheck($claimEvent);
+            $this->theah->queueEvent($claimEvent);
+        }
 
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState();
@@ -1170,8 +1162,10 @@ trait StatesTrait
         $adversary = $this->theah->getCharacterById($adversaryId);
         $challengerId = $this->theah->getDuelChallengerId();
 
-        //If the adversary is dead or not in the same location as the actor, then any adversary threat is nullified
-        if ($actor->Location != $adversary->Location)
+        //If the actor not in the same location as the adversary, then any adversary threat is nullified
+        //If the actor is in the locker, then threat remains
+        $actorIsInLocker = strpos($actor->Location, "Locker-") !== false;
+        if ($actor->Location != $adversary->Location && !$actorIsInLocker)
         {
             $field = "";
             if ($actorId == $challengerId)

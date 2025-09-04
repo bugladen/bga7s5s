@@ -6,7 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01198;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01198;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 

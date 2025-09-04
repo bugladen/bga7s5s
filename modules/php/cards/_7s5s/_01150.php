@@ -153,7 +153,7 @@ class _01150 extends Scheme
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01150)
         {
             $locations = $game->theah->getCityLocations();
-            $locations = array_filter($locations, fn($location) => $location->Reknown > 0);
+            $locations = array_filter($locations, fn($location) => $location->Name != Game::LOCATION_CITY_FORUM && $location->Reknown > 0);
             if (count($locations) > 0)
             {
                 throw new \BgaUserException($game->translate("There are locations with Reknown."));

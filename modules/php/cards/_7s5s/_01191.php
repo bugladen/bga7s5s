@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01191;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01191;
 
 class _01191 extends CityAttachment implements IHasActions
 {
