@@ -1154,8 +1154,10 @@ trait StatesTrait
         $adversary = $this->theah->getCharacterById($adversaryId);
         $challengerId = $this->theah->getDuelChallengerId();
 
-        //If the adversary is dead or not in the same location as the actor, then any adversary threat is nullified
-        if ($actor->Location != $adversary->Location)
+        //If the actor not in the same location as the adversary, then any adversary threat is nullified
+        //If the actor is in the locker, then threat remains
+        $actorIsInLocker = strpos($actor->Location, "Locker-") !== false;
+        if ($actor->Location != $adversary->Location && !$actorIsInLocker)
         {
             $field = "";
             if ($actorId == $challengerId)
