@@ -220,9 +220,8 @@ trait ArgumentsTrait
         $args["discount"] = $discount;
 
         $characters = $this->theah->getCharactersAtLocation($performer->Location, $includeUncontrolled = true);
-        $characters = array_filter($characters, fn($character) => $character->hasTrait("Mercenary"));
-        $characterIds = array_map(fn($character) => $character->Id, $characters);
-        $args["characterIds"] = $characterIds;
+        $characters = array_values(array_filter($characters, fn($character) => ! $character->isControlled() && $character->hasTrait("Mercenary")));
+        $args["characterIds"] = array_map(fn($character) => $character->Id, $characters);
 
         return $args;
     }
