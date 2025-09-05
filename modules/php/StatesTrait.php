@@ -1154,10 +1154,14 @@ trait StatesTrait
         $adversary = $this->theah->getCharacterById($adversaryId);
         $challengerId = $this->theah->getDuelChallengerId();
 
+        $actorIsInLocker = strpos($actor->Location, "Locker-") !== false;
+        $adversaryIsInLocker = strpos($adversary->Location, "Locker-") !== false;
+        $bothInLocker = $actorIsInLocker && $adversaryIsInLocker;
+
         //If the actor not in the same location as the adversary, then any adversary threat is nullified
         //If the actor is in the locker, then threat remains
-        $actorIsInLocker = strpos($actor->Location, "Locker-") !== false;
-        if ($actor->Location != $adversary->Location && !$actorIsInLocker)
+        //If both are in the locker, then obviously the duel will end
+        if ($bothInLocker || ($actor->Location != $adversary->Location && !$actorIsInLocker))
         {
             $field = "";
             if ($actorId == $challengerId)
