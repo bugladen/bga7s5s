@@ -263,6 +263,85 @@ namespace Bga\GameFramework {
         }
     }
 
+    abstract class Legacy {
+        /**
+         * Get data associated with $key for the current game.
+         * 
+         * This data is common to ALL tables from the same game for this player, and persist from one table to another.
+         * 
+         * Note: calling this function has an important cost => please call it few times (possibly: only ONCE) for each player for 1 game if possible
+         * 
+         * @param string $key the key of the legacy data to get
+         * @param int $playerId the player id (or 0 for data shared on all tables)
+         * @param mixed $defaultValue the value to return if the key doesn't exist in the legacy data for this player
+         */
+        public function get(string $key, int $playerId, mixed $defaultValue = null): mixed {
+            return null;
+        }
+
+        /**
+         * Store some data associated with $key for the given user / current game
+         * In the opposite of all other game data, this data will PERSIST after the end of this table, and can be re-used in a future table with the same game.
+         * 
+         * ⚠️ The only possible place where you can use this method is when the game is over at your table (last game action). Otherwise, there is a risk of conflicts between ongoing games.
+         * 
+         * In any way, the total data (= all keys) you can store for a given user+game is 64k
+         * 
+         * NOTICE: You can store some persistant data across all tables from your game using the specific player_id 0 which is unused. In such case, it's even more important to manage correctly the size of your data to avoid any exception or issue while storing updated data (ie. you can use this for some kind of leaderbord for solo game or contest)
+         * 
+         * 
+         * @param string $key the key of the legacy data to save
+         * @param int $playerId the player id (or 0 for data shared on all tables)
+         * @param mixed $value the value to save as the legacy data for this player
+         * @param int $ttl time-to-live: the maximum, and default, is 365 days.
+         */
+        public function set(string $key, int $playerId, mixed $value, int $ttl = 365): void {
+        }
+
+        /**
+         * Remove some legacy data with the given key
+         * 
+         * @param string $key the key of the legacy data to remove
+         * @param int $playerId the player id (or 0 for data shared on all tables)
+         */
+        public function delete(string $key, int $playerId): void {
+        }
+
+        /**
+         * Get data associated with the team for the current game.
+         * 
+         * This data is common to ALL tables from the same game for this team, and persist from one table to another.
+         * 
+         * Note: calling this function has an important cost => please call it few times (possibly: only ONCE) for 1 game if possible
+         * 
+         * @param mixed $defaultValue the value to return if the legacy data doesn't exist or is null for this team
+         */
+        public function getTeam(mixed $defaultValue = null): mixed {
+            return null;
+        }
+
+        /**
+         * Store some data associated to the team of the current table (all players at the table) / current game
+         * In the opposite of all other game data, this data will PERSIST after the end of this table, and can be re-used in a future table with the same game.
+         * 
+         * ⚠️ The only possible place where you can use this method is when the game is over at your table (last game action). Otherwise, there is a risk of conflicts between ongoing games.
+         * 
+         * In any way, the total data you can store for a given team+game is 64k
+         * 
+         * @param mixed $value the value to save as the legacy data for this team
+         * @param int $ttl time-to-live: the maximum, and default, is 365 days.
+         */
+        public function setTeam(mixed $value, int $ttl = 365): void {
+        }
+
+        /**
+         * Remove the legacy data for a team
+         */
+        public function deleteTeam(): void {
+        }
+    }
+
+
     abstract class TableOptions {
         /**
          * Get the value of a table option.
@@ -314,6 +393,11 @@ namespace Bga\GameFramework {
          * Access the underlying Notify object.
          */
         readonly public \Bga\GameFramework\Notify $notify;
+
+        /**
+         * Access the underlying Legacy object.
+         */
+        readonly public \Bga\GameFramework\Legacy $legacy;
 
         /**
          * Access the underlying TableOptions object.
@@ -890,6 +974,8 @@ namespace Bga\GameFramework {
 
         /**
          * Remove some legacy data with the given key.
+         * 
+         * @deprecated use $this->legacy->delete(string $key, int $playerId). ⚠️ parameter order has changed.
          */
         final public function removeLegacyData(int $playerId, string $key): void
         {
@@ -897,8 +983,10 @@ namespace Bga\GameFramework {
         }
 
         /**
-         * Same as `Table::storeLegacyData()`, except that it stores some data for the whole team within the current
+         * Same as `Table::removeLegacyData()`, except that it deletes the data for the whole team within the current
          * table and does not use a key.
+         * 
+         * @deprecated use $this->legacy->delete
          */
         final public function removeLegacyTeamData(): void
         {
@@ -907,6 +995,8 @@ namespace Bga\GameFramework {
 
         /**
          * Get data associated with $key for the current game.
+         * 
+         * @deprecated use $this->legacy->get(string $key, int $playerId, mixed $defaultValue = null). ⚠️ parameter order has changed, and it will now return the real data instead of the JSON-encoded one.
          */
         final public function retrieveLegacyData($playerId, $key): array
         {
@@ -916,6 +1006,8 @@ namespace Bga\GameFramework {
         /**
          * Same as `Table::storeLegacyData()`, except that it stores some data for the whole team within the current
          * table and does not use a key.
+         * 
+         * @deprecated use $this->legacy->getTeam(mixed $defaultValue = null). ⚠️ it will now return the real data instead of the JSON-encoded one.
          */
         final public function retrieveLegacyTeamData(): array
         {
@@ -967,7 +1059,7 @@ namespace Bga\GameFramework {
          * In the opposite of all other game data, this data will PERSIST after the end of this table, and can be
          * re-used in a future table with the same game.
          *
-         * IMPORTANT: The only possible place where you can use this method is when the game is over at your table
+         * ⚠️ The only possible place where you can use this method is when the game is over at your table
          * (last game action). Otherwise, there is a risk of conflicts between ongoing games.
          *
          * In any way, the total data (= all keys) you can store for a given user+game is 64k (note: data is store
@@ -979,6 +1071,8 @@ namespace Bga\GameFramework {
          * game or contest).
          *
          * Note: This function cannot be called during game setup (will throw an error).
+         * 
+         * @deprecated use $this->legacy->set(string $key, int $playerId, mixed $value, int $ttl = 365). ⚠️ parameter order has changed.
          */
         final public function storeLegacyData(int $playerId, string $key, array $data, int $ttl = 365): void
         {
@@ -988,6 +1082,8 @@ namespace Bga\GameFramework {
         /**
          * Same as `Table::storeLegacyData()`, except that it stores some data for the whole team within the current
          * table and does not use a key.
+         * 
+         * @deprecated use $this->legacy->setTeam(mixed $value, int $ttl = 365).
          */
         final public function storeLegacyTeamData(array $data, int $ttl = 365): void
         {
@@ -1037,7 +1133,7 @@ namespace Bga\GameFramework {
          *
          * @return int the new active player id
          */
-        final protected function activePrevPlayer(): void
+        final public function activePrevPlayer(): void
         {
             //
         }
@@ -1051,7 +1147,7 @@ namespace Bga\GameFramework {
          *
          * @param array<int, ?int> $players
          */
-        final protected function createNextPlayerTable(array $players, bool $bLoop = true): void
+        final public function createNextPlayerTable(array $players, bool $bLoop = true): void
         {
             //
         }
@@ -1072,7 +1168,7 @@ namespace Bga\GameFramework {
          *
          * @throws \BgaSystemException if the current player is not at the table (i.e. spectator).
          */
-        final protected function getCurrentPlayerColor(): string
+        final public function getCurrentPlayerColor(): string
         {
             return '';
         }
@@ -1084,7 +1180,7 @@ namespace Bga\GameFramework {
          *
          * @throws \BgaSystemException if the current player is not at the table (i.e. spectator).
          */
-        final protected function getCurrentPlayerName($bReturnEmptyIfNotLogged = false): string
+        final public function getCurrentPlayerName($bReturnEmptyIfNotLogged = false): string
         {
             return '';
         }
@@ -1133,7 +1229,7 @@ namespace Bga\GameFramework {
          *
          * @throws \BgaSystemException if the current player is not at the table (i.e. spectator).
          */
-        final protected function isCurrentPlayerZombie(): bool
+        final public function isCurrentPlayerZombie(): bool
         {
             return false;
         }
@@ -1153,7 +1249,7 @@ namespace Bga\GameFramework {
          * You can do whatever you want in order to make sure the turn of this player ends appropriately
          * (ex: pass).
          *
-         * Important: your zombie code will be called when the player leaves the game. This action is triggered
+         * ⚠️ your zombie code will be called when the player leaves the game. This action is triggered
          * from the main site and propagated to the gameserver from a server, not from a browser.
          * As a consequence, there is no current player associated to this action. In your zombieTurn function,
          * you must _never_ use `getCurrentPlayerId()` or `getCurrentPlayerName()`, otherwise it will fail with a
@@ -1783,7 +1879,7 @@ namespace {
         }
 
         /**
-         * Change current state to a new state. Important: the $stateNum parameter is the key of the state.
+         * Change current state to a new state. ⚠️ the $nextState parameter is the key of the state, not the state name.
          *
          * NOTE: This is very advanced method, it should not be used in normal cases. Specific advanced cases
          * include - jumping to specific state from "do_anytime" actions, jumping to dispatcher state or jumping to
