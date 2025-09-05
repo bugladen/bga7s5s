@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;

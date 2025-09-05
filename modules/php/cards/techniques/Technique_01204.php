@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;

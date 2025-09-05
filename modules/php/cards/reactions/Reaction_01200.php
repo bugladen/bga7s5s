@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01200;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\AttachmentReaction;
