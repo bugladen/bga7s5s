@@ -29,9 +29,16 @@ class Action_01036 extends CharacterAction
             return false;
 
         $characters = $theah->getCharactersAtLocation($daniella->Location);
-        $characters = array_filter($characters, fn($character) => $character->ControllerId == $daniella->ControllerId && $character->hasTrait("Mercenary", $daniella));
 
-        return count($characters) > 0;
+        $mercenaries = array_filter($characters, fn($character) => $character->ControllerId == $daniella->ControllerId && $character->hasTrait("Mercenary", $daniella));
+        if (count($mercenaries) == 0)
+            return false;
+
+        $opposing = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($playerId));
+        if (count($opposing) == 0)
+            return false;
+
+        return true;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
