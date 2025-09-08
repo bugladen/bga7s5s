@@ -1712,16 +1712,16 @@ trait StatesTrait
         //Get characters in play
         $characters = $this->theah->getCharactersInPlay();
 
-        //Only use characters that are in the city
-        $characters = array_filter($characters, fn($character) => $this->theah->cardInCity($character));
-
         //Only use characters that are controlled (i.e. not mercenaries)
         $characters = array_filter($characters, fn($character) => $character->isControlled());
 
         foreach ($characters as $character)
         {
-            $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false);
-            $this->theah->queueEvent($movedHome);
+            if ($character->Location != Game::LOCATION_PLAYER_HOME)
+            {
+                $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false);
+                $this->theah->queueEvent($movedHome);
+            }
 
             if ($character->Engaged)
             {
