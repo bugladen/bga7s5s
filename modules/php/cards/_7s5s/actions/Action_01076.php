@@ -70,9 +70,8 @@ class Action_01076 extends RiskAction
             $performer = $game->theah->getCardById($performerId);
 
             $locations = array_values($game->theah->getCityLocations());
-            $locations = array_filter($locations, fn($location) => $location->Name != $performer->Location);
-            $locationIds = array_map(fn($location) => $location->Name, $locations);
-            $args["locationIds"] = $locationIds;
+            $locations = array_values(array_filter($locations, fn($location) => $location->Name != $performer->Location));
+            $args["locationIds"] = array_map(fn($location) => $location->Name, $locations);
 
             $args["performerId"] = $game->globals->get(Game::CHOSEN_PERFORMER);
         }
