@@ -1,0 +1,26 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+This codebase is for an online adaption of the card game 7th Sea: City of Five Sails. Specifically this code is written to run on the Board Game Arena framework. 
+
+Anything related to the backend is written in PHP.  
+Anything written for the UI or front-end is written in Javascript.  jQuery is available. Dojo is available.
+
+The entire backend is a state machine and centers around the file:states.inc.php.  states.inc.php is a huge associative array.  The indexes for the array are named constants.  
+states.inc.php also includes the file states.7s5s.php which includes the same function.
+There are three types of states:
+1. game: This is a state run by the state machine automatically when the state is transitioned to.  There is no player interaction with this state.
+2. activeplayer: This is a single-player state.  The game waits for the player to perform an action and then transitions to another state based on the action.
+3. multipleactiveplayer: This is a multi-player state.  The game waits for all players to perform an action, then transitions to antoher state.
+
+Each state in the game is an array element in states.inc.php.  Each element describes the state.
+
+Each element contains an associative array as follows:
+1. "name" => The human-readable name of the state, used as a reference in many javascript methods
+2. "type" => The statetype: game, activeplayer, or multipleactiveplayer
+3. "args" => if statetype=activeplayer or statetype=multipleactiveplayer, the name of the PHP function that will supply arguments to the Ajax return on the Javascript-side.  The function will return an associatetive array.
+4. "possibleactions" => An array of strings containing the names of the PHP methods that could be called from the Javascript-side when a player submits an action.
+5. "action" => If statetype=multipleactiveplayer, the name of the PHP function that will be called when all players have submitted their action. If statetype=game, the name of the PHP function that auto-runs when the state is transitioned to.
+6. "transitions" => An associative array of named transitions to other states.
