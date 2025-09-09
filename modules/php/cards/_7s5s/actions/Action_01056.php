@@ -162,7 +162,7 @@ class Action_01056 extends RiskCityAction
                 ]);
 
                 $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
-                $game->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
+                $game->globals->set(Game::CHALLENGE_TYPE, Game::MOVE_ALONG_CHALLENGE_TYPE);
 
                 $transition = EventFactory::createTransitionEvent($performer->ControllerId, $owner->Id, '01056_3', $this->Id);
                 $game->theah->queueEvent($transition);

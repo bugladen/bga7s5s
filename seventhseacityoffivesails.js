@@ -93,6 +93,7 @@ function (dojo, declare) {
             this.DEFENDING_HONOR_CHALLENGE_TYPE = 4;
             this.LEGENDARY_REPUTATION_CHALLENGE_TYPE = 5;
             this.DANIELA_DEITRICH_CHALLENGE_TYPE = 6;
+            this.MOVE_ALONG_CHALLENGE_TYPE = 7;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 100;

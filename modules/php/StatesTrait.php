@@ -559,8 +559,12 @@ trait StatesTrait
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
         $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE, "");
 
-        $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
-        $this->theah->queueEvent($engageEvent);
+        $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
+        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE)
+        {
+            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
+            $this->theah->queueEvent($engageEvent);
+        }
 
         $this->globals->set(Game::CHALLENGE_CANCELLED, false);
 
