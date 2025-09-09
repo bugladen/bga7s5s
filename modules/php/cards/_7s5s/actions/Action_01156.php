@@ -170,6 +170,7 @@ class Action_01156 extends AttachmentAction
             }
 
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
             $game->gamestate->nextState();
         }
 

@@ -191,6 +191,7 @@ class Action_01197 extends CharacterAction
             }
 
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
 
             $fromCharacterId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $fromCharacter = $game->theah->getCharacterById($fromCharacterId);

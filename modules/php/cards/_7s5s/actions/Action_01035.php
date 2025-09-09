@@ -86,6 +86,7 @@ class Action_01035 extends CharacterAction
             $revealEvent = EventFactory::createTransitionEvent($playerId, $kaspar->Id, "01035", $this->Id);
             $event->queueEvent($revealEvent);
 
+            $this->resetPlayerPassCount($game);
             $this->setUsed($event->theah, true);
         }
     }

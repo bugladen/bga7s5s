@@ -67,14 +67,6 @@ $machinestates += [
         ],
         "transitions" => ["multipleOk" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
-    States::PLANNING_PHASE_RESOLVE_SCHEMES_01147_2 => [
-        "name" => "planningPhaseResolveSchemes_01147_2",
-        "type" => "game",
-        "action" => "stFromCard",
-        "transitions" => [
-            "" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
-        ]
-    ],
 
     States::PLANNING_PHASE_RESOLVE_SCHEMES_01150 => [
         "name" => "planningPhaseResolveSchemes_01150",

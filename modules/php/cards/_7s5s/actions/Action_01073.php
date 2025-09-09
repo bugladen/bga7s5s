@@ -62,6 +62,9 @@ class Action_01073 extends AttachmentAction
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, '01073', $this->Id);
             $event->theah->queueEvent($transition);
+
+            $this->setUsed($event->theah, true);
+            $this->resetPlayerPassCount($game);
         }
     }
 }

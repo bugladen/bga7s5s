@@ -168,7 +168,8 @@ class Action_01205 extends CharacterAction
                 'owner_inject_code' => $giacinto->getInjectCode(),
             ]);
 
-            $this->SetUsed($game->theah, true);
+            $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState("locationChosen");
 

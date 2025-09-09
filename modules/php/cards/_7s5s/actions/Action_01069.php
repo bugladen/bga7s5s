@@ -160,7 +160,8 @@ class Action_01069 extends CharacterAction
             $addEvent = EventFactory::createCardAddedToHandEvent($maxime->ControllerId, $id);
             $game->theah->queueEvent($addEvent);
 
-            $this->SetUsed($game->theah, true);
+            $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState("attachmentChosen");
         }

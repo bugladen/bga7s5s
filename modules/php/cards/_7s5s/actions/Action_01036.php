@@ -63,6 +63,8 @@ class Action_01036 extends CharacterAction
             $daniella = $this->getOwningCharacter($event->theah);
             $transitionEvent = EventFactory::createTransitionEvent($daniella->ControllerId, $daniella->Id, "01036", $this->Id);
             $event->theah->queueEvent($transitionEvent);
+
+            $this->setUsed($event->theah, true);
         }
     }
 

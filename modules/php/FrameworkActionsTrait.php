@@ -1088,7 +1088,6 @@ trait FrameworkActionsTrait
             $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
     
-            $this->globals->set(GAME::PASS_COUNT, 0);
             $this->gamestate->nextState("inPlayActionChosen");
         }
     }
@@ -1106,7 +1105,6 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
-        $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("inPlayActionPerformerChosen");
     }
 
