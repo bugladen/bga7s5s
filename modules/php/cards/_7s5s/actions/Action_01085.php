@@ -94,6 +94,13 @@ class Action_01085 extends RiskAction
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01085)
         {
+            //Done
+            if ($id == 0)
+            {
+                $game->gamestate->nextState();
+                return;
+            }
+
             $porteTravel = $this->getOwningCard($game->theah);
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
@@ -121,6 +128,9 @@ class Action_01085 extends RiskAction
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
             
+            $transition = EventFactory::createTransitionEvent($performer->ControllerId, $porteTravel->Id, "01085", $this->Id);
+            $game->theah->queueEvent($transition);
+
             $game->gamestate->nextState();
         }
     }
