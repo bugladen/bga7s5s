@@ -40,16 +40,20 @@ class Action_01176 extends RiskAction
         return $performers;
     }
 
-    public function getActionFromHandDiscount(Theah $theah, Character $performer, CardAction $requestedAction): int
+    public function getActionFromHandDiscount(Theah $theah, Character $performer, CardAction $action): int
     {
-        $discount = parent::getActionFromHandDiscount($theah, $performer, $requestedAction);
+        $discount = parent::getActionFromHandDiscount($theah, $performer, $action);
 
-        $performerId = $theah->game->globals->get(Game::CHOSEN_PERFORMER);
-        $performer = $theah->getCharacterById($performerId);
-
-        if ($performer->hasTrait("Hero") || $performer->hasTrait("Scoundrel"))
+        if ($action->Id == $this->Id)
         {
-            $discount += 1;
+            $performerId = $theah->game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $theah->getCharacterById($performerId);
+    
+            if ($performer->hasTrait("Hero") || $performer->hasTrait("Scoundrel"))
+            {
+                $discount += 1;
+            }
+    
         }
 
         return $discount;
