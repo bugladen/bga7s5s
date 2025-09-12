@@ -854,7 +854,12 @@ trait FrameworkActionsTrait
         //If the Equip event was caused by Let's Haggle, we need to announce it here
         if ($equipType == Game::LETS_HAGGLE_EQUIP_TYPE)
         {
-            $scheme = $this->instantiateCard("01147");
+            $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+            $action = $this->theah->getInPlayActionById($actionId);
+            $scheme = $action->getOwningCard($this->theah);
+            $action->SetUsed($this->theah, true);
+            $this->updateCardObjectInDb($scheme);
+
             $this->notifyAllPlayers("message", clienttranslate('${player_name} performed the Action from ${scheme_inject_code}.'), [
                 "player_name" => $this->getPlayerNameById($playerId),
                 "scheme_inject_code" => $scheme->getInjectCode(),
@@ -969,7 +974,6 @@ trait FrameworkActionsTrait
             $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
     
-            $this->globals->set(GAME::PASS_COUNT, 0);
             $this->gamestate->nextState("inPlayActionChosen");
         }
     }
@@ -987,7 +991,6 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
-        $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("inPlayActionPerformerChosen");
     }
 

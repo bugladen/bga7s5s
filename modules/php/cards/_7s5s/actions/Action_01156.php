@@ -72,9 +72,11 @@ class Action_01156 extends AttachmentAction
             foreach ($adjacentLocations as $adjacentLocation)
             {
                 $opposingCharacters = $game->theah->getCharactersAtLocation($adjacentLocation);
-                $opposingCharacter = array_filter($opposingCharacters, fn($c) => $c->isNotControlledByPlayer($performer->ControllerId));
-                if (count($opposingCharacter) > 0)
-                    $charactersIds[] = $opposingCharacter[0]->Id;
+                $opposingCharacters = array_filter($opposingCharacters, fn($c) => $c->isNotControlledByPlayer($performer->ControllerId));
+                foreach ($opposingCharacters as $opposingCharacter)
+                {
+                    $charactersIds[] = $opposingCharacter->Id;
+                }
             }
 
             $charactersIds = array_unique($charactersIds);
@@ -170,6 +172,7 @@ class Action_01156 extends AttachmentAction
             }
 
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
             $game->gamestate->nextState();
         }
 

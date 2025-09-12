@@ -86,9 +86,8 @@ class Action_01056 extends RiskCityAction
             $args['performerId'] = $performerId;
 
             $opponents = $game->theah->getCharactersAtLocation($performer->Location);
-            $opponents = array_filter($opponents, fn($opponent) => $opponent->isNotControlledByPlayer($game->getActivePlayerId()));
-            $opponentIds = array_map(fn($opponent) => $opponent->Id, $opponents);
-            $args['characterIds'] = $opponentIds;
+            $opponents = array_values(array_filter($opponents, fn($opponent) => $opponent->isNotControlledByPlayer($game->getActivePlayerId())));
+            $args['characterIds'] = array_map(fn($opponent) => $opponent->Id, $opponents);
         }
 
         return $args;
@@ -163,7 +162,7 @@ class Action_01056 extends RiskCityAction
                 ]);
 
                 $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
-                $game->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
+                $game->globals->set(Game::CHALLENGE_TYPE, Game::MOVE_ALONG_CHALLENGE_TYPE);
 
                 $transition = EventFactory::createTransitionEvent($performer->ControllerId, $owner->Id, '01056_3', $this->Id);
                 $game->theah->queueEvent($transition);

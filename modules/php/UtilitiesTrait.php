@@ -454,8 +454,8 @@ trait UtilitiesTrait
         $pressureType = $this->globals->get(Game::PRESSURE_TYPE);
         if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE)
-            || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE
-        ))
+            || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE)
+        )
         {
             //Ties win
             if ($attemptingPlayerId == $maxPlayerId || array_key_exists($attemptingPlayerId, $ties))

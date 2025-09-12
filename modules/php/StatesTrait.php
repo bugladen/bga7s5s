@@ -574,8 +574,12 @@ trait StatesTrait
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
         $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE, "");
 
-        $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
-        $this->theah->queueEvent($engageEvent);
+        $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
+        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE)
+        {
+            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
+            $this->theah->queueEvent($engageEvent);
+        }
 
         $this->globals->set(Game::CHALLENGE_CANCELLED, false);
 
@@ -1162,10 +1166,14 @@ trait StatesTrait
         $adversary = $this->theah->getCharacterById($adversaryId);
         $challengerId = $this->theah->getDuelChallengerId();
 
+        $actorIsInLocker = strpos($actor->Location, "Locker-") !== false;
+        $adversaryIsInLocker = strpos($adversary->Location, "Locker-") !== false;
+        $bothInLocker = $actorIsInLocker && $adversaryIsInLocker;
+
         //If the actor not in the same location as the adversary, then any adversary threat is nullified
         //If the actor is in the locker, then threat remains
-        $actorIsInLocker = strpos($actor->Location, "Locker-") !== false;
-        if ($actor->Location != $adversary->Location && !$actorIsInLocker)
+        //If both are in the locker, then obviously the duel will end
+        if ($bothInLocker || ($actor->Location != $adversary->Location && !$actorIsInLocker))
         {
             $field = "";
             if ($actorId == $challengerId)
@@ -1717,9 +1725,6 @@ trait StatesTrait
         //Get characters in play
         $characters = $this->theah->getCharactersInPlay();
 
-        //Only use characters that are in the city
-        $characters = array_filter($characters, fn($character) => $this->theah->cardInCity($character));
-
         //Only use characters that are controlled (i.e. not mercenaries)
         $characters = array_filter($characters, fn($character) => $character->isControlled());
 
@@ -1733,8 +1738,11 @@ trait StatesTrait
             }
             else
             {
-                $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $sourceId=0);
-                $this->theah->queueEvent($movedHome);
+                if ($character->Location != Game::LOCATION_PLAYER_HOME)
+                {
+                    $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $sourceId=0);
+                    $this->theah->queueEvent($movedHome);
+                }
     
                 if ($character->Engaged)
                 {

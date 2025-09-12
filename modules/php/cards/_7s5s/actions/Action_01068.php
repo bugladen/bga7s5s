@@ -165,6 +165,7 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
 
             $this->announceAction($game);
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState("locationChosen");
         }

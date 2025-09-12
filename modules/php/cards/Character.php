@@ -213,13 +213,6 @@ abstract class Character extends Card implements IHasTechniques
 
         if ($event instanceof EventCharacterHealed && $event->characterId == $this->Id)
         {
-            $this->ModifiedResolve += $event->wounds;
-            $modifiedResolve = $this->getModifiedResolve($event->theah);
-            if ($this->ModifiedResolve > $modifiedResolve) 
-            {
-                $this->ModifiedResolve = $modifiedResolve;
-            }
-            
             $this->Wounds -= $event->wounds;
             $actualHealed = $event->wounds;
             if ($this->Wounds < 0) 
@@ -228,6 +221,7 @@ abstract class Character extends Card implements IHasTechniques
                 $this->Wounds = 0;
             }
 
+            $this->ModifiedResolve = $this->getModifiedResolve($event->theah);
             $this->IsUpdated = true;
 
             $event->theah->game->notifyAllPlayers("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason} 

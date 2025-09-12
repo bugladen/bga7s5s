@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 class Reaction_01080 extends RiskReaction
 {
     private int $DuelOpponentId = 0;
+    private string $DuelLocation = '';
     
     public function __construct()
     {
@@ -30,8 +31,7 @@ class Reaction_01080 extends RiskReaction
     {
         $array = parent::getReactionButtonProperties($theah);
 
-        $performer = $theah->getCharacterById($this->DuelOpponentId);
-        $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Pressure %s'), $performer->Location), 'pressure');
+        $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Pressure %s'), $this->DuelLocation), 'pressure');
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
 
         return $array;
@@ -70,6 +70,7 @@ class Reaction_01080 extends RiskReaction
                             {
                                 //Save our participant so we can choose to claim the location later
                                 $this->DuelOpponentId = $game->theah->getDuelOpponentId($event->characterId);
+                                $this->DuelLocation = $dyingCharacter->Location;
                                 $owner->IsUpdated = true;
                             }
                         }
@@ -112,7 +113,7 @@ class Reaction_01080 extends RiskReaction
 
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $pressureTypes = $game->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
-            $event  = EventFactory::createPressureOccuringEvent($game->getActivePlayerId(), $performer->Id, $performer->Location, $pressureTypes);
+            $event  = EventFactory::createPressureOccuringEvent($game->getActivePlayerId(), $performer->Id, $this->DuelLocation, $pressureTypes);
             $game->theah->queueEvent($event);
 
             $owner = $this->getOwningCard($game->theah);
@@ -137,12 +138,12 @@ class Reaction_01080 extends RiskReaction
 
             [$success, $totals] = $game->pressureLocation($performer->ControllerId, $performer, Game::STAT_INFLUENCE);
 
-            $pressuredEvent = EventFactory::createLocationPressuredEvent($performer->ControllerId, $performer->Id, $performer->Location, Game::STAT_INFLUENCE, $success, $totals);
+            $pressuredEvent = EventFactory::createLocationPressuredEvent($performer->ControllerId, $performer->Id, $this->DuelLocation, Game::STAT_INFLUENCE, $success, $totals);
             $game->theah->queueEvent($pressuredEvent);
 
             if ($success)
             {
-                $event = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $performer->Location);
+                $event = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $this->DuelLocation);
                 $game->theah->queueEvent($event);
             }
 

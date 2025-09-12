@@ -15,6 +15,7 @@
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
@@ -191,6 +192,20 @@ trait DebugTrait
             $event->sourceId = $sourceId;
             $event->wounds = $wounds;
             $event->reason = 'Debug Wound';
+        }
+        $this->theah->queueEvent($event);
+        $this->theah->runEvents($debug = true);
+    }
+
+    public function debug_HealCharacter(int $characterId, int $wounds, int $sourceId = 0)
+    {
+        $event = $this->theah->createEvent(Events::CharacterHealed);
+        if ($event instanceof EventCharacterHealed)
+        {
+            $event->characterId = $characterId;
+            $event->sourceId = $sourceId;
+            $event->wounds = $wounds;
+            $event->reason = 'Debug Heal';
         }
         $this->theah->queueEvent($event);
         $this->theah->runEvents($debug = true);

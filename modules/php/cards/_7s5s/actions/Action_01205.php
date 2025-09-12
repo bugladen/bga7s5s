@@ -163,6 +163,7 @@ class Action_01205 extends CharacterAction
 
             $this->announceAction($game);
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState("locationChosen");
 

@@ -112,6 +112,7 @@ class Action_01049 extends AttachmentAction
             $game->theah->queueEvent($transitionEvent);
 
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState("characterChosen");
         }

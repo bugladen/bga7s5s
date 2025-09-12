@@ -971,6 +971,9 @@ class Theah
         foreach ($characters as $character) {
             if ($character->Engaged)
                 continue;
+            if ($character->DashedInfluence)
+                continue;
+            
             $charactersThatCanClaim[] = $character;
         }
         

@@ -43,7 +43,6 @@ class Action_01159 extends CardAction
     {
         $discount = parent::getActionFromHandDiscount($theah, $performer, $action);
 
-        $owner = $this->getOwningCard($theah);
         if ($action->Id == $this->Id)
         {
             $leader = $theah->getLeaderByPlayerId($performer->ControllerId);

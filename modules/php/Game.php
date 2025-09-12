@@ -129,7 +129,8 @@ class Game extends \Table
     final const DEFENDING_HONOR_CHALLENGE_TYPE = 4;
     final const LEGENDARY_REPUTATION_CHALLENGE_TYPE = 5;
     final const DANIELA_DEITRICH_CHALLENGE_TYPE = 6;
-    final const SERVO_SCARPA_CHALLENGE_TYPE = 7;
+    final const MOVE_ALONG_CHALLENGE_TYPE = 7;
+    final const SERVO_SCARPA_CHALLENGE_TYPE = 8;
 
     //Duel global variables
     //Duel Names

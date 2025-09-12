@@ -41,4 +41,9 @@ abstract class Action
     {
         return [];
     }
+
+    public function resetPlayerPassCount(Game $game): void
+    {
+        $game->globals->set(Game::PASS_COUNT, 0);
+    }
 }
