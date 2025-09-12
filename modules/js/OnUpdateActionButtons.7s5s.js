@@ -185,6 +185,15 @@
             'highDramaBeginning_01144_client': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onRecruitCharacterConfirmed());
             },
+
+            'highDramaPhase01008': () => {
+                this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
+            },
+            'highDramaPhase01008_4': () => {
+                this.addActionButton(`actSink`, _('Sink'), () => this.bgaPerformAction('actFromCardWithId', {id: 1})) 
+                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actPass', {})) 
+            },
+
     
             'highDramaPhase01011': () => {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
@@ -193,7 +202,8 @@
             },
 
             'highDramaPhase01012': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                if (! args.args.abnormalFlow)
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
@@ -315,7 +325,8 @@
             },
 
             'highDramaPhase01068': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                if (! args.args.abnormalFlow)
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
@@ -327,7 +338,8 @@
             },
 
             'highDramaPhase01069': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                if (! args.args.abnormalFlow)
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardDiscarded());
                 dojo.addClass('actChooseDiscardCards', 'disabled');
             },

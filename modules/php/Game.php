@@ -117,6 +117,7 @@ class Game extends \Table
     final const TRANSITION_INTERNAL_ID = "transitionInternalId";
     final const REACTION_ID = "reactionId";
     final const REVEALED_CARDS = "revealedCards";
+    final const ABNORMAL_FLOW = "abnormalFlow";
 
     //Challenge global variables
     final const CHALLENGE_CANCELLED = "challengeCancelled";

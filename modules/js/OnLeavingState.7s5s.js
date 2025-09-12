@@ -194,6 +194,17 @@
                 $('faction_hand_info').innerHTML = '';
             },
 
+            'highDramaPhase01008': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+            'highDramaPhase01008_4': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+
             'highDramaPhase01011': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.clientStateArgs.characterIds.forEach((characterId) => {

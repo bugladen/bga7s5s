@@ -1310,6 +1310,7 @@ trait StatesTrait
         $this->globals->delete(Game::TRANSITION_INTERNAL_ID);
         $this->globals->delete(Game::REACTION_ID);
         $this->globals->delete(Game::REVEALED_CARDS);
+        $this->globals->delete(Game::ABNORMAL_FLOW);
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);

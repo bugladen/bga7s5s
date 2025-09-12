@@ -56,16 +56,7 @@ class _01063 extends Character
                 $technique = new Technique_01063Swap();
                 $technique->setId("Technique_01063Swap");
                 $technique->setOwnerId($character->Id);
-                $character->addTechnique($technique);
-
-                $event->theah->game->notifyAllPlayers('techniqueAdded', clienttranslate('${source_inject_code}: ${character_inject_code} has gained Technique: ${technique_name}.'), [
-                    'i18n' => ['technique_name'],
-                    'source_inject_code' => $this->getInjectCode(),
-                    'character_inject_code' => $character->getInjectCode(),
-                    'characterId' => $character->Id,
-                    'technique' => $technique->getPropertyArray($event->theah->game),
-                    'technique_name' => $technique->Name
-                ]);
+                $character->addTechnique($technique, $event->theah->game);
                 $character->IsUpdated = true;
             }
         }
@@ -90,16 +81,7 @@ class _01063 extends Character
                             $technique = $character->getTechniqueByClassId("Technique_01063Swap");
                             if ($technique)
                             {
-                                $character->removeTechnique($technique);
-
-                                $event->theah->game->notifyAllPlayers('techniqueRemoved', clienttranslate('${source_inject_code}: ${character_inject_code} has lost Technique: ${technique_name}.'), [
-                                    'i18n' => ['technique_name'],
-                                    'source_inject_code' => $this->getInjectCode(),
-                                    'character_inject_code' => $character->getInjectCode(),
-                                    'characterId' => $character->Id,
-                                    'techniqueId' => $technique->Id,
-                                    'technique_name' => $technique->Name
-                                ]);
+                                $character->removeTechnique($technique, $event->theah->game);
                                 $character->IsUpdated = true;
                             }
                         }
@@ -120,16 +102,7 @@ class _01063 extends Character
                         $technique->setOwnerId($character->Id);
                         if ($character instanceof IHasTechniques)
                         {
-                            $character->addTechnique($technique);
-
-                            $event->theah->game->notifyAllPlayers('techniqueAdded', clienttranslate('${source_inject_code}: ${character_inject_code} has gained Technique: ${technique_name}.'), [
-                                'i18n' => ['technique_name'],
-                                'source_inject_code' => $this->getInjectCode(),
-                                'character_inject_code' => $character->getInjectCode(),
-                                'characterId' => $character->Id,
-                                'technique' => $technique->getPropertyArray($event->theah->game),
-                                'technique_name' => $technique->Name
-                            ]);
+                            $character->addTechnique($technique, $event->theah->game);
                             $character->IsUpdated = true;
                         }
                     }
@@ -144,16 +117,7 @@ class _01063 extends Character
                     $technique = new Technique_01063Swap();
                     $technique->setId("Technique_01063Swap");
                     $technique->setOwnerId($character->Id);
-                    $character->addTechnique($technique);
-
-                    $event->theah->game->notifyAllPlayers('techniqueAdded', clienttranslate('${source_inject_code}: ${character_inject_code} has gained Technique: ${technique_name}.'), [
-                        'i18n' => ['technique_name'],
-                        'source_inject_code' => $this->getInjectCode(),
-                        'character_inject_code' => $character->getInjectCode(),
-                        'characterId' => $character->Id,
-                        'technique' => $technique->getPropertyArray($event->theah->game),
-                        'technique_name' => $technique->Name
-                    ]);
+                    $character->addTechnique($technique, $event->theah->game);
                     $character->IsUpdated = true;
                 }
             }
@@ -166,16 +130,7 @@ class _01063 extends Character
                     $technique = $character->getTechniqueByClassId("Technique_01063Swap");
                     if ($technique)
                     {
-                        $character->removeTechnique($technique);
-
-                        $event->theah->game->notifyAllPlayers('techniqueRemoved', clienttranslate('${source_inject_code}: ${character_inject_code} has lost Technique: ${technique_name}.'), [
-                            'i18n' => ['technique_name'],
-                            'source_inject_code' => $this->getInjectCode(),
-                            'character_inject_code' => $character->getInjectCode(),
-                            'characterId' => $character->Id,
-                            'techniqueId' => $technique->Id,
-                            'technique_name' => $technique->Name
-                        ]);
+                        $character->removeTechnique($technique, $event->theah->game);
                         $character->IsUpdated = true;
                     }
                 }

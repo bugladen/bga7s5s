@@ -222,7 +222,7 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Cesca Del Rosso') . clienttranslate(': ${you} must must acknowlege revealed card:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
-        "action" => "stMultiPlayerInitSansActivePlayer",
+        "action" => "stMultiPlayerInitSansInitiatingPlayer",
         "possibleactions" => [
             "actMultipleOk", 
         ],
@@ -230,17 +230,30 @@ $machinestates += [
     ],
     States::HIGH_DRAMA_PLAYER_TURN_01008_2 => [
         "name" => "highDramaPhase01008_2",
-        "description" => clienttranslate('Cesca Del Rosso') . clienttranslate(': ${actplayer} may search their deck for a Red Hand Thug.'),
-        "descriptionmyturn" => clienttranslate('Cesca Del Rosso') . clienttranslate(': ${you} may choose a Red Hand Thug from Your Deck:'),
+        "type" => "game",
+        "action" => "stSetCurrentPlayer",
+        "transitions" => ["" => States::HIGH_DRAMA_PLAYER_TURN_01008_3]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01008_3 => [
+        "name" => "highDramaPhase01008_3",
+        "type" => "game",
+        "action" => "stFromCard",
+        "transitions" => [
+            "cardDrawn" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            "choose" => States::HIGH_DRAMA_PLAYER_TURN_01008_4]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01008_4 => [
+        "name" => "highDramaPhase01008_4",
+        "description" => clienttranslate('Cesca Del Rosso') . clienttranslate(': ${actplayer} may choose to sink revealed card.'),
+        "descriptionmyturn" => clienttranslate('Cesca Del Rosso') . clienttranslate(': ${you} may choose to sink revealed card:'),
         "type" => "activeplayer",
-        "args" => "argsForStatePrivate",
+        "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardPass",
+            "actPass",
             "actFromCardWithId", 
         ],
         "transitions" => [
-            "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_01008_3
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
         ]
     ],
 
@@ -271,7 +284,7 @@ $machinestates += [
             "actFromCardWithId"
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
             "opposingCharacterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],

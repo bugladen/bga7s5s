@@ -41,6 +41,15 @@ abstract class CardAction extends Action implements ICardAbility
         return 0;
     }
 
+    public function getArgsFromAction(Game $game, int $state, string $stateName): array
+    {
+        $args = parent::getArgsFromAction($game, $state, $stateName);
+
+        $args["abnormalFlow"] = $game->globals->get(Game::ABNORMAL_FLOW, false);
+
+        return $args;
+    }
+
 
     public function handleEvent(Event $event)
     {

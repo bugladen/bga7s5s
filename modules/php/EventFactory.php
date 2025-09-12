@@ -12,7 +12,6 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
@@ -63,6 +62,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTableSetup;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
@@ -710,6 +710,21 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->actorId = $actorId;
             $event->adversaryId = $adversaryId;
             $event->techniqueId = $techniqueId;
+        }
+
+        return $event;
+    }
+
+    public static function createSorcererAbilityPlayedEvent(int $playerId, int $sourceId, string $abilityId, int $targetId = 0, string $targetLocation = ""): EventSorcererAbilityPlayed
+    {
+        $event = self::createEvent(Events::SorcererAbilityPlayed);
+        if ($event instanceof EventSorcererAbilityPlayed)
+        {
+            $event->playerId = $playerId;
+            $event->sourceId = $sourceId;
+            $event->abilityId = $abilityId;
+            $event->targetId = $targetId;
+            $event->targetLocation = $targetLocation;
         }
 
         return $event;

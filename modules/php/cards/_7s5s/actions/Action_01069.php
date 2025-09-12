@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -11,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01069 extends CharacterAction
+class Action_01069 extends CharacterAction implements ISorcererAbility
 {
     public function __construct()
     {
@@ -154,6 +155,9 @@ class Action_01069 extends CharacterAction
 
             $addEvent = EventFactory::createCardAddedToHandEvent($maxime->ControllerId, $id);
             $game->theah->queueEvent($addEvent);
+
+            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($maxime->ControllerId, $maxime->Id, $this->Id, $maxime->Id, $maxime->Location);
+            $game->theah->queueEvent($sorcererEvent);
 
             $this->SetUsed($game->theah, true);
 

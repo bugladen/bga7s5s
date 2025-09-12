@@ -419,11 +419,14 @@ trait ArgumentsTrait
         //Select the Ids of the performers
         $performerIds = array_map(fn($performer) => $performer->Id, $performers);
 
+        $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
+
         return [
             "_private" => [
                 "active" => [
                     "ids" => $performerIds,
-                    "actionCardId" => $owner->Id
+                    "actionCardId" => $owner->Id,
+                    "abnormalFlow" => $abnormalFlow,
                 ]
             ]
         ];
@@ -439,6 +442,7 @@ trait ArgumentsTrait
         $action = $this->theah->getInHandActionById($actionId);
 
         $owner = $action->getOwningCard($this->theah);
+        $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
 
         return [
             "_private" => [
@@ -447,7 +451,8 @@ trait ArgumentsTrait
                     "chosenActionId" => $actionId,
                     "choseActionCardId" => $owner->Id,
                     "requiresPerformerSelected" => $action->RequiresPerformerSelected,
-                    "discount" => $this->globals->get(GAME::DISCOUNT)
+                    "discount" => $this->globals->get(GAME::DISCOUNT),
+                    "abnormalFlow" => $abnormalFlow,
                 ]
             ],
         ];

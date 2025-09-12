@@ -461,6 +461,26 @@
                 this.factionHand.setSelectionMode(2);
             },
 
+            'highDramaPhase01008': () => {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = _('Revealed Card');
+    
+                this.addCardToDeck(this.chooseList, args.args.args.card);
+                this.chooseList.setSelectionMode(0);
+            },
+            'highDramaPhase01008_4': () => {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = _('Revealed Card');
+    
+                //Wait a second for stock object to catch up?
+                setTimeout(() => {
+                    this.addCardToDeck(this.chooseList, args.args.args.card);
+                    this.chooseList.setSelectionMode(0);
+                }, 500);
+            },
+
             'highDramaPhase01011': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

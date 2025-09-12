@@ -7,13 +7,19 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01008;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 
-class _01008 extends Character implements IHasActions, IHasReactions
+class _01008 extends Character implements IHasActions, IHasReactions, IHasTechniques, IHasManeuvers
 {
     use ActionTrait;
     use ReactionTrait;
+    use TechniqueTrait;
+    use ManeuverTrait;
 
     public function __construct()
     {

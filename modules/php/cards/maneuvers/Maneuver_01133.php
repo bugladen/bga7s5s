@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers;
 
-class Maneuver_01133 extends Maneuver
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
+
+class Maneuver_01133 extends Maneuver implements ISorcererAbility
 {
     public function __construct()
     {

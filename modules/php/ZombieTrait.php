@@ -151,6 +151,7 @@ trait ZombieTrait
                     $this->actBack();
                     break;
 
+                case "highDramaPhase01008_4": // Cesca Del Rosso
                 case "highDramaPhase01015": // The Great Game
                 case "highDramaPhase01049_2": // Polished Flintlock engage
                 case "highDramaPhase01056_2": // Move Along choice
@@ -288,6 +289,7 @@ trait ZombieTrait
                     $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
                     break;
 
+                case "highDramaPhase01008": // Cesca Del Rosso
                 case "highDramaPhase01035": // Kaspar
                 case "highDramaPhase01038": // Otto Streit
                 case "highDramaPhase01180": // Kaj Kousei

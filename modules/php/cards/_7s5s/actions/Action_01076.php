@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -10,7 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01076 extends RiskAction
+class Action_01076 extends RiskAction implements ISorcererAbility
 {
     public function __construct()
     {
@@ -70,9 +71,8 @@ class Action_01076 extends RiskAction
             $performer = $game->theah->getCardById($performerId);
 
             $locations = array_values($game->theah->getCityLocations());
-            $locations = array_filter($locations, fn($location) => $location->Name != $performer->Location);
-            $locationIds = array_map(fn($location) => $location->Name, $locations);
-            $args["locationIds"] = $locationIds;
+            $locations = array_values(array_filter($locations, fn($location) => $location->Name != $performer->Location));
+            $args["locationIds"] = array_map(fn($location) => $location->Name, $locations);
 
             $args["performerId"] = $game->globals->get(Game::CHOSEN_PERFORMER);
         }
@@ -117,6 +117,9 @@ class Action_01076 extends RiskAction
             }
 
             $locationName = $game->globals->get(Game::CHOSEN_LOCATION);
+
+            $event = EventFactory::createSorcererAbilityPlayedEvent($bloodMark->ControllerId, $bloodMark->Id, $this->Id, $performer->Id, $performer->Location);
+            $game->theah->queueEvent($event);
 
             //Move Performer to chosen location
             $event = EventFactory::createCardMovedEvent($performer->ControllerId, $performer->Id, $performer->Location, $locationName, false, $bloodMark->Id);

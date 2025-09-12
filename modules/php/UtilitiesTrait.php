@@ -276,7 +276,7 @@ trait UtilitiesTrait
         return $count;
     }
 
-    public function instantiateCard(string $cardClass, ?int $id) : Card 
+    public function instantiateCard(string $cardClass, ?int $id = null) : Card 
     {
         //Pull the first two characters of the card id to get the set
         $set = substr($cardClass, 0, 2);

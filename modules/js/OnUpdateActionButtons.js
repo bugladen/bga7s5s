@@ -151,16 +151,20 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaInHandActionChoosePerformer'  : () => {
-            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            if (! args._private.abnormalFlow)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaInHandActionPay': () => {
-            if (args._private.requiresPerformerSelected)
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backPerformer'}));
-            else
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backChooseAction'}));
+            if (! args._private.abnormalFlow)
+            {
+                if (args._private.requiresPerformerSelected)
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backPerformer'}));
+                else
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backChooseAction'}));
+            }
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onActionCardFromHandPaymentConfirmed());
         },
 
