@@ -39,7 +39,7 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
         }
 
         $characters = $theah->getCharactersAtLocation($leontine->Location);
-        $characters = array_filter($characters, fn($character) => $character->Id != $leontine->Id && $character->ControllerId == $playerId);
+        $characters = array_filter($characters, fn($character) => $character->ControllerId == $playerId);
 
         if (count($characters) == 0)
         {
@@ -66,7 +66,7 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
             }
 
             $characters = $event->theah->getCharactersAtLocation($leontine->Location);
-            $characters = array_filter($characters, fn($character) => $character->Id != $leontine->Id && $character->ControllerId == $playerId);
+            $characters = array_filter($characters, fn($character) => $character->ControllerId == $playerId);
     
             if (count($characters) == 0)
             {
@@ -86,7 +86,7 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
         {
             $leontine = $this->getOwningCharacter($game->theah);
             $characters = $game->theah->getCharactersAtLocation($leontine->Location);
-            $characters = array_values(array_filter($characters, fn($character) => $character->Id != $leontine->Id && $character->ControllerId == $leontine->ControllerId));
+            $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId == $leontine->ControllerId));
     
             $args["characterIds"] = array_map(fn($character) => $character->Id, $characters);
         }
