@@ -34,6 +34,12 @@ class Action_01069 extends CharacterAction implements ISorcererAbility
             return false;
         }
 
+        $hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
+        if (count($hand) == 0)
+        {
+            return false;
+        }
+
         $discardPileName = $theah->game->getPlayerDiscardDeckName($playerId);
         $cards = $theah->getCardObjectsAtLocation($discardPileName);
         $cards = array_filter($cards, fn($card) => $card instanceof Attachment && ! $card->hasTrait("Unique"));

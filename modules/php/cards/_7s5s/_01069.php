@@ -55,11 +55,7 @@ class _01069 extends Character implements IHasActions
             {
                 //Check to see if ability is a Sorcerer ability
                 $ability = $source->getAbilityById($event->abilityId);
-                $ignoreWounds = $ability && $ability instanceof ISorcererAbility;
-            }
-            else
-            {
-                $ignoreWounds = $source->hasTrait("Sorcery");
+                $ignoreWounds = ($ability && $ability instanceof ISorcererAbility) || $source->hasTrait("Sorcerer");
             }
 
             if ($ignoreWounds)
