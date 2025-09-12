@@ -326,7 +326,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         //Get the attached character and set up as a container
         if (attachment.attachedToId) {
             const character = this.cardProperties[attachment.attachedToId];
-            dojo.addClass(character.divId, '_7sfs-attachment-container');
+            if (character)
+                dojo.addClass(character.divId, '_7sfs-attachment-container');
+            else
+                attachment.attachedToId = undefined;
         }
 
         let placement = inDuel ? 'last' : attachment.attachedToId ? 'last' : 'before';
