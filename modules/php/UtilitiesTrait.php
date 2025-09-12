@@ -442,15 +442,8 @@ trait UtilitiesTrait
         $ties = array_filter($playerInfluences, fn($player) => $player['influence'] == $maxInfluence);
 
         $pressureType = $this->globals->get(Game::PRESSURE_TYPE);
-        if ($pressureType == Game::NORMAL_PRESSURE_TYPE)
-        {
-            if (count($ties) > 1 || $attemptingPlayerId != $maxPlayerId) 
-                return [false, $totals];
-
-            return [true, $totals];
-        }
-        else if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE) || 
-                 $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE))
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE) || 
+            $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE))
         {
             if ($attemptingPlayerId == $maxPlayerId || array_key_exists($attemptingPlayerId, $ties))
                 return [true, $totals];
@@ -459,7 +452,10 @@ trait UtilitiesTrait
         }
         else
         {
-            throw new \Exception("Invalid pressure type: $pressureType");
+            if (count($ties) > 1 || $attemptingPlayerId != $maxPlayerId) 
+                return [false, $totals];
+
+            return [true, $totals];
         }
     }
 
