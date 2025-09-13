@@ -122,6 +122,7 @@ class Action_01152b extends SchemeCityAction
             $this->announceAction($game);
 
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState("targetChosen");
         }

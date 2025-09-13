@@ -95,6 +95,8 @@ class Action_01012 extends CharacterAction implements ISorcererAbility
             $game->theah->queueEvent($event);
 
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
+            
             $game->gamestate->nextState("opposingCharacterChosen");
         }
     }

@@ -62,7 +62,9 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
             $owner = $this->getOwningCharacter($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01008", $this->Id);
             $event->theah->queueEvent($transition);
-    
+
+            $this->setUsed($event->theah, true);
+            $this->resetPlayerPassCount($game);    
         }
     }
 

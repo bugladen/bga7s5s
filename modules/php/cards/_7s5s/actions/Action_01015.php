@@ -124,6 +124,8 @@ class Action_01015 extends SchemeCityAction
             $game->theah->queueEvent($woundEvent);
 
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
+            
             $game->gamestate->nextState();
         }
     }

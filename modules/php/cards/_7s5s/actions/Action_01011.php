@@ -113,6 +113,9 @@ class Action_01011 extends CharacterAction
             $transition = EventFactory::createTransitionEvent($servo->ControllerId, $servo->Id, "01011_2", $this->Id);
             $game->theah->queueEvent($transition);
 
+            $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
+
             $game->gamestate->nextState("opposingCharacterChosen");
         }
     }

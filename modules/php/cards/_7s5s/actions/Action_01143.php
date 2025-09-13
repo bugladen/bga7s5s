@@ -53,6 +53,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
             $event->theah->queueEvent($transitionEvent);
 
             $this->setUsed($event->theah, true);
+            $this->resetPlayerPassCount($game);
         }
     }
 
