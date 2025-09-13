@@ -108,13 +108,20 @@ onEnteringState: function( stateName, args )
                     this.clearCardAsSelectable(image);
                     this.makeCardSelectable(image);
 
-                    if (card.negotiable)                             
+                    if (card.negotiable || args.args.recruitType == this.CIRILO_RECRUIT_TYPE)
                     {
                         const cost = $(`${card.divId}_wealth_cost`);
-                        let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
+                        const originalCost = parseInt(cost.innerHTML);
+
+                        let discountedCost = originalCost - this.clientStateArgs.discount;
                         discountedCost = discountedCost < 0 ? 0 : discountedCost;
+
+                        if (args.args.recruitType == this.CIRILO_RECRUIT_TYPE)
+                            discountedCost = 1;                        
+
                         cost.innerHTML = parseInt(discountedCost);
-                        dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
+                        if (originalCost != discountedCost)
+                            dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
                     }
                 });
             }
@@ -134,11 +141,18 @@ onEnteringState: function( stateName, args )
                 this.clientStateArgs.recruitId = card.id;
     
                 const cost = $(`${card.divId}_wealth_cost`);
-                let discountedCost = parseInt(cost.innerHTML) - args.args.discount;
+                const originalCost = parseInt(cost.innerHTML);
+
+                let discountedCost = originalCost - args.args.discount;
                 discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                
+                if (args.args.recruitType == this.CIRILO_RECRUIT_TYPE)
+                    discountedCost = 1;
+
                 this.clientStateArgs.discountedCost = discountedCost;
                 cost.innerHTML = parseInt(discountedCost);
-                dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
+                if (originalCost != discountedCost)
+                    dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
     
                 this.factionHand.setSelectionMode(2);
             }

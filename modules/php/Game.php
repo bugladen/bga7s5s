@@ -80,6 +80,7 @@ class Game extends \Table
     final const RECRUIT_TYPE = "recruitType";
     final const NORMAL_RECRUIT_TYPE = 0;
     final const KASPAR_RECRUIT_TYPE = 1;
+    final const CIRILO_RECRUIT_TYPE = 2;
 
     //Pressure global variables
     final const CLAUD_ID = "claudeId"; //When Claude is in play, this is the ID of the card that caused the claim type
@@ -104,6 +105,7 @@ class Game extends \Table
     final const CHOSEN_LOCATION = "chosenLocation";
     final const CHOSEN_ACTION = "chosenAction";
     final const CHOSEN_PERFORMER = "chosenPerformer";
+    final const PERFORMER_PARLEYED = "performerParleyed";
     final const CHOSEN_ATTACHMENT = "chosenAttachment";
     final const CHOSEN_TARGET = "chosenTarget";
     final const CHOSEN_TECHNIQUE_IS_MAIN = "chosenTechniqueIsMain";

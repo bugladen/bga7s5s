@@ -391,6 +391,11 @@ abstract class Card
         ];
 
         $properties['type'] = 'Card';
+
+        //Hack to prevent older games from breaking
+        if (empty($this->ModifiedTraits))
+            $this->ModifiedTraits = $this->Traits;
+
         $properties['traits'] = $this->ModifiedTraits;
         $properties['conditions'] = $this->Conditions;
 

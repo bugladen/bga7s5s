@@ -419,10 +419,16 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Character is not a City Character."));
         }
 
-        $discount = $this->globals->get(Game::DISCOUNT);        
+        $discount = $this->globals->get(Game::DISCOUNT, 0);        
 
         $cost = $character->WealthCost - $discount;
         if ($cost < 0) $cost = 0;
+
+        $recruitType = $this->globals->get(Game::RECRUIT_TYPE);
+        if ($recruitType == Game::CIRILO_RECRUIT_TYPE)
+        {
+            $cost = 1;
+        }
 
         $cardIds = json_decode($payWithCards, true);
         
@@ -602,6 +608,7 @@ trait FrameworkActionsTrait
         //Set the discount for recruiting a mercenary.
         $discount = $this->theah->getParleyDiscount($character, true);
         $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(GAME::PERFORMER_PARLEYED, true);
 
         $this->gamestate->nextState("parleyChosen");
     }
@@ -614,6 +621,7 @@ trait FrameworkActionsTrait
 
         $discount = $this->theah->getParleyDiscount($character, false);
         $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(GAME::PERFORMER_PARLEYED, false);
         $this->gamestate->nextState("parleyChosen");
     }
 
@@ -651,7 +659,8 @@ trait FrameworkActionsTrait
             "card_inject_code" => $performer->getInjectCode(),
         ]);
 
-        if ($discount > 0)
+        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
+        if ($performerParleyed)
         {
             $this->notifyAllPlayers("message", clienttranslate('${player_name} chose to Parley with ${card_inject_code}.'), [
                 "player_name" => $playerName,

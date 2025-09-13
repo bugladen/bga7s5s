@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Brute;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -1399,7 +1400,7 @@ trait EventHub
                     $locker = $theah->game->getPlayerLockerName($character->ControllerId);
                     $location = $locker;
 
-                    if ($character->hasTrait("Brute"))
+                    if ($character instanceof Brute)
                     {
                         $discardPileName = $theah->game->getPlayerDiscardDeckName($character->ControllerId);
                         $location = $discardPileName;

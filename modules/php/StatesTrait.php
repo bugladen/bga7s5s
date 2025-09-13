@@ -1308,6 +1308,7 @@ trait StatesTrait
         $this->globals->delete(GAME::NEXT_COMBAT_CARD);
         $this->globals->delete(GAME::CHOSEN_LOCATION);
         $this->globals->delete(GAME::CHOSEN_PERFORMER);
+        $this->globals->delete(GAME::PERFORMER_PARLEYED);
         $this->globals->delete(GAME::CHOSEN_ATTACHMENT);
         $this->globals->delete(GAME::CHOSEN_ACTION);
         $this->globals->delete(GAME::CHOSEN_TARGET);

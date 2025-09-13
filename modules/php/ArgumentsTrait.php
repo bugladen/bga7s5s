@@ -183,6 +183,7 @@ trait ArgumentsTrait
         $args = [];
         $args["performerId"] = $performerId;
         $args["discount"] = $discount;
+        $args["recruitType"] = $this->globals->get(Game::RECRUIT_TYPE);
 
         $characters = $this->theah->getCharactersAtLocation($performer->Location, $includeUncontrolled = true);
         $characters = array_values(array_filter($characters, fn($character) => ! $character->isControlled() && $character->hasTrait("Mercenary")));

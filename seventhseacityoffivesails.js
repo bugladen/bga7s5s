@@ -84,6 +84,7 @@ function (dojo, declare) {
             //Recruit types
             this.NORMAL_RECRUIT_TYPE = 0;
             this.KASPAR_RECRUIT_TYPE = 1;
+            this.CIRILO_RECRUIT_TYPE = 2;
 
             //Challenge types
             this.NORMAL_CHALLENGE_TYPE = 0;
