@@ -36,6 +36,8 @@ class _01033 extends Risk implements IHasManeuvers
             'Ambrogia',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01033(),
         ];

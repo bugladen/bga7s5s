@@ -35,5 +35,7 @@ class _01022 extends FactionAttachment
             'Knife',
             'Ambrogia',
         ];
+
+        $this->resetCard();
     }
 }

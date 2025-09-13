@@ -117,7 +117,7 @@ class Reaction_01023 extends RiskReaction
             //Get all characters at the location of the challenge
             $characters = $theah->getCharactersAtLocation($challengeLocation, $owner->ControllerId);
             //Filter out characters that are owned by the player and have the Brute trait
-            $characters = array_filter($characters, fn($character) => $character->OwnerId == $owner->ControllerId && in_array('Brute', $character->Traits));
+            $characters = array_filter($characters, fn($character) => $character->OwnerId == $owner->ControllerId && $character->hasTrait('Brute'));
             if (count($characters) > 0)
             {
                 $discount += 1;

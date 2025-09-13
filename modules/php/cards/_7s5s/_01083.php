@@ -32,6 +32,8 @@ class _01083 extends Risk implements IHasActions
             'Honor',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01083(),
         ];

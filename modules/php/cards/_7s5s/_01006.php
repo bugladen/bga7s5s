@@ -35,18 +35,15 @@ class _01006 extends Leader implements IHasReactions
         $this->Influence = 3;
         $this->CrewCap = 6;
         $this->Panache = 6;
-
-        $this->resetModifiedCharacterStats();
-        
-        $this->ModifiedCrewCap = $this->CrewCap;
-        $this->ModifiedPanache = $this->Panache;
-
+       
         $this->Traits = [
             "Leader",
             "Villain",
             "Red Hand",
             "Vodacce",
         ];
+
+        $this->resetCard();
 
         $this->Reactions = [
             new Reaction_01006(),

@@ -25,5 +25,8 @@ class _01137 extends Risk
             'Hunt',
             'Relentless',
         ];
+
+        $this->resetCard();
+
     }
 }

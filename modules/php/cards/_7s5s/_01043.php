@@ -36,12 +36,12 @@ class _01043 extends Character implements IHasReactions
         $this->Finesse = 2;
         $this->Influence = 1;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Hunter",
             "Eisen",
         ];
+
+        $this->resetCard();
 
         $this->Reactions = [
             new Reaction_01043(),
@@ -55,7 +55,7 @@ class _01043 extends Character implements IHasReactions
         if ($event instanceof EventDuelCalculateCombatCardStats && $event->actorId == $this->Id)
         {
             $adversary = $event->theah->getCharacterById($event->adversaryId);
-            if (in_array("Sorcerer", $adversary->Traits))
+            if ($adversary->hasTrait("Sorcerer"))
             {
                 $event->thrust += 1;
                 $event->explanations[] = sprintf($event->theah->game->translate("%s increases the Thrust of his Combat Cards by 1 when dueling with a Sorcerer."), $this->getInjectCode());
@@ -66,7 +66,7 @@ class _01043 extends Character implements IHasReactions
         // At the end of the player turn Uwe resets to not being a Mercenary
         if ($event instanceof EventPlayerTurnEnd)
         {
-            $this->Traits = array_filter($this->Traits, fn($trait) => $trait != "Mercenary");
+            $this->ModifiedTraits = array_filter($this->ModifiedTraits, fn($trait) => $trait != "Mercenary");
             $this->IsUpdated = true;
         }
     }

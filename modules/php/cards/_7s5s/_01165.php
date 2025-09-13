@@ -30,6 +30,8 @@ class _01165 extends Risk implements IHasManeuvers
             'Prepared',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01165(),
         ];

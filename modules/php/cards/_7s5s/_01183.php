@@ -26,6 +26,8 @@ class _01183 extends CityEventCard
             'Brawl',
             'Feud',
         ];
+
+        $this->resetCard();
     }
 
     public function getPressureTypes(Theah $theah, Character $performer, Array &$pressureTypes): void

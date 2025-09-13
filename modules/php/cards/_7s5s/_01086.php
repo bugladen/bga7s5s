@@ -35,6 +35,8 @@ class _01086 extends Risk implements IHasActions, IHasManeuvers
             'Demoralize',
             "Valroux",
         ];
+
+        $this->resetCard();
         
         $this->Actions = [
             new Action_01086(),

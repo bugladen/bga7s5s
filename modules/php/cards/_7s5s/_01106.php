@@ -25,5 +25,7 @@ class _01106 extends Risk
             'Ad Hoc',
             'Savvy',
         ];
+
+        $this->resetCard();
     }
 }

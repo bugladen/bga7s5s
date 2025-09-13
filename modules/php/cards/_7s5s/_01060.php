@@ -31,6 +31,8 @@ class _01060 extends Risk implements IHasActions
             'Logistics',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01060()
         ];

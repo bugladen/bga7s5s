@@ -29,8 +29,6 @@ class _01194 extends CityCharacter implements IHasActions
         $this->Influence = 0;
         $this->DashedInfluence = true;
 
-        $this->resetModifiedCharacterStats();
-
         $this->WealthCost = 4;
         $this->CityCardNumber = 18;
         $this->Negotiable = true;
@@ -39,6 +37,8 @@ class _01194 extends CityCharacter implements IHasActions
             'Mercenary',
             'Eisen',
         ];
+
+        $this->resetCard();
 
         $this->Actions = [
             new Action_01194(),

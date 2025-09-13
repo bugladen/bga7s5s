@@ -40,6 +40,8 @@ class _01148 extends Scheme implements IHasActions
             "Solitary",
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01148(),
         ];

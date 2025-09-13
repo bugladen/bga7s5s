@@ -31,6 +31,8 @@ class _01135 extends Risk implements IHasManeuvers
             'Mireli',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01135(),
         ];

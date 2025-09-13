@@ -24,5 +24,7 @@ class _01171 extends Risk
             'Cunning',
             'Villainous',
         ];
+
+        $this->resetCard();
     }
 }

@@ -32,7 +32,7 @@ class Action_01201 extends CharacterAction implements ISorcererAbility
             return false;
         }
 
-        if (! in_array("Sorcerer", $ravenna->Traits))
+        if (! $ravenna->hasTrait("Sorcerer"))
         {
             return false;
         }

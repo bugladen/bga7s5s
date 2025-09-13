@@ -34,6 +34,8 @@ class _01181 extends CityAttachment implements IHasReactions
             'Trinket',
         ];
 
+        $this->resetCard();
+
         $this->Reactions = [
             new Reaction_01181()
         ];

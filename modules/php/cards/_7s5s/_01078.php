@@ -31,6 +31,8 @@ class _01078 extends Risk implements IHasActions
             'Provocation',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01078(),
         ];

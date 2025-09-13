@@ -26,5 +26,7 @@ class _01103 extends Risk
             'Virtue',
             'Unique',
         ];
+
+        $this->resetCard();
     }
 }

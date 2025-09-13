@@ -25,5 +25,7 @@ class _01104 extends Risk
             'Camaraderie',
             'Romance',
         ];
+
+        $this->resetCard();
     }
 }

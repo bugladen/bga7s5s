@@ -31,6 +31,8 @@ class _01054 extends Risk implements IHasManeuvers
             'Eisenfaust',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01054(),
         ];

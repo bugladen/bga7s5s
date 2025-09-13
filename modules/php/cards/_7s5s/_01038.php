@@ -27,12 +27,12 @@ class _01038 extends Character implements IHasActions
         $this->Finesse = 2;
         $this->Influence = 2;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Academic",
             "Eisen",
         ];
+
+        $this->resetCard();
 
         $this->Actions = [
             new Action_01038(),

@@ -36,7 +36,7 @@ class Action_01062 extends CharacterAction
         {
             $characters = $theah->getCharactersAtLocation($location);
             //Filter duelists owned by controller of Odette
-            $characters = array_filter($characters, fn($character) => $character->ControllerId == $odette->ControllerId && in_array("Duelist", $character->Traits));
+            $characters = array_filter($characters, fn($character) => $character->ControllerId == $odette->ControllerId && $character->hasTrait("Duelist"));
             $count += count($characters);
         }
 
@@ -52,7 +52,7 @@ class Action_01062 extends CharacterAction
         {
             $characters = $theah->getCharactersAtLocation($location);
             //Filter duelists owned by controller of Odette
-            $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId == $odette->ControllerId && in_array("Duelist", $character->Traits)));
+            $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId == $odette->ControllerId && $character->hasTrait("Duelist")));
             $performers = array_merge($performers, $characters);
         }
 

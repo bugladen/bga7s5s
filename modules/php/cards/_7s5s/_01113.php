@@ -32,6 +32,8 @@ class _01113 extends Risk implements IHasManeuvers
             'Theft',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01113(),
         ];

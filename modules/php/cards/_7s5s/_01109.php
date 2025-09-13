@@ -25,5 +25,7 @@ class _01109 extends Risk
             'Revelry',
             'Torpor',
         ];
+
+        $this->resetCard();
     }
 }

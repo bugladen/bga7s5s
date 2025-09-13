@@ -318,7 +318,7 @@ trait UtilitiesTrait
         foreach ($hand as $handCard) {
             $card = $this->getCardObjectFromDb($handCard['id']);
             //Does card have the wealth trait?  Count as 2 if it does.
-            if (in_array('Wealth', $card->Traits))
+            if ($card->hasTrait("Wealth"))
                 $wealth += 2;
             else
                 $wealth += 1;
@@ -343,7 +343,7 @@ trait UtilitiesTrait
     {
         foreach ($character->Attachments as $attachment) {
             $attachment = $this->getCardObjectFromDb($attachment);
-            if ($attachment instanceof Attachment && in_array($type, $attachment->Traits) && $attachment->hasEquipRestriction($type)) {
+            if ($attachment instanceof Attachment && $attachment->hasTrait($type) && $attachment->hasEquipRestriction($type)) {
                 return true;
             }
         }
@@ -544,7 +544,7 @@ trait UtilitiesTrait
                 }
                 else
                 {
-                    if (in_array($type, $card->Traits))
+                    if ($card->hasTrait($type))
                     {
                         $revealed[] = $cardInfo['id'];
                         $found = true;

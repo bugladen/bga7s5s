@@ -28,8 +28,6 @@ class _01012 extends Character implements IHasActions
         $this->Finesse = 2;
         $this->Influence = 3;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Sorcerer",
             "Strega",
@@ -37,6 +35,8 @@ class _01012 extends Character implements IHasActions
             "Vodacce",
         ];
 
+        $this->resetCard();
+        
         $this->Actions = [
             new Action_01012(),
         ];

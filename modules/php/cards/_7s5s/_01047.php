@@ -43,6 +43,8 @@ class _01047 extends FactionAttachment implements IHasReactions, IHasTechniques
             'Unique',
         ];
 
+        $this->resetCard();
+
         $this->Reactions = [
             new Reaction_01047(),
         ];

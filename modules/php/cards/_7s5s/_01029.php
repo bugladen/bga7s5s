@@ -34,6 +34,8 @@ class _01029 extends Risk implements IHasActions
             'Duress',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01029(),
         ];

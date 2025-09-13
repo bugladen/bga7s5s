@@ -30,6 +30,8 @@ class _01144 extends Scheme
             "Bargain", 
             "Conscription",
         ];
+
+        $this->resetCard();
     }
 
     public function handleEvent(Event $event)

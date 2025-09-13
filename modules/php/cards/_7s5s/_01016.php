@@ -35,6 +35,8 @@ class _01016 extends Scheme implements IHasReactions
             "Gang",
         ];
 
+        $this->resetCard();
+        
         $this->Reactions = [
             new Reaction_01016(),
         ];

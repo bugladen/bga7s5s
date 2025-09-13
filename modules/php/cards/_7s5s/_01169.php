@@ -31,6 +31,8 @@ class _01169 extends Risk
             'Ad Hoc',
         ];
 
+        $this->resetCard();
+
         $this->EscapeDuel = false;
     }
 

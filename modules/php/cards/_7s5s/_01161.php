@@ -24,5 +24,7 @@ class _01161 extends Risk
             'Sorcery',
             'Glamour',
         ];
+
+        $this->resetCard();
     }
 }

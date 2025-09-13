@@ -30,5 +30,7 @@ class _01100 extends FactionAttachment
             'Trinket',
             'Unique',
         ];
+
+        $this->resetCard();
     }
 }

@@ -25,5 +25,7 @@ class _01160 extends Risk
         $this->Traits = [
             'Villainous',
         ];
+
+        $this->resetCard();
     }
 }

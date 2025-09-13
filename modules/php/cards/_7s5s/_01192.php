@@ -28,8 +28,6 @@ class _01192 extends CityCharacter implements IHasActions
         $this->Finesse = 3;
         $this->Influence = 2;
 
-        $this->resetModifiedCharacterStats();
-
         $this->WealthCost = 4;
         $this->CityCardNumber = 16;
         $this->Negotiable = true;
@@ -41,6 +39,8 @@ class _01192 extends CityCharacter implements IHasActions
             'Villain',
             'Castille',
         ];
+
+        $this->resetCard();
 
         $this->Actions = [
             new Action_01192(),

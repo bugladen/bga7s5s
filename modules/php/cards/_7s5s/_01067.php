@@ -29,14 +29,14 @@ class _01067 extends Character
         $this->Finesse = 2;
         $this->Influence = 1;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Duelist",
             "Musketeer",
             "Montaigne",
         ];
 
+        $this->resetCard();
+        
         $this->Techniques = [
             new Technique_01067(),
         ];

@@ -25,5 +25,7 @@ class _01111 extends Risk
             'Discovery',
             'Scholarship',
         ];
+
+        $this->resetCard();
     }
 }

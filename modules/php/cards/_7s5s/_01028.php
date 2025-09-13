@@ -28,5 +28,7 @@ class _01028 extends Risk
             'Camaraderie',
             'Gang',
         ];
+
+        $this->resetCard();
     }
 }

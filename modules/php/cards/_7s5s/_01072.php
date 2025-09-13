@@ -35,6 +35,8 @@ class _01072 extends Scheme implements IHasActions
             "Honor",
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01072(),
         ];

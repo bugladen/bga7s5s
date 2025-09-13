@@ -32,6 +32,8 @@ class _01082 extends Risk implements IHasManeuvers
             'Final Strike',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01082(),
         ];

@@ -32,13 +32,13 @@ class _01013 extends Character implements IHasTechniques, IHasReactions
         $this->Finesse = 2;
         $this->Influence = 1;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Hero",
             "Duelist",
             "Vodacce",
         ];
+
+        $this->resetCard();
 
         $this->Techniques = [
             new Technique_01013(),

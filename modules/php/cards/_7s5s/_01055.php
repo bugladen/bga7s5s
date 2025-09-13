@@ -35,6 +35,8 @@ class _01055 extends Risk implements IHasActions, IHasManeuvers
             'Ranged',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01055(),
         ];

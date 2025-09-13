@@ -32,6 +32,8 @@ class _01139 extends Risk implements IHasManeuvers
             'Unique',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01139(),
         ];

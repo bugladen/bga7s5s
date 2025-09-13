@@ -36,6 +36,8 @@ class _01202 extends CityAttachment implements IHasReactions
             'Unique',
         ];
 
+        $this->resetCard();
+
         $this->Reactions = [
             new Reaction_01202(),
         ];

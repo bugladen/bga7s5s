@@ -25,8 +25,6 @@ class _01018 extends Brute
         $this->Influence = 0;
         $this->DashedInfluence = true;
 
-        $this->resetModifiedCharacterStats();
-
         $this->Riposte = 1;
         $this->Parry = 1;
         $this->Thrust = 0;
@@ -40,5 +38,7 @@ class _01018 extends Brute
             'Unique',
             'Brute',
         ];
+
+        $this->resetCard();
     }
 }

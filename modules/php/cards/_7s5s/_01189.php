@@ -29,6 +29,8 @@ class _01189 extends CityEventCard implements IHasActions
             'Fortune',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01189a(),
             new Action_01189b(),

@@ -30,6 +30,8 @@ class _01168 extends Risk implements IHasActions
             'Savvy',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01168(),
         ];

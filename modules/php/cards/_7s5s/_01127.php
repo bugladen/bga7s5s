@@ -38,6 +38,8 @@ class _01127 extends FactionAttachment implements IHasTechniques
             'Unique',
         ];
 
+        $this->resetCard();
+
         $this->Techniques = [
             new Technique_01127(),
         ];

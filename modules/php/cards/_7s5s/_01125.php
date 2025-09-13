@@ -28,6 +28,8 @@ class _01125 extends Scheme
             "Cunning", 
             "Hunt",
         ];
+
+        $this->resetCard();
     }
 
     public function handleEvent(Event $event)

@@ -35,6 +35,8 @@ class _01150 extends Scheme
             "Feud", 
             "Provocation",
         ];
+
+        $this->resetCard();
     }
 
     public function handleEvent(Event $event)

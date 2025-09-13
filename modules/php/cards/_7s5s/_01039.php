@@ -32,13 +32,13 @@ class _01039 extends Character implements IHasReactions, IHasTechniques
         $this->Finesse = 1;
         $this->Influence = 2;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Academic",
             "Hunter",
             "Eisen",
         ];
+
+        $this->resetCard();
 
         $this->Techniques = [
             new Technique_01039(),

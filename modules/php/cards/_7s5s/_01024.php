@@ -28,5 +28,7 @@ class _01024 extends Risk
             'Conscription',
             'Gang',
         ];
+
+        $this->resetCard();
     }
 }

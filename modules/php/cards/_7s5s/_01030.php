@@ -29,5 +29,7 @@ class _01030 extends Risk
             'Sorte',
             'Unique',
         ];
-    }
+ 
+        $this->resetCard();
+   }
 }

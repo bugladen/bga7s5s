@@ -32,13 +32,13 @@ class _01011 extends Character implements IHasActions, IHasTechniques
         $this->Finesse = 2;
         $this->Influence = 1;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Deulist",
             "Red Hand",
             "Vodacce",
         ];
+
+        $this->resetCard();
 
         $this->Actions = [
             new Action_01011(),

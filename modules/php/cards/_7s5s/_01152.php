@@ -37,6 +37,8 @@ class _01152 extends Scheme implements IHasActions
             "Demoralize",
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01152a(),
             new Action_01152b(),

@@ -25,11 +25,6 @@ class _01116 extends Leader
         $this->CrewCap = 5;
         $this->Panache = 5;
 
-        $this->resetModifiedCharacterStats();
-        
-        $this->ModifiedCrewCap = $this->CrewCap;
-        $this->ModifiedPanache = $this->Panache;
-
         $this->Traits = [
             "Leader",
             "Exile",
@@ -37,6 +32,8 @@ class _01116 extends Leader
             "Sorcerer",
             "Usurra",
         ];
+
+        $this->resetCard();
     }
 
 }

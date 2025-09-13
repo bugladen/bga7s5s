@@ -31,6 +31,8 @@ class _01136 extends Risk implements IHasManeuvers
             'Relentless',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01136(),
         ];

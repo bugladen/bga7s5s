@@ -38,6 +38,8 @@ class _01128 extends FactionAttachment implements IHasTechniques
             'Mireli',
         ];
 
+        $this->resetCard();
+
         $this->Techniques = [
             new Technique_01128(),
         ];

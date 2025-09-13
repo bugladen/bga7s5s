@@ -28,14 +28,14 @@ class _01068 extends Character implements IHasActions
         $this->Finesse = 2;
         $this->Influence = 2;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Duelist",
             "Musketeer",
             "Sorcerer",
             "Montaigne",
         ];
+
+        $this->resetCard();
 
         $this->Actions = [
             new Action_01068(),

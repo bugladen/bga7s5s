@@ -35,6 +35,8 @@ class _01087 extends Risk implements IHasActions, IHasManeuvers
             'Duty',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01087(),
         ];

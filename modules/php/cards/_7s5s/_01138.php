@@ -25,6 +25,8 @@ class _01138 extends Risk
             'Brawl',
             'Hunt',
         ];
+
+        $this->resetCard();
     }
 
 }

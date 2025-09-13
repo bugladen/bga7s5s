@@ -25,12 +25,12 @@ class _01120 extends Character
         $this->Finesse = 2;
         $this->Influence = 3;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Academic",
             "Usurra",
         ];
+
+        $this->resetCard();
 
         $technique = new Technique_PlusOneParry();
         $technique->setId("Technique_01120");

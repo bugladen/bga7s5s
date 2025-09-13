@@ -38,5 +38,6 @@ class _01023 extends Risk implements IHasReactions
             new Reaction_01023()
         ];
 
+        $this->resetCard();
     }
 }

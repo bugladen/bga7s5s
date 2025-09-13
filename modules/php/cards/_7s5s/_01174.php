@@ -25,5 +25,7 @@ class _01174 extends Risk
         $this->Traits = [
             'Sabotage',
         ];
+
+        $this->resetCard();
     }
 }

@@ -37,6 +37,8 @@ class _01143 extends Scheme implements IHasActions
             "Duress",
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01143(),
         ];

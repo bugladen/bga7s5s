@@ -38,6 +38,8 @@ class _01147 extends Scheme implements IHasActions
             "Market",
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01147(),
         ];

@@ -31,6 +31,8 @@ class _01077 extends Risk implements IHasManeuvers
             'Valroux',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01077(),
         ];

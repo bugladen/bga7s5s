@@ -24,5 +24,7 @@ class _01167 extends Risk
             'Crime',
             'Theft',
         ];
+
+        $this->resetCard();
     }
 }

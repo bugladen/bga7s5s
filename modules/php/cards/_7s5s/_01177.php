@@ -25,6 +25,13 @@ class _01177 extends CityEventCard
         $this->CardNumber = 177;
 
         $this->CityCardNumber = 1;
+
+        $this->Traits = [
+            "Heroic",
+            "Savvy"
+        ];
+
+        $this->resetCard();
     }
 
     public function argsFromCard(Game $game, int $state, string $stateName, string $internalId): array 

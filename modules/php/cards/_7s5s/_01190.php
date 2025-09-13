@@ -27,8 +27,6 @@ class _01190 extends CityCharacter
         $this->Influence = 0;
         $this->DashedInfluence = true;
 
-        $this->resetModifiedCharacterStats();
-
         $this->WealthCost = 4;
         $this->CityCardNumber = 14;
         $this->Negotiable = true;
@@ -38,6 +36,8 @@ class _01190 extends CityCharacter
             'Pirate',
             'Vesten',
         ];
+
+        $this->resetCard();
     }
 
     public function canChallenge(): bool

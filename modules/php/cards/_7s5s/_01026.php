@@ -28,5 +28,7 @@ class _01026 extends Risk
             'Glory',
             'Zeal',
         ];
+
+        $this->resetCard();
     }
 }

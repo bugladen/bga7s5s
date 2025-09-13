@@ -25,17 +25,14 @@ class _01089 extends Leader
         $this->CrewCap = 6;
         $this->Panache = 6;
 
-        $this->resetModifiedCharacterStats();
-        
-        $this->ModifiedCrewCap = $this->CrewCap;
-        $this->ModifiedPanache = $this->Panache;
-
         $this->Traits = [
             "Leader",
             "Pirate",
             "Scoundrel",
             "Castille",
         ];
+
+        $this->resetCard();
     }
 
 }

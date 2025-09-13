@@ -32,6 +32,8 @@ class _01145 extends Scheme
             "Bureaucracy", 
             "Camaraderie",
         ];
+
+        $this->resetCard();
     }
 
     public function handleEvent(Event $event)

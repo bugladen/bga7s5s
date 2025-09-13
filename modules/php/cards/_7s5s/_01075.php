@@ -40,6 +40,8 @@ class _01075 extends FactionAttachment implements IHasActions
             'Unique',            
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01075(),
         ];

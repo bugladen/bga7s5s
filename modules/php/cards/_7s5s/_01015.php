@@ -38,6 +38,8 @@ class _01015 extends Scheme implements IHasActions, IHasReactions
             "Zeal",
         ];
 
+        $this->resetCard();
+        
         $this->Actions = [
             new Action_01015(),
         ];

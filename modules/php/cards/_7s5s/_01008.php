@@ -38,14 +38,14 @@ class _01008 extends Character implements IHasActions, IHasReactions, IHasTechni
         $this->Finesse = 1;
         $this->Influence = 2;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Sorcerer",
             "Strega",
             "Red Hand",
             "Vodacce",
         ];
+
+        $this->resetCard();
 
         $this->Actions = [
             new Action_01008(),

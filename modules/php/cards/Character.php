@@ -2,7 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -56,8 +55,9 @@ abstract class Character extends Card implements IHasTechniques
         $this->IsDying = false;
     }
 
-    public function resetModifiedCharacterStats()
+    public function resetCard()
     {
+        parent::resetCard();
         $this->ModifiedResolve = $this->Resolve;
         $this->ModifiedCombat = $this->Combat;
         $this->ModifiedFinesse = $this->Finesse;

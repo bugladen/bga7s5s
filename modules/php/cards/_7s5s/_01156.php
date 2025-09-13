@@ -35,6 +35,8 @@ class _01156 extends FactionAttachment implements IHasActions
             'Rifle',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01156(),
         ];

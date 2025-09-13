@@ -38,6 +38,8 @@ class _01073 extends FactionAttachment implements IHasActions
             'Hat',
         ];
 
+        $this->resetCard();
+        
         $this->Actions = [
             new Action_01073(),
         ];

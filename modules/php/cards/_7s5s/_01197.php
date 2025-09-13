@@ -32,8 +32,6 @@ class _01197 extends CityCharacter implements IHasActions
         $this->Influence = 0;
         $this->DashedInfluence = true;
 
-        $this->resetModifiedCharacterStats();
-
         $this->WealthCost = 4;
         $this->CityCardNumber = 21;
         $this->Negotiable = true;
@@ -42,6 +40,8 @@ class _01197 extends CityCharacter implements IHasActions
             'Mercenary',
             'Vesten',
         ];
+
+        $this->resetCard();
 
         $this->Actions = [
             new Action_01197(),

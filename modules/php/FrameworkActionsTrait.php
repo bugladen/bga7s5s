@@ -435,7 +435,7 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+            $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Mercenary is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
@@ -801,13 +801,13 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(self::_("Attachment is not at Performer's Location."));
             }
         }
-        if (in_array("Armor", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Armor") && $attachment->hasEquipRestriction("Armor")) {
+        if ($attachment->hasTrait("Armor") && $this->characterHasAttachmentOfType($performer, "Armor") && $attachment->hasEquipRestriction("Armor")) {
             throw new \BgaUserException(self::_("Character cannot have more than one Armor attachment."));
         }
-        if (in_array("Attire", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Attire") && $attachment->hasEquipRestriction("Attire")) {
+        if ($attachment->hasTrait("Attire") && $this->characterHasAttachmentOfType($performer, "Attire") && $attachment->hasEquipRestriction("Attire")) {
             throw new \BgaUserException(self::_("Character cannot have more than one Attire attachment."));
         }
-        if (in_array("Weapon", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Weapon") && $attachment->hasEquipRestriction("Weapon")) {
+        if ($attachment->hasTrait("Weapon") && $this->characterHasAttachmentOfType($performer, "Weapon") && $attachment->hasEquipRestriction("Weapon")) {
             throw new \BgaUserException(self::_("Character cannot have more than one Weapon attachment."));
         }
 
@@ -825,7 +825,7 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
                 //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+            $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
@@ -1088,7 +1088,7 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+            $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
@@ -1177,7 +1177,7 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+            $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Brute is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
@@ -1371,7 +1371,7 @@ trait FrameworkActionsTrait
 
         $engageRequired = true;
         //If Odette was the target, and intervening character is a Musketeer, they are not required to engage
-        if ($target instanceof _01062 && in_array("Musketeer", $character->Traits))
+        if ($target instanceof _01062 && $character->hasTrait("Musketeer"))
         {
             $this->notifyAllPlayers("message", clienttranslate('${character_name} does not need to engage because they are a Musketeer intervening for Odette.'), [
                 "i18n" => ["character_name"],
@@ -1550,7 +1550,7 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += in_array("Wealth", $payCard->Traits) ? 2 : 1;
+            $totalWealth += $payCard->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
@@ -1824,7 +1824,7 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += in_array("Wealth", $payCard->Traits) ? 2 : 1;
+            $totalWealth += $payCard->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));

@@ -35,6 +35,8 @@ class _01146 extends Scheme implements IHasReactions
             "Honor",
         ];
 
+        $this->resetCard();
+
         $this->Reactions = [
             new Reaction_01146a(),
             new Reaction_01146b(),

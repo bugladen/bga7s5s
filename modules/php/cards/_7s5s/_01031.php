@@ -36,6 +36,8 @@ class _01031 extends Risk implements IHasManeuvers
             'Zeal',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01031(),
         ];

@@ -38,6 +38,8 @@ class _01046 extends FactionAttachment implements IHasActions
             'Unique',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01046a(),
             new Action_01046b(),

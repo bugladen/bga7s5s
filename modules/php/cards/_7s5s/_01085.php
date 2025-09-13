@@ -37,6 +37,8 @@ class _01085 extends Risk implements IHasActions
             'Unique',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01085(),
         ];

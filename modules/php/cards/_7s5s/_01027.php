@@ -28,5 +28,7 @@ class _01027 extends Risk
             'Bureaucracy',
             'Cunning',
         ];
+
+        $this->resetCard();
     }
 }

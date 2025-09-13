@@ -36,6 +36,8 @@ class _01052 extends Risk implements IHasActions, IHasManeuvers
             'Eisenfaust',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01052(),
         ];

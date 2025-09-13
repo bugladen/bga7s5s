@@ -31,6 +31,8 @@ class _01131 extends Risk implements IHasManeuvers
             'Kulachniy Boi',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01131(),
         ];

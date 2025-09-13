@@ -28,8 +28,6 @@ class _01205 extends CityCharacter implements IHasActions
         $this->Finesse = 1;
         $this->Influence = 2;
 
-        $this->resetModifiedCharacterStats();
-
         $this->WealthCost = 5;
         $this->CityCardNumber = 29;
         $this->Negotiable = true;
@@ -41,6 +39,8 @@ class _01205 extends CityCharacter implements IHasActions
             'Scoundrel',
             'Castille',
         ];
+
+        $this->resetCard();
 
         $this->Actions = [
             new Action_01205(),

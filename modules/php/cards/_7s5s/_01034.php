@@ -29,5 +29,7 @@ class _01034 extends Risk
             'Duress',
             'Zeal',
         ];
+
+        $this->resetCard();
     }
 }
