@@ -185,7 +185,7 @@ abstract class Character extends Card implements IHasTechniques
                 'resolve' => $this->ModifiedResolve
             ]);
 
-            if ($this->ModifiedResolve <= 0)
+            if ($this->Wounds >= $this->ModifiedResolve)
             {
                 $this->IsDying = true;
                 
@@ -270,7 +270,7 @@ abstract class Character extends Card implements IHasTechniques
 
     public function getModifiedResolve(Theah $theah): int
     {
-        $resolve = $this->Resolve - $this->Wounds;
+        $resolve = $this->Resolve;
         foreach ($this->Attachments as $attachmentId)
         {
             $attachment = $theah->getAttachmentById($attachmentId);

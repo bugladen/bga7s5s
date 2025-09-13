@@ -650,7 +650,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const element = $(`${card.divId}_resolve_value`);
         element.innerHTML = card.modifiedResolve;
-        if (card.modifiedResolve != card.resolve)
+        if (card.modifiedResolve != card.resolve || card.wounds > 0)
             dojo.addClass(element, '_7sfs-modified-stat-value');
     },
 
