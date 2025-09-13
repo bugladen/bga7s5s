@@ -175,8 +175,7 @@ abstract class Character extends Card implements IHasTechniques
             $this->ModifiedResolve = $this->getModifiedResolve($event->theah);
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_inject_code} has received ${wounds} wound(s) due to: ${reason} 
-            <p>New Resolve: ${resolve}'), [
+            $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_inject_code} has received ${wounds} wound(s) due to: ${reason}'), [
                 'i18n' => ['reason'],
                 "target_inject_code" => $this->getInjectCode(),
                 "characterId" => $this->Id,
@@ -224,8 +223,7 @@ abstract class Character extends Card implements IHasTechniques
             $this->ModifiedResolve = $this->getModifiedResolve($event->theah);
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason} 
-            <p>New Resolve: ${resolve}'), [
+            $event->theah->game->notifyAllPlayers("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason}'), [
                 'i18n' => ['reason'],
                 "target_inject_code" => $this->getInjectCode(),
                 "characterId" => $this->Id,

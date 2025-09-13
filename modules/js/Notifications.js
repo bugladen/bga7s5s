@@ -666,17 +666,16 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card.wounds < 0)
             card.wounds = 0;
         
+        const woundChip = $(`${card.divId}_wounds`);
+        woundChip.innerHTML = card.wounds;
         if (card.wounds == 0)
-        {
-            const woundChip = $(`${card.divId}_wounds`);
             dojo.destroy(woundChip);
-        }
 
         card.modifiedResolve = args.resolve;
 
         const element = $(`${card.divId}_resolve_value`);
         element.innerHTML = card.modifiedResolve;
-        if (card.modifiedResolve == card.resolve)
+        if (card.modifiedResolve == card.resolve && card.wounds == 0)
             dojo.removeClass(element, '_7sfs-modified-stat-value');
     },
 
