@@ -128,7 +128,7 @@ trait ArgumentsTrait
         return [
             '_private' => [
                 'active' => [
-                    "canChallenge" => $this->theah->playerCanChallenge($playerId),
+                    "canChallenge" => $this->theah->playerCanBasicChallenge($playerId),
                     "canClaim" => $this->theah->playerCanClaim($playerId),
                     "canEquip" => $this->theah->playerCanEquip($playerId),
                     "canMove" => $this->theah->playerCanMove($playerId),
@@ -497,7 +497,7 @@ trait ArgumentsTrait
         $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
         
         //Filter those characters that can challenge
-        $characters = array_filter($characters, fn($character) => $character->canChallenge());
+        $characters = array_filter($characters, fn($character) => $character->canChallenge() && ! $character->Engaged);
 
         $charactersThatCanChallenge = [];
         foreach ($characters as $character)
@@ -569,15 +569,12 @@ trait ArgumentsTrait
             fn($character) => $character->ControllerId && $character->ControllerId == $playerId && $character->Id != $targetId);
         
         //Get characters that can intervene
-        $charactersCanIntervene = array_filter($charactersAtLocation, fn($character) => $character->canIntervene());
-
-        $charactersCanIntervene = array_values($charactersCanIntervene);
-        $ids = array_map(fn($character) => $character->Id, $charactersCanIntervene);
+        $charactersCanIntervene = array_values(array_filter($charactersAtLocation, fn($character) => $character->canIntervene() && ! $character->Engaged));
 
         return [
             "performerId" => $performerId,
             "targetId" => $targetId,
-            "ids" => $ids,
+            "ids" => array_map(fn($character) => $character->Id, $charactersCanIntervene),
             "challengeType" => $this->globals->get(Game::CHALLENGE_TYPE)
         ];
 

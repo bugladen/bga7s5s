@@ -869,13 +869,13 @@ class Theah
         return count($charactersThatCanEquipInCity) > 0 || $this->game->handHasAttachments($playerId);        
     }
 
-    public function playerCanChallenge($playerId): bool
+    public function playerCanBasicChallenge($playerId): bool
     {
         $characters = $this->getCharactersInCityByPlayerId($playerId);
         $charactersThatCanChallenge = [];
         foreach ($characters as $character) 
         {
-            if ( ! $character->canChallenge()) continue;
+            if ( ! $character->canChallenge() || $character->Engaged) continue;
 
             $otherCharacters = $this->getCharactersAtLocation($character->Location);
             $otherCharacters = array_filter($otherCharacters, fn($otherCharacter) => $otherCharacter->ControllerId && $otherCharacter->ControllerId != $playerId );
