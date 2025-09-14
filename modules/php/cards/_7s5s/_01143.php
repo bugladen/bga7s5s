@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
@@ -79,6 +80,25 @@ class _01143 extends Scheme implements IHasActions
             //Transition to the state where player can choose any location.
             $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "01143");
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            //Restore the influence of all mercenaries
+            $mercenaries = $event->theah->getCharactersInPlay();
+            $mercenaries = array_filter($mercenaries, fn($character) => $character->hasTrait("Mercenary"));
+            foreach ($mercenaries as $mercenary)
+            {
+                $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
+                    $this->ControllerId, 
+                    $mercenary->Id, 
+                    $mercenary->ModifiedInfluence, 
+                    $mercenary->ModifiedInfluence + 1,
+                    $this->getInjectCode()
+                );
+        
+                $event->theah->queueEvent($modifiedEvent);      
+            }
         }
 
         if ($event instanceof EventCharacterRecruited)
