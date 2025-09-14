@@ -249,7 +249,23 @@ return declare('seventhseacityoffivesails.utilities', null, {
             this.createAttachmentCard(divId, attachment, character.divId, inDuel);
         });
 
+        dojo.connect($(divId), 'onclick', this, 'splayAttachments');
     },  
+
+    splayAttachments: function( event )
+    {
+        const parent = event.target.parentElement;
+        if (!dojo.hasClass(event.target, '_7sfs-selectable') && dojo.hasClass(parent, '_7sfs-attachment-container'))
+        {
+            dojo.toggleClass(parent, '_7sfs-attachment-container-splayed');
+
+            //Query all sub elements of the parent with the class _7sfs-attached-card
+            const attachedCards = parent.querySelectorAll('._7sfs-attached-card');
+            attachedCards.forEach((card) => {
+                dojo.toggleClass(card, '_7sfs-attached-card-splayed');
+            });
+        }
+    },
 
     createEventCard: function( divId, event, targetDiv )
     {
