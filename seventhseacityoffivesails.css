@@ -908,14 +908,22 @@ body {
 
 ._7sfs-attachment-container {
     position:relative;
-    margin-left: calc(var(--attachment-count) * 20px);
+    margin-left: calc(var(--attachment-count) * 15px);
+}
+
+._7sfs-attachment-container-splayed {
+    margin-left: calc(var(--attachment-count) * 70px);
 }
 
 ._7sfs-attached-card {
     position: absolute;
     top: 0px;
-    left: calc(var(--attachment-index) * -20px);
+    left: calc(var(--attachment-index) * -15px);
     z-index: calc(10 - var(--attachment-index));
+}
+
+._7sfs-attached-card-splayed {
+    left: calc(var(--attachment-index) * -70px);
 }
 
 ._7sfs-discard-pile-card {
