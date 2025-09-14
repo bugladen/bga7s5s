@@ -191,7 +191,7 @@ trait EventHub
                         "modifiedInfluence" => $modifiedInfluence,
                     ]);
 
-                    if ($character->ModifiedResolve <= 0 && ! $character->IsDying)
+                    if ($character->Wounds >= $character->ModifiedResolve && ! $character->IsDying)
                     {
                         $destroyEvent = EventFactory::createCharacterDestroyedEvent($character->ControllerId, $character->Id, sprintf($this->game->translate("Has unequipped %s"), $attachment->Name));
                         $this->queueEvent($destroyEvent);
@@ -254,7 +254,7 @@ trait EventHub
                         "modifiedInfluence" => $modifiedInfluence,
                     ]);
 
-                    if ($character->ModifiedResolve <= 0 && ! $character->IsDying)
+                    if ($character->Wounds >= $character->ModifiedResolve && ! $character->IsDying)
                     {
                         $destroyEvent = EventFactory::createCharacterDestroyedEvent($character->ControllerId, $character->Id, sprintf($this->game->translate("Has unequipped %s"), $attachment->Name));
                         $this->queueEvent($destroyEvent);

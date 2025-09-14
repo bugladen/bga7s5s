@@ -45,7 +45,6 @@ abstract class Leader extends Character
                 $this->IsUpdated = true;
 
                 $event->theah->game->notifyAllPlayers("panacheModified", clienttranslate('${leader_inject_code}: Panache modified to ${panache} by ${scheme_inject_code}'), [
-                    'i18n' => ['scheme_inject_code'],
                     "leader_inject_code" => $this->getInjectCode(),
                     "panache" => $this->ModifiedPanache,
                     "scheme_inject_code" => $event->scheme->getInjectCode(),

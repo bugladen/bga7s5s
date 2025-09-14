@@ -175,8 +175,7 @@ abstract class Character extends Card implements IHasTechniques
             $this->ModifiedResolve = $this->getModifiedResolve($event->theah);
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_inject_code} has received ${wounds} wound(s) due to: ${reason} 
-            <p>New Resolve: ${resolve}'), [
+            $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_inject_code} has received ${wounds} wound(s) due to: ${reason}'), [
                 'i18n' => ['reason'],
                 "target_inject_code" => $this->getInjectCode(),
                 "characterId" => $this->Id,
@@ -185,7 +184,7 @@ abstract class Character extends Card implements IHasTechniques
                 'resolve' => $this->ModifiedResolve
             ]);
 
-            if ($this->ModifiedResolve <= 0)
+            if ($this->Wounds >= $this->ModifiedResolve)
             {
                 $this->IsDying = true;
                 
@@ -224,8 +223,7 @@ abstract class Character extends Card implements IHasTechniques
             $this->ModifiedResolve = $this->getModifiedResolve($event->theah);
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason} 
-            <p>New Resolve: ${resolve}'), [
+            $event->theah->game->notifyAllPlayers("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason}'), [
                 'i18n' => ['reason'],
                 "target_inject_code" => $this->getInjectCode(),
                 "characterId" => $this->Id,
@@ -270,7 +268,7 @@ abstract class Character extends Card implements IHasTechniques
 
     public function getModifiedResolve(Theah $theah): int
     {
-        $resolve = $this->Resolve - $this->Wounds;
+        $resolve = $this->Resolve;
         foreach ($this->Attachments as $attachmentId)
         {
             $attachment = $theah->getAttachmentById($attachmentId);
