@@ -235,6 +235,24 @@
 
             'highDramaPhase01015': () => {
                 if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.schemeId];
+                    let image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    this.clientStateArgs.ids.forEach((cardId) => {
+                        card = this.cardProperties[cardId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+    
+            'highDramaPhase01017': () => {
+                if (this.isCurrentPlayerActive()) {
                     card = this.cardProperties[this.clientStateArgs.performerId];
                     const image = $(`${card.divId}_image`);
                     dojo.removeClass(image, '_7sfs-chosen');
@@ -246,7 +264,7 @@
                     });
                 }
             },
-    
+
             'highDramaPhase01029': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

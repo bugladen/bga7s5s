@@ -70,6 +70,9 @@ class Action_01015 extends SchemeCityAction
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01015)
         {
+            $scheme = $this->getOwningCard($game->theah);
+            $args['schemeId'] = $scheme->Id;
+            
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
@@ -117,6 +120,7 @@ class Action_01015 extends SchemeCityAction
                 "player_name" => $game->getActivePlayerName(),
             ]);
 
+            $performer->unEquipAllAttachments($game->theah);
             $destroyEvent = EventFactory::createCharacterDestroyedEvent($performer->ControllerId, $performer->Id, $scheme->getInjectCode());
             $game->theah->queueEvent($destroyEvent);
 
@@ -126,7 +130,7 @@ class Action_01015 extends SchemeCityAction
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
             
-            $game->gamestate->nextState();
+            $game->gamestate->nextState("characterChosen");
         }
     }
 

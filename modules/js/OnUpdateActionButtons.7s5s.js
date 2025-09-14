@@ -209,10 +209,17 @@
             },
 
             'highDramaPhase01015': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
+            'highDramaPhase01017': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'highDramaPhase01029': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
