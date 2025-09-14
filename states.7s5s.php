@@ -329,6 +329,22 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01020 => [
+        "name" => "highDramaPhase01020",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Dante') . clienttranslate(': ${you} must choose a character to move:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01029 => [
         "name" => "highDramaPhase01029",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

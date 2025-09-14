@@ -10,31 +10,32 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01019 extends CharacterAction
+class Action_01020 extends CharacterAction
 {
     public function __construct()
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Destroy Buratino, Wound Character");
+        $this->Name = clienttranslate("Destroy Dante, Move Character");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
-    
     {
         if ( ! parent::isAvailableToPlayer($playerId, $theah))
         {
             return false;
         }
-        
+
         $owner = $this->getOwningCharacter($theah);
         if (! $theah->cardInCity($owner))
         {
             return false;
         }
 
-        $characters = $theah->getCharactersAtLocation($owner->Location);
+        $characters = $theah->getCharactersInPlay();
         $characters = array_filter($characters, fn($character) => $character->Id != $owner->Id);
+        $characters = array_filter($characters, fn($character) => $character->Location != $owner->Location);
+
         return count($characters) > 0;
     }
 
@@ -44,9 +45,8 @@ class Action_01019 extends CharacterAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $owner = $this->getOwningCharacter($event->theah);
-            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01019", $this->Id);
-            $event->theah->queueEvent($transitionEvent);
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01020", $this->Id);
+            $event->theah->queueEvent($transition);
         }
     }
 
@@ -54,27 +54,27 @@ class Action_01019 extends CharacterAction
     {
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01019)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01020)
         {
             $owner = $this->getOwningCharacter($game->theah);
 
             $args["performerId"] = $owner->Id;
 
-            $characters = $game->theah->getCharactersAtLocation($owner->Location);
-            $characters = array_values(array_filter($characters, fn($character) => $character->Id != $owner->Id));
+            $characters = $game->theah->getCharactersInPlay();
+            $characters = array_filter($characters, fn($character) => $character->Id != $owner->Id);
+            $characters = array_values(array_filter($characters, fn($character) => $character->Location != $owner->Location));
 
             $args["ids"] = array_map(fn($character) => $character->Id, $characters);
         }
 
         return $args;
-
     }
 
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01019)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01020)
         {
             $owner = $this->getOwningCharacter($game->theah);
             $target = $game->theah->getCharacterById($id);
@@ -83,9 +83,9 @@ class Action_01019 extends CharacterAction
                 throw new \BgaUserException(sprintf($game->translate("Invalid target character id: %d"), $id));
             }
 
-            if ($target->Location != $owner->Location)
+            if ($target->Location == $owner->Location)
             {
-                throw new \BgaUserException($game->translate("Target character is not at the same location as Buratino."));
+                throw new \BgaUserException($game->translate("Target character is at the same location as Dante."));
             }
 
             $this->announceAction($game);
@@ -94,11 +94,11 @@ class Action_01019 extends CharacterAction
             $event = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());
             $game->theah->queueEvent($event);
 
-            $event = EventFactory::createCharacterWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $event = EventFactory::createCardMovedEvent($owner->ControllerId, $target->Id, $target->Location, $owner->Location, false, $owner->Id);
             $game->theah->queueEvent($event);
 
             $game->gamestate->nextState("characterChosen");
         }
     }
-    
+
 }
