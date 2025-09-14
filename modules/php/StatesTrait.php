@@ -1769,6 +1769,17 @@ trait StatesTrait
                 $event = EventFactory::createCardSentToLockerEvent($playerId, $schemeId);
                 $this->theah->queueEvent($event);
             }
+
+            //Reset the leader's panache
+            $leader = $this->theah->getLeaderByPlayerId($playerId);
+            $leader->ModifiedPanache = $leader->Panache;
+            $this->updateCardObjectInDb($leader);
+
+            $this->notifyAllPlayers("panacheModified", "", [
+                "playerId" => $playerId,
+                "panache" => $leader->ModifiedPanache,
+            ]);
+
         }
 
         $this->gamestate->nextState();
