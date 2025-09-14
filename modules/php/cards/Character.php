@@ -172,7 +172,6 @@ abstract class Character extends Card implements IHasTechniques
         if ($event instanceof EventCharacterWounded && $event->characterId == $this->Id)
         {
             $this->Wounds += $event->wounds;            
-            $this->ModifiedResolve = $this->getModifiedResolve($event->theah);
             $this->IsUpdated = true;
 
             $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_inject_code} has received ${wounds} wound(s) due to: ${reason}'), [
@@ -220,7 +219,6 @@ abstract class Character extends Card implements IHasTechniques
                 $this->Wounds = 0;
             }
 
-            $this->ModifiedResolve = $this->getModifiedResolve($event->theah);
             $this->IsUpdated = true;
 
             $event->theah->game->notifyAllPlayers("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason}'), [
@@ -236,6 +234,7 @@ abstract class Character extends Card implements IHasTechniques
         if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
         {
             $this->IsDying = false;
+            $this->IsUpdated = true;
         }
     }
 
@@ -266,15 +265,4 @@ abstract class Character extends Card implements IHasTechniques
         return $properties;
     }
 
-    public function getModifiedResolve(Theah $theah): int
-    {
-        $resolve = $this->Resolve;
-        foreach ($this->Attachments as $attachmentId)
-        {
-            $attachment = $theah->getAttachmentById($attachmentId);
-            $resolve += $attachment->ResolveModifier;
-        }
-
-        return $resolve;
-    }
 }
