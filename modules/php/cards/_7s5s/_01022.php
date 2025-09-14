@@ -2,10 +2,15 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01022;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 
-class _01022 extends FactionAttachment
+class _01022 extends FactionAttachment implements IHasReactions
 {
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -37,5 +42,9 @@ class _01022 extends FactionAttachment
         ];
 
         $this->resetCard();
+
+        $this->Reactions = [
+            new Reaction_01022(),
+        ];
     }
 }
