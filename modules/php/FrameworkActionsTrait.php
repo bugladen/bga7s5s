@@ -1214,7 +1214,7 @@ trait FrameworkActionsTrait
         $player_id = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        if ($this->theah->playerCanChallenge($player_id) == false) {
+        if ($this->theah->playerCanBasicChallenge($player_id) == false) {
             throw new \BgaUserException(self::_("Challenge Action is not allowed right now."));
         }
 
@@ -1232,7 +1232,7 @@ trait FrameworkActionsTrait
 
         $performer = $this->theah->getCharacterById($id);
 
-        if ( ! $performer->canChallenge()) {
+        if ( ! $performer->canChallenge() || $performer->Engaged) {
             throw new \BgaUserException(self::_("Performer cannot Challenge."));
         }
 
@@ -1354,7 +1354,7 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Character is not at the same location"));
         }    
 
-        if( ! $character->canIntervene()) {
+        if( ! $character->canIntervene() || $character->Engaged) {
             throw new \BgaUserException(self::_("Character cannot Intervene."));
         }
 

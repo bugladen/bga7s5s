@@ -49,6 +49,9 @@ class _01188 extends CityCharacter
 
     public function canIntervene() : bool
     {
+        if (!parent::canIntervene())
+            return false;
+
         return true;
     }
 

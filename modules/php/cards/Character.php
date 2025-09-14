@@ -66,12 +66,12 @@ abstract class Character extends Card implements IHasTechniques
 
     public function canChallenge(): bool
     {
-        return $this->isControlled() && ! $this->Engaged;
+        return $this->isControlled();
     }
 
     public function canIntervene() : bool
     {
-        return ! $this->Engaged;
+        return $this->isControlled();
     }
 
     public function hasWhenRevealedEffect() : bool

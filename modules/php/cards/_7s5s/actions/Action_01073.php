@@ -36,7 +36,7 @@ class Action_01073 extends AttachmentAction
             return false;
         }
 
-        if (! $owner->canChallenge())
+        if (! $owner->canChallenge() || $owner->Engaged)
         {
             return false;
         }
