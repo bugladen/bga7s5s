@@ -39,20 +39,19 @@ class Action_01038 extends CharacterAction
             $otto = $this->getOwningCharacter($event->theah);
             $count = 3;
 
-            //Announce the Attachments that are revealed
+            //Announce the cards revealed
             $deckCards = $event->theah->game->getCardsOnTopOfPlayerFactionDeck($otto->ControllerId, $count);
             $names = [];
             $found = 0;
             foreach ($deckCards as $deckCard) {
                 $card = $event->theah->game->getCardObjectFromDb($deckCard['id']);
                 if ($card instanceof Attachment)
-                {
-                    $names[] = $event->theah->game->translate($card->Name);
                     $found++;
-                }
+                $names[] = $card->getInjectCode();
             }
 
-            $event->theah->game->notifyAllPlayers('message', clienttranslate('${player_name} uses Otto Streit\'s Action to reveal Attachments from their deck.  ${found} Attachments have been revealed. (${names})'), [
+            $event->theah->game->notifyAllPlayers('message', clienttranslate('${player_name} uses Otto Streit\'s Action to reveal Attachments from their deck. ${found} Attachment(s) have been revealed. 
+            <p>Cards Revealed: ${names}'), [
                 'i18n' => ['card_name'],
                 'player_name' => $event->theah->game->getActivePlayerName(),
                 'card_name' => $otto->Name,
@@ -100,6 +99,15 @@ class Action_01038 extends CharacterAction
             $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to put any Attachments into their Faction Hand.'), [
                 "player_name" => $game->getActivePlayerName(),
             ]);
+
+            $count = 3;
+            $otto = $this->getOwningCharacter($game->theah);
+            $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($otto->ControllerId, $count);
+            foreach ($deckCards as $deckCard) 
+            {
+                $event = EventFactory::createCardAddedToFactionDeckEvent($game->getActivePlayerId(), $deckCard['id'], false);
+                $game->theah->queueEvent($event);
+            }
 
             $game->gamestate->nextState("pass");
         }
