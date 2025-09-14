@@ -15,7 +15,7 @@ class Action_01017 extends CharacterAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Engage Character at Location");
+        $this->Name = clienttranslate("Destroy Alcee, Engage Character at Location");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
