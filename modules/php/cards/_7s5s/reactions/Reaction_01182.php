@@ -52,6 +52,7 @@ class Reaction_01182 extends CardReaction
                     $ekko->Location == $event->fromLocation)
                 {
                     $this->TargetCharacterId = $event->cardId;
+                    $ekko->IsUpdated = true;
                     $transition = EventFactory::createReactionTransitionEvent($ekko->ControllerId, $ekko->Id, $this->Id);
                     $event->queueEvent($transition);
                 }
@@ -68,8 +69,9 @@ class Reaction_01182 extends CardReaction
             $ekko = $this->getOwningCard($game->theah);
             $woundEvent = EventFactory::createCharacterWoundedEvent($this->TargetCharacterId, $ekko->Id, 1, $ekko->getInjectCode());
             $game->theah->queueEvent($woundEvent);
-    
+            
             $this->TargetCharacterId = 0;
+            $ekko->IsUpdated = true;
             $this->setUsed($game->theah, true);
         }
 
