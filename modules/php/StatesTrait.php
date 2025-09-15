@@ -1752,6 +1752,16 @@ trait StatesTrait
                     $this->theah->queueEvent($engardeEvent);                    
                 }
             }
+
+            foreach ($character->Attachments as $attachmentId)
+            {
+                $attachment = $this->theah->getAttachmentById($attachmentId);
+                if ($attachment->Engaged)
+                {
+                    $engardeEvent = EventFactory::createCardEngardedEvent($attachment->ControllerId, $attachment->Id);
+                    $this->theah->queueEvent($engardeEvent);
+                }
+            }
         }
 
         //Discard all city cards in the city that are not controlled
