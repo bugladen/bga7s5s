@@ -23,7 +23,7 @@ class Reaction_01182 extends CardReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to Wound Character leaving Ekko\'s Location: ');
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to Wound Character leaving Eko\'s Location: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
