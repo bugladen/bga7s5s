@@ -477,35 +477,64 @@ onEnteringState: function( stateName, args )
         },
 
         'duelUseManeuverFromCombatCard': () => {
-            if (this.isCurrentPlayerActive()) {
-                this.factionHand.selectItem(args.args._private.cardId);
+            if (this.isCurrentPlayerActive()) 
+            {
+                setTimeout(async () => {
+                    if (args.args._private.gambled)
+                        {
+                            dojo.removeClass('choose_container', 'hidden');
+                            dojo.removeClass('chooseList', 'hidden');
+                            $('choose_container_name').innerHTML = _('Chosen Gamble Card');    
+                            this.addCardToDeck(this.chooseList, args.args._private.card);
+                        }
+                        else
+                            this.factionHand.selectItem(args.args._private.cardId);
+                }, 500);
             }
         },
 
         'duelPayForManeuverFromCombatCard' : () => {
-            if (this.isCurrentPlayerActive()) {
-                const cardId = args.args._private.combatCardId;
-                const card = this.cardProperties[cardId];
-                let div = this.factionHand.getItemDivId(cardId);
-                dojo.addClass(div, '_7sfs-unselectable');
+            if (this.isCurrentPlayerActive()) 
+            {
+                setTimeout(async () => {
+                    let div = null;
+                    if (args.args._private.gambled)
+                    {
+                        dojo.removeClass('choose_container', 'hidden');
+                        dojo.removeClass('chooseList', 'hidden');
+                        $('choose_container_name').innerHTML = _('Chosen Gamble Card');
     
-                dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
-                    id: div,
-                    cost: args.args._private.cost,
-                }), div, "first" );    
+                        this.addCardToDeck(this.chooseList, args.args._private.card);
+                        const cardId = args.args._private.combatCardId;
+                        div = this.chooseList.getItemDivId(cardId);
+        
     
-                const costDiv = $(`${div}_wealth_cost`);
-                const cost = parseInt(costDiv.innerHTML);
-                let discountedCost = cost - args.args._private.discount;
-                discountedCost = discountedCost < 0 ? 0 : discountedCost;
-                if (discountedCost !== cost)
-                {
-                    costDiv.innerHTML = parseInt(discountedCost);
-                    dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
-                }
+                    }
+                    else
+                    {
+                        const cardId = args.args._private.combatCardId;
+                        div = this.factionHand.getItemDivId(cardId);
+                        dojo.addClass(div, '_7sfs-unselectable');
+                    }
+        
+                    dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                        id: div,
+                        cost: args.args._private.cost,
+                    }), div, "first" );    
     
-                $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
-                this.factionHand.setSelectionMode(2);
+                    const costDiv = $(`${div}_wealth_cost`);
+                    const cost = parseInt(costDiv.innerHTML);
+                    let discountedCost = cost - args.args._private.discount;
+                    discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                    if (discountedCost !== cost)
+                    {
+                        costDiv.innerHTML = parseInt(discountedCost);
+                        dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                    }
+    
+                    $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
+                    this.factionHand.setSelectionMode(2);
+                }, 500);
             }
         },
 

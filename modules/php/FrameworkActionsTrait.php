@@ -1683,6 +1683,7 @@ trait FrameworkActionsTrait
         $this->cards->insertCardOnExtremePosition($notChosenCard['id'], $deckName, false);
 
         $this->globals->set(Game::CHOSEN_CARD, $id);
+        $this->globals->set(Game::DUEL_GAMBLED, true);
 
         $duelId = $this->globals->get(Game::DUEL_ID);
         $round = $this->globals->get(Game::DUEL_ROUND);
@@ -1708,12 +1709,14 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);        
 
-        $card = $this->getCardObjectFromDb($id);
         $card->Location = Game::LOCATION_PURGATORY;
         $this->updateCardObjectInDb($card);
         $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
 
-        $this->gamestate->nextState();
+        if ($card->hasManeuversAvailableToPlayer($playerId, $this->theah))
+            $this->gamestate->nextState("useManeuver");
+        else
+            $this->gamestate->nextState("noManeuver");
     }
     
 

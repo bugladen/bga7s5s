@@ -368,6 +368,10 @@ onLeavingState: function( stateName )
         'duelPayForManeuverFromCombatCard' : () => {
             if (this.isCurrentPlayerActive()) 
             {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+
                 this.factionHand.getAllItems().forEach((card, index) => {
                     let div = this.factionHand.getItemDivId(card.id);
                     if (dojo.hasClass(div, '_7sfs-unselectable')) {

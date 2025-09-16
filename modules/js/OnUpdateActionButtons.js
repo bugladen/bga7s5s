@@ -299,7 +299,8 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelUseManeuverFromCombatCard': () => {
-            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            if (! args._private.gambled)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args._private.maneuvers.forEach((maneuver) => { 
                 this.addActionButton(
                     `btnChooseManeuver_${maneuver.id}`, maneuver.name, () => this.bgaPerformAction('actDuelUseManeuverFromCombatCard', { maneuverId: maneuver.id})) 
@@ -308,8 +309,9 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelPayForManeuverFromCombatCard': () => {
-            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onCombatCardPaymentConfirmed());
+            if (! args._private.gambled)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actPayForCards`, _('Confirm'), () => this.onCombatCardPaymentConfirmed());
         },
 
         'duelChooseGambleCard': () => {
