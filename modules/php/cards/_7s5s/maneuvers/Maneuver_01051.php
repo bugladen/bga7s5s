@@ -39,7 +39,11 @@ class Maneuver_01051 extends Maneuver
         $actor = $theah->getDuelRoundActor();
         $owner = $this->getOwningCard($theah);
         $characters = $theah->getCharactersAtLocation($actor->Location);
-        $characters = array_filter($characters, fn($character) => $character->hasTrait('Mercenary', $owner) && $character->ControllerId == $actor->ControllerId);
+        $characters = array_filter($characters, fn($character) => 
+            $character->hasTrait('Mercenary', $owner) && 
+            $character->ControllerId == $actor->ControllerId &&
+            $character->Id != $actor->Id
+        );
 
         return count($characters) > 0;
     }
@@ -81,7 +85,11 @@ class Maneuver_01051 extends Maneuver
             $actor = $game->theah->getDuelRoundActor();
             $owner = $this->getOwningCard($game->theah);
             $characters = $game->theah->getCharactersAtLocation($actor->Location);
-            $characters = array_values(array_filter($characters, fn($character) => $character->hasTrait('Mercenary', $owner) && $character->ControllerId == $actor->ControllerId));
+            $characters = array_values(array_filter($characters, fn($character) => 
+                $character->hasTrait('Mercenary', $owner) && 
+                $character->ControllerId == $actor->ControllerId &&
+                $character->Id != $actor->Id
+            ));
             $characterIds = array_map(fn($character) => $character->Id, $characters);
     
             $args['characterIds'] = $characterIds;
