@@ -1950,7 +1950,7 @@ $machinestates = [
             States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD => [
                 "name" => "duelPayForManeuverFromCombatCard",
                 "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
-                "descriptionmyturn" => clienttranslate('${you} must choose how to pay for chosen combat card by selecting cards in your hand:'),
+                "descriptionmyturn" => clienttranslate('${you} must pay for Maneuver from chosen combat card by selecting cards in your hand:'),
                 "type" => "activeplayer",
                 "args" => "argsDuelPayForManeuverFromCombatCard",
                 "possibleactions" => [
@@ -2077,7 +2077,8 @@ $machinestates = [
                     "actGambleCardChosen"
                 ],
                 "transitions" => [
-                    "" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS
+                    "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
+                    "noManeuver" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS
                 ]
             ],
                 States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS => [
