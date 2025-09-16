@@ -1955,11 +1955,13 @@ $machinestates = [
                 "args" => "argsDuelPayForManeuverFromCombatCard",
                 "possibleactions" => [
                     "actDuelPayForManeuverFromCombatCard",
-                    "actBack"
+                    "actBack",
+                    "actBackWithTransition"
                 ],
                 "transitions" => [
                     "maneuverPaidFor" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
-                    "back" => States::DUEL_CHOOSE_ACTION
+                    "back" => States::DUEL_CHOOSE_ACTION,
+                    "backGambled" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD
                 ]
             ],
                 // Add custom maneuver transitions here
