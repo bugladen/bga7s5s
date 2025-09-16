@@ -357,6 +357,10 @@ onLeavingState: function( stateName )
 
         'duelUseManeuverFromCombatCard' : () => {
             if (this.isCurrentPlayerActive()) {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+
                 var items = this.factionHand.getSelectedItems();
                 const types = {};
                 items.forEach((item) => {
