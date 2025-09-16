@@ -25,7 +25,8 @@ class Reaction_01181 extends AttachmentReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to Heal Wounds: ');
+        $character = $theah->getCharacterById($this->HealTargetId);
+        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} may choose to Heal Wounds from %s: '), $character->Name);
     }
 
     public function getReactionButtonProperties(Theah $theah): array
