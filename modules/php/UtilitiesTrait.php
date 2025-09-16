@@ -477,7 +477,7 @@ trait UtilitiesTrait
                     $revealed[] = $cardInfo['id'];
                     $found = true;
                     $cardFound = $card;
-                    $names[] = $card->Name;
+                    $names[] = $card->getInjectCode();
                     break;
                 }
             }
@@ -488,13 +488,13 @@ trait UtilitiesTrait
                     $revealed[] = $cardInfo['id'];
                     $found = true;
                     $cardFound = $card;
-                    $names[] = $card->Name;
+                    $names[] = $card->getInjectCode();
                     break;
                 }
             }
 
             $revealed[] = $cardInfo['id'];
-            $names[] = $card->Name;
+            $names[] = $card->getInjectCode();
             unset($card);                
         }
 
@@ -513,7 +513,7 @@ trait UtilitiesTrait
             $revealed = [];
             $names = [];
             $count = $this->cards->countCardInLocation(Game::LOCATION_CITY_DECK);
-            $cards = $this->getCardsOnTopOfCityDeck($count);    
+            $cards = $this->getCardsOnTopOfCityDeck($count);
             foreach ($cards as $cardInfo)
             {
                 $card = $this->getCardObjectFromDb($cardInfo['id']);
@@ -524,7 +524,7 @@ trait UtilitiesTrait
                         $revealed[] = $cardInfo['id'];
                         $found = true;
                         $cardFound = $card;
-                        $names[] = $card->Name;
+                        $names[] = $card->getInjectCode();
                         break;
                     }
                 }
@@ -535,13 +535,13 @@ trait UtilitiesTrait
                         $revealed[] = $cardInfo['id'];
                         $found = true;
                         $cardFound = $card;
-                        $names[] = $card->Name;
+                        $names[] = $card->getInjectCode();
                         break;
                     }
                 }
 
                 $revealed[] = $cardInfo['id'];
-                $names[] = $card->Name;
+                $names[] = $card->getInjectCode();
                 unset($card);
             }
         }
