@@ -658,29 +658,39 @@ trait ArgumentsTrait
 
     public function argsDuelUseManeuverFromCombatCard(): array
     {
-        $cardId =$this->globals->get(Game::CHOSEN_CARD);
+        $cardId = $this->globals->get(Game::CHOSEN_CARD);
+        $gambled = $this->globals->get(Game::DUEL_GAMBLED, false);
+
         $card = $this->getCardObjectFromDb($cardId);
-        if ($card instanceof IHasManeuvers) {
-            return [
-                "_private" => [
-                    "active" => [
-                        "cardId" => $cardId,
-                        "maneuvers" => $card->getManeuversArray($this)
-                    ]
-                ]
-            ];
-        }
+        if ($card instanceof IHasManeuvers)
+            $maneuvers = $card->getManeuversArray($this);
 
-        return [];
-    }
-
-    public function argsDuelPayForManeuverFromCombatCard(): array {
         return [
             "_private" => [
                 "active" => [
-                    "combatCardId" => $this->globals->get(Game::CHOSEN_CARD),
+                    "cardId" => $cardId,
+                    "maneuvers" => $maneuvers,
+                    "gambled" => $gambled,
+                    "card" => $card->getPropertyArray($this)
+                ]
+            ]
+        ];
+
+    }
+
+    public function argsDuelPayForManeuverFromCombatCard(): array     
+    {
+        $cardId = $this->globals->get(Game::CHOSEN_CARD);
+        $gambled = $this->globals->get(Game::DUEL_GAMBLED, false);
+        $card = $this->getCardObjectFromDb($cardId);
+        return [
+            "_private" => [
+                "active" => [
+                    "combatCardId" => $cardId,
                     "cost" => $this->globals->get(Game::CHOSEN_CARD_COST),
-                    "discount" => $this->globals->get(Game::DISCOUNT)
+                    "discount" => $this->globals->get(Game::DISCOUNT),
+                    "gambled" => $gambled,
+                    "card" => $card->getPropertyArray($this)
                 ]
             ]
         ];

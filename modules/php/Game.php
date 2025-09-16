@@ -147,6 +147,7 @@ class Game extends \Table
     final const IN_DUEL = "inDuel";
     final const DUEL_ID = "duelId";
     final const DUEL_ROUND = "duelRound";
+    final const DUEL_GAMBLED = "duelGambled";
 
     use DeckTrait;
     use StatesTrait;
