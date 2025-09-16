@@ -10,6 +10,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
@@ -1095,6 +1096,12 @@ trait FrameworkActionsTrait
             $card = $this->getCardObjectFromDb($cardId);
             if ($card == null)
                 throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
+
+            //Edge case: Bravos cannot be paid for with a Thug card
+            if ($risk instanceof _01024 && $card->hasTrait('Thug'))
+            {
+                throw new \BgaUserException(self::_("A Thug cannot be used to pay for Bravos."));
+            }
 
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;

@@ -570,9 +570,13 @@ trait EventHub
                         $character->ControllerId = $event->playerId;
                         $character->IsUpdated = true;
                         $theah->addCardToWorld($character);        
+
+                        $message = clienttranslate('${player_name} musters ${character_inject_code} at ${location}.');
+                        if ($event->location != Game::LOCATION_PLAYER_HOME)
+                            $message = clienttranslate('${player_name} plays ${character_inject_code} at ${location}.');
         
                         // Notify players of mustered character
-                        $theah->game->notifyAllPlayers("characterMustered", clienttranslate('${player_name} musters ${character_inject_code} at ${location}.'), [
+                        $theah->game->notifyAllPlayers("characterMustered", $message, [
                             'i18n' => ['location'],
                             "player_id" => $event->playerId,
                             "player_name" => $theah->game->getPlayerNameById($event->playerId),

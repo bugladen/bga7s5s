@@ -345,6 +345,20 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01024 => [
+        "name" => "highDramaPhase01024",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Bravos') . clienttranslate(': ${you} must choose a Thug to put into play:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "thugChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01029 => [
         "name" => "highDramaPhase01029",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

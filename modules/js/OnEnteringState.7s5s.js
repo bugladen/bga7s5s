@@ -596,6 +596,21 @@
                 }
             },
 
+            'highDramaPhase01024': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = _("Thugs in your Discard Pile: ");
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
             'highDramaPhase01029': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
