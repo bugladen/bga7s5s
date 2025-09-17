@@ -63,6 +63,12 @@ class _01169 extends Risk
 
             $moveEvent = EventFactory::createCardMovedEvent($actor->ControllerId, $actor->Id, $actor->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $this->Id);
             $event->theah->queueEvent($moveEvent);
+
+            if (! $this->Engaged)
+            {
+                $engageEvent = EventFactory::createCardEngagedEvent($actor->ControllerId, $actor->Id, $this->Id);
+                $event->theah->queueEvent($engageEvent);
+            }
         }
     }
 }

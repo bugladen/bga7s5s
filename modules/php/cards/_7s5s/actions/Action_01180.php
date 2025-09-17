@@ -48,19 +48,27 @@ class Action_01180 extends CharacterAction
             $count = 0;
             foreach ($deckCards as $deckCard) {
                 $card = $event->theah->game->getCardObjectFromDb($deckCard['id']);
-                $names[] = $event->theah->game->translate($card->Name);
+                $names[] = $card->getInjectCode();
                 if ($card->hasTrait('Artifact'))
                     $count++;
             }
 
             $kaj = $this->getOwningCard($event->theah);
+            $game = $event->theah->game;
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
+                'i18n' => ['action'],
+                'player_name' => $game->getActivePlayerName(),
+                'action' => $this->Name,
+                'owner_inject_code' => $kaj->getInjectCode(),
+            ]);
+
+            $this->setUsed($event->theah, true);
             $event->theah->game->notifyAllPlayers('message', clienttranslate('${action_inject_code}: ${count} Artifacts found in the top 4 cards of the City Deck. (${names})'), [
                 'action_inject_code' => $kaj->getInjectCode(),
                 'count' => $count,
                 'names' => implode(', ', $names)
             ]);
 
-            $this->setUsed($event->theah, true);
             $this->resetPlayerPassCount($event->theah->game);
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01180", $this->Id);

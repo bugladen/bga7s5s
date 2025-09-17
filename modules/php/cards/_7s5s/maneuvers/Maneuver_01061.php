@@ -20,7 +20,7 @@ class Maneuver_01061 extends Maneuver
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventDuelCalculateManeuverValues)
+        if ($event instanceof EventDuelCalculateManeuverValues && $event->maneuverId == $this->Id)
         {
             $event->parry += 1;
 

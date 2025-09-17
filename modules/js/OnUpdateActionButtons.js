@@ -329,7 +329,9 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelPayForManeuverFromCombatCard': () => {
-            if (! args._private.gambled)
+            if (args._private.gambled)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backGambled'}));
+            else
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actPayForCards`, _('Confirm'), () => this.onCombatCardPaymentConfirmed());
         },

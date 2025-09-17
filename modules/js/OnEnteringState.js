@@ -546,6 +546,7 @@ onEnteringState: function( stateName, args )
                             dojo.removeClass('chooseList', 'hidden');
                             $('choose_container_name').innerHTML = _('Chosen Gamble Card');    
                             this.addCardToDeck(this.chooseList, args.args._private.card);
+                            this.chooseList.setSelectionMode(0);
                         }
                         else
                             this.factionHand.selectItem(args.args._private.cardId);
@@ -567,12 +568,12 @@ onEnteringState: function( stateName, args )
                         this.addCardToDeck(this.chooseList, args.args._private.card);
                         const cardId = args.args._private.combatCardId;
                         div = this.chooseList.getItemDivId(cardId);
-        
-    
+                        this.chooseList.setSelectionMode(0);
                     }
                     else
                     {
                         const cardId = args.args._private.combatCardId;
+                        div = this.factionHand.getItemDivId(cardId);
                         div = this.factionHand.getItemDivId(cardId);
                         dojo.addClass(div, '_7sfs-unselectable');
                     }
