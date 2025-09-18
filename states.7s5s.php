@@ -355,7 +355,7 @@ $machinestates += [
             "actFromCardWithId",
         ],
         "transitions" => [
-            "thugChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
         ]
     ],
 
@@ -369,7 +369,7 @@ $machinestates += [
             "actFromCardWithId",
         ],
         "transitions" => [
-            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
         ]
     ],
 

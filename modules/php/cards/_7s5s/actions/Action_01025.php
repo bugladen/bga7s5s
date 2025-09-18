@@ -129,7 +129,7 @@ class Action_01025 extends RiskAction implements ISorcererAbility
 
             $this->announceAction($game);
 
-            $game->gamestate->nextState("characterChosen");
+            $game->gamestate->nextState();
         }
     }
 }

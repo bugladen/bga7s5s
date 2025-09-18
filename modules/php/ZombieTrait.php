@@ -119,6 +119,7 @@ trait ZombieTrait
                 // High Drama Player Turn Event States (Card-Specific)
                 case "highDramaPhase01011": // Servo Scarpa
                 case "highDramaPhase01012": // Sibella Scarpa
+                case "highDramaPhase01020": // Dante
                 case "highDramaPhase01044": // Armed and Marshaled
                 case "highDramaPhase01044_2": // Armed and Marshaled target
                 case "highDramaPhase01044_3": // Armed and Marshaled manipulation
@@ -155,7 +156,8 @@ trait ZombieTrait
                 case "highDramaPhase01015": // The Great Game
                 case "highDramaPhase01017": // Alcee
                 case "highDramaPhase01019": // Buratino
-                case "highDramaPhase01020": // Dante
+                case "highDramaPhase01024": // Bravos
+                case "highDramaPhase01025": // Fate's Burden
                 case "highDramaPhase01049_2": // Polished Flintlock engage
                 case "highDramaPhase01056_2": // Move Along choice
                 case "highDramaPhase01072_2": // Réputation Méritée city card
