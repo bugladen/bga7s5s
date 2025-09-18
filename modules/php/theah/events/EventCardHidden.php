@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventCardEngarded extends Event
+class EventCardHidden extends Event
 {
     public int $playerId;
     public int $cardId;
@@ -10,7 +10,8 @@ class EventCardEngarded extends Event
     public function __construct()
     {
         parent::__construct();
-        $this->runEventHubAfterCards = true;
+
+        $this->playerId = 0;
+        $this->cardId = 0;
     }
- 
 }

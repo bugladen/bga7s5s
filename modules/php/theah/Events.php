@@ -93,6 +93,7 @@ class Events
     const CardDrawn = 'EventCardDrawn';
     const CardEngaged = 'EventCardEngaged';
     const CardEngarded = 'EventCardEngarded';
+    const CardHidden = 'EventCardHidden';
     const CardSentToLocker = 'EventCardSentToLocker';
     const CharacterDestroyed = 'EventCharacterDestroyed';
     const CharacterHealed = 'EventCharacterHealed';

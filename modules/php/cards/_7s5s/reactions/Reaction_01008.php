@@ -107,6 +107,8 @@ class Reaction_01008 extends CardReaction
                         $event = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($cesca->ControllerId, $card->Id);
                         $game->theah->queueEvent($event);
                     }
+                    $deck = $game->getGameDeckObject();
+                    $deck->moveCard($card->Id, Game::LOCATION_PERMANENTLY_HIDDEN);
                 }
                 
             }

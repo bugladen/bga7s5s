@@ -359,6 +359,20 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01025 => [
+        "name" => "highDramaPhase01025",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Fate\'s Burden') . clienttranslate(': ${you} must choose a character to equip Fate\'s Burden to:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01029 => [
         "name" => "highDramaPhase01029",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),

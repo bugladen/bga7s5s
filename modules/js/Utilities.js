@@ -362,6 +362,16 @@ return declare('seventhseacityoffivesails.utilities', null, {
             influence: this.attachmentFormatModifer(attachment.influenceModifier),
             cost: attachment.wealthCost,
         }), targetDiv, placement );
+
+        if (!attachment.showStatModifiers)
+        {
+            //Remove the class from child elements of the divId
+            dojo.removeClass($(`${divId}_resolve`), '_7sfs-card-resolve');
+            dojo.removeClass($(`${divId}_wealth_cost`), '_7sfs-card-wealth-cost _7sfs-city-attachment-wealth-cost');
+            dojo.removeClass($(`${divId}_combat_box`), '_7sfs-card-stat-box _7sfs-card-combat-box');
+            dojo.removeClass($(`${divId}_finesse_box`), '_7sfs-card-stat-box _7sfs-card-finesse-box');
+            dojo.removeClass($(`${divId}_influence_box`), '_7sfs-card-stat-box _7sfs-card-influence');
+        }
         
         if (attachment.controllerId)
         {

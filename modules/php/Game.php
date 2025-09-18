@@ -46,6 +46,7 @@ class Game extends \Table
     final const LOCATION_APPROACH = 'Approach';
     final const LOCATION_HAND = 'hand';
     final const LOCATION_PURGATORY = 'Purgatory';
+    final const LOCATION_PERMANENTLY_HIDDEN = 'Permanently Hidden';
 
     //Global variable names
     final const FIRST_PLAYER = "firstPlayer";

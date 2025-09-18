@@ -714,7 +714,6 @@ class Theah
             if (count($opposingCharacters) > 0)
             {
                 $performers[] = $character;
-                break;
             }
         }
 

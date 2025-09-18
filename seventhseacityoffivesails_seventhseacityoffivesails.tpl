@@ -130,17 +130,17 @@ var jstpl_character=`
 var jstpl_card_attachment=`
 <div id="\${id}" style="--attachment-index:\${attachmentIndex}">
     <div id="\${id}_image" class="_7sfs-card _7sfs-home-\${faction}" style="--card_image:url('\${image}')">
-        <div class="_7sfs-card-resolve">\${resolve}</div>
+        <div id="\${id}_resolve" class="_7sfs-card-resolve">\${resolve}</div>
         <div id="\${id}_wealth_cost" class="_7sfs-card-wealth-cost _7sfs-city-attachment-wealth-cost">\${cost}</div>
-        <div class="_7sfs-card-stat-box _7sfs-card-combat-box">
+        <div id="\${id}_combat_box" class="_7sfs-card-stat-box _7sfs-card-combat-box">
             <div class="_7sfs-card-combat-value _7sfs-attachment-combat-value">\${combat}</div>
             <div class="_7sfs-card-combat-image"></div>
         </div>
-        <div class="_7sfs-card-stat-box _7sfs-card-finesse-box">
+        <div id="\${id}_finesse_box" class="_7sfs-card-stat-box _7sfs-card-finesse-box">
             <div class="_7sfs-card-finesse-value _7sfs-attachment-finesse-value">\${finesse}</div>
             <div class="_7sfs-card-finesse-image"></div>
         </div>
-        <div class="_7sfs-card-stat-box _7sfs-card-influence">
+        <div id="\${id}_influence_box" class="_7sfs-card-stat-box _7sfs-card-influence">
             <div class="_7sfs-card-influence-value _7sfs-attachment-influence-value">\${influence}</div>
             <div class="_7sfs-card-influence-image"></div>
         </div>

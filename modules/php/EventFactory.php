@@ -29,6 +29,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
@@ -265,6 +266,18 @@ class EventFactory
     {
         $event = self::createEvent(Events::CardEngarded);
         if ($event instanceof EventCardEngarded)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+        }
+
+        return $event;
+    }
+
+    public static function createCardHiddenEvent(int $playerId, int $cardId): EventCardHidden
+    {
+        $event = self::createEvent(Events::CardHidden);
+        if ($event instanceof EventCardHidden)
         {
             $event->playerId = $playerId;
             $event->cardId = $cardId;
