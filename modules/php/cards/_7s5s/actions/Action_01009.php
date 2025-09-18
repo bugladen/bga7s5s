@@ -53,6 +53,7 @@ class Action_01009 extends CharacterAction
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01009", $this->Id);
             $event->theah->queueEvent($transition);
 
+            $this->setUsed($event->theah, true);
         }
     }
 }

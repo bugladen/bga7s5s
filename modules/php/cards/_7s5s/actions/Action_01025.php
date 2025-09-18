@@ -128,6 +128,7 @@ class Action_01025 extends RiskAction implements ISorcererAbility
             $game->theah->queueEvent($event);
 
             $this->announceAction($game);
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState();
         }

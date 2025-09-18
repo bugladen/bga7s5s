@@ -89,6 +89,7 @@ class Action_01020 extends CharacterAction
             }
 
             $this->announceAction($game);
+            $this->resetPlayerPassCount($game);
 
             $owner->unEquipAllAttachments($game->theah);
             $event = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());
