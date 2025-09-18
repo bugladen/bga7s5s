@@ -158,6 +158,7 @@ trait ZombieTrait
                 case "highDramaPhase01019": // Buratino
                 case "highDramaPhase01024": // Bravos
                 case "highDramaPhase01025": // Fate's Burden
+                case "highDramaPhase01026": // For the Family
                 case "highDramaPhase01049_2": // Polished Flintlock engage
                 case "highDramaPhase01056_2": // Move Along choice
                 case "highDramaPhase01072_2": // Réputation Méritée city card
