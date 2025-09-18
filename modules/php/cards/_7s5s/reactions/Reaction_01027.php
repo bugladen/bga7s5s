@@ -57,6 +57,19 @@ class Reaction_01027 extends RiskReaction
 
         if ($reactionId == "failPressure")
         {
+            $game->gamestate->nextState('pay');
+            return;
+        }
+
+        $game->gamestate->nextState("done");
+    }
+
+    public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void
+    {
+        parent::reactionPaidFor($game, $state, $internalId, $reactionId);
+
+        if ($reactionId == "failPressure")
+        {
             $owner = $this->getOwningCard($game->theah);
             $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: Difference of Pressure was 1 or less. ${player_name} used Reaction and FAILED Pressure.'), [
                 "reaction_inject_code" => $owner->getInjectCode(),
@@ -75,10 +88,6 @@ class Reaction_01027 extends RiskReaction
                 $this->event->highDramaBasicAction, 
                 $this->event->abilityId);
             $game->theah->queueEvent($event);
-
-            $this->setUsed($game->theah, true);
         }
-
-        $game->gamestate->nextState("done");
     }
 }
