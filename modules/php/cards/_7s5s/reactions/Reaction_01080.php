@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01080 extends RiskReaction
@@ -88,6 +89,13 @@ class Reaction_01080 extends RiskReaction
                 $event->theah->queueEvent($transition);
             }
         }
+
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
+        {
+            $performer = $event->theah->getCharacterById($this->DuelOpponentId);
+            $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $this->DuelLocation);
+            $event->theah->queueEvent($claimEvent);
+        }
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -136,16 +144,11 @@ class Reaction_01080 extends RiskReaction
         {
             $performer = $game->theah->getCharacterById($this->DuelOpponentId);
 
-            [$success, $totals] = $game->pressureLocation($performer->ControllerId, $performer, Game::STAT_INFLUENCE);
+            [$success, $totals, $difference] = $game->pressureLocation($performer->ControllerId, $performer, Game::STAT_INFLUENCE);
 
-            $pressuredEvent = EventFactory::createLocationPressuredEvent($performer->ControllerId, $performer->Id, $this->DuelLocation, Game::STAT_INFLUENCE, $success, $totals);
+            $pressuredEvent = EventFactory::createLocationPressuredEvent($performer->ControllerId, $performer->Id, $this->DuelLocation, Game::STAT_INFLUENCE, $success, $totals, $difference);
+            $pressuredEvent->abilityId = $this->Id;
             $game->theah->queueEvent($pressuredEvent);
-
-            if ($success)
-            {
-                $event = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $this->DuelLocation);
-                $game->theah->queueEvent($event);
-            }
 
             $game->gamestate->nextState();
         }

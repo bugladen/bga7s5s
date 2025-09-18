@@ -782,8 +782,7 @@ $machinestates += [
         "type" => "game",
         "action" => "stFromCard",
         "transitions" => [
-            "success" => States::HIGH_DRAMA_PLAYER_TURN_01072_2,
-            "failure" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
     States::HIGH_DRAMA_PLAYER_TURN_01072_2 => [

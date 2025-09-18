@@ -508,21 +508,13 @@ trait StatesTrait
             $this->theah->queueEvent($engageEvent);
         }
         
-        list($success, $totals) = $this->pressureLocation($claimingPlayerId, $performer, Game::STAT_INFLUENCE);
+        list($success, $totals, $difference) = $this->pressureLocation($claimingPlayerId, $performer, Game::STAT_INFLUENCE);
 
         $pressureTypes = $this->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
-        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureTypes), $success, $totals);
+        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureTypes), $success, $totals, $difference);
+        $pressuredEvent->highDramaBasicAction = true;
         $this->theah->eventCheck($pressuredEvent);
         $this->theah->queueEvent($pressuredEvent);
-
-        if ($success) 
-        {
-            $this->setControllerForLocation($performer->Location, $claimingPlayerId);
-
-            $claimEvent = EventFactory::createLocationClaimedEvent($claimingPlayerId, $performer->Id, $performer->Location);
-            $this->theah->eventCheck($claimEvent);
-            $this->theah->queueEvent($claimEvent);
-        }
 
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState();

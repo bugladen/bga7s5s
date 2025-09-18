@@ -50,6 +50,13 @@ class DB extends \APP_DbObject
         $this->executeSql($sql);
     }
 
+    public function deletePressureResultEvents()
+    {
+        $sql = "DELETE FROM events 
+                WHERE (event_serialized LIKE '%EventLocationPressureResult%')";
+        $this->executeSql($sql);
+    }
+
     public function getCollection(string $sql): array
     {
         /** @disregard P1013 */

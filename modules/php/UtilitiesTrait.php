@@ -437,12 +437,14 @@ trait UtilitiesTrait
 
         //Get the player with the most influence
         $maxInfluence = 0;
+        $difference = 0;
         $maxPlayerId = 0;
         $totals = "";
         foreach ($playerInfluences as $playerId => $player) 
         {
             $totals .= "{$this->getPlayerNameById($playerId)}:({$player['influence']}) ";
             if ($player['influence'] > $maxInfluence) {
+                $difference = $player['influence'] - $maxInfluence;
                 $maxInfluence = $player['influence'];
                 $maxPlayerId = $playerId;
             }
@@ -450,6 +452,8 @@ trait UtilitiesTrait
 
         //Check for ties
         $ties = array_filter($playerInfluences, fn($player) => $player['influence'] == $maxInfluence);
+        if (count($ties) > 1)
+            $difference = 0;
 
         $pressureType = $this->globals->get(Game::PRESSURE_TYPE);
         if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE)
@@ -459,17 +463,17 @@ trait UtilitiesTrait
         {
             //Ties win
             if ($attemptingPlayerId == $maxPlayerId || array_key_exists($attemptingPlayerId, $ties))
-                return [true, $totals];
+                return [true, $totals, $difference];
 
-            return [false, $totals];
+            return [false, $totals, $difference];
         }
         else
         {
             //Ties do not win
             if (count($ties) > 1 || $attemptingPlayerId != $maxPlayerId) 
-                return [false, $totals];
+                return [false, $totals, $difference];
 
-            return [true, $totals];
+            return [true, $totals, $difference];
         }
     }
 

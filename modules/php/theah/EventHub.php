@@ -69,6 +69,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventThreatModified;
@@ -660,18 +661,47 @@ trait EventHub
                 $handler = function (Theah $theah, EventLocationPressured $event)
                 {
                     $performer = $theah->getCharacterById($event->performerId);
-                    $theah->game->notifyAllPlayers("locationPressured", clienttranslate('${player_name} chose ${performer_inject_code} to ${result} Pressure ${location}.
+                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} chose ${performer_inject_code} to Pressure ${location}.
                     <br>Pressure Type: ${pressureType}
                     <br>Influence Totals: ${totals}'), [
                         'i18n' => ['location', 'pressureType'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
                         "performer_inject_code" => $performer->getInjectCode(),
-                        "result" => $event->success ? clienttranslate("SUCCESSFULLY") : clienttranslate("UNSUCCESSFULLY"),
-                        "totals" => $event->totalsExplanation,
+                        "location" => $event->location,
                         "pressureType" => $event->pressureType,
-                        "playerId" => $event->playerId,
-                        "location" => $performer->Location,
+                        "totals" => $event->totalsExplanation,
                     ]);
+
+                    $pressureResultEvent = EventFactory::createLocationPressureResultEvent(
+                        $event->playerId, 
+                        $event->performerId, 
+                        $event->location, 
+                        $event->pressureType, 
+                        $event->success, 
+                        $event->totalsExplanation, 
+                        $event->highDramaBasicAction, 
+                        $event->abilityId);
+                    $theah->queueEvent($pressureResultEvent);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventLocationPressureResult:
+                $handler = function (Theah $theah, EventLocationPressureResult $event)
+                {
+                    $performer = $theah->getCharacterById($event->performerId);
+                    $theah->game->notifyAllPlayers("message", clienttranslate('Pressure Result: ${result}.'), [
+                        "result" => $event->success ? clienttranslate("SUCCESS") : clienttranslate("FAILED"),
+                    ]);
+
+                    if ($event->highDramaBasicAction && $event->success)
+                    {
+                        $theah->game->setControllerForLocation($performer->Location, $event->playerId);
+                
+                        $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $performer->Id, $performer->Location);
+                        $theah->eventCheck($claimEvent);
+                        $theah->queueEvent($claimEvent);
+                    }
                 };
                 $handler($this, $event);
                 break;

@@ -51,6 +51,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechnique
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
@@ -542,7 +543,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createLocationPressuredEvent(int $playerId, int $performerId, string $location, string $pressureType, bool $success, string $totalsExplanation): EventLocationPressured
+    public static function createLocationPressuredEvent(int $playerId, int $performerId, string $location, string $pressureType, bool $success, string $totalsExplanation, int $difference): EventLocationPressured
     {
         $event = self::createEvent(Events::LocationPressured);
         if ($event instanceof EventLocationPressured)
@@ -553,6 +554,25 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->pressureType = $pressureType;
             $event->success = $success;
             $event->totalsExplanation = $totalsExplanation;
+            $event->difference = $difference;
+        }
+
+        return $event;
+    }
+
+    public static function createLocationPressureResultEvent(int $playerId, int $performerId, string $location, string $pressureType, bool $success, string $totalsExplanation, bool $highDramaBasicAction, string $abilityId): EventLocationPressureResult
+    {
+        $event = self::createEvent(Events::LocationPressureResult);
+        if ($event instanceof EventLocationPressureResult)
+        {
+            $event->playerId = $playerId;
+            $event->performerId = $performerId;
+            $event->location = $location;
+            $event->pressureType = $pressureType;
+            $event->success = $success;
+            $event->totalsExplanation = $totalsExplanation;
+            $event->highDramaBasicAction = $highDramaBasicAction;
+            $event->abilityId = $abilityId;
         }
 
         return $event;

@@ -47,6 +47,7 @@ class Events
     //High Drama Events
     const PressureOccuring = 'EventPressureOccuring';
     const LocationPressured = 'EventLocationPressured';
+    const LocationPressureResult = 'EventLocationPressureResult';
     const LocationClaimed = 'EventLocationClaimed';
     const CharacterRecruited = 'EventCharacterRecruited';
     const HighDramaPhasePlayerPassed = 'EventHighDramaPhasePlayerPassed';
