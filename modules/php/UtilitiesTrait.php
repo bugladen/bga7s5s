@@ -433,6 +433,12 @@ trait UtilitiesTrait
                 $constanzo = $this->theah->getCardById($this->globals->get(Game::CONSTANZO_ID));
                 $playerInfluences[$constanzo->ControllerId]['influence'] += 1;
             }
+
+            //If Pack Tactics is in play, add the Influence pressure bonus
+            if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::PACK_TACTICS_PRESSURE_TYPE) && $pressureType == Game::STAT_INFLUENCE)
+            {
+                $playerInfluences[$character->ControllerId]['influence'] += $this->globals->get(Game::PRESSURE_BONUS, 0);
+            }
         }
 
         //Get the player with the most influence

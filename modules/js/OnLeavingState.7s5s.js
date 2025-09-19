@@ -330,6 +330,21 @@
                 }
             },
 
+            'highDramaPhase01028': () => {
+                this.resetCityLocations();
+            },
+            'highDramaPhase01028_2': () => {
+                if (this.isCurrentPlayerActive()) 
+                    {
+                        this.clientStateArgs.ids.forEach((cardId) => {
+                            card = this.cardProperties[cardId];
+                            const image = $(`${card.divId}_image`);
+                            this.clearCardAsSelectable(image);
+                        });
+                        this.clientStateArgs = {};
+                    }
+                },
+
             'highDramaPhase01029': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

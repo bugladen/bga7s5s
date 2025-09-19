@@ -480,7 +480,7 @@ class Theah
     {
         $characters = [];
         foreach ($this->cards as $card) {
-            if ($card instanceof Character && $card->isControlled() && $card->Location != Game::LOCATION_HAND) {
+            if ($card instanceof Character && $card->isControlled() && ($this->cardInCity($card) || $card->Location == Game::LOCATION_PLAYER_HOME)) {
                 $characters[] = $card;
             }
         }
@@ -492,7 +492,7 @@ class Theah
     {
         $characters = [];
         foreach ($this->cards as $card) {
-            if ($card instanceof Character && $card->ControllerId == $playerId && $card->Location != Game::LOCATION_HAND) {
+            if ($card instanceof Character && $card->ControllerId == $playerId && ($this->cardInCity($card) || $card->Location == Game::LOCATION_PLAYER_HOME)) {
                 $characters[] = $card;
             }
         }

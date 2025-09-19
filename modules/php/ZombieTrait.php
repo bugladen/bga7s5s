@@ -159,6 +159,8 @@ trait ZombieTrait
                 case "highDramaPhase01024": // Bravos
                 case "highDramaPhase01025": // Fate's Burden
                 case "highDramaPhase01026": // For the Family
+                case "highDramaPhase01028": // Pack Tactics
+                case "highDramaPhase01028_2": // Pack Tactics
                 case "highDramaPhase01049_2": // Polished Flintlock engage
                 case "highDramaPhase01056_2": // Move Along choice
                 case "highDramaPhase01072_2": // Réputation Méritée city card
@@ -168,7 +170,7 @@ trait ZombieTrait
                 case "highDramaPhase01148_3": // Marooned discard
                 case "highDramaPhase01148_4": // Marooned manipulate
 
-                    $this->gamestate->nextState("");
+                    $this->gamestate->nextState();
                     break;
 
                 case "highDramaPhase01029": // The Pressure Is On

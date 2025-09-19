@@ -149,7 +149,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onChooseMultipleInPlayCardsConfirmed: function()
     {
-        if (this.selectedCards.length < this.numberOfCardsSelectable )
+        if (this.numberOfCardsSelectable < this.MAX_CARDS_SELECTABLE && this.selectedCards.length < this.numberOfCardsSelectable )
             this.confirmationDialog(_("You did not select as many cards as you are allowed. Are you sure you want to continue?"),
                () => {this.submitInPlayCards();}
            );

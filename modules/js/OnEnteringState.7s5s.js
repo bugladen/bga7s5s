@@ -45,11 +45,7 @@
                     const locations = this.getListofAvailableCityLocationImages();
                     this.numberOfCityLocationsSelectable = 2;
                     locations.forEach((location) => {
-                        dojo.addClass(location, '_7sfs-selectable');
-                        dojo.style(location, 'cursor', 'pointer');
-    
-                        const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
-                        this.connects.push(handle);
+                        this.makeCityLocationSelectable(location);
                     });
                 }
             },
@@ -646,6 +642,28 @@
                         this.makeCardSelectable(image);
                     });
                     this.clientStateArgs.ids = args.args.args.ids;
+                }
+            },
+
+            'highDramaPhase01028': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 1;
+                    locations.forEach((location) => {
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+            'highDramaPhase01028_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = this.MAX_CARDS_SELECTABLE;
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    args.args.args.ids.forEach((cardId) => {
+                        card = this.cardProperties[cardId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                        this.makeCardSelectable(image);
+                    });
                 }
             },
 

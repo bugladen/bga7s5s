@@ -72,6 +72,8 @@ function (dojo, declare) {
             this.LOCATION_PLAYER_DISCARD = 'Player Discard';
             this.LOCATION_PLAYER_LOCKER = 'Player Locker';
 
+            this.MAX_CARDS_SELECTABLE = 999;
+
             //Recruit types
             this.NORMAL_RECRUIT_TYPE = 0;
             this.KASPAR_RECRUIT_TYPE = 1;
