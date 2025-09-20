@@ -2138,6 +2138,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "01031" => States::DUEL_END_OF_ROUND_01031,
                         "reaction" => States::DUEL_END_OF_ROUND_REACTIONS,
                         "endOfEvents" => States::DUEL_NEXT_PLAYER,
                         "endOfGame" => States::END_GAME

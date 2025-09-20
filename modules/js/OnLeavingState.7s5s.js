@@ -1130,6 +1130,13 @@
                 }
             },
 
+            'duelEndOfRound_01031': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'duskPhaseBegin01177' : () => {
                 if (this.isCurrentPlayerActive()) {
                     for( const cardId in this.cardProperties ) {

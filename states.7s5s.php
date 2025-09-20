@@ -1547,6 +1547,20 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
+    States::DUEL_END_OF_ROUND_01031 => [
+        "name" => "duelEndOfRound_01031",
+        "description" => clienttranslate('${actplayer} is choosing their Duel End of Round options.'),
+        "descriptionmyturn" => clienttranslate('Rough \'em Up') . clienttranslate(': ${you} may choose a Thug to destroy:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId", 
+        ],
+        "transitions" => [
+            "" => States::DUEL_END_OF_ROUND_EVENTS,
+        ]
+    ],
+
     States::DUEL_END_01080 => [
         "name" => "duelEnd_01080",
         "type" => "game",

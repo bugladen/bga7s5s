@@ -296,6 +296,7 @@ class States
         const DUEL_SET_NEXT_COMBAT_CARD = 527;
         const DUEL_END_OF_ROUND = 528;
             const DUEL_END_OF_ROUND_EVENTS = 5280;
+                const DUEL_END_OF_ROUND_01031 = 52801031;
             const DUEL_END_OF_ROUND_REACTIONS = 5281;
             const DUEL_END_OF_ROUND_PAY_FOR_REACTION = 5282;
     const DUEL_NEXT_PLAYER = 53;

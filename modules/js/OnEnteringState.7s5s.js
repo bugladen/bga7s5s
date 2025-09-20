@@ -1823,6 +1823,13 @@
                     this.clientStateArgs.characterIds = args.args.args.characterIds;
                 }
             },
+
+            'duelEndOfRound_01031': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
     
             'duskPhaseBegin01177' : () => {
                 if (this.isCurrentPlayerActive()) {

@@ -13,5 +13,6 @@ class EventDuelEndOfRound extends Event
 
         $this->playerId = 0;
         $this->actorId = 0;
+        $this->priority = Event::LOW_PRIORITY;
     }
 }

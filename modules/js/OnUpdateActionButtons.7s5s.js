@@ -667,6 +667,12 @@
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
+
+            'duelEndOfRound_01031': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
     
             'duskPhaseBegin01177': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Character'), () => this.onChooseInPlayCardConfirmed());
