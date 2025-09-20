@@ -431,6 +431,21 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01030 => [
+        "name" => "highDramaPhase01030",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Pull the Strand') . clienttranslate(': ${you} must choose a character to target:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actFromCardPass"
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01035 => [
         "name" => "highDramaPhase01035",
         "description" => clienttranslate('Your opponent(s) must acknowledge revealed cards.'),

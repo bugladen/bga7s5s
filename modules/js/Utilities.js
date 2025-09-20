@@ -777,5 +777,38 @@ return declare('seventhseacityoffivesails.utilities', null, {
     getCityLocationElement: function(location) {
         return dojo.query(`[data-location="${location}"]`)[0];
     },
+
+    highlightPerformerChosen: function(cardId) {
+        const card = this.cardProperties[cardId];
+        const image = $(`${card.divId}_image`);
+        dojo.addClass(image, '_7sfs-chosen');
+        this.clientStateArgs.performerId = cardId;
+    },  
+
+    highlightCardsAsSelectable: function(ids) {
+        ids.forEach((id) => {
+            const card = this.cardProperties[id];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+            this.makeCardSelectable(image);
+        });
+        this.clientStateArgs.ids = ids;
+    },
+
+    unhighlightPerformerChosen: function(id) {
+        const card = this.cardProperties[id];
+        const image = $(`${card.divId}_image`);
+        dojo.removeClass(image, '_7sfs-chosen');
+    },
+
+    unhighlightCardsAsSelectable: function(ids) {
+        ids.forEach((id) => {
+            const card = this.cardProperties[id];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+        });
+    },
+    
+    
 })
 });

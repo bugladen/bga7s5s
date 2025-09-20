@@ -335,15 +335,15 @@
             },
             'highDramaPhase01028_2': () => {
                 if (this.isCurrentPlayerActive()) 
-                    {
-                        this.clientStateArgs.ids.forEach((cardId) => {
-                            card = this.cardProperties[cardId];
-                            const image = $(`${card.divId}_image`);
-                            this.clearCardAsSelectable(image);
-                        });
-                        this.clientStateArgs = {};
-                    }
-                },
+                {
+                    this.clientStateArgs.ids.forEach((cardId) => {
+                        card = this.cardProperties[cardId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                    this.clientStateArgs = {};
+                }
+            },
 
             'highDramaPhase01029': () => {
                 if (this.isCurrentPlayerActive()) 
@@ -353,6 +353,15 @@
                         const image = $(`${card.divId}_image`);
                         this.clearCardAsSelectable(image);
                     });
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase01030': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightPerformerChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
                     this.clientStateArgs = {};
                 }
             },

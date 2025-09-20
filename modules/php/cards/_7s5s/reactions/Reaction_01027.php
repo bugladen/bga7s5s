@@ -39,15 +39,19 @@ class Reaction_01027 extends RiskReaction
 
         if ($event instanceof EventLocationPressured && $event->success && $event->difference <= 1)
         {
-            $this->event = clone $event;
-            unset($this->event->theah);
-            
-            $owner = $this->getOwningCard($event->theah);
-            $owner->IsUpdated = true;
-
-            $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-            $transitionEvent->priority = Event::HIGH_PRIORITY;
-            $event->theah->queueEvent($transitionEvent);
+            $risk = $this->getOwningCard($event->theah);
+            if ($risk->Location == Game::LOCATION_HAND)
+            {
+                $this->event = clone $event;
+                unset($this->event->theah);
+                
+                $owner = $this->getOwningCard($event->theah);
+                $owner->IsUpdated = true;
+    
+                $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $transitionEvent->priority = Event::HIGH_PRIORITY;
+                $event->theah->queueEvent($transitionEvent);
+            }
         }
     }
 

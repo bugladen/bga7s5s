@@ -679,6 +679,15 @@
                     });
                 }
             },
+
+            'highDramaPhase01030': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightPerformerChosen(args.args.args.performerId);
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            },
     
             'highDramaPhase01035' : () => {
                 dojo.removeClass('choose_container', 'hidden');

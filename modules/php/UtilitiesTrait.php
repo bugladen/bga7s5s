@@ -410,7 +410,15 @@ trait UtilitiesTrait
             {
                 if (!$character->isControlled()) continue;
 
-                $player = $playerInfluences[$character->ControllerId];
+                $player =& $playerInfluences[$character->ControllerId];
+                
+                if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::PULL_THE_STRAND_PRESSURE_TYPE))
+                {
+                    if ($character->Id == $this->globals->get(Game::CHOSEN_TARGET))
+                    {
+                        $player =& $playerInfluences[$performer->ControllerId];
+                    }
+                }
 
                 switch ($pressureType) 
                 {
@@ -424,7 +432,6 @@ trait UtilitiesTrait
                         $player['influence'] += $character->getInfluencePressureValue();
                         break;
                 }
-                $playerInfluences[$character->ControllerId] = $player;
             }
 
             //If Constanzo is in play, he gets 1 influence for each pressure type

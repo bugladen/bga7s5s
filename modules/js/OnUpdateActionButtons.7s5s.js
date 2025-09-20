@@ -261,6 +261,11 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
+            'highDramaPhase01030': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'highDramaPhase01035': () => {
                 this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
             },

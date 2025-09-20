@@ -97,6 +97,7 @@ class Game extends \Table
     final const CONSTANZO_PRESSURE_TYPE = 16;
     final const CONTEMPT_AND_HATRED_PRESSURE_TYPE = 32;
     final const PACK_TACTICS_PRESSURE_TYPE = 64;
+    final const PULL_THE_STRAND_PRESSURE_TYPE = 128;
 
     //Player action global variables
     //Delete these in stNextPlayer
