@@ -98,6 +98,7 @@ function (dojo, declare) {
             this.DANIELA_DEITRICH_CHALLENGE_TYPE = 6;
             this.MOVE_ALONG_CHALLENGE_TYPE = 7;
             this.SERVO_SCARPA_CHALLENGE_TYPE = 8;
+            this.VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 100;
