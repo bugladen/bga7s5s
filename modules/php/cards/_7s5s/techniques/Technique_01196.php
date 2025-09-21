@@ -3,9 +3,11 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01196 extends Technique
 {
@@ -13,6 +15,15 @@ class Technique_01196 extends Technique
     {
         parent::__construct();
         $this->Name = clienttranslate("+1 Riposte");
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if (! parent::isAvailableToPlayer($playerId, $theah))
+            return false;
+        
+        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
+        return $inDuel;
     }
 
     public function handleEvent(Event $event)
