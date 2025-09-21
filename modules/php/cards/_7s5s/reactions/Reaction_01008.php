@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01008;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01012;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01030;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01068;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01069;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01076;
@@ -162,6 +163,16 @@ class Reaction_01008 extends CardReaction
                 $copyAction = true;
                 $action = new Action_01012();
                 $action->setId("Action_01012");
+                $action->setOwnerId($cesca->Id);
+                if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
+            }
+
+            //Pull the Strand
+            if ($ability instanceof Action_01030)
+            {
+                $copyAction = true;
+                $action = new Action_01030();
+                $action->setId("Action_01030");
                 $action->setOwnerId($cesca->Id);
                 if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
             }

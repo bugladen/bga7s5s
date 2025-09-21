@@ -117,6 +117,9 @@ class Action_01030 extends RiskAction implements ISorcererAbility
             $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, $owner->Id, $performer->Location, [Game::STAT_INFLUENCE]);
             $game->theah->queueEvent($pressureOccuringEvent);
 
+            $abilityPlayed = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $character->Id, $character->Location);
+            $game->theah->queueEvent($abilityPlayed);
+
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01028_2", $this->Id);
             $game->theah->queueEvent($transitionEvent);
 
