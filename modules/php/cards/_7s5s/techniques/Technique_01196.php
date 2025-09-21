@@ -23,7 +23,17 @@ class Technique_01196 extends Technique
             return false;
         
         $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
-        return $inDuel;
+        if (!$inDuel)
+            return false;
+        
+        $owner = $this->getOwningCharacter($theah);
+        $actor = $theah->getDuelRoundActor();
+        if ($actor->Id != $owner->Id)
+            return false;
+
+        $adversary = $theah->getCharacterById($theah->getDuelOpponentId($actor->Id));
+
+        return $actor->ModifiedCombat + $actor->ModifiedInfluence >= $adversary->ModifiedCombat + $adversary->ModifiedInfluence;
     }
 
     public function handleEvent(Event $event)
