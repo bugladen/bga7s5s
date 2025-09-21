@@ -161,6 +161,10 @@ trait ZombieTrait
                 case "highDramaPhase01026": // For the Family
                 case "highDramaPhase01028": // Pack Tactics
                 case "highDramaPhase01028_2": // Pack Tactics
+                case "highDramaPhase01029": // The Pressure Is On
+                case "highDramaPhase01030": // Pull the Strand
+                case "highDramaPhase01034": // Wrath of the Don
+                case "highDramaPhase01034_2": // Wrath of the Don target
                 case "highDramaPhase01049_2": // Polished Flintlock engage
                 case "highDramaPhase01056_2": // Move Along choice
                 case "highDramaPhase01072_2": // Réputation Méritée city card

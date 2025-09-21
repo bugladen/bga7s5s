@@ -123,7 +123,7 @@ class Action_01029 extends RiskAction
             $this->announceAction($game);
             $this->resetPlayerPassCount($game);
     
-            $game->gamestate->nextState("cardChosen");
+            $game->gamestate->nextState();
         }
     }
 }

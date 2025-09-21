@@ -427,7 +427,7 @@ $machinestates += [
             "actFromCardPass"
         ],
         "transitions" => [
-            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
         ]
     ],
 
@@ -435,6 +435,35 @@ $machinestates += [
         "name" => "highDramaPhase01030",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
         "descriptionmyturn" => clienttranslate('Pull the Strand') . clienttranslate(': ${you} must choose a character to target:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actFromCardPass"
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
+
+    States::HIGH_DRAMA_PLAYER_TURN_01034 => [
+        "name" => "highDramaPhase01034",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Wrath of the Don') . clienttranslate(': ${you} must choose a character to Engage:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actFromCardPass"
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01034_2 => [
+        "name" => "highDramaPhase01034_2",
+        "description" => clienttranslate('${actplayer} is choosing whether to Engage the target character.'),
+        "descriptionmyturn" => clienttranslate('Wrath of the Don') . clienttranslate(': ${you} must choose to Engage target character:'),
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [

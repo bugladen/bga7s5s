@@ -683,11 +683,33 @@
             'highDramaPhase01030': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
-                    this.highlightPerformerChosen(args.args.args.performerId);
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
 
                     this.clientStateArgs.ids = args.args.args.ids;
                     this.highlightCardsAsSelectable(args.args.args.ids);
-                }            },
+                }            
+            },
+
+            'highDramaPhase01034': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+            'highDramaPhase01034_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.highlightCharacterChosen(args.args.args.targetId);
+                    this.clientStateArgs.targetId = args.args.args.targetId;
+                }            
+            },
     
             'highDramaPhase01035' : () => {
                 dojo.removeClass('choose_container', 'hidden');

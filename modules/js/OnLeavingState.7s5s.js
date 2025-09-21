@@ -360,8 +360,25 @@
             'highDramaPhase01030': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.unhighlightPerformerChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
                     this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+
+            'highDramaPhase01034': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+            'highDramaPhase01034_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.targetId);
                     this.clientStateArgs = {};
                 }
             },
