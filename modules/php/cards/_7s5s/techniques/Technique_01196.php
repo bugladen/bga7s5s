@@ -3,9 +3,11 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01196 extends Technique
 {
@@ -13,6 +15,25 @@ class Technique_01196 extends Technique
     {
         parent::__construct();
         $this->Name = clienttranslate("+1 Riposte");
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if (! parent::isAvailableToPlayer($playerId, $theah))
+            return false;
+        
+        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
+        if (!$inDuel)
+            return false;
+        
+        $owner = $this->getOwningCharacter($theah);
+        $actor = $theah->getDuelRoundActor();
+        if ($actor->Id != $owner->Id)
+            return false;
+
+        $adversary = $theah->getCharacterById($theah->getDuelOpponentId($actor->Id));
+
+        return $actor->ModifiedCombat + $actor->ModifiedInfluence >= $adversary->ModifiedCombat + $adversary->ModifiedInfluence;
     }
 
     public function handleEvent(Event $event)
