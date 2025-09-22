@@ -297,33 +297,48 @@ var jstpl_row_combat_card = `
         </svg>
     </div>
     <div id="city-oles-inn" class="_7sfs-city-location">
-        <div id="oles-inn-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-        <div id="oles-inn-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/004.jpg)"></div>
-        <div id="oles-inn-endcap" class="_7sfs-city-endcap"></div>
+        <div id="oles-inn-frontcap" class="_7sfs-city-endcap"></div>
+        <div class="_7sfs-city-location-contents">
+            <div id="oles-inn-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+            <div id="oles-inn-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/004.jpg)"></div>
+            <div id="oles-inn-endcap" class="_7sfs-city-endcap"></div>
+        </div>
     </div>
     <div></div>
     <div id="city-docks" class="_7sfs-city-location">
-        <div id="dock-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-        <div id="dock-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/003.jpg)"></div>
-        <div id="dock-endcap" class="_7sfs-city-endcap"></div>
+        <div id="dock-frontcap" class="_7sfs-city-endcap"></div>
+        <div class="_7sfs-city-location-contents">
+            <div id="dock-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+            <div id="dock-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/003.jpg)"></div>
+            <div id="dock-endcap" class="_7sfs-city-endcap"></div>
+        </div>
     </div>
     <div></div>
     <div id="city-forum" class="_7sfs-city-location">
-        <div id="forum-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-        <div id="forum-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/001.jpg)"></div>
-        <div id="forum-endcap" class="_7sfs-city-endcap"></div>
+        <div id="forum-frontcap" class="_7sfs-city-endcap"></div>
+        <div class="_7sfs-city-location-contents">
+            <div id="forum-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+            <div id="forum-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/001.jpg)"></div>
+            <div id="forum-endcap" class="_7sfs-city-endcap"></div>
+        </div>
     </div>
     <div></div>
     <div id="city-bazaar" class="_7sfs-city-location">
-        <div id="bazaar-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-        <div id="bazaar-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/002.jpg)"></div>
-        <div id="bazaar-endcap" class="_7sfs-city-endcap"></div>
+        <div id="bazaar-frontcap" class="_7sfs-city-endcap"></div>
+        <div class="_7sfs-city-location-contents">
+            <div id="bazaar-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+            <div id="bazaar-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/002.jpg)"></div>
+            <div id="bazaar-endcap" class="_7sfs-city-endcap"></div>
+        </div>
     </div>
     <div></div>
     <div id="city-governors-garden" class="_7sfs-city-location">
-        <div id="garden-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-        <div id="garden-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/005.jpg)"></div>
-        <div id="garden-endcap" class="_7sfs-city-endcap"></div>
+        <div id="garden-frontcap" class="_7sfs-city-endcap"></div>
+        <div class="_7sfs-city-location-contents">
+            <div id="garden-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+            <div id="garden-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/005.jpg)"></div>
+            <div id="garden-endcap" class="_7sfs-city-endcap"></div>
+        </div>
     </div>
     <div id="city-ll-tower">
         <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
