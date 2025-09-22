@@ -1038,6 +1038,9 @@ trait FrameworkActionsTrait
         }
         else
         {
+            $discount = $this->theah->getActionFromHandDiscount($performer = null, $action);
+            $this->globals->set(Game::DISCOUNT, $discount);
+    
             $this->gamestate->nextState("inHandActionChosen");
         }
     }

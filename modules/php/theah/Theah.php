@@ -297,7 +297,7 @@ class Theah
         return $locations;
     }
 
-    function getActionFromHandDiscount(Character $performer, CardAction $action): int
+    function getActionFromHandDiscount(?Character $performer, CardAction $action): int
     {
         $cards = $this->cards;
         $discount = 0;

@@ -1,0 +1,115 @@
+<?php
+
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
+
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+
+class Action_01160 extends RiskAction
+{
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->Name = clienttranslate("Wound Character that is Wounded");
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if (! parent::isAvailableToPlayer($playerId, $theah))
+        {
+            return false;
+        }
+
+        $characters = $theah->getCharactersInPlay();
+        $characters = array_filter($characters, fn($character) => $theah->cardInCity($character));
+        $characters = array_filter($characters, fn($character) => ! $character instanceof Leader);
+        $characters = array_filter($characters, fn($character) => $character->Wounds > 0);
+
+        return count($characters) > 0;
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01160", $this->Id);
+            $event->theah->queueEvent($transition);
+        }
+    }
+
+    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $action): int
+    {
+        $discount = parent::getActionFromHandDiscount($theah, $performer, $action);
+
+        if ($action->Id == $this->Id)
+        {
+            $owner = $this->getOwningCard($theah);
+            $leader = $theah->getLeaderByPlayerId($owner->ControllerId);
+            if ($leader->hasTrait('Villain'))
+            {
+                $discount += 1;
+            }
+        }
+
+        return $discount;
+    }
+
+    public function getArgsFromAction(Game $game, int $state, string $stateName): array
+    {
+        $args = parent::getArgsFromAction($game, $state, $stateName);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01160)
+        {
+            $characters = $game->theah->getCharactersInPlay();
+            $characters = array_filter($characters, fn($character) => ! $character instanceof Leader);
+            $characters = array_values(array_filter($characters, fn($character) => $character->Wounds > 0));
+            $args['ids'] = array_map(fn($character) => $character->Id, $characters);
+        }
+
+        return $args;
+    }
+
+    public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
+    {
+        parent::actFromActionWithId($game, $state, $stateName, $id);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01160)
+        {
+            $character = $game->theah->getCharacterById($id);
+            if ($character == null)
+            {
+                throw new \BgaUserException($game->translate("Character not found"));
+            }
+
+            if (! $game->theah->cardInCity($character))
+            {
+                throw new \BgaUserException($game->translate("Character is not in the city"));
+            }
+
+            if ($character->Wounds == 0)
+            {
+                throw new \BgaUserException($game->translate("Character is not wounded"));
+            }
+
+            $owner = $this->getOwningCard($game->theah);
+            $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode());
+            $game->theah->queueEvent($woundEvent);
+
+            $this->resetPlayerPassCount($game);
+
+            $game->gamestate->nextState();
+        }
+    }
+}

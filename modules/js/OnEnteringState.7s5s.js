@@ -1388,6 +1388,13 @@
                     this.clientStateArgs.targetId = args.args.args.targetId;
                 }
             },
+
+            'highDramaPhase01160': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
     
             'highDramaPhase01180' : () => {
                 dojo.removeClass('choose_container', 'hidden');

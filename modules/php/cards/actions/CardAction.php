@@ -36,7 +36,7 @@ abstract class CardAction extends Action implements ICardAbility
         return ! $this->Used;
     }
 
-    public function getActionFromHandDiscount(Theah $theah, Character $performer, CardAction $action): int
+    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $action): int
     {
         return 0;
     }

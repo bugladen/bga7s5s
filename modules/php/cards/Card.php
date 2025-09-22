@@ -410,7 +410,7 @@ abstract class Card
         return $properties;
     }
 
-    public function getActionFromHandDiscount(Theah $theah, Character $performer, CardAction $requestedAction): int
+    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $requestedAction): int
     {
         $discount = 0;
         if ($this instanceof IHasActions)

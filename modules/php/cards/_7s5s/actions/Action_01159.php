@@ -39,7 +39,7 @@ class Action_01159 extends CardAction
         return false;
     }
 
-    public function getActionFromHandDiscount(Theah $theah, Character $performer, CardAction $action): int
+    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $action): int
     {
         $discount = parent::getActionFromHandDiscount($theah, $performer, $action);
 

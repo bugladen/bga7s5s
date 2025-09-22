@@ -873,6 +873,12 @@
                     dojo.removeClass(image, '_7sfs-chosen');
                 }
             },
+
+            'highDramaPhase01160': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                }
+            },
     
             'highDramaPhase01180' : () => {
                 //Exposed to all players
