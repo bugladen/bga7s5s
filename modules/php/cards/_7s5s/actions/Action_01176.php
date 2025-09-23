@@ -26,7 +26,7 @@ class Action_01176 extends RiskAction
         if (! parent::isAvailableToPlayer($playerId, $theah))
             return false;
 
-        $characters = $theah->getCharactersInPlayByPlayerId($playerId);
+        $characters = $theah->getCharactersInPlay();
         $characters = array_filter($characters, fn($character) => $character->Wounds > 0);
 
         return count($characters) > 0;
@@ -34,10 +34,10 @@ class Action_01176 extends RiskAction
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_values(array_filter($performers, fn($performer) => $performer->Wounds > 0));
+        $characters = $theah->getCharactersInPlay();
+        $characters = array_values(array_filter($characters, fn($performer) => $performer->Wounds > 0));
 
-        return $performers;
+        return $characters;
     }
 
     public function getActionFromHandDiscount(Theah $theah, Character $performer, CardAction $action): int
