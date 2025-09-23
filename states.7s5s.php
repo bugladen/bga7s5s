@@ -157,7 +157,7 @@ $machinestates += [
         "args" => "argsEmpty",
         "possibleactions" => [
             "actFromCardWithLocations", 
-            "actPass" 
+            "actFromCardPass" 
         ],
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
