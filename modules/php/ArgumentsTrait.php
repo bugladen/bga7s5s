@@ -185,17 +185,14 @@ trait ArgumentsTrait
         $charactersThatCanReruit = [];
         foreach ($characters as $character) {
             $charactersAtLocation = $this->theah->getCharactersAtLocation($character->Location, $includeUncontrolled = true);
-            $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return $character->hasTrait("Mercenary"); });
+            $mercenariesAtLocation = array_filter($charactersAtLocation, fn($character) => ! $character->isControlled() && $character->hasTrait("Mercenary"));
             if (count($mercenariesAtLocation) > 0) {
                 $charactersThatCanReruit[] = $character;
             }
         }
 
-        //Select only the Ids of the characters
-        $characterIds = array_map(function($character) { return $character->Id; }, $charactersThatCanReruit);
-
         return [
-            "ids" => $characterIds
+            "ids" => array_map(fn($character) => $character->Id, $charactersThatCanReruit)
         ];
 
     }
