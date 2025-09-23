@@ -174,6 +174,7 @@ trait ZombieTrait
                 case "highDramaPhase01148_3": // Marooned discard
                 case "highDramaPhase01148_4": // Marooned manipulate
                 case "highDramaPhase01160": // Bleed Out
+                case "highDramaPhase01161": // Boon
 
                     $this->gamestate->nextState();
                     break;

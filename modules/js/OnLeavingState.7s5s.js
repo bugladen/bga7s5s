@@ -879,6 +879,12 @@
                     this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
                 }
             },
+
+            'highDramaPhase01161': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                }
+            },
     
             'highDramaPhase01180' : () => {
                 //Exposed to all players

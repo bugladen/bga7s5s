@@ -1395,6 +1395,13 @@
                     this.highlightCardsAsSelectable(args.args.args.ids);
                 }
             },
+
+            'highDramaPhase01161': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
     
             'highDramaPhase01180' : () => {
                 dojo.removeClass('choose_container', 'hidden');

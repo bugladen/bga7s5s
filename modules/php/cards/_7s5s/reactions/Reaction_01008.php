@@ -264,16 +264,7 @@ class Reaction_01008 extends CardReaction
 
     private function copyCard(Game $game, string $className, int $playerId): Card
     {
-        $location = Game::LOCATION_HAND;
-        $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$className}', $playerId, '$location', $playerId)";
-        $game->DbQuery($sql);
-
-        $id = $game->DbGetLastId();
-        $card = $game->instantiateCard($className, $id);
-        $card->OwnerId = $playerId;
-        $card->ControllerId = $playerId;
-        $card->Location = $location;
-        $game->updateCardObjectInDb($card);
+        $card = $game->createCardInLocation($className, Game::LOCATION_HAND, $playerId);
         $this->copiedCards[] = $card->Id;
 
         $game->notifyPlayer($playerId, "drawCard", '${card_inject_code} was temporarily copied into your Faction Hand to immediately be used.', [

@@ -1134,6 +1134,19 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01161 => [
+        "name" => "highDramaPhase01161",
+        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+        "descriptionmyturn" => clienttranslate('Boon') . clienttranslate(': ${you} must choose a character to Equip Boon:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
 
     States::HIGH_DRAMA_PLAYER_TURN_01180 => [
         "name" => "highDramaPhase01180",

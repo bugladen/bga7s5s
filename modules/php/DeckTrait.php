@@ -28,16 +28,9 @@ trait DeckTrait
         $cityDeckChoice = $this->tableOptions->get(Game::OPTIONS_CITY_DECK);
         $cityDeck = $city_decks->decks[$cityDeckChoice];
 
-        foreach ($cityDeck->cards as $cityCard) {
-            $location = Game::LOCATION_CITY_DECK;
-            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$cityCard}', 0, '{$location}', 0)";
-            $this->DbQuery($sql);
-
-            //Store the card Id in the object, and serialize the card object to the db
-            $id = $this->DbGetLastId();
-            $card = $this->instantiateCard($cityCard, $id);
-            $this->updateCardObjectInDb($card);
-        }
+        foreach ($cityDeck->cards as $cityCard)
+            $card = $this->createCardInLocation($cityCard, Game::LOCATION_CITY_DECK, 0);
+        
         $this->cards->shuffle(Game::LOCATION_CITY_DECK);
 
         // Load the decks selected by the players
@@ -51,20 +44,10 @@ trait DeckTrait
             //Now that we have a deck, add the cards in the deck to the db
 
             // Leader
-            $location = Game::LOCATION_PLAYER_HOME;
-            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$deck->leader}', $playerId, '{$location}', $playerId)";
-            $this->DbQuery($sql);
-            $id = $this->DbGetLastId();
-
-            //Instantiate the leader card and assign it the id from the db
-            $card = $this->instantiateCard($deck->leader, $id);
-            $card->OwnerId = $playerId;
-            $card->ControllerId = $playerId;
-            $card->Location = $location;
-            $this->updateCardObjectInDb($card);
+            $card = $this->createCardInLocation($deck->leader, Game::LOCATION_PLAYER_HOME, $playerId);
 
             //Set the id of the leader card in the player record
-            $sql = "UPDATE player SET leader_card_id = $id WHERE player_id = $playerId";
+            $sql = "UPDATE player SET leader_card_id = $card->Id WHERE player_id = $playerId";
             $this->DbQuery($sql);
 
             //Notify players about the leaders
@@ -80,19 +63,8 @@ trait DeckTrait
             // *** Create the approach deck and send each card to the player ***
             $approachDeck = $deck->approach_deck;
             $cards = [];
-            $location = GAME::LOCATION_APPROACH;
             foreach ($approachDeck as $approachCard) {
-                $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$approachCard}', $playerId, '$location', $playerId)";
-                $this->DbQuery($sql);
-
-                //Create an instance of the card, set the ID, and save it back into the db
-                $id = $this->DbGetLastId();
-                $card = $this->instantiateCard($approachCard, $id);
-                $card->OwnerId = $playerId;
-                $card->ControllerId = $playerId;
-                $card->Location = $location;
-                $this->updateCardObjectInDb($card);
-
+                $card = $this->createCardInLocation($approachCard, Game::LOCATION_APPROACH, $playerId);
                 $cards[] = $card->getPropertyArray($this);
             }
 
@@ -108,20 +80,10 @@ trait DeckTrait
             $cards = [];
             $location = $this->getPlayerFactionDeckName($playerId);
             foreach ($factionDeck as $factionCard) {
-                for ($i = 0; $i < $factionCard->count; $i++) {
-                    $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$factionCard->id}', $playerId, '$location', $playerId)";
-                    $this->DbQuery($sql);
-
-                    //Create an instance of the card, set the ID, and save it back into the db
-                    $id = $this->DbGetLastId();
-                    $card = $this->instantiateCard($factionCard->id, $id);
-                    $card->OwnerId = $playerId;
-                    $card->ControllerId = $playerId;
-                    $card->Location = $location;
-                    $this->updateCardObjectInDb($card);
-
+                for ($i = 0; $i < $factionCard->count; $i++) 
+                {
+                    $card = $this->createCardInLocation($factionCard->id, $location, $playerId);
                     $cards[] = $card->getPropertyArray($this);
-
                 }
             }
             $this->cards->shuffle($location, $playerId);
@@ -275,5 +237,20 @@ trait DeckTrait
             'player_name' => $this->getPlayerNameById($playerId),
             'playerId' => $playerId,
         ]);
+    }
+
+    public function createCardInLocation(string $className, string $location, int $playerId): Card
+    {
+        $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$className}', $playerId, '$location', $playerId)";
+        $this->DbQuery($sql);
+        $id = $this->DbGetLastId();
+        
+        $card = $this->instantiateCard($className, $id);
+        $card->OwnerId = $playerId;
+        $card->ControllerId = $playerId;
+        $card->Location = $location;
+        $this->updateCardObjectInDb($card);
+
+        return $card;
     }
 }

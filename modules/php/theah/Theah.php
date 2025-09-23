@@ -532,6 +532,17 @@ class Theah
         return $characters;
     }
 
+    function getCharactersAtLocationByPlayerId(string $location, int $playerId, bool $includeUncontrolled = false)
+    {
+        $characters = [];
+        foreach ($this->cards as $card) {
+            if ($card instanceof Character && $card->Location == $location && $card->ControllerId == $playerId) {
+                $characters[] = $card;
+            }
+        }
+        return $characters;
+    }
+
     function getEquipDiscount(Character $performer, Attachment $attachment): int
     {
         //Smuggled Item cost is free

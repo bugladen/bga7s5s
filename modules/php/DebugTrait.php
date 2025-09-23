@@ -24,17 +24,7 @@ trait DebugTrait
 {
     public function debug_AddCardToHand(string $className, int $playerId)
     {
-        $location = Game::LOCATION_HAND;
-        $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$className}', $playerId, '$location', $playerId)";
-        $this->DbQuery($sql);
-
-        //Create an instance of the card, set the ID, and save it back into the db
-        $id = $this->DbGetLastId();
-        $card = $this->instantiateCard($className, $id);
-        $card->OwnerId = $playerId;
-        $card->ControllerId = $playerId;
-        $card->Location = $location;
-        $this->updateCardObjectInDb($card);
+        $card = $this->createCardInLocation($className, Game::LOCATION_HAND, $playerId);
 
         $this->notifyPlayer($playerId, "drawCard", 'Debug Draw', [
             "card" => $card->getPropertyArray($this),
@@ -54,14 +44,7 @@ trait DebugTrait
         $card = $this->instantiateCard($className);
         if ($card) 
         {
-            $location = Game::LOCATION_CITY_DECK;
-            $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$className}', 0, '{$location}', 0)";
-            $this->DbQuery($sql);
-
-            //Store the card Id in the object, and serialize the card object to the db
-            $id = $this->DbGetLastId();
-            $card = $this->instantiateCard($className, $id);
-            $this->updateCardObjectInDb($card);
+            $card = $this->createCardInLocation($className, Game::LOCATION_CITY_DECK, 0);
             $this->cards->insertCardOnExtremePosition($card->Id, Game::LOCATION_CITY_DECK, true);
         }
     }

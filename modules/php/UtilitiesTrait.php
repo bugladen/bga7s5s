@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskAttachment;
 
 trait UtilitiesTrait
 {
@@ -622,6 +623,27 @@ trait UtilitiesTrait
         
         //Return true if the flag is set
         return ($global & $flag) == $flag;
+    }
+
+    public function createRiskAttachment(Game $game, string $className, int $originalCardId, string $location, int $playerId, int $targetId)
+    {
+        //Place original card in special hiding location
+        $owner = $game->theah->getCardById($originalCardId);
+        $deck = $game->getGameDeckObject();
+        $deck->moveCard($owner->Id, Game::LOCATION_PERMANENTLY_HIDDEN);
+
+        $moveEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($owner->ControllerId, $owner->Id);
+        $game->theah->queueEvent($moveEvent);
+
+        $card = $game->createCardInLocation($className, $location, $playerId);
+        if ($card instanceof IRiskAttachment)
+        {
+            $card->setOriginalCardId($owner->Id);
+        }
+        $game->updateCardObjectInDb($card);
+
+        $event = EventFactory::createAttachmentEquippedEvent($playerId, $targetId, $card->Id, 0, 0, $asAction = false);
+        $game->theah->queueEvent($event);
     }
 
     //WIP. 
