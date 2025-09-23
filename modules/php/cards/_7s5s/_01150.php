@@ -145,4 +145,17 @@ class _01150 extends Scheme
     
         }
     }
+
+    public function actFromCardPass(Game $game, int $state, string $stateName, string $internalId): void
+    {
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01150)
+        {
+            $game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code}: ${player_name} has passed choosing a location to remove reknown from.'), [
+                "scheme_inject_code" => $this->getInjectCode(),
+                "player_name" => $game->getActivePlayerName()
+            ]);
+
+            $game->gamestate->nextState();
+        }
+    }
 }

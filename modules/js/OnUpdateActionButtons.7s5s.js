@@ -136,7 +136,7 @@
     
             'planningPhaseResolveSchemes_01150': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     
