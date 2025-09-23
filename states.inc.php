@@ -1626,7 +1626,7 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "mercenaryChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY, 
-                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_PARLEY
+                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
                 ]
             ],
             States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY => [
