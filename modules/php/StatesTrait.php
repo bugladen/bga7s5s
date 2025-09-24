@@ -560,11 +560,6 @@ trait StatesTrait
         $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE, "");
 
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
-        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE)
-        {
-            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
-            $this->theah->queueEvent($engageEvent);
-        }
 
         $this->globals->set(Game::CHALLENGE_CANCELLED, false);
 
@@ -577,6 +572,12 @@ trait StatesTrait
             $challengeEvent->activatedTechniqueId = $techniqueId;
         }
         $this->theah->queueEvent($challengeEvent);
+
+        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE)
+        {
+            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
+            $this->theah->queueEvent($engageEvent);
+        }
     }
 
     public function stSetupChallenge()

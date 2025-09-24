@@ -12,7 +12,7 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 
 trait ArgumentsTrait
@@ -493,12 +493,19 @@ trait ArgumentsTrait
 
         $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
         
-        //Filter those characters that can challenge
-        $characters = array_filter($characters, fn($character) => $character->canChallenge() && ! $character->Engaged);
-
         $charactersThatCanChallenge = [];
         foreach ($characters as $character)
         {
+            //Special case for Carmella Vanessa Slavaggi
+            if ($character instanceof _01178)
+            {
+                if (! $character->canChallenge()) continue;
+            }
+            else
+            {
+                if (! $character->canChallenge() || $character->Engaged) continue;
+            }
+
             $opponents = $this->theah->getCharactersAtLocation($character->Location);
             $opponents = array_filter($opponents, fn($opponent) => $opponent->isNotControlledByPlayer($playerId));
             if (count($opponents) > 0)
@@ -566,7 +573,21 @@ trait ArgumentsTrait
             fn($character) => $character->ControllerId && $character->ControllerId == $playerId && $character->Id != $targetId);
         
         //Get characters that can intervene
-        $charactersCanIntervene = array_values(array_filter($charactersAtLocation, fn($character) => $character->canIntervene() && ! $character->Engaged));
+        $charactersCanIntervene = [];
+        foreach ($charactersAtLocation as $character)
+        {
+            //Special case for Carmella Vanessa Slavaggi
+            if ($character instanceof _01178)
+            {
+                if (! $character->canIntervene()) continue;
+            }
+            else
+            {
+                if (! $character->canIntervene() || $character->Engaged) continue;
+            }
+
+            $charactersCanIntervene[] = $character;
+        }
 
         return [
             "performerId" => $performerId,

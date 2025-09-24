@@ -15,6 +15,7 @@
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
@@ -1261,8 +1262,20 @@ trait FrameworkActionsTrait
 
         $performer = $this->theah->getCharacterById($id);
 
-        if ( ! $performer->canChallenge() || $performer->Engaged) {
-            throw new \BgaUserException(self::_("Performer cannot Challenge."));
+        //Special case for Carmella Vanessa Slavaggi
+        if ($performer instanceof _01178)
+        {
+            if (! $performer->canChallenge())
+            {
+                throw new \BgaUserException(self::_("Performer cannot Challenge."));
+            }
+        }
+        else
+        {
+            if (! $performer->canChallenge() || $performer->Engaged)
+            {
+                throw new \BgaUserException(self::_("Performer cannot Challenge."));
+            }
         }
 
         $characters = $this->theah->getCharactersInCityByPlayerId($activePlayerId);
@@ -1383,8 +1396,20 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Character is not at the same location as the target."));
         }    
 
-        if( ! $character->canIntervene() || $character->Engaged) {
-            throw new \BgaUserException(self::_("Character cannot Intervene."));
+        //Special case for Carmella Vanessa Slavaggi
+        if ($character instanceof _01178)
+        {
+            if (! $character->canIntervene())
+            {
+                throw new \BgaUserException(self::_("Character cannot Intervene."));
+            }
+        }
+        else
+        {
+            if (! $character->canIntervene() || $character->Engaged)
+            {
+                throw new \BgaUserException(self::_("Character cannot Intervene."));
+            }
         }
 
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);

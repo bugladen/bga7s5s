@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\DB;
@@ -875,10 +876,17 @@ class Theah
         $charactersThatCanChallenge = [];
         foreach ($characters as $character) 
         {
-            if ( ! $character->canChallenge() || $character->Engaged) continue;
+            if ($character instanceof _01178)
+            {
+                if (! $character->canChallenge()) continue;
+            }
+            else
+            {
+                if ( ! $character->canChallenge() || $character->Engaged) continue;
+            }
 
             $otherCharacters = $this->getCharactersAtLocation($character->Location);
-            $otherCharacters = array_filter($otherCharacters, fn($otherCharacter) => $otherCharacter->ControllerId && $otherCharacter->ControllerId != $playerId );
+            $otherCharacters = array_filter($otherCharacters, fn($otherCharacter) => $otherCharacter->isNotControlledByPlayer($playerId));
 
             if (count($otherCharacters) > 0)
                 $charactersThatCanChallenge[] = $character;
