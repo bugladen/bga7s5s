@@ -38,7 +38,7 @@ class Action_01049 extends AttachmentAction
         }
 
         $characters = $theah->getCharactersAtLocation($owningCharacter->Location);
-        $characters = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($owningCharacter->ControllerId) && ! $character->Engaged);
+        $characters = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($owningCharacter->ControllerId));
 
         return count($characters) > 0;
     }
@@ -63,7 +63,7 @@ class Action_01049 extends AttachmentAction
         {
             $owningCharacter = $this->getOwningCharacter($game->theah);
             $characters = $game->theah->getCharactersAtLocation($owningCharacter->Location);
-            $characters = array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($owningCharacter->ControllerId) && ! $character->Engaged));
+            $characters = array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($owningCharacter->ControllerId)));
             $args["characterIds"] = array_map(fn($character) => $character->Id, $characters);
         }
 
@@ -89,27 +89,39 @@ class Action_01049 extends AttachmentAction
                 throw new \BgaUserException($game->translate("You cannot manipulate a character that you control."));
             }
 
-            if ($character->Engaged)
-            {
-                throw new \BgaUserException($game->translate("You cannot manipulate a character that is already engaged."));
-            }
-
             if ($character->Location != $owner->Location)
             {
                 throw new \BgaUserException($game->translate("You cannot manipulate a character that is not at the same location as the attachment."));
             }
 
-            $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
+            if ($character->Engaged)
+            {
+                $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the action of ${card_inject_code} and selected ${character_inject_code} as the target, who was already Engaged.'), [
+                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                    "character_inject_code" => $character->getInjectCode(),
+                    "card_inject_code" => $owner->getInjectCode(),
+                ]);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} used the Action [${action_name}] from ${card_inject_code}'), [
-                'i18n' => ['action_name'],
-                'player_name' => $game->getPlayerNameById($owner->ControllerId),
-                'action_name' => $this->Name,
-                'card_inject_code' => $owner->getInjectCode(),
-            ]);
+                $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $game->theah->queueEvent($woundEvent);
 
-            $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "01049_2", $this->Id);
-            $game->theah->queueEvent($transitionEvent);
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id);
+                $game->theah->queueEvent($engageEvent);
+            }
+            else
+            {
+                $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
+
+                $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the action of ${card_inject_code} and selected ${character_inject_code} as the target.'), [
+                    'player_name' => $game->getPlayerNameById($owner->ControllerId),
+                    'card_inject_code' => $owner->getInjectCode(),
+                    'character_inject_code' => $character->getInjectCode(),
+                ]);
+    
+                $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "01049_2", $this->Id);
+                $game->theah->queueEvent($transitionEvent);
+   
+            }
 
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
