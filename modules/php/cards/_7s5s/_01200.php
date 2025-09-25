@@ -115,7 +115,7 @@ class _01200 extends CityAttachment implements IHasReactions
                 throw new \BgaUserException($game->translate("Invalid opponent"));
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to look at ${opponentName}\'s Approach Deck.'), [
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to look at <strong>${opponentName}</strong>\'s Approach Deck.'), [
                 'player_name' => $game->getActivePlayerName(),
                 'opponentName' => $players[$id]['player_name'],
             ]);

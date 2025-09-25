@@ -885,6 +885,31 @@
                     this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
                 }
             },
+
+            'highDramaPhase01167_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
+            'highDramaPhase01167_3': () => {
+                if (this.isCurrentPlayerActive()) 
+                    {
+                        dojo.addClass('choose_container', 'hidden');
+                        dojo.addClass('chooseList', 'hidden');
+                        this.chooseList.removeAll();
+                        this.chooseList.setSelectionMode(0);
+
+                        this.factionHand.setSelectionMode(0);
+
+                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    }
+                },
     
             'highDramaPhase01180' : () => {
                 //Exposed to all players

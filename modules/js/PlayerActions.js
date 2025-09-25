@@ -346,6 +346,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         items = items.map((item) => item.id);
 
         const actionArray = {
+            'highDramaPhase01167_3'               : 'actFromCardWithIds',
             'highDramaPhase01180_5'               : 'actFromCardWithIds',
         };
 
