@@ -13,6 +13,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
@@ -1242,8 +1243,20 @@ trait FrameworkActionsTrait
 
         $performer = $this->theah->getCharacterById($id);
 
-        if ( ! $performer->canChallenge() || $performer->Engaged) {
-            throw new \BgaUserException(self::_("Performer cannot Challenge."));
+        //Special case for Carmella Vanessa Slavaggi
+        if ($performer instanceof _01178)
+        {
+            if (! $performer->canChallenge())
+            {
+                throw new \BgaUserException(self::_("Performer cannot Challenge."));
+            }
+        }
+        else
+        {
+            if (! $performer->canChallenge() || $performer->Engaged)
+            {
+                throw new \BgaUserException(self::_("Performer cannot Challenge."));
+            }
         }
 
         $characters = $this->theah->getCharactersInCityByPlayerId($activePlayerId);
@@ -1364,8 +1377,20 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Character is not at the same location"));
         }    
 
-        if( ! $character->canIntervene() || $character->Engaged) {
-            throw new \BgaUserException(self::_("Character cannot Intervene."));
+        //Special case for Carmella Vanessa Slavaggi
+        if ($character instanceof _01178)
+        {
+            if (! $character->canIntervene())
+            {
+                throw new \BgaUserException(self::_("Character cannot Intervene."));
+            }
+        }
+        else
+        {
+            if (! $character->canIntervene() || $character->Engaged)
+            {
+                throw new \BgaUserException(self::_("Character cannot Intervene."));
+            }
         }
 
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
@@ -1691,16 +1716,23 @@ trait FrameworkActionsTrait
         $round = $this->globals->get(Game::DUEL_ROUND);    
         $type = $this->globals->get(Game::DUEL_TYPE);
 
-        $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
-        $actorId = $this->getUniqueValueFromDB($sql);
-
-        $sql = "SELECT count(*) FROM duel_round_combat_card where duel_id = $duelId AND round = $round";
-        $combatCardsCount = $this->getUniqueValueFromDB($sql);
+        $actor = $this->theah->getDuelRoundActor();
 
         if ($round == 1 && $type != Game::VLADISLAV_DUEL_TYPE)
         {
-            //Check to see if a combat card was played
-            if ($combatCardsCount == 0)
+            //How many times has the player gambled this duel?
+            $sql = "SELECT count(gambled) FROM duel_round where duel_id = $duelId and player_id = {$actor->ControllerId}";
+            $gamblesCount = $this->getUniqueValueFromDB($sql);
+
+            $gamblesLeft = $actor->ModifiedFinesse - $gamblesCount;
+            $handCards = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $actor->ControllerId);
+            $handCardsCount = count($handCards);
+
+            $sql = "SELECT count(*) FROM duel_round_combat_card where duel_id = $duelId AND round = $round";
+            $combatCardsCount = $this->getUniqueValueFromDB($sql);
+
+            //Check to see if a combat card was played (but if you can't gamble or have no cards in hand, you can pass)
+            if ($combatCardsCount == 0 && ($handCardsCount > 0 || $gamblesLeft > 0))
             {
                 throw new \BgaUserException(self::_("For the first round, you must either gamble or a combat card must be played."));
             }
@@ -1710,8 +1742,8 @@ trait FrameworkActionsTrait
         if ($event instanceof EventDuelActionsDone)
         {
             $event->playerId = $this->getActivePlayerId();
-            $event->actorId = $actorId;
-            $event->adversaryId = $this->theah->getDuelOpponentId($actorId);
+            $event->actorId = $actor->Id;
+            $event->adversaryId = $this->theah->getDuelOpponentId($actor->Id);
         }
         $this->theah->queueEvent($event);
         

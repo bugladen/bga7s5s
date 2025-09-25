@@ -96,7 +96,7 @@ class Action_01038 extends CharacterAction
      
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01038_3)
         {
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to put any Attachments into their Faction Hand.'), [
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to put any Attachments into their Faction Hand.  The cards have been sunk.'), [
                 "player_name" => $game->getActivePlayerName(),
             ]);
 

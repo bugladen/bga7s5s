@@ -134,13 +134,17 @@ onLeavingState: function( stateName )
             if (this.isCurrentPlayerActive()) 
             {
                 let card = this.cardProperties[this.clientStateArgs.actionCardId];
-                const image = $(`${card.divId}_image`);
-                dojo.removeClass(image, '_7sfs-chosen');
+                if (card) {
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+                }
 
                 this.clientStateArgs.ids.forEach((cardId) => {
                     card = this.cardProperties[cardId];
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    }
                 });
             }
         },

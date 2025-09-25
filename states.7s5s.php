@@ -643,8 +643,8 @@ $machinestates += [
     ],
     States::HIGH_DRAMA_PLAYER_TURN_01049_2 => [
         "name" => "highDramaPhase01049_2",
-        "description" => clienttranslate('${actplayer} is choosing whether to engage the target character.'),
-        "descriptionmyturn" => clienttranslate('Polished Flintlock') . clienttranslate(': ${you} must choose to engage target character: '),
+        "description" => clienttranslate('${actplayer} is choosing whether to Engage or Wound the target character.'),
+        "descriptionmyturn" => clienttranslate('Polished Flintlock: ${you} must choose to Engage or Wound the target character: '),
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
