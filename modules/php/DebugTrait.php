@@ -49,34 +49,15 @@ trait DebugTrait
         }
     }
 
-    public function debug_SetCardInPlayerDiscardPile(int $playerId, string $className)
+    public function debug_SetCardInPlayerDiscardPile(string $className, int $playerId)
     {
-        $card = $this->instantiateCard($className);
-        if ($card) {
-            $location = $this->getPlayerDiscardDeckName($playerId);
-            $dbCard = $this->cards->getCardsOfType($className);
-            $dbCard = reset($dbCard);
-            if ($dbCard)
-            {
-                $this->cards->moveCard($dbCard['id'], $location, $playerId);
-                $card = $this->getCardObjectFromDb($dbCard['id']);
-                $card->Location = $location;
-                $card->ControllerId = $playerId;
-                $this->updateCardObjectInDb($card);
-            }
-        }
+        $location = $this->getPlayerDiscardDeckName($playerId);
+        $this->createCardInLocation($className, $location, $playerId);
     }
 
     public function debug_SetCardInCityDiscardPile(string $className)
     {
-        $card = $this->instantiateCard($className);
-        if ($card) {
-            $location = Game::LOCATION_CITY_DISCARD;
-            $dbCard = $this->cards->getCardsOfType($className);
-            $dbCard = reset($dbCard);
-            if ($dbCard)
-                $this->cards->moveCard($dbCard['id'], $location);
-        }
+        $this->createCardInLocation($className, Game::LOCATION_CITY_DISCARD, 0);
     }
 
     public function debug_RecruitMercenary(int $cardId, int $playerId)

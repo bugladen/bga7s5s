@@ -239,7 +239,7 @@ class Action_01180 extends CharacterAction
             $attachment = $game->getCardObjectFromDb($attachmentId);
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->getCardObjectFromDb($performerId);
+            $performer = $game->theah->getCharacterById($performerId);
 
             if ($attachment instanceof Attachment)
                 $cost = $attachment->WealthCost;
@@ -254,7 +254,7 @@ class Action_01180 extends CharacterAction
                 if ($card == null)
                     throw new \BgaUserException(sprintf($game->translate("Card %d not found."), $cardId));
     
-                    //If $card has wealth in its traits, add it to the total wealth
+                //If $card has wealth in its traits, add it to the total wealth
                 $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
             }
             if ($totalWealth != $cost) {

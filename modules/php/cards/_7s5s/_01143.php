@@ -126,7 +126,7 @@ class _01143 extends Scheme implements IHasActions
             $playerId = $game->getActivePlayerId();
     
             $event = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
-            $event->theah->eventCheck($event);
+            $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
     
             //Get all cards in the chosen location

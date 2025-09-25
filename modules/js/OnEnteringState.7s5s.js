@@ -1402,6 +1402,67 @@
                     this.highlightCardsAsSelectable(args.args.args.ids);
                 }
             },
+
+            'highDramaPhase01167_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Non-Unique Attachments in ${opponentName}'s Discard Pile: "),
+                        {
+                            opponentName: args.args.args.opponentName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
+            'highDramaPhase01167_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    setTimeout(() => {
+                        this.addCardToDeck(this.chooseList, args.args.args.chosenAttachment);
+                        const card = args.args.args.chosenAttachment;
+                        const chosenAttachmentId = card.id;
+                        let div = this.chooseList.getItemDivId(chosenAttachmentId);
+            
+                        dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                            id: div,
+                            cost: card.wealthCost,
+                        }), div, "first" );    
+            
+                        const costDiv = $(`${div}_wealth_cost`);
+                        const cost = parseInt(costDiv.innerHTML);
+                        let discountedCost = cost - args.args.args.discount;
+                        discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                        if (discountedCost !== cost)
+                        {
+                            costDiv.innerHTML = parseInt(discountedCost);
+                            dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                        }
+    
+                    }, 500);
+
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+    
+                    $('choose_container_name').innerHTML = _(`Chosen Attachment to Equip`);
+                    this.chooseList.setSelectionMode(0);
+        
+                    $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
+                    this.factionHand.setSelectionMode(2);
+                }
+            },
     
             'highDramaPhase01180' : () => {
                 dojo.removeClass('choose_container', 'hidden');
