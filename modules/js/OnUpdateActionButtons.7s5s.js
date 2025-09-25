@@ -532,7 +532,10 @@
             'highDramaPhase01167_2': () => {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+<<<<<<< HEAD
                 this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {})) 
+=======
+>>>>>>> 4c39f1dba8ce4667ded62c4614ff8329d676af67
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             'highDramaPhase01167_3': () => {
