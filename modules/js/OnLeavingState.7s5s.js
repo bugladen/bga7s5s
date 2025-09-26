@@ -618,6 +618,15 @@
                 dojo.addClass('chooseList', 'hidden');
                 this.chooseList.removeAll();
             },
+
+            'highDramaPhase01171': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
                 
             'highDramaPhase01072_2' : () => {
                 if (this.isCurrentPlayerActive()) 
