@@ -856,6 +856,7 @@ trait FrameworkActionsTrait
             ]);
 
             $smuggledUnattachedEvent = EventFactory::createAttachmentUnequippedEvent($playerId, $performer->Id, $smuggledItem->Id);
+            $this->theah->eventCheck($smuggledUnattachedEvent);
             $this->theah->queueEvent($smuggledUnattachedEvent);
 
             $smuggledDiscardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($smuggledItem->ControllerId, $smuggledItem->Id, $smuggledItem->Location);

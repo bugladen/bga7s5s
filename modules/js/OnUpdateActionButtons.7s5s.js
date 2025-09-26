@@ -550,6 +550,12 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase01174': () => {
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+
             'highDramaPhase01180': () => {
                 this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
             },
