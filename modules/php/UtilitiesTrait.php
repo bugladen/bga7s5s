@@ -410,27 +410,26 @@ trait UtilitiesTrait
             foreach ($charactersAtLocation as $character) 
             {
                 if (!$character->isControlled()) continue;
+                $playerId = $character->ControllerId;
 
-                $player =& $playerInfluences[$character->ControllerId];
-                
                 if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::PULL_THE_STRAND_PRESSURE_TYPE))
                 {
                     if ($character->Id == $this->globals->get(Game::CHOSEN_TARGET))
                     {
-                        $player =& $playerInfluences[$performer->ControllerId];
+                        $playerId = $performer->ControllerId;
                     }
                 }
 
                 switch ($pressureType) 
                 {
                     case Game::STAT_COMBAT:
-                        $player['influence'] += $character->getCombatPressureValue();
+                        $playerInfluences[$playerId]['influence'] += $character->getCombatPressureValue();
                         break;
                     case Game::STAT_FINESSE:
-                        $player['influence'] += $character->getFinessePressureValue();
+                        $playerInfluences[$playerId]['influence'] += $character->getFinessePressureValue();
                         break;
                     case Game::STAT_INFLUENCE:
-                        $player['influence'] += $character->getInfluencePressureValue();
+                        $playerInfluences[$playerId]['influence'] += $character->getInfluencePressureValue();
                         break;
                 }
             }

@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\DB;
@@ -19,6 +20,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions\Reaction_CrewCapLimit;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\GovernorsGardenAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\OlesInnAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -31,6 +34,7 @@ class Theah
     private bool $cityBuilt;
 
     private Array $Reactions;
+    private Array $Actions;
 
     use EventHub;
 
@@ -41,10 +45,8 @@ class Theah
         $this->cityLocations = [];
         $this->db = new DB();
         $this->cityBuilt = false;
-
-        $this->Reactions = [
-            new Reaction_CrewCapLimit(),
-        ];
+        $this->Actions = [];
+        $this->Reactions = [];
     }
 
     public function addCardToWorld(Card $card)
@@ -74,6 +76,22 @@ class Theah
         if ($this->cityBuilt) return;
 
         $this->cards = [];
+
+        if ($this->game->getPlayerCount() >= 3) 
+        {
+            $playersThatUsedOlesInn = $this->game->globals->get(Game::PLAYERS_THAT_USED_OLES_INN, []);
+            $this->Actions[] = new OlesInnAction($playersThatUsedOlesInn, $this->game);
+        }
+
+        if ($this->game->getPlayerCount() >= 4) 
+        {   
+            $playersThatUsedGovernorsGarden = $this->game->globals->get(Game::PLAYERS_THAT_USED_GOVERNORS_GARDEN, []);
+            $this->Actions[] = new GovernorsGardenAction($playersThatUsedGovernorsGarden, $this->game);
+        }
+
+        $this->Reactions = [
+            new Reaction_CrewCapLimit(),
+        ];
 
         $this->buildCityLocations();
 
@@ -188,6 +206,10 @@ class Theah
             //Run the event for all cards in play, including hands
             foreach ($this->cards as $card) 
                 $card->handleEvent($event);
+
+            //Run the event for theah actions
+            foreach ($this->Actions as $action) 
+                $action->handleEvent($event);
 
             //Run the event for theah reactions
             foreach ($this->Reactions as $reaction) 
@@ -590,6 +612,15 @@ class Theah
     function getInPlayActionsAvailableToPlayer($playerId)
     {
         $actionsArray = [];
+
+        foreach ($this->Actions as $action)
+        {
+            if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+            {
+                $actionsArray[] = $action->getPropertyArray($this->game);
+            }
+        }
+
         foreach ($this->cards as $card)
         {
             if ($card instanceof IHasActions && $card->Location != Game::LOCATION_HAND)
@@ -683,9 +714,18 @@ class Theah
         return null;
     }
 
-    function getInPlayActionById($id): ?CardAction
+    function getInPlayActionById($id): ?Action
     {
-        foreach ($this->cards as $card) {
+        foreach ($this->Actions as $action)
+        {
+            if ($action->Id == $id)
+            {
+                return $action;
+            }
+        }
+
+        foreach ($this->cards as $card) 
+        {
             if ($card instanceof IHasActions) {
                 $action = $card->getActionById($id);
                 if ($action) {
@@ -1007,7 +1047,16 @@ class Theah
 
     public function playerHasInPlayActions($playerId): bool
     {
-        $actionCards = [];
+        $actionAvailable = [];
+
+        foreach ($this->Actions as $action)
+        {
+            if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+            {
+                $actionAvailable[] = $action;
+            }
+        }
+
         foreach ($this->cards as $card)
         {
             if ($card instanceof IHasActions && $card->Location != Game::LOCATION_HAND)            
@@ -1017,13 +1066,13 @@ class Theah
                 {
                     if ($action->isAvailableToPlayer($playerId, $this, $this->game))
                     {
-                        $actionCards[] = $card;
+                        $actionAvailable[] = $action;
                     }
                 }
             }
         }
 
-        return count($actionCards) > 0;
+        return count($actionAvailable) > 0;
     }
 
     public function playerHasInHandActions($playerId): bool

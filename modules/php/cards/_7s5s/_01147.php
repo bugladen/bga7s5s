@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01147;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
@@ -157,11 +158,13 @@ class _01147 extends Scheme implements IHasActions
         $action = $theah->getInPlayActionById($actionId);
         if ($action != null)
         {
-            $owner = $action->getOwningCard($theah);
+            $id = Game::THEAH_ID;
+            if ($action instanceof CardAction)
+                $id = $action->OwnerId;
 
-            if ($owner->Id == $this->Id && 
-            $performer->ControllerId == $this->ControllerId &&
-            $performer->Location == Game::LOCATION_CITY_BAZAAR)
+            if ($id == $this->Id && 
+                $performer->ControllerId == $this->ControllerId &&
+                $performer->Location == Game::LOCATION_CITY_BAZAAR)
             {
                 $discount += 1;
             }

@@ -30,11 +30,11 @@ return declare('seventhseacityoffivesails.setup', null, {
         dojo.connect($('city-discard'), 'onclick', this, 'onCityDiscardClicked');
 
         // Set up the city tooltips
-        this.addTooltipHtml( 'oles-inn-image', `<div class='_7sfs-basic-tooltip'>${_("Ole's Inn")}</div>` );
+        this.addTooltipHtml( 'oles-inn-image', `<div class='_7sfs-basic-tooltip'>${_("Ole's Inn.  If you control this, you can draw a card as an action.")}</div>` );
         this.addTooltipHtml( 'dock-image', `<div class='_7sfs-basic-tooltip'>${_('The City Docks')}</div>` );
         this.addTooltipHtml( 'forum-image', `<div class='_7sfs-basic-tooltip'>${_('The City Forum')}</div>` );
         this.addTooltipHtml( 'bazaar-image', `<div class='_7sfs-basic-tooltip'>${_('The Grand Bazaar')}</div>` );
-        this.addTooltipHtml( 'garden-image', `<div class='_7sfs-basic-tooltip'>${_("Governor's Garden")}</div>` );
+        this.addTooltipHtml( 'garden-image', `<div class='_7sfs-basic-tooltip'>${_("Governor's Garden.  If you control this, you can draw a card as an action.")}</div>` );
 
         this.addTooltipHtml( 'city-discard', `<div class='_7sfs-basic-tooltip'>${_('City Discard Pile')}</div>` );
         this.addTooltipHtml( 'day-indicator', `<div class='_7sfs-basic-tooltip'>${_('The Current Day')}</div>` );

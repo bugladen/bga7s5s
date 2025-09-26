@@ -13,6 +13,7 @@
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 
 trait ArgumentsTrait
@@ -375,7 +376,10 @@ trait ArgumentsTrait
 
         $actionId = $this->globals->get(Game::CHOSEN_ACTION);
         $action = $this->theah->getInPlayActionById($actionId);
-        $owner = $action->getOwningCard($this->theah);
+
+        $owner = null;
+        if ($action instanceof CardAction)
+            $owner = $action->getOwningCard($this->theah);
         
         $performers = array_values($action->getPerformersForAction($playerId, $this->theah));
         

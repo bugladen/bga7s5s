@@ -13,6 +13,7 @@
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01042;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
@@ -606,8 +607,11 @@ trait StatesTrait
         {
             $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
             $action = $this->theah->getInPlayActionById($actionId);
-            $action->SetUsed($this->theah, true);
-            $action->announceAction($this);
+            if ($action instanceof CardAction)
+            {
+                $action->SetUsed($this->theah, true);
+                $action->announceAction($this);
+            }
         }
         
         //Set the location of the challenge

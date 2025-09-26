@@ -14,6 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
@@ -959,7 +960,9 @@ trait FrameworkActionsTrait
     {
         $player_id = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
+
         $action = $this->theah->getInPlayActionById($actionId);
+
         if ($action == null) {
             throw new \BgaUserException(self::_("Action not found."));
         }
@@ -982,7 +985,11 @@ trait FrameworkActionsTrait
         }
         else
         {
-            $event = EventFactory::createActionTriggeredEvent($player_id, $action->OwnerId, $actionId);
+            $id = Game::THEAH_ID;
+            if ($action instanceof CardAction)
+                $id = $action->OwnerId;
+
+            $event = EventFactory::createActionTriggeredEvent($player_id, $id, $actionId);
             $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
     
