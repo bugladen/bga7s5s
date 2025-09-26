@@ -618,15 +618,6 @@
                 dojo.addClass('chooseList', 'hidden');
                 this.chooseList.removeAll();
             },
-
-            'highDramaPhase01171': () => {
-                if (this.isCurrentPlayerActive()) 
-                {
-                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
-                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
-                    this.clientStateArgs = {};
-                }
-            },
                 
             'highDramaPhase01072_2' : () => {
                 if (this.isCurrentPlayerActive()) 
@@ -908,18 +899,37 @@
 
             'highDramaPhase01167_3': () => {
                 if (this.isCurrentPlayerActive()) 
+                {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+
+                    this.factionHand.setSelectionMode(0);
+
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                }
+            },
+
+
+            'highDramaPhase01171': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase01172': () => {
+                if (this.isCurrentPlayerActive()) 
                     {
-                        dojo.addClass('choose_container', 'hidden');
-                        dojo.addClass('chooseList', 'hidden');
-                        this.chooseList.removeAll();
-                        this.chooseList.setSelectionMode(0);
-
-                        this.factionHand.setSelectionMode(0);
-
                         this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                        this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                        this.clientStateArgs = {};
                     }
-                },
-    
+            },
+
             'highDramaPhase01180' : () => {
                 //Exposed to all players
                 dojo.addClass('choose_container', 'hidden');
