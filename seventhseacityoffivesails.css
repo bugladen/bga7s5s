@@ -136,6 +136,9 @@ body {
     background-position: -250px -180px;
     width: 700px;
 }
+._7sfs-deck-picker-faction-image._7sfs-castille {
+    background-image: url('img/cards/deckpicker/089.jpg');
+}    
 ._7sfs-deck-picker-faction-image._7sfs-eisen {
     background-image: url('img/cards/deckpicker/035.jpg');
 }
