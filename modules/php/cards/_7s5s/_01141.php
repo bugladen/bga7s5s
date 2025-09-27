@@ -25,5 +25,7 @@ class _01141 extends Risk
             'Brawl',
             'Kulachniy Boi',
         ];
+
+        $this->resetCard();
     }
 }

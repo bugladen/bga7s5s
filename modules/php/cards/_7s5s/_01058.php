@@ -36,6 +36,8 @@ class _01058 extends Risk implements IHasActions, IHasManeuvers
             'Drexel',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01058(),
         ];

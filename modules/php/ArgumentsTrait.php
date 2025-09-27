@@ -13,6 +13,7 @@
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 
 trait ArgumentsTrait
@@ -44,35 +45,6 @@ trait ArgumentsTrait
         }, $starter_decks->decks);
 
         return ["availableDecks" => $decks];
-    }
-
-    public function argsPlanningPhaseResolveSchemes_01016_2(): array
-    {
-        //Return all the Red Hand Thug cards in player's deck
-        if ($this->getCurrentPlayerId() == $this->getActivePlayerId()) 
-        {
-            $playerId = $this->getActivePlayerId();
-            $location = $this->getPlayerFactionDeckName($playerId);
-            $deck = $this->cards->getCardsInLocation($location);
-            $thugs = [];
-            foreach ($deck as $deckCard) {
-                $card = $this->getCardObjectFromDb($deckCard['id']);
-                if (in_array("Red Hand", $card->Traits) && in_array("Thug", $card->Traits)) 
-                {
-                    $thugs[] = $card->getPropertyArray($this);
-                }
-            }            
-
-            return [
-                "_private" => [
-                    "active" => [
-                        "thugs" => $thugs
-                    ]
-                ]
-            ];
-        }
-
-        return [];
     }
 
     public function argsPlanningPhaseResolveSchemes_01016_3(): array
@@ -113,13 +85,6 @@ trait ArgumentsTrait
         ];
     }
 
-    public function argsPlanningPhaseResolveSchemes_01152_3(): array
-    {
-        return [
-            "location" => $this->globals->get(GAME::CHOSEN_LOCATION)
-        ];
-    }
-
     public function argPlayerTurn(): array
     {
         $this->theah->buildCity();
@@ -135,6 +100,7 @@ trait ArgumentsTrait
                     "canRecruit" => $this->theah->playerCanRecruit($playerId),
                     "hasInPlayActions" => $this->theah->playerHasInPlayActions($playerId),
                     "hasInHandActions" => $this->theah->playerHasInHandActions($playerId),
+                    "hasBrutes" => $this->theah->playerHasBrutes($playerId),
                 ]
             ]
         ];
@@ -215,6 +181,7 @@ trait ArgumentsTrait
         $args = [];
         $args["performerId"] = $performerId;
         $args["discount"] = $discount;
+        $args["recruitType"] = $this->globals->get(Game::RECRUIT_TYPE);
 
         $characters = $this->theah->getCharactersAtLocation($performer->Location, $includeUncontrolled = true);
         $characters = array_values(array_filter($characters, fn($character) => ! $character->isControlled() && $character->hasTrait("Mercenary")));
@@ -409,7 +376,10 @@ trait ArgumentsTrait
 
         $actionId = $this->globals->get(Game::CHOSEN_ACTION);
         $action = $this->theah->getInPlayActionById($actionId);
-        $owner = $action->getOwningCard($this->theah);
+
+        $owner = null;
+        if ($action instanceof CardAction)
+            $owner = $action->getOwningCard($this->theah);
         
         $performers = array_values($action->getPerformersForAction($playerId, $this->theah));
         
@@ -435,7 +405,6 @@ trait ArgumentsTrait
                 ]
             ]
         ];
-
     }
 
     public function argsHighDramaInHandActionChoosePerformer(): array
@@ -452,11 +421,14 @@ trait ArgumentsTrait
         //Select the Ids of the performers
         $performerIds = array_map(fn($performer) => $performer->Id, $performers);
 
+        $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
+
         return [
             "_private" => [
                 "active" => [
                     "ids" => $performerIds,
-                    "actionCardId" => $owner->Id
+                    "actionCardId" => $owner->Id,
+                    "abnormalFlow" => $abnormalFlow,
                 ]
             ]
         ];
@@ -472,6 +444,7 @@ trait ArgumentsTrait
         $action = $this->theah->getInHandActionById($actionId);
 
         $owner = $action->getOwningCard($this->theah);
+        $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
 
         return [
             "_private" => [
@@ -480,6 +453,37 @@ trait ArgumentsTrait
                     "chosenActionId" => $actionId,
                     "choseActionCardId" => $owner->Id,
                     "requiresPerformerSelected" => $action->RequiresPerformerSelected,
+                    "discount" => $this->globals->get(GAME::DISCOUNT),
+                    "abnormalFlow" => $abnormalFlow,
+                ]
+            ],
+        ];
+    }
+
+    public function argsHighDramaBruteActionChooseBrute(): array
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+
+        return [
+            "_private" => [
+                "active" => [
+                    "ids" => $this->theah->getBrutesAvailableToPlayer($playerId),
+                ]
+            ]
+        ];
+    }
+
+    public function argsHighDramaBruteActionPayForBrute(): array
+    {
+        $bruteId = $this->globals->get(GAME::CHOSEN_CARD);
+        $brute = $this->getCardObjectFromDb($bruteId);
+
+        return [
+            "_private" => [
+                "active" => [
+                    "bruteId" => $bruteId,
+                    "brute" => $brute->getPropertyArray($this),
                     "discount" => $this->globals->get(GAME::DISCOUNT)
                 ]
             ],
@@ -554,6 +558,7 @@ trait ArgumentsTrait
         return [
             "performerId" => $performerId,
             "targetId" => $targetId,
+            "challengeType" => $this->globals->get(Game::CHALLENGE_TYPE),
             "techniques" => $this->theah->getAvailableCharacterTechniques($performer)
         ];
     }

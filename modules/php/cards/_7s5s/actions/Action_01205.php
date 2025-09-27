@@ -161,13 +161,7 @@ class Action_01205 extends CharacterAction
             $game->theah->queueEvent($giacintoMoveEvent);
             $game->theah->queueEvent($victimMoveEvent);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
-                'i18n' => ['action'],
-                'player_name' => $game->getActivePlayerName(),
-                'action' => $this->Name,
-                'owner_inject_code' => $giacinto->getInjectCode(),
-            ]);
-
+            $this->announceAction($game);
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
 

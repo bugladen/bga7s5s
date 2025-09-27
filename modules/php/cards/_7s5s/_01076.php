@@ -31,6 +31,8 @@ class _01076 extends Risk implements IHasActions
             'Porte',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01076(),
         ];

@@ -12,11 +12,11 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
-use ArrayAccess;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskAttachment;
 
 trait UtilitiesTrait
 {
@@ -277,10 +277,10 @@ trait UtilitiesTrait
         return $count;
     }
 
-    public function instantiateCard($cardId) : Card 
+    public function instantiateCard(string $cardClass, ?int $id = null) : Card 
     {
         //Pull the first two characters of the card id to get the set
-        $set = substr($cardId, 0, 2);
+        $set = substr($cardClass, 0, 2);
 
         switch ($set) {
             case '01':
@@ -290,8 +290,12 @@ trait UtilitiesTrait
                 $set = "_7s5s";
         }
 
-        $className = "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$cardId";
+        $className = "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$cardClass";
         $card = new $className();
+        if ($id) 
+        {
+            $card->setId($id);
+        }
 
         return $card;
     }
@@ -315,7 +319,7 @@ trait UtilitiesTrait
         foreach ($hand as $handCard) {
             $card = $this->getCardObjectFromDb($handCard['id']);
             //Does card have the wealth trait?  Count as 2 if it does.
-            if (in_array('Wealth', $card->Traits))
+            if ($card->hasTrait("Wealth"))
                 $wealth += 2;
             else
                 $wealth += 1;
@@ -340,7 +344,7 @@ trait UtilitiesTrait
     {
         foreach ($character->Attachments as $attachment) {
             $attachment = $this->getCardObjectFromDb($attachment);
-            if ($attachment instanceof Attachment && in_array($type, $attachment->Traits) && $attachment->hasEquipRestriction($type)) {
+            if ($attachment instanceof Attachment && $attachment->hasTrait($type) && $attachment->hasEquipRestriction($type)) {
                 return true;
             }
         }
@@ -405,34 +409,55 @@ trait UtilitiesTrait
         {
             foreach ($charactersAtLocation as $character) 
             {
-                if (!$character->ControllerId) continue;
+                if (!$character->isControlled()) continue;
+                $playerId = $character->ControllerId;
 
-                $player = $playerInfluences[$character->ControllerId];
+                if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::PULL_THE_STRAND_PRESSURE_TYPE))
+                {
+                    if ($character->Id == $this->globals->get(Game::CHOSEN_TARGET))
+                    {
+                        $playerId = $performer->ControllerId;
+                    }
+                }
 
                 switch ($pressureType) 
                 {
                     case Game::STAT_COMBAT:
-                        $player['influence'] += $character->getCombatPressureValue();
+                        $playerInfluences[$playerId]['influence'] += $character->getCombatPressureValue();
                         break;
                     case Game::STAT_FINESSE:
-                        $player['influence'] += $character->getFinessePressureValue();
+                        $playerInfluences[$playerId]['influence'] += $character->getFinessePressureValue();
                         break;
                     case Game::STAT_INFLUENCE:
-                        $player['influence'] += $character->getInfluencePressureValue();
+                        $playerInfluences[$playerId]['influence'] += $character->getInfluencePressureValue();
                         break;
                 }
-                $playerInfluences[$character->ControllerId] = $player;
+            }
+
+            //If Constanzo is in play, he gets 1 influence for each pressure type
+            if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CONSTANZO_PRESSURE_TYPE))
+            {
+                $constanzo = $this->theah->getCardById($this->globals->get(Game::CONSTANZO_ID));
+                $playerInfluences[$constanzo->ControllerId]['influence'] += 1;
+            }
+
+            //If Pack Tactics is in play, add the Influence pressure bonus
+            if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::PACK_TACTICS_PRESSURE_TYPE) && $pressureType == Game::STAT_INFLUENCE)
+            {
+                $playerInfluences[$character->ControllerId]['influence'] += $this->globals->get(Game::PRESSURE_BONUS, 0);
             }
         }
 
         //Get the player with the most influence
         $maxInfluence = 0;
+        $difference = 0;
         $maxPlayerId = 0;
         $totals = "";
         foreach ($playerInfluences as $playerId => $player) 
         {
             $totals .= "{$this->getPlayerNameById($playerId)}:({$player['influence']}) ";
             if ($player['influence'] > $maxInfluence) {
+                $difference = $player['influence'] - $maxInfluence;
                 $maxInfluence = $player['influence'];
                 $maxPlayerId = $playerId;
             }
@@ -440,22 +465,28 @@ trait UtilitiesTrait
 
         //Check for ties
         $ties = array_filter($playerInfluences, fn($player) => $player['influence'] == $maxInfluence);
+        if (count($ties) > 1)
+            $difference = 0;
 
         $pressureType = $this->globals->get(Game::PRESSURE_TYPE);
-        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE) || 
-            $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE))
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE)
+            || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE)
+            || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE)
+        )
         {
+            //Ties win
             if ($attemptingPlayerId == $maxPlayerId || array_key_exists($attemptingPlayerId, $ties))
-                return [true, $totals];
+                return [true, $totals, $difference];
 
-            return [false, $totals];
+            return [false, $totals, $difference];
         }
         else
         {
+            //Ties do not win
             if (count($ties) > 1 || $attemptingPlayerId != $maxPlayerId) 
-                return [false, $totals];
+                return [false, $totals, $difference];
 
-            return [true, $totals];
+            return [true, $totals, $difference];
         }
     }
 
@@ -530,7 +561,7 @@ trait UtilitiesTrait
                 }
                 else
                 {
-                    if (in_array($type, $card->Traits))
+                    if ($card->hasTrait($type))
                     {
                         $revealed[] = $cardInfo['id'];
                         $found = true;
@@ -591,5 +622,38 @@ trait UtilitiesTrait
         
         //Return true if the flag is set
         return ($global & $flag) == $flag;
+    }
+
+    public function createRiskAttachment(Game $game, string $className, int $originalCardId, string $location, int $playerId, int $targetId)
+    {
+        //Place original card in special hiding location
+        $owner = $game->theah->getCardById($originalCardId);
+        $deck = $game->getGameDeckObject();
+        $deck->moveCard($owner->Id, Game::LOCATION_PERMANENTLY_HIDDEN);
+
+        $moveEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($owner->ControllerId, $owner->Id);
+        $game->theah->queueEvent($moveEvent);
+
+        $card = $game->createCardInLocation($className, $location, $playerId);
+        if ($card instanceof IRiskAttachment)
+        {
+            $card->setOriginalCardId($owner->Id);
+        }
+        $game->updateCardObjectInDb($card);
+
+        $event = EventFactory::createAttachmentEquippedEvent($playerId, $targetId, $card->Id, 0, 0, $asAction = false);
+        $game->theah->queueEvent($event);
+    }
+
+    //WIP. 
+    public function inStateMachine(int $state)
+    { 
+        return array_key_exists($state, $this->gamestate->states);
+    }
+
+    //WIP. 
+    public function addState(int $stateNumber, Array $state)
+    {
+        $this->gamestate->states[$stateNumber] = $state;
     }
 }

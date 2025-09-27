@@ -31,6 +31,8 @@ class _01142 extends Risk implements IHasManeuvers
             'Demoralize',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01142(),
         ];

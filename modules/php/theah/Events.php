@@ -4,6 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 class Events
 {
+    const TableSetup = 'EventTableSetup';
+    
     //Phase Events
     const NewDay = 'EventNewDay';
     const PhaseDawnBeginning = 'EventPhaseDawnBeginning';
@@ -45,6 +47,7 @@ class Events
     //High Drama Events
     const PressureOccuring = 'EventPressureOccuring';
     const LocationPressured = 'EventLocationPressured';
+    const LocationPressureResult = 'EventLocationPressureResult';
     const LocationClaimed = 'EventLocationClaimed';
     const CharacterRecruited = 'EventCharacterRecruited';
     const HighDramaPhasePlayerPassed = 'EventHighDramaPhasePlayerPassed';
@@ -91,6 +94,7 @@ class Events
     const CardDrawn = 'EventCardDrawn';
     const CardEngaged = 'EventCardEngaged';
     const CardEngarded = 'EventCardEngarded';
+    const CardHidden = 'EventCardHidden';
     const CardSentToLocker = 'EventCardSentToLocker';
     const CharacterDestroyed = 'EventCharacterDestroyed';
     const CharacterHealed = 'EventCharacterHealed';
@@ -98,6 +102,7 @@ class Events
     const CharacterWounded = 'EventCharacterWounded';
     const ManeuverCanceled = 'EventManeuverCanceled';
     const TechniqueCanceled = 'EventTechniqueCanceled';
+    const SorcererAbilityPlayed = 'EventSorcererAbilityPlayed';
 
     //Character events
     const CharacterInfluenceModified = 'EventCharacterInfluenceModified';

@@ -35,6 +35,8 @@ class _01153 extends FactionAttachment
             'Armor',
         ];
 
+        $this->resetCard();
+
         $this->hasBlockedWound = false;
     }
 

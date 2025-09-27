@@ -13,6 +13,7 @@
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01042;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
@@ -38,6 +39,13 @@ trait StatesTrait
         $this->gamestate->setAllPlayersMultiactive();
     }
 
+    public function stMultiPlayerInitSansInitiatingPlayer() {
+        $this->gamestate->setAllPlayersMultiactive();
+
+        $playerId = $this->globals->get(Game::MULTI_STATE_INITIATING_PLAYER);
+        $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
+    }
+
     public function stSetCurrentPlayer() 
     {
         $currentPlayerId = $this->globals->get(Game::CURRENT_PLAYER);
@@ -53,6 +61,14 @@ trait StatesTrait
 
     public function stBuildDecks() {
         $this->buildDecks();
+        $this->gamestate->nextState("");
+    }
+
+    public function stSetupTable() 
+    {
+        $event = EventFactory::createTableSetupEvent();
+        $this->theah->queueEvent($event);
+
         $this->gamestate->nextState("");
     }
 
@@ -493,21 +509,13 @@ trait StatesTrait
             $this->theah->queueEvent($engageEvent);
         }
         
-        list($success, $totals) = $this->pressureLocation($claimingPlayerId, $performer, Game::STAT_INFLUENCE);
+        list($success, $totals, $difference) = $this->pressureLocation($claimingPlayerId, $performer, Game::STAT_INFLUENCE);
 
         $pressureTypes = $this->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
-        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureTypes), $success, $totals);
+        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureTypes), $success, $totals, $difference);
+        $pressuredEvent->highDramaBasicAction = true;
         $this->theah->eventCheck($pressuredEvent);
         $this->theah->queueEvent($pressuredEvent);
-
-        if ($success) 
-        {
-            $this->setControllerForLocation($performer->Location, $claimingPlayerId);
-
-            $claimEvent = EventFactory::createLocationClaimedEvent($claimingPlayerId, $performer->Id, $performer->Location);
-            $this->theah->eventCheck($claimEvent);
-            $this->theah->queueEvent($claimEvent);
-        }
 
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState();
@@ -599,15 +607,11 @@ trait StatesTrait
         {
             $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
             $action = $this->theah->getInPlayActionById($actionId);
-            $owner = $action->getOwningCard($this->theah);
-            $action->SetUsed($this->theah, true);
-
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}.'), [
-                'i18n' => ['action'],
-                'player_name' => $this->getActivePlayerName($playerId),
-                'action' => $action->Name,
-                'owner_inject_code' => $owner->getInjectCode(),
-            ]);
+            if ($action instanceof CardAction)
+            {
+                $action->SetUsed($this->theah, true);
+                $action->announceAction($this);
+            }
         }
         
         //Set the location of the challenge
@@ -1303,6 +1307,7 @@ trait StatesTrait
         $this->globals->delete(GAME::NEXT_COMBAT_CARD);
         $this->globals->delete(GAME::CHOSEN_LOCATION);
         $this->globals->delete(GAME::CHOSEN_PERFORMER);
+        $this->globals->delete(GAME::PERFORMER_PARLEYED);
         $this->globals->delete(GAME::CHOSEN_ATTACHMENT);
         $this->globals->delete(GAME::CHOSEN_ACTION);
         $this->globals->delete(GAME::CHOSEN_TARGET);
@@ -1313,7 +1318,9 @@ trait StatesTrait
         $this->globals->delete(Game::TRANSITION_INTERNAL_ID);
         $this->globals->delete(Game::REACTION_ID);
         $this->globals->delete(Game::REVEALED_CARDS);
+        $this->globals->delete(Game::ABNORMAL_FLOW);
         $this->globals->delete(GAME::DISCOUNT);
+        $this->globals->delete(Game::PRESSURE_BONUS);
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
@@ -1725,16 +1732,25 @@ trait StatesTrait
 
         foreach ($characters as $character)
         {
-            if ($character->Location != Game::LOCATION_PLAYER_HOME)
+            //Brutes get discarded
+            if ($character->hasTrait("Brute"))
             {
-                $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false);
-                $this->theah->queueEvent($movedHome);
+                $discardedEvent = EventFactory::createCardDiscardedFromPlayEvent($character->ControllerId, $character->Id, $character->Location);
+                $this->theah->queueEvent($discardedEvent);
             }
-
-            if ($character->Engaged)
+            else
             {
-                $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id);
-                $this->theah->queueEvent($engardeEvent);                    
+                if ($character->Location != Game::LOCATION_PLAYER_HOME)
+                {
+                    $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $sourceId=0);
+                    $this->theah->queueEvent($movedHome);
+                }
+    
+                if ($character->Engaged)
+                {
+                    $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id);
+                    $this->theah->queueEvent($engardeEvent);                    
+                }
             }
 
             foreach ($character->Attachments as $attachmentId)

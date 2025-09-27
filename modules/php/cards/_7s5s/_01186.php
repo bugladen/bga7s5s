@@ -32,8 +32,6 @@ class _01186 extends CityCharacter
         $this->Influence = 0;
         $this->DashedInfluence = true;
 
-        $this->resetModifiedCharacterStats();
-
         $this->WealthCost = 6;
         $this->CityCardNumber = 10;
         $this->Negotiable = true;
@@ -44,6 +42,8 @@ class _01186 extends CityCharacter
             'Weapons Master',
             'Ashur',
         ];
+
+        $this->resetCard();
 
         $this->Techniques = [
             new Technique_01186(),

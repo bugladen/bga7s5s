@@ -57,9 +57,8 @@ class Maneuver_01084 extends Maneuver
             $owner->IsUpdated = true;
 
             $game = $event->theah->game;
-            $card = $game->playerDrawCard($event->playerId);
             $owner = $this->getOwningCard($event->theah);
-            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $card, sprintf($game->translate("%s Maneuver effect"), $owner->getInjectCode()));
+            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, sprintf($game->translate("%s Maneuver effect"), $owner->getInjectCode()));
             $event->theah->queueEvent($addEvent);
         }
 

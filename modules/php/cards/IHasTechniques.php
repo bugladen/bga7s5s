@@ -21,7 +21,7 @@ interface IHasTechniques
 
     public function updateTechniqueOwnerIds($id);
 
-    public function addTechnique(Technique $technique);
+    public function addTechnique(Technique $technique, Game $game);
 
-    public function removeTechnique(Technique $technique);
+    public function removeTechnique(Technique $technique, Game $game);
 }

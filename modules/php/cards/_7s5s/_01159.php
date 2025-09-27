@@ -31,6 +31,8 @@ class _01159 extends Risk implements IHasActions
             'Heroic',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01159(),
         ];

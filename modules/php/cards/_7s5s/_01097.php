@@ -23,11 +23,11 @@ class _01097 extends Character
         $this->Finesse = 1;        
         $this->Influence = 2;
 
-        $this->resetModifiedCharacterStats();
-
         $this->Traits = [
             "Pirate",
             "Aragosta",
         ];
+
+        $this->resetCard();
     }
 }

@@ -25,6 +25,8 @@ class _01132 extends Risk
             'Sorcery',
             'Dar Matushki',
         ];
+
+        $this->resetCard();
     }
 
 }

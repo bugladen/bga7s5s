@@ -40,7 +40,7 @@ class Action_01176 extends RiskAction
         return $characters;
     }
 
-    public function getActionFromHandDiscount(Theah $theah, Character $performer, CardAction $action): int
+    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $action): int
     {
         $discount = parent::getActionFromHandDiscount($theah, $performer, $action);
 
@@ -53,7 +53,6 @@ class Action_01176 extends RiskAction
             {
                 $discount += 1;
             }
-    
         }
 
         return $discount;

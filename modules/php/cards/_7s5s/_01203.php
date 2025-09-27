@@ -28,8 +28,6 @@ class _01203 extends CityCharacter implements IHasReactions
         $this->Finesse = 3;
         $this->Influence = 1;
 
-        $this->resetModifiedCharacterStats();
-
         $this->WealthCost = 5;
         $this->CityCardNumber = 27;
         $this->Negotiable = true;
@@ -39,6 +37,8 @@ class _01203 extends CityCharacter implements IHasReactions
             'Duelist',
             'Sarmatian',
         ];
+
+        $this->resetCard();
 
         $this->Reactions = [
             new Reaction_01203(),

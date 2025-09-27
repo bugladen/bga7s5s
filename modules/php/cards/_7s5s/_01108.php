@@ -32,6 +32,8 @@ class _01108 extends Risk implements IHasManeuvers
             'El Punal Occulto',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01108(),
         ];

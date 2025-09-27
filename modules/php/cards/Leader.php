@@ -27,6 +27,14 @@ abstract class Leader extends Character
         $this->ModifiedPanache = 0;
     }
 
+    public function resetCard()
+    {
+        parent::resetCard();
+        
+        $this->ModifiedCrewCap = $this->CrewCap;
+        $this->ModifiedPanache = $this->Panache;
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);

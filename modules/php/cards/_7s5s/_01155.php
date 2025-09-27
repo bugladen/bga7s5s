@@ -45,6 +45,8 @@ class _01155 extends FactionAttachment implements IHasManeuvers, IHasTechniques,
             'Ad Hoc',
         ];
 
+        $this->resetCard();
+
         $technique = new Technique_DestroyPlusOneThrust();
         $technique->setId("Technique_01155");
         $this->Techniques = [

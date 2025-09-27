@@ -37,6 +37,8 @@ class _01045 extends Scheme implements IHasReactions
             "Prepared",
         ];
 
+        $this->resetCard();
+
         $this->Reactions = [
             new Reaction_01045(),
         ];

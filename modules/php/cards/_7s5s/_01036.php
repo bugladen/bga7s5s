@@ -32,13 +32,13 @@ class _01036 extends Character implements IHasActions, IHasTechniques
         $this->Finesse = 3;
         $this->Influence = 1;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Sorcerer",
             "Strega",
             "Vodacce",
         ];
+
+        $this->resetCard();
 
         $this->Actions = [
             new Action_01036(),

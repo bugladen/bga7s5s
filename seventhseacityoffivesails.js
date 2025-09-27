@@ -72,6 +72,8 @@ function (dojo, declare) {
             this.LOCATION_PLAYER_DISCARD = 'Player Discard';
             this.LOCATION_PLAYER_LOCKER = 'Player Locker';
 
+            this.MAX_CARDS_SELECTABLE = 999;
+
             //Recruit types
             this.NORMAL_RECRUIT_TYPE = 0;
             this.KASPAR_RECRUIT_TYPE = 1;
@@ -84,6 +86,7 @@ function (dojo, declare) {
             //Recruit types
             this.NORMAL_RECRUIT_TYPE = 0;
             this.KASPAR_RECRUIT_TYPE = 1;
+            this.CIRILO_RECRUIT_TYPE = 2;
 
             //Challenge types
             this.NORMAL_CHALLENGE_TYPE = 0;
@@ -94,6 +97,8 @@ function (dojo, declare) {
             this.LEGENDARY_REPUTATION_CHALLENGE_TYPE = 5;
             this.DANIELA_DEITRICH_CHALLENGE_TYPE = 6;
             this.MOVE_ALONG_CHALLENGE_TYPE = 7;
+            this.SERVO_SCARPA_CHALLENGE_TYPE = 8;
+            this.VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 100;

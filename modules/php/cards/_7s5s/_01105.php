@@ -25,5 +25,7 @@ class _01105 extends Risk
             'Cheating',
             'Revelry',
         ];
+
+        $this->resetCard();
     }
 }

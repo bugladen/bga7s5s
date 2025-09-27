@@ -2,16 +2,23 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01143;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
-class _01143 extends Scheme
+class _01143 extends Scheme implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -30,13 +37,36 @@ class _01143 extends Scheme
             "Demoralize", 
             "Duress",
         ];
+
+        $this->resetCard();
+
+        $this->Actions = [
+            new Action_01143(),
+        ];
     }
 
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
+        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
+        {
+
+            //Decrease the influence of all mercenaries by 1
+            $mercenaries = $event->theah->getCharactersInPlay();
+            $mercenaries = array_filter($mercenaries, fn($character) => $character->hasTrait("Mercenary"));
+            foreach ($mercenaries as $mercenary)
+            {
+                $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
+                    $this->ControllerId, 
+                    $mercenary->Id, 
+                    $mercenary->ModifiedInfluence, 
+                    $mercenary->ModifiedInfluence - 1,
+                    $this->getInjectCode()
+                );
+        
+                $event->theah->queueEvent($modifiedEvent);      
+            }
 
             $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves.  Reknown will be added to The City Forum.
             Then ${player_name} may choose a city location to place reknown onto. If they do, all City Cards will be discarded from that location.'), [
@@ -44,22 +74,75 @@ class _01143 extends Scheme
                 "player_name" => $event->playerName,
             ]);
 
-            $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($reknown instanceof EventReknownAddedToLocation) {
-                $reknown->playerId = $this->ControllerId;
-                $reknown->location = Game::LOCATION_CITY_FORUM;
-                $reknown->amount = 1;
-                $reknown->description = $this->getInjectCode();
-            }
+            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
 
             //Transition to the state where player can choose any location.
-            $transition = $event->theah->createEvent(Events::Transition);
-            if ($transition instanceof EventTransition) {
-                $transition->playerId = $event->playerId;
-                $transition->transition = '01143';
-            }
+            $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "01143");
             $event->theah->queueEvent($transition);
         }
-    }    
+
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            //Restore the influence of all mercenaries
+            $mercenaries = $event->theah->getCharactersInPlay();
+            $mercenaries = array_filter($mercenaries, fn($character) => $character->hasTrait("Mercenary"));
+            foreach ($mercenaries as $mercenary)
+            {
+                $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
+                    $this->ControllerId, 
+                    $mercenary->Id, 
+                    $mercenary->ModifiedInfluence, 
+                    $mercenary->ModifiedInfluence + 1,
+                    $this->getInjectCode()
+                );
+        
+                $event->theah->queueEvent($modifiedEvent);      
+            }
+        }
+
+        if ($event instanceof EventCharacterRecruited)
+        {
+            $character = $event->theah->getCharacterById($event->characterId);
+            $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
+                $event->playerId, 
+                $event->characterId, 
+                $character->ModifiedInfluence, 
+                $character->ModifiedInfluence - 1,
+                $this->getInjectCode()
+            );
+
+            $event->theah->queueEvent($modifiedEvent);
+        }
+    }
+    
+    public function actFromCardWithIds(Game $game, int $state, string $stateName, string $internalId, array $ids): void
+    {
+        parent::actFromCardWithIds($game, $state, $stateName, $internalId, $ids);
+
+        if ($state === States::PLANNING_PHASE_RESOLVE_SCHEMES_01143) 
+        {
+            $location = $ids[0];
+            $playerId = $game->getActivePlayerId();
+    
+            $event = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
+            $game->theah->eventCheck($event);
+            $game->theah->queueEvent($event);
+    
+            //Get all cards in the chosen location
+            $game->theah->buildCity();
+            $cards = $game->theah->getCardObjectsAtLocation($location);
+            foreach ($cards as $card)
+            {
+                //Discard all city cards
+                if ($card instanceof ICityDeckCard)
+                {
+                    $discard = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $card->Id, $location);
+                    $game->theah->queueEvent($discard);
+                }
+            }
+    
+            $game->gamestate->nextState("");
+        }
+    }
 }

@@ -24,6 +24,8 @@ class _01102 extends Risk
         $this->Traits = [
             'Hubris',
         ];
+
+        $this->resetCard();
     }
 }
 

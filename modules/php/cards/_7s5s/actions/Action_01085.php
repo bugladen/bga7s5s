@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -10,7 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01085 extends RiskAction
+class Action_01085 extends RiskAction implements ISorcererAbility
 {
     public function __construct()
     {
@@ -130,6 +131,9 @@ class Action_01085 extends RiskAction
             
             $transition = EventFactory::createTransitionEvent($performer->ControllerId, $porteTravel->Id, "01085", $this->Id);
             $game->theah->queueEvent($transition);
+            
+            $event = EventFactory::createSorcererAbilityPlayedEvent($porteTravel->ControllerId, $porteTravel->Id, $this->Id, $target->Id, $target->Location);
+            $game->theah->queueEvent($event);
 
             $game->gamestate->nextState();
         }

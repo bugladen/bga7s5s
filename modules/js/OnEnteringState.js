@@ -108,13 +108,20 @@ onEnteringState: function( stateName, args )
                     this.clearCardAsSelectable(image);
                     this.makeCardSelectable(image);
 
-                    if (card.negotiable)                             
+                    if (card.negotiable || args.args.recruitType == this.CIRILO_RECRUIT_TYPE)
                     {
                         const cost = $(`${card.divId}_wealth_cost`);
-                        let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
+                        const originalCost = parseInt(cost.innerHTML);
+
+                        let discountedCost = originalCost - this.clientStateArgs.discount;
                         discountedCost = discountedCost < 0 ? 0 : discountedCost;
+
+                        if (args.args.recruitType == this.CIRILO_RECRUIT_TYPE)
+                            discountedCost = 1;                        
+
                         cost.innerHTML = parseInt(discountedCost);
-                        dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
+                        if (originalCost != discountedCost)
+                            dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
                     }
                 });
             }
@@ -134,11 +141,18 @@ onEnteringState: function( stateName, args )
                 this.clientStateArgs.recruitId = card.id;
     
                 const cost = $(`${card.divId}_wealth_cost`);
-                let discountedCost = parseInt(cost.innerHTML) - args.args.discount;
+                const originalCost = parseInt(cost.innerHTML);
+
+                let discountedCost = originalCost - args.args.discount;
                 discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                
+                if (args.args.recruitType == this.CIRILO_RECRUIT_TYPE)
+                    discountedCost = 1;
+
                 this.clientStateArgs.discountedCost = discountedCost;
                 cost.innerHTML = parseInt(discountedCost);
-                dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
+                if (originalCost != discountedCost)
+                    dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
     
                 this.factionHand.setSelectionMode(2);
             }
@@ -258,6 +272,8 @@ onEnteringState: function( stateName, args )
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
                 this.factionHand.setSelectionMode(2);
+
+                this.clientStateArgs.chosenCardId = chosenAttachmentId;
             }
         },
 
@@ -364,6 +380,50 @@ onEnteringState: function( stateName, args )
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
                 this.factionHand.setSelectionMode(2);
+            }
+        },
+
+        'highDramaBruteActionChooseBrute': () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                args.args._private.ids.forEach((cardId) => {
+                    let div = this.factionHand.getItemDivId(cardId);
+                    dojo.addClass(div, '_7sfs-selectable');
+                });
+                this.factionHand.setSelectionMode(1);
+            }
+        },
+
+        'highDramaBruteActionPayForBrute': () => {
+            if (this.isCurrentPlayerActive()) {
+                const chosenBruteId = args.args._private.bruteId;
+                const card = args.args._private.brute;
+
+                let items = this.factionHand.getAllItems();
+
+                let div = this.factionHand.getItemDivId(chosenBruteId);
+                dojo.addClass(div, '_7sfs-unselectable');
+
+                dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                    id: div,
+                    cost: card.wealthCost,
+                }), div, "first" );    
+    
+                const costDiv = $(`${div}_wealth_cost`);
+                const cost = parseInt(costDiv.innerHTML);
+                let discountedCost = cost - args.args._private.discount;
+                discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                if (discountedCost !== cost)
+                {
+                    this.clientStateArgs.discountedCost = discountedCost;
+                    costDiv.innerHTML = parseInt(discountedCost);
+                    dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                }
+    
+                $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
+                this.factionHand.setSelectionMode(2);
+
+                this.clientStateArgs.chosenCardId = chosenBruteId;
             }
         },
 
@@ -517,6 +577,7 @@ onEnteringState: function( stateName, args )
                     else
                     {
                         const cardId = args.args._private.combatCardId;
+                        div = this.factionHand.getItemDivId(cardId);
                         div = this.factionHand.getItemDivId(cardId);
                         dojo.addClass(div, '_7sfs-unselectable');
                     }

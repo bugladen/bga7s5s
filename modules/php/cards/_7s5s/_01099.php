@@ -29,6 +29,8 @@ class _01099 extends Scheme
             "Cunning", 
             "Rumor",
         ];
+
+        $this->resetCard();
     }
 
     public function handleEvent(Event $event)

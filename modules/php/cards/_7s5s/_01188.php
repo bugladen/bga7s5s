@@ -31,8 +31,6 @@ class _01188 extends CityCharacter
         $this->Influence = 0;
         $this->DashedInfluence = true;
 
-        $this->resetModifiedCharacterStats();
-
         $this->ModifiedInfluence = 0;
 
         $this->WealthCost = 4;
@@ -43,6 +41,8 @@ class _01188 extends CityCharacter
             'Mercenary',
             'Usurra',
         ];
+
+        $this->resetCard();
 
         $this->HasIntervened = false;
     }

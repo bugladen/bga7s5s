@@ -31,13 +31,13 @@ class _01069 extends Character implements IHasActions
         $this->Finesse = 2;
         $this->Influence = 3;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Villain",
             "Sorcerer",
             "Montaigne",
         ];
+
+        $this->resetCard();
 
         $this->Actions = [
             new Action_01069(),

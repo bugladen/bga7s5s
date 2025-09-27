@@ -35,6 +35,8 @@ class _01195 extends CityAttachment
             'Sword',
             'Unique',
         ];
+
+        $this->resetCard();
     }
 
     public function handleEvent(Event $event)

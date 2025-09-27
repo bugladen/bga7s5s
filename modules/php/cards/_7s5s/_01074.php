@@ -39,6 +39,8 @@ class _01074 extends FactionAttachment implements IHasTechniques
             'Melee',
             "Sword",
         ];
+        
+        $this->resetCard();
 
         $technique = new Technique_PlusOneRiposte();
         $technique->setId("Technique_01074");
@@ -54,7 +56,7 @@ class _01074 extends FactionAttachment implements IHasTechniques
         if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id) 
         {
             $performer = $event->theah->getCardById($event->characterId);
-            if (!in_array("Duelist", $performer->Traits))
+            if (!$performer->hasTrait("Duelist"))
                 throw new \BgaUserException($event->theah->game->translate(("Mastercrafted Rapier can only be equipped to Duelists.")));
         }
     }

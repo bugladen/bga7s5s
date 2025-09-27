@@ -36,6 +36,11 @@ trait ZombieTrait
 
         if ($state["type"] === "activeplayer") {
             switch ($stateName) {
+                case "setupTable_01006":
+                    // Default action: Pass or take first available option
+                    $this->actPass();
+                    break;
+
                 case "planningPhaseResolveSchemes_01044":
                 case "planningPhaseResolveSchemes_01045":
                 case "planningPhaseResolveSchemes_01145":
@@ -48,7 +53,6 @@ trait ZombieTrait
                 // Planning Phase States
                 case "planningPhaseResolveSchemes_01016":
                 case "planningPhaseResolveSchemes_01016_2":
-                case "planningPhaseResolveSchemes_01016_3":
                 case "planningPhaseResolveSchemes_01098":
                 case "planningPhaseResolveSchemes_01125":
                 case "planningPhaseResolveSchemes_01125_2":
@@ -58,13 +62,17 @@ trait ZombieTrait
                 case "planningPhaseResolveSchemes_01143":
                 case "planningPhaseResolveSchemes_01144":
                 case "planningPhaseResolveSchemes_01144_2":
-                case "planningPhaseResolveSchemes_01152":
-                case "planningPhaseResolveSchemes_01152_2":
-                case "planningPhaseResolveSchemes_01152_3":
                 case "planningPhaseEnd_01098":
                 case "planningPhaseEnd_01098_2":
                     // Default action: Pass or take first available option
                     $this->actPass();
+                    break;
+
+                case "planningPhaseResolveSchemes_01152":
+                case "planningPhaseResolveSchemes_01152_2":
+                case "planningPhaseResolveSchemes_01152_3":
+                    // Default action: Pass or take first available option
+                    $this->actPass("pass");
                     break;
 
                 // High Drama Player Turn States
@@ -98,6 +106,8 @@ trait ZombieTrait
                 case "highDramaInPlayActionChoosePerformer":
                 case "highDramaInHandActionChooseAction":
                 case "highDramaInHandActionChoosePerformer":
+                case "highDramaBruteActionChooseBrute":
+                case "highDramaBruteActionPayForBrute":
                     // Default action: Go back to main turn
                     $this->actBack();
                     break;
@@ -107,6 +117,9 @@ trait ZombieTrait
                     break;
 
                 // High Drama Player Turn Event States (Card-Specific)
+                case "highDramaPhase01011": // Servo Scarpa
+                case "highDramaPhase01012": // Sibella Scarpa
+                case "highDramaPhase01020": // Dante
                 case "highDramaPhase01044": // Armed and Marshaled
                 case "highDramaPhase01044_2": // Armed and Marshaled target
                 case "highDramaPhase01044_3": // Armed and Marshaled manipulation
@@ -128,7 +141,10 @@ trait ZombieTrait
                 case "highDramaPhase01076": // Blood Mark location
                 case "highDramaPhase01076_2": // Blood Mark character        
                 case "highDramaPhase01147": // Let's Haggle
+                case "highDramaPhase01148": // Marooned
                 case "highDramaPhase01149": // Midnight Shipment
+                case "highDramaPhase01152a": // Until Morale Improves
+                case "highDramaPhase01152b": // Until Morale Improves
                 case "highDramaPhase01156": // Matchlock Musket discard
                 case "highDramaPhase01156_2": // Matchlock Musket target
                 case "highDramaPhase01156_3": // Matchlock Musket choice
@@ -136,14 +152,31 @@ trait ZombieTrait
                     $this->actBack();
                     break;
 
+                case "highDramaPhase01008_4": // Cesca Del Rosso
+                case "highDramaPhase01015": // The Great Game
+                case "highDramaPhase01017": // Alcee
+                case "highDramaPhase01019": // Buratino
+                case "highDramaPhase01024": // Bravos
+                case "highDramaPhase01025": // Fate's Burden
+                case "highDramaPhase01026": // For the Family
+                case "highDramaPhase01028": // Pack Tactics
+                case "highDramaPhase01028_2": // Pack Tactics
+                case "highDramaPhase01029": // The Pressure Is On
+                case "highDramaPhase01030": // Pull the Strand
+                case "highDramaPhase01034": // Wrath of the Don
+                case "highDramaPhase01034_2": // Wrath of the Don target
                 case "highDramaPhase01049_2": // Polished Flintlock engage
                 case "highDramaPhase01056_2": // Move Along choice
                 case "highDramaPhase01072_2": // Réputation Méritée city card
                 case "highDramaPhase01081": // Gallant Deeds
                 case "highDramaPhase01085": // Porté Travel
                 case "highDramaPhase01086": // Status Matters
+                case "highDramaPhase01148_3": // Marooned discard
+                case "highDramaPhase01148_4": // Marooned manipulate
+                case "highDramaPhase01160": // Bleed Out
+                case "highDramaPhase01161": // Boon
 
-                    $this->gamestate->nextState("");
+                    $this->gamestate->nextState();
                     break;
 
                 case "highDramaPhase01029": // The Pressure Is On
@@ -176,7 +209,6 @@ trait ZombieTrait
 
                 // Challenge Action States
                 case "highDramaChallengeActionResolveTechnique_01063": // Bastien's Technique
-                case "highDramaChallengeActionActivateTechnique_01067": // Jean Urbain's Technique
                     $this->gamestate->nextState("");
                     break;
 
@@ -191,6 +223,7 @@ trait ZombieTrait
                     break;
 
                 // Duel Choose Technique States
+                case "duelChooseTechnique_01013": // Vissenta Scarpa's Technique
                 case "duelChooseTechnique_01036": // Daniela's Technique
                 case "duelChooseTechnique_01067": // Jean Urbain's Technique
                 case "duelChooseTechnique_01063": // Bastien's Technique
@@ -251,6 +284,11 @@ trait ZombieTrait
                     $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked');
                     break;
 
+                // Setup Table States
+                case "setupTable_01006_2":
+                    $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
+                    break;
+
                 // Planning Phase
                 case "planningPhase":
                     // Default action: Mark as planned (auto-pick first available)
@@ -259,8 +297,13 @@ trait ZombieTrait
                     break;
 
                 // Acknowledgment States
+                case "planningPhaseResolveSchemes_01016_3":
                 case "planningPhaseResolveSchemes_01147": // Let's Haggle
                 case "planningPhaseEnd_01098_2": // The Cat's Embargo
+                    $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
+                    break;
+
+                case "highDramaPhase01008": // Cesca Del Rosso
                 case "highDramaPhase01035": // Kaspar
                 case "highDramaPhase01038": // Otto Streit
                 case "highDramaPhase01180": // Kaj Kousei

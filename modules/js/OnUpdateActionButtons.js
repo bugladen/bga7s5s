@@ -37,6 +37,7 @@ onUpdateActionButtons: function( stateName, args )
                     banner_description: _('Select a Starter Deck to play with using the buttons above.  Or explore the available Factions using the buttons below, and click <strong>Select</strong> to choose that Faction.'),
                     eisen_description: _('<strong>Eisen</strong>: An accomplished General in the War of the Cross, Kaspar Dietrich returned home to Eisen, only to find it in ruins, overrun by monsters. As such, he has a passionate distrust for all things sorcery and supernatural. Kaspar fled south to the port city of Five Sails where he hopes to use his formidable reputation as a master commander and strategist to build an army to reclaim his homeland. He utilizes strategies that involve making use of the city and the mercenaries and equipment available to him.'),
                     montaigne_description: _('<strong>Montaigne</strong>: Odette Dubois d’Arrent is the most recent arrival to the city. She is a courtier from Montaigne, a country that does not have a district or established foothold in Five Sails. She is tasked to help her patron expand his influence within the free city.  As such, she is eager to find allies. But she did not arrive in Five Sails alone. A small, but elite, group of skilled Musketeers accompanies her and protects her from the rougher elements of the City. Her strengths include movement and creative positioning to make the most of her political abilities and her Musketeer’s steel.'),
+                    vodacce_description: _('<strong>Vodacce</strong>: “Don” Constanzo Scarpa loves his city, for Five Sails is indeed his city, and he is willing to do whatever it takes to protect it, even if it is from itself. Reputation, family and loyalty are the things that are of paramount importance to Constanzo as he tries to advance politically through the ranks of the city’s elite. Constanzo’s style is cutthroat and brutal where the ends always justify the means. He cares not for what or even who gets sacrificed along the way as long as it advances his goals.'),
                     select_description: _('Select This Deck'),
                 }),  'city', 'after');
             }
@@ -79,10 +80,12 @@ onUpdateActionButtons: function( stateName, args )
                 this.addTooltipHtml( 'btnInPlayAction', `<div class='_7sfs-basic-tooltip'>${_("Use an In-Play Action")}</div>` );
             }
             if (args._private.hasInHandActions)
-                {
-                    this.addActionButton(`btnInHandAction`, _('In-Hand Action'), () => this.bgaPerformAction('actHighDramaChooseInHandActionStart', {})) 
-                    this.addTooltipHtml( 'btnInHandAction', `<div class='_7sfs-basic-tooltip'>${_("Use an In-Hand Action")}</div>` );
-                }
+            {
+                this.addActionButton(`btnInHandAction`, _('In-Hand Action'), () => this.bgaPerformAction('actHighDramaChooseInHandActionStart', {})) 
+                this.addTooltipHtml( 'btnInHandAction', `<div class='_7sfs-basic-tooltip'>${_("Use an In-Hand Action")}</div>` );
+            }
+            if (args._private.hasBrutes)
+                this.addActionButton(`btnBrute`, _('Play Brute'), () => this.bgaPerformAction('actHighDramaChooseBruteStart', {})) 
                         
             this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
         },
@@ -112,7 +115,8 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaRecruitActionChooseMercenary': () => {
-            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            if (args.recruitType == this.NORMAL_RECRUIT_TYPE)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
@@ -148,17 +152,32 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaInHandActionChoosePerformer'  : () => {
-            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            if (! args._private.abnormalFlow)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'highDramaInHandActionPay': () => {
-            if (args._private.requiresPerformerSelected)
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backPerformer'}));
-            else
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backChooseAction'}));
+            if (! args._private.abnormalFlow)
+            {
+                if (args._private.requiresPerformerSelected)
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backPerformer'}));
+                else
+                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backChooseAction'}));
+            }
             this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onActionCardFromHandPaymentConfirmed());
+        },
+
+        'highDramaBruteActionChooseBrute'  : () => {
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onChooseHandCardConfirmed());
+            dojo.addClass('actFactionCardsSelected', 'disabled');
+        },
+
+        'highDramaBruteActionPayForBrute': () => {
+            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onPaymentConfirmed());
         },
 
         'highDramaEquipActionChoosePerformer': () => {
@@ -182,7 +201,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaEquipActionChooseAttachmentFromHand': () => {
             this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onChooseHandAttachmentConfirmed());
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onChooseHandCardConfirmed());
             dojo.addClass('actFactionCardsSelected', 'disabled');
         },
 
@@ -194,7 +213,7 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaEquipActionPayForAttachmentFromHand': () => {
             this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onPaymentConfirmed());
         },
 
         'highDramaEquipActionPayForAttachmentFromPlay': () => {
@@ -202,7 +221,7 @@ onUpdateActionButtons: function( stateName, args )
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backLetsHaggle'}));
             else
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
-            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onAttachmentPaymentConfirmed());
+            this.addActionButton(`actFactionCardsSelected`, _('Confirm'), () => this.onPaymentConfirmed());
         },
 
         'highDramaClaimActionChoosePerformer': () => {
@@ -232,7 +251,8 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaChallengeActionActivateTechnique': () => {
-            this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+            if (args.challengeType != this.SERVO_SCARPA_CHALLENGE_TYPE)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args.techniques.forEach((technique) => { 
                 this.addActionButton(
                     `actChooseTechnique${technique.id}-btn`, technique.name, () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 

@@ -32,6 +32,8 @@ class _01115 extends Risk implements IHasManeuvers
             'Torres',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01115(),
         ];

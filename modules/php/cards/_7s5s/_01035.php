@@ -31,17 +31,14 @@ class _01035 extends Leader implements IHasActions
         $this->CrewCap = 6;
         $this->Panache = 6;
 
-        $this->resetModifiedCharacterStats();
-        
-        $this->ModifiedCrewCap = $this->CrewCap;
-        $this->ModifiedPanache = $this->Panache;
-
         $this->Traits = [
             "Leader",
             "Hero",
             "General",
             "Eisen",
         ];
+
+        $this->resetCard();
 
         $this->Actions = [
             new Action_01035(),

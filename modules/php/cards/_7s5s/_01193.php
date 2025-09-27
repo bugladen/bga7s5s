@@ -33,6 +33,8 @@ class _01193 extends CityAttachment implements IHasTechniques
             'Armor',
         ];
 
+        $this->resetCard();
+
         $this->Techniques = [
             new Technique_01193(),
         ];

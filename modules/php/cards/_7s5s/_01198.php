@@ -37,6 +37,8 @@ class _01198 extends CityAttachment implements IHasActions
             'Trinket',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01198(),
         ];

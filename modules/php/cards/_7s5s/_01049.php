@@ -41,6 +41,8 @@ class _01049 extends FactionAttachment implements IHasActions, IHasTechniques
             'Pistol',
         ];
 
+        $this->resetCard();
+
         $this->Techniques = [
             new Technique_01049(),
         ];

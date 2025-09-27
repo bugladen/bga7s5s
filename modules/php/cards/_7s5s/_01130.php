@@ -25,6 +25,8 @@ class _01130 extends Risk
             'Immovable',
             'Provocation',
         ];
+
+        $this->resetCard();
     }
 
 }

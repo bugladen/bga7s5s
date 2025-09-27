@@ -23,13 +23,13 @@ class _01122 extends Character
         $this->Finesse = 1;
         $this->Influence = 2;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Scoundrel",
             "Murskaaja",
             "Vesten",
         ];
+
+        $this->resetCard();
     }
 
 }

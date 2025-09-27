@@ -23,12 +23,12 @@ class _01094 extends Character
         $this->Finesse = 1;       
         $this->Influence = 2;
 
-        $this->resetModifiedCharacterStats();
-
         $this->Traits = [
             "Academic",
             "Castille",
         ];
+
+        $this->resetCard();
     }
 
     public function getInfluencePressureValue(): int

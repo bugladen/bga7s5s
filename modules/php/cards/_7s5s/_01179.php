@@ -33,6 +33,13 @@ class _01179 extends CityEventCard implements IHasActions
 
         $this->Reknown = 0;
 
+        $this->Traits = [
+            "Catastrophe",
+            "Monster"
+        ];
+
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01179(),
         ];

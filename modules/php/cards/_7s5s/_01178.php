@@ -29,8 +29,6 @@ class _01178 extends CityCharacter
         $this->Finesse = 2;
         $this->Influence = 1;
 
-        $this->resetModifiedCharacterStats();
-
         $this->WealthCost = 5;        
         $this->CityCardNumber = 2;
         $this->Negotiable = true;
@@ -40,6 +38,8 @@ class _01178 extends CityCharacter
             'Duelist',
             'Vodacce',
         ];
+
+        $this->resetCard();
 
         $this->AbilityUsed = false;
     }

@@ -49,7 +49,7 @@ class Action_01180 extends CharacterAction
             foreach ($deckCards as $deckCard) {
                 $card = $event->theah->game->getCardObjectFromDb($deckCard['id']);
                 $names[] = $card->getInjectCode();
-                if (in_array('Artifact', $card->Traits))
+                if ($card->hasTrait('Artifact'))
                     $count++;
             }
 
@@ -175,7 +175,7 @@ class Action_01180 extends CharacterAction
 
             $chosenCard = $game->getCardObjectFromDb($id);
 
-            if (! $chosenCard instanceof Attachment && ! in_array('Artifact', $chosenCard->Traits))
+            if (! $chosenCard instanceof Attachment && ! $chosenCard->hasTrait('Artifact'))
             {
                 throw new \BgaUserException(sprintf($game->translate("Card %s is not an Artifact."), $id));
             }
@@ -239,7 +239,7 @@ class Action_01180 extends CharacterAction
             $attachment = $game->getCardObjectFromDb($attachmentId);
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->getCardObjectFromDb($performerId);
+            $performer = $game->theah->getCharacterById($performerId);
 
             if ($attachment instanceof Attachment)
                 $cost = $attachment->WealthCost;
@@ -254,8 +254,8 @@ class Action_01180 extends CharacterAction
                 if ($card == null)
                     throw new \BgaUserException(sprintf($game->translate("Card %d not found."), $cardId));
     
-                    //If $card has wealth in its traits, add it to the total wealth
-                $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+                //If $card has wealth in its traits, add it to the total wealth
+                $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
             }
             if ($totalWealth != $cost) {
                 throw new \BgaUserException(sprintf($game->translate("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));

@@ -27,12 +27,12 @@ class _01042 extends Character implements IHasTechniques
         $this->Finesse = 1;
         $this->Influence = 1;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Duelist",
             "Eisen",
         ];
+
+        $this->resetCard();
 
         $technique = new Technique_PlusOneThrust();
         $technique->setId("Technique_01042");

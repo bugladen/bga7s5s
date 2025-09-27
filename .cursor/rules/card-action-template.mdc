@@ -1,0 +1,138 @@
+---
+globs: ["**/cards/**/actions/Action_*.php"]
+alwaysApply: false
+---
+# Card Action Template Rule
+
+When creating or modifying card action files in the actions directory, you MUST follow this exact template structure and naming conventions.
+
+## Required Template Structure
+
+```php
+<?php
+
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
+
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\{ACTION_CLASS};
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+
+class Action_{CARD_ID} extends {ACTION_CLASS}
+{
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->Name = clienttranslate("{ACTION_DESCRIPTION}");
+        $this->RequiresPerformerSelected = {REQUIRES_PERFORMER};
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if (!parent::isAvailableToPlayer($playerId, $theah))
+        {
+            return false;
+        }
+
+        // Add specific availability logic here
+        return true;
+    }
+
+    public function getPerformersForAction(int $playerId, Theah $theah): array
+    {
+        // Override if specific performer selection is needed
+        return parent::getPerformersForAction($playerId, $theah);
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "{CARD_ID}", $this->Id);
+            $event->theah->queueEvent($transition);
+        }
+    }
+
+    public function getArgsFromAction(Game $game, int $state, string $stateName): array
+    {
+        $args = parent::getArgsFromAction($game, $state, $stateName);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_{CARD_ID})
+        {
+            // Add specific arguments for this action
+        }
+
+        return $args;
+    }
+
+    public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
+    {
+        parent::actFromActionWithId($game, $state, $stateName, $id);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_{CARD_ID})
+        {
+            // Add specific action logic here
+            $game->gamestate->nextState();
+        }
+    }
+}
+```
+
+## Template Variables
+
+Replace these placeholders with actual values:
+- `{CARD_ID}` - The 5-digit card ID (e.g., "01026")
+- `{ACTION_DESCRIPTION}` - Human-readable action description
+- `{REQUIRES_PERFORMER}` - true or false
+
+## Required Patterns
+
+1. **Namespace**: Always use `Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions`
+2. **Class Name**: Always follow `Action_{CARD_ID}` pattern
+3. **Parent Class**: Extend `RiskAction` for risk card actions
+4. **Constructor**: Always call parent constructor and set Name property
+5. **Event Handling**: Always include the standard event handling pattern
+6. **State Methods**: Include both `getArgsFromAction` and `actFromActionWithId` methods
+7. **State Constants**: Use `States::HIGH_DRAMA_PLAYER_TURN_{CARD_ID}` pattern
+
+## Import Requirements
+
+Always include these standard imports:
+- `RiskAction` (or appropriate parent class)
+- `EventFactory`
+- `Game`
+- `States`
+- `Event` and `EventActionTriggered`
+- `Theah`
+
+## Method Requirements
+
+1. **isAvailableToPlayer**: Must call parent method first, then add specific logic
+2. **getPerformersForAction**: Override only if specific performer selection needed
+3. **handleEvent**: Must include the standard event handling pattern
+4. **getArgsFromAction**: Must call parent method first, then add state-specific logic
+5. **actFromActionWithId**: Must call parent method first, then add state-specific logic
+
+## Code Style
+
+- Use proper indentation (4 spaces)
+- Follow PSR-12 coding standards
+- Use meaningful variable names
+- Include proper error handling with `BgaUserException`
+- Always call `$game->gamestate->nextState()` at the end of action methods
+
+## State Machine Integration
+
+- Action states must be defined in `states.inc.php` and `states.7s5s.php`
+- State names must follow the pattern `highDramaPlayerTurn_{CARD_ID}`
+- Transitions must be properly defined in the state machine
+- Use `EventFactory::createTransitionEvent()` for state transitions
+
+This template ensures consistency across all card actions and proper integration with the game's state machine.

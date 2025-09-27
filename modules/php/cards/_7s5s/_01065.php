@@ -30,13 +30,13 @@ class _01065 extends Character implements IHasReactions
         $this->Finesse = 3;
         $this->Influence = 1;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->Traits = [
             "Duelist",
             "Musketeer",
             "Montaigne",
         ];
+
+        $this->resetCard();
 
         $this->Reactions = [
             new Reaction_01065(),

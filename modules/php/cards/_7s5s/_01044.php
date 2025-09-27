@@ -36,6 +36,8 @@ class _01044 extends Scheme implements IHasActions
             "Logistics",
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01044(),
         ];

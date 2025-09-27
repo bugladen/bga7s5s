@@ -33,6 +33,8 @@ class _01206 extends CityAttachment implements IHasActions
             'Coat',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01206(),
         ];

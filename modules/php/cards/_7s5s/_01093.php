@@ -24,13 +24,13 @@ class _01093 extends Character
         $this->Finesse = 2;       
         $this->Influence = 1;
 
-        $this->resetModifiedCharacterStats();
-
         $this->Traits = [
             "Duelist",
             "Pirate",
             "Castille",
         ];
+
+        $this->resetCard();
 
         $this->Techniques = [
             new Technique_01093(),

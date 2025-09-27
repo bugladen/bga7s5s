@@ -49,13 +49,16 @@ class Action_01044 extends SchemeCityAction
         {
             $actionCardId = $game->globals->get(Game::CHOSEN_ACTION);
             $actionCard = $game->theah->getInPlayActionById($actionCardId);
-            $owner = $actionCard->getOwningCard($game->theah);
+
+            $id = Game::THEAH_ID;
+            if ($actionCard instanceof CardAction)
+                $id = $actionCard->OwnerId;
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
     
             $args['performerId'] = $performer->Id;
-            $args['actionCardId'] = $owner?->Id;
+            $args['actionCardId'] = $id;
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01044)

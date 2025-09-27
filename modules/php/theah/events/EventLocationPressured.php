@@ -10,6 +10,9 @@ class EventLocationPressured extends Event
     public string $pressureType;
     public string $totalsExplanation;
     public bool $success;
+    public int $difference;
+    public bool $highDramaBasicAction;
+    public string $abilityId;
 
     public function __construct()
     {
@@ -21,5 +24,10 @@ class EventLocationPressured extends Event
         $this->pressureType = "";
         $this->totalsExplanation = "";
         $this->success = false;
+        $this->difference = 0;
+        $this->highDramaBasicAction = false;
+        $this->abilityId = "";
+
+        $this->runEventHubAfterCards = true;
     }
 }

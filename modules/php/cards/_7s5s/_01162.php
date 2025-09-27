@@ -24,6 +24,8 @@ class _01162 extends Risk
             'Romance',
             'Temptation',
         ];
+
+        $this->resetCard();
     }
 
 }

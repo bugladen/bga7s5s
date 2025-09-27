@@ -2,7 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -16,6 +15,8 @@ abstract class Attachment extends Card implements IWealthCost
     public int $InfluenceModifier;
 
     public int $AttachedToId;
+
+    public bool $ShowStatModifiers = true;
     
     public function __construct()
     {
@@ -26,6 +27,7 @@ abstract class Attachment extends Card implements IWealthCost
         $this->FinesseModifier = 0;
         $this->InfluenceModifier = 0;
         $this->AttachedToId = 0;
+        $this->ShowStatModifiers = true;
     }
 
     public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment): int
@@ -45,6 +47,7 @@ abstract class Attachment extends Card implements IWealthCost
 
         $properties['type'] = 'Attachment';
         $properties['attachedToId'] = $this->AttachedToId;
+        $properties['showStatModifiers'] = $this->ShowStatModifiers;
 
         return $properties;
     }

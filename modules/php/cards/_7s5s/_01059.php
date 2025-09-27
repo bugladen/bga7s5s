@@ -35,6 +35,8 @@ class _01059 extends Risk implements IHasActions, IHasManeuvers
             'Prepared',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01059(),
         ];

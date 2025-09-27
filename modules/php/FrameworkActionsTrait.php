@@ -1,27 +1,24 @@
 <?php
 
 /**
- *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
  * SeventhSeaCityOfFiveSails implementation : © Edward Mittelstedt bugbucket@comcast.net
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
- * See http://en.boardgamearena.com/#!doc/Studio for more information.
- * -----
+ * See https://en.doc.boardgamearena.com/Studio for more information.
  */
 
- namespace Bga\Games\SeventhSeaCityOfFiveSails;
+namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01013;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
@@ -157,25 +154,6 @@ trait FrameworkActionsTrait
 
         // Go back and finish running the Scheme events
         $this->gamestate->nextState("");
-    }
-
-    public function actPlanningPhase_01016_2(int $id)
-    {
-        $playerId = $this->getActivePlayerId();
-        $card = $this->getCardObjectFromDb($id);
-
-        $removeEvent = EventFactory::createCardRemovedFromPlayerFactionDeckEvent($playerId, $card->Id);
-        $this->theah->eventCheck($removeEvent);
-
-        $addEvent = EventFactory::createCardAddedToHandEvent($playerId, $card->Id);
-        $this->theah->eventCheck($addEvent);
-
-        $this->theah->queueEvent($removeEvent);
-        $this->theah->queueEvent($addEvent);
-
-        $this->globals->set(GAME::CHOSEN_CARD, $card->Id);
-
-        $this->gamestate->nextState("cardChosen");
     }
 
     public function actPlanningPhase_01125(string $locations)
@@ -355,46 +333,6 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhase_01143(string $locations)
-    {
-        $locations = json_decode($locations, true);
-        $location = array_shift($locations);
-        $playerId = $this->getActivePlayerId();
-        $playerName = $this->getActivePlayerName();
-
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) {
-            $event->playerId = $this->getActivePlayerId();
-            $event->location = $location;
-            $event->amount = 1;
-            $event->description = $playerName;
-        }
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        //Get all cards in the chosen location
-        $this->theah->buildCity();
-        $cards = $this->theah->getCardObjectsAtLocation($location);
-        foreach ($cards as $card)
-        {
-            //Discard all city cards
-            if ($card instanceof ICityDeckCard)
-            {
-                $discard = $this->theah->createEvent(Events::CardAddedToCityDiscardPile);
-                if ($discard instanceof EventCardAddedToCityDiscardPile)
-                {
-                    $discard->cardId = $card->Id;
-                    $discard->fromLocation = $location;
-                    $discard->playerId = $playerId;
-                }
-
-                $this->theah->queueEvent($discard);
-            }
-        }
-
-        $this->gamestate->nextState("");
-    }
-
     public function actPlanningPhase_01144(string $locations)
     {
         $locations = json_decode($locations, true);
@@ -472,59 +410,6 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhase_01152(string $locations)
-    {
-        $location = json_decode($locations, true)[0];
-        
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) {
-            $event->playerId = $this->getActivePlayerId();
-            $event->location = $location;
-            $event->amount = 1;
-            $event->description = "Until Morale Improves: Adding Reknown to Location";
-        }
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->gamestate->nextState("reknownPlaced");
-    }
-
-    public function actPlanningPhase_01152_2(string $locations)
-    {
-        $location = json_decode($locations, true)[0];
-
-        //Check if the location actually has reknown to move
-        $reknown = $this->getReknownForLocation($location);
-        if ($reknown <= 0)
-            throw new \BgaUserException(sprintf(self::_("%s does not have any reknown to move."), $location));
-
-        $playerId = $this->getActivePlayerId();
-        $event = EventFactory::createReknownRemovedFromLocationEvent($playerId, $location, 1, "Until Morale Improves: Moving Reknown from one Location to an adjacent location");
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->globals->set(GAME::CHOSEN_LOCATION, $location);
-
-        $this->gamestate->nextState("locationChosen");
-    }
-
-    public function actPlanningPhase_01152_3(string $locations)
-    {
-        $location = json_decode($locations, true)[0];
-
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) {
-            $event->playerId = $this->getActivePlayerId();
-            $event->location = $location;
-            $event->amount = 1;
-            $event->description = "Until Morale Improves: Moving Reknown from one Location to an adjacent location";
-        }
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->gamestate->nextState("");
-    }
-
     private function actRecruitMercenary(int $recruitId, string $payWithCards)
     {
         $character = $this->getCardObjectFromDb($recruitId);
@@ -537,10 +422,16 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Character is not a City Character."));
         }
 
-        $discount = $this->globals->get(Game::DISCOUNT);        
+        $discount = $this->globals->get(Game::DISCOUNT, 0);        
 
         $cost = $character->WealthCost - $discount;
         if ($cost < 0) $cost = 0;
+
+        $recruitType = $this->globals->get(Game::RECRUIT_TYPE);
+        if ($recruitType == Game::CIRILO_RECRUIT_TYPE)
+        {
+            $cost = 1;
+        }
 
         $cardIds = json_decode($payWithCards, true);
         
@@ -553,7 +444,7 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+            $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Mercenary is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
@@ -720,6 +611,7 @@ trait FrameworkActionsTrait
         //Set the discount for recruiting a mercenary.
         $discount = $this->theah->getParleyDiscount($character, true);
         $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(GAME::PERFORMER_PARLEYED, true);
 
         $this->gamestate->nextState("parleyChosen");
     }
@@ -732,6 +624,7 @@ trait FrameworkActionsTrait
 
         $discount = $this->theah->getParleyDiscount($character, false);
         $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(GAME::PERFORMER_PARLEYED, false);
         $this->gamestate->nextState("parleyChosen");
     }
 
@@ -769,7 +662,8 @@ trait FrameworkActionsTrait
             "card_inject_code" => $performer->getInjectCode(),
         ]);
 
-        if ($discount > 0)
+        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
+        if ($performerParleyed)
         {
             $this->notifyAllPlayers("message", clienttranslate('${player_name} chose to Parley with ${card_inject_code}.'), [
                 "player_name" => $playerName,
@@ -837,20 +731,18 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState($transition);
     }
 
-    public function actHighDramaEquipActionAttachmentFromHandSelected(int $attachmentId)
+    public function actHighDramaEquipActionAttachmentFromHandSelected(int $id)
     {
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
 
-        //Get the chosen player's hand
-        $handCard = $this->cards->getCard($attachmentId);
-        $card = $this->getCardObjectFromDb($handCard['id']);
-        if ($card->Location != Game::LOCATION_HAND || $card->ControllerId != $playerId) {
+        $attachment = $this->getCardObjectFromDb($id);
+        if ($attachment == null || $attachment->Location != Game::LOCATION_HAND || $attachment->ControllerId != $playerId) 
+        {
             throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
         }
 
-        $attachment = $this->getCardObjectFromDb($attachmentId);
-        $this->globals->set(GAME::CHOSEN_CARD, $attachmentId);
+        $this->globals->set(GAME::CHOSEN_CARD, $id);
 
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
@@ -899,15 +791,11 @@ trait FrameworkActionsTrait
         $equipType = $this->globals->get(Game::EQUIP_TYPE);
 
         //Sanity checks
-        if ($attachment->Location == Game::LOCATION_HAND)
+        if ($attachment->Location != Game::LOCATION_HAND || $attachment->ControllerId != $playerId) 
         {
-            //Get the chosen player's hand
-            $handCard = $this->cards->getCard($attachmentId);
-            $card = $this->getCardObjectFromDb($handCard['id']);
-            if ($card->Location != Game::LOCATION_HAND || $card->ControllerId != $playerId) {
-                throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
-            }
+            throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
         }
+
         // Let's Haggle can equip attachments only from the Bazaar
         if ($equipType == Game::LETS_HAGGLE_EQUIP_TYPE) 
         {
@@ -925,13 +813,13 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(self::_("Attachment is not at Performer's Location."));
             }
         }
-        if (in_array("Armor", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Armor") && $attachment->hasEquipRestriction("Armor")) {
+        if ($attachment->hasTrait("Armor") && $this->characterHasAttachmentOfType($performer, "Armor") && $attachment->hasEquipRestriction("Armor")) {
             throw new \BgaUserException(self::_("Character cannot have more than one Armor attachment."));
         }
-        if (in_array("Attire", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Attire") && $attachment->hasEquipRestriction("Attire")) {
+        if ($attachment->hasTrait("Attire") && $this->characterHasAttachmentOfType($performer, "Attire") && $attachment->hasEquipRestriction("Attire")) {
             throw new \BgaUserException(self::_("Character cannot have more than one Attire attachment."));
         }
-        if (in_array("Weapon", $attachment->Traits) && $this->characterHasAttachmentOfType($performer, "Weapon") && $attachment->hasEquipRestriction("Weapon")) {
+        if ($attachment->hasTrait("Weapon") && $this->characterHasAttachmentOfType($performer, "Weapon") && $attachment->hasEquipRestriction("Weapon")) {
             throw new \BgaUserException(self::_("Character cannot have more than one Weapon attachment."));
         }
 
@@ -949,7 +837,7 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
                 //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+            $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
@@ -969,6 +857,7 @@ trait FrameworkActionsTrait
             ]);
 
             $smuggledUnattachedEvent = EventFactory::createAttachmentUnequippedEvent($playerId, $performer->Id, $smuggledItem->Id);
+            $this->theah->eventCheck($smuggledUnattachedEvent);
             $this->theah->queueEvent($smuggledUnattachedEvent);
 
             $smuggledDiscardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($smuggledItem->ControllerId, $smuggledItem->Id, $smuggledItem->Location);
@@ -1033,6 +922,10 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Performer cannot Claim because it is engaged."));
         }
 
+        if ($performer->DashedInfluence) {
+            throw new \BgaUserException(self::_("Performer cannot Claim because it has a Dashed Influence."));
+        }
+
         $charactersInCity = $this->theah->getCharactersInCityByPlayerId($activePlayerId);
         $characterIds = array_map(fn($character) => $character->Id, $charactersInCity);
 
@@ -1067,7 +960,9 @@ trait FrameworkActionsTrait
     {
         $player_id = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
+
         $action = $this->theah->getInPlayActionById($actionId);
+
         if ($action == null) {
             throw new \BgaUserException(self::_("Action not found."));
         }
@@ -1090,7 +985,11 @@ trait FrameworkActionsTrait
         }
         else
         {
-            $event = EventFactory::createActionTriggeredEvent($player_id, $action->OwnerId, $actionId);
+            $id = Game::THEAH_ID;
+            if ($action instanceof CardAction)
+                $id = $action->OwnerId;
+
+            $event = EventFactory::createActionTriggeredEvent($player_id, $id, $actionId);
             $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
     
@@ -1148,6 +1047,9 @@ trait FrameworkActionsTrait
         }
         else
         {
+            $discount = $this->theah->getActionFromHandDiscount($performer = null, $action);
+            $this->globals->set(Game::DISCOUNT, $discount);
+    
             $this->gamestate->nextState("inHandActionChosen");
         }
     }
@@ -1207,8 +1109,14 @@ trait FrameworkActionsTrait
             if ($card == null)
                 throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
+            //Edge case: Bravos cannot be paid for with a Thug card
+            if ($risk instanceof _01024 && $card->hasTrait('Thug'))
+            {
+                throw new \BgaUserException(self::_("A Thug cannot be used to pay for Bravos."));
+            }
+
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += in_array("Wealth", $card->Traits) ? 2 : 1;
+            $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
@@ -1237,6 +1145,87 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("actionPaidFor");
+    }
+
+    public function actHighDramaChooseBruteStart()
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+        if ($this->theah->playerHasBrutes($player_id) == false) {
+            throw new \BgaUserException(self::_("Brute is not allowed right now."));
+        }
+
+        $this->gamestate->nextState("bruteStart");
+    }
+
+    public function actHighDramaBruteActionBruteChosen(int $id)
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $brute = $this->getCardObjectFromDb($id);
+        if ($brute == null || $brute->Location != Game::LOCATION_HAND || $brute->ControllerId != $playerId) 
+        {
+            throw new \BgaUserException(self::_("Brute is not in Player's Hand."));
+        }
+
+        $discount = $this->theah->getPlayBruteDiscount($brute);
+        $this->globals->set(Game::DISCOUNT, $discount);
+
+        $this->globals->set(GAME::CHOSEN_CARD, $id);
+
+        $this->gamestate->nextState("bruteChosen");
+    }
+
+    public function actPayForBrute(string $payWithCards)
+    {
+        $this->theah->buildCity();
+        $playerId = $this->getActivePlayerId();
+
+        $bruteId = $this->globals->get(GAME::CHOSEN_CARD);
+        $brute = $this->getCardObjectFromDb($bruteId);
+
+        //Sanity checks
+        if ($brute == null || $brute->Location != Game::LOCATION_HAND || $brute->ControllerId != $playerId) 
+        {
+            throw new \BgaUserException(self::_("Brute is not in Player's Hand."));
+        }
+
+        $discount = $this->globals->get(Game::DISCOUNT);
+        $cost = $brute->WealthCost - $discount;
+        if ($cost < 0) $cost = 0;
+
+        $cardIds = json_decode($payWithCards, true);
+        
+        //Total up the wealth of the cards to see if player paid correctly
+        $totalWealth = 0;
+        foreach ($cardIds as $cardId) {
+            $card = $this->getCardObjectFromDb($cardId);
+            if ($card == null)
+                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
+
+            //If $card has wealth in its traits, add it to the total wealth
+            $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
+        }
+        if ($totalWealth != $cost) {
+            throw new \BgaUserException(sprintf(self::_("Cost of Brute is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+        }
+
+        $playerId = $this->getActivePlayerId();
+
+        //Move the cards used to pay to the player's discard pile
+        foreach ($cardIds as $cardId) 
+        {
+            $card = $this->getCardObjectFromDb($cardId);
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $asPayment = true);
+            $this->theah->queueEvent($event);
+        }
+
+        $musterEvent = EventFactory::createCharacterMusteredEvent($playerId, $brute->Id, Game::LOCATION_PLAYER_HOME);
+        $this->theah->queueEvent($musterEvent);
+
+        $this->globals->set(GAME::PASS_COUNT, 0);
+        $this->gamestate->nextState("brutePaidFor");
     }
 
     public function actHighDramaChallengeActionStart()
@@ -1393,7 +1382,7 @@ trait FrameworkActionsTrait
 
         $target = $this->theah->getCardById($this->globals->get(GAME::CHOSEN_TARGET));
         if ($target->Location != $character->Location) {
-            throw new \BgaUserException(self::_("Character is not at the same location as the target."));
+            throw new \BgaUserException(self::_("Character is not at the same location"));
         }    
 
         //Special case for Carmella Vanessa Slavaggi
@@ -1434,7 +1423,7 @@ trait FrameworkActionsTrait
 
         $engageRequired = true;
         //If Odette was the target, and intervening character is a Musketeer, they are not required to engage
-        if ($target instanceof _01062 && in_array("Musketeer", $character->Traits))
+        if ($target instanceof _01062 && $character->hasTrait("Musketeer"))
         {
             $this->notifyAllPlayers("message", clienttranslate('${character_name} does not need to engage because they are a Musketeer intervening for Odette.'), [
                 "i18n" => ["character_name"],
@@ -1509,22 +1498,6 @@ trait FrameworkActionsTrait
         $this->theah->queueEvent($threatEvent);
 
         $this->gamestate->nextState("techniqueChosen");
-    }
-
-    public function actDuelActionResolveTechnique_01013 (bool $useThrust)
-    {
-        $this->theah->buildCity();
-        $techniqueId = $this->globals->get(Game::CHOSEN_TECHNIQUE);
-        $technique = $this->theah->getTechniqueById($techniqueId);
-
-        if ($technique instanceof Technique_01013)
-        {
-            $technique->UseThrust = $useThrust;
-            $owner = $this->theah->getCharacterById($technique->OwnerId);
-            $owner->IsUpdated = true;        
-        }
-
-        $this->gamestate->nextState("");
     }
 
     public function actDuelActionGamble()
@@ -1629,7 +1602,7 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += in_array("Wealth", $payCard->Traits) ? 2 : 1;
+            $totalWealth += $payCard->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
@@ -1913,7 +1886,7 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += in_array("Wealth", $payCard->Traits) ? 2 : 1;
+            $totalWealth += $payCard->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));

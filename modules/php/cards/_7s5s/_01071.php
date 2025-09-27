@@ -39,6 +39,8 @@ class _01071 extends Scheme implements IHasActions
             "Glory",
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01071(),
         ];
@@ -63,7 +65,7 @@ class _01071 extends Scheme implements IHasActions
         if ($event instanceof EventCardMoved && $this->Location == Game::LOCATION_PLAYER_HOME && $event->initiatingPlayerId == $this->ControllerId)
         {
             $character = $event->theah->getCharacterById($event->cardId);
-            if (in_array("Musketeer", $character->Traits))
+            if ($character->hasTrait("Musketeer"))
             {
                 $addInfluence = false;
                 $removeInfluence = false;
@@ -125,7 +127,7 @@ class _01071 extends Scheme implements IHasActions
         {
             // Do we have any Musketeers in that location?
             $characters = $event->theah->getCharactersAtLocation($event->location);
-            $musketeers = array_filter($characters, fn($character) => in_array("Musketeer", $character->Traits));
+            $musketeers = array_filter($characters, fn($character) => $character->hasTrait("Musketeer"));
             if (count($musketeers) > 0)
             {
                 $location = $event->theah->getCityLocation($event->location);
@@ -144,7 +146,7 @@ class _01071 extends Scheme implements IHasActions
         if ($event instanceof EventReknownRemovedFromLocation && $this->Location == Game::LOCATION_PLAYER_HOME)
         {
             $characters = $event->theah->getCharactersAtLocation($event->location);
-            $musketeers = array_filter($characters, fn($character) => in_array("Musketeer", $character->Traits));
+            $musketeers = array_filter($characters, fn($character) => $character->hasTrait("Musketeer"));
             if (count($musketeers) > 0)
             {
                 $location = $event->theah->getCityLocation($event->location);
@@ -172,7 +174,9 @@ class _01071 extends Scheme implements IHasActions
             $playerId, 
             $character->Id, 
             $character->ModifiedInfluence, 
-            $character->ModifiedInfluence + 1);
+            $character->ModifiedInfluence + 1,
+            $this->getInjectCode()
+        );
 
         $theah->eventCheck($modifiedEvent);
         $theah->queueEvent($modifiedEvent);
@@ -189,7 +193,9 @@ class _01071 extends Scheme implements IHasActions
             $playerId, 
             $character->Id, 
             $character->ModifiedInfluence, 
-            $character->ModifiedInfluence - 1);
+            $character->ModifiedInfluence - 1,
+            $this->getInjectCode()
+        );
 
         $theah->eventCheck($modifiedEvent);
         $theah->queueEvent($modifiedEvent);

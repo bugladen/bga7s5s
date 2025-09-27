@@ -36,6 +36,8 @@ class _01157 extends FactionAttachment implements IHasTechniques
             'Knife',
         ];
 
+        $this->resetCard();
+
         $technique = new Technique_DestroyPlusOneThrust();
         $technique->setId("Technique_01157");
         $this->Techniques = [

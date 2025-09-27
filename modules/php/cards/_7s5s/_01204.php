@@ -39,6 +39,8 @@ class _01204 extends CityAttachment implements IHasTechniques
             'Unique',
         ];
 
+        $this->resetCard();
+
         $this->Techniques = [
             new Technique_01204(),
         ];

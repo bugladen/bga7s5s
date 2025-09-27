@@ -32,6 +32,8 @@ class _01098 extends Scheme
             "Logistics", 
             "Sabotage",
         ];
+
+        $this->resetCard();
     }
 
     public function handleEvent(Event $event)

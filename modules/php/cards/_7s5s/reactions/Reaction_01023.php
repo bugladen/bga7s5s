@@ -7,10 +7,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeAccepted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01023 extends RiskReaction
@@ -84,7 +86,7 @@ class Reaction_01023 extends RiskReaction
             }
         }
 
-        if ($event instanceof EventDuskEndOfDay)
+        if ($event instanceof EventChallengeAccepted || $event instanceof EventChallengeRejected || $event instanceof EventPlayerTurnEnd)
         {
             $this->PreventIntervention = false;
             $owner = $this->getOwningCard($event->theah);
@@ -117,7 +119,7 @@ class Reaction_01023 extends RiskReaction
             //Get all characters at the location of the challenge
             $characters = $theah->getCharactersAtLocation($challengeLocation, $owner->ControllerId);
             //Filter out characters that are owned by the player and have the Brute trait
-            $characters = array_filter($characters, fn($character) => $character->OwnerId == $owner->ControllerId && in_array('Brute', $character->Traits));
+            $characters = array_filter($characters, fn($character) => $character->OwnerId == $owner->ControllerId && $character->hasTrait('Brute'));
             if (count($characters) > 0)
             {
                 $discount += 1;

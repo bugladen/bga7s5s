@@ -27,6 +27,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardAddedToCityDiscardPile', 500],
             ['cardAddedToHand', 2000],
             ['cardDiscardedFromHand', 500],
+            ['cardRemovedFromHand', 500],
             ['cardDiscardedFromPlay', 500],
             ['cardEngaged', 1000],
             ['cardEngarded', 1000],
@@ -70,6 +71,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['reknownRemovedFromLocation', 500],
             ['reknownUpdatedOnCard', 500],
             ['cardSentToLocker', 500],
+            ['actionAdded', 1],
+            ['actionRemoved', 1],
             ['techniqueAdded', 1],
             ['techniqueRemoved', 1],
             ['techniqueUsed', 1],
@@ -217,7 +220,37 @@ return declare('seventhseacityoffivesails.notifications', null, {
             this.createTooltipForCard(card);
         }
     },
-    
+
+    notif_actionAdded: function( notif )
+    {
+        debug( 'notif_actionAdded' );
+        debug( notif );
+        
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        if (card)
+        {
+            //Add the action to the card
+            card.actions.push(args.action);
+            this.createTooltipForCard(card);
+        }
+    },
+
+    notif_actionRemoved: function( notif )
+    {
+        debug( 'notif_actionRemoved' );
+        debug( notif );
+        
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        if (card)
+        {
+            //Remove the action from the card
+            card.actions = card.actions.filter(action => action.id !== args.actionId);
+            this.createTooltipForCard(card);
+        }
+    },
+
     notif_techniqueUsed: function( notif )
     {
         debug( 'notif_techniqueUsed' );
@@ -546,6 +579,20 @@ return declare('seventhseacityoffivesails.notifications', null, {
         player.discard.push(card);
     },
 
+    notif_cardRemovedFromHand: function( notif )
+    {
+        debug( 'notif_cardRemovedFromHand' );
+        debug( notif );
+
+        const args = notif.args;
+
+        if (notif.args.playerId == this.player_id)
+        {
+            this.factionHand.removeFromStockById(args.cardId);
+            $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
+        }
+    },
+
     notif_cardMoved: function( notif )
     {
         debug( 'notif_cardMoved' );
@@ -596,8 +643,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
+
         const cardId = this.createCardId(args.character, args.location);
-        const target = this.getTargetElementForLocation(args.location, args.playerId);
+        const target = this.getTargetElementForLocation(args.location, args.player_id);
         this.createCard(cardId, args.character, target);
     },
 

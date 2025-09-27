@@ -32,5 +32,7 @@ class _01176 extends Risk implements IHasActions
         $this->Actions = [
             new Action_01176(),
         ];
+
+        $this->resetCard();
     }
 }

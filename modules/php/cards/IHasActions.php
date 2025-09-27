@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 interface IHasActions
@@ -19,5 +20,9 @@ interface IHasActions
 
     public function getActionsArray(Game $game): Array;
 
-    public function updateActionOwnerIds($id);    
+    public function updateActionOwnerIds($id);
+
+    public function addAction(CardAction $action, Game $game);
+
+    public function removeAction(CardAction $action, Game $game);
 }

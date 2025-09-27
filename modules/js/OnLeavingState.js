@@ -345,6 +345,32 @@ onLeavingState: function( stateName )
             }
         },
 
+        'highDramaBruteActionChooseBrute': () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.factionHand.getAllItems().forEach((card, index) => {
+                    let div = this.factionHand.getItemDivId(card.id);
+                    dojo.removeClass(div, '_7sfs-selectable');
+                });
+                this.factionHand.setSelectionMode(0);
+            }
+        },
+
+        'highDramaBruteActionPayForBrute': () => {
+            if (this.isCurrentPlayerActive()) 
+            {
+                this.factionHand.getAllItems().forEach((card, index) => {
+                    let div = this.factionHand.getItemDivId(card.id);
+                    if (dojo.hasClass(div, '_7sfs-unselectable')) {
+                        dojo.removeClass(div, '_7sfs-unselectable');
+                        dojo.destroy(`${div}_wealth_cost`);
+                    }
+                });
+                this.factionHand.setSelectionMode(0);
+                $('faction_hand_info').innerHTML = '';
+            }
+        },
+
         'duelChooseAction': () => {
             if (this.isCurrentPlayerActive()) {
                 this.factionHand.setSelectionMode(0);

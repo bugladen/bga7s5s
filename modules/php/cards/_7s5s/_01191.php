@@ -34,6 +34,8 @@ class _01191 extends CityAttachment implements IHasActions
             'Pistol',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01191(),
         ];

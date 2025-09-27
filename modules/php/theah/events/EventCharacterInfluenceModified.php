@@ -8,6 +8,7 @@ class EventCharacterInfluenceModified extends Event
     public int $CharacterId;
     public int $OldInfluence;
     public int $NewInfluence;
+    public string $Reason;
 
     public function __construct()
     {
@@ -17,5 +18,6 @@ class EventCharacterInfluenceModified extends Event
         $this->CharacterId = 0;
         $this->OldInfluence = 0;
         $this->NewInfluence = 0;
+        $this->Reason = '';
     }
 }

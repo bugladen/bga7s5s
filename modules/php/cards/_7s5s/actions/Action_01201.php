@@ -32,7 +32,7 @@ class Action_01201 extends CharacterAction implements ISorcererAbility
             return false;
         }
 
-        if (! in_array("Sorcerer", $ravenna->Traits))
+        if (! $ravenna->hasTrait("Sorcerer"))
         {
             return false;
         }
@@ -58,10 +58,12 @@ class Action_01201 extends CharacterAction implements ISorcererAbility
             $event->theah->eventCheck($woundEvent);
             $event->theah->queueEvent($woundEvent);
 
-            $card = $event->theah->game->playerDrawCard($event->playerId);
-            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $card, $ravenna->getInjectCode());
+            $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $ravenna->getInjectCode());
             $event->theah->queueEvent($addEvent);
 
+            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($ravenna->ControllerId, $ravenna->Id, $this->Id, $ravenna->Id, $ravenna->Location);
+            $event->theah->queueEvent($sorcererEvent);
+            
             $this->setUsed($event->theah, true);
             $this->resetPlayerPassCount($event->theah->game);
         }

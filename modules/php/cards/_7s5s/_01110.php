@@ -31,6 +31,8 @@ class _01110 extends Risk implements IHasManeuvers
             'Aldana',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01110(),
         ];

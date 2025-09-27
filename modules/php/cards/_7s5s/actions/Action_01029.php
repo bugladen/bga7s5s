@@ -1,7 +1,8 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -87,8 +88,7 @@ class Action_01029 extends RiskAction
             $performer = $game->theah->getCardById($performerId);
     
             $characters = $game->theah->getCharactersAtLocation($performer->Location);
-            //Filter out characters owned by the player
-            $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId != $performer->ControllerId));
+            $characters = array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($performer->ControllerId)));
             $args['ids'] = array_map(fn($character) => $character->Id, $characters);
         }
 
@@ -105,8 +105,7 @@ class Action_01029 extends RiskAction
             $performer = $game->theah->getCardById($performerId);
     
             $characters = $game->theah->getCharactersAtLocation($performer->Location);
-            //Filter out characters owned by the player
-            $characters = array_filter($characters, fn($character) => $character->ControllerId != $performer->ControllerId);
+            $characters = array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($performer->ControllerId)));
     
             $character_ids = array_map(fn($character) => $character->Id, $characters);
     
@@ -120,8 +119,11 @@ class Action_01029 extends RiskAction
             $target = $game->theah->getCardById($id);
             $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $target->Id, $owner->Id);
             $game->theah->queueEvent($event);
+
+            $this->announceAction($game);
+            $this->resetPlayerPassCount($game);
     
-            $game->gamestate->nextState("cardChosen");
+            $game->gamestate->nextState();
         }
     }
 }

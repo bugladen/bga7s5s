@@ -13,13 +13,12 @@ declare(strict_types=1);
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\GameFramework\Components\Deck;
-use Bga\GameFramework\Components\Table;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
-class Game extends \Table
+class Game extends \Bga\GameFramework\Table
 {
     // Phases of the day
     final const SETUP_PHASE = 0;
@@ -30,6 +29,8 @@ class Game extends \Table
     final const DUSK = 5;
 
     final const THEAH_ID = 777777;
+    final const PLAYERS_THAT_USED_OLES_INN = "playersThatUsedOlesInn";
+    final const PLAYERS_THAT_USED_GOVERNORS_GARDEN = "playersThatUsedGovernorsGarden";
 
     //Game options
     final const OPTIONS_CITY_DECK = 100;
@@ -46,6 +47,7 @@ class Game extends \Table
     final const LOCATION_APPROACH = 'Approach';
     final const LOCATION_HAND = 'hand';
     final const LOCATION_PURGATORY = 'Purgatory';
+    final const LOCATION_PERMANENTLY_HIDDEN = 'Permanently Hidden';
 
     //Global variable names
     final const FIRST_PLAYER = "firstPlayer";
@@ -59,6 +61,7 @@ class Game extends \Table
     final const STAT_FINESSE = "Finesse";
     final const STAT_INFLUENCE = "Influence";
     final const PASS_COUNT = "passCount";
+    final const MULTI_STATE_INITIATING_PLAYER = "multiStateInitiatingPlayer";
 
     //Conditions
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";
@@ -79,16 +82,23 @@ class Game extends \Table
     final const RECRUIT_TYPE = "recruitType";
     final const NORMAL_RECRUIT_TYPE = 0;
     final const KASPAR_RECRUIT_TYPE = 1;
+    final const CIRILO_RECRUIT_TYPE = 2;
 
     //Pressure global variables
     final const CLAUD_ID = "claudeId"; //When Claude is in play, this is the ID of the card that caused the claim type
+    final const CONSTANZO_ID = "constanzoId"; //When Contanzo is in play, this is the ID of the card that caused the claim type
     final const PRESSURE_TYPE = "pressureType";
+    final const PRESSURE_BONUS = "pressureBonus";
     final const NORMAL_PRESSURE_TYPE = 0;
     //These must be binary flags
     final const CLAUDE_PRESSURE_TYPE = 1;
     final const CAPTAINS_COAT_PRESSURE_TYPE = 2;
     final const REPUTATION_MERITEE_PRESSURE_TYPE = 4;
     final const TABARD_PRESSURE_TYPE = 8;
+    final const CONSTANZO_PRESSURE_TYPE = 16;
+    final const CONTEMPT_AND_HATRED_PRESSURE_TYPE = 32;
+    final const PACK_TACTICS_PRESSURE_TYPE = 64;
+    final const PULL_THE_STRAND_PRESSURE_TYPE = 128;
 
     //Player action global variables
     //Delete these in stNextPlayer
@@ -100,6 +110,7 @@ class Game extends \Table
     final const CHOSEN_LOCATION = "chosenLocation";
     final const CHOSEN_ACTION = "chosenAction";
     final const CHOSEN_PERFORMER = "chosenPerformer";
+    final const PERFORMER_PARLEYED = "performerParleyed";
     final const CHOSEN_ATTACHMENT = "chosenAttachment";
     final const CHOSEN_TARGET = "chosenTarget";
     final const CHOSEN_TECHNIQUE_IS_MAIN = "chosenTechniqueIsMain";
@@ -113,6 +124,7 @@ class Game extends \Table
     final const TRANSITION_INTERNAL_ID = "transitionInternalId";
     final const REACTION_ID = "reactionId";
     final const REVEALED_CARDS = "revealedCards";
+    final const ABNORMAL_FLOW = "abnormalFlow";
 
     //Challenge global variables
     final const CHALLENGE_CANCELLED = "challengeCancelled";
@@ -125,6 +137,8 @@ class Game extends \Table
     final const LEGENDARY_REPUTATION_CHALLENGE_TYPE = 5;
     final const DANIELA_DEITRICH_CHALLENGE_TYPE = 6;
     final const MOVE_ALONG_CHALLENGE_TYPE = 7;
+    final const SERVO_SCARPA_CHALLENGE_TYPE = 8;
+    final const VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
 
     //Duel global variables
     //Duel Names

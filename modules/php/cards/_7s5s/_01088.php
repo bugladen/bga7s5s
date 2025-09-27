@@ -36,6 +36,8 @@ class _01088 extends Risk implements IHasManeuvers, IHasReactions
             'Valroux',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01088(),
         ];

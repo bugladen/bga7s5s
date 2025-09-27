@@ -32,6 +32,8 @@ class _01145 extends Scheme
             "Bureaucracy", 
             "Camaraderie",
         ];
+
+        $this->resetCard();
     }
 
     public function handleEvent(Event $event)
@@ -208,8 +210,7 @@ class _01145 extends Scheme
         //Each player will now draw a card
         $players = $game->loadPlayersBasicInfos();
         foreach ($players as $playerId => $player) {
-            $card = $game->playerDrawCard($playerId);
-            $addEvent = EventFactory::createCardDrawnEvent($playerId, $card, sprintf($game->translate("%s effect"), $this->getInjectCode()));
+            $addEvent = EventFactory::createCardDrawnEvent($playerId, sprintf($game->translate("%s effect"), $this->getInjectCode()));
             $game->theah->queueEvent($addEvent);
         }
 
@@ -233,8 +234,7 @@ class _01145 extends Scheme
 
         if ($lowestPlayer != 0)
         {
-            $card = $game->playerDrawCard($lowestPlayer);
-            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, $card, sprintf($game->translate("%s effect - player has fewest reknown"), $this->getInjectCode()));   
+            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, sprintf($game->translate("%s effect - player has fewest reknown"), $this->getInjectCode()));   
             //No need for a check
             $game->theah->queueEvent($addEvent);
         }
@@ -244,8 +244,7 @@ class _01145 extends Scheme
 
         if ($lowestPlayer != null && $lowestPlayer == $this->ControllerId)
         {
-            $card = $game->playerDrawCard($lowestPlayer);
-            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, $card, sprintf($game->translate("%s effect - player has fewest characters in play"), $this->getInjectCode()));
+            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, sprintf($game->translate("%s effect - player has fewest characters in play"), $this->getInjectCode()));
             //No need for a check
             $game->theah->queueEvent($addEvent);
         }

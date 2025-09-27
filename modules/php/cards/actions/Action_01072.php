@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01072 extends CardAction
@@ -69,6 +70,13 @@ class Action_01072 extends CardAction
             $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $scheme->Id, "01072", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
+
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01072_2", $this->Id);
+            $event->theah->queueEvent($transitionEvent);
+        }
     }
 
     public function stateFromAction(Game $game, int $state, string $stateName): void
@@ -81,19 +89,13 @@ class Action_01072 extends CardAction
             $leader = $game->theah->getLeaderByPlayerId($owner->ControllerId);
 
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE);
-            [$success, $totals] = $game->pressureLocation($owner->ControllerId, $leader, Game::STAT_INFLUENCE);
+            [$success, $totals, $difference] = $game->pressureLocation($owner->ControllerId, $leader, Game::STAT_INFLUENCE);
 
-            $pressuredEvent = EventFactory::createLocationPressuredEvent($owner->ControllerId, $leader->Id, $leader->Location, Game::STAT_INFLUENCE, $success, $totals);
+            $pressuredEvent = EventFactory::createLocationPressuredEvent($owner->ControllerId, $leader->Id, $leader->Location, Game::STAT_INFLUENCE, $success, $totals, $difference);
+            $pressuredEvent->abilityId = $this->Id;
             $game->theah->queueEvent($pressuredEvent);
 
-            if ($success)
-            {
-                $game->gamestate->nextState("success");
-            }
-            else
-            {
-                $game->gamestate->nextState("failure");
-            }
+            $game->gamestate->nextState();
         }
     }
 

@@ -31,6 +31,8 @@ class _01080 extends Risk implements IHasReactions
             'Rumor',
         ];
 
+        $this->resetCard();
+
         $this->Reactions = [
             new Reaction_01080(),
         ];

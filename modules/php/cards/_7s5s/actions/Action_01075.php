@@ -53,12 +53,7 @@ class Action_01075 extends AttachmentAction
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
-                'i18n' => ['action'],
-                'player_name' => $game->getPlayerNameById($owner->ControllerId),
-                'action' => $this->Name,
-                'owner_inject_code' => $owner->getInjectCode(),
-            ]);
+            $this->announceAction($game);
 
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id);
             $event->theah->queueEvent($engageEvent);

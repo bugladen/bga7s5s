@@ -2,7 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -56,8 +55,9 @@ abstract class Character extends Card implements IHasTechniques
         $this->IsDying = false;
     }
 
-    public function resetModifiedCharacterStats()
+    public function resetCard()
     {
+        parent::resetCard();
         $this->ModifiedResolve = $this->Resolve;
         $this->ModifiedCombat = $this->Combat;
         $this->ModifiedFinesse = $this->Finesse;
@@ -186,23 +186,9 @@ abstract class Character extends Card implements IHasTechniques
             if ($this->Wounds >= $this->ModifiedResolve)
             {
                 $this->IsDying = true;
+
+                $this->unEquipAllAttachments($event->theah);
                 
-                //Unequip all attachments
-                foreach ($this->Attachments as $attachmentId)
-                {
-                    $attachment = $event->theah->getCardById($attachmentId);
-
-                    $unattached = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $this->Id, $attachment->Id);
-                    $event->theah->queueEvent($unattached);
-
-                    if ($attachment instanceof CityAttachment)
-                        $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($this->ControllerId, $attachment->Id, $attachment->Location);
-                    else
-                        $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location);
-
-                    $event->theah->queueEvent($discardEvent);
-                }
-
                 //Send this to the locker
                 $destroyEvent = EventFactory::createCharacterDestroyedEvent($this->ControllerId, $this->Id, $event->reason);
                 $event->theah->queueEvent($destroyEvent);
@@ -235,6 +221,24 @@ abstract class Character extends Card implements IHasTechniques
         {
             $this->IsDying = false;
             $this->IsUpdated = true;
+        }
+    }
+
+    public function unEquipAllAttachments(Theah $theah)
+    {
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getCardById($attachmentId);
+
+            $unattached = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $this->Id, $attachment->Id);
+            $theah->queueEvent($unattached);
+
+            if ($attachment instanceof CityAttachment)
+                $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($this->ControllerId, $attachment->Id, $attachment->Location);
+            else
+                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location);
+
+            $theah->queueEvent($discardEvent);
         }
     }
 

@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Brute;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -22,6 +23,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
@@ -67,6 +69,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventThreatModified;
@@ -263,28 +266,33 @@ trait EventHub
                 break;
 
             case $event instanceof EventCardDrawn:
-                $event->card->Location = Game::LOCATION_HAND;
-                $event->card->IsUpdated = true;
-
-                $deck = $this->game->getGameDeckObject();
-                $hand = $deck->getCardsInLocation(Game::LOCATION_HAND, $event->playerId);
-                $count = count($hand);
-
-                $this->game->notifyPlayer($event->playerId, "drawCard", clienttranslate('Private: You drew ${card_inject_code} because of ${reason}.'), [
-                    'i18n' => ['card_name', 'reason'],
-                    "card_inject_code" => $event->card->getInjectCode(),
-                    "card" => $event->card->getPropertyArray($this->game),
-                    "reason" => $event->reason,
-                ]);
-
-                // Notify players that card has been added to hand
-                $this->game->notifyAllPlayers("drawCardMessage", clienttranslate('${player_name} drew a card into their Faction Hand because of ${reason}.'), [
-                    'i18n' => ['reason'],
-                    "playerId" => $event->playerId,
-                    "player_name" => $this->game->getPlayerNameById($event->playerId),
-                    "reason" => $event->reason,
-                    "count" => $count,
-                ]);
+                $handler = function (Theah $theah, EventCardDrawn $event)
+                {
+                    $card = $theah->game->playerDrawCard($event->playerId);
+                    $card->Location = Game::LOCATION_HAND;
+                    $card->IsUpdated = true;
+    
+                    $deck = $theah->game->getGameDeckObject();
+                    $hand = $deck->getCardsInLocation(Game::LOCATION_HAND, $event->playerId);
+                    $count = count($hand);
+    
+                    $theah->game->notifyPlayer($event->playerId, "drawCard", clienttranslate('Private: You drew ${card_inject_code} because of ${reason}.'), [
+                        'i18n' => ['card_name', 'reason'],
+                        "card_inject_code" => $card->getInjectCode(),
+                        "card" => $card->getPropertyArray($theah->game),
+                        "reason" => $event->reason,
+                    ]);
+    
+                    // Notify players that card has been added to hand
+                    $theah->game->notifyAllPlayers("drawCardMessage", clienttranslate('${player_name} drew a card into their Faction Hand because of ${reason}.'), [
+                        'i18n' => ['reason'],
+                        "playerId" => $event->playerId,
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "reason" => $event->reason,
+                        "count" => $count,
+                    ]);
+                };
+                $handler($this, $event);
                 break;
 
             case $event instanceof EventCardAddedToCityDeck:
@@ -411,16 +419,26 @@ trait EventHub
 
             case $event instanceof EventCardDiscardedFromPlay:
                 $handler = function (Theah $theah, EventCardDiscardedFromPlay $event)
-                    {
-                        $discardPileName = $theah->game->getPlayerDiscardDeckName($event->ownerId);
+                {
+                    $discardPileName = $theah->game->getPlayerDiscardDeckName($event->ownerId);
 
-                        $deck = $theah->game->getGameDeckObject();
-                        $deck->moveCard($event->cardId, $discardPileName);
-    
-                        $card = $theah->getCardById($event->cardId);
-                        $card->Location = $discardPileName;
-                        $card->IsUpdated = true;
-    
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->moveCard($event->cardId, $discardPileName);
+
+                    $card = $theah->getCardById($event->cardId);
+                    if ($card instanceof Character)
+                    {
+                        //Character has been destroyed, so recreate it because it has no memory of past state
+                        $fullClassname = get_class($card);
+                        $pos = strrpos($fullClassname, '\\');
+                        $className = substr($fullClassname, $pos + 2);
+                        $card = $theah->game->instantiateCard($className, $event->cardId);            
+                        $theah->addCardToWorld($card);
+                    }
+                    $card->Location = $discardPileName;
+                    $card->Engaged = false;
+                    $card->IsUpdated = true;
+
                     $this->game->notifyAllPlayers("cardDiscardedFromPlay", clienttranslate('${card_inject_code} discarded from ${location}.'), [
                         'i18n' => ['location'],
                         "playerId" => $event->ownerId,
@@ -428,9 +446,9 @@ trait EventHub
                         "cardId" => $event->cardId,
                         "location" => $event->fromLocation,
                     ]);
-                    };
-                    $handler($this, $event);
-                    break;
+                };
+                $handler($this, $event);
+                break;
 
             case $event instanceof EventCardEngaged:
                 $handler = function (Theah $theah, EventCardEngaged $event)
@@ -462,7 +480,20 @@ trait EventHub
                     ]);
                 };
                 $handler($this, $event);
-                break;                
+                break;
+
+            case $event instanceof EventCardHidden:
+                $handler = function (Theah $theah, EventCardHidden $event)
+                {
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->moveCard($event->cardId, Game::LOCATION_PERMANENTLY_HIDDEN);
+
+                    $card = $theah->getCardById($event->cardId);
+                    $card->Location = Game::LOCATION_PERMANENTLY_HIDDEN;
+                    $card->IsUpdated = true;
+                };
+                $handler($this, $event);
+                break;
 
             case $event instanceof EventCardMoved:
                 $handler = function (Theah $theah, EventCardMoved $event)
@@ -527,15 +558,16 @@ trait EventHub
                 $handler = function (Theah $theah, EventCharacterInfluenceModified $event)
                 {
                     $character = $theah->getCharacterById($event->CharacterId);
-                    $character->ModifiedInfluence = $event->NewInfluence;
+                    $character->ModifiedInfluence = max(0, $event->NewInfluence);
                     $character->IsUpdated = true;
 
-                    $theah->game->notifyAllPlayers("characterInfluenceModified", clienttranslate('The influence of ${character_name} went from ${oldInfluence} to ${newInfluence}.'), [
+                    $theah->game->notifyAllPlayers("characterInfluenceModified", clienttranslate('The influence of ${character_name} went from ${oldInfluence} to ${newInfluence} due to: ${reason}.'), [
                         'i18n' => ['character_name'],
                         "character_name" => $character->Name,
                         "characterId" => $character->Id,
                         "oldInfluence" => $event->OldInfluence, 
                         "newInfluence" => $event->NewInfluence,
+                        "reason" => $event->Reason,
                     ]);
                 };
                 $handler($this, $event);
@@ -553,9 +585,13 @@ trait EventHub
                         $character->ControllerId = $event->playerId;
                         $character->IsUpdated = true;
                         $theah->addCardToWorld($character);        
+
+                        $message = clienttranslate('${player_name} musters ${character_inject_code} at ${location}.');
+                        if ($event->location != Game::LOCATION_PLAYER_HOME)
+                            $message = clienttranslate('${player_name} plays ${character_inject_code} at ${location}.');
         
                         // Notify players of mustered character
-                        $theah->game->notifyAllPlayers("characterMustered", clienttranslate('${player_name} musters ${character_inject_code} at ${location}.'), [
+                        $theah->game->notifyAllPlayers("characterMustered", $message, [
                             'i18n' => ['location'],
                             "player_id" => $event->playerId,
                             "player_name" => $theah->game->getPlayerNameById($event->playerId),
@@ -625,18 +661,47 @@ trait EventHub
                 $handler = function (Theah $theah, EventLocationPressured $event)
                 {
                     $performer = $theah->getCharacterById($event->performerId);
-                    $theah->game->notifyAllPlayers("locationPressured", clienttranslate('${player_name} chose ${performer_inject_code} to ${result} Pressure ${location}.
+                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} chose ${performer_inject_code} to Pressure ${location}.
                     <br>Pressure Type: ${pressureType}
                     <br>Influence Totals: ${totals}'), [
                         'i18n' => ['location', 'pressureType'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
                         "performer_inject_code" => $performer->getInjectCode(),
-                        "result" => $event->success ? clienttranslate("SUCCESSFULLY") : clienttranslate("UNSUCCESSFULLY"),
-                        "totals" => $event->totalsExplanation,
+                        "location" => $event->location,
                         "pressureType" => $event->pressureType,
-                        "playerId" => $event->playerId,
-                        "location" => $performer->Location,
+                        "totals" => $event->totalsExplanation,
                     ]);
+
+                    $pressureResultEvent = EventFactory::createLocationPressureResultEvent(
+                        $event->playerId, 
+                        $event->performerId, 
+                        $event->location, 
+                        $event->pressureType, 
+                        $event->success, 
+                        $event->totalsExplanation, 
+                        $event->highDramaBasicAction, 
+                        $event->abilityId);
+                    $theah->queueEvent($pressureResultEvent);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventLocationPressureResult:
+                $handler = function (Theah $theah, EventLocationPressureResult $event)
+                {
+                    $performer = $theah->getCharacterById($event->performerId);
+                    $theah->game->notifyAllPlayers("message", clienttranslate('Pressure Result: ${result}.'), [
+                        "result" => $event->success ? clienttranslate("SUCCESS") : clienttranslate("FAILED"),
+                    ]);
+
+                    if ($event->highDramaBasicAction && $event->success)
+                    {
+                        $theah->game->setControllerForLocation($performer->Location, $event->playerId);
+                
+                        $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $performer->Id, $performer->Location);
+                        $theah->eventCheck($claimEvent);
+                        $theah->queueEvent($claimEvent);
+                    }
                 };
                 $handler($this, $event);
                 break;
@@ -1381,26 +1446,46 @@ trait EventHub
                 {
                     $character = $theah->getCardById($event->characterId);
                     $locker = $theah->game->getPlayerLockerName($character->ControllerId);
-                    $deck = $theah->game->getGameDeckObject();
-                    $deck->moveCard($event->characterId, $locker);
+                    $location = $locker;
 
-                    //Card has been moved to the locker, so recreate it because it has no memory of past state
+                    if ($character instanceof Brute)
+                    {
+                        $discardPileName = $theah->game->getPlayerDiscardDeckName($character->ControllerId);
+                        $location = $discardPileName;
+                        $deck = $theah->game->getGameDeckObject();
+                        $deck->moveCard($event->characterId, $discardPileName);
+
+                        $this->game->notifyAllPlayers("cardDiscardedFromPlay", clienttranslate('${card_inject_code} has been destroyed and sent to the discard pile due to: ${reason} '), [
+                            'i18n' => ['location'],
+                            "playerId" => $character->ControllerId,
+                            "card_inject_code" => $character->getInjectCode(),
+                            "cardId" => $character->Id,
+                            "location" => $character->Location,
+                            "reason" => $event->reason,
+                        ]);
+                        }
+                    else
+                    {
+                        $deck = $theah->game->getGameDeckObject();
+                        $deck->moveCard($event->characterId, $locker);
+
+                        $theah->game->notifyAllPlayers("characterDestroyed", clienttranslate('${target_inject_code} has been destroyed and sent to the locker due to: ${reason} '), [
+                            'i18n' => ['reason'],
+                            "playerId" => $event->playerId,
+                            "target_inject_code" => $character->getInjectCode(),
+                            "characterId" => $event->characterId,
+                            "reason" => $event->reason,
+                        ]);
+                    }
+
+                    //Card has been destroyed, so recreate it because it has no memory of past state
                     $fullClassname = get_class($character);
                     $pos = strrpos($fullClassname, '\\');
                     $className = substr($fullClassname, $pos + 2);
-                    $character = $theah->game->instantiateCard($className);            
-                    $character->setId($event->characterId);
-                    $character->Location = $locker;
+                    $character = $theah->game->instantiateCard($className, $event->characterId);            
+                    $character->Location = $location;
                     $character->IsUpdated = true;
                     $theah->addCardToWorld($character);
-
-                    $theah->game->notifyAllPlayers("characterDestroyed", clienttranslate('${target_inject_code} has been destroyed and sent to the locker due to: ${reason} '), [
-                        'i18n' => ['reason'],
-                        "playerId" => $event->playerId,
-                        "target_inject_code" => $character->getInjectCode(),
-                        "characterId" => $event->characterId,
-                        "reason" => $event->reason,
-                    ]);
                 };
                 $handler($this, $event);
                 break;

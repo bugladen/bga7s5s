@@ -31,6 +31,8 @@ class _01057 extends Risk implements IHasManeuvers
             'Ranged',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01057(),
         ];

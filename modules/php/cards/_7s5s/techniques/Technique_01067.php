@@ -46,11 +46,8 @@ class Technique_01067 extends Technique
 
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
-            if ( ! $this->UseRiposteInstead)
-            {
-                $event->adversaryThreat += 1;
-                $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat."), $this->Name);
-            }
+            $event->adversaryThreat += 1;
+            $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat."), $this->Name);
         }
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)

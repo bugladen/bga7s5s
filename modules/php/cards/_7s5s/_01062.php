@@ -34,8 +34,6 @@ class _01062 extends Leader implements IHasActions, IHasReactions
         $this->CrewCap = 6;
         $this->Panache = 7;
 
-        $this->resetModifiedCharacterStats();
-        
         $this->ModifiedCrewCap = $this->CrewCap;
         $this->ModifiedPanache = $this->Panache;
 
@@ -45,6 +43,8 @@ class _01062 extends Leader implements IHasActions, IHasReactions
             "Diplomat",
             "Montaigne",
         ];
+
+        $this->resetCard();
 
         $this->Actions = [
             new Action_01062(),

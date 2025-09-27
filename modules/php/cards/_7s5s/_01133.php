@@ -31,6 +31,8 @@ class _01133 extends Risk implements IHasManeuvers
             'Dar Matushki',
         ];
 
+        $this->resetCard();
+
         $this->Maneuvers = [
             new Maneuver_01133(),
         ];

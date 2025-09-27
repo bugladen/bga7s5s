@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\DB;
@@ -19,6 +20,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions\Reaction_CrewCapLimit;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\GovernorsGardenAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\OlesInnAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -31,6 +34,7 @@ class Theah
     private bool $cityBuilt;
 
     private Array $Reactions;
+    private Array $Actions;
 
     use EventHub;
 
@@ -41,10 +45,8 @@ class Theah
         $this->cityLocations = [];
         $this->db = new DB();
         $this->cityBuilt = false;
-
-        $this->Reactions = [
-            new Reaction_CrewCapLimit(),
-        ];
+        $this->Actions = [];
+        $this->Reactions = [];
     }
 
     public function addCardToWorld(Card $card)
@@ -74,6 +76,22 @@ class Theah
         if ($this->cityBuilt) return;
 
         $this->cards = [];
+
+        if ($this->game->getPlayerCount() >= 3) 
+        {
+            $playersThatUsedOlesInn = $this->game->globals->get(Game::PLAYERS_THAT_USED_OLES_INN, []);
+            $this->Actions[] = new OlesInnAction($playersThatUsedOlesInn, $this->game);
+        }
+
+        if ($this->game->getPlayerCount() >= 4) 
+        {   
+            $playersThatUsedGovernorsGarden = $this->game->globals->get(Game::PLAYERS_THAT_USED_GOVERNORS_GARDEN, []);
+            $this->Actions[] = new GovernorsGardenAction($playersThatUsedGovernorsGarden, $this->game);
+        }
+
+        $this->Reactions = [
+            new Reaction_CrewCapLimit(),
+        ];
 
         $this->buildCityLocations();
 
@@ -189,6 +207,10 @@ class Theah
             foreach ($this->cards as $card) 
                 $card->handleEvent($event);
 
+            //Run the event for theah actions
+            foreach ($this->Actions as $action) 
+                $action->handleEvent($event);
+
             //Run the event for theah reactions
             foreach ($this->Reactions as $reaction) 
                 $reaction->handleEvent($event);
@@ -298,7 +320,7 @@ class Theah
         return $locations;
     }
 
-    function getActionFromHandDiscount(Character $performer, CardAction $action): int
+    function getActionFromHandDiscount(?Character $performer, CardAction $action): int
     {
         $cards = $this->cards;
         $discount = 0;
@@ -356,7 +378,14 @@ class Theah
         }
 
         return $maneuvers;
-    }    
+    }
+
+    public function getCardsInPlay(): array
+    {
+        $cards = array_filter($this->cards, fn($card) => $card->isControlled() && ($this->cardInCity($card) || $card->Location == Game::LOCATION_PLAYER_HOME));
+        
+        return $cards;
+    }
 
     public function getCardPropertiesAtLocation($location, $playerId = null)
     {
@@ -446,7 +475,7 @@ class Theah
     {
         $count = 0;
         foreach ($this->cards as $card) {
-            if ($card instanceof Character && $card->ControllerId == $playerId) {
+            if ($card instanceof Character && $card->ControllerId == $playerId && ! $card->hasTrait("Brute")) {
                 $count++;
             }
         }
@@ -481,7 +510,7 @@ class Theah
     {
         $characters = [];
         foreach ($this->cards as $card) {
-            if ($card instanceof Character && $card->isControlled() && $card->Location != Game::LOCATION_HAND) {
+            if ($card instanceof Character && $card->isControlled() && ($this->cardInCity($card) || $card->Location == Game::LOCATION_PLAYER_HOME)) {
                 $characters[] = $card;
             }
         }
@@ -493,7 +522,7 @@ class Theah
     {
         $characters = [];
         foreach ($this->cards as $card) {
-            if ($card instanceof Character && $card->ControllerId == $playerId && $card->Location != Game::LOCATION_HAND) {
+            if ($card instanceof Character && $card->ControllerId == $playerId && ($this->cardInCity($card) || $card->Location == Game::LOCATION_PLAYER_HOME)) {
                 $characters[] = $card;
             }
         }
@@ -533,6 +562,17 @@ class Theah
         return $characters;
     }
 
+    function getCharactersAtLocationByPlayerId(string $location, int $playerId, bool $includeUncontrolled = false)
+    {
+        $characters = [];
+        foreach ($this->cards as $card) {
+            if ($card instanceof Character && $card->Location == $location && $card->ControllerId == $playerId) {
+                $characters[] = $card;
+            }
+        }
+        return $characters;
+    }
+
     function getEquipDiscount(Character $performer, Attachment $attachment): int
     {
         //Smuggled Item cost is free
@@ -558,9 +598,29 @@ class Theah
         return $discount;
     }
 
+    function getPlayBruteDiscount(Character $brute): int
+    {
+        $discount = 0;
+        foreach ($this->cards as $card) 
+        {
+            $discount += $card->getPlayBruteDiscount($this, $brute);
+        }
+
+        return $discount;
+    }
+
     function getInPlayActionsAvailableToPlayer($playerId)
     {
         $actionsArray = [];
+
+        foreach ($this->Actions as $action)
+        {
+            if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+            {
+                $actionsArray[] = $action->getPropertyArray($this->game);
+            }
+        }
+
         foreach ($this->cards as $card)
         {
             if ($card instanceof IHasActions && $card->Location != Game::LOCATION_HAND)
@@ -628,6 +688,22 @@ class Theah
         return $actionsArray;
     }
 
+    function getBrutesAvailableToPlayer($playerId): array
+    {
+        $brutes = [];
+        $cards = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
+        foreach ($cards as $card)
+        {
+            if ($card instanceof Character && $card->hasTrait("Brute"))
+            {
+                $brutes[] = $card->Id;
+            }
+        }
+
+        return $brutes;
+    }
+
+
     function getLeaderByPlayerId($playerId)
     {
         foreach ($this->cards as $card) {
@@ -638,9 +714,18 @@ class Theah
         return null;
     }
 
-    function getInPlayActionById($id): ?CardAction
+    function getInPlayActionById($id): ?Action
     {
-        foreach ($this->cards as $card) {
+        foreach ($this->Actions as $action)
+        {
+            if ($action->Id == $id)
+            {
+                return $action;
+            }
+        }
+
+        foreach ($this->cards as $card) 
+        {
             if ($card instanceof IHasActions) {
                 $action = $card->getActionById($id);
                 if ($action) {
@@ -675,6 +760,55 @@ class Theah
             }
         }
         return null;
+    }
+
+    public function getCharactersInCityWithOpposingCharacters(int $playerId): array
+    {
+        $characters = $this->getCharactersInCityByPlayerId($playerId);
+        $performers = [];
+        foreach ($characters as $character)
+        {
+            $opposingCharacters = $this->getCharactersAtLocation($character->Location);
+            $opposingCharacters = array_filter($opposingCharacters, fn($character) => $character->isNotControlledByPlayer($playerId));
+            if (count($opposingCharacters) > 0)
+            {
+                $performers[] = $character;
+            }
+        }
+
+        return $performers;
+    }
+
+    public function getCharactersInCityWithOpposingMercenaries(int $playerId): array
+    {
+        $characters = $this->getCharactersInCityByPlayerId($playerId);
+        $performers = [];
+        foreach ($characters as $character)
+        {
+            $opposingCharacters = $this->getCharactersAtLocation($character->Location);
+            $opposingCharacters = array_filter($opposingCharacters, fn($character) => $character->isNotControlledByPlayer($playerId) && $character->hasTrait("Mercenary"));
+            if (count($opposingCharacters) > 0)
+            {
+                $performers[] = $character;
+                break;
+            }
+        }
+
+        return $performers;
+    }
+
+    public function getOpposingCharactersAtLocation(string $location, int $playerId): array
+    {
+        $characters = $this->getCharactersAtLocation($location);
+        $characters = array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($playerId)));
+        return $characters;
+    }
+
+    public function getOpposingMercenariesAtLocation(string $location, int $playerId): array
+    {
+        $characters = $this->getCharactersAtLocation($location);
+        $characters = array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($playerId) && $character->hasTrait("Mercenary")));
+        return $characters;
     }
 
     function getPressureTypes(Character $performer, string $startingStatType): Array
@@ -913,7 +1047,16 @@ class Theah
 
     public function playerHasInPlayActions($playerId): bool
     {
-        $actionCards = [];
+        $actionAvailable = [];
+
+        foreach ($this->Actions as $action)
+        {
+            if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+            {
+                $actionAvailable[] = $action;
+            }
+        }
+
         foreach ($this->cards as $card)
         {
             if ($card instanceof IHasActions && $card->Location != Game::LOCATION_HAND)            
@@ -923,13 +1066,13 @@ class Theah
                 {
                     if ($action->isAvailableToPlayer($playerId, $this, $this->game))
                     {
-                        $actionCards[] = $card;
+                        $actionAvailable[] = $action;
                     }
                 }
             }
         }
 
-        return count($actionCards) > 0;
+        return count($actionAvailable) > 0;
     }
 
     public function playerHasInHandActions($playerId): bool
@@ -954,6 +1097,21 @@ class Theah
         return count($actionCards) > 0;
     }
 
+    public function playerHasBrutes($playerId): bool
+    {
+        $bruteCards = [];
+        $cards = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
+        foreach ($cards as $card)
+        {
+            if ($card->hasTrait("Brute"))
+            {
+                $bruteCards[] = $card;
+            }
+        }
+
+        return count($bruteCards) > 0;
+    }
+
     public function deleteManeuverEvents(string $maneuverId)
     {
         $this->db->deleteManeuverEvents($maneuverId);
@@ -962,6 +1120,11 @@ class Theah
     public function deleteTechniqueEvents(string $techniqueId)
     {
         $this->db->deleteTechniqueEvents($techniqueId);
+    }
+
+    public function deletePressureResultEvents()
+    {
+        $this->db->deletePressureResultEvents();
     }
 
     public function swapParticipantsInDuel(int $duelId, int $round, int $oldParticipantId, int $newParticipantId)

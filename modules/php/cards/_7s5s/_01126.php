@@ -39,6 +39,8 @@ class _01126 extends Scheme
             "Leshiye", 
             "Nature",
         ];
+
+        $this->resetCard();
     }
 
     public function getPropertyArray(Game $game): array

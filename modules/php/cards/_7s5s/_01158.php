@@ -30,5 +30,7 @@ class _01158 extends FactionAttachment
             'Coat',
             'Rilasciare',
         ];
+
+        $this->resetCard();
     }
 }

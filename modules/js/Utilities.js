@@ -362,6 +362,16 @@ return declare('seventhseacityoffivesails.utilities', null, {
             influence: this.attachmentFormatModifer(attachment.influenceModifier),
             cost: attachment.wealthCost,
         }), targetDiv, placement );
+
+        if (!attachment.showStatModifiers)
+        {
+            //Remove the class from child elements of the divId
+            dojo.removeClass($(`${divId}_resolve`), '_7sfs-card-resolve');
+            dojo.removeClass($(`${divId}_wealth_cost`), '_7sfs-card-wealth-cost _7sfs-city-attachment-wealth-cost');
+            dojo.removeClass($(`${divId}_combat_box`), '_7sfs-card-stat-box _7sfs-card-combat-box');
+            dojo.removeClass($(`${divId}_finesse_box`), '_7sfs-card-stat-box _7sfs-card-finesse-box');
+            dojo.removeClass($(`${divId}_influence_box`), '_7sfs-card-stat-box _7sfs-card-influence');
+        }
         
         if (attachment.controllerId)
         {
@@ -767,5 +777,37 @@ return declare('seventhseacityoffivesails.utilities', null, {
     getCityLocationElement: function(location) {
         return dojo.query(`[data-location="${location}"]`)[0];
     },
+
+    highlightCharacterChosen: function(cardId) {
+        const card = this.cardProperties[cardId];
+        const image = $(`${card.divId}_image`);
+        dojo.addClass(image, '_7sfs-chosen');
+    },  
+
+    highlightCardsAsSelectable: function(ids) {
+        ids.forEach((id) => {
+            const card = this.cardProperties[id];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+            this.makeCardSelectable(image);
+        });
+        this.clientStateArgs.ids = ids;
+    },
+
+    unhighlightCharacterChosen: function(id) {
+        const card = this.cardProperties[id];
+        const image = $(`${card.divId}_image`);
+        dojo.removeClass(image, '_7sfs-chosen');
+    },
+
+    unhighlightCardsAsSelectable: function(ids) {
+        ids.forEach((id) => {
+            const card = this.cardProperties[id];
+            const image = $(`${card.divId}_image`);
+            this.clearCardAsSelectable(image);
+        });
+    },
+    
+    
 })
 });

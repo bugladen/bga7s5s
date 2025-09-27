@@ -12,7 +12,6 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
@@ -30,6 +29,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
@@ -51,6 +51,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechnique
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
@@ -63,6 +64,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTableSetup;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -235,13 +238,12 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardDrawnEvent(int $playerId, Card $card, string $reason): EventCardDrawn
+    public static function createCardDrawnEvent(int $playerId, string $reason): EventCardDrawn
     {
         $event = self::createEvent(Events::CardDrawn);
         if ($event instanceof EventCardDrawn)
         {
             $event->playerId = $playerId;
-            $event->card = $card;
             $event->reason = $reason;
         }
         return $event;
@@ -265,6 +267,18 @@ class EventFactory
     {
         $event = self::createEvent(Events::CardEngarded);
         if ($event instanceof EventCardEngarded)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+        }
+
+        return $event;
+    }
+
+    public static function createCardHiddenEvent(int $playerId, int $cardId): EventCardHidden
+    {
+        $event = self::createEvent(Events::CardHidden);
+        if ($event instanceof EventCardHidden)
         {
             $event->playerId = $playerId;
             $event->cardId = $cardId;
@@ -387,7 +401,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createCharacterInfluenceModifiedEvent(int $playerId, int $characterId, int $oldInfluence, int $newInfluence): EventCharacterInfluenceModified
+    public static function createCharacterInfluenceModifiedEvent(int $playerId, int $characterId, int $oldInfluence, int $newInfluence, string $reason = ''): EventCharacterInfluenceModified
     {
         $event = self::createEvent(Events::CharacterInfluenceModified);
         if ($event instanceof EventCharacterInfluenceModified)
@@ -396,6 +410,7 @@ class EventFactory
             $event->CharacterId = $characterId;
             $event->OldInfluence = $oldInfluence;
             $event->NewInfluence = $newInfluence;
+            $event->Reason = $reason;
         }
         return $event;
     }
@@ -528,7 +543,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createLocationPressuredEvent(int $playerId, int $performerId, string $location, string $pressureType, bool $success, string $totalsExplanation): EventLocationPressured
+    public static function createLocationPressuredEvent(int $playerId, int $performerId, string $location, string $pressureType, bool $success, string $totalsExplanation, int $difference): EventLocationPressured
     {
         $event = self::createEvent(Events::LocationPressured);
         if ($event instanceof EventLocationPressured)
@@ -539,6 +554,25 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->pressureType = $pressureType;
             $event->success = $success;
             $event->totalsExplanation = $totalsExplanation;
+            $event->difference = $difference;
+        }
+
+        return $event;
+    }
+
+    public static function createLocationPressureResultEvent(int $playerId, int $performerId, string $location, string $pressureType, bool $success, string $totalsExplanation, bool $highDramaBasicAction, string $abilityId): EventLocationPressureResult
+    {
+        $event = self::createEvent(Events::LocationPressureResult);
+        if ($event instanceof EventLocationPressureResult)
+        {
+            $event->playerId = $playerId;
+            $event->performerId = $performerId;
+            $event->location = $location;
+            $event->pressureType = $pressureType;
+            $event->success = $success;
+            $event->totalsExplanation = $totalsExplanation;
+            $event->highDramaBasicAction = $highDramaBasicAction;
+            $event->abilityId = $abilityId;
         }
 
         return $event;
@@ -709,6 +743,31 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->actorId = $actorId;
             $event->adversaryId = $adversaryId;
             $event->techniqueId = $techniqueId;
+        }
+
+        return $event;
+    }
+
+    public static function createSorcererAbilityPlayedEvent(int $playerId, int $sourceId, string $abilityId, int $targetId = 0, string $targetLocation = ""): EventSorcererAbilityPlayed
+    {
+        $event = self::createEvent(Events::SorcererAbilityPlayed);
+        if ($event instanceof EventSorcererAbilityPlayed)
+        {
+            $event->playerId = $playerId;
+            $event->sourceId = $sourceId;
+            $event->abilityId = $abilityId;
+            $event->targetId = $targetId;
+            $event->targetLocation = $targetLocation;
+        }
+
+        return $event;
+    }
+
+    public static function createTableSetupEvent(): EventTableSetup
+    {
+        $event = self::createEvent(Events::TableSetup);
+        if ($event instanceof EventTableSetup)
+        {
         }
 
         return $event;

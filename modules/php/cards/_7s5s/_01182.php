@@ -28,8 +28,6 @@ class _01182 extends CityCharacter implements IHasReactions
         $this->Finesse = 2;
         $this->Influence = 1;
 
-        $this->resetModifiedCharacterStats();
-
         $this->WealthCost = 4;        
         $this->CityCardNumber = 6;
         $this->Negotiable = true;
@@ -39,6 +37,8 @@ class _01182 extends CityCharacter implements IHasReactions
             'Pirate',
             'Maghreb',
         ];
+
+        $this->resetCard();
 
         $this->Reactions = [
             new Reaction_01182()

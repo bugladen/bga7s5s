@@ -31,8 +31,6 @@ class _01180 extends CityCharacter implements IHasActions
         $this->Finesse = 2;
         $this->Influence = 2;
 
-        $this->resetModifiedCharacterStats();
-
         $this->WealthCost = 4;        
         $this->CityCardNumber = 4;
         $this->Negotiable = true;
@@ -44,6 +42,8 @@ class _01180 extends CityCharacter implements IHasActions
             'Numa'
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01180()
         ];
@@ -54,7 +54,7 @@ class _01180 extends CityCharacter implements IHasActions
         $discount = parent::getEquipDiscount($theah, $performer, $attachment);
 
         //While equipping an Artifact to any of the controllers characters, Kaj Kousei gives a discount of 1
-        if ($performer->ControllerId == $this->ControllerId && in_array('Artifact', $attachment->Traits))
+        if ($performer->ControllerId == $this->ControllerId && $attachment->hasTrait('Artifact'))
         {
             $discount += 1;
         }

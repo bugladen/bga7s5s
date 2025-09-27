@@ -39,6 +39,8 @@ class _01101 extends FactionAttachment implements IHasTechniques
             'Aldana',
         ];
 
+        $this->resetCard();
+
         $this->Techniques = [
             new Technique_01101(),
         ];

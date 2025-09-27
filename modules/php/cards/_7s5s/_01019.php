@@ -2,10 +2,15 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01019;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Brute;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 
-class _01019 extends FactionCharacter
+class _01019 extends Brute implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -25,8 +30,6 @@ class _01019 extends FactionCharacter
         $this->Influence = 0;
         $this->DashedInfluence = true;
 
-        $this->resetModifiedCharacterStats();
-
         $this->Riposte = 1;
         $this->Parry = 0;
         $this->Thrust = 2;
@@ -40,5 +43,12 @@ class _01019 extends FactionCharacter
             'Unique',
             'Brute',
         ];
+
+        $this->resetCard();
+
+        $this->Actions = [
+            new Action_01019(),
+        ];
+
     }
 }

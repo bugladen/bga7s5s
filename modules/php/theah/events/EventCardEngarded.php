@@ -10,6 +10,7 @@ class EventCardEngarded extends Event
     public function __construct()
     {
         parent::__construct();
+        $this->runEventHubAfterCards = true;
     }
  
 }

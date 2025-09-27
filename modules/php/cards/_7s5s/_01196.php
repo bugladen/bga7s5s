@@ -29,8 +29,6 @@ class _01196 extends CityCharacter implements IHasReactions
         $this->Finesse = 2;
         $this->Influence = 2;
 
-        $this->resetModifiedCharacterStats();
-
         $this->WealthCost = 5;
         $this->CityCardNumber = 20;
         $this->Negotiable = true;
@@ -41,6 +39,8 @@ class _01196 extends CityCharacter implements IHasReactions
             'Sorcerer',
             'Montaigne',
         ];
+
+        $this->resetCard();
 
         $this->Techniques = [
             new Technique_01196(),

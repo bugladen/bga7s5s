@@ -33,6 +33,8 @@ class _01187 extends CityAttachment implements IHasActions
             'Artifact',
         ];
 
+        $this->resetCard();
+
         $this->Actions = [
             new Action_01187(),
         ];

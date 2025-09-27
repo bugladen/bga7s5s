@@ -17,6 +17,17 @@
 
         const methods = {
 
+            'setupTable_01006': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+            'setupTable_01006_2': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+
             'planningPhaseResolveSchemes_01016': () => {
                 this.resetCityLocations();
             },
@@ -182,7 +193,158 @@
                 this.clientStateArgs = {};
                 $('faction_hand_info').innerHTML = '';
             },
+
+            'highDramaPhase01008': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+            'highDramaPhase01008_4': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+
+            'highDramaPhase01011': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+                }
+            },
+
+            'highDramaPhase01012': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+                }
+            },
+
+            'highDramaPhase01015': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.schemeId];
+                    let image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    this.clientStateArgs.ids.forEach((cardId) => {
+                        card = this.cardProperties[cardId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
     
+            'highDramaPhase01017': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    this.clientStateArgs.ids.forEach((cardId) => {
+                        card = this.cardProperties[cardId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+
+            'highDramaPhase01019': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    this.clientStateArgs.ids.forEach((cardId) => {
+                        card = this.cardProperties[cardId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+
+            'highDramaPhase01020': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    this.clientStateArgs.ids.forEach((cardId) => {
+                        card = this.cardProperties[cardId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+
+            'highDramaPhase01024': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
+            'highDramaPhase01025': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    this.clientStateArgs.ids.forEach((cardId) => {
+                        card = this.cardProperties[cardId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+
+            'highDramaPhase01026': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    this.clientStateArgs.ids.forEach((cardId) => {
+                        card = this.cardProperties[cardId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+
+            'highDramaPhase01028': () => {
+                this.resetCityLocations();
+            },
+            'highDramaPhase01028_2': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.clientStateArgs.ids.forEach((cardId) => {
+                        card = this.cardProperties[cardId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase01029': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
@@ -191,6 +353,32 @@
                         const image = $(`${card.divId}_image`);
                         this.clearCardAsSelectable(image);
                     });
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase01030': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+
+            'highDramaPhase01034': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+            'highDramaPhase01034_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.targetId);
                     this.clientStateArgs = {};
                 }
             },
@@ -546,6 +734,66 @@
                     });
                 }
             },
+
+            'highDramaPhase01148': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.schemeId];
+                    const schemeImage = $(`${card.divId}_image`);
+                    dojo.removeClass(schemeImage, '_7sfs-chosen');
+
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    this.clientStateArgs.charactersIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+            'highDramaPhase01148_3': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    card = this.cardProperties[this.clientStateArgs.schemeId];
+                    const schemeImage = $(`${card.divId}_image`);
+                    dojo.removeClass(schemeImage, '_7sfs-chosen');
+
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    card = this.cardProperties[this.clientStateArgs.targetId];
+                    if (card)
+                    {
+                        const targetImage = $(`${card.divId}_image`);
+                        dojo.removeClass(targetImage, '_7sfs-chosen');
+                    }
+
+                    this.factionHand.setSelectionMode(0);
+                }
+            },
+            'highDramaPhase01148_4': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    card = this.cardProperties[this.clientStateArgs.schemeId];
+                    const schemeImage = $(`${card.divId}_image`);
+                    dojo.removeClass(schemeImage, '_7sfs-chosen');
+
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    card = this.cardProperties[this.clientStateArgs.targetId];
+                    if (card)
+                    {
+                        const targetImage = $(`${card.divId}_image`);
+                        dojo.removeClass(targetImage, '_7sfs-chosen');
+                    }
+
+                    this.factionHand.setSelectionMode(0);
+                }
+            },
     
             'highDramaPhase01149': () => {
                 if (this.isCurrentPlayerActive()) 
@@ -559,6 +807,34 @@
                     card = this.cardProperties[this.clientStateArgs.schemeId];
                     const schemeImage = $(`${card.divId}_image`);
                     dojo.removeClass(schemeImage, '_7sfs-chosen');
+                }
+            },
+
+            'highDramaPhase01152a': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+
+            'highDramaPhase01152b': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
                 }
             },
 
@@ -597,7 +873,63 @@
                     dojo.removeClass(image, '_7sfs-chosen');
                 }
             },
-    
+
+            'highDramaPhase01160': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                }
+            },
+
+            'highDramaPhase01161': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                }
+            },
+
+            'highDramaPhase01167_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
+            'highDramaPhase01167_3': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+
+                    this.factionHand.setSelectionMode(0);
+
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                }
+            },
+
+
+            'highDramaPhase01171': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase01172': () => {
+                if (this.isCurrentPlayerActive()) 
+                    {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                        this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                        this.clientStateArgs = {};
+                    }
+            },
+
             'highDramaPhase01180' : () => {
                 //Exposed to all players
                 dojo.addClass('choose_container', 'hidden');
@@ -868,6 +1200,13 @@
                     dojo.addClass('chooseList', 'hidden');
                     this.chooseList.removeAll();
                     this.chooseList.setSelectionMode(0);
+                }
+            },
+
+            'duelEndOfRound_01031': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
                 }
             },
 

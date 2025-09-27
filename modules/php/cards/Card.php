@@ -21,6 +21,7 @@ abstract class Card
     public string $Faction;
     public bool $Engaged;
     public Array $Traits = [];
+    public Array $ModifiedTraits = [];
     public Array $Conditions = [];
 
     public string $Location;
@@ -44,6 +45,8 @@ abstract class Card
         $this->IsUpdated = false;
         $this->Reknown = 0;
     }
+
+    public function addStates(Game $game) {}
 
     public function setId($id)
     {
@@ -297,6 +300,8 @@ abstract class Card
 
     public function getParleyDiscount(Character $performer, bool $parleying) : int { return 0; }
 
+    public function getPlayBruteDiscount(Theah $theah, Character $brute): int { return 0; }
+
     public function eventCheck(Event $event)
     {
         if ($this instanceof IHasTechniques) {
@@ -386,7 +391,12 @@ abstract class Card
         ];
 
         $properties['type'] = 'Card';
-        $properties['traits'] = $this->Traits;
+
+        //Hack to prevent older games from breaking
+        if (empty($this->ModifiedTraits))
+            $this->ModifiedTraits = $this->Traits;
+
+        $properties['traits'] = $this->ModifiedTraits;
         $properties['conditions'] = $this->Conditions;
 
         if ($this instanceof IWealthCost) $this->addWealthCostProperties($properties);
@@ -400,7 +410,7 @@ abstract class Card
         return $properties;
     }
 
-    public function getActionFromHandDiscount(Theah $theah, Character $performer, CardAction $requestedAction): int
+    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $requestedAction): int
     {
         $discount = 0;
         if ($this instanceof IHasActions)
@@ -430,7 +440,11 @@ abstract class Card
 
     public function hasTrait(string $trait, ?Card $queryCard = null): bool
     {
-        return in_array($trait, $this->Traits);
+        //Hack to prevent older games from breaking
+        if (empty($this->ModifiedTraits))
+            $this->ModifiedTraits = $this->Traits;
+
+        return in_array($trait, $this->ModifiedTraits);
     }
 
     public function isControlled(): bool
@@ -445,7 +459,11 @@ abstract class Card
 
     public function addTrait(Game $game, string $trait): void
     {
-        $this->Traits[] = $trait;
+        //Hack to prevent older games from breaking
+        if (empty($this->ModifiedTraits))
+            $this->ModifiedTraits = $this->Traits;
+
+        $this->ModifiedTraits[] = $trait;
         $this->IsUpdated = true;
 
         $game->notifyAllPlayers("traitAdded", clienttranslate('${character_inject_code} gains [${trait}].'), [
@@ -457,12 +475,16 @@ abstract class Card
 
     public function removeTrait(Game $game, string $trait): void
     {
-        $index = array_search($trait, $this->Traits);
+        //Hack to prevent older games from breaking
+        if (empty($this->ModifiedTraits))
+            $this->ModifiedTraits = $this->Traits;
+
+        $index = array_search($trait, $this->ModifiedTraits);
         if ($index !== false)
         {
-            unset($this->Traits[$index]);
+            unset($this->ModifiedTraits[$index]);
         }
-        $this->Traits = array_values($this->Traits);
+        $this->ModifiedTraits = array_values($this->ModifiedTraits);
         $this->IsUpdated = true;
 
         $game->notifyAllPlayers("traitRemoved", clienttranslate('${character_inject_code} loses [${trait}].'), [
@@ -492,5 +514,10 @@ abstract class Card
     public function getInjectCode(): string
     {
         return sprintf('[%s(%s)]', $this->Name, $this->Image);
+    }
+
+    public function resetCard()
+    {
+        $this->ModifiedTraits = $this->Traits;
     }
 }

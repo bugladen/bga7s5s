@@ -51,9 +51,15 @@ var jstpl_deck_picker = `
       <div class="_7sfs-deck-picker-tab-text">\${montaigne_description}</div>
     </div>
 
+    <div class="_7sfs-deck-picker-tab-content" data-deck-name="Montaigne" id="SDVodacce">
+      <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-vodacce"></div>
+      <div class="_7sfs-deck-picker-tab-text">\${vodacce_description}</div>
+    </div>
+
     <div class="_7sfs-deck-picker-tab-buttons">
       <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(1)">Eisen</button>
       <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(2)">Montaigne</button>
+      <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(3)">Vodacce</button>
       <button id="btnDeckSelect" class="deck-picker-button" disabled onclick="gameui.deckPickerDeckSelected()">\${select_description}</button>
     </div>
   </div>
@@ -124,17 +130,17 @@ var jstpl_character=`
 var jstpl_card_attachment=`
 <div id="\${id}" style="--attachment-index:\${attachmentIndex}">
     <div id="\${id}_image" class="_7sfs-card _7sfs-home-\${faction}" style="--card_image:url('\${image}')">
-        <div class="_7sfs-card-resolve">\${resolve}</div>
+        <div id="\${id}_resolve" class="_7sfs-card-resolve">\${resolve}</div>
         <div id="\${id}_wealth_cost" class="_7sfs-card-wealth-cost _7sfs-city-attachment-wealth-cost">\${cost}</div>
-        <div class="_7sfs-card-stat-box _7sfs-card-combat-box">
+        <div id="\${id}_combat_box" class="_7sfs-card-stat-box _7sfs-card-combat-box">
             <div class="_7sfs-card-combat-value _7sfs-attachment-combat-value">\${combat}</div>
             <div class="_7sfs-card-combat-image"></div>
         </div>
-        <div class="_7sfs-card-stat-box _7sfs-card-finesse-box">
+        <div id="\${id}_finesse_box" class="_7sfs-card-stat-box _7sfs-card-finesse-box">
             <div class="_7sfs-card-finesse-value _7sfs-attachment-finesse-value">\${finesse}</div>
             <div class="_7sfs-card-finesse-image"></div>
         </div>
-        <div class="_7sfs-card-stat-box _7sfs-card-influence">
+        <div id="\${id}_influence_box" class="_7sfs-card-stat-box _7sfs-card-influence">
             <div class="_7sfs-card-influence-value _7sfs-attachment-influence-value">\${influence}</div>
             <div class="_7sfs-card-influence-image"></div>
         </div>

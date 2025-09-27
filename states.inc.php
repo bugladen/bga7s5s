@@ -45,7 +45,56 @@ $machinestates = [
         "description" => clienttranslate("Creating the City..."),
         "type" => "game",
         "action" => "stBuildDecks",
-        "transitions" => ["" => States::DAWN_NEW_DAY]
+        "transitions" => ["" => States::SETUP_TABLE]
+    ],
+
+    States::SETUP_TABLE => [
+        "name" => "setupTable",
+        "description" => clienttranslate("Setting up the Table..."),
+        "type" => "game",
+        "action" => "stSetupTable",
+        "transitions" => ["" => States::SETUP_TABLE_EVENTS]
+    ],
+    States::SETUP_TABLE_EVENTS => [
+        "name" => "setupTableEvents",
+        "description" => clienttranslate("Resolving Events for the Table Setup..."),
+        "type" => "game",
+        "action" => "stRunEvents",
+        "transitions" => [
+            "01006" => States::SETUP_TABLE_01006,
+            "reaction" => States::SETUP_TABLE_REACTIONS,
+            "endOfEvents" => States::DAWN_NEW_DAY,
+            "endOfGame" => States::END_GAME
+        ]
+    ],
+    States::SETUP_TABLE_REACTIONS => [
+        "name" => "playerReaction",
+        "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+        "descriptionmyturn" => "",
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actReactionForState", 
+        ],
+        "transitions" => [
+            "done" => States::SETUP_TABLE_EVENTS, 
+            "pay" => States::SETUP_TABLE_PAY_FOR_REACTION,
+        ]
+    ],
+    States::SETUP_TABLE_PAY_FOR_REACTION => [
+        "name" => "playerPayForReaction",
+        "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+        "descriptionmyturn" => "",
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actBack",
+            "actPayForReaction", 
+        ],
+        "transitions" => [
+            "back" => States::SETUP_TABLE_REACTIONS, 
+            "paid" => States::SETUP_TABLE_EVENTS, 
+        ]
     ],
 
     States::DAWN_NEW_DAY => [
@@ -555,44 +604,7 @@ $machinestates = [
                 "paid" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS, 
             ]
         ],
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01016 => [
-            "name" => "planningPhaseResolveSchemes_01016",
-            "description" => clienttranslate('Plans Within Plans: ${actplayer} must choose two city locations to place Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('Plans Within Plans: ${you} must choose two city locations to place Reknown onto:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actCityLocationsForReknownSelected", 
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_2]
-        ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_2 => [
-                "name" => "planningPhaseResolveSchemes_01016_2",
-                "description" => clienttranslate('Plans Within Plans: ${actplayer} may search their deck for a Red Hand Thug.'),
-                "descriptionmyturn" => clienttranslate('Plans Within Plans: ${you} may choose a Red Hand Thug from Your Deck:'),
-                "type" => "activeplayer",
-                "args" => "argsPlanningPhaseResolveSchemes_01016_2",
-                "possibleactions" => [
-                    "actPassWithPass",
-                    "actPlanningPhase_01016_2", 
-                ],
-                "transitions" => [
-                    "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
-                    "cardChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_3
-                ]
-            ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_3 => [
-                "name" => "planningPhaseResolveSchemes_01016_3",
-                "description" => clienttranslate('Plans Within Plans: Your opponent(s) must acknowlege revealed card.'),
-                "descriptionmyturn" => clienttranslate('Plans Within Plans: ${you} must must acknowlege revealed card:'),
-                "type" => "multipleactiveplayer",
-                "args" => "argsPlanningPhaseResolveSchemes_01016_3",
-                "action" => "stMultiPlayerInit",
-                "possibleactions" => [
-                    "actMultipleOk", 
-                ],
-                "transitions" => ["multipleOk" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-            ],
+
             States::PLANNING_PHASE_RESOLVE_SCHEMES_01098 => [
                 "name" => "planningPhaseResolveSchemes_01098",
                 "description" => clienttranslate('The Cat\'s Embargo: ${actplayer} must choose two city locations to place Reknown onto.'),
@@ -668,19 +680,6 @@ $machinestates = [
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
 
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01143 => [
-            "name" => "planningPhaseResolveSchemes_01143",
-            "description" => clienttranslate('Contempt and Hatred: ${actplayer} may choose a city location to place Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('Contempt and Hatred: ${you} may choose a city location to place Reknown onto:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actPass",
-                "actPlanningPhase_01143", 
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-        ],
-
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01144 => [
             "name" => "planningPhaseResolveSchemes_01144",
             "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose a city location to place Reknown onto.'),
@@ -720,45 +719,6 @@ $machinestates = [
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
     
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01152 => [
-            "name" => "planningPhaseResolveSchemes_01152",
-            "description" => clienttranslate('Until Morale Improves: ${actplayer} may choose a City Location to place a Reknown onto.'),
-            "descriptionmyturn" => clienttranslate('Until Morale Improves: ${you} may choose a City Location to place a Reknown onto: '),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actPlanningPhase_01152",
-                "actPassWithPass"
-            ],
-            "transitions" => [
-                "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2,
-                "reknownPlaced" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
-                ]
-            ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2 => [
-                "name" => "planningPhaseResolveSchemes_01152_2",
-                "description" => clienttranslate('Until Morale Improves: ${actplayer} must choose a City Location to move a Reknown FROM, if able.'),
-                "descriptionmyturn" => clienttranslate('Until Morale Improves: ${you} must choose a City Location to move a Reknown FROM, if able: '),
-                "type" => "activeplayer",
-                "args" => "argsEmpty",
-                "possibleactions" => [
-                    "actPlanningPhase_01152_2",
-                    "actPassWithPass"
-                ],
-                "transitions" => [
-                    "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
-                    "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3
-                    ]
-                ],
-                States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3 => [
-                    "name" => "planningPhaseResolveSchemes_01152_3",
-                    "description" => clienttranslate('Until Morale Improves: ${actplayer} must choose an adjacent City Location to move the Reknown TO.'),
-                    "descriptionmyturn" => clienttranslate('Until Morale Improves: ${you} must choose an adjacent City Location to move the Reknown TO:'),
-                    "type" => "activeplayer",
-                    "args" => "argsPlanningPhaseResolveSchemes_01152_3",
-                    "possibleactions" => ["actPlanningPhase_01152_3"],
-                    "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-                ],
     States::PLANNING_PHASE_DRAW => [
         "name" => "planningPhaseDraw",
         "description" => clienttranslate('Drawing Cards...'),
@@ -923,6 +883,7 @@ $machinestates = [
             "actHighDramaRecruitActionStart",
             "actHighDramaChooseInPlayActionStart",
             "actHighDramaChooseInHandActionStart",
+            "actHighDramaChooseBruteStart",
             "actHighDramaPass",
         ],
         "transitions" => [
@@ -933,6 +894,7 @@ $machinestates = [
             "recruitActionStart" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER,
             "inPlayActionStart" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
             "inHandActionStart" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_ACTION,
+            "bruteStart" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE,
             "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "end" => States::HIGH_DRAMA_END
         ]
@@ -944,7 +906,26 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "01008" => States::HIGH_DRAMA_PLAYER_TURN_01008,
+                "01009" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY,
+                "01011" => States::HIGH_DRAMA_PLAYER_TURN_01011,
+                "01011_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "01012" => States::HIGH_DRAMA_PLAYER_TURN_01012,
+                "01015" => States::HIGH_DRAMA_PLAYER_TURN_01015,
+                "01017" => States::HIGH_DRAMA_PLAYER_TURN_01017,
+                "01019" => States::HIGH_DRAMA_PLAYER_TURN_01019,
+                "01020" => States::HIGH_DRAMA_PLAYER_TURN_01020,
+                "01024" => States::HIGH_DRAMA_PLAYER_TURN_01024,
+                "01025" => States::HIGH_DRAMA_PLAYER_TURN_01025,
+                "01026" => States::HIGH_DRAMA_PLAYER_TURN_01026,
+                "01028" => States::HIGH_DRAMA_PLAYER_TURN_01028,
+                "01028_2" => States::HIGH_DRAMA_CLAIM_ACTION,
                 "01029" => States::HIGH_DRAMA_PLAYER_TURN_01029,
+                "01030" => States::HIGH_DRAMA_PLAYER_TURN_01030,
+                "01030_2" => States::HIGH_DRAMA_CLAIM_ACTION,
+                "01033" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "01034" => States::HIGH_DRAMA_PLAYER_TURN_01034,
+                "01034_2" => States::HIGH_DRAMA_PLAYER_TURN_01034_2,
                 "01035" => States::HIGH_DRAMA_PLAYER_TURN_01035,
                 "01036" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01038" => States::HIGH_DRAMA_PLAYER_TURN_01038,
@@ -963,6 +944,7 @@ $machinestates = [
                 "01069" => States::HIGH_DRAMA_PLAYER_TURN_01069,
                 "01071" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01072" => States::HIGH_DRAMA_PLAYER_TURN_01072,
+                "01072_2" => States::HIGH_DRAMA_PLAYER_TURN_01072_2,
                 "01073" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01075" => States::HIGH_DRAMA_CLAIM_ACTION,
                 "01076" => States::HIGH_DRAMA_PLAYER_TURN_01076,
@@ -971,10 +953,22 @@ $machinestates = [
                 "01083" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01085" => States::HIGH_DRAMA_PLAYER_TURN_01085,
                 "01086" => States::HIGH_DRAMA_PLAYER_TURN_01086,
+                "01143" => States::HIGH_DRAMA_CLAIM_ACTION,
                 "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
+                "01148" => States::HIGH_DRAMA_PLAYER_TURN_01148,
+                "01148_3" => States::HIGH_DRAMA_PLAYER_TURN_01148_4,
+                "01148_4" => States::HIGH_DRAMA_PLAYER_TURN_01148_2,
                 "01149" => States::HIGH_DRAMA_PLAYER_TURN_01149,
+                "01152a" => States::HIGH_DRAMA_PLAYER_TURN_01152a,
+                "01152b" => States::HIGH_DRAMA_PLAYER_TURN_01152b,
                 "01156" => States::HIGH_DRAMA_PLAYER_TURN_01156,
                 "01156_3" => States::HIGH_DRAMA_PLAYER_TURN_01156_3,
+                "01160" => States::HIGH_DRAMA_PLAYER_TURN_01160,
+                "01161" => States::HIGH_DRAMA_PLAYER_TURN_01161,
+                "01167" => States::HIGH_DRAMA_PLAYER_TURN_01167,
+                "01171" => States::HIGH_DRAMA_PLAYER_TURN_01171,
+                "01172" => States::HIGH_DRAMA_PLAYER_TURN_01172,
+                "01174" => States::HIGH_DRAMA_PLAYER_TURN_01174,
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
                 "01187" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION,
                 "01185" => States::HIGH_DRAMA_PLAYER_TURN_01185,
@@ -987,6 +981,8 @@ $machinestates = [
                 "01200" => States::HIGH_DRAMA_PLAYER_TURN_01200,
                 "01205" => States::HIGH_DRAMA_PLAYER_TURN_01205,
                 "01206" => States::HIGH_DRAMA_CLAIM_ACTION,
+                "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
+                "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
                 "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
                 "endOfEvents" => States::NEXT_PLAYER,
                 "endOfGame" => States::END_GAME
@@ -1088,7 +1084,6 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "01067" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_01067,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_REACTIONS,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE,
                     "endOfGame" => States::END_GAME
@@ -1725,7 +1720,37 @@ $machinestates = [
                     "backChooseAction" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_ACTION
                 ]
             ],
-    
+        States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE => [
+            "name" => "highDramaBruteActionChooseBrute",
+            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            "descriptionmyturn" => clienttranslate('${you} must choose a Brute from your Hand to play:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaBruteActionChooseBrute",
+            "possibleactions" => [
+                "actHighDramaBruteActionBruteChosen",
+                "actBack",
+            ],
+            "transitions" => [
+                "bruteChosen" => States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE,
+                "back" => States::HIGH_DRAMA_PLAYER_TURN
+            ]
+        ],
+        States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE => [
+            "name" => "highDramaBruteActionPayForBrute",
+            "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            "descriptionmyturn" => clienttranslate('${you} must pay for the chosen Brute:'),
+            "type" => "activeplayer",
+            "args" => "argsHighDramaBruteActionPayForBrute",
+            "possibleactions" => [
+                "actPayForBrute",
+                "actBack",
+            ],
+            "transitions" => [
+                "brutePaidFor" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "back" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE
+            ]
+        ],
+
         States::DUEL_STARTED => [
             "name" => "duelStarted",
             "type" => "game",
@@ -1863,7 +1888,7 @@ $machinestates = [
                     "action" => "stRunEvents",
                     "transitions" => [
                         "reaction" => States::DUEL_CHOOSE_TECHNIQUE_REACTIONS,
-                        "01013" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS_01013,
+                        "01013" => States::DUEL_CHOOSE_TECHNIQUE_01013,
                         "01036" => States::DUEL_CHOOSE_TECHNIQUE_01036,
                         "01063" => States::DUEL_CHOOSE_TECHNIQUE_01063,
                         "01067" => States::DUEL_CHOOSE_TECHNIQUE_01067,
@@ -1898,19 +1923,6 @@ $machinestates = [
                     "transitions" => [
                         "back" => States::DUEL_CHOOSE_TECHNIQUE_REACTIONS, 
                         "paid" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS, 
-                    ]
-                ],
-                States::DUEL_CHOOSE_TECHNIQUE_EVENTS_01013 => [
-                    "name" => "duelActionResolveTechnique_01013",
-                    "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
-                    "descriptionmyturn" => clienttranslate('Vissenta Scarpa: Add Parry or Thrust: ${you} must choose Parry or Thrust:'),
-                    "type" => "activeplayer",
-                    "args" => "argsEmpty",
-                    "possibleactions" => [
-                        "actDuelActionResolveTechnique_01013", 
-                    ],
-                    "transitions" => [
-                        "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
                     ]
                 ],
             States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD => [
@@ -2135,6 +2147,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "01031" => States::DUEL_END_OF_ROUND_01031,
                         "reaction" => States::DUEL_END_OF_ROUND_REACTIONS,
                         "endOfEvents" => States::DUEL_NEXT_PLAYER,
                         "endOfGame" => States::END_GAME
