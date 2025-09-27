@@ -1,6 +1,10 @@
 <?php
 
-$this->city_decks = <<<JSON
+namespace Bga\Games\SeventhSeaCityOfFiveSails;
+
+class CityDecks
+{
+    public static string $decks = <<<JSON
  {
     "decks": [
         {
@@ -41,3 +45,5 @@ $this->city_decks = <<<JSON
     ]
  }
 JSON;
+
+}

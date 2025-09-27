@@ -34,9 +34,7 @@ trait ArgumentsTrait
 
     public function argAvailableDecks(): array
     {
-        require('includes/starterdecks.inc.php');
-        
-        $starter_decks = json_decode($this->starter_decks);        
+        $starter_decks = json_decode(StarterDecks::$decksJson);        
         $decks = array_map(function($deck) { 
             return [ 
                 "id" => $deck->id,

@@ -24,7 +24,7 @@ $machinestates = [
         "description" => "",
         "type" => "manager",
         "action" => "stGameSetup",
-        "transitions" => ["" => States::PICK_DECKS]
+        "transitions" => ["" => States::DECK_ASSIGNMENT]
     ),
 
     States::PICK_DECKS => [

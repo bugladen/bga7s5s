@@ -15,6 +15,7 @@
 class States
 {
     const GAME_SETUP = 1;
+    const DECK_ASSIGNMENT = 2;
     const PICK_DECKS = 5;
     const BUILD_TABLE = 8;
     const SETUP_TABLE = 9;

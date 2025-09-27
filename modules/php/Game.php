@@ -34,6 +34,9 @@ class Game extends \Bga\GameFramework\Table
 
     //Game options
     final const OPTIONS_CITY_DECK = 100;
+    final const OPTIONS_PLAYER_DECKS = 101;
+    final const OPTIONS_PLAYER_DECKS_MANUAL = 0;
+    final const OPTIONS_PLAYER_DECKS_RANDOM = 1;
 
     //Card locations
     final const LOCATION_CITY_DECK = 'City Deck';
