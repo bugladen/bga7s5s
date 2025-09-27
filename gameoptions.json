@@ -7,5 +7,30 @@
                 "description": "City Deck will be used from the Core Set"
             }
         }
+    },
+
+    "101": {
+        "name": "Player Decks",
+        "values": {
+            "0": {
+                "name": "Player Chosen",
+                "description": "Each player will choose a Starter Deck manually. Mirror matches are possible."
+            },
+            "1": {
+                "name": "Assigned Random Unique Starter Deck",
+                "description": "A random unique Core Starter Deck will assigned to each player by the server.  No mirror matches are possible."
+                
+            }
+        },
+        "startcondition": {
+            "0": [],
+            "1": [
+              {
+                "type": "maxplayers",
+                "value": 3,
+                "message": "Assigned Random Unique option is available for 3 players maximum. Only 3 starter decks are currently available."
+              }
+            ]
+        }    
     }
 }

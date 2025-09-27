@@ -13,7 +13,6 @@
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 
 trait DeckTrait
 {
@@ -21,10 +20,8 @@ trait DeckTrait
 
         // *** Create the city deck ***
 
-        require('includes/citydecks.inc.php');
-
         // Load the city deck JSON
-        $city_decks = json_decode($this->city_decks);
+        $city_decks = json_decode(CityDecks::$decks);
         $cityDeckChoice = $this->tableOptions->get(Game::OPTIONS_CITY_DECK);
         $cityDeck = $city_decks->decks[$cityDeckChoice];
 

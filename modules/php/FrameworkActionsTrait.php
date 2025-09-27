@@ -91,8 +91,7 @@ trait FrameworkActionsTrait
 
         if ($deck_type === 'starter') 
         {
-            require('includes/starterdecks.inc.php');
-            $starter_decks = json_decode($this->starter_decks);
+            $starter_decks = json_decode(StarterDecks::$decksJson);
             $deck = current(array_filter($starter_decks->decks, fn($deck) => $deck->id === $deck_id));
             if (! $deck)
             {
