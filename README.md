@@ -30,6 +30,7 @@ SFTP Upload the entire project directory up into the BGA server.
     - The game can declare a winner if, in a two-player game, a Leader is sent to the Locker.
 - Montaigne Starter Deck implemented
 - Eisen Starter Deck implemented
+- Vodacce Starter Deck implemented
 
 ## Sets Implemented 
 - Core (In Progress)
