@@ -611,6 +611,7 @@ trait StatesTrait
             {
                 $action->SetUsed($this->theah, true);
                 $action->announceAction($this);
+                $action->resetPlayerPassCount($this);
             }
         }
         

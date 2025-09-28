@@ -117,7 +117,7 @@ class Action_01058 extends RiskAction
                 throw new \BgaUserException($game->translate("Character has an equal or higher Combat stat than the performer"));
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to move ${character_inject_code} HOME.'), [
+            $game->notify->all("message", clienttranslate('${player_name} has chosen to move ${character_inject_code} HOME.'), [
                 "player_name" => $game->getPlayerNameById($performer->ControllerId),
                 "character_inject_code" => $target->getInjectCode(),
             ]);
@@ -126,6 +126,8 @@ class Action_01058 extends RiskAction
             $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = true, $owner->Id);
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
+
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState();
         }

@@ -49,6 +49,8 @@ class Action_01046b extends AttachmentAction
 
             $healEvent = EventFactory::createCharacterHealedEvent($attachedTo->Id, $darkGift->Id, 1, sprintf($event->theah->game->translate("%s Action"), $darkGift->getInjectCode()), $this->Id);
             $event->theah->queueEvent($healEvent);
+
+            $this->resetPlayerPassCount($event->theah->game);
         }
     }
 }

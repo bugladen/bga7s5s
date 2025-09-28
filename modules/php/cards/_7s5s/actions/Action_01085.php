@@ -98,6 +98,7 @@ class Action_01085 extends RiskAction implements ISorcererAbility
             //Done
             if ($id == 0)
             {
+                $this->resetPlayerPassCount($game);
                 $game->gamestate->nextState();
                 return;
             }
@@ -115,7 +116,7 @@ class Action_01085 extends RiskAction implements ISorcererAbility
                 throw new \BgaUserException($game->translate("Character is already at the performer's location"));
             }
 
-            $game->notifyAllPlayers("message", $game->translate('Porté Travel: ${player_name} has chosen to move ${character_inject_code} to ${performer_inject_code}\'s location.'), [
+            $game->notify->all("message", $game->translate('Porté Travel: ${player_name} has chosen to move ${character_inject_code} to ${performer_inject_code}\'s location.'), [
                 "player_name" => $game->getActivePlayerName(),
                 "character_inject_code" => $target->getInjectCode(),
                 "performer_inject_code" => $performer->getInjectCode(),

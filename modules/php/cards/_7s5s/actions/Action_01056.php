@@ -117,7 +117,7 @@ class Action_01056 extends RiskCityAction
                 throw new \BgaUserException($game->translate("You cannot challenge a character that is not at the same location as you."));
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chose ${performer_inject_code} to confront ${character_inject_code}.'), [
+            $game->notify->all("message", clienttranslate('${player_name} chose ${performer_inject_code} to confront ${character_inject_code}.'), [
                 'player_name' => $game->getPlayerNameById($performer->ControllerId),
                 'performer_inject_code' => $performer->getInjectCode(),
                 'character_inject_code' => $target->getInjectCode(),
@@ -128,6 +128,8 @@ class Action_01056 extends RiskCityAction
             $owner = $this->getOwningCard($game->theah);
             $transition = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, '01056_2', $this->Id);
             $game->theah->queueEvent($transition);
+
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState("");
         }
@@ -141,7 +143,7 @@ class Action_01056 extends RiskCityAction
             // Move Home
             if ($id == 1)
             {
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} chose to move ${target_inject_code} home.'), [
+                $game->notify->all("message", clienttranslate('${player_name} chose to move ${target_inject_code} home.'), [
                     'player_name' => $game->getPlayerNameById($target->ControllerId),
                     'target_inject_code' => $target->getInjectCode(),
                 ]);
@@ -157,7 +159,7 @@ class Action_01056 extends RiskCityAction
                 $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
                 $performer = $game->theah->getCharacterById($performerId);
 
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} chose to continue with Challenge.'), [
+                $game->notify->all("message", clienttranslate('${player_name} chose to continue with Challenge.'), [
                     'player_name' => $game->getPlayerNameById($target->ControllerId),
                 ]);
 
