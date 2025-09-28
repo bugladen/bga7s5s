@@ -105,6 +105,8 @@ class Action_01081 extends RiskCityAction
             $event = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id, $owner->Id);
             $game->theah->queueEvent($event);
 
+            $this->resetPlayerPassCount($game);
+
             $game->gamestate->nextState();
         }
     }

@@ -114,11 +114,13 @@ class Action_01086 extends RiskAction
             $game->setControllerForLocation($location->Name, 0);
             $location->Controller = 0;
 
-            $game->notifyAllPlayers("locationUncontrolled", clienttranslate('${location_name} is now uncontrolled.'), [
+            $game->notify->all("locationUncontrolled", clienttranslate('${location_name} is now uncontrolled.'), [
                 "i18n" => ["location_name"],
                 "location_name" => $location->Name,
                 "location" => $location->Name,
             ]);
+
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState();
         }

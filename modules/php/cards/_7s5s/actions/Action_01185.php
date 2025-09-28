@@ -97,6 +97,8 @@ class Action_01185 extends EventCityAction
             $game->theah->queueEvent($event);
 
             $game->gamestate->nextState("cardsDiscarded");
+
+            $this->resetPlayerPassCount($game);
         }
     }
 

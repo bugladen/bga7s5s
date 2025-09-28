@@ -167,12 +167,14 @@ class Action_01055 extends RiskCityAction
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chose to move ${target_inject_code} to ${location_name}.'), [
+            $game->notify->all("message", clienttranslate('${player_name} chose to move ${target_inject_code} to ${location_name}.'), [
                 "i18n" => ["location_name"],
                 "player_name" => $game->getPlayerNameById($performer->ControllerId),
                 "target_inject_code" => $target->getInjectCode(),
                 "location_name" => $location
             ]);
+
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState("locationChosen");
         }

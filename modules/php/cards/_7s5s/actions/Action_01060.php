@@ -149,6 +149,8 @@ class Action_01060 extends RiskAction
                 $game->theah->queueEvent($moveEvent);
             }
 
+            $this->resetPlayerPassCount($game);
+
             $game->gamestate->nextState("locationChosen");
         }
     }

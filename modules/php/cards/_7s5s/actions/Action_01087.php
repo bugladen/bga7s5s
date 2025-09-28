@@ -53,6 +53,7 @@ class Action_01087 extends RiskAction
             $event->theah->queueEvent($engardeEvent);
 
             $this->announceAction($game);
+            $this->resetPlayerPassCount($game);
         }
     }
 }

@@ -117,7 +117,9 @@ class Action_01189b extends EventCityAction
             $game->theah->queueEvent($discardEvent);
     
             $this->announceAction($game);
-    
+
+            $this->resetPlayerPassCount($game);
+
             $game->gamestate->nextState("locationChosen");
         }
 

@@ -50,7 +50,7 @@ class Action_01206 extends AttachmentAction
 
             $this->setUsed($event->theah, true);
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${player_name} used Captain\'s Coat Action to claim a location.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${player_name} used Captain\'s Coat Action to claim a location.'), [
                 'player_name' => $performer->Name,
             ]);
 
@@ -66,6 +66,9 @@ class Action_01206 extends AttachmentAction
 
             $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $performer->Id, "01206", $this->Id);
             $event->theah->queueEvent($transitionEvent);
+
+            $this->resetPlayerPassCount($event->theah->game);
+            $this->setUsed($event->theah, true);
         }
     }
 }

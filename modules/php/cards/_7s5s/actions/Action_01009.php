@@ -54,6 +54,7 @@ class Action_01009 extends CharacterAction
             $event->theah->queueEvent($transition);
 
             $this->setUsed($event->theah, true);
+            $this->resetPlayerPassCount($game);
         }
     }
 }
