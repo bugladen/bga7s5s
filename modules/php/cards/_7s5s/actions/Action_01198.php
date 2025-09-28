@@ -83,6 +83,7 @@ class Action_01198 extends AttachmentAction
             $event->theah->queueEvent($transition);
 
             //resetPlayerPassCount is called in stSetupChallenge
+            // $this->setUsed() is called in stSetupChallenge
         }
     }
     

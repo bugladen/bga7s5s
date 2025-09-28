@@ -92,6 +92,7 @@ class Action_01046a extends AttachmentAction
             $game->theah->queueEvent($moveEvent);
 
             $this->resetPlayerPassCount($game);
+            $this->setUsed($game->theah, true);
 
             $game->gamestate->nextState("locationChosen");
         }

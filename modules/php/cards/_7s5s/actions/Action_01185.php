@@ -99,6 +99,7 @@ class Action_01185 extends EventCityAction
             $game->gamestate->nextState("cardsDiscarded");
 
             $this->resetPlayerPassCount($game);
+            // $this->setUsed() not called because this card is discarded
         }
     }
 

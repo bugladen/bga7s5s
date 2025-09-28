@@ -51,6 +51,7 @@ class Action_01046b extends AttachmentAction
             $event->theah->queueEvent($healEvent);
 
             $this->resetPlayerPassCount($event->theah->game);
+            $this->setUsed($event->theah, true);
         }
     }
 }
