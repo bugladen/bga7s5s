@@ -58,6 +58,7 @@ class Action_01191 extends AttachmentAction
             }
 
             $this->resetPlayerPassCount($event->theah->game);
+            // $this->setUsed() not called because this card is destroyed
         }
     }
 }

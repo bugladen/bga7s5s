@@ -102,6 +102,8 @@ class Action_01179 extends EventCityAction
             $event->theah->queueEvent($playerEvent);
 
             $this->resetPlayerPassCount($event->theah->game);
+            // $this->setUsed() not called because special use cases
+            
         }
     }
 }
