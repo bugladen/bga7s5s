@@ -40,6 +40,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
@@ -396,6 +397,21 @@ class EventFactory
             $event->playerId = $playerId;
             $event->characterId = $characterId;
             $event->reason = $reason;
+        }
+
+        return $event;
+    }
+
+    public static function createCharacterFinesseModifedEvent(int $playerId, int $characterId, int $oldFinesse, int $newFinesse, string $reason = ''): EventCharacterFinesseModifed
+    {
+        $event = self::createEvent(Events::CharacterFinesseModifed);
+        if ($event instanceof EventCharacterFinesseModifed)
+        {
+            $event->PlayerId = $playerId;
+            $event->CharacterId = $characterId;
+            $event->OldFinesse = $oldFinesse;
+            $event->NewFinesse = $newFinesse;
+            $event->Reason = $reason;
         }
 
         return $event;

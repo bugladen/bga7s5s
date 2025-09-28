@@ -40,7 +40,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['challengerSwapped', 500],
             ['characterDestroyed', 1000],
             ['characterHealed', 1000],
-            ['characterInfluenceModified', 1000],
+            ['characterFinesseModifed', 1],
+            ['characterInfluenceModified', 1],
             ['characterIntervened', 500],
             ['characterMustered', 1000],
             ['characterRecruited', 1000],
@@ -745,6 +746,23 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const player = this.gamedatas.players[args.playerId];
         player.locker.push(card);
+    },
+
+    notif_characterFinesseModifed: function( notif )
+    {
+        debug( 'notif_characterFinesseModifed' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        card.modifiedFinesse = args.newFinesse;
+
+        const element = $(`${card.divId}_finesse_value`);
+        element.innerHTML = card.modifiedFinesse;
+        if (card.modifiedFinesse != card.finesse)
+            dojo.addClass(element, '_7sfs-modified-stat-value');
+        else
+            dojo.removeClass(element, '_7sfs-modified-stat-value');
     },
 
     notif_characterInfluenceModified: function( notif )

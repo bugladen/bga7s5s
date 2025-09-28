@@ -69,6 +69,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
@@ -554,24 +555,43 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
-            case $event instanceof EventCharacterInfluenceModified:
-                $handler = function (Theah $theah, EventCharacterInfluenceModified $event)
-                {
-                    $character = $theah->getCharacterById($event->CharacterId);
-                    $character->ModifiedInfluence = max(0, $event->NewInfluence);
-                    $character->IsUpdated = true;
+                case $event instanceof EventCharacterFinesseModifed:
+                    $handler = function (Theah $theah, EventCharacterFinesseModifed $event)
+                    {
+                        $character = $theah->getCharacterById($event->CharacterId);
+                        $character->ModifiedFinesse = max(0, $event->NewFinesse);
+                        $character->IsUpdated = true;
+    
+                        $theah->game->notify->all("characterFinesseModifed", clienttranslate('The finesse of ${character_name} went from ${oldFinesse} to ${newFinesse} due to: ${reason}.'), [
+                            'i18n' => ['character_name'],
+                            "character_name" => $character->Name,
+                            "characterId" => $character->Id,
+                            "oldFinesse" => $event->OldFinesse, 
+                            "newFinesse" => $event->NewFinesse,
+                            "reason" => $event->Reason,
+                        ]);
+                    };
+                    $handler($this, $event);
+                    break;
+    
+                case $event instanceof EventCharacterInfluenceModified:
+                    $handler = function (Theah $theah, EventCharacterInfluenceModified $event)
+                    {
+                        $character = $theah->getCharacterById($event->CharacterId);
+                        $character->ModifiedInfluence = max(0, $event->NewInfluence);
+                        $character->IsUpdated = true;
 
-                    $theah->game->notifyAllPlayers("characterInfluenceModified", clienttranslate('The influence of ${character_name} went from ${oldInfluence} to ${newInfluence} due to: ${reason}.'), [
-                        'i18n' => ['character_name'],
-                        "character_name" => $character->Name,
-                        "characterId" => $character->Id,
-                        "oldInfluence" => $event->OldInfluence, 
-                        "newInfluence" => $event->NewInfluence,
-                        "reason" => $event->Reason,
-                    ]);
-                };
-                $handler($this, $event);
-                break;
+                        $theah->game->notifyAllPlayers("characterInfluenceModified", clienttranslate('The influence of ${character_name} went from ${oldInfluence} to ${newInfluence} due to: ${reason}.'), [
+                            'i18n' => ['character_name'],
+                            "character_name" => $character->Name,
+                            "characterId" => $character->Id,
+                            "oldInfluence" => $event->OldInfluence, 
+                            "newInfluence" => $event->NewInfluence,
+                            "reason" => $event->Reason,
+                        ]);
+                    };
+                    $handler($this, $event);
+                    break;
 
                 case $event instanceof EventCharacterMustered:
                     $handler = function (Theah $theah, EventCharacterMustered $event)

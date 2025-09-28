@@ -106,6 +106,7 @@ class Events
 
     //Character events
     const CharacterInfluenceModified = 'EventCharacterInfluenceModified';
+    const CharacterFinesseModifed = 'EventCharacterFinesseModifed';
     const CharacterMustered = 'EventCharacterMustered';
 
     //Dusk Phase events
