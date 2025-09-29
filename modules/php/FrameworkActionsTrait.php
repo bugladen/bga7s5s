@@ -904,7 +904,7 @@ trait FrameworkActionsTrait
         $player_id = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        if ($this->theah->playerCanClaim($player_id) == false) {
+        if ($this->theah->playerCanBasicClaim($player_id) == false) {
             throw new \BgaUserException(self::_("Claim Action is not allowed right now."));
         }
 

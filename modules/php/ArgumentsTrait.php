@@ -92,7 +92,7 @@ trait ArgumentsTrait
             '_private' => [
                 'active' => [
                     "canChallenge" => $this->theah->playerCanBasicChallenge($playerId),
-                    "canClaim" => $this->theah->playerCanClaim($playerId),
+                    "canClaim" => $this->theah->playerCanBasicClaim($playerId),
                     "canEquip" => $this->theah->playerCanEquip($playerId),
                     "canMove" => $this->theah->playerCanMove($playerId),
                     "canRecruit" => $this->theah->playerCanRecruit($playerId),

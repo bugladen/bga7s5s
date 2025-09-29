@@ -1029,7 +1029,7 @@ class Theah
         return count($charactersThatCanChallenge) > 0;
     }
 
-    public function playerCanClaim($playerId): bool
+    public function playerCanBasicClaim($playerId): bool
     {
         $characters = $this->getCharactersInCityByPlayerId($playerId);
         $charactersThatCanClaim = [];
@@ -1039,6 +1039,11 @@ class Theah
             if ($character->DashedInfluence)
                 continue;
             
+            //Check if player already controls this location
+            $location = $this->getCityLocation($character->Location);
+            if ($location->Controller == $playerId)
+                continue;
+
             $charactersThatCanClaim[] = $character;
         }
         
