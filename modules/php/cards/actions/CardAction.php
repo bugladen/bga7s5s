@@ -64,9 +64,9 @@ abstract class CardAction extends Action implements ICardAbility
     public function announceAction(Game $game): void
     {
         $owner = $this->getOwningCard($game->theah);
-        $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} has used the [${action}] Action.'), [
+        $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} has used the [${action}] Action.'), [
             'i18n' => ['action'],
-            'player_name' => $game->getPlayerNameById($owner->ControllerId),
+            'player_name' => $game->getActivePlayerName(),
             'action' => $this->Name,
             'owner_inject_code' => $owner->getInjectCode(),
         ]);
