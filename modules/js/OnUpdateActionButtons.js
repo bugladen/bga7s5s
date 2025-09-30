@@ -319,7 +319,7 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelUseManeuverFromCombatCard': () => {
-            if (! args._private.gambled)
+            if (! args._private.gambled && ! args._private.abnormalFlow)
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args._private.maneuvers.forEach((maneuver) => { 
                 this.addActionButton(
@@ -329,8 +329,8 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelPayForManeuverFromCombatCard': () => {
-            if (args._private.gambled)
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backGambled'}));
+            if (args._private.gambled || args._private.abnormalFlow)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backAbnormalFlow'}));
             else
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actPayForCards`, _('Confirm'), () => this.onCombatCardPaymentConfirmed());

@@ -1851,6 +1851,7 @@ $machinestates = [
             "descriptionmyturn" => clienttranslate('${you} must choose a Duel Action:'),
             "type" => "activeplayer",
             "args" => "argsChooseDuelAction",
+            "action" => "stResetDuelAction",
             "possibleactions" => [
                 "actDuelActionGamble",
                 "actDuelActionChooseCombatCard",
@@ -1973,7 +1974,7 @@ $machinestates = [
                 "transitions" => [
                     "maneuverPaidFor" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
                     "back" => States::DUEL_CHOOSE_ACTION,
-                    "backGambled" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD
+                    "backAbnormalFlow" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD
                 ]
             ],
                 // Add custom maneuver transitions here

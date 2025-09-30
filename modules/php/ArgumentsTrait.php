@@ -685,13 +685,16 @@ trait ArgumentsTrait
         if ($card instanceof IHasManeuvers)
             $maneuvers = $card->getManeuversArray($this);
 
-        return [
+            $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
+
+            return [
             "_private" => [
                 "active" => [
                     "cardId" => $cardId,
                     "maneuvers" => $maneuvers,
                     "gambled" => $gambled,
-                    "card" => $card->getPropertyArray($this)
+                    "card" => $card->getPropertyArray($this),
+                    "abnormalFlow" => $abnormalFlow
                 ]
             ]
         ];
@@ -703,6 +706,7 @@ trait ArgumentsTrait
         $cardId = $this->globals->get(Game::CHOSEN_CARD);
         $gambled = $this->globals->get(Game::DUEL_GAMBLED, false);
         $card = $this->getCardObjectFromDb($cardId);
+        $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
         return [
             "_private" => [
                 "active" => [
@@ -710,7 +714,8 @@ trait ArgumentsTrait
                     "cost" => $this->globals->get(Game::CHOSEN_CARD_COST),
                     "discount" => $this->globals->get(Game::DISCOUNT),
                     "gambled" => $gambled,
-                    "card" => $card->getPropertyArray($this)
+                    "card" => $card->getPropertyArray($this),
+                    "abnormalFlow" => $abnormalFlow
                 ]
             ]
         ];

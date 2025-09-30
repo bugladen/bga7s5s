@@ -51,7 +51,7 @@ class Maneuver_01077 extends Maneuver
     {
         $args = parent::getArgsFromManeuver($game, $state, $stateName);
 
-        if ($state === States::DUEL_RESOLVE_MANEUVER_01077)
+        if ($state === States::DUEL_RESOLVE_MANEUVER_01077 || $state === States::DUEL_RESOLVE_MANEUVER_01077_2)
         {
             $actor = $game->theah->getDuelRoundActor();
             $cardInfos = $game->getCardsOnTopOfPlayerFactionDeck($actor->ControllerId, $actor->ModifiedFinesse);
@@ -72,7 +72,7 @@ class Maneuver_01077 extends Maneuver
     {
         parent::actFromManeuverWithId($game, $state, $stateName, $id);
 
-        if ($state === States::DUEL_RESOLVE_MANEUVER_01077)
+        if ($state === States::DUEL_RESOLVE_MANEUVER_01077_2)
         {
             $actor = $game->theah->getDuelRoundActor();
             $cardInfos = $game->getCardsOnTopOfPlayerFactionDeck($actor->ControllerId, $actor->ModifiedFinesse);
@@ -93,13 +93,17 @@ class Maneuver_01077 extends Maneuver
             $card = $game->getCardObjectFromDb($id);
 
             $owner = $this->getOwningCard($game->theah);
-            $game->notifyAllPlayers("message", clienttranslate('${card_inject_code}: ${player_name} has chosen ${combat_card_inject_code} as a new combat card to play from ${count} choices.  The rest of the cards have been sunk.'), [
+            $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} has chosen ${combat_card_inject_code} as a new combat card to play from ${count} choices.  The rest of the cards have been sunk.'), [
                 "card_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($actor->ControllerId),
                 "count" => $actor->ModifiedFinesse,
                 "combat_card_inject_code" => $card->getInjectCode(),
             ]);
 
+            $event = EventFactory::createCardAddedToHandEvent($actor->ControllerId, $id);
+            $game->theah->queueEvent($event);
+
+            $game->globals->set(Game::ABNORMAL_FLOW, true);
             $game->globals->set(Game::NEXT_COMBAT_CARD, $id);
             $game->gamestate->nextState();
         }

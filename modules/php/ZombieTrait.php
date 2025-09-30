@@ -233,7 +233,6 @@ trait ZombieTrait
                 // Duel Resolve Maneuver States
                 case "duelResolveManeuver_01051": // Answering the Call
                 case "duelResolveManeuver_01059": // Regroup
-                case "duelResolveManeuver_01077": // Broken Time
                 case "duelResolveManeuver_01079": // Disarm
                 case "duelResolveManeuver_01079_2": // Disarm choice
                 case "duelResolveManeuver_01165": // Copy Technique

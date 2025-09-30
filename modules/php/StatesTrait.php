@@ -999,6 +999,11 @@ trait StatesTrait
         $this->gamestate->nextState();
     }
 
+    public function stResetDuelAction(): void
+    {
+        $this->globals->delete(Game::ABNORMAL_FLOW);
+    }
+
     public function stApplyCombatCardStats(): void
     {
         $duelId = $this->globals->get(Game::DUEL_ID);
@@ -1242,6 +1247,7 @@ trait StatesTrait
         $this->globals->delete(Game::DUEL_CHALLENGER);
         $this->globals->delete(Game::DUEL_DEFENDER);
         $this->globals->delete(Game::DUEL_GAMBLED);
+        $this->globals->delete(Game::ABNORMAL_FLOW);
 
         $sql = "SELECT challenging_player_id, defending_player_id, challenger_id, defender_id FROM duel where duel_id = $duelId";
         $result = $this->getObjectListFromDB($sql)[0];
