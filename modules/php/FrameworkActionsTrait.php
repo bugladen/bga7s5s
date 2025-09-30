@@ -746,7 +746,11 @@ trait FrameworkActionsTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
-        $discount = $this->theah->getEquipDiscount($performer, $attachment);
+        [$discount, $explanations] = $this->theah->getEquipDiscount($performer, $attachment);
+        if ($discount > 0)
+            $this->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                "explanations" => $explanations,
+            ]);
         $this->globals->set(Game::DISCOUNT, $discount);
 
         $this->gamestate->nextState("attachmentSelected");
@@ -771,7 +775,11 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHOSEN_CARD, $attachmentId);
 
-        $discount = $this->theah->getEquipDiscount($performer, $attachment);
+        [$discount, $explanations] = $this->theah->getEquipDiscount($performer, $attachment);
+        if ($discount > 0)
+            $this->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                "explanations" => $explanations,
+            ]);
         $this->globals->set(Game::DISCOUNT, $discount);
 
         $this->gamestate->nextState("attachmentSelected");

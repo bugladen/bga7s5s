@@ -94,7 +94,7 @@ class Action_01167 extends RiskAction
             $performer = $game->getCardObjectFromDb($performerId);
             $args['performerId'] = $performerId;
 
-            $discount = $game->theah->getEquipDiscount($performer, $chosenAttachment);
+            $discount = $game->globals->get(Game::DISCOUNT);
             $args['discount'] = $discount;
         }
 
@@ -143,6 +143,15 @@ class Action_01167 extends RiskAction
                 throw new \BgaUserException($game->translate("You cannot recover a unique attachment"));
             }
 
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->getCardObjectFromDb($performerId);
+            [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $attachment);
+            if ($discount > 0)
+                $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                    "explanations" => $explanations,
+                ]);
+            $game->globals->set(Game::DISCOUNT, $discount);
+
             $game->globals->set(Game::CHOSEN_CARD, $id);
             $game->gamestate->nextState("attachmentChosen");
         }
@@ -173,7 +182,7 @@ class Action_01167 extends RiskAction
             if ($attachment instanceof Attachment)
                 $cost = $attachment->WealthCost;
             
-            $discount = $game->theah->getEquipDiscount($performer, $attachment);
+            $discount = $game->globals->get(Game::DISCOUNT);
             $cost -= $discount;
     
             //Total up the wealth of the cards to see if player paid correctly

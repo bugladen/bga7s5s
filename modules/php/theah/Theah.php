@@ -573,19 +573,20 @@ class Theah
         return $characters;
     }
 
-    function getEquipDiscount(Character $performer, Attachment $attachment): int
+    function getEquipDiscount(Character $performer, Attachment $attachment): Array
     {
         //Smuggled Item cost is free
         if ($this->game->globals->get(Game::EQUIP_TYPE) == Game::SMUGGLED_ITEM_EQUIP_TYPE) {
-            return $attachment->WealthCost;
+            return [$attachment->WealthCost, $this->game->translate("Smuggled Item: Cost is free")];
         }
         
         $discount = 0;
+        $explanations = [];
         foreach ($this->cards as $card) {
-            $discount += $card->getEquipDiscount($this, $performer, $attachment);
+            $discount += $card->getEquipDiscount($this, $performer, $attachment, $explanations);
         }
-
-        return $discount;
+        $explanations = implode("<br>", $explanations);
+        return [$discount, $explanations];
     }
 
     function getParleyDiscount(Character $performer, bool $parleying): int

@@ -90,16 +90,16 @@ abstract class Character extends Card implements IHasTechniques
         return $discount;
     }
 
-    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment) : int
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, Array &$explanations) : int
     {
-        $discount = parent::getEquipDiscount($theah, $performer, $attachment);
+        $discount = parent::getEquipDiscount($theah, $performer, $attachment, $explanations);
         
         foreach ($this->Attachments as $attachmentId)
         {
             $attachment = $theah->getCardById($attachmentId);
             if ($attachment instanceof Attachment)
             {
-                $discount += $attachment->getEquipDiscount($theah, $performer, $attachment);
+                $discount += $attachment->getEquipDiscount($theah, $performer, $attachment, $explanations);
             }
         
         }
