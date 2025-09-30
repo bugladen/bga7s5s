@@ -325,6 +325,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const actionArray = {
             'highDramaEquipActionPayForAttachmentFromHand' : 'actHighDramaEquipAttachment',
+            'highDramaEquipActionPayForAttachmentFromPlay' : 'actHighDramaEquipAttachment',
             'highDramaBruteActionPayForBrute'              : 'actPayForBrute',
         };
 

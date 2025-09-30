@@ -798,9 +798,13 @@ trait FrameworkActionsTrait
         $equipType = $this->globals->get(Game::EQUIP_TYPE);
 
         //Sanity checks
-        if ($attachment->Location != Game::LOCATION_HAND || $attachment->ControllerId != $playerId) 
+        if ($attachment->Location == Game::LOCATION_HAND) 
         {
-            throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
+            $handCards = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+            $handCardIds = array_map(function($handCard) { return $handCard['id']; }, $handCards);
+            if (!in_array($attachmentId, $handCardIds)) {
+                throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
+            }
         }
 
         // Let's Haggle can equip attachments only from the Bazaar
@@ -810,8 +814,9 @@ trait FrameworkActionsTrait
             {
                 throw new \BgaUserException(self::_("Let's Haggle: Attachment is not at Bazaar."));
             }
-        }        
-        else if ($attachment->Location != Game::LOCATION_HAND)
+        } 
+
+        if ($attachment->Location != Game::LOCATION_HAND)
         {
             $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($performer->Location);
             $attachmentIds = array_map(function($attachment) { return $attachment->Id; }, $attachmentsAtLocation);
