@@ -107,15 +107,15 @@ class _01045 extends Scheme implements IHasReactions
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01045)
         {
             $deck = $game->getGameDeckObject();
-            $cardObjects = $deck->getCardsInLocation(Game::LOCATION_CITY_DECK);   
+            $cardObjects = $deck->getCardsInLocation(Game::LOCATION_CITY_DISCARD);   
 
             $ids = array_column($cardObjects, 'id');
             foreach ($ids as $id)
             {
                 $card = $game->getCardObjectFromDb($id);
-                if ($card->hasTrait('Mercenary') && $card->Location == Game::LOCATION_CITY_DECK)
+                if ($card->hasTrait('Mercenary') && $card->Location == Game::LOCATION_CITY_DISCARD)
                 {
-                    throw new \BgaUserException($game->translate("There are Mercenaries in the City Deck"));
+                    throw new \BgaUserException($game->translate("There are Mercenaries in the City Deck Discard Pile"));
                 }
             }
                    
