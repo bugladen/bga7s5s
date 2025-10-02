@@ -592,14 +592,16 @@ class Theah
         return [$discount, $explanations];
     }
 
-    function getParleyDiscount(Character $performer, bool $parleying): int
+    function getParleyDiscount(Character $performer, bool $parleying): Array
     {
         $discount = 0;
+        $explanations = [];
         foreach ($this->cards as $card) {
-            $discount += $card->getParleyDiscount($performer, $parleying);
+            $discount += $card->getParleyDiscount($this,$performer, $parleying, $explanations);
         }
 
-        return $discount;
+        $explanations = implode("<br>", $explanations);
+        return [$discount, $explanations];
     }
 
     function getPlayBruteDiscount(Character $brute): int

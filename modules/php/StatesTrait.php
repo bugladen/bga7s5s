@@ -529,7 +529,8 @@ trait StatesTrait
         if ($performer->Engaged)
         {
             //Discount might have special abilities above parleying
-            $discount = $this->theah->getParleyDiscount($performer, false);
+            [$discount, $explanations] = $this->theah->getParleyDiscount($performer, false);
+            $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
             $this->globals->set(Game::DISCOUNT, $discount);
             $this->gamestate->nextState("notParleyable");
         }

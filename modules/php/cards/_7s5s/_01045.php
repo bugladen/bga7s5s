@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01045 extends Scheme implements IHasReactions
 {
@@ -44,12 +45,13 @@ class _01045 extends Scheme implements IHasReactions
         ];
     }
 
-    public function getParleyDiscount(Character $performer, bool $parleying) : int
+    public function getParleyDiscount(Theah $theah, Character $performer, bool $parleying, Array &$explanations) : int
     {
-        $discount = parent::getParleyDiscount($performer, $parleying);
+        $discount = parent::getParleyDiscount($theah, $performer, $parleying, $explanations);
         if ($this->Location == Game::LOCATION_PLAYER_HOME && $parleying && $performer->ControllerId == $this->ControllerId && $performer instanceof Leader)
         {
             $discount += 1;
+            $explanations[] = sprintf($theah->game->translate("%s: -1 because performer is a Leader Parleying with a Mercenary."), $this->getInjectCode());
         }
 
         return $discount;

@@ -421,7 +421,8 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Character is not a City Character."));
         }
 
-        $discount = $this->globals->get(Game::DISCOUNT, 0);        
+        $discount = $this->globals->get(Game::DISCOUNT, 0); 
+        $explanations = $this->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
 
         $cost = $character->WealthCost - $discount;
         if ($cost < 0) $cost = 0;
@@ -458,6 +459,7 @@ trait FrameworkActionsTrait
             $recruitCharacterEvent->playerId = $playerId;
             $recruitCharacterEvent->discount = $discount;
             $recruitCharacterEvent->cost = $cost;
+            $recruitCharacterEvent->explanations = $explanations;
         }
         $this->theah->eventCheck($recruitCharacterEvent);
         $this->theah->queueEvent($recruitCharacterEvent);
@@ -608,8 +610,14 @@ trait FrameworkActionsTrait
         $character = $this->theah->getCharacterById($id);
 
         //Set the discount for recruiting a mercenary.
-        $discount = $this->theah->getParleyDiscount($character, true);
+        [$discount, $explanations] = $this->theah->getParleyDiscount($character, true);
+        if ($discount > 0)
+        $this->notify->player($character->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+            "explanations" => $explanations,
+        ]);
+
         $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
         $this->globals->set(GAME::PERFORMER_PARLEYED, true);
 
         $this->gamestate->nextState("parleyChosen");
@@ -621,7 +629,13 @@ trait FrameworkActionsTrait
         $id = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $character = $this->theah->getCharacterById($id);
 
-        $discount = $this->theah->getParleyDiscount($character, false);
+        [$discount, $explanations] = $this->theah->getParleyDiscount($character, false);
+        if ($discount > 0)
+        $this->notify->player($character->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+            "explanations" => $explanations,
+        ]);
+
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
         $this->globals->set(Game::DISCOUNT, $discount);
         $this->globals->set(GAME::PERFORMER_PARLEYED, false);
         $this->gamestate->nextState("parleyChosen");

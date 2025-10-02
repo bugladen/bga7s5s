@@ -298,7 +298,7 @@ abstract class Card
 
     public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, Array &$explanations): int { return 0; }
 
-    public function getParleyDiscount(Character $performer, bool $parleying) : int { return 0; }
+    public function getParleyDiscount(Theah $theah, Character $performer, bool $parleying, Array &$explanations) : int { return 0; }
 
     public function getPlayBruteDiscount(Theah $theah, Character $brute): int { return 0; }
 
