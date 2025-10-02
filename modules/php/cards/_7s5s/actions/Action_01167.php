@@ -151,6 +151,7 @@ class Action_01167 extends RiskAction
                     "explanations" => $explanations,
                 ]);
             $game->globals->set(Game::DISCOUNT, $discount);
+            $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
 
             $game->globals->set(Game::CHOSEN_CARD, $id);
             $game->gamestate->nextState("attachmentChosen");
@@ -183,6 +184,7 @@ class Action_01167 extends RiskAction
                 $cost = $attachment->WealthCost;
             
             $discount = $game->globals->get(Game::DISCOUNT);
+            $explanations = $game->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
             $cost -= $discount;
     
             //Total up the wealth of the cards to see if player paid correctly
@@ -209,7 +211,7 @@ class Action_01167 extends RiskAction
             $game->theah->queueEvent($removeFromDiscardEvent);
 
             //Equip the attachment
-            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $performerId, $attachmentId, $discount, $cost);
+            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $performerId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
             $game->theah->eventCheck($equipAttachmentEvent);
             $game->theah->queueEvent($equipAttachmentEvent);
     

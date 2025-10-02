@@ -752,6 +752,7 @@ trait FrameworkActionsTrait
                 "explanations" => $explanations,
             ]);
         $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
 
         $this->gamestate->nextState("attachmentSelected");
     }
@@ -781,6 +782,7 @@ trait FrameworkActionsTrait
                 "explanations" => $explanations,
             ]);
         $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
 
         $this->gamestate->nextState("attachmentSelected");
     }
@@ -836,6 +838,7 @@ trait FrameworkActionsTrait
         }
 
         $discount = $this->globals->get(Game::DISCOUNT);
+        $explanations = $this->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
         $cost = $attachment->WealthCost - $discount;
         if ($cost < 0) $cost = 0;
 
@@ -895,7 +898,7 @@ trait FrameworkActionsTrait
         $actualTargetId = $attachment->getRequiredAttachTargetId($this->theah, $performer->Id);
 
         //Equip the attachment
-        $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $actualTargetId, $attachmentId, $discount, $cost);
+        $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $actualTargetId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
         $this->theah->eventCheck($equipAttachmentEvent);
 
         //Move the cards used to pay to the player's discard pile
@@ -1059,8 +1062,14 @@ trait FrameworkActionsTrait
         }
         else
         {
-            $discount = $this->theah->getActionFromHandDiscount($performer = null, $action);
+            [$discount, $explanations] = $this->theah->getActionFromHandDiscount($performer = null, $action);
             $this->globals->set(Game::DISCOUNT, $discount);
+            $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+
+            if ($discount > 0)
+                $this->notify->player($player_id, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                    "explanations" => $explanations,
+                ]);
     
             $this->gamestate->nextState("inHandActionChosen");
         }
@@ -1078,8 +1087,14 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
-        $discount = $this->theah->getActionFromHandDiscount($performer, $action);
+        [$discount, $explanations] = $this->theah->getActionFromHandDiscount($performer, $action);
         $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+
+        if ($discount > 0)
+            $this->notify->player($playerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                "explanations" => $explanations,
+            ]);
 
         $this->gamestate->nextState("inHandActionPerformerChosen");
     }
@@ -1109,6 +1124,7 @@ trait FrameworkActionsTrait
         }
 
         $discount = $this->globals->get(Game::DISCOUNT, 0);
+        $explanations = $this->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
         $cost = $risk->WealthCost - $discount;
         if ($cost < 0) $cost = 0;
 
@@ -1141,11 +1157,23 @@ trait FrameworkActionsTrait
             $this->theah->queueEvent($event);
         }
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} is performing the In-Hand Action [${action_name}] from ${card_inject_code}.'), [
+        $message = clienttranslate('${player_name} is performing the In-Hand Action [${action_name}] from ${card_inject_code}. ');
+        if ($discount > 0)
+        {
+            $message .= clienttranslate('This was played at a cost of ${cost} Wealth (discount of ${discount}).');
+            if ($explanations != '')
+            {
+                $message .= clienttranslate('<br>${explanations}');
+            }
+        }
+        $this->notifyAllPlayers("message", $message, [
             "i18n" => ["action_name"],
             "player_name" => $this->getActivePlayerName(),
             "action_name" => $action->Name,
             "card_inject_code" => $risk->getInjectCode(),
+            "cost" => $cost,
+            "discount" => $discount,
+            "explanations" => $explanations,
         ]);
 
         $event = EventFactory::createActionTriggeredEvent($playerId, $performerId, $actionId);

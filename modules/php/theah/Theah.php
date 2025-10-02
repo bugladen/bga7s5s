@@ -184,7 +184,7 @@ class Theah
             $this->eventCheck($event);
             $this->db->queueEvent($event);
         } catch (\Exception $e) {
-            $this->game->notifyAllPlayers("message", clienttranslate($e->getMessage()), []);
+            $this->game->notify->all("message", clienttranslate($e->getMessage()), []);
         }
     }
 
@@ -255,7 +255,7 @@ class Theah
         }
         else 
         {
-            $state = $this->game->gamestate->state();
+            $state = $this->game->gamestate->getCurrentMainState();
             if ($state['type'] == "activeplayer")
             {
                 $currentPlayerId = $this->game->globals->get(Game::CURRENT_PLAYER);
@@ -320,15 +320,18 @@ class Theah
         return $locations;
     }
 
-    function getActionFromHandDiscount(?Character $performer, CardAction $action): int
+    function getActionFromHandDiscount(?Character $performer, CardAction $action): Array
     {
         $cards = $this->cards;
         $discount = 0;
+        $explanations = [];
         foreach ($cards as $card) {
-            $discount += $card->getActionFromHandDiscount($this, $performer, $action);
+            $discount += $card->getActionFromHandDiscount($this, $performer, $action, $explanations);
         }
+
+        $explanations = implode("<br>", $explanations);
             
-        return $discount;
+        return [$discount, $explanations];
     }
 
     function getAvailableAttachmentsAtLocation($location)
@@ -1191,7 +1194,7 @@ class Theah
             $sql = "UPDATE duel_round SET actor_id = $newParticipantId, actor_serialized = '$serialized' WHERE duel_id = $duelId AND round = $round";
             $this->db->executeSql($sql);
 
-            $this->game->notifyAllPlayers("duelActorSwapped", '', [
+            $this->game->notify->all("duelActorSwapped", '', [
                 'round' => $round,
                 'actor' => $newParticipant->getPropertyArray($this->game),
             ]);

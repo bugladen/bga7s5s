@@ -410,14 +410,14 @@ abstract class Card
         return $properties;
     }
 
-    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $requestedAction): int
+    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $requestedAction, Array &$explanations): int
     {
         $discount = 0;
         if ($this instanceof IHasActions)
         {
             foreach ($this->getActions() as $action)
             {
-                $discount += $action->getActionFromHandDiscount($theah, $performer, $requestedAction);
+                $discount += $action->getActionFromHandDiscount($theah, $performer, $requestedAction, $explanations);
             }
         }
 

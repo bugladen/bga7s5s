@@ -85,6 +85,7 @@ class Action_01147 extends SchemeCityAction
                     "explanations" => $explanations,
                 ]);
             $game->globals->set(Game::DISCOUNT, $discount);
+            $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
     
             $game->globals->set(Game::EQUIP_TYPE, Game::LETS_HAGGLE_EQUIP_TYPE);
             

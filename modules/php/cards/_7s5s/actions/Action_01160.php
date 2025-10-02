@@ -49,9 +49,9 @@ class Action_01160 extends RiskAction
         }
     }
 
-    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $action): int
+    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $action, Array &$explanations): int
     {
-        $discount = parent::getActionFromHandDiscount($theah, $performer, $action);
+        $discount = parent::getActionFromHandDiscount($theah, $performer, $action, $explanations);
 
         if ($action->Id == $this->Id)
         {
@@ -60,6 +60,7 @@ class Action_01160 extends RiskAction
             if ($leader->hasTrait('Villain'))
             {
                 $discount += 1;
+                $explanations[] = sprintf($theah->game->translate("%s: -1 because Leader is a Villain."), $owner->getInjectCode());
             }
         }
 

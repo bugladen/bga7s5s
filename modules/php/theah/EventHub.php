@@ -147,8 +147,14 @@ trait EventHub
                     // Notify players of attachment equipped
                     $message = clienttranslate('${player_name} equipped ${attachment_inject_code} to ${performer_inject_code}. ');
                     if ($event->asAction)
+                    {
                         $message .= clienttranslate('This was done at a cost of ${cost} Wealth (discount of ${discount}).');
-                    $theah->game->notifyAllPlayers("attachmentEquipped", $message, [
+                        if ($event->explanations != '')
+                        {
+                            $message .= clienttranslate('<br>${explanations}');
+                        }
+                    }
+                    $theah->game->notify->all("attachmentEquipped", $message, [
                         "player_id" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "attachment_inject_code" => $attachment->getInjectCode(),

@@ -120,7 +120,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createAttachmentEquippedEvent(int $playerId, int $characterId, int $attachmentId, int $discount, int $cost, bool $asAction = true): EventAttachmentEquipped
+    public static function createAttachmentEquippedEvent(int $playerId, int $characterId, int $attachmentId, int $discount, int $cost, bool $asAction = true, string $explanations = ''): EventAttachmentEquipped
     {
         $event = self::createEvent(Events::AttachmentEquipped);
         if ($event instanceof EventAttachmentEquipped)
@@ -131,6 +131,7 @@ class EventFactory
             $event->discount = $discount;
             $event->cost = $cost;
             $event->asAction = $asAction;
+            $event->explanations = $explanations;
         }
 
         return $event;

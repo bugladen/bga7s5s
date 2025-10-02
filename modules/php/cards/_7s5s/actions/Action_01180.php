@@ -228,6 +228,7 @@ class Action_01180 extends CharacterAction
                     "explanations" => $explanations,
                 ]);
             $game->globals->set(Game::DISCOUNT, $discount);
+            $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
             $game->globals->set(Game::CHOSEN_PERFORMER, $id);
 
             $game->gamestate->nextState("performerChosen");
@@ -250,6 +251,7 @@ class Action_01180 extends CharacterAction
                 $cost = $attachment->WealthCost;
             
             $discount = $game->globals->get(Game::DISCOUNT);
+            $explanations = $game->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
             $cost -= $discount;
     
             //Total up the wealth of the cards to see if player paid correctly
@@ -284,7 +286,7 @@ class Action_01180 extends CharacterAction
             }
 
             //Equip the attachment
-            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $performerId, $attachmentId, $discount, $cost);
+            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $performerId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
             $game->theah->eventCheck($equipAttachmentEvent);
             $game->theah->queueEvent($equipAttachmentEvent);
     
