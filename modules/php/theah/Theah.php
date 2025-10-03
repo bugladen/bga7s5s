@@ -43,7 +43,7 @@ class Theah
         $this->game = $game;
         $this->cards = [];
         $this->cityLocations = [];
-        $this->db = new DB();
+        $this->db = new DB($game);
         $this->cityBuilt = false;
         $this->Actions = [];
         $this->Reactions = [];
