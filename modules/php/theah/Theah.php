@@ -43,7 +43,7 @@ class Theah
         $this->game = $game;
         $this->cards = [];
         $this->cityLocations = [];
-        $this->db = new DB();
+        $this->db = new DB($game);
         $this->cityBuilt = false;
         $this->Actions = [];
         $this->Reactions = [];
@@ -184,7 +184,7 @@ class Theah
             $this->eventCheck($event);
             $this->db->queueEvent($event);
         } catch (\Exception $e) {
-            $this->game->notifyAllPlayers("message", clienttranslate($e->getMessage()), []);
+            $this->game->notify->all("message", clienttranslate($e->getMessage()), []);
         }
     }
 
@@ -255,7 +255,7 @@ class Theah
         }
         else 
         {
-            $state = $this->game->gamestate->state();
+            $state = $this->game->gamestate->getCurrentMainState();
             if ($state['type'] == "activeplayer")
             {
                 $currentPlayerId = $this->game->globals->get(Game::CURRENT_PLAYER);
@@ -320,15 +320,18 @@ class Theah
         return $locations;
     }
 
-    function getActionFromHandDiscount(?Character $performer, CardAction $action): int
+    function getActionFromHandDiscount(?Character $performer, CardAction $action): Array
     {
         $cards = $this->cards;
         $discount = 0;
+        $explanations = [];
         foreach ($cards as $card) {
-            $discount += $card->getActionFromHandDiscount($this, $performer, $action);
+            $discount += $card->getActionFromHandDiscount($this, $performer, $action, $explanations);
         }
+
+        $explanations = implode("<br>", $explanations);
             
-        return $discount;
+        return [$discount, $explanations];
     }
 
     function getAvailableAttachmentsAtLocation($location)
@@ -573,29 +576,32 @@ class Theah
         return $characters;
     }
 
-    function getEquipDiscount(Character $performer, Attachment $attachment): int
+    function getEquipDiscount(Character $performer, Attachment $attachment): Array
     {
         //Smuggled Item cost is free
         if ($this->game->globals->get(Game::EQUIP_TYPE) == Game::SMUGGLED_ITEM_EQUIP_TYPE) {
-            return $attachment->WealthCost;
+            return [$attachment->WealthCost, $this->game->translate("Smuggled Item: Cost is free")];
         }
         
         $discount = 0;
+        $explanations = [];
         foreach ($this->cards as $card) {
-            $discount += $card->getEquipDiscount($this, $performer, $attachment);
+            $discount += $card->getEquipDiscount($this, $performer, $attachment, $explanations);
         }
-
-        return $discount;
+        $explanations = implode("<br>", $explanations);
+        return [$discount, $explanations];
     }
 
-    function getParleyDiscount(Character $performer, bool $parleying): int
+    function getParleyDiscount(Character $performer, bool $parleying): Array
     {
         $discount = 0;
+        $explanations = [];
         foreach ($this->cards as $card) {
-            $discount += $card->getParleyDiscount($performer, $parleying);
+            $discount += $card->getParleyDiscount($this,$performer, $parleying, $explanations);
         }
 
-        return $discount;
+        $explanations = implode("<br>", $explanations);
+        return [$discount, $explanations];
     }
 
     function getPlayBruteDiscount(Character $brute): int
@@ -1029,7 +1035,7 @@ class Theah
         return count($charactersThatCanChallenge) > 0;
     }
 
-    public function playerCanClaim($playerId): bool
+    public function playerCanBasicClaim($playerId): bool
     {
         $characters = $this->getCharactersInCityByPlayerId($playerId);
         $charactersThatCanClaim = [];
@@ -1039,6 +1045,11 @@ class Theah
             if ($character->DashedInfluence)
                 continue;
             
+            //Check if player already controls this location
+            $location = $this->getCityLocation($character->Location);
+            if ($location->Controller == $playerId)
+                continue;
+
             $charactersThatCanClaim[] = $character;
         }
         
@@ -1185,7 +1196,7 @@ class Theah
             $sql = "UPDATE duel_round SET actor_id = $newParticipantId, actor_serialized = '$serialized' WHERE duel_id = $duelId AND round = $round";
             $this->db->executeSql($sql);
 
-            $this->game->notifyAllPlayers("duelActorSwapped", '', [
+            $this->game->notify->all("duelActorSwapped", '', [
                 'round' => $round,
                 'actor' => $newParticipant->getPropertyArray($this->game),
             ]);

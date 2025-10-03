@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01035 extends Leader implements IHasActions
 {
@@ -45,13 +46,14 @@ class _01035 extends Leader implements IHasActions
         ];
     }
 
-    public function getParleyDiscount(Character $performer, bool $parleying) : int
+    public function getParleyDiscount(Theah $theah, Character $performer, bool $parleying, Array &$explanations) : int
     {
-        $discount = parent::getParleyDiscount($performer, $parleying);
+        $discount = parent::getParleyDiscount($theah, $performer, $parleying, $explanations);
 
         if ($performer->Id == $this->Id && $parleying)
         {
             $discount += 2;
+            $explanations[] = sprintf($theah->game->translate("%s: -2 because performer is Kaspar Dietrich."), $this->getInjectCode());
         }
 
         return $discount;

@@ -79,8 +79,13 @@ class Action_01147 extends SchemeCityAction
             $performer = $game->theah->getCharacterById($performerId);
 
             $game->globals->set(Game::CHOSEN_CARD, $attachment->Id);
-            $discount = $game->theah->getEquipDiscount($performer, $attachment);
+            [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $attachment);
+            if ($discount > 0)
+                $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                    "explanations" => $explanations,
+                ]);
             $game->globals->set(Game::DISCOUNT, $discount);
+            $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
     
             $game->globals->set(Game::EQUIP_TYPE, Game::LETS_HAGGLE_EQUIP_TYPE);
             

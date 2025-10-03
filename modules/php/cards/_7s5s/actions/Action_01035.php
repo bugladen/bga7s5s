@@ -167,7 +167,7 @@ class Action_01035 extends CharacterAction
             $mercenaryId = $game->globals->get(Game::CHOSEN_CARD);
             $mercenary = $game->getCardObjectFromDb($mercenaryId);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses to recruit ${mercenary}.'), [
+            $game->notify->all("message", clienttranslate('${player_name} chooses to recruit ${mercenary}.'), [
                 "player_name" => $game->getActivePlayerName(),
                 "mercenary" => $mercenary->Name,
             ]);
@@ -184,18 +184,24 @@ class Action_01035 extends CharacterAction
 
             if ($id == 1)
             {
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses to parley with ${mercenary}.'), [
+                $game->notify->all("message", clienttranslate('${player_name} chooses to parley with ${mercenary}.'), [
                     "player_name" => $game->getActivePlayerName(),
                     "mercenary" => $mercenary->Name,
                 ]);
 
                 //Set the discount for recruiting a mercenary.
-                $discount = $game->theah->getParleyDiscount($kaspar, true);
+                [$discount, $explanations] = $game->theah->getParleyDiscount($kaspar, true);
+                if ($discount > 0)
+                $game->notify->player($kaspar->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                    "explanations" => $explanations,
+                ]);
+        
                 $game->globals->set(Game::DISCOUNT, $discount);
+                $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
             }
             else
             {
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to parley with ${mercenary}.'), [
+                $game->notify->all("message", clienttranslate('${player_name} chooses not to parley with ${mercenary}.'), [
                     "player_name" => $game->getActivePlayerName(),
                     "mercenary" => $mercenary->Name,
                 ]);

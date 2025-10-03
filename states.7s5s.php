@@ -1535,20 +1535,6 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
-    States::DUEL_RESOLVE_MANEUVER_01077 => [
-        "name" => "duelResolveManeuver_01077",
-        "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
-        "descriptionmyturn" => clienttranslate('Broken Time') . clienttranslate(': ${you} must choose a Combat Card to play:'),
-        "type" => "activeplayer",
-        "args" => "argsForStatePrivate",
-        "possibleactions" => [
-            "actFromCardWithId", 
-        ],
-        "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
-        ]
-    ],
-
     States::DUEL_RESOLVE_MANEUVER_01079 => [
         "name" => "duelResolveManeuver_01079",
         "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),

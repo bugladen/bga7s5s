@@ -118,7 +118,7 @@ class Action_01180 extends CharacterAction
             $performer = $game->getCardObjectFromDb($performerId);
             $args['performerId'] = $performerId;
 
-            $discount = $game->theah->getEquipDiscount($performer, $chosenAttachment);
+            $discount = $game->globals->get(Game::DISCOUNT);
             $args['discount'] = $discount;
         }
 
@@ -216,13 +216,19 @@ class Action_01180 extends CharacterAction
             $wealth = $game->handWealthCount($playerId);
 
             //Get any discounts the player may have
-            $discount = $game->theah->getEquipDiscount($performer, $chosenAttachment);
+            [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $chosenAttachment);
 
             if ($cost > $wealth - $discount)
             {
                 throw new \BgaUserException(sprintf($game->translate("You do not have enough Wealth to equip this card (with a discount of %s)."), $discount));
             }        
         
+            if ($discount > 0)
+                $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                    "explanations" => $explanations,
+                ]);
+            $game->globals->set(Game::DISCOUNT, $discount);
+            $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
             $game->globals->set(Game::CHOSEN_PERFORMER, $id);
 
             $game->gamestate->nextState("performerChosen");
@@ -244,7 +250,8 @@ class Action_01180 extends CharacterAction
             if ($attachment instanceof Attachment)
                 $cost = $attachment->WealthCost;
             
-            $discount = $game->theah->getEquipDiscount($performer, $attachment);
+            $discount = $game->globals->get(Game::DISCOUNT);
+            $explanations = $game->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
             $cost -= $discount;
     
             //Total up the wealth of the cards to see if player paid correctly
@@ -263,7 +270,7 @@ class Action_01180 extends CharacterAction
     
             $playerId = $game->getActivePlayerId();
     
-            $game->notifyAllPlayers('message', clienttranslate('${player_name} has chosen to Equip ${card_inject_code} from the top 4 cards of the City Deck.'), [
+            $game->notify->all('message', clienttranslate('${player_name} has chosen to Equip ${card_inject_code} from the top 4 cards of the City Deck.'), [
                 'player_name' => $game->getActivePlayerName(),
                 'card_inject_code' => $attachment->getInjectCode(),
             ]);
@@ -279,7 +286,7 @@ class Action_01180 extends CharacterAction
             }
 
             //Equip the attachment
-            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $performerId, $attachmentId, $discount, $cost);
+            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $performerId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
             $game->theah->eventCheck($equipAttachmentEvent);
             $game->theah->queueEvent($equipAttachmentEvent);
     

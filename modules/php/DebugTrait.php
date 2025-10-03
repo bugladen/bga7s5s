@@ -195,7 +195,7 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
-    public function debug_ClaimLocation(int $playerId, string $location)
+    public function debug_ClaimLocation(string $location, int $playerId)
     {
         $this->setControllerForLocation($location, $playerId);
 

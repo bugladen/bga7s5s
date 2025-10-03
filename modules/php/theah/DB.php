@@ -3,18 +3,26 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 /** @disregard */
-class DB extends \APP_DbObject
+class DB
 {
+    private Game $game;
+
+    public function __construct(Game $game)
+    {
+        $this->game = $game;
+    }
+
     public function queueEvent(Event $event)
     {
         $priority = $event->priority;
         $serialized = addslashes(serialize($event));
         $sql = "INSERT INTO events (event_priority, event_serialized) values ($priority, '{$serialized}')";
         /** @disregard P1013 */
-        $this->DbQuery($sql);
+        $this->game->DbQuery($sql);
     }
 
     public function getNextEvent()
@@ -28,7 +36,7 @@ class DB extends \APP_DbObject
         
         $sql = "DELETE FROM events WHERE event_id = {$data['id']}";
         /** @disregard P1013 */
-        $this->DbQuery($sql);
+        $this->game->DbQuery($sql);
 
         $event = unserialize($data['json']);
         return $event;
@@ -60,31 +68,31 @@ class DB extends \APP_DbObject
     public function getCollection(string $sql): array
     {
         /** @disregard P1013 */
-        return $this->getCollectionFromDB($sql);
+        return $this->game->getCollectionFromDB($sql);
     }
 
     public function getObject(string $sql): array | null
     {
         /** @disregard P1013 */
-        return $this->getObjectFromDB($sql);
+        return $this->game->getObjectFromDB($sql);
     }
 
     public function getObjectList(string $sql): array
     {
         /** @disregard P1013 */
-        return $this->getObjectListFromDB($sql);
+        return $this->game->getObjectListFromDB($sql);
     }
 
     public function getUniqueValue(string $sql)
     {
         /** @disregard P1013 */
-        return $this->getUniqueValueFromDB($sql);
+        return $this->game->getUniqueValueFromDB($sql);
     }
 
     public function executeSql(string $sql)
     {
         /** @disregard P1013 */
-        $this->DbQuery($sql);
+        $this->game->DbQuery($sql);
     }
 
     public function getCardObjectsAtLocation(string $location, $playerId = null): array
@@ -99,7 +107,7 @@ class DB extends \APP_DbObject
             $sql .= " AND card_location_arg = $playerId";
         }
         /** @disregard P1013 */
-        $data = $this->getObjectListFromDB($sql);
+        $data = $this->game->getObjectListFromDB($sql);
 
         $cards = [];
         foreach ($data as $result) {
@@ -111,7 +119,7 @@ class DB extends \APP_DbObject
 
     public function getCardObject($cardId) : Card {
         /** @disregard P1013 */
-        $data = $this->getObjectFromDB("SELECT card_serialized FROM card WHERE card_id = $cardId");
+        $data = $this->game->getObjectFromDB("SELECT card_serialized FROM card WHERE card_id = $cardId");
         $card = unserialize($data['card_serialized']);
         return $card;
     }
@@ -120,24 +128,24 @@ class DB extends \APP_DbObject
         $serialized = addslashes(serialize($card));
         $sql = "UPDATE card set card_serialized = '{$serialized}' WHERE card_id = $card->Id";
         /** @disregard P1013 */
-        $this->DbQuery($sql);
+        $this->game->DbQuery($sql);
     }
 
     public function getPlayerIds() {
         $sql = "SELECT player_id as id FROM player";
         /** @disregard P1013 */
-        return $this->getObjectListFromDB($sql);
+        return $this->game->getObjectListFromDB($sql);
     }
 
     public function getPlayerReknown($playerId) {
         $sql = "SELECT player_score FROM player WHERE player_id = $playerId";
         /** @disregard P1013 */
-        return $this->getUniqueValueFromDB($sql);
+        return $this->game->getUniqueValueFromDB($sql);
     }
 
     function setPlayerReknown($playerId, $reknown) {
         /** @disregard P1013 */
-        $this->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
+        $this->game->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
     }
 
     function incrementPlayerReknown($player_id, $inc) {

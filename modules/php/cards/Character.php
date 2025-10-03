@@ -79,27 +79,28 @@ abstract class Character extends Card implements IHasTechniques
         return false;
     }
 
-    public function getParleyDiscount(Character $performer, bool $parleying) : int
+    public function getParleyDiscount(Theah $theah, Character $performer, bool $parleying, Array &$explanations) : int
     {
-        $discount = parent::getParleyDiscount($performer, $parleying);
+        $discount = parent::getParleyDiscount($theah, $performer, $parleying, $explanations);
         if ($performer->Id == $this->Id && $parleying)
         {
             $discount += $this->ModifiedInfluence;
+            $explanations[] = sprintf($theah->game->translate("%s: -%d for Influence."), $this->getInjectCode(), $this->ModifiedInfluence);
         }
 
         return $discount;
     }
 
-    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment) : int
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, Array &$explanations) : int
     {
-        $discount = parent::getEquipDiscount($theah, $performer, $attachment);
+        $discount = parent::getEquipDiscount($theah, $performer, $attachment, $explanations);
         
         foreach ($this->Attachments as $attachmentId)
         {
             $attachment = $theah->getCardById($attachmentId);
             if ($attachment instanceof Attachment)
             {
-                $discount += $attachment->getEquipDiscount($theah, $performer, $attachment);
+                $discount += $attachment->getEquipDiscount($theah, $performer, $attachment, $explanations);
             }
         
         }

@@ -1918,16 +1918,28 @@
             },
 
             'duelResolveManeuver_01077': () => {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = _('Revealed Faction Deck Cards');
+    
+                args.args.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+                this.chooseList.setSelectionMode(0);
+            },
+            'duelResolveManeuver_01077_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     dojo.removeClass('choose_container', 'hidden');
                     dojo.removeClass('chooseList', 'hidden');
                     $('choose_container_name').innerHTML = _('Revealed Cards in Your Faction Deck');
     
                     // For each card in the players deck, create a stock item
-                    args.args._private.args.cards.forEach((card) => {
-                        this.addCardToDeck(this.chooseList, card);
-                    });
-                    this.chooseList.setSelectionMode(1);
+                    setTimeout(() => {
+                        args.args._private.args.cards.forEach((card) => {
+                            this.addCardToDeck(this.chooseList, card);
+                        });
+                        this.chooseList.setSelectionMode(1);
+                    }, 500);
                 }
             },
         

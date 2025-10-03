@@ -422,7 +422,7 @@ body {
     margin-top: 5px;
     margin-bottom: 10px;
     border: 1px solid black;
-    height:110px;
+    flex-wrap: wrap;
 }
 
 ._7sfs-home-panel {
@@ -431,13 +431,14 @@ body {
 
 ._7sfs-home-endcap {
     display: inline-block;
-    background-image: url('img/boardResources.png');
+    /* background-image: url('img/boardResources.png');
     background-position: -177px 0px;
     background-size: calc(var(--png-board-resource-width) * .5) calc(var(--png-board-resource-height) * 0.5);
     height: 18px;
     width: 18px;
     border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
+    border-bottom-right-radius: 10px; */
+    width: 5px;
     margin: 5px;
 }
 
@@ -834,7 +835,7 @@ body {
 ._7sfs-scheme-initiative-box {
     position: absolute;
     background-color: #E4CCAC;
-    bottom: 25px;
+    top: 63px;
 }
 ._7sfs-scheme-initiative-image {
     float: right;
@@ -860,7 +861,7 @@ body {
 ._7sfs-scheme-panache-box {
     position: absolute;
     background-color: #E4CCAC;
-    bottom: 1px;
+    top: 87px;
 }
 ._7sfs-scheme-panache-image {
     float: right;

@@ -48,13 +48,14 @@ class _01197 extends CityCharacter implements IHasActions
         ];
     }
 
-    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment) : int
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, Array &$explanations) : int
     {
-        $discount = parent::getEquipDiscount($theah, $performer, $attachment);
+        $discount = parent::getEquipDiscount($theah, $performer, $attachment, $explanations);
 
         if ($performer->Id == $this->Id)
         {
             $discount += 1;
+            $explanations[] = sprintf($theah->game->translate("%s: -1 because performer is Kalla Forsberg."), $this->getInjectCode());
         }
 
         return $discount;   

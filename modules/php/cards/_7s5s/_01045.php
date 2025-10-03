@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01045 extends Scheme implements IHasReactions
 {
@@ -44,12 +45,13 @@ class _01045 extends Scheme implements IHasReactions
         ];
     }
 
-    public function getParleyDiscount(Character $performer, bool $parleying) : int
+    public function getParleyDiscount(Theah $theah, Character $performer, bool $parleying, Array &$explanations) : int
     {
-        $discount = parent::getParleyDiscount($performer, $parleying);
+        $discount = parent::getParleyDiscount($theah, $performer, $parleying, $explanations);
         if ($this->Location == Game::LOCATION_PLAYER_HOME && $parleying && $performer->ControllerId == $this->ControllerId && $performer instanceof Leader)
         {
             $discount += 1;
+            $explanations[] = sprintf($theah->game->translate("%s: -1 because performer is a Leader Parleying with a Mercenary."), $this->getInjectCode());
         }
 
         return $discount;
@@ -105,15 +107,15 @@ class _01045 extends Scheme implements IHasReactions
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01045)
         {
             $deck = $game->getGameDeckObject();
-            $cardObjects = $deck->getCardsInLocation(Game::LOCATION_CITY_DECK);   
+            $cardObjects = $deck->getCardsInLocation(Game::LOCATION_CITY_DISCARD);   
 
             $ids = array_column($cardObjects, 'id');
             foreach ($ids as $id)
             {
                 $card = $game->getCardObjectFromDb($id);
-                if ($card->hasTrait('Mercenary') && $card->Location == Game::LOCATION_CITY_DECK)
+                if ($card->hasTrait('Mercenary') && $card->Location == Game::LOCATION_CITY_DISCARD)
                 {
-                    throw new \BgaUserException($game->translate("There are Mercenaries in the City Deck"));
+                    throw new \BgaUserException($game->translate("There are Mercenaries in the City Deck Discard Pile"));
                 }
             }
                    

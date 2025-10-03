@@ -106,6 +106,7 @@ class Game extends \Bga\GameFramework\Table
     //Player action global variables
     //Delete these in stNextPlayer
     final const DISCOUNT = "discount";
+    final const DISCOUNT_EXPLAINATIONS = "discountExplanations";
     final const CHOSEN_OPPONENT = "chosenOpponent";
     final const CHOSEN_CARD = "chosenCard";
     final const CHOSEN_CARD_COST = "chosenCardCost";
@@ -325,16 +326,6 @@ class Game extends \Bga\GameFramework\Table
         }
 
         return $result;
-    }
-
-    /**
-     * Returns the game name.
-     *
-     * IMPORTANT: Please do not modify.
-     */
-    protected function getGameName()
-    {
-        return "seventhseacityoffivesails";
     }
 
     /**

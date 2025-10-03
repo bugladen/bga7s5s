@@ -150,9 +150,9 @@ class _01147 extends Scheme implements IHasActions
         }
     }
     
-    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment): int
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, Array &$explanations): int
     {
-        $discount = parent::getEquipDiscount($theah, $performer, $attachment);
+        $discount = parent::getEquipDiscount($theah, $performer, $attachment, $explanations);
 
         $actionId = $theah->game->globals->get(Game::CHOSEN_ACTION);
         $action = $theah->getInPlayActionById($actionId);
@@ -167,6 +167,7 @@ class _01147 extends Scheme implements IHasActions
                 $performer->Location == Game::LOCATION_CITY_BAZAAR)
             {
                 $discount += 1;
+                $explanations[] = sprintf($theah->game->translate("%s: -1 because performer is at the Bazaar."), $this->getInjectCode());
             }
         }
 

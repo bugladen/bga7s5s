@@ -148,8 +148,14 @@ trait EventHub
                     // Notify players of attachment equipped
                     $message = clienttranslate('${player_name} equipped ${attachment_inject_code} to ${performer_inject_code}. ');
                     if ($event->asAction)
+                    {
                         $message .= clienttranslate('This was done at a cost of ${cost} Wealth (discount of ${discount}).');
-                    $theah->game->notifyAllPlayers("attachmentEquipped", $message, [
+                        if ($event->explanations != '')
+                        {
+                            $message .= clienttranslate('<br>${explanations}');
+                        }
+                    }
+                    $theah->game->notify->all("attachmentEquipped", $message, [
                         "player_id" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "attachment_inject_code" => $attachment->getInjectCode(),
@@ -629,13 +635,23 @@ trait EventHub
                 $character->IsUpdated = true;
 
                 // Notify players of recruited character
-                $this->game->notifyAllPlayers("characterRecruited", clienttranslate('${player_name} recruits ${character_inject_code} at a cost of ${cost} Wealth (discount of ${discount}).'), [
+                $message = clienttranslate('${player_name} recruits ${character_inject_code} at a cost of ${cost} Wealth.');
+                if ($event->discount > 0)
+                {
+                    $message .= clienttranslate(' (with a discount of ${discount}).');
+                    if ($event->explanations != '')
+                    {
+                        $message .= clienttranslate('<br>${explanations}');
+                    }
+                }
+                $this->game->notifyAllPlayers("characterRecruited", $message, [
                     "player_id" => $event->playerId,
                     "player_name" => $this->game->getPlayerNameById($event->playerId),
                     "character_inject_code" => $character->getInjectCode(),
                     "characterId" => $character->Id,
                     "discount" => $event->discount,
                     "cost" => $event->cost,
+                    "explanations" => $event->explanations,
                 ]);
                 break;
 

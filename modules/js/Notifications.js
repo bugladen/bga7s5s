@@ -380,6 +380,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             //Destroy the old card element
             dojo.destroy(oldCard.divId);
         }
+        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
 
         this.attachCard(performer, attachment);
         this.cardProperties[attachment.id] = attachment;

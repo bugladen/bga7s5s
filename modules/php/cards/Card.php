@@ -296,9 +296,9 @@ abstract class Card
         }
     }
 
-    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment): int { return 0; }
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, Array &$explanations): int { return 0; }
 
-    public function getParleyDiscount(Character $performer, bool $parleying) : int { return 0; }
+    public function getParleyDiscount(Theah $theah, Character $performer, bool $parleying, Array &$explanations) : int { return 0; }
 
     public function getPlayBruteDiscount(Theah $theah, Character $brute): int { return 0; }
 
@@ -410,14 +410,14 @@ abstract class Card
         return $properties;
     }
 
-    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $requestedAction): int
+    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $requestedAction, Array &$explanations): int
     {
         $discount = 0;
         if ($this instanceof IHasActions)
         {
             foreach ($this->getActions() as $action)
             {
-                $discount += $action->getActionFromHandDiscount($theah, $performer, $requestedAction);
+                $discount += $action->getActionFromHandDiscount($theah, $performer, $requestedAction, $explanations);
             }
         }
 

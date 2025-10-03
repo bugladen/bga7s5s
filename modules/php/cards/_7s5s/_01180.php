@@ -49,14 +49,15 @@ class _01180 extends CityCharacter implements IHasActions
         ];
     }
 
-    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment) : int
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, Array &$explanations) : int
     {
-        $discount = parent::getEquipDiscount($theah, $performer, $attachment);
+        $discount = parent::getEquipDiscount($theah, $performer, $attachment, $explanations);
 
         //While equipping an Artifact to any of the controllers characters, Kaj Kousei gives a discount of 1
         if ($performer->ControllerId == $this->ControllerId && $attachment->hasTrait('Artifact'))
         {
             $discount += 1;
+            $explanations[] = sprintf($theah->game->translate("%s: -1 for equipping an Artifact to any of the controller's characters"), $this->getInjectCode());
         }
         return $discount;
     }

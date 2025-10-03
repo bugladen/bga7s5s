@@ -40,9 +40,9 @@ class Action_01159 extends RiskAction
         return false;
     }
 
-    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $action): int
+    public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $action, Array &$explanations): int
     {
-        $discount = parent::getActionFromHandDiscount($theah, $performer, $action);
+        $discount = parent::getActionFromHandDiscount($theah, $performer, $action, $explanations);
 
         if ($action->Id == $this->Id)
         {
@@ -50,6 +50,8 @@ class Action_01159 extends RiskAction
             if ($leader->hasTrait('Diplomat') || $leader->hasTrait('Hero'))
             {
                 $discount += 1;            
+                $owner = $this->getOwningCard($theah);
+                $explanations[] = sprintf($theah->game->translate("%s: -1 because Leader is a Diplomat or Hero."), $owner->getInjectCode());
             }
         }
 

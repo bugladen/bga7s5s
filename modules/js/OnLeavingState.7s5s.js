@@ -1194,6 +1194,11 @@
             },
 
             'duelResolveManeuver_01077': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+            'duelResolveManeuver_01077_2': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
                     dojo.addClass('choose_container', 'hidden');

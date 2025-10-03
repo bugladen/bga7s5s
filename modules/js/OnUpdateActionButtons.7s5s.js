@@ -691,8 +691,11 @@
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
-    
+
             'duelResolveManeuver_01077': () => {
+                this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
+            },    
+            'duelResolveManeuver_01077_2': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },

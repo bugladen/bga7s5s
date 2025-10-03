@@ -421,7 +421,8 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Character is not a City Character."));
         }
 
-        $discount = $this->globals->get(Game::DISCOUNT, 0);        
+        $discount = $this->globals->get(Game::DISCOUNT, 0); 
+        $explanations = $this->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
 
         $cost = $character->WealthCost - $discount;
         if ($cost < 0) $cost = 0;
@@ -458,6 +459,7 @@ trait FrameworkActionsTrait
             $recruitCharacterEvent->playerId = $playerId;
             $recruitCharacterEvent->discount = $discount;
             $recruitCharacterEvent->cost = $cost;
+            $recruitCharacterEvent->explanations = $explanations;
         }
         $this->theah->eventCheck($recruitCharacterEvent);
         $this->theah->queueEvent($recruitCharacterEvent);
@@ -608,8 +610,14 @@ trait FrameworkActionsTrait
         $character = $this->theah->getCharacterById($id);
 
         //Set the discount for recruiting a mercenary.
-        $discount = $this->theah->getParleyDiscount($character, true);
+        [$discount, $explanations] = $this->theah->getParleyDiscount($character, true);
+        if ($discount > 0)
+        $this->notify->player($character->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+            "explanations" => $explanations,
+        ]);
+
         $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
         $this->globals->set(GAME::PERFORMER_PARLEYED, true);
 
         $this->gamestate->nextState("parleyChosen");
@@ -621,7 +629,13 @@ trait FrameworkActionsTrait
         $id = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $character = $this->theah->getCharacterById($id);
 
-        $discount = $this->theah->getParleyDiscount($character, false);
+        [$discount, $explanations] = $this->theah->getParleyDiscount($character, false);
+        if ($discount > 0)
+        $this->notify->player($character->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+            "explanations" => $explanations,
+        ]);
+
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
         $this->globals->set(Game::DISCOUNT, $discount);
         $this->globals->set(GAME::PERFORMER_PARLEYED, false);
         $this->gamestate->nextState("parleyChosen");
@@ -746,8 +760,13 @@ trait FrameworkActionsTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
-        $discount = $this->theah->getEquipDiscount($performer, $attachment);
+        [$discount, $explanations] = $this->theah->getEquipDiscount($performer, $attachment);
+        if ($discount > 0)
+            $this->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                "explanations" => $explanations,
+            ]);
         $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
 
         $this->gamestate->nextState("attachmentSelected");
     }
@@ -771,8 +790,13 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHOSEN_CARD, $attachmentId);
 
-        $discount = $this->theah->getEquipDiscount($performer, $attachment);
+        [$discount, $explanations] = $this->theah->getEquipDiscount($performer, $attachment);
+        if ($discount > 0)
+            $this->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                "explanations" => $explanations,
+            ]);
         $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
 
         $this->gamestate->nextState("attachmentSelected");
     }
@@ -790,9 +814,13 @@ trait FrameworkActionsTrait
         $equipType = $this->globals->get(Game::EQUIP_TYPE);
 
         //Sanity checks
-        if ($attachment->Location != Game::LOCATION_HAND || $attachment->ControllerId != $playerId) 
+        if ($attachment->Location == Game::LOCATION_HAND) 
         {
-            throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
+            $handCards = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+            $handCardIds = array_map(function($handCard) { return $handCard['id']; }, $handCards);
+            if (!in_array($attachmentId, $handCardIds)) {
+                throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
+            }
         }
 
         // Let's Haggle can equip attachments only from the Bazaar
@@ -802,8 +830,9 @@ trait FrameworkActionsTrait
             {
                 throw new \BgaUserException(self::_("Let's Haggle: Attachment is not at Bazaar."));
             }
-        }        
-        else if ($attachment->Location != Game::LOCATION_HAND)
+        } 
+
+        if ($attachment->Location != Game::LOCATION_HAND)
         {
             $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($performer->Location);
             $attachmentIds = array_map(function($attachment) { return $attachment->Id; }, $attachmentsAtLocation);
@@ -823,6 +852,7 @@ trait FrameworkActionsTrait
         }
 
         $discount = $this->globals->get(Game::DISCOUNT);
+        $explanations = $this->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
         $cost = $attachment->WealthCost - $discount;
         if ($cost < 0) $cost = 0;
 
@@ -882,7 +912,7 @@ trait FrameworkActionsTrait
         $actualTargetId = $attachment->getRequiredAttachTargetId($this->theah, $performer->Id);
 
         //Equip the attachment
-        $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $actualTargetId, $attachmentId, $discount, $cost);
+        $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $actualTargetId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
         $this->theah->eventCheck($equipAttachmentEvent);
 
         //Move the cards used to pay to the player's discard pile
@@ -904,7 +934,7 @@ trait FrameworkActionsTrait
         $player_id = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        if ($this->theah->playerCanClaim($player_id) == false) {
+        if ($this->theah->playerCanBasicClaim($player_id) == false) {
             throw new \BgaUserException(self::_("Claim Action is not allowed right now."));
         }
 
@@ -1046,8 +1076,14 @@ trait FrameworkActionsTrait
         }
         else
         {
-            $discount = $this->theah->getActionFromHandDiscount($performer = null, $action);
+            [$discount, $explanations] = $this->theah->getActionFromHandDiscount($performer = null, $action);
             $this->globals->set(Game::DISCOUNT, $discount);
+            $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+
+            if ($discount > 0)
+                $this->notify->player($player_id, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                    "explanations" => $explanations,
+                ]);
     
             $this->gamestate->nextState("inHandActionChosen");
         }
@@ -1065,8 +1101,14 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
-        $discount = $this->theah->getActionFromHandDiscount($performer, $action);
+        [$discount, $explanations] = $this->theah->getActionFromHandDiscount($performer, $action);
         $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+
+        if ($discount > 0)
+            $this->notify->player($playerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                "explanations" => $explanations,
+            ]);
 
         $this->gamestate->nextState("inHandActionPerformerChosen");
     }
@@ -1096,6 +1138,7 @@ trait FrameworkActionsTrait
         }
 
         $discount = $this->globals->get(Game::DISCOUNT, 0);
+        $explanations = $this->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
         $cost = $risk->WealthCost - $discount;
         if ($cost < 0) $cost = 0;
 
@@ -1128,11 +1171,23 @@ trait FrameworkActionsTrait
             $this->theah->queueEvent($event);
         }
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} is performing the In-Hand Action [${action_name}] from ${card_inject_code}.'), [
+        $message = clienttranslate('${player_name} is performing the In-Hand Action [${action_name}] from ${card_inject_code}. ');
+        if ($discount > 0)
+        {
+            $message .= clienttranslate('This was played at a cost of ${cost} Wealth (discount of ${discount}).');
+            if ($explanations != '')
+            {
+                $message .= clienttranslate('<br>${explanations}');
+            }
+        }
+        $this->notifyAllPlayers("message", $message, [
             "i18n" => ["action_name"],
             "player_name" => $this->getActivePlayerName(),
             "action_name" => $action->Name,
             "card_inject_code" => $risk->getInjectCode(),
+            "cost" => $cost,
+            "discount" => $discount,
+            "explanations" => $explanations,
         ]);
 
         $event = EventFactory::createActionTriggeredEvent($playerId, $performerId, $actionId);
