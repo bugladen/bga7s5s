@@ -190,9 +190,7 @@ class Game extends \Bga\GameFramework\Table
             Game::TURN_PHASE => 11,
         ]);
 
-        $this->cards = $this->getNew( "module.common.deck" );
-        $this->cards->init( "card" );    
-
+        $this->cards = $this->deckFactory->createDeck('card');
         $this->theah = new Theah($this);
     }
        
