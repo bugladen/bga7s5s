@@ -96,6 +96,7 @@ class Events
     const CardEngarded = 'EventCardEngarded';
     const CardHidden = 'EventCardHidden';
     const CardSentToLocker = 'EventCardSentToLocker';
+    const CardRemovedFromLocker = 'EventCardRemovedFromLocker';
     const CharacterDestroyed = 'EventCharacterDestroyed';
     const CharacterHealed = 'EventCharacterHealed';
     const CharacterPutIntoApproachDeck = 'EventCharacterPutIntoApproachDeck';

@@ -34,6 +34,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardMoved', 1000],
             ['cardRemovedFromCityDiscardPile', 500],
             ['cardRemovedFromPlayerDiscardPile', 500],
+            ['cardRemovedFromLocker', 500],
             ['challengeIssued', 500],
             ['challengeRejected', 500],
             ['challengeCancelled', 500],
@@ -779,6 +780,16 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const player = this.gamedatas.players[args.playerId];
         player.locker.push(card);
+    },
+
+    notif_cardRemovedFromLocker: function( notif )
+    {
+        debug( 'notif_cardRemovedFromLocker' );
+        debug( notif );
+
+        const args = notif.args;
+        const player = this.gamedatas.players[args.playerId];
+        player.locker = player.locker.filter((c) => c.id !== args.cardId);
     },
 
     notif_newDay: function( notif )
