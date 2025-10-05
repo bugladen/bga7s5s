@@ -235,9 +235,9 @@ abstract class Character extends Card implements IHasTechniques
             $theah->queueEvent($unattached);
 
             if ($attachment instanceof CityAttachment)
-                $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($this->ControllerId, $attachment->Id, $attachment->Location);
+                $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($this->ControllerId, $attachment->Id, $attachment->Location, $this->Id, $asEffect = true);
             else
-                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location);
+                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location, $this->Id, $asEffect = true);
 
             $theah->queueEvent($discardEvent);
         }

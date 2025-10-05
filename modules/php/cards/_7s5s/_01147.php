@@ -79,11 +79,11 @@ class _01147 extends Scheme implements IHasActions
 
             $game = $event->theah->game;
 
-            $attachment = $game->revealFirstCardTypeFromCityDeck($event->playerId, "Attachment");
+            $attachment = $game->revealFirstCardTypeFromCityDeck($event->playerId, "Attachment", $this->Id);
 
             if ($attachment)
             {
-                $game->notifyAllPlayers("message", clienttranslate('${attachment} is the first Attachment revealed in the City Deck.'), [
+                $game->notify->all("message", clienttranslate('${attachment} is the first Attachment revealed in the City Deck.'), [
                     'attachment' => $attachment->Name,
                 ]);
 
@@ -94,10 +94,10 @@ class _01147 extends Scheme implements IHasActions
             else
             {
                 $game->globals->delete(Game::CHOSEN_CARD);
-                $game->notifyAllPlayers("message", clienttranslate('No Attachment was found in the City Deck.'), []);
+                $game->notify->all("message", clienttranslate('No Attachment was found in the City Deck.'), []);
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('The rest of the revealed cards have been sunk.'), []);
+            $game->notify->all("message", clienttranslate('The rest of the revealed cards have been sunk.'), []);
 
             $revealEvent = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "01147");
             //This puts the event in same priority as the rest of the resolve events

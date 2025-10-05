@@ -57,12 +57,12 @@ class Action_01035 extends CharacterAction
 
             $this->announceAction($game);
 
-            $mercenary = $game->revealFirstCardTypeFromCityDeck($playerId, "Mercenary");
+            $mercenary = $game->revealFirstCardTypeFromCityDeck($playerId, "Mercenary", $kaspar->Id);
 
             if ($mercenary)
             {
                 $game->globals->set(Game::CHOSEN_CARD, $mercenary->Id);
-                $game->notifyAllPlayers("message", clienttranslate('${mercenary_inject_code} is the first Mercenary revealed in the City Deck.'), [
+                $game->notify->all("message", clienttranslate('${mercenary_inject_code} is the first Mercenary revealed in the City Deck.'), [
                     "mercenary_inject_code" => $mercenary->getInjectCode(),
                 ]);
 
@@ -73,10 +73,10 @@ class Action_01035 extends CharacterAction
             else
             {
                 $game->globals->delete(Game::CHOSEN_CARD);
-                $game->notifyAllPlayers("message", clienttranslate('No mercenary was found in the City Deck.'), []);
+                $game->notify->all("message", clienttranslate('No mercenary was found in the City Deck.'), []);
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('The rest of the revealed cards have been sunk.'), []);
+            $game->notify->all("message", clienttranslate('The rest of the revealed cards have been sunk.'), []);
 
             $revealEvent = EventFactory::createTransitionEvent($playerId, $kaspar->Id, "01035", $this->Id);
             $event->queueEvent($revealEvent);
@@ -144,7 +144,7 @@ class Action_01035 extends CharacterAction
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01035_3)
         {
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to recruit the revealed mercenary.'), [
+            $game->notify->all("message", clienttranslate('${player_name} chooses not to recruit the revealed mercenary.'), [
                 "player_name" => $game->getActivePlayerName(),
             ]);
 

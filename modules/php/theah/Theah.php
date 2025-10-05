@@ -1133,6 +1133,11 @@ class Theah
         $this->db->deletePressureResultEvents();
     }
 
+    public function deleteReactionTransitionEvents(string $reactionId)
+    {
+        $this->db->deleteReactionTransitionEvents($reactionId);
+    }
+
     public function swapParticipantsInDuel(int $duelId, int $round, int $oldParticipantId, int $newParticipantId)
     {
         $sql = "SELECT challenging_player_id, challenger_id, defending_player_id, defender_id FROM duel where duel_id = $duelId";

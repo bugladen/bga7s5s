@@ -137,7 +137,7 @@ class _01143 extends Scheme implements IHasActions
                 //Discard all city cards
                 if ($card instanceof ICityDeckCard)
                 {
-                    $discard = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $card->Id, $location);
+                    $discard = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $card->Id, $location, $this->Id, $asEffect = true);
                     $game->theah->queueEvent($discard);
                 }
             }

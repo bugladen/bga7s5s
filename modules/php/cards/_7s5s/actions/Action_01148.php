@@ -108,7 +108,7 @@ class Action_01148 extends SchemeCityAction
             }
 
             $scheme = $this->getOwningCard($game->theah);
-            $game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code}: ${player_name} has chosen ${performer_inject_code} to manipulate ${character_inject_code} at ${location}.'), [
+            $game->notify->all("message", clienttranslate('${scheme_inject_code}: ${player_name} has chosen ${performer_inject_code} to manipulate ${character_inject_code} at ${location}.'), [
                 "i18n" => ["location"],
                 "scheme_inject_code" => $scheme->getInjectCode(),
                 "player_name" => $game->getActivePlayerName(),
@@ -145,7 +145,8 @@ class Action_01148 extends SchemeCityAction
                 throw new \BgaUserException($game->translate("Card is not in your hand"));
             }
 
-            $event = EventFactory::createCardDiscardedFromHandEvent($scheme->ControllerId, $card->Id);
+            $owner = $this->getOwningCard($game->theah);
+            $event = EventFactory::createCardDiscardedFromHandEvent($scheme->ControllerId, $card->Id, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createTransitionEvent($scheme->ControllerId, $scheme->Id, "01148_3", $this->Id);

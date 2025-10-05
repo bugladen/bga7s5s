@@ -490,7 +490,7 @@ trait UtilitiesTrait
         }
     }
 
-    function revealFirstCardTypeFromCityDeck(int $playerId, string $type, bool $discardInsteadOfSink = false): ?Card
+    function revealFirstCardTypeFromCityDeck(int $playerId, string $type, int $sourceId = 0, bool $isEffect = false, bool $discardInsteadOfSink = false): ?Card
     {
         $count = $this->cards->countCardInLocation(Game::LOCATION_CITY_DECK);
         $cards = $this->getCardsOnTopOfCityDeck($count);
@@ -593,7 +593,7 @@ trait UtilitiesTrait
             //Send the revealed cards to the discard pile
             foreach ($revealed as $cardId)
             {
-                $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $cardId, Game::LOCATION_CITY_DECK);
+                $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $cardId, Game::LOCATION_CITY_DECK, $sourceId, $isEffect);
                 $this->theah->queueEvent($event);
             }
         }

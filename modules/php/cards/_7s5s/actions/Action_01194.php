@@ -151,7 +151,7 @@ class Action_01194 extends CharacterAction
             $game->theah->eventCheck($unequipEvent);
 
             //Discard the attachment
-            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($attachment->ControllerId, $attachmentId, $attachment->Location);
+            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($attachment->ControllerId, $attachmentId, $attachment->Location, $adelheide->Id, $asEffect = false);
             $game->theah->eventCheck($discardEvent);
 
             //Wound the target character

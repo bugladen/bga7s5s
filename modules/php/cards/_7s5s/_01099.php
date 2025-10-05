@@ -2,6 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01099a;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01099b;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
@@ -9,8 +13,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
-class _01099 extends Scheme
+class _01099 extends Scheme implements IHasReactions
 {
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -31,6 +37,11 @@ class _01099 extends Scheme
         ];
 
         $this->resetCard();
+
+        $this->Reactions = [
+            new Reaction_01099a(),
+            new Reaction_01099b(),
+        ];
     }
 
     public function handleEvent(Event $event)
@@ -39,7 +50,7 @@ class _01099 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves. Reknown will be added to The Docks'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. Reknown will be added to The Docks'), [
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 

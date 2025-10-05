@@ -75,12 +75,13 @@ class Reaction_01202 extends AttachmentReaction
             $unequipEvent = EventFactory::createAttachmentUnequippedEvent($playerId, $owningCharacter->Id, $attachment->Id);
             $game->theah->eventCheck($unequipEvent);
 
-            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->ControllerId, $attachment->Id, $attachment->Location);
+            $owner = $this->getOwningCard($game->theah);
+            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->ControllerId, $attachment->Id, $attachment->Location, $owner->Id);
             $game->theah->eventCheck($discardEvent);
 
             $owner = $this->getOwningCard($game->theah);
             $targetCharacter = $game->theah->getCharacterById($this->SavedCharacterId);
-            $game->notifyAllPlayers('message', clienttranslate('${owner_inject_code}: ${player_name} used Reaction to put ${character_inject_code} into their Approach Deck.'), [
+            $game->notify->all('message', clienttranslate('${owner_inject_code}: ${player_name} used Reaction to put ${character_inject_code} into their Approach Deck.'), [
                 'owner_inject_code' => $owner->getInjectCode(),
                 'player_name' => $game->getActivePlayerName(),
                 'character_inject_code' => $targetCharacter->getInjectCode(),

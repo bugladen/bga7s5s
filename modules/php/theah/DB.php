@@ -65,6 +65,14 @@ class DB
         $this->executeSql($sql);
     }
 
+    //Use this to delete all reaction transition events that might pile up from other events
+    public function deleteReactionTransitionEvents(string $reactionId)
+    {
+        $sql = "DELETE FROM events 
+                WHERE (event_serialized LIKE '%EventTransition%' AND event_serialized LIKE '%{$reactionId}%')";
+        $this->executeSql($sql);
+    }
+
     public function getCollection(string $sql): array
     {
         /** @disregard P1013 */

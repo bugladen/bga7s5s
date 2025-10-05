@@ -20,7 +20,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
@@ -1307,7 +1306,7 @@ trait StatesTrait
             }
             else
             {
-                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
+                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0);
                 $this->theah->queueEvent($event);
             }
         }
@@ -1793,12 +1792,7 @@ trait StatesTrait
             {
                 if ($card instanceof ICityDeckCard && $card->ControllerId == 0)
                 {
-                    $discard = $this->theah->createEvent(Events::CardAddedToCityDiscardPile);
-                    if ($discard instanceof EventCardAddedToCityDiscardPile)
-                    {
-                        $discard->cardId = $card->Id;
-                        $discard->fromLocation = $location->Name;
-                    }    
+                    $discard = EventFactory::createCardAddedToCityDiscardPileEvent($card->ControllerId, $card->Id, $location->Name);
                     $this->theah->queueEvent($discard);
                 }
             }
@@ -1868,7 +1862,7 @@ trait StatesTrait
         {
             $card = $this->getCardObjectFromDb($purgatoryCard['id']);
             $playerId = $card->ControllerId;
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0);
             $this->theah->queueEvent($event);
         }
 

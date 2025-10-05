@@ -48,7 +48,7 @@ class Action_01191 extends AttachmentAction
             $unequippedEvent = EventFactory::createAttachmentUnequippedEvent($event->playerId, $ownerId, $duckfootPistol->Id);
             $event->theah->queueEvent($unequippedEvent);
 
-            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($event->playerId, $duckfootPistol->Id, $location);
+            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($event->playerId, $duckfootPistol->Id, $location, $duckfootPistol->Id, $asEffect = false);
             $event->theah->queueEvent($discardEvent);
 
             foreach ($characters as $character)

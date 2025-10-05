@@ -200,19 +200,20 @@ class Action_01072 extends CardAction
             $discardedCard = $game->globals->get(Game::CHOSEN_CARD);
             if ($discardedCard != 0)
             {
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} chose to discard ${discarded_card}'), [
+                $game->notify->all("message", clienttranslate('${player_name} chose to discard ${discarded_card}'), [
                     "player_name" => $game->getPlayerNameById($game->getActivePlayerId()),
                     "discarded_card" => $game->theah->getCardById($discardedCard)->Name,
                 ]);
 
                 $discardedCard = $game->theah->getCardById($discardedCard);
-                $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $discardedCard->Id, $discardedCard->Location);
+                $owner = $this->getOwningCard($game->theah);
+                $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $discardedCard->Id, $discardedCard->Location, $owner->Id, $asEffect = true);
                 $game->theah->queueEvent($event);
             }
 
             if ($musterCard != null)
             {                
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} chose to muster ${muster_card}'), [
+                $game->notify->all("message", clienttranslate('${player_name} chose to muster ${muster_card}'), [
                     "player_name" => $game->getPlayerNameById($playerId),
                     "muster_card" => $musterCard->Name,
                 ]);

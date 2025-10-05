@@ -218,7 +218,7 @@ class Action_01167 extends RiskAction
             //Move the cards used to pay to the player's discard pile
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
-                $event = EventFactory::createCardDiscardedFromHandEvent($owner->ControllerId, $card->Id, $asPayment = true);
+                $event = EventFactory::createCardDiscardedFromHandEvent($owner->ControllerId, $card->Id, $owner->Id, $asPayment = true);
                 $game->theah->queueEvent($event);
             }
     

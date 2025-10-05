@@ -191,7 +191,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardAddedToCityDiscardPileEvent(int $playerId, int $cardId, string $location): EventCardAddedToCityDiscardPile
+    public static function createCardAddedToCityDiscardPileEvent(int $playerId, int $cardId, string $location, int $sourceId = 0, bool $asEffect = false): EventCardAddedToCityDiscardPile
     {
         $event = self::createEvent(Events::CardAddedToCityDiscardPile);
         if ($event instanceof EventCardAddedToCityDiscardPile)
@@ -199,6 +199,8 @@ class EventFactory
             $event->cardId = $cardId;
             $event->fromLocation = $location;
             $event->playerId = $playerId;
+            $event->sourceId = $sourceId;
+            $event->asEffect = $asEffect;
         }
         return $event;
     }
@@ -214,21 +216,23 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardDiscardedFromHandEvent(int $playerId, int $cardId, bool $asPayment = false, bool $asPlayed = false): EventCardDiscardedFromHand
+    public static function createCardDiscardedFromHandEvent(int $playerId, int $cardId, int $sourceId, $asPayment = false, bool $asPlayed = false, bool $asEffect = false): EventCardDiscardedFromHand
     {
         $event = self::createEvent(Events::CardDiscardedFromHand);
         if ($event instanceof EventCardDiscardedFromHand)
         {
             $event->playerId = $playerId;
             $event->cardId = $cardId;
+            $event->sourceId = $sourceId;
             $event->AsPayment = $asPayment;
             $event->AsPlayed = $asPlayed;
+            $event->asEffect = $asEffect;
         }
 
         return $event;
     }
 
-    public static function createCardDiscardedFromPlayEvent(int $ownerId, int $cardId, string $location): EventCardDiscardedFromPlay
+    public static function createCardDiscardedFromPlayEvent(int $ownerId, int $cardId, string $location, int $sourceId = 0, bool $asEffect = false): EventCardDiscardedFromPlay
     {
         $event = self::createEvent(Events::CardDiscardedFromPlay);
         if ($event instanceof EventCardDiscardedFromPlay)
@@ -236,6 +240,8 @@ class EventFactory
             $event->ownerId = $ownerId;
             $event->cardId = $cardId;
             $event->fromLocation = $location;
+            $event->sourceId = $sourceId;
+            $event->asEffect = $asEffect;
         }
         return $event;
     }

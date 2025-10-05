@@ -109,7 +109,7 @@ class Action_01189a extends EventCityAction
             $toEvent = EventFactory::createReknownAddedToLocationEvent($performer->ControllerId, $poo->Location, 1, "{$poo->getInjectCode()}: Moving Reknown from adjacent location to an adjacent location");
             $game->theah->eventCheck($toEvent);
     
-            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($poo->ControllerId, $poo->Id, $poo->Location);
+            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($poo->ControllerId, $poo->Id, $poo->Location, $poo->Id, $asEffect = true);
             $game->theah->eventCheck($discardEvent);
     
             $game->theah->queueEvent($engageEvent);

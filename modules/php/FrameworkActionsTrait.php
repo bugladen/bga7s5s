@@ -467,7 +467,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $asPayment = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = true);
             //No check needed
             $this->theah->queueEvent($event);
         }
@@ -851,7 +851,7 @@ trait FrameworkActionsTrait
             $this->theah->eventCheck($smuggledUnattachedEvent);
             $this->theah->queueEvent($smuggledUnattachedEvent);
 
-            $smuggledDiscardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($smuggledItem->ControllerId, $smuggledItem->Id, $smuggledItem->Location);
+            $smuggledDiscardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($smuggledItem->ControllerId, $smuggledItem->Id, $smuggledItem->Location, $smuggledItem->Id, $asEffect = false);
             $this->theah->queueEvent($smuggledDiscardEvent);
         }
 
@@ -880,7 +880,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $asPayment = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
 
@@ -1129,7 +1129,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $asPayment = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
 
@@ -1156,7 +1156,7 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
-        $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $risk->Id, $asPayment = false, $asPlayed = true);
+        $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $risk->Id, $sourceId = 0, $asPayment = false, $asPlayed = true, $asEffect = true);
         $this->theah->queueEvent($event);
 
         $this->globals->set(GAME::PASS_COUNT, 0);
@@ -1233,7 +1233,7 @@ trait FrameworkActionsTrait
         foreach ($cardIds as $cardId) 
         {
             $card = $this->getCardObjectFromDb($cardId);
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $asPayment = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
 
@@ -1633,7 +1633,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $payCard = $this->getCardObjectFromDb($cardId);
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $payCard->Id, $asPayment = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $payCard->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
 
@@ -1911,7 +1911,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $payCard = $this->getCardObjectFromDb($cardId);
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $payCard->Id, $asPayment = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $payCard->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
 
@@ -1921,7 +1921,7 @@ trait FrameworkActionsTrait
             "announcement" => $announcement,
         ]);
 
-        $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $asPayment = false, $asPlayed = true);
+        $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = false, $asPlayed = true, $asEffect = true);
         $this->theah->queueEvent($event);
 
         $reaction->reactionPaidFor($this, $this->gamestate->state_id(), $internalId, $reactionId);

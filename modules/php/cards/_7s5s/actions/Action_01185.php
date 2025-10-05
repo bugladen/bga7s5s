@@ -79,11 +79,10 @@ class Action_01185 extends EventCityAction
             $this->announceAction($game);
 
             //Move the cards used to pay to the player's discard pile
-            $deck = $game->getGameDeckObject();
             $playerId = $game->getActivePlayerId();
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
-                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $asPayment = true);
+                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $riskyUndertaking->Id, $asPayment = true);
                 $game->theah->queueEvent($event);
             }
 
@@ -93,7 +92,7 @@ class Action_01185 extends EventCityAction
             $game->theah->queueEvent($event);
 
             //Discard this card
-            $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $riskyUndertaking->Id, $location);
+            $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $riskyUndertaking->Id, $location, $riskyUndertaking->Id, $asEffect = true);
             $game->theah->queueEvent($event);
 
             $game->gamestate->nextState("cardsDiscarded");
