@@ -604,7 +604,9 @@ trait StatesTrait
             Game::DANIELA_DEITRICH_CHALLENGE_TYPE,
         ];
 
-        if (in_array($this->globals->get(GAME::CHALLENGE_TYPE), $types))
+        $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
+
+        if (in_array($challengeType, $types))
         {
             $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
             $action = $this->theah->getInPlayActionById($actionId);
@@ -614,6 +616,17 @@ trait StatesTrait
                 $action->announceAction($this);
                 $action->resetPlayerPassCount($this);
             }
+        }
+
+        if ($challengeType == Game::CAVALIER_HAT_CHALLENGE_TYPE || $challengeType == Game::TRISKELION_CHALLENGE_TYPE)
+        {
+            $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+            $action = $this->theah->getInPlayActionById($actionId);
+            $owner = $action->getOwningCard($this->theah);
+            $equipped = $action->getOwningCharacter($this->theah);
+
+            $engageEvent = EventFactory::createCardEngagedEvent($equipped->ControllerId, $equipped->Id, $owner->Id);
+            $this->theah->queueEvent($engageEvent);
         }
         
         //Set the location of the challenge
