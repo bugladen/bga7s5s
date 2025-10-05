@@ -1045,11 +1045,6 @@ class Theah
             if ($character->DashedInfluence)
                 continue;
             
-            //Check if player already controls this location
-            $location = $this->getCityLocation($character->Location);
-            if ($location->Controller == $playerId)
-                continue;
-
             $charactersThatCanClaim[] = $character;
         }
         
