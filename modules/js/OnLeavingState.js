@@ -419,10 +419,8 @@ onLeavingState: function( stateName )
         },
 
         'duskPhaseDiscard': () => {
-            if (this.isCurrentPlayerActive()) {
-                this.factionHand.setSelectionMode(0);
-                $('faction_hand_info').innerHTML = '';
-            }
+            this.factionHand.setSelectionMode(0);
+            $('faction_hand_info').innerHTML = '';
         },
 
         'playerPayForReaction': () => {
