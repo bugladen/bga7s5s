@@ -82,6 +82,7 @@ class Action_01198 extends AttachmentAction
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01198", $this->Id);
             $event->theah->queueEvent($transition);
 
+            //Set used and reset player pass count in stSetupChallenge
         }
     }
     
