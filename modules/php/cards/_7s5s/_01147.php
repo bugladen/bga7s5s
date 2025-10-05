@@ -52,8 +52,9 @@ class _01147 extends Scheme implements IHasActions
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id)
         {
+            $game = $event->theah->game;
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves.  
+            $game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  
             Reknown will be added to The Forum and The Grand Bazaar. 
             Cards will be revealed from the City Deck until an Attachment is revealed, then added to The Grand Bazaar.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
@@ -77,13 +78,11 @@ class _01147 extends Scheme implements IHasActions
             }
             $event->theah->queueEvent($reknown);
 
-            $game = $event->theah->game;
-
             $attachment = $game->revealFirstCardTypeFromCityDeck($event->playerId, "Attachment");
 
             if ($attachment)
             {
-                $game->notifyAllPlayers("message", clienttranslate('${attachment} is the first Attachment revealed in the City Deck.'), [
+                $game->notify->all("message", clienttranslate('${attachment} is the first Attachment revealed in the City Deck.'), [
                     'attachment' => $attachment->Name,
                 ]);
 
@@ -94,10 +93,10 @@ class _01147 extends Scheme implements IHasActions
             else
             {
                 $game->globals->delete(Game::CHOSEN_CARD);
-                $game->notifyAllPlayers("message", clienttranslate('No Attachment was found in the City Deck.'), []);
+                $game->notify->all("message", clienttranslate('No Attachment was found in the City Deck.'), []);
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('The rest of the revealed cards have been sunk.'), []);
+            $game->notify->all("message", clienttranslate('The rest of the revealed cards have been sunk.'), []);
 
             $revealEvent = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "01147");
             //This puts the event in same priority as the rest of the resolve events
@@ -133,9 +132,10 @@ class _01147 extends Scheme implements IHasActions
         parent::stateFromCard($game, $state, $stateName, $actionId);
 
         //Sink all the cards except the revealed mercenary
+        $deck = $game->getGameDeckObject();
         $attachmentId = $game->globals->get(Game::CHOSEN_CARD);
         $revealed = json_decode($game->globals->get(Game::REVEALED_CARDS), true);
-        $cards = [];
+
         foreach ($revealed as $cardId)
         {
             if ($cardId == $attachmentId)
@@ -143,10 +143,7 @@ class _01147 extends Scheme implements IHasActions
                 continue;
             }
 
-            $card = $game->getCardObjectFromDb($cardId);
-            $cards[] = $card->getPropertyArray($game);
-            $event = EventFactory::createCardAddedToCityDiscardPileEvent($card->ControllerId, $card->Id, Game::LOCATION_CITY_DECK);
-            $game->theah->queueEvent($event);
+            $deck->insertCardOnExtremePosition($cardId, Game::LOCATION_CITY_DECK, false);
         }
     }
     
