@@ -80,7 +80,7 @@ class Action_01149 extends SchemeCityAction
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $scheme = $this->getOwningCard($event->theah);
-            $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $scheme->Id, "01149");
+            $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $scheme->Id, "01149", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
     }
