@@ -420,6 +420,7 @@ body {
     margin-bottom: 10px;
     border: 1px solid black;
     flex-wrap: wrap;
+    min-height: 110px;
 }
 
 ._7sfs-home-panel {
