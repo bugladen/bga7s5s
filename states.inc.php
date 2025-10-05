@@ -605,17 +605,6 @@ $machinestates = [
             ]
         ],
 
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01098 => [
-                "name" => "planningPhaseResolveSchemes_01098",
-                "description" => clienttranslate('The Cat\'s Embargo: ${actplayer} must choose two city locations to place Reknown onto.'),
-                "descriptionmyturn" => clienttranslate('The Cat\'s Embargo: ${you} must choose two city locations to place Reknown onto:'),
-                "type" => "activeplayer",
-                "args" => "argsEmpty",
-                "possibleactions" => [
-                    "actCityLocationsForReknownSelected", 
-                ],
-                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-            ],
             States::PLANNING_PHASE_RESOLVE_SCHEMES_01125 => [
             "name" => "planningPhaseResolveSchemes_01125",
             "description" => clienttranslate('The Boar\'s Guile: ${actplayer} may choose a City Location to place a Reknown onto.'),
@@ -775,31 +764,7 @@ $machinestates = [
                 "paid" => States::PLANNING_PHASE_END_EVENTS, 
             ]
         ],
-        States::PLANNING_PHASE_END_01098 => [
-            "name" => "planningPhaseEnd_01098",
-            "description" => clienttranslate('The Cat\'s Embargo: ${actplayer} must choose an opponent to reveal a card from hand.'),
-            "descriptionmyturn" => clienttranslate('The Cat\'s Embargo: ${you} must choose an opponent to reveal a card from hand:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actPass",
-                "actPlanningPhaseEnd_01098", 
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_END_01098_2]
-        ],
-        States::PLANNING_PHASE_END_01098_2 => [
-            "name" => "planningPhaseEnd_01098_2",
-            "description" => clienttranslate('The Cat\'s Embargo: Your opponent(s) must acknowlege revealed card.'),
-            "descriptionmyturn" => clienttranslate('The Cat\'s Embargo: ${you} must must acknowlege revealed card:'),
-            "type" => "multipleactiveplayer",
-            "args" => "argsPlanningPhaseEnd_01098_2",
-            "action" => "stMultiPlayerInit",
-            "possibleactions" => [
-                "actMultipleOk", 
-            ],
-            "transitions" => ["multipleOk" => States::PLANNING_PHASE_END_EVENTS]
-        ],
-    
+
     States::HIGH_DRAMA_BEGINNING => [
         "name" => "highDramaBeginning",
         "description" => clienttranslate("Beginning of High Drama..."),

@@ -109,7 +109,6 @@ return declare('seventhseacityoffivesails.actions', null, {
     {
         const actions = {
             'planningPhaseResolveSchemes_01125_4'                   : 'actPlanningPhase_01125_4',
-            'planningPhaseEnd_01098'                                : 'actPlanningPhaseEnd_01098',
             'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
             'highDramaMoveActionChoosePerformer'                    : 'actHighDramaMoveActionPerformerChosen',
             'highDramaInPlayActionChoosePerformer'                  : 'actHighDramaInPlayActionPerformerChosen',  

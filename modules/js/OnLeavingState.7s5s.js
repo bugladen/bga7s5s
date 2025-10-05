@@ -150,20 +150,6 @@
                 this.resetCityLocations();
             },
     
-            //Clear the leader cards after one is selected
-            'planningPhaseEnd_01098': () => {
-                if (this.isCurrentPlayerActive()) 
-                {
-                    for( const cardId in this.cardProperties ) {
-                        card = this.cardProperties[cardId];
-                        if (card.type === 'Character' && card.traits.includes('Leader') && card.controllerId && card.controllerId != this.getActivePlayerId()) {
-                            const image = $(`${card.divId}_image`);
-                            this.clearCardAsSelectable(image);
-                        }
-                    }
-                }
-            },
-    
             'planningPhaseEnd_01098_2': () => {
                 //Exposed to all players
                 dojo.addClass('choose_container', 'hidden');

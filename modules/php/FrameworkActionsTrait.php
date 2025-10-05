@@ -479,44 +479,6 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhaseEnd_01098(int $id)
-    {
-        $leader = $this->getCardObjectFromDb($id);
-        $chosenPlayerId = $leader->ControllerId;
-
-        //Get the chosen player's name
-        $chosenPlayerName = $this->getPlayerNameById($chosenPlayerId);
-
-        //Get the chosen player's hand
-        $hand = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $chosenPlayerId);
-
-        //Randomly select a card from the hand
-        $card = $hand[array_rand($hand)];
-        $pickedCard = $this->getCardObjectFromDb($card['id']);
-
-        $playerId = $this->getActivePlayerId();
-        $playerName = $this->getActivePlayerName();
-
-        //Get the chosen scheme card for the active player and updated it with the chosen card
-        $scheme = $this->getPlayerChosenScheme($playerId);
-        if ($scheme instanceof _01098) {
-            $scheme->EmbargoedCardId = $pickedCard->Id;
-            $this->updateCardObjectInDb($scheme);
-        }
-
-        $this->globals->set(GAME::CATS_EMBARGO, $pickedCard->Id);
-
-        $this->notifyAllPlayers('message', 
-            clienttranslate('${player_name} reveals ${picked_card} randomly from <strong>${chosen_player_name}</strong>\'s hand.'), [
-            "player_name" => $playerName,
-            "chosen_player_name" => $chosenPlayerName,
-            "picked_card" => $pickedCard->getInjectCode(),
-            "card" => $pickedCard->getPropertyArray($this),
-        ]);
-
-        $this->gamestate->nextState("");
-    }
-
     public function actHighDramaMoveActionStart()
     {
         $player_id = (int)$this->getActivePlayerId();

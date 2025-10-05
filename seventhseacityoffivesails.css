@@ -335,6 +335,20 @@ body {
     border: 2px solid orangered
 }
 
+._7sfs-cats-embargo-target-chip {
+    position: absolute;
+    background-image: url('img/cards/7s5s/098.jpg');
+    background-size: 222px 303px;
+    background-position: -121px -166px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: inline-block;
+    left: 33px;
+    top: 60px;
+    border: 2px solid orangered
+}
+
 ._7sfs-city-image {
     background-image: var(--city-image);
     background-size: 272px 200px;

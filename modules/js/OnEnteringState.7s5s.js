@@ -393,25 +393,6 @@
                 }
             },
             
-            'planningPhaseEnd_01098': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.numberOfCardsSelectable = 1;
-                    let count = 0;
-                    for( const cardId in this.cardProperties ) {
-                        card = this.cardProperties[cardId];
-                        if (card.type === 'Character' && card.traits.includes('Leader') && card.controllerId && card.controllerId != this.getActivePlayerId()) {
-                            const image = $(`${card.divId}_image`);
-                            this.makeCardSelectable(image);
-    
-                            count++;
-                        }
-                    }
-                    if (count > 0) {
-                        dojo.addClass('actPass', 'disabled');
-                    }
-                }
-            },
-    
             'planningPhaseEnd_01098_2': () => {
                 dojo.removeClass('choose_container', 'hidden');
                 dojo.removeClass('chooseList', 'hidden');

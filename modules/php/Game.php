@@ -59,7 +59,6 @@ class Game extends \Bga\GameFramework\Table
     final const TURN_PHASE = "turnPhase";
     final const PLAYER_COUNT = "playerCount";
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
-    final const CATS_EMBARGO = "catsEmbargo";
     final const STAT_COMBAT = "Combat";
     final const STAT_FINESSE = "Finesse";
     final const STAT_INFLUENCE = "Influence";
@@ -69,6 +68,7 @@ class Game extends \Bga\GameFramework\Table
     //Conditions
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";
     final const CRYSTAL_EYE_TARGET = "Crystal Eye Target";
+    final const CATS_EMBARGO_TARGET = "Cats Embargo Target";
 
     //Equip global variables
     final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';

@@ -167,9 +167,9 @@
             },
     
             'planningPhaseEnd_01098': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
-                dojo.addClass('actChooseCardSelected', 'disabled');
+                args.args.args.opponents.forEach((opponent) => {
+                    this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
+                });
             },
     
             'planningPhaseEnd_01098_2': () => {

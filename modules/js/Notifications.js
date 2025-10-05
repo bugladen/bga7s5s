@@ -34,6 +34,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardMoved', 1000],
             ['cardRemovedFromCityDiscardPile', 500],
             ['cardRemovedFromPlayerDiscardPile', 500],
+            ['catsEmbargoTargetChosen', 500],
             ['challengeIssued', 500],
             ['challengeRejected', 500],
             ['challengeCancelled', 500],
@@ -962,6 +963,28 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }),  div, 'last');
 
         this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
+    },
+
+    notif_catsEmbargoTargetChosen: function( notif )
+    {
+        debug( 'notif_catsEmbargoTargetChosen' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions.push(this.CATS_EMBARGO_TARGET);
+
+            const div = this.factionHand.getItemDivId(args.cardId);
+            const id = `${args.cardId}_cats_embargo_target`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: '_7sfs-cats-embargo-target-chip',
+            }),  div, 'last');
+    
+            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>` );
+        }
     },
 
     notif_01126_2_scheme_moved: function( notif )
