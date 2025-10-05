@@ -67,6 +67,10 @@ class Reaction_01202 extends AttachmentReaction
         if ($reactionId == 'saveCharacter')
         {
             $playerId = $game->getActivePlayerId();
+
+            $removedFromLockerEvent = EventFactory::createCardRemovedFromLockerEvent($playerId, $this->SavedCharacterId);
+            $game->theah->eventCheck($removedFromLockerEvent);
+
             $approachDeckEvent = EventFactory::createCharacterPutIntoApproachDeckEvent($playerId, $this->SavedCharacterId);
             $game->theah->eventCheck($approachDeckEvent);
 
@@ -75,9 +79,8 @@ class Reaction_01202 extends AttachmentReaction
             $unequipEvent = EventFactory::createAttachmentUnequippedEvent($playerId, $owningCharacter->Id, $attachment->Id);
             $game->theah->eventCheck($unequipEvent);
 
-            $owner = $this->getOwningCard($game->theah);
-            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->ControllerId, $attachment->Id, $attachment->Location, $owner->Id);
-            $game->theah->eventCheck($discardEvent);
+            $lockerEvent = EventFactory::createCardSentToLockerEvent($attachment->ControllerId, $attachment->Id);
+            $game->theah->eventCheck($lockerEvent);
 
             $owner = $this->getOwningCard($game->theah);
             $targetCharacter = $game->theah->getCharacterById($this->SavedCharacterId);
@@ -87,9 +90,10 @@ class Reaction_01202 extends AttachmentReaction
                 'character_inject_code' => $targetCharacter->getInjectCode(),
             ]);
 
+            $game->theah->queueEvent($removedFromLockerEvent);
             $game->theah->queueEvent($approachDeckEvent);
             $game->theah->queueEvent($unequipEvent);
-            $game->theah->queueEvent($discardEvent);
+            $game->theah->queueEvent($lockerEvent);
         }
 
         $game->gamestate->nextState("done");

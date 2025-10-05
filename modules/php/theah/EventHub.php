@@ -24,6 +24,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
@@ -546,6 +547,20 @@ trait EventHub
                 };
                 $handler($this, $event);
                 break;
+
+            case $event instanceof EventCardRemovedFromLocker:
+                $handler = function (Theah $theah, EventCardRemovedFromLocker $event)
+                {
+                    $card = $theah->getCardById($event->cardId);
+                    $this->game->notifyAllPlayers("cardRemovedFromLocker", clienttranslate('${card_inject_code} has been removed from ${player_name}\'s locker.'), [
+                        "card_inject_code" => $card->getInjectCode(),
+                        "playerId" => $event->playerId,
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
+                        "cardId" => $card->Id
+                    ]);
+                };
+                $handler($this, $event);
+                break;
     
             case $event instanceof EventCardRemovedFromPlayerDiscardPile:
                 $handler = function (Theah $theah, EventCardRemovedFromPlayerDiscardPile $event)
@@ -1013,6 +1028,7 @@ trait EventHub
                     $character->OwnerId = $event->playerId;
                     $character->ControllerId = $event->playerId;
                     $character->IsUpdated = true;
+                    $theah->addCardToWorld($character);
 
                     $theah->game->notifyAllPlayers("message", clienttranslate('${character_inject_code} has been put into ${player_name}\'s Approach Deck.'), [
                         "character_inject_code" => $character->getInjectCode(),
