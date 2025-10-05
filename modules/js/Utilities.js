@@ -363,6 +363,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
             cost: attachment.wealthCost,
         }), targetDiv, placement );
 
+        if (attachment.controllerId)
+        {
+            dojo.addClass(divId, '_7sfs-attached-card');
+            dojo.addClass(`${divId}_wealth_cost`, 'hidden');
+        } 
+
         if (!attachment.showStatModifiers)
         {
             //Remove the class from child elements of the divId
@@ -371,14 +377,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.removeClass($(`${divId}_combat_box`), '_7sfs-card-stat-box _7sfs-card-combat-box');
             dojo.removeClass($(`${divId}_finesse_box`), '_7sfs-card-stat-box _7sfs-card-finesse-box');
             dojo.removeClass($(`${divId}_influence_box`), '_7sfs-card-stat-box _7sfs-card-influence');
+
+            dojo.addClass(divId, '_7sfs-attached-card-no-modifiers');
         }
         
-        if (attachment.controllerId)
-        {
-            dojo.addClass(divId, '_7sfs-attached-card');
-            dojo.addClass(`${divId}_wealth_cost`, 'hidden');
-        } 
-
         if (attachment.engaged) 
             dojo.addClass(`${divId}_image`, '_7sfs-engaged');
 

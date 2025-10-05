@@ -931,6 +931,10 @@ body {
     z-index: calc(10 - var(--attachment-index));
 }
 
+._7sfs-attached-card-no-modifiers {
+    left: calc(var(--attachment-index) * -20px);
+}
+
 ._7sfs-attached-card-splayed {
     left: calc(var(--attachment-index) * -70px);
 }
