@@ -786,6 +786,15 @@ return declare('seventhseacityoffivesails.utilities', null, {
         dojo.addClass(image, '_7sfs-chosen');
     },  
 
+    highlightCardsAsChosen: function(ids) {
+        ids.forEach((id) => {
+            const card = this.cardProperties[id];
+            const image = $(`${card.divId}_image`);
+            dojo.addClass(image, '_7sfs-chosen');
+        });
+        this.clientStateArgs.ids = ids;
+    },
+
     highlightCardsAsSelectable: function(ids) {
         ids.forEach((id) => {
             const card = this.cardProperties[id];
@@ -802,7 +811,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         dojo.removeClass(image, '_7sfs-chosen');
     },
 
-    unhighlightCardsAsSelectable: function(ids) {
+    unhighlightCards: function(ids) {
         ids.forEach((id) => {
             const card = this.cardProperties[id];
             const image = $(`${card.divId}_image`);

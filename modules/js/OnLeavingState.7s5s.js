@@ -347,7 +347,7 @@
                 if (this.isCurrentPlayerActive()) 
                 {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
-                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.unhighlightCards(this.clientStateArgs.ids);
                     this.clientStateArgs = {};
                 }
             },
@@ -357,7 +357,7 @@
                 if (this.isCurrentPlayerActive()) 
                 {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
-                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.unhighlightCards(this.clientStateArgs.ids);
                     this.clientStateArgs = {};
                 }
             },
@@ -706,6 +706,26 @@
                 }
             },
     
+            'highDramaPhase01091': () => {
+                if (this.isCurrentPlayerActive()) 
+                    {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                        this.unhighlightCards(this.clientStateArgs.ids);
+                        this.clientStateArgs = {};
+                    }
+                },
+
+            'highDramaPhase01091_2': () => {
+                if (this.isCurrentPlayerActive()) 
+                    {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                        this.unhighlightCards(this.clientStateArgs.ids);
+                        this.clientStateArgs = {};
+
+                        this.factionHand.setSelectionMode(0);
+                    }
+                },
+
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
@@ -862,13 +882,13 @@
 
             'highDramaPhase01160': () => {
                 if (this.isCurrentPlayerActive()) {
-                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.unhighlightCards(this.clientStateArgs.ids);
                 }
             },
 
             'highDramaPhase01161': () => {
                 if (this.isCurrentPlayerActive()) {
-                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.unhighlightCards(this.clientStateArgs.ids);
                 }
             },
 
@@ -902,7 +922,7 @@
                 if (this.isCurrentPlayerActive()) 
                 {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
-                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.unhighlightCards(this.clientStateArgs.ids);
                     this.clientStateArgs = {};
                 }
             },
@@ -911,7 +931,7 @@
                 if (this.isCurrentPlayerActive()) 
                     {
                         this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
-                        this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                        this.unhighlightCards(this.clientStateArgs.ids);
                         this.clientStateArgs = {};
                     }
             },
@@ -1196,7 +1216,7 @@
 
             'duelEndOfRound_01031': () => {
                 if (this.isCurrentPlayerActive()) {
-                    this.unhighlightCardsAsSelectable(this.clientStateArgs.ids);
+                    this.unhighlightCards(this.clientStateArgs.ids);
                     this.clientStateArgs = {};
                 }
             },

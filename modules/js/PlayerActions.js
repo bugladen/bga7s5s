@@ -224,10 +224,11 @@ return declare('seventhseacityoffivesails.actions', null, {
         const actionArray = {
             'highDramaEquipActionChooseAttachmentFromHand'  : 'actHighDramaEquipActionAttachmentFromHandSelected',
             'highDramaBruteActionChooseBrute'               : 'actHighDramaBruteActionBruteChosen',
-            'highDramaPhase01148_3'                         : 'actFromCardWithId',
         };
 
-        const action = actionArray[this.gamedatas.gamestate.name];
+        let action = actionArray[this.gamedatas.gamestate.name];
+        if (action === undefined)
+            action = 'actFromCardWithId';
 
         let errors = false;
         this.bgaPerformAction(action, { 

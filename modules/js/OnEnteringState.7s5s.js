@@ -1194,6 +1194,28 @@
                 }
             },
 
+            'highDramaPhase01091': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 2;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+            'highDramaPhase01091_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsChosen(args.args.args.ids);
+
+                    this.factionHand.setSelectionMode(1);
+                }            
+            },
+
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
@@ -1284,8 +1306,7 @@
     
                     this.factionHand.setSelectionMode(1);
                 }
-            },
-                
+            },                
     
             'highDramaPhase01149': () => {
                 if (this.isCurrentPlayerActive()) {
@@ -1464,7 +1485,7 @@
         
                     $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
                     this.factionHand.setSelectionMode(2);
-                }
+                }            
             },
     
             'highDramaPhase01180' : () => {
