@@ -80,7 +80,7 @@ class Action_01147 extends SchemeCityAction
 
             $game->globals->set(Game::CHOSEN_CARD, $attachment->Id);
             [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $attachment);
-            if ($discount > 0)
+            if ($discount != 0)
                 $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
                     "explanations" => $explanations,
                 ]);

@@ -146,7 +146,7 @@ class Action_01167 extends RiskAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->getCardObjectFromDb($performerId);
             [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $attachment);
-            if ($discount > 0)
+            if ($discount != 0)
                 $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
                     "explanations" => $explanations,
                 ]);

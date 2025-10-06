@@ -223,7 +223,7 @@ class Action_01180 extends CharacterAction
                 throw new \BgaUserException(sprintf($game->translate("You do not have enough Wealth to equip this card (with a discount of %s)."), $discount));
             }        
         
-            if ($discount > 0)
+            if ($discount != 0)
                 $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
                     "explanations" => $explanations,
                 ]);

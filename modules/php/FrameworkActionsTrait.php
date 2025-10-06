@@ -573,7 +573,7 @@ trait FrameworkActionsTrait
 
         //Set the discount for recruiting a mercenary.
         [$discount, $explanations] = $this->theah->getParleyDiscount($character, true);
-        if ($discount > 0)
+        if ($discount != 0)
         $this->notify->player($character->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
             "explanations" => $explanations,
         ]);
@@ -592,7 +592,7 @@ trait FrameworkActionsTrait
         $character = $this->theah->getCharacterById($id);
 
         [$discount, $explanations] = $this->theah->getParleyDiscount($character, false);
-        if ($discount > 0)
+        if ($discount != 0)
         $this->notify->player($character->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
             "explanations" => $explanations,
         ]);
@@ -723,7 +723,7 @@ trait FrameworkActionsTrait
         $performer = $this->theah->getCharacterById($performerId);
 
         [$discount, $explanations] = $this->theah->getEquipDiscount($performer, $attachment);
-        if ($discount > 0)
+        if ($discount != 0)
             $this->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
                 "explanations" => $explanations,
             ]);
@@ -753,7 +753,7 @@ trait FrameworkActionsTrait
         $this->globals->set(GAME::CHOSEN_CARD, $attachmentId);
 
         [$discount, $explanations] = $this->theah->getEquipDiscount($performer, $attachment);
-        if ($discount > 0)
+        if ($discount != 0)
             $this->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
                 "explanations" => $explanations,
             ]);
@@ -1042,7 +1042,7 @@ trait FrameworkActionsTrait
             $this->globals->set(Game::DISCOUNT, $discount);
             $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
 
-            if ($discount > 0)
+            if ($discount != 0)
                 $this->notify->player($player_id, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
                     "explanations" => $explanations,
                 ]);
@@ -1067,7 +1067,7 @@ trait FrameworkActionsTrait
         $this->globals->set(Game::DISCOUNT, $discount);
         $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
 
-        if ($discount > 0)
+        if ($discount != 0)
             $this->notify->player($playerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
                 "explanations" => $explanations,
             ]);
@@ -1134,7 +1134,7 @@ trait FrameworkActionsTrait
         }
 
         $message = clienttranslate('${player_name} is performing the In-Hand Action [${action_name}] from ${card_inject_code}. ');
-        if ($discount > 0)
+        if ($discount != 0)
         {
             $message .= clienttranslate('This was played at a cost of ${cost} Wealth (discount of ${discount}).');
             if ($explanations != '')

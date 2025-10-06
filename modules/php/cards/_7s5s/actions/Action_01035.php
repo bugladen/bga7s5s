@@ -191,7 +191,7 @@ class Action_01035 extends CharacterAction
 
                 //Set the discount for recruiting a mercenary.
                 [$discount, $explanations] = $game->theah->getParleyDiscount($kaspar, true);
-                if ($discount > 0)
+                if ($discount != 0)
                 $game->notify->player($kaspar->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
                     "explanations" => $explanations,
                 ]);

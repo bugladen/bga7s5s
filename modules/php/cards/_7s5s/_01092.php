@@ -2,10 +2,17 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01092;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class _01092 extends Character
+class _01092 extends Character implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -29,6 +36,23 @@ class _01092 extends Character
             "Avalon",
         ];
 
+        $this->Actions = [
+            new Action_01092(),
+        ];
+
         $this->resetCard();
+    }
+
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, array &$explanations): int
+    {
+        $discount = parent::getEquipDiscount($theah, $performer, $attachment, $explanations);
+
+        if ($performer->isNotControlledByPlayer($this->ControllerId) && $performer->Location == $this->Location)
+        {
+            $discount -= 1;
+            $explanations[] = sprintf($theah->game->translate("%s: +1 because performer is opposing Makepeace Botwighte."), $this->getInjectCode());
+        }
+
+        return $discount;
     }
 }
