@@ -610,6 +610,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const attachments = list.filter((card) => card.type === 'Attachment' && card.attachedToId == 0);
         list = attachments.concat(list.filter((card) => card.type !== 'Attachment'));
 
+        //Move all the events to the beginning of the list
+        const events = list.filter((card) => card.type === 'Event');
+        list = events.concat(list.filter((card) => card.type !== 'Event'));
+
         return list;
     },
 
