@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01149;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01149;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -46,7 +46,7 @@ class _01149 extends Scheme implements IHasActions
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves.  Reknown will be added to The Docks and The Grand Bazaar.  A new City Card will be added to The Docks.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  Reknown will be added to The Docks and The Grand Bazaar.  A new City Card will be added to The Docks.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 

@@ -994,10 +994,6 @@ body {
     box-shadow: 0 0 2px 2px red;
 }
 
-._7sfs-darkened {
-    filter: brightness(50%);
-}
-
 ._7sfs-engaged {
     transform: rotate(90deg);
     margin-left:15px;

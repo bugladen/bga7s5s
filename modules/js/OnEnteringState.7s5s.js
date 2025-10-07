@@ -335,17 +335,12 @@
                     const locations = this.getListofAvailableCityLocationImages();
                     this.numberOfCityLocationsSelectable = 1;
                     locations.forEach((location) => {
-                        if (location == 'forum-image')
-                        {
-                            dojo.addClass(location, '_7sfs-darkened');
-                            return;
-                        } 
-    
                         const imageElement = $(location);
                         const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
                         const reknown = parseInt(reknownElement.innerHTML);
-                        if (reknown === 0) return;
-    
+                        if (location == 'forum-image' || reknown === 0)
+                            return;
+
                         this.makeCityLocationSelectable(location);
                     });
                 }

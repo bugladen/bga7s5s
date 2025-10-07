@@ -1,8 +1,8 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityEventCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
