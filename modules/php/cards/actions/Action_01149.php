@@ -53,10 +53,6 @@ class Action_01149 extends SchemeCityAction
             }
         }
 
-        //Can't use if there are city cards in the docks
-        if ($numberofCityCards > 0)
-            return false;
-
         //Can't use if there are more city cards than event cards
         if ($numberofCityCards > $numberofEventCards)
             return false;
