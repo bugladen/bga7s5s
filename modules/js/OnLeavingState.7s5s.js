@@ -134,7 +134,6 @@
             },
     
             'planningPhaseResolveSchemes_01150': () => {
-                dojo.removeClass("forum-image", '_7sfs-darkened');
                 this.resetCityLocations();
             },
     
