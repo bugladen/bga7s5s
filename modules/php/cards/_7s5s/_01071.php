@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action_01071;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01071;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
@@ -52,7 +52,7 @@ class _01071 extends Scheme implements IHasActions
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose a city location to place reknown onto.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose a city location to place reknown onto.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);
@@ -165,7 +165,7 @@ class _01071 extends Scheme implements IHasActions
 
     private function addInfluence(Theah $theah, int $playerId, Character $character)
     {
-        $theah->game->notifyAllPlayers("message", clienttranslate('Épée Sanglante: ${character_name} gains 1 Influence.'), [
+        $theah->game->notify->all("message", clienttranslate('Épée Sanglante: ${character_name} gains 1 Influence.'), [
             'i18n' => ['character_name'],
             "character_name" => $character->Name,
         ]);
@@ -184,7 +184,7 @@ class _01071 extends Scheme implements IHasActions
 
     private function removeInfluence(Theah $theah, int $playerId, Character $character)
     {
-        $theah->game->notifyAllPlayers("message", clienttranslate('Épée Sanglante: ${character_name} loses 1 Influence.'), [
+        $theah->game->notify->all("message", clienttranslate('Épée Sanglante: ${character_name} loses 1 Influence.'), [
             'i18n' => ['character_name'],
             "character_name" => $character->Name,
         ]);
