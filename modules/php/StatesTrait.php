@@ -641,9 +641,8 @@ trait StatesTrait
     {
         $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
         $target = $this->theah->getCharacterById($targetId);
-        $this->gamestate->changeActivePlayer($target->ControllerId);
 
-        $cancelled = $this->globals->get(Game::CHALLENGE_CANCELLED);
+        $cancelled = $target->ControllerId == 0 || $this->globals->get(Game::CHALLENGE_CANCELLED);
         if ($cancelled)
         {
             $challengerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
@@ -667,6 +666,7 @@ trait StatesTrait
         }
         else
         {
+            $this->gamestate->changeActivePlayer($target->ControllerId);
             $this->gamestate->nextState("notCancelled");
         }
     }
