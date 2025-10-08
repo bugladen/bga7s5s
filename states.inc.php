@@ -920,6 +920,7 @@ $machinestates = [
                 "01086" => States::HIGH_DRAMA_PLAYER_TURN_01086,
                 "01091" => States::HIGH_DRAMA_PLAYER_TURN_01091,
                 "01092" => States::HIGH_DRAMA_PLAYER_TURN_01092,
+                "01093" => States::HIGH_DRAMA_PLAYER_TURN_01093,
                 "01143" => States::HIGH_DRAMA_CLAIM_ACTION,
                 "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
                 "01148" => States::HIGH_DRAMA_PLAYER_TURN_01148,
@@ -1860,6 +1861,7 @@ $machinestates = [
                         "01036" => States::DUEL_CHOOSE_TECHNIQUE_01036,
                         "01063" => States::DUEL_CHOOSE_TECHNIQUE_01063,
                         "01067" => States::DUEL_CHOOSE_TECHNIQUE_01067,
+                        "01093" => States::DUEL_CHOOSE_TECHNIQUE_01093,
                         "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                         "endOfGame" => States::END_GAME
                         ]

@@ -190,7 +190,7 @@ class DB
         if ($actorId == $challengerId)
         {
             //Riposte sends threat back to adversary, only in the amount it reduced threat to the actor
-            $riposte = $eventRiposte < 0 ? 0 : $eventRiposte;
+            $riposte = $eventRiposte;
             if ($riposte > $endingChallengerThreat) 
                 $riposte = $endingChallengerThreat;
             $endingChallengerThreat -= $riposte;
@@ -198,14 +198,14 @@ class DB
             $results['riposte'] = $eventRiposte;
 
             //Parry reduces threat
-            $parry = $eventParry < 0 ? 0 : $eventParry;
+            $parry = $eventParry;
             if ($parry > $endingChallengerThreat) 
                 $parry = $endingChallengerThreat;
             $endingChallengerThreat -= $parry;
             $results['parry'] = $eventParry;
 
             //Thrust adds threat
-            $thrust = $eventThrust < 0 ? 0 : $eventThrust;
+            $thrust = $eventThrust;
             $endingDefenderThreat += $thrust;
             $results['thrust'] = $eventThrust;
 
@@ -214,7 +214,7 @@ class DB
         else if ($actorId == $defenderId)
         {
             //Riposte sends threat back to adversary, only in the amount it reduced threat to the actor
-            $riposte = $eventRiposte < 0 ? 0 : $eventRiposte;
+            $riposte = $eventRiposte;
             if ($riposte > $endingDefenderThreat) 
                 $riposte = $endingDefenderThreat;
             $endingDefenderThreat -= $riposte;
@@ -222,14 +222,14 @@ class DB
             $results['riposte'] = $eventRiposte;
          
             //Parry reduces threat
-            $parry = $eventParry < 0 ? 0 : $eventParry;
+            $parry = $eventParry;
             if ($parry > $endingDefenderThreat) 
                 $parry = $endingDefenderThreat;
             $endingDefenderThreat -= $parry;
             $results['parry'] = $eventParry;
 
             //Thrust adds threat
-            $thrust = $eventThrust < 0 ? 0 : $eventThrust;
+            $thrust = $eventThrust;
             $endingChallengerThreat += $thrust;
             $results['thrust'] = $eventThrust;
 

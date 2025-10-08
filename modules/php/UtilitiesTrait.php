@@ -15,6 +15,7 @@
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IFactionCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskAttachment;
 
@@ -207,6 +208,23 @@ trait UtilitiesTrait
         }
 
         return $rounds;
+    }
+
+    public function getCombatCardRiposteForRound(int $duelId, int $round)
+    {
+        $sql = "SELECT combat_card_id FROM duel_round_combat_card where duel_id = $duelId AND round = {$round}";
+        $combatCardIds = $this->getCollectionFromDB($sql);
+        $riposte = 0;
+        foreach ($combatCardIds as $combatCardId)
+        {
+            $card = $this->getCardObjectFromDb($combatCardId['combat_card_id']);
+            if ($card instanceof IFactionCard)
+            {
+                $riposte += $card->getRiposte();
+            }
+        }
+
+        return $riposte;
     }
 
     public function getPlayerChosenScheme($playerId)

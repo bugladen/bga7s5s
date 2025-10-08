@@ -17,4 +17,9 @@ trait FactionCardTrait
 
         $properties['deckOrigin'] = 'Faction';
     }
+
+    public function getRiposte(): int
+    {
+        return $this->Riposte;
+    }
 }
