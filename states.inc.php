@@ -875,6 +875,7 @@ $machinestates = [
         "descriptionmyturn" => clienttranslate('${you} must perform a High Drama Action, or Pass:'),
         "type" => "activeplayer",
         "args" => "argPlayerTurn",
+        "action" => "stHighDramaPlayerTurn",
         "possibleactions" => [
             "actHighDramaChallengeActionStart",
             "actHighDramaClaimActionStart",

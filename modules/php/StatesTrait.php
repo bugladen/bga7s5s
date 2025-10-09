@@ -491,6 +491,18 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
+    public function stHighDramaPlayerTurn()
+    {
+        $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
+        $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
+        $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
+        $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
+        $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+
+        $this->globals->delete(Game::IS_BASIC_CLAIM_ACTION);
+        $this->globals->delete(Game::ABNORMAL_FLOW);
+    }
+
 
     public function stHighDramaClaim() 
     {
@@ -501,8 +513,7 @@ trait StatesTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->getCardObjectFromDb($performerId);
         
-        $claimType = $this->globals->get(Game::PRESSURE_TYPE);
-        if ($claimType == Game::NORMAL_PRESSURE_TYPE)
+        if ($this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false))
         {
             $engageEvent = EventFactory::createCardEngagedEvent($claimingPlayerId, $performer->Id);
             $this->theah->eventCheck($engageEvent);
