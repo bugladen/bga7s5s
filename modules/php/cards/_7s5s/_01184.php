@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01184;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01184 extends CityCharacter implements IHasReactions
 {
@@ -45,9 +46,9 @@ class _01184 extends CityCharacter implements IHasReactions
         ];
     }
 
-    public function getInfluencePressureValue(): int
+    public function getInfluencePressureValue(Theah $theah, string $location): int
     {
-        $value = parent::getInfluencePressureValue();
+        $value = parent::getInfluencePressureValue($theah, $location);
         return $value + 1;
     }
 }

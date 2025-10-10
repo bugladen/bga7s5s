@@ -441,13 +441,13 @@ trait UtilitiesTrait
                 switch ($pressureType) 
                 {
                     case Game::STAT_COMBAT:
-                        $playerInfluences[$playerId]['influence'] += $character->getCombatPressureValue();
+                        $playerInfluences[$playerId]['influence'] += $character->getCombatPressureValue($this->theah, $performer->Location);
                         break;
                     case Game::STAT_FINESSE:
-                        $playerInfluences[$playerId]['influence'] += $character->getFinessePressureValue();
+                        $playerInfluences[$playerId]['influence'] += $character->getFinessePressureValue($this->theah, $performer->Location);
                         break;
                     case Game::STAT_INFLUENCE:
-                        $playerInfluences[$playerId]['influence'] += $character->getInfluencePressureValue();
+                        $playerInfluences[$playerId]['influence'] += $character->getInfluencePressureValue($this->theah, $performer->Location);
                         break;
                 }
             }

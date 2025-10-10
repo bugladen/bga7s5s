@@ -107,17 +107,17 @@ abstract class Character extends Card implements IHasTechniques
         return $discount;
     }
 
-    public function getCombatPressureValue(): int
+    public function getCombatPressureValue(Theah $theah, string $location): int
     {
         return $this->ModifiedCombat;
     }
 
-    public function getFinessePressureValue(): int
+    public function getFinessePressureValue(Theah $theah, string $location): int
     {
         return $this->ModifiedFinesse;
     }
 
-    public function getInfluencePressureValue(): int
+    public function getInfluencePressureValue(Theah $theah, string $location): int
     {
         return $this->ModifiedInfluence;
     }
