@@ -55,6 +55,7 @@ onEnteringState: function( stateName, args )
                     if (location == this.LOCATION_PLAYER_HOME)
                     {
                         var home = $(`${this.getActivePlayerId()}-home-anchor`);
+                        dojo.addClass(home, '_7sfs-home-endcap-marker');
                         dojo.addClass(home, '_7sfs-selectable');
                         dojo.style(home, 'cursor', 'pointer');
                         const handle = dojo.connect($(home), 'onclick', this, 'onCityLocationClicked');

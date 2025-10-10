@@ -92,6 +92,7 @@ class Game extends \Bga\GameFramework\Table
     final const CONSTANZO_ID = "constanzoId"; //When Contanzo is in play, this is the ID of the card that caused the claim type
     final const PRESSURE_TYPE = "pressureType";
     final const PRESSURE_BONUS = "pressureBonus";
+    final const IS_BASIC_CLAIM_ACTION = "isBasicClaimAction";
     final const NORMAL_PRESSURE_TYPE = 0;
     //These must be binary flags
     final const CLAUDE_PRESSURE_TYPE = 1;

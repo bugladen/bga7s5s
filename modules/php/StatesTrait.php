@@ -490,6 +490,18 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
+    public function stHighDramaPlayerTurn()
+    {
+        $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
+        $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
+        $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
+        $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
+        $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+
+        $this->globals->delete(Game::IS_BASIC_CLAIM_ACTION);
+        $this->globals->delete(Game::ABNORMAL_FLOW);
+    }
+
 
     public function stHighDramaClaim() 
     {
@@ -500,8 +512,7 @@ trait StatesTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->getCardObjectFromDb($performerId);
         
-        $claimType = $this->globals->get(Game::PRESSURE_TYPE);
-        if ($claimType == Game::NORMAL_PRESSURE_TYPE)
+        if ($this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false))
         {
             $engageEvent = EventFactory::createCardEngagedEvent($claimingPlayerId, $performer->Id);
             $this->theah->eventCheck($engageEvent);
@@ -640,9 +651,8 @@ trait StatesTrait
     {
         $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
         $target = $this->theah->getCharacterById($targetId);
-        $this->gamestate->changeActivePlayer($target->ControllerId);
 
-        $cancelled = $this->globals->get(Game::CHALLENGE_CANCELLED);
+        $cancelled = $target->ControllerId == 0 || $this->globals->get(Game::CHALLENGE_CANCELLED);
         if ($cancelled)
         {
             $challengerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
@@ -666,6 +676,7 @@ trait StatesTrait
         }
         else
         {
+            $this->gamestate->changeActivePlayer($target->ControllerId);
             $this->gamestate->nextState("notCancelled");
         }
     }

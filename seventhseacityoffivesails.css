@@ -446,15 +446,17 @@ body {
 
 ._7sfs-home-endcap {
     display: inline-block;
-    /* background-image: url('img/boardResources.png');
+    width: 5px;
+    margin: 5px;
+}
+
+._7sfs-home-endcap-marker {
+    background-image: url('img/boardResources.png');
     background-position: -177px 0px;
     background-size: calc(var(--png-board-resource-width) * .5) calc(var(--png-board-resource-height) * 0.5);
     height: 18px;
     width: 18px;
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px; */
-    width: 5px;
-    margin: 5px;
+    border-radius: 10px;
 }
 
 ._7sfs-crew-cap {

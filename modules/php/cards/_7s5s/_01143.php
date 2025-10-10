@@ -101,7 +101,7 @@ class _01143 extends Scheme implements IHasActions
             }
         }
 
-        if ($event instanceof EventCharacterRecruited)
+        if ($event instanceof EventCharacterRecruited && $this->Location == Game::LOCATION_PLAYER_HOME)
         {
             $character = $event->theah->getCharacterById($event->characterId);
             $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(

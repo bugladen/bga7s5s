@@ -556,6 +556,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const playerHome = this.getCityLocationElement(this.LOCATION_PLAYER_HOME);
         dojo.removeClass(playerHome, '_7sfs-selectable');
         dojo.removeClass(playerHome, '_7sfs-selected');
+        dojo.removeClass(playerHome, '_7sfs-home-endcap-marker');
         dojo.style(playerHome, 'cursor', 'default');
     },
     
