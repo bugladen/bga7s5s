@@ -24,6 +24,11 @@ class Action_01156 extends AttachmentAction
         if (! parent::isAvailableToPlayer($playerId, $theah))
             return false;
 
+        $deck = $theah->game->getGameDeckObject();  
+        $hand = $deck->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+        if (count($hand) == 0)
+            return false;
+
         $perfomer = $this->getOwningCharacter($theah);
         if (! $theah->cardInCity($perfomer))
             return false;

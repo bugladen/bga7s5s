@@ -502,6 +502,7 @@
             },
 
             'highDramaPhase01156': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardDiscarded());
                 dojo.addClass('actChooseDiscardCards', 'disabled');
             },

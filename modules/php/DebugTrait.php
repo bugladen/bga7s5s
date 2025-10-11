@@ -204,4 +204,15 @@ trait DebugTrait
         $this->theah->queueEvent($claimEvent);
         $this->theah->runEvents($debug = true);
     }
+
+    public function debug_EmptyHand(int $playerId)
+    {
+        $hand = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+        foreach ($hand as $card)
+        {
+            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($playerId, $card['id'], false, false);
+            $this->theah->queueEvent($discardEvent);
+        }
+        $this->theah->runEvents($debug = true);
+    }
 }
