@@ -1585,9 +1585,9 @@ trait FrameworkActionsTrait
         }
         else
         {
-            $card->Location = Game::LOCATION_PURGATORY;
+            $card->Location = Game::LOCATION_DUELING_LINE;
             $this->updateCardObjectInDb($card);
-            $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
+            $this->cards->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId);
 
             $this->gamestate->nextState("applyCombatCardStats");
         }   
@@ -1621,9 +1621,9 @@ trait FrameworkActionsTrait
         $card = $this->theah->game->getCardObjectFromDb($cardId);
 
         //Remove card from hand
-        $card->Location = Game::LOCATION_PURGATORY;
+        $card->Location = Game::LOCATION_DUELING_LINE;
         $this->updateCardObjectInDb($card);
-        $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
+        $this->cards->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId);
 
         $this->gamestate->nextState("maneuverDeclined");
     }
@@ -1704,9 +1704,9 @@ trait FrameworkActionsTrait
         $this->theah->queueEvent($threatEvent);
 
         //Remove card from hand
-        $card->Location = Game::LOCATION_PURGATORY;
+        $card->Location = Game::LOCATION_DUELING_LINE;
         $this->updateCardObjectInDb($card);
-        $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
+        $this->cards->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId);
 
         $this->gamestate->nextState("maneuverPaidFor");
     }
@@ -1762,9 +1762,9 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);        
 
-        $card->Location = Game::LOCATION_PURGATORY;
+        $card->Location = Game::LOCATION_DUELING_LINE;
         $this->updateCardObjectInDb($card);
-        $this->cards->moveCard($card->Id, Game::LOCATION_PURGATORY, $playerId);
+        $this->cards->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId);
 
         if ($card->hasManeuversAvailableToPlayer($playerId, $this->theah))
             $this->gamestate->nextState("useManeuver");

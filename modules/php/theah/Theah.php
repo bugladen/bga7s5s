@@ -102,6 +102,7 @@ class Theah
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_BAZAAR);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_PURGATORY);
+        $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_DUELING_LINE);
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_HAND);
 
         $playerIds = $this->db->getPlayerIds();

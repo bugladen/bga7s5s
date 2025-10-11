@@ -42,7 +42,7 @@ class Reaction_01155 extends RiskReaction
             $game = $event->theah->game;
             $inDuel = $game->globals->get(Game::IN_DUEL);
             $owner = $this->getOwningCard($event->theah);
-            if ($owner->Location == Game::LOCATION_PURGATORY && $inDuel)
+            if ($owner->Location == Game::LOCATION_DUELING_LINE && $inDuel && $owner->ControllerId == $event->playerId)
             {
                 $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($reactionEvent);
@@ -56,13 +56,15 @@ class Reaction_01155 extends RiskReaction
 
         if ($reactionId == 'equip')
         {
-            $game->notifyAllPlayers('message', clienttranslate('Improvised Weapon: ${player_name} has returned to their Faction Hand from the Duel card line'), [
+            $game->notify->all('message', clienttranslate('Improvised Weapon: ${player_name} has returned to their Faction Hand from the Duel card line'), [
                 "player_name" => $game->getActivePlayerName(),
             ]);
 
             $owner = $this->getOwningCard($game->theah);
             $moveEvent = EventFactory::createCardAddedToHandEvent($owner->ControllerId, $owner->Id);
             $game->theah->queueEvent($moveEvent);
+
+            $this->setUsed($game->theah, true);
 
         }
 

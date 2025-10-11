@@ -1303,11 +1303,11 @@ trait StatesTrait
         }
         $this->theah->queueEvent($event);
 
-        //Get all the cards in purgatory and move them to the discard pile
-        $cards = $this->cards->getCardsInLocation(Game::LOCATION_PURGATORY);
-        foreach ($cards as $purgatoryCard)
+        //Get all the cards in the dueling line and move them to the discard pile
+        $cards = $this->cards->getCardsInLocation(Game::LOCATION_DUELING_LINE);
+        foreach ($cards as $duelingLineCard)
         {
-            $card = $this->getCardObjectFromDb($purgatoryCard['id']);
+            $card = $this->getCardObjectFromDb($duelingLineCard['id']);
             $playerId = $card->ControllerId;
 
             //Terrell Brandt's dueling line will be returned to his hand
