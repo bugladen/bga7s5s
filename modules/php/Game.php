@@ -51,6 +51,7 @@ class Game extends \Bga\GameFramework\Table
     final const LOCATION_HAND = 'hand';
     final const LOCATION_PURGATORY = 'Purgatory';
     final const LOCATION_PERMANENTLY_HIDDEN = 'Permanently Hidden';
+    final const LOCATION_DUELING_LINE = 'Dueling Line';
 
     //Global variable names
     final const FIRST_PLAYER = "firstPlayer";
