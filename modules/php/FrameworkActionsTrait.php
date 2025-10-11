@@ -1521,7 +1521,7 @@ trait FrameworkActionsTrait
     {
         $actor = $this->theah->getDuelRoundActor();
         [$cardCount, $explanations] = $this->theah->getNumberOfGambleCardsToReveal($actor);
-        if ($cardCount != 2)
+        if ($explanations != '')
             $this->notify->player($actor->ControllerId, "message", clienttranslate('Private: Explanations for modification of number of gamble cards to reveal:<br>${explanations}'), [
                 "explanations" => $explanations,
             ]);

@@ -5,8 +5,9 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01101;
-
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01101;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 
 class _01101 extends FactionAttachment implements IHasTechniques
 {
@@ -44,5 +45,18 @@ class _01101 extends FactionAttachment implements IHasTechniques
         $this->Techniques = [
             new Technique_01101(),
         ];
+    }
+
+    public function getNumberOfGambleCardsToReveal(Theah $theah, Character $actor, array &$explanations): int
+    {
+        $count = parent::getNumberOfGambleCardsToReveal($theah, $actor, $explanations);
+
+        if ($this->isAttached() && $this->attachedTo($theah)->ControllerId == $actor->ControllerId)
+        {
+            $explanations[] = sprintf($theah->game->translate("%s: +1 for being attached to acting character."), $this->getInjectCode());
+            $count += 1;
+        }
+
+        return $count;
     }
 }
