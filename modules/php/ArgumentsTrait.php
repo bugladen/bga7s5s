@@ -715,7 +715,8 @@ trait ArgumentsTrait
     public function argsDuelChooseGambleCard(): array
     {
         $playerId = $this->getActivePlayerId();
-        $deckCards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, 2);
+        $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
+        $deckCards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
         $cards = [];
         foreach ($deckCards as $deckCard) {
             $card = $this->getCardObjectFromDb($deckCard['id']);

@@ -159,6 +159,8 @@ class Game extends \Bga\GameFramework\Table
     final const DUEL_ID = "duelId";
     final const DUEL_ROUND = "duelRound";
     final const DUEL_GAMBLED = "duelGambled";
+    final const GAMBLE_REVEAL_COUNT = "gambleRevealCount";
+    final const GAMBLE_REVEAL_EXPLANATIONS = "gambleRevealExplanations";
 
     use DeckTrait;
     use StatesTrait;

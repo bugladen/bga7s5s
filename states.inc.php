@@ -2060,9 +2060,11 @@ $machinestates = [
                 "type" => "activeplayer",
                 "args" => "argsDuelChooseGambleCard",
                 "possibleactions" => [
+                    "actBack",
                     "actGambleCardChosen"
                 ],
                 "transitions" => [
+                    "back" => States::DUEL_CHOOSE_ACTION,
                     "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "noManeuver" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS
                 ]

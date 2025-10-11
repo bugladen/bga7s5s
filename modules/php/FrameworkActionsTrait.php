@@ -1519,6 +1519,16 @@ trait FrameworkActionsTrait
 
     public function actDuelActionGamble()
     {
+        $actor = $this->theah->getDuelRoundActor();
+        [$cardCount, $explanations] = $this->theah->getNumberOfGambleCardsToReveal($actor);
+        if ($cardCount != 2)
+            $this->notify->player($actor->ControllerId, "message", clienttranslate('Private: Explanations for modification of number of gamble cards to reveal:<br>${explanations}'), [
+                "explanations" => $explanations,
+            ]);
+
+        $this->globals->set(Game::GAMBLE_REVEAL_COUNT, $cardCount);
+        $this->globals->set(Game::GAMBLE_REVEAL_EXPLANATIONS, $explanations);
+
         $this->gamestate->nextState("chooseGambleCard");
     }
 
@@ -1688,14 +1698,18 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Card is not in your faction deck."));
         }
 
-        $cards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, 2);
-        if ($cards[0]['id'] != $id && $cards[1]['id'] != $id) {
-            throw new \BgaUserException(self::_("Chosen card is not one of the two on top."));
+        $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
+        $cards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
+        if (!in_array($id, array_column($cards, 'id'))) {
+            throw new \BgaUserException(self::_("Chosen card is not in the top $count cards of your faction deck."));
         }
 
-        //Get the card not chosen from cards array
-        $notChosenCard = $cards[0]['id'] == $id ? $cards[1] : $cards[0];
-        $this->cards->insertCardOnExtremePosition($notChosenCard['id'], $deckName, false);
+        //Sink the cards that are not chosen
+        $cards = array_filter($cards, fn($card) => $card['id'] != $id);
+        foreach ($cards as $notChosenCard) 
+        {
+            $this->cards->insertCardOnExtremePosition($notChosenCard['id'], $deckName, false);
+        }
 
         $this->globals->set(Game::CHOSEN_CARD, $id);
         $this->globals->set(Game::DUEL_GAMBLED, true);
@@ -1713,6 +1727,7 @@ trait FrameworkActionsTrait
         $actorId = $result['actor_id'];
         $adversaryId = $this->theah->getDuelOpponentId($actorId);
 
+        $explanations = $this->globals->get(Game::GAMBLE_REVEAL_EXPLANATIONS, '');
         $event = $this->theah->createEvent(Events::DuelPlayerGambled);
         if ($event instanceof EventDuelPlayerGambled)
         {
@@ -1720,6 +1735,8 @@ trait FrameworkActionsTrait
             $event->actorId = $actorId;
             $event->adversaryId = $adversaryId;
             $event->chosenCardId = $id;
+            $event->revealCount = $count;
+            $event->explanations = $explanations;
         }
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);        

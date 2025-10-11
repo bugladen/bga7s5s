@@ -152,7 +152,7 @@ abstract class Card
             }
         }
 
-        $game->notifyAllPlayers("message", clienttranslate('${player_name} passes.'), [
+        $game->notify->all("message", clienttranslate('${player_name} passes.'), [
             "player_name" => $game->getPlayerNameById($this->ControllerId),
         ]);
     }
@@ -299,6 +299,20 @@ abstract class Card
     public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, Array &$explanations): int { return 0; }
 
     public function getParleyDiscount(Theah $theah, Character $performer, bool $parleying, Array &$explanations) : int { return 0; }
+
+    public function getNumberOfGambleCardsToReveal(Theah $theah, Character $actor, Array &$explanations): int 
+    {
+        $count = 0;
+        if ($this instanceof IHasReactions)
+        {
+            foreach ($this->getReactions() as $reaction)
+            {
+                $count += $reaction->getNumberOfGambleCardsToReveal($theah, $actor, $explanations);
+            }
+        }
+
+        return $count;
+    }
 
     public function getPlayBruteDiscount(Theah $theah, Character $brute): int { return 0; }
 
@@ -466,7 +480,7 @@ abstract class Card
         $this->ModifiedTraits[] = $trait;
         $this->IsUpdated = true;
 
-        $game->notifyAllPlayers("traitAdded", clienttranslate('${character_inject_code} gains [${trait}].'), [
+        $game->notify->all("traitAdded", clienttranslate('${character_inject_code} gains [${trait}].'), [
             "character_inject_code" => $this->getInjectCode(),
             "characterId" => $this->Id,
             'trait' => $trait,
@@ -487,7 +501,7 @@ abstract class Card
         $this->ModifiedTraits = array_values($this->ModifiedTraits);
         $this->IsUpdated = true;
 
-        $game->notifyAllPlayers("traitRemoved", clienttranslate('${character_inject_code} loses [${trait}].'), [
+        $game->notify->all("traitRemoved", clienttranslate('${character_inject_code} loses [${trait}].'), [
             "character_inject_code" => $this->getInjectCode(),
             "characterId" => $this->Id,
             'trait' => $trait,

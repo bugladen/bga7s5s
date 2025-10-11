@@ -338,6 +338,8 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelChooseGambleCard': () => {
+            if (args._private.cards.length == 0)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },

@@ -803,6 +803,20 @@ class Theah
         return $performers;
     }
 
+    public function getNumberOfGambleCardsToReveal(Character $actor): Array
+    {
+        $count = 2;
+        $explanations = [];
+        foreach ($this->cards as $card) {
+            $count += $card->getNumberOfGambleCardsToReveal($this, $actor, $explanations);
+        }
+        $count = $count < 0 ? 0 : $count;
+        $explanations = implode("<br>", $explanations);
+            
+        return [$count, $explanations];
+
+    }
+
     public function getOpposingCharactersAtLocation(string $location, int $playerId): array
     {
         $characters = $this->getCharactersAtLocation($location);

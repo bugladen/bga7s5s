@@ -1176,6 +1176,8 @@ trait StatesTrait
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(GAME::REVEALED_CARDS);
         $this->globals->delete(Game::DUEL_GAMBLED);
+        $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
+        $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
 
         $this->gamestate->nextState();
     }
@@ -1271,6 +1273,8 @@ trait StatesTrait
         $this->globals->delete(Game::DUEL_CHALLENGER);
         $this->globals->delete(Game::DUEL_DEFENDER);
         $this->globals->delete(Game::DUEL_GAMBLED);
+        $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
+        $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
         $this->globals->delete(Game::ABNORMAL_FLOW);
 
         $sql = "SELECT challenging_player_id, defending_player_id, challenger_id, defender_id FROM duel where duel_id = $duelId";

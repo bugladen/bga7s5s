@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -49,8 +50,7 @@ abstract class Reaction
 
     public function stateFromReaction(Game $game, int $state, string $stateName): void { }
 
-    public function getArgsFromReaction(Game $game, int $state, string $stateName): array 
-    {
-        return [];
-    }
+    public function getArgsFromReaction(Game $game, int $state, string $stateName): array   { return []; }
+
+    public function getNumberOfGambleCardsToReveal(Theah $theah, Character $actor, Array &$explanations): int { return 0; }
 }

@@ -1437,9 +1437,18 @@ trait EventHub
                 $handler = function(Theah $theah, EventDuelPlayerGambled $event) {
                     $card = $theah->game->getCardObjectFromDb($event->chosenCardId);
                     $theah->addCardToWorld($card);
-                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has gambled with ${card_inject_code}.'), [
+
+                    $message = clienttranslate('${player_name} has gambled with ${card_inject_code}. ${count} cards were revealed.');
+                    if ($event->explanations != '')
+                    {
+                        $message .= clienttranslate('<br>${explanations}');
+                    }
+
+                    $theah->game->notify->all("message", $message, [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "card_inject_code" => $card->getInjectCode(),
+                        "count" => $event->revealCount,
+                        "explanations" => $event->explanations,
                     ]);
                 };
                 $handler($this, $event);
