@@ -168,6 +168,7 @@ trait EventHub
                         "modifiedCombat" => $modifiedCombat,
                         "modifiedFinesse" => $modifiedFinesse,
                         "modifiedInfluence" => $modifiedInfluence,
+                        "explanations" => $event->explanations,
                     ]);
                 };
                 $handler($this, $event);
