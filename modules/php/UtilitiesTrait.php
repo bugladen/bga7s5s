@@ -642,7 +642,7 @@ trait UtilitiesTrait
         return ($global & $flag) == $flag;
     }
 
-    public function createRiskAttachment(Game $game, string $className, int $originalCardId, string $location, int $playerId, int $targetId)
+    public function createRiskAttachment(Game $game, string $className, int $originalCardId, string $location, int $ownerId, int $controllerId, int $targetId)
     {
         //Place original card in special hiding location
         $owner = $game->theah->getCardById($originalCardId);
@@ -652,14 +652,14 @@ trait UtilitiesTrait
         $moveEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($owner->ControllerId, $owner->Id);
         $game->theah->queueEvent($moveEvent);
 
-        $card = $game->createCardInLocation($className, $location, $playerId);
+        $card = $game->createCardInLocation($className, $location, $ownerId, $controllerId);
         if ($card instanceof IRiskAttachment)
         {
             $card->setOriginalCardId($owner->Id);
         }
         $game->updateCardObjectInDb($card);
 
-        $event = EventFactory::createAttachmentEquippedEvent($playerId, $targetId, $card->Id, 0, 0, $asAction = false);
+        $event = EventFactory::createAttachmentEquippedEvent($controllerId, $targetId, $card->Id, 0, 0, $asAction = false);
         $game->theah->queueEvent($event);
     }
 

@@ -744,12 +744,19 @@
 
             'highDramaPhase01097': () => {
                 if (this.isCurrentPlayerActive()) 
-                    {
-                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
-                        this.unhighlightCards(this.clientStateArgs.ids);
-                        this.clientStateArgs = {};
-                    }
-                },
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase01102': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode(0);
+                }
+            },
 
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 

@@ -1248,6 +1248,13 @@
                 }            
             },
 
+            'highDramaPhase01102': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode(2);
+                }
+            },
+
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

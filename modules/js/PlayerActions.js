@@ -411,7 +411,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
-    onCardsDiscarded_01185: function()
+    onCardsDiscarded: function()
     {
         let items = this.factionHand.getSelectedItems();
         items = items.map((item) => item.id);
