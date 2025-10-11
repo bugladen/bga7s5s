@@ -1054,12 +1054,18 @@ body {
     color: #EE4B38;;
 }
 
+#duel {
+    overflow-x: auto;
+    margin-bottom: 10px;
+}
 #duel_table {
     margin-bottom: 10px;
+    min-width: 100%;
+    width: max-content;
 }
 
 #duel_table, ._7sfs-threat-table {
-    width: 100%;
+    width: max-content;
     background-color: silver;
     font-family: "Pirata One", system-ui;
     font-size: 12pt;
