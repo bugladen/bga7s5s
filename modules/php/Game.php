@@ -80,9 +80,6 @@ class Game extends \Bga\GameFramework\Table
     final const SMUGGLED_ITEM_EQUIP_TYPE = 1;
     final const LETS_HAGGLE_EQUIP_TYPE = 2;
     
-    //Claim global variables
-    final const CLAIMING_PLAYER = "claimingPlayer";
-
     //Recruit global variables
     final const RECRUIT_TYPE = "recruitType";
     final const NORMAL_RECRUIT_TYPE = 0;
@@ -90,6 +87,7 @@ class Game extends \Bga\GameFramework\Table
     final const CIRILO_RECRUIT_TYPE = 2;
 
     //Pressure global variables
+    final const PRESSURING_PLAYER = "pressuringPlayer";
     final const CLAUD_ID = "claudeId"; //When Claude is in play, this is the ID of the card that caused the claim type
     final const CONSTANZO_ID = "constanzoId"; //When Contanzo is in play, this is the ID of the card that caused the claim type
     final const PRESSURE_STAT = "pressureStat";

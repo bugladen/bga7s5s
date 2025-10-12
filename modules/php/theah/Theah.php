@@ -832,12 +832,12 @@ class Theah
         return $characters;
     }
 
-    function getPressureTypes(Character $performer, string $startingStatType): Array
+    function getPressureStats(Character $performer, string $startingStatType): Array
     {        
         $pressureTypes = [$startingStatType];
         $cardsInPlay = array_filter($this->cards, fn($card) => $this->cardInCity($card) || $card->Location == Game::LOCATION_PLAYER_HOME);
         foreach ($cardsInPlay as $card) {
-            $card->getPressureTypes($this, $performer, $pressureTypes);
+            $card->getPressureStats($this, $performer, $pressureTypes);
         }
         $pressureTypes = array_unique($pressureTypes);
         return $pressureTypes;

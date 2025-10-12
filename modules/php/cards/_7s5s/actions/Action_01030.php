@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01030 extends RiskAction implements ISorcererAbility
@@ -52,6 +53,12 @@ class Action_01030 extends RiskAction implements ISorcererAbility
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01030", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
+        {
+            $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $event->performerId, $event->location);
+            $event->theah->queueEvent($claimEvent);            
         }
     }
 
@@ -110,17 +117,18 @@ class Action_01030 extends RiskAction implements ISorcererAbility
             $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id);
             $game->theah->queueEvent($event);
 
-            $game->globals->set(Game::CLAIMING_PLAYER, $owner->ControllerId);
+            $game->globals->set(Game::PRESSURING_PLAYER, $owner->ControllerId);
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::PULL_THE_STRAND_PRESSURE_TYPE);
 
-            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, $owner->Id, $performer->Location, [Game::STAT_INFLUENCE]);
+            $pressureStats = $game->theah->getPressureStats($performer, Game::STAT_INFLUENCE);
+            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, $owner->Id, $performer->Location, $pressureStats);
             $game->theah->queueEvent($pressureOccuringEvent);
 
             $abilityPlayed = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $character->Id, $character->Location);
             $game->theah->queueEvent($abilityPlayed);
 
-            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01028_2", $this->Id);
+            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "pressureLocation", $this->Id);
             $game->theah->queueEvent($transitionEvent);
 
             $game->gamestate->nextState();

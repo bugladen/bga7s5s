@@ -85,16 +85,16 @@ class Action_01105 extends RiskCityAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
-            $game->globals->set(Game::CLAIMING_PLAYER, $performer->ControllerId);
+            $game->globals->set(Game::PRESSURING_PLAYER, $performer->ControllerId);
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->globals->set(Game::PRESSURE_STAT, Game::STAT_RESOLVE);
 
-            $pressureTypes = $event->theah->getPressureTypes($performer, Game::STAT_RESOLVE);
-            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($performer->ControllerId, $performer->Id, $performer->Location, $pressureTypes);
+            $pressureStats = $event->theah->getPressureStats($performer, Game::STAT_RESOLVE);
+            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($performer->ControllerId, $performer->Id, $performer->Location, $pressureStats);
             $game->theah->queueEvent($pressureOccuringEvent);
 
-            //Go straight to stHighDramaClaim
-            $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $performer->Id, "01105", $this->Id);
+            //Go straight to stHighDramaPressureLocation
+            $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $performer->Id, "pressureLocation", $this->Id);
             $event->theah->queueEvent($transitionEvent);
 
         }
@@ -102,7 +102,7 @@ class Action_01105 extends RiskCityAction
         if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
         {
             $owner = $this->getOwningCard($event->theah);
-            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01105_2", $this->Id);
+            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01105", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
     }

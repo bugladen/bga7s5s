@@ -120,12 +120,12 @@ class Reaction_01080 extends RiskReaction
             $performer = $game->theah->getCharacterById($this->DuelOpponentId);
 
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
-            $pressureTypes = $game->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
-            $event  = EventFactory::createPressureOccuringEvent($game->getActivePlayerId(), $performer->Id, $this->DuelLocation, $pressureTypes);
+            $pressureStats = $game->theah->getPressureStats($performer, Game::STAT_INFLUENCE);
+            $event  = EventFactory::createPressureOccuringEvent($game->getActivePlayerId(), $performer->Id, $this->DuelLocation, $pressureStats);
             $game->theah->queueEvent($event);
 
             $owner = $this->getOwningCard($game->theah);
-            $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used the Reaction to Pressure ${location_name}'), [
+            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used the Reaction to Pressure ${location_name}'), [
                 "i18n" => ["location_name"],
                 "reaction_inject_code" => $owner->getInjectCode(),
                 'player_name' => $game->getPlayerNameById($performer->ControllerId),

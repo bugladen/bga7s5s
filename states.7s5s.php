@@ -852,14 +852,6 @@ $machinestates += [
 
     States::HIGH_DRAMA_PLAYER_TURN_01072 => [
         "name" => "highDramaPhase01072",
-        "type" => "game",
-        "action" => "stFromCard",
-        "transitions" => [
-            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
-        ]
-    ],
-    States::HIGH_DRAMA_PLAYER_TURN_01072_2 => [
-        "name" => "highDramaPhase01072_2",
         "description" => clienttranslate('${actplayer} is choosing a City Card to discard.'),
         "descriptionmyturn" => clienttranslate('Réputation Méritée') . clienttranslate(': ${you} must choose a City Card to discard: '),
         "type" => "activeplayer",
@@ -868,11 +860,11 @@ $machinestates += [
             "actFromCardWithId",
         ],
         "transitions" => [
-            "" => States::HIGH_DRAMA_PLAYER_TURN_01072_3
+            "" => States::HIGH_DRAMA_PLAYER_TURN_01072_2
         ]
     ],
-    States::HIGH_DRAMA_PLAYER_TURN_01072_3 => [
-        "name" => "highDramaPhase01072_3",
+    States::HIGH_DRAMA_PLAYER_TURN_01072_2 => [
+        "name" => "highDramaPhase01072_2",
         "description" => clienttranslate('${actplayer} is choosing a card to Muster.'),
         "descriptionmyturn" => clienttranslate('Réputation Méritée') . clienttranslate(': ${you} must choose a card to Muster: '),
         "type" => "activeplayer",
@@ -882,7 +874,7 @@ $machinestates += [
             "actBack"
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_PLAYER_TURN_01072_2,
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01072,
             "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],

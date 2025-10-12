@@ -885,10 +885,8 @@ $machinestates = [
                 "01025" => States::HIGH_DRAMA_PLAYER_TURN_01025,
                 "01026" => States::HIGH_DRAMA_PLAYER_TURN_01026,
                 "01028" => States::HIGH_DRAMA_PLAYER_TURN_01028,
-                "01028_2" => States::HIGH_DRAMA_CLAIM_ACTION,
                 "01029" => States::HIGH_DRAMA_PLAYER_TURN_01029,
                 "01030" => States::HIGH_DRAMA_PLAYER_TURN_01030,
-                "01030_2" => States::HIGH_DRAMA_CLAIM_ACTION,
                 "01033" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01034" => States::HIGH_DRAMA_PLAYER_TURN_01034,
                 "01034_2" => States::HIGH_DRAMA_PLAYER_TURN_01034_2,
@@ -910,9 +908,7 @@ $machinestates = [
                 "01069" => States::HIGH_DRAMA_PLAYER_TURN_01069,
                 "01071" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01072" => States::HIGH_DRAMA_PLAYER_TURN_01072,
-                "01072_2" => States::HIGH_DRAMA_PLAYER_TURN_01072_2,
                 "01073" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
-                "01075" => States::HIGH_DRAMA_CLAIM_ACTION,
                 "01076" => States::HIGH_DRAMA_PLAYER_TURN_01076,
                 "01078" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01081" => States::HIGH_DRAMA_PLAYER_TURN_01081,
@@ -925,9 +921,7 @@ $machinestates = [
                 "01097" => States::HIGH_DRAMA_PLAYER_TURN_01097,
                 "01102" => States::HIGH_DRAMA_PLAYER_TURN_01102,
                 "01104" => States::HIGH_DRAMA_PLAYER_TURN_01104,
-                "01105" => States::HIGH_DRAMA_CLAIM_ACTION,
-                "01105_2" => States::HIGH_DRAMA_PLAYER_TURN_01105,
-                "01143" => States::HIGH_DRAMA_CLAIM_ACTION,
+                "01105" => States::HIGH_DRAMA_PLAYER_TURN_01105,
                 "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
                 "01148" => States::HIGH_DRAMA_PLAYER_TURN_01148,
                 "01148_3" => States::HIGH_DRAMA_PLAYER_TURN_01148_4,
@@ -954,7 +948,7 @@ $machinestates = [
                 "01198" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01200" => States::HIGH_DRAMA_PLAYER_TURN_01200,
                 "01205" => States::HIGH_DRAMA_PLAYER_TURN_01205,
-                "01206" => States::HIGH_DRAMA_CLAIM_ACTION,
+                "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
                 "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
@@ -1372,7 +1366,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_REACTIONS,
-                "endOfEvents" => States::HIGH_DRAMA_CLAIM_ACTION,
+                "endOfEvents" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "endOfGame" => States::END_GAME
                 ]
         ],
@@ -1406,10 +1400,10 @@ $machinestates = [
             ]
         ],
 
-        States::HIGH_DRAMA_CLAIM_ACTION => [
-            "name" => "highDramaClaimAction",
+        States::HIGH_DRAMA_PRESSURE_LOCATION => [
+            "name" => "highDramaPressureLocation",
             "type" => "game",
-            "action" => "stHighDramaClaim",
+            "action" => "stHighDramaPressureLocation",
             "transitions" => [
                 "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
             ]

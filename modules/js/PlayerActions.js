@@ -178,7 +178,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         const card = Object.values(items)[0];
 
         const actions = {
-            'highDramaPhase01072_3'   : 'actFromCardWithId',
+            'highDramaPhase01072_2'   : 'actFromCardWithId',
         };
 
         const action = actions[this.gamedatas.gamestate.name];

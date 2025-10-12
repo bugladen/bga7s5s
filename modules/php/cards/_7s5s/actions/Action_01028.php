@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01028 extends RiskAction
@@ -41,6 +42,12 @@ class Action_01028 extends RiskAction
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01028", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
+        {
+            $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $event->performerId, $event->location);
+            $event->theah->queueEvent($claimEvent);
         }
     }
 
@@ -127,7 +134,7 @@ class Action_01028 extends RiskAction
                 throw new \BgaUserException($game->translate("No thugs were moved and no performer found at the pressure location"));
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('${card_inject_code} ${count} Thugs were moved to the pressure location which will add +${bonus} to ${player_name}\'s Influence value'), [
+            $game->notify->all("message", clienttranslate('${card_inject_code} ${count} Thugs were moved to the pressure location which will add +${bonus} to ${player_name}\'s Influence value'), [
                 'card_inject_code' => $owner->getInjectCode(),
                 'count' => count($ids),
                 'bonus' => $pressureBonus,
@@ -136,15 +143,16 @@ class Action_01028 extends RiskAction
 
 
             $game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
-            $game->globals->set(Game::CLAIMING_PLAYER, $owner->ControllerId);
+            $game->globals->set(Game::PRESSURING_PLAYER, $owner->ControllerId);
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::PACK_TACTICS_PRESSURE_TYPE);
             $game->globals->set(Game::PRESSURE_BONUS, $pressureBonus);
 
-            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, $owner->Id, $location, [Game::STAT_INFLUENCE]);
+            $pressureStats = $game->theah->getPressureStats($performer, Game::STAT_INFLUENCE);
+            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, $owner->Id, $location, $pressureStats);
             $game->theah->queueEvent($pressureOccuringEvent);
 
-            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01028_2", $this->Id);
+            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "pressureLocation", $this->Id);
             $game->theah->queueEvent($transitionEvent);
 
             $game->gamestate->nextState("thugsChosen");

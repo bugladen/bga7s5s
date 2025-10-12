@@ -747,7 +747,7 @@ trait EventHub
                 $handler = function (Theah $theah, EventLocationPressureResult $event)
                 {
                     $performer = $theah->getCharacterById($event->performerId);
-                    $theah->game->notifyAllPlayers("message", clienttranslate('Pressure Result: ${result}.'), [
+                    $theah->game->notify->all("message", clienttranslate('Pressure Result: ${result}.'), [
                         "result" => $event->success ? clienttranslate("SUCCESS") : clienttranslate("FAILED"),
                     ]);
 

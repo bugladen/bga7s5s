@@ -402,7 +402,7 @@ trait UtilitiesTrait
             $playerInfluences[$playerId] = $player;
         }
 
-        $pressureTypes = $this->theah->getPressureTypes($performer, $pressureType);
+        $pressureStats = $this->theah->getPressureStats($performer, $pressureType);
 
         //Get the total influence of the characters at the location
         $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
@@ -423,7 +423,7 @@ trait UtilitiesTrait
             $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => ! $character->hasTrait("Mercenary"));
         }
 
-        foreach ($pressureTypes as $pressureType) 
+        foreach ($pressureStats as $pressureStat) 
         {
             foreach ($charactersAtLocation as $character) 
             {
@@ -438,7 +438,7 @@ trait UtilitiesTrait
                     }
                 }
 
-                switch ($pressureType) 
+                switch ($pressureStat) 
                 {
                     case Game::STAT_COMBAT:
                         $playerInfluences[$playerId]['influence'] += $character->getCombatPressureValue($this->theah, $performer->Location);
@@ -463,7 +463,7 @@ trait UtilitiesTrait
             }
 
             //If Pack Tactics is in play, add the Influence pressure bonus
-            if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::PACK_TACTICS_PRESSURE_TYPE) && $pressureType == Game::STAT_INFLUENCE)
+            if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::PACK_TACTICS_PRESSURE_TYPE) && $pressureStat == Game::STAT_INFLUENCE)
             {
                 $playerInfluences[$character->ControllerId]['influence'] += $this->globals->get(Game::PRESSURE_BONUS, 0);
             }
@@ -489,7 +489,6 @@ trait UtilitiesTrait
         if (count($ties) > 1)
             $difference = 0;
 
-        $pressureType = $this->globals->get(Game::PRESSURE_TYPE);
         if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE)

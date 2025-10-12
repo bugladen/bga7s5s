@@ -1064,7 +1064,7 @@
                 }            
             },
     
-            'highDramaPhase01072_2' : () => {
+            'highDramaPhase01072' : () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
     
@@ -1084,7 +1084,7 @@
                 }
             },
     
-            'highDramaPhase01072_3' : () => {
+            'highDramaPhase01072_2' : () => {
                 if (this.isCurrentPlayerActive()) {
                     card = this.cardProperties[args.args.args.chosenCardId];
                     if (card)

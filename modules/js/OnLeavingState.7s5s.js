@@ -604,7 +604,7 @@
                 this.chooseList.removeAll();
             },
                 
-            'highDramaPhase01072_2' : () => {
+            'highDramaPhase01072' : () => {
                 if (this.isCurrentPlayerActive()) 
                 {
                     this.clientStateArgs.targetCardIds.forEach((cardId) => {
@@ -619,7 +619,7 @@
                 }
             },
     
-            'highDramaPhase01072_3' : () => {
+            'highDramaPhase01072_2' : () => {
                 if (this.isCurrentPlayerActive()) 
                 {
                     if (this.clientStateArgs.chosenCardId)

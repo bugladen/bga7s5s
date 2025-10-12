@@ -505,9 +505,9 @@ trait StatesTrait
     }
 
 
-    public function stHighDramaClaim() 
+    public function stHighDramaPressureLocation() 
     {
-        $claimingPlayerId = $this->globals->get(GAME::CLAIMING_PLAYER);
+        $claimingPlayerId = $this->globals->get(GAME::PRESSURING_PLAYER);
         $this->gamestate->changeActivePlayer($claimingPlayerId);        
         $this->theah->buildCity();
 
@@ -524,8 +524,8 @@ trait StatesTrait
         $pressureStat = $this->globals->get(Game::PRESSURE_STAT, Game::STAT_INFLUENCE);
         list($success, $totals, $difference) = $this->pressureLocation($claimingPlayerId, $performer, $pressureStat);
 
-        $pressureTypes = $this->theah->getPressureTypes($performer, $pressureStat);
-        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureTypes), $success, $totals, $difference);
+        $pressureStats = $this->theah->getPressureStats($performer, $pressureStat);
+        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureStats), $success, $totals, $difference);
         $pressuredEvent->abilityId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, "");
         $pressuredEvent->highDramaBasicAction = $this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false);
         

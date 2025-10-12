@@ -924,13 +924,13 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(self::_("Performer is not in the City."));
         }
 
-        $this->globals->set(Game::CLAIMING_PLAYER, $activePlayerId);
+        $this->globals->set(Game::PRESSURING_PLAYER, $activePlayerId);
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
         $this->globals->set(Game::IS_BASIC_CLAIM_ACTION, true);
-        $pressureTypes = $this->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
-        $claimEvent = EventFactory::createPressureOccuringEvent($activePlayerId, $performer->Id, $performer->Location, $pressureTypes);
+        $pressureStats = $this->theah->getPressureStats($performer, Game::STAT_INFLUENCE);
+        $claimEvent = EventFactory::createPressureOccuringEvent($activePlayerId, $performer->Id, $performer->Location, $pressureStats);
         $this->theah->eventCheck($claimEvent);
         $this->theah->queueEvent($claimEvent);
 
