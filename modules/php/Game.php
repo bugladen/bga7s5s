@@ -63,6 +63,7 @@ class Game extends \Bga\GameFramework\Table
     final const STAT_COMBAT = "Combat";
     final const STAT_FINESSE = "Finesse";
     final const STAT_INFLUENCE = "Influence";
+    final const STAT_RESOLVE = "Resolve";
     final const PASS_COUNT = "passCount";
     final const MULTI_STATE_INITIATING_PLAYER = "multiStateInitiatingPlayer";
 
@@ -91,6 +92,7 @@ class Game extends \Bga\GameFramework\Table
     //Pressure global variables
     final const CLAUD_ID = "claudeId"; //When Claude is in play, this is the ID of the card that caused the claim type
     final const CONSTANZO_ID = "constanzoId"; //When Contanzo is in play, this is the ID of the card that caused the claim type
+    final const PRESSURE_STAT = "pressureStat";
     final const PRESSURE_TYPE = "pressureType";
     final const PRESSURE_BONUS = "pressureBonus";
     final const IS_BASIC_CLAIM_ACTION = "isBasicClaimAction";

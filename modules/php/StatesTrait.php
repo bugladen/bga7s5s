@@ -483,6 +483,7 @@ trait StatesTrait
     public function stHighDramaPhase() {
         $this->gamestate->changeActivePlayer($this->globals->get(Game::FIRST_PLAYER));
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
+        $this->globals->delete(Game::PRESSURE_STAT);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
@@ -493,6 +494,7 @@ trait StatesTrait
     public function stHighDramaPlayerTurn()
     {
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
+        $this->globals->delete(Game::PRESSURE_STAT);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
@@ -519,11 +521,14 @@ trait StatesTrait
             $this->theah->queueEvent($engageEvent);
         }
         
-        list($success, $totals, $difference) = $this->pressureLocation($claimingPlayerId, $performer, Game::STAT_INFLUENCE);
+        $pressureStat = $this->globals->get(Game::PRESSURE_STAT, Game::STAT_INFLUENCE);
+        list($success, $totals, $difference) = $this->pressureLocation($claimingPlayerId, $performer, $pressureStat);
 
-        $pressureTypes = $this->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
+        $pressureTypes = $this->theah->getPressureTypes($performer, $pressureStat);
         $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureTypes), $success, $totals, $difference);
-        $pressuredEvent->highDramaBasicAction = true;
+        $pressuredEvent->abilityId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, "");
+        $pressuredEvent->highDramaBasicAction = $this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false);
+        
         $this->theah->eventCheck($pressuredEvent);
         $this->theah->queueEvent($pressuredEvent);
 
@@ -1357,6 +1362,7 @@ trait StatesTrait
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(Game::PRESSURE_BONUS);
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
+        $this->globals->delete(Game::PRESSURE_STAT);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);

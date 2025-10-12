@@ -122,6 +122,11 @@ abstract class Character extends Card implements IHasTechniques
         return $this->ModifiedInfluence;
     }
 
+    public function getResolvePressureValue(Theah $theah, string $location): int
+    {
+        return $this->ModifiedResolve;
+    }
+
     public function addAttachment(Attachment $attachment)
     {
         $this->ModifiedResolve += $attachment->ResolveModifier;

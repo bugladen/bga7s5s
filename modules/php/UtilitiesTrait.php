@@ -449,6 +449,9 @@ trait UtilitiesTrait
                     case Game::STAT_INFLUENCE:
                         $playerInfluences[$playerId]['influence'] += $character->getInfluencePressureValue($this->theah, $performer->Location);
                         break;
+                    case Game::STAT_RESOLVE:
+                        $playerInfluences[$playerId]['influence'] += $character->getResolvePressureValue($this->theah, $performer->Location);
+                        break;
                 }
             }
 
