@@ -747,6 +747,11 @@
                 });
             },
 
+            'duelResolveManeuver_01103': () => {
+                this.addActionButton(`actUseParry`, _('+2 Parry'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actUseThrust`, _('+2 Thrust'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
+
             'duelResolveManeuver_01079_2': () => {
                 this.addActionButton(`actDestroyWeapon`, _('Destroy Weapon'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
                 this.addActionButton(`actTakeWound`, _('Take Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));

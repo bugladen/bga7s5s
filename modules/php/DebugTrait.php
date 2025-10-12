@@ -215,4 +215,19 @@ trait DebugTrait
         }
         $this->theah->runEvents($debug = true);
     }
+
+    public function debug_SetFirstPlayer(int $playerId)
+    {
+        $this->globals->set(Game::FIRST_PLAYER, $playerId);
+        $this->setNewPlayerOrder($playerId);
+
+        // Notify all players of the first player.
+        $this->notifyAllPlayers("firstPlayer", clienttranslate('DEBUG: ${player_name} is now the First Player.'), [
+            'player_name' => $this->getPlayerNameById($playerId),
+            'playerId' => $playerId
+        ]);    
+        $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
+        $this->theah->queueEvent($event);
+        $this->theah->runEvents($debug = true);
+    }
 }

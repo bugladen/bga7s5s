@@ -1157,7 +1157,7 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
-        $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $risk->Id, $sourceId = 0, $asPayment = false, $asPlayed = true, $asEffect = true);
+        $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $risk->Id, $sourceId = 0, $asPayment = false, $asPlayed = true);
         $this->theah->queueEvent($event);
 
         $this->globals->set(GAME::PASS_COUNT, 0);
