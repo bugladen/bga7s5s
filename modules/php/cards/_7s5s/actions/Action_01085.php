@@ -98,7 +98,6 @@ class Action_01085 extends RiskAction implements ISorcererAbility
             //Done
             if ($id == 0)
             {
-                $this->resetPlayerPassCount($game);
                 $game->gamestate->nextState();
                 return;
             }

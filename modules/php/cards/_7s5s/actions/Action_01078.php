@@ -74,8 +74,6 @@ class Action_01078 extends RiskAction
 
             $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $owner->Id, "01078", $this->Id);
             $event->theah->queueEvent($transitionEvent);
-
-            $this->resetPlayerPassCount($game);
         }
     }
 }

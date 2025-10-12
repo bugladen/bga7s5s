@@ -46,8 +46,6 @@ class Action_01168 extends RiskAction
 
             $lockerEvent = EventFactory::createCardSentToLockerEvent($event->playerId, $owner->Id);
             $game->theah->queueEvent($lockerEvent);
-
-            $this->resetPlayerPassCount($game);
         }
     }
 }

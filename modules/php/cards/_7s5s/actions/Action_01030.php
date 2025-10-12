@@ -101,7 +101,7 @@ class Action_01030 extends RiskAction implements ISorcererAbility
 
             $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chose ${character_inject_code} as target for ${card_inject_code}.'), [
+            $game->notify->all("message", clienttranslate('${player_name} chose ${character_inject_code} as target for ${card_inject_code}.'), [
                 'player_name' => $game->getPlayerNameById($performer->ControllerId),
                 'character_inject_code' => $character->getInjectCode(),
                 'card_inject_code' => $owner->getInjectCode(),
@@ -123,7 +123,6 @@ class Action_01030 extends RiskAction implements ISorcererAbility
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01028_2", $this->Id);
             $game->theah->queueEvent($transitionEvent);
 
-            $this->resetPlayerPassCount($game);            
             $game->gamestate->nextState();
         }
     }

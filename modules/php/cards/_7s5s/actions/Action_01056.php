@@ -129,9 +129,7 @@ class Action_01056 extends RiskCityAction
             $transition = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, '01056_2', $this->Id);
             $game->theah->queueEvent($transition);
 
-            $this->resetPlayerPassCount($game);
-
-            $game->gamestate->nextState("");
+            $game->gamestate->nextState();
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01056_2)

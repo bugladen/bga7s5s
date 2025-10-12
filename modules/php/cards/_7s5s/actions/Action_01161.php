@@ -98,8 +98,6 @@ class Action_01161 extends RiskAction implements ISorcererAbility
 
             $game->createRiskAttachment($game, "01161_Boon", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id);
             
-            $this->resetPlayerPassCount($game);
-
             $game->gamestate->nextState();
         }
     }

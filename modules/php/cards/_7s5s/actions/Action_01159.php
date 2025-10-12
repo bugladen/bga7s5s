@@ -86,8 +86,6 @@ class Action_01159 extends RiskAction
             $owner = $this->getOwningCard($event->theah);
             $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $performerId, $owner->Id);
             $event->theah->queueEvent($engardeEvent);
-
-            $this->resetPlayerPassCount($game);
         }
     }
 }

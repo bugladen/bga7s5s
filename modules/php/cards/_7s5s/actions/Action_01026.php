@@ -95,8 +95,6 @@ class Action_01026 extends RiskAction
                 throw new \BgaUserException($game->translate("Character is not at the same location as the performer"));
             }
 
-            $this->resetPlayerPassCount($game);
-
             $owner = $this->getOwningCard($game->theah);
             $destroyedEvent = EventFactory::createCharacterDestroyedEvent($performer->ControllerId, $performer->Id, $owner->getInjectCode());
             $game->theah->queueEvent($destroyedEvent);

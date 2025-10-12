@@ -105,8 +105,6 @@ class Action_01034 extends RiskAction
                 throw new \BgaUserException($game->translate("Character is not at the same location as the performer"));
             }
 
-            $this->resetPlayerPassCount($game);
-
             $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
             
             $owner = $this->getOwningCard($game->theah);

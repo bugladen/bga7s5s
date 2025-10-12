@@ -108,8 +108,6 @@ class Action_01160 extends RiskAction
             $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode());
             $game->theah->queueEvent($woundEvent);
 
-            $this->resetPlayerPassCount($game);
-
             $game->gamestate->nextState();
         }
     }

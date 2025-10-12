@@ -120,8 +120,6 @@ class Action_01086 extends RiskAction
                 "location" => $location->Name,
             ]);
 
-            $this->resetPlayerPassCount($game);
-
             $game->gamestate->nextState();
         }
     }

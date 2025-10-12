@@ -174,8 +174,6 @@ class Action_01055 extends RiskCityAction
                 "location_name" => $location
             ]);
 
-            $this->resetPlayerPassCount($game);
-
             $game->gamestate->nextState("locationChosen");
         }
     }   

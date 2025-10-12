@@ -225,7 +225,6 @@ class Action_01167 extends RiskAction
             $deck = $game->getGameDeckObject();
             $deck->moveCard($attachment->Id, $performer->Location, $attachment->ControllerId);
     
-            $this->resetPlayerPassCount($game);
             $game->gamestate->nextState("attachmentEquipped");
         }
     }

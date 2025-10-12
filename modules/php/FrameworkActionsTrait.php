@@ -1153,6 +1153,9 @@ trait FrameworkActionsTrait
             "explanations" => $explanations,
         ]);
 
+        //Reset the player pass count 
+        $this->globals->set(GAME::PASS_COUNT, 0);
+
         $event = EventFactory::createActionTriggeredEvent($playerId, $performerId, $actionId);
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);

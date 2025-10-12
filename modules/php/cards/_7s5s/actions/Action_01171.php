@@ -124,7 +124,6 @@ class Action_01171 extends RiskAction
                 $game->theah->queueEvent($moveEvent);
             }
 
-            $this->resetPlayerPassCount($game);
             $game->gamestate->nextState();
         }
     }

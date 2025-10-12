@@ -53,8 +53,6 @@ class Action_01083 extends RiskCityAction
             
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, '01083', $this->Id);
             $event->theah->queueEvent($transition);
-
-            $this->resetPlayerPassCount($event->theah->game);
         }
     }
 
