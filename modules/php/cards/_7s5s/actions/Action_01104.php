@@ -103,7 +103,6 @@ class Action_01104 extends RiskCityAction
             $moveEvent = EventFactory::createCardMovedEvent($owner->ControllerId, $performer->Id, $performer->Location, Game::LOCATION_PLAYER_HOME, true, $owner->Id);
             $game->theah->queueEvent($moveEvent);
 
-            $this->announceAction($game);
             $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState();

@@ -59,7 +59,6 @@ class Action_01103a extends RiskCityAction
             $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $performerId, $performer->Location);
             $event->theah->queueEvent($claimEvent);
 
-            $this->announceAction($game);
             $this->resetPlayerPassCount($game);
         }
     }

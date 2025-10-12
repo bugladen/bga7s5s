@@ -120,7 +120,6 @@ class Action_01029 extends RiskAction
             $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $target->Id, $owner->Id);
             $game->theah->queueEvent($event);
 
-            $this->announceAction($game);
             $this->resetPlayerPassCount($game);
     
             $game->gamestate->nextState();

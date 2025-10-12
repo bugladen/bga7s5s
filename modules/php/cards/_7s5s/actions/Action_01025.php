@@ -101,7 +101,6 @@ class Action_01025 extends RiskAction implements ISorcererAbility
             $owner = $this->getOwningCard($game->theah);
             $game->createRiskAttachment($game, "01025_Burden", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id);
 
-            $this->announceAction($game);
             $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState();

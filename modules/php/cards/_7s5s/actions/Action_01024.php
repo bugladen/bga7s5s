@@ -95,7 +95,6 @@ class Action_01024 extends RiskAction
             $event = EventFactory::createCharacterMusteredEvent($owner->ControllerId, $thug->Id, $leader->Location);
             $game->theah->queueEvent($event);
 
-            $this->announceAction($game);
             $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState();

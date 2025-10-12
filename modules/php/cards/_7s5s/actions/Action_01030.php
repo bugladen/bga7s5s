@@ -123,7 +123,6 @@ class Action_01030 extends RiskAction implements ISorcererAbility
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01028_2", $this->Id);
             $game->theah->queueEvent($transitionEvent);
 
-            $this->announceAction($game);
             $this->resetPlayerPassCount($game);            
             $game->gamestate->nextState();
         }

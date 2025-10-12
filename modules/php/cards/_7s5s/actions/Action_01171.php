@@ -112,8 +112,6 @@ class Action_01171 extends RiskAction
                 throw new \BgaUserException($game->translate("Character is not a Mercenary."));
             }
 
-            $this->announceAction($game);
-
             $owner = $this->getOwningCard($game->theah);
             if (! $character->Engaged)
             {
