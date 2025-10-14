@@ -16,9 +16,9 @@ class Action_01168 extends RiskAction
         $this->Name = clienttranslate("Spend a Reknown, Draw a Card");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if (!parent::isAvailableToPlayer($playerId, $theah))
+        if (!parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
             return false;
 
         $reknown = $theah->game->getPlayerReknown($playerId);

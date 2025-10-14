@@ -19,9 +19,9 @@ class Action_01185 extends EventCityAction
         $this->Name = clienttranslate("Add a Reknown");
     }    
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if (!parent::isAvailableToPlayer($playerId, $theah))
+        if (!parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -76,7 +76,7 @@ class Action_01185 extends EventCityAction
             $riskyUndertaking = $this->getOwningCard($game->theah);
             $playerName = $game->getActivePlayerName();
 
-            $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${player_name} has used the Action.'), [
+            $game->notify->all("message", clienttranslate('${action_inject_code}: ${player_name} has used the Action.'), [
                 'action_inject_code' => $riskyUndertaking->getInjectCode(),
                 'player_name' => $playerName,
             ]);

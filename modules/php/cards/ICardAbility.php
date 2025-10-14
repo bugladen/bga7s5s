@@ -11,6 +11,8 @@ interface ICardAbility
 
     function setId($id);
 
+    function getId(): string;
+
     function setOwnerId($id);
     
     function isAvailable(): bool;

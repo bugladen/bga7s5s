@@ -20,10 +20,10 @@ class Action_01147 extends SchemeCityAction
         $this->Name = clienttranslate("Equip Attachment From Bazaar");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
         //Parent already checks that the player has a character in the city
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }

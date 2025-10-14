@@ -14,15 +14,15 @@ class RiskAction extends CardAction
         parent::__construct();
     }
     
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }        
         
         $card = $this->getOwningCard($theah);        
-        if ($card->Location != Game::LOCATION_HAND)
+        if ($card->Location != Game::LOCATION_HAND && ! $overrideInHandCheck)
         {
             return false;
         }

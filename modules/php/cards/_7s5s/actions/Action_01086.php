@@ -19,9 +19,9 @@ class Action_01086 extends RiskAction
         $this->Name = clienttranslate("Make Location Uncontrolled");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }

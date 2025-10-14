@@ -1872,6 +1872,15 @@ trait FrameworkActionsTrait
         $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $locations);
     }
 
+    public function actFromCardWithActionId(int $actionSourceId, string $actionId)
+    {
+        $this->theah->buildCity();
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+        $card = $this->theah->getCardById($sourceId);
+        $card->actFromCardWithActionId($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $internalId, $actionSourceId, $actionId);
+    }
+
     public function actReactionForState(string $reactionId)
     {
         $this->theah->buildCity();

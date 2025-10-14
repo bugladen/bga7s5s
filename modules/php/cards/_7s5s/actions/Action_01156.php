@@ -19,9 +19,9 @@ class Action_01156 extends AttachmentAction
         $this->RequiresPerformerSelected = true;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
+        if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
             return false;
 
         $deck = $theah->game->getGameDeckObject();  
@@ -152,7 +152,7 @@ class Action_01156 extends AttachmentAction
             $musket = $this->getOwningAttachment($game->theah);
             if ($target->Engaged)
             {
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the action of ${musket_inject_code} and selected ${character_inject_code} as the target, who was already Engaged.'), [
+                $game->notify->all("message", clienttranslate('${player_name} has used the action of ${musket_inject_code} and selected ${character_inject_code} as the target, who was already Engaged.'), [
                     "player_name" => $game->getPlayerNameById($performer->ControllerId),
                     "character_inject_code" => $target->getInjectCode(),
                     "musket_inject_code" => $musket->getInjectCode(),
@@ -164,7 +164,7 @@ class Action_01156 extends AttachmentAction
             else
             {
                 $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the action of ${musket_inject_code} and selected ${character_inject_code} as the target.
+                $game->notify->all("message", clienttranslate('${player_name} has used the action of ${musket_inject_code} and selected ${character_inject_code} as the target.
                 ${target_player_name} must decide to Engage or suffer a wound.'), [
                     "player_name" => $game->getPlayerNameById($performer->ControllerId),
                     "target_player_name" => $game->getPlayerNameById($target->ControllerId),

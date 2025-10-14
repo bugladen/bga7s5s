@@ -22,9 +22,9 @@ class Action_01071 extends SchemeCityAction
         $this->Name = clienttranslate("Issue Fight Challenge");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }

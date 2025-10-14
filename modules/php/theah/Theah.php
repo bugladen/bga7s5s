@@ -622,7 +622,7 @@ class Theah
 
         foreach ($this->Actions as $action)
         {
-            if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+            if ($action->isAvailableToPlayer($playerId, $this))
             {
                 $actionsArray[] = $action->getPropertyArray($this->game);
             }
@@ -636,7 +636,7 @@ class Theah
                 foreach ($actions as $actionItem)
                 {
                     $action = $card->getActionById($actionItem['id']);
-                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    if ($action->isAvailableToPlayer($playerId, $this))
                     {
                         $actionsArray[] = $actionItem;
                     }
@@ -659,7 +659,7 @@ class Theah
                 foreach ($actions as $actionItem)
                 {
                     $action = $card->getActionById($actionItem['id']);
-                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    if ($action->isAvailableToPlayer($playerId, $this))
                     {
                         $actionsArray[] = $actionItem;
                     }
@@ -681,7 +681,7 @@ class Theah
                 $actions = $card->getActions();
                 foreach ($actions as $action)
                 {
-                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    if ($action->isAvailableToPlayer($playerId, $this))
                     {
                         $actionsArray[] = $card->Id;
                     }
@@ -1072,7 +1072,7 @@ class Theah
 
         foreach ($this->Actions as $action)
         {
-            if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+            if ($action->isAvailableToPlayer($playerId, $this))
             {
                 $actionAvailable[] = $action;
             }
@@ -1085,7 +1085,7 @@ class Theah
                 $actions = $card->getActions();
                 foreach ($actions as $action)
                 {
-                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    if ($action->isAvailableToPlayer($playerId, $this))
                     {
                         $actionAvailable[] = $action;
                     }
@@ -1107,7 +1107,7 @@ class Theah
                 $actions = $card->getActions();
                 foreach ($actions as $action)
                 {
-                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    if ($action->isAvailableToPlayer($playerId, $this))
                     {
                         $actionCards[] = $card;
                     }

@@ -21,9 +21,9 @@ class Action_01189b extends EventCityAction
         $this->RequiresPerformerSelected = true;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if (!parent::isAvailableToPlayer($playerId, $theah))
+        if (!parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -112,7 +112,7 @@ class Action_01189b extends EventCityAction
             $game->theah->queueEvent($toEvent);
             $game->theah->queueEvent($discardEvent);
     
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
+            $game->notify->all("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
                 'i18n' => ['action'],
                 'player_name' => $game->getActivePlayerName(),
                 'action' => $this->Name,

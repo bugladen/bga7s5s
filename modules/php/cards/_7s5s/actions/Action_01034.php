@@ -20,9 +20,9 @@ class Action_01034 extends RiskAction
         $this->RequiresPerformerSelected = true;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
+        if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -128,7 +128,7 @@ class Action_01034 extends RiskAction
 
             if ($id == 1)
             {
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} decided to engage ${character_inject_code}'), [
+                $game->notify->all("message", clienttranslate('${player_name} decided to engage ${character_inject_code}'), [
                     'player_name' => $game->getPlayerNameById($performer->ControllerId),
                     'character_inject_code' => $target->getInjectCode(),
                 ]);
@@ -152,7 +152,7 @@ class Action_01034 extends RiskAction
             $targetId = $game->globals->get(Game::CHOSEN_TARGET);
             $target = $game->theah->getCharacterById($targetId);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to engage ${character_inject_code}'), [
+            $game->notify->all("message", clienttranslate('${player_name} chooses not to engage ${character_inject_code}'), [
                 'player_name' => $game->getPlayerNameById($performer->ControllerId),
                 'character_inject_code' => $target->getInjectCode(),
             ]);

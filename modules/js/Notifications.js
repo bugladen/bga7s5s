@@ -791,11 +791,19 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
-        const card = this.cardProperties[args.card.id];
-        card.location = this.LOCATION_PLAYER_LOCKER;
+        let card = this.cardProperties[args.card.id];
+        if (card)
+        {
+            card.location = this.LOCATION_PLAYER_LOCKER;
 
-        dojo.destroy(card.divId);
-        card.divId = null;
+            dojo.destroy(card.divId);
+            card.divId = null;    
+        }
+        else
+        {
+            card = args.card;
+            this.cardProperties[card.id] = card;
+        }
 
         const player = this.gamedatas.players[args.playerId];
         player.locker.push(card);

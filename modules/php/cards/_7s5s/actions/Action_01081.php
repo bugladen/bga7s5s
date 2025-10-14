@@ -20,9 +20,9 @@ class Action_01081 extends RiskCityAction
         $this->RequiresPerformerSelected = true;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        $result = parent::isAvailableToPlayer($playerId, $theah);
+        $result = parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck);
         if (!$result)
         {
             return false;

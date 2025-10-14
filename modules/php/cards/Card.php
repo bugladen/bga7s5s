@@ -235,6 +235,18 @@ abstract class Card
         }
     }
 
+    public function actFromCardWithActionId(Game $game, int $state, string $stateName, string $internalId, int $actionSourceId, string $actionId): void
+    {
+        if ($this instanceof IHasActions)
+        {
+            $action = $this->getActionById($internalId);
+            if ($action)
+            {
+                $action->actFromActionWithActionId($game, $state, $stateName, $actionSourceId, $actionId);
+            }
+        }
+    }
+
     public function getAbilityById($id): ?ICardAbility
     {
         if ($this instanceof IHasActions)

@@ -19,9 +19,9 @@ class Action_01062 extends CharacterAction
         $this->RequiresPerformerSelected = true;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
             return false;
 
         $odette = $this->getOwningCharacter($theah);
@@ -71,7 +71,7 @@ class Action_01062 extends CharacterAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} used the Action from ${odette_inject_code} to move ${performer_inject_code} to ${location_name}.'), [
+            $game->notify->all("message", clienttranslate('${player_name} used the Action from ${odette_inject_code} to move ${performer_inject_code} to ${location_name}.'), [
                 "i18n" => ["location_name"],
                 "player_name" => $game->getPlayerNameById($performer->ControllerId),
                 "odette_inject_code" => $odette->getInjectCode(),

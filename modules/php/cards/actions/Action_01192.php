@@ -20,9 +20,9 @@ class Action_01192 extends CharacterAction
         $this->Name = clienttranslate("Put a Revealed Risk Into Your Hand");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {  
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -60,7 +60,7 @@ class Action_01192 extends CharacterAction
                 }
             }
 
-            $event->theah->game->notifyAllPlayers('message', clienttranslate('${player_name} uses Gustavo\'s Action to reveal Risks from their deck.  ${found} Risks have been revealed. (${names})'), [
+            $event->theah->game->notify->all('message', clienttranslate('${player_name} uses Gustavo\'s Action to reveal Risks from their deck.  ${found} Risks have been revealed. (${names})'), [
                 'i18n' => ['card_name'],
                 'player_name' => $event->theah->game->getActivePlayerName(),
                 'card_name' => $gustavo->Name,
@@ -104,7 +104,7 @@ class Action_01192 extends CharacterAction
      
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192_3)
         {
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to put any Risks into their Faction Hand.'), [
+            $game->notify->all("message", clienttranslate('${player_name} chooses not to put any Risks into their Faction Hand.'), [
                 "player_name" => $game->getActivePlayerName(),
             ]);
 

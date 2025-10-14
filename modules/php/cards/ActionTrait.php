@@ -77,28 +77,35 @@ trait ActionTrait
             $action->setOwnerId($id);
     }
 
-    public function addAction(CardAction $action, Game $game)
+    public function addAction(CardAction $action, Game $game, bool $notify = true)
     {
         $this->Actions[] = $action;
 
-        $game->notifyAllPlayers('actionAdded', clienttranslate('${character_inject_code} has gained Action: ${action_name}.'), [
-            'i18n' => ['action_name'],
-            'character_inject_code' => $this->getInjectCode(),
-            'characterId' => $this->Id,
-            'action' => $action->getPropertyArray($game),
-            'action_name' => $action->Name
-        ]);
+        if ($notify)
+        {
+            $game->notify->all('actionAdded', clienttranslate('${character_inject_code} has gained Action: ${action_name}.'), [
+                'i18n' => ['action_name'],
+                'character_inject_code' => $this->getInjectCode(),
+                'characterId' => $this->Id,
+                'action' => $action->getPropertyArray($game),
+                'action_name' => $action->Name
+            ]);
+        }
     }
 
-    public function removeAction(CardAction $action, Game $game)
+    public function removeAction(CardAction $action, Game $game, bool $notify = true)
     {
         $this->Actions = array_filter($this->Actions, fn($a) => $a->Id != $action->Id);
-        $game->notifyAllPlayers('actionRemoved', clienttranslate('${character_inject_code} has lost Action: ${action_name}.'), [
-            'i18n' => ['action_name'],
-            'character_inject_code' => $this->getInjectCode(),
-            'characterId' => $this->Id,
-            'actionId' => $action->Id,
-            'action_name' => $action->Name
-        ]);
+
+        if ($notify)
+        {
+            $game->notify->all('actionRemoved', clienttranslate('${character_inject_code} has lost Action: ${action_name}.'), [
+                'i18n' => ['action_name'],
+                'character_inject_code' => $this->getInjectCode(),
+                'characterId' => $this->Id,
+                'actionId' => $action->Id,
+                'action_name' => $action->Name
+            ]);
+        }
     }
 }

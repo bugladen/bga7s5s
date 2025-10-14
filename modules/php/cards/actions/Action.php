@@ -21,13 +21,15 @@ abstract class Action
     
     public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  { }
 
+    public function actFromActionWithActionId(Game $game, int $state, string $stateName, int $actionSourceId, string $actionId): void  { }
+
     public function stateFromAction(Game $game, int $state, string $stateName): void { }
 
     public function handleEvent(Event $event) { }
 
     public function eventCheck(Event $event) {}
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
         return true;
     }

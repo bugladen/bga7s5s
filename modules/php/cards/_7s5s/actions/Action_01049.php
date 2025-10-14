@@ -19,9 +19,9 @@ class Action_01049 extends AttachmentAction
         $this->Name = clienttranslate("Wound Character If They Do Not Engage");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
             return false;
 
         $owner = $this->getOwningAttachment($theah);
@@ -96,7 +96,7 @@ class Action_01049 extends AttachmentAction
 
             if ($character->Engaged)
             {
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the action of ${card_inject_code} and selected ${character_inject_code} as the target, who was already Engaged.'), [
+                $game->notify->all("message", clienttranslate('${player_name} has used the action of ${card_inject_code} and selected ${character_inject_code} as the target, who was already Engaged.'), [
                     "player_name" => $game->getPlayerNameById($owner->ControllerId),
                     "character_inject_code" => $character->getInjectCode(),
                     "card_inject_code" => $owner->getInjectCode(),
@@ -112,7 +112,7 @@ class Action_01049 extends AttachmentAction
             {
                 $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
 
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the action of ${card_inject_code} and selected ${character_inject_code} as the target.'), [
+                $game->notify->all("message", clienttranslate('${player_name} has used the action of ${card_inject_code} and selected ${character_inject_code} as the target.'), [
                     'player_name' => $game->getPlayerNameById($owner->ControllerId),
                     'card_inject_code' => $owner->getInjectCode(),
                     'character_inject_code' => $character->getInjectCode(),
@@ -138,7 +138,7 @@ class Action_01049 extends AttachmentAction
             // Engage the target character
             if ($id == 1)
             {
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} decided to engage ${character_inject_code}'), [
+                $game->notify->all("message", clienttranslate('${player_name} decided to engage ${character_inject_code}'), [
                     'player_name' => $game->getPlayerNameById($targetCharacter->ControllerId),
                     'character_inject_code' => $targetCharacter->getInjectCode(),
                 ]);
@@ -150,7 +150,7 @@ class Action_01049 extends AttachmentAction
             // Wound the target character
             if ($id == 2)
             {
-                $game->notifyAllPlayers("message", clienttranslate('${player_name} decided to wound ${character_inject_code}'), [
+                $game->notify->all("message", clienttranslate('${player_name} decided to wound ${character_inject_code}'), [
                     'player_name' => $game->getPlayerNameById($targetCharacter->ControllerId),
                     'character_inject_code' => $targetCharacter->getInjectCode(),
                 ]);
