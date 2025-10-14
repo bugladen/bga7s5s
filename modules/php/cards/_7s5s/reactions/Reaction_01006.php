@@ -6,7 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseBegin;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01006 extends CardReaction
@@ -46,23 +46,20 @@ class Reaction_01006 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventDuskPhaseBegin && $this->isAvailable())
+        if ($event instanceof EventDuskPhaseEnd && $this->isAvailable())
         {
             $don = $this->getOwningCharacter($event->theah);    
-            if ($event->theah->cardInCity($don))
+            $characters = $event->theah->getCharactersAtLocation($don->Location);
+            $characters = array_filter($characters, fn($character) => 
+                $character->Id != $don->Id && 
+                $character->ControllerId == $don->ControllerId && 
+                $character->hasTrait("Brute"));
+            if (count($characters) > 0)
             {
-                $characters = $event->theah->getCharactersAtLocation($don->Location);
-                $characters = array_filter($characters, fn($character) => 
-                    $character->Id != $don->Id && 
-                    $character->ControllerId == $don->ControllerId && 
-                    $character->hasTrait("Brute"));
-                if (count($characters) > 0)
-                {
-                    $reactionEvent = EventFactory::createReactionTransitionEvent($don->ControllerId, $don->Id, $this->Id);
-                    $event->theah->queueEvent($reactionEvent);
-                }
+                $reactionEvent = EventFactory::createReactionTransitionEvent($don->ControllerId, $don->Id, $this->Id);
+                $event->theah->queueEvent($reactionEvent);
             }
-        }
+    }
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -82,10 +79,10 @@ class Reaction_01006 extends CardReaction
 
             $don = $this->getOwningCharacter($game->theah);
 
-            $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and removed [Brute] from ${character_name}.'), [
+            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and removed [Brute] from ${inject_code}.'), [
                 "reaction_inject_code" => $don->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($don->ControllerId),
-                "character_name" => $character->Name,
+                "inject_code" => $character->getInjectCode(),
             ]);
 
             $this->setUsed($game->theah, true);
