@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01009;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
@@ -77,6 +78,9 @@ class _01009 extends Character implements IHasActions
             foreach ($characters as $character)
             {
                 $character->removeTrait($event->theah->game, "Brute");
+
+                $bruteEvent = EventFactory::createCharacterLostBruteEvent($event->playerId, $character->Id);
+                $event->theah->queueEvent($bruteEvent);
             }
         }
     }

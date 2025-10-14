@@ -44,6 +44,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterLostBrute;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
@@ -373,6 +374,18 @@ class EventFactory
             $event->playerId = $playerId;
             $event->oldChallengerId = $oldChallengerId;
             $event->newChallengerId = $newChallengerId;
+        }
+
+        return $event;
+    }
+
+    public static function createCharacterLostBruteEvent(int $playerId, int $characterId): EventCharacterLostBrute
+    {
+        $event = self::createEvent(Events::CharacterLostBrute);
+        if ($event instanceof EventCharacterLostBrute)
+        {
+            $event->playerId = $playerId;
+            $event->characterId = $characterId;
         }
 
         return $event;

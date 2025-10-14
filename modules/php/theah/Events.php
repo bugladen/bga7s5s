@@ -108,7 +108,8 @@ class Events
     //Character events
     const CharacterInfluenceModified = 'EventCharacterInfluenceModified';
     const CharacterMustered = 'EventCharacterMustered';
-
+    const CharacterLostBrute = 'EventCharacterLostBrute';
+    
     //Dusk Phase events
     const DuskPhaseBegin = 'EventDuskPhaseBegin';
     const DuskPhaseEnd = 'EventDuskPhaseEnd';
