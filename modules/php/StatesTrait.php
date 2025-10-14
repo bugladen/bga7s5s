@@ -1764,25 +1764,16 @@ trait StatesTrait
 
         foreach ($characters as $character)
         {
-            //Brutes get discarded
-            if ($character->hasTrait("Brute"))
+            if ($character->Location != Game::LOCATION_PLAYER_HOME)
             {
-                $discardedEvent = EventFactory::createCardDiscardedFromPlayEvent($character->ControllerId, $character->Id, $character->Location);
-                $this->theah->queueEvent($discardedEvent);
+                $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $sourceId=0);
+                $this->theah->queueEvent($movedHome);
             }
-            else
+
+            if ($character->Engaged)
             {
-                if ($character->Location != Game::LOCATION_PLAYER_HOME)
-                {
-                    $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $sourceId=0);
-                    $this->theah->queueEvent($movedHome);
-                }
-    
-                if ($character->Engaged)
-                {
-                    $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id);
-                    $this->theah->queueEvent($engardeEvent);                    
-                }
+                $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id);
+                $this->theah->queueEvent($engardeEvent);                    
             }
 
             foreach ($character->Attachments as $attachmentId)
@@ -1899,6 +1890,22 @@ trait StatesTrait
     {
         $event = $this->theah->createEvent(Events::DuskEndOfDay);
         $this->theah->queueEvent($event);
+
+        //Get characters in play
+        $characters = $this->theah->getCharactersInPlay();
+
+        //Only use characters that are controlled (i.e. not mercenaries)
+        $characters = array_filter($characters, fn($character) => $character->isControlled());
+
+        foreach ($characters as $character)
+        {
+            //Brutes get discarded
+            if ($character->hasTrait("Brute"))
+            {
+                $discardedEvent = EventFactory::createCardDiscardedFromPlayEvent($character->ControllerId, $character->Id, $character->Location);
+                $this->theah->queueEvent($discardedEvent);
+            }
+        }        
 
         $this->gamestate->nextState();
     }
