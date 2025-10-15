@@ -46,6 +46,7 @@ class Technique_01204 extends Technique
             $event->theah->queueEvent($woundEvent);
 
             $this->ReduceAdversaryParry = true;
+            $attachment->IsUpdated = true;
         }
 
         //Reduce the opponent's Parry by 1 if the technique is activated

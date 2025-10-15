@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterLostBrute;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -28,7 +29,8 @@ class Reaction_CrewCapLimit extends GameReaction
 
         if ($event instanceof EventApproachCharacterPlayed 
         || $event instanceof EventCharacterRecruited
-        || $event instanceof EventCharacterMustered)
+        || $event instanceof EventCharacterMustered
+        || $event instanceof EventCharacterLostBrute)
         {
             $count = $event->theah->getCharacterCountByPlayerId($event->playerId);
             $leader = $event->theah->getLeaderByPlayerId($event->playerId);

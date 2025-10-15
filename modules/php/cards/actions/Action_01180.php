@@ -207,7 +207,7 @@ class Action_01180 extends CharacterAction
             $wealth = $game->handWealthCount($playerId);
 
             //Get any discounts the player may have
-            $discount = $game->theah->getEquipDiscount($performer, $chosenAttachment);
+            [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $chosenAttachment);
 
             if ($cost > $wealth - $discount)
             {
@@ -235,7 +235,7 @@ class Action_01180 extends CharacterAction
             if ($attachment instanceof Attachment)
                 $cost = $attachment->WealthCost;
             
-            $discount = $game->theah->getEquipDiscount($performer, $attachment);
+            [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $attachment);
             $cost -= $discount;
     
             //Total up the wealth of the cards to see if player paid correctly

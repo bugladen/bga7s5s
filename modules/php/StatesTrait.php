@@ -1201,14 +1201,20 @@ trait StatesTrait
         $adversary = $this->theah->getCharacterById($adversaryId);
         $challengerId = $this->theah->getDuelChallengerId();
 
-        $actorIsInLocker = strpos($actor->Location, "Locker-") !== false;
-        $adversaryIsInLocker = strpos($adversary->Location, "Locker-") !== false;
-        $bothInLocker = $actorIsInLocker && $adversaryIsInLocker;
+        $actorIsDead = strpos($actor->Location, "Locker-") !== false;
+        if ($actor->hasTrait("Brute"))
+            $actorIsDead = strpos($actor->Location, "Discard-") !== false;
+
+        $adversaryIsDead = strpos($adversary->Location, "Locker-") !== false;
+        if ($adversary->hasTrait("Brute"))
+            $adversaryIsDead = strpos($adversary->Location, "Discard-") !== false;
+
+        $bothDead = $actorIsDead && $adversaryIsDead;
 
         //If the actor not in the same location as the adversary, then any adversary threat is nullified
         //If the actor is in the locker, then threat remains
         //If both are in the locker, then obviously the duel will end
-        if ($bothInLocker || ($actor->Location != $adversary->Location && !$actorIsInLocker))
+        if ($bothDead || ($actor->Location != $adversary->Location && !$actorIsDead))
         {
             $field = "";
             if ($actorId == $challengerId)
@@ -1773,25 +1779,16 @@ trait StatesTrait
 
         foreach ($characters as $character)
         {
-            //Brutes get discarded
-            if ($character->hasTrait("Brute"))
+            if ($character->Location != Game::LOCATION_PLAYER_HOME)
             {
-                $discardedEvent = EventFactory::createCardDiscardedFromPlayEvent($character->ControllerId, $character->Id, $character->Location);
-                $this->theah->queueEvent($discardedEvent);
+                $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $sourceId=0);
+                $this->theah->queueEvent($movedHome);
             }
-            else
+
+            if ($character->Engaged)
             {
-                if ($character->Location != Game::LOCATION_PLAYER_HOME)
-                {
-                    $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $sourceId=0);
-                    $this->theah->queueEvent($movedHome);
-                }
-    
-                if ($character->Engaged)
-                {
-                    $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id);
-                    $this->theah->queueEvent($engardeEvent);                    
-                }
+                $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id);
+                $this->theah->queueEvent($engardeEvent);                    
             }
 
             foreach ($character->Attachments as $attachmentId)
@@ -1903,6 +1900,22 @@ trait StatesTrait
     {
         $event = $this->theah->createEvent(Events::DuskEndOfDay);
         $this->theah->queueEvent($event);
+
+        //Get characters in play
+        $characters = $this->theah->getCharactersInPlay();
+
+        //Only use characters that are controlled (i.e. not mercenaries)
+        $characters = array_filter($characters, fn($character) => $character->isControlled());
+
+        foreach ($characters as $character)
+        {
+            //Brutes get discarded
+            if ($character->hasTrait("Brute"))
+            {
+                $discardedEvent = EventFactory::createCardDiscardedFromPlayEvent($character->ControllerId, $character->Id, $character->Location);
+                $this->theah->queueEvent($discardedEvent);
+            }
+        }        
 
         $this->gamestate->nextState();
     }
