@@ -2032,6 +2032,13 @@
                     }, 500);
                 }
             },
+
+            'duelResolveManeuver_01108': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode(1);
+                }
+            },
         
             'duelApplyCombatCardStats_01085': () => {
                 if (this.isCurrentPlayerActive()) {

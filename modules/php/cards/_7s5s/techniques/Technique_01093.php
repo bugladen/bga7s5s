@@ -2,15 +2,12 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IFactionCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -68,6 +65,12 @@ class Technique_01093 extends Technique
         if ($state == States::DUEL_CHOOSE_TECHNIQUE_01093)
         {
             $card = $game->getCardObjectFromDb($id);
+
+            if ($card == null)
+            {
+                throw new \BgaUserException($game->translate("Card not found"));
+            }
+
             $playerId = $game->getActivePlayerId();
 
             if ($card->ControllerId != $playerId)

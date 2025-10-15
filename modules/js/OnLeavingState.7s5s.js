@@ -1280,6 +1280,13 @@
                 }
             },
 
+            'duelResolveManeuver_01108': () => {
+            if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode(0);
+                }
+            },
+
             'duelEndOfRound_01031': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCards(this.clientStateArgs.ids);

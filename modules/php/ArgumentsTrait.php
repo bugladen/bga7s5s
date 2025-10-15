@@ -674,11 +674,11 @@ trait ArgumentsTrait
 
         $card = $this->getCardObjectFromDb($cardId);
         if ($card instanceof IHasManeuvers)
-            $maneuvers = $card->getManeuversArray($this);
+            $maneuvers = $card->getManeuversArray($this, $mustBeAvailable = true);
 
-            $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
+        $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
 
-            return [
+        return [
             "_private" => [
                 "active" => [
                     "cardId" => $cardId,
