@@ -1273,4 +1273,15 @@ class Theah
 
         return 0;
     }
+
+    public function duelParticipantWoundsTaken(int $participantId) : int
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT sum(wounds_taken) as wounds FROM duel_round WHERE duel_id = $duelId AND round <> $round AND actor_id = $participantId";
+        $result = $this->db->getUniqueValue($sql);
+        
+        return $result;
+    }
+
 }
