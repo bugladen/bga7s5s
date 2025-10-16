@@ -76,7 +76,7 @@ class Reaction_01099a extends CardReaction
             $this->setUsed($game->theah, true);
 
             //Delete any reaction transitions for this reaction so they don't trigger again
-            $game->theah->deleteReactionTransitionEvents($this->Id);
+            $game->theah->deleteTransitionEvents($this->Id);
         }
 
         $game->gamestate->nextState("done");

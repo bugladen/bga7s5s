@@ -66,10 +66,24 @@ class DB
     }
 
     //Use this to delete all reaction transition events that might pile up from other events
-    public function deleteReactionTransitionEvents(string $reactionId)
+    public function deleteTransitionEvents(string $reactionId)
     {
         $sql = "DELETE FROM events 
                 WHERE (event_serialized LIKE '%EventTransition%' AND event_serialized LIKE '%{$reactionId}%')";
+        $this->executeSql($sql);
+    }
+
+    public function deleteActionTriggeredEvents(string $actionId)
+    {
+        $sql = "DELETE FROM events 
+                WHERE (event_serialized LIKE '%EventActionTriggered%' AND event_serialized LIKE '%{$actionId}%')";
+        $this->executeSql($sql);
+    }
+
+    public function deleteReactionTriggeredEvents(string $reactionId)
+    {
+        $sql = "DELETE FROM events 
+                WHERE (event_serialized LIKE '%EventReactionTriggered%' AND event_serialized LIKE '%{$reactionId}%')";
         $this->executeSql($sql);
     }
 

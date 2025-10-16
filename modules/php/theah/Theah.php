@@ -1148,9 +1148,19 @@ class Theah
         $this->db->deletePressureResultEvents();
     }
 
-    public function deleteReactionTransitionEvents(string $reactionId)
+    public function deleteTransitionEvents(string $reactionId)
     {
-        $this->db->deleteReactionTransitionEvents($reactionId);
+        $this->db->deleteTransitionEvents($reactionId);
+    }
+
+    public function deleteActionTriggeredEvents(string $actionId)
+    {
+        $this->db->deleteActionTriggeredEvents($actionId);
+    }
+
+    public function deleteReactionTriggeredEvents(string $reactionId)
+    {
+        $this->db->deleteReactionTriggeredEvents($reactionId);
     }
 
     public function swapParticipantsInDuel(int $duelId, int $round, int $oldParticipantId, int $newParticipantId)

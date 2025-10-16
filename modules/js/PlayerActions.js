@@ -312,10 +312,15 @@ return declare('seventhseacityoffivesails.actions', null, {
         var items = this.factionHand.getSelectedItems();
         items = items.map((item) => item.id);
 
+        let errors = false;
         this.bgaPerformAction('actPayForInHandAction', { 
             'payWithCards': JSON.stringify(items),
         }).catch(() =>  {
-        });        
+            errors = true;
+        }).then(() =>  {
+            if (!errors && this.clientStateArgs.chosenActionCardId) 
+                this.factionHand.removeFromStockById(this.clientStateArgs.chosenActionCardId);
+        });
     },
 
     onPaymentConfirmed: function()

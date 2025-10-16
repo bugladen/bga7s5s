@@ -1134,6 +1134,10 @@ trait FrameworkActionsTrait
             $this->theah->queueEvent($event);
         }
 
+        $this->cards->moveCard($risk->Id, Game::LOCATION_PURGATORY);
+        $risk->Location = Game::LOCATION_PURGATORY;
+        $this->updateCardObjectInDb($risk);
+
         $message = clienttranslate('${player_name} is performing the In-Hand Action [${action_name}] from ${card_inject_code}. ');
         if ($discount != 0)
         {
@@ -1143,7 +1147,7 @@ trait FrameworkActionsTrait
                 $message .= clienttranslate('<br>${explanations}');
             }
         }
-        $this->notifyAllPlayers("message", $message, [
+        $this->notify->all("message", $message, [
             "i18n" => ["action_name"],
             "player_name" => $this->getActivePlayerName(),
             "action_name" => $action->Name,
@@ -1155,6 +1159,9 @@ trait FrameworkActionsTrait
 
         //Reset the player pass count 
         $this->globals->set(GAME::PASS_COUNT, 0);
+
+        $event = EventFactory::createRiskPlayedEvent($playerId, $risk->Id);
+        $this->theah->queueEvent($event);
 
         $event = EventFactory::createActionTriggeredEvent($playerId, $performerId, $actionId);
         $this->theah->eventCheck($event);
@@ -1946,13 +1953,19 @@ trait FrameworkActionsTrait
         }
 
         $announcement = $reaction->getReactionAnnouncement($this, $this->gamestate->state_id(), $internalId, $reactionId);
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} ${announcement}'), [
-            "player_name" => $this->getActivePlayerName(),
-            "announcement" => $announcement,
-        ]);
+        if ($announcement != "")
+        {
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} ${announcement}'), [
+                "player_name" => $this->getActivePlayerName(),
+                "announcement" => $announcement,
+            ]);
+        }
 
         $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = false, $asPlayed = true, $asEffect = true);
         $this->theah->queueEvent($event);
+
+        $riskPlayed = EventFactory::createRiskPlayedEvent($playerId, $card->Id);
+        $this->theah->queueEvent($riskPlayed);
 
         $reaction->reactionPaidFor($this, $this->gamestate->state_id(), $internalId, $reactionId);
 

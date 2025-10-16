@@ -356,6 +356,7 @@ onEnteringState: function( stateName, args )
                 }
 
                 const chosenActionCardId = args.args._private.choseActionCardId;
+                this.clientStateArgs.chosenActionCardId = chosenActionCardId;
                 const card = this.cardProperties[chosenActionCardId];
 
                 let items = this.factionHand.getAllItems();

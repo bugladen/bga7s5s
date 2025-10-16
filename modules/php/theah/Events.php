@@ -104,6 +104,7 @@ class Events
     const ManeuverCanceled = 'EventManeuverCanceled';
     const TechniqueCanceled = 'EventTechniqueCanceled';
     const SorcererAbilityPlayed = 'EventSorcererAbilityPlayed';
+    const RiskPlayed = 'EventRiskPlayed';
 
     //Character events
     const CharacterInfluenceModified = 'EventCharacterInfluenceModified';
@@ -121,6 +122,7 @@ class Events
     const ChangeActivePlayer = 'EventChangeActivePlayer';
 
     const ActionTriggered = 'EventActionTriggered';
+    const ReactionTriggered = 'EventReactionTriggered';
     const ActionUsed = 'EventActionUsed';
     const ReactionUsed = 'EventReactionUsed';
     const ManeuverUsed = 'EventManeuverUsed';

@@ -62,11 +62,13 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTableSetup;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
@@ -729,6 +731,20 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $transition;
     }
 
+    public static function createReactionTriggeredEvent(int $playerId, int $performerId, string $reactionId, string $reactionAction): EventReactionTriggered
+    {
+        $event = self::createEvent(Events::ReactionTriggered);
+        if ($event instanceof EventReactionTriggered)
+        {
+            $event->playerId = $playerId;
+            $event->performerId = $performerId;
+            $event->reactionId = $reactionId;
+            $event->reactionAction = $reactionAction;
+            $event->priority = Event::HIGHEST_PRIORITY;
+        }
+        return $event;
+    }
+
     public static function createReactionUsedEvent(int $playerId, int $ownerId, string $reactionId, bool $used): EventReactionUsed
     {
         $event = self::createEvent(Events::ReactionUsed);
@@ -792,6 +808,18 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->actorId = $actorId;
             $event->adversaryId = $adversaryId;
             $event->techniqueId = $techniqueId;
+        }
+
+        return $event;
+    }
+
+    public static function createRiskPlayedEvent(int $playerId, int $riskId): EventRiskPlayed
+    {
+        $event = self::createEvent(Events::RiskPlayed);
+        if ($event instanceof EventRiskPlayed)
+        {
+            $event->playerId = $playerId;
+            $event->riskId = $riskId;
         }
 
         return $event;
