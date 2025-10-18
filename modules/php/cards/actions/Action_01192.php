@@ -70,6 +70,7 @@ class Action_01192 extends CharacterAction
             ]);
 
             $this->setUsed($event->theah, true);
+            $this->resetPlayerPassCount($event->theah->game);
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01192", $this->Id);
             $event->theah->queueEvent($transition);

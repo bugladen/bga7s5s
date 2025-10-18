@@ -98,6 +98,9 @@ class Action_01189b extends EventCityAction
             {
                 throw new \BgaUserException(sprintf($game->translate("%s does not have any reknown to move."), $poo->Location));
             }
+
+            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $poo->Id);
+            $game->theah->eventCheck($engageEvent);
     
             $fromEvent = EventFactory::createReknownRemovedFromLocationEvent($performer->ControllerId, $poo->Location, 1, "{$poo->getInjectCode()}: Moving Reknown to adjacent location");
             $game->theah->eventCheck($fromEvent);
@@ -108,17 +111,16 @@ class Action_01189b extends EventCityAction
             $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($poo->ControllerId, $poo->Id, $poo->Location);
             $game->theah->eventCheck($discardEvent);
     
+            $game->theah->queueEvent($engageEvent);
             $game->theah->queueEvent($fromEvent);
             $game->theah->queueEvent($toEvent);
             $game->theah->queueEvent($discardEvent);
     
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
-                'i18n' => ['action'],
-                'player_name' => $game->getActivePlayerName(),
-                'action' => $this->Name,
-                'owner_inject_code' => $poo->getInjectCode(),
-            ]);
-    
+            $this->announceAction($game);
+
+            $this->resetPlayerPassCount($game);
+            // $this->setUsed() not called because this card is destroyed
+
             $game->gamestate->nextState("locationChosen");
         }
 

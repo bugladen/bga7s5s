@@ -43,7 +43,7 @@ class Reaction_01200 extends AttachmentReaction
     {
         parent::handleEvent($event);
 
-        if (($event instanceof EventApproachCharacterPlayed || $event instanceof EventCharacterMustered) && $this->isAvailable())
+        if (($event instanceof EventApproachCharacterPlayed || $event instanceof EventCharacterMustered) && $this->ownerIsAttached($event->theah) && $this->isAvailable())
         {
             $attachment = $this->getOwningAttachment($event->theah);
             if ($attachment->isAttached() && $attachment instanceof _01200 && $event->characterId == $attachment->ChosenCard)
@@ -54,7 +54,7 @@ class Reaction_01200 extends AttachmentReaction
             }
         }
 
-        if ($event instanceof EventSchemeCardRevealed && $this->isAvailable())
+        if ($event instanceof EventSchemeCardRevealed && $this->ownerIsAttached($event->theah) && $this->isAvailable())
         {
             $attachment = $this->getOwningAttachment($event->theah);
             if ($attachment->isAttached() && $attachment instanceof _01200 && $event->scheme->Id == $attachment->ChosenCard)

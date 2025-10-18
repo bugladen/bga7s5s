@@ -48,19 +48,28 @@ class Action_01180 extends CharacterAction
             $count = 0;
             foreach ($deckCards as $deckCard) {
                 $card = $event->theah->game->getCardObjectFromDb($deckCard['id']);
-                $names[] = $event->theah->game->translate($card->Name);
+                $names[] = $card->getInjectCode();
                 if ($card->hasTrait('Artifact'))
                     $count++;
             }
 
             $kaj = $this->getOwningCard($event->theah);
+            $game = $event->theah->game;
+            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
+                'i18n' => ['action'],
+                'player_name' => $game->getActivePlayerName(),
+                'action' => $this->Name,
+                'owner_inject_code' => $kaj->getInjectCode(),
+            ]);
+
+            $this->setUsed($event->theah, true);
             $event->theah->game->notifyAllPlayers('message', clienttranslate('${action_inject_code}: ${count} Artifacts found in the top 4 cards of the City Deck. (${names})'), [
                 'action_inject_code' => $kaj->getInjectCode(),
                 'count' => $count,
                 'names' => implode(', ', $names)
             ]);
 
-            $this->setUsed($event->theah, true);
+            $this->resetPlayerPassCount($event->theah->game);
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01180", $this->Id);
             $event->theah->queueEvent($transition);
@@ -109,7 +118,7 @@ class Action_01180 extends CharacterAction
             $performer = $game->getCardObjectFromDb($performerId);
             $args['performerId'] = $performerId;
 
-            $discount = $game->theah->getEquipDiscount($performer, $chosenAttachment);
+            $discount = $game->globals->get(Game::DISCOUNT);
             $args['discount'] = $discount;
         }
 
@@ -214,6 +223,12 @@ class Action_01180 extends CharacterAction
                 throw new \BgaUserException(sprintf($game->translate("You do not have enough Wealth to equip this card (with a discount of %s)."), $discount));
             }        
         
+            if ($discount > 0)
+                $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                    "explanations" => $explanations,
+                ]);
+            $game->globals->set(Game::DISCOUNT, $discount);
+            $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
             $game->globals->set(Game::CHOSEN_PERFORMER, $id);
 
             $game->gamestate->nextState("performerChosen");
@@ -230,12 +245,13 @@ class Action_01180 extends CharacterAction
             $attachment = $game->getCardObjectFromDb($attachmentId);
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->getCardObjectFromDb($performerId);
+            $performer = $game->theah->getCharacterById($performerId);
 
             if ($attachment instanceof Attachment)
                 $cost = $attachment->WealthCost;
             
-            [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $attachment);
+            $discount = $game->globals->get(Game::DISCOUNT);
+            $explanations = $game->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
             $cost -= $discount;
     
             //Total up the wealth of the cards to see if player paid correctly
@@ -245,7 +261,7 @@ class Action_01180 extends CharacterAction
                 if ($card == null)
                     throw new \BgaUserException(sprintf($game->translate("Card %d not found."), $cardId));
     
-                    //If $card has wealth in its traits, add it to the total wealth
+                //If $card has wealth in its traits, add it to the total wealth
                 $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
             }
             if ($totalWealth != $cost) {
@@ -254,7 +270,7 @@ class Action_01180 extends CharacterAction
     
             $playerId = $game->getActivePlayerId();
     
-            $game->notifyAllPlayers('message', clienttranslate('${player_name} has chosen to Equip ${card_inject_code} from the top 4 cards of the City Deck.'), [
+            $game->notify->all('message', clienttranslate('${player_name} has chosen to Equip ${card_inject_code} from the top 4 cards of the City Deck.'), [
                 'player_name' => $game->getActivePlayerName(),
                 'card_inject_code' => $attachment->getInjectCode(),
             ]);
@@ -270,7 +286,7 @@ class Action_01180 extends CharacterAction
             }
 
             //Equip the attachment
-            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $performerId, $attachmentId, $discount, $cost);
+            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $performerId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
             $game->theah->eventCheck($equipAttachmentEvent);
             $game->theah->queueEvent($equipAttachmentEvent);
     

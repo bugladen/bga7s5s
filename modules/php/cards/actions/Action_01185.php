@@ -76,10 +76,7 @@ class Action_01185 extends EventCityAction
             $riskyUndertaking = $this->getOwningCard($game->theah);
             $playerName = $game->getActivePlayerName();
 
-            $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${player_name} has used the Action.'), [
-                'action_inject_code' => $riskyUndertaking->getInjectCode(),
-                'player_name' => $playerName,
-            ]);
+            $this->announceAction($game);
 
             //Move the cards used to pay to the player's discard pile
             $deck = $game->getGameDeckObject();
@@ -100,6 +97,9 @@ class Action_01185 extends EventCityAction
             $game->theah->queueEvent($event);
 
             $game->gamestate->nextState("cardsDiscarded");
+
+            $this->resetPlayerPassCount($game);
+            // $this->setUsed() not called because this card is discarded
         }
     }
 

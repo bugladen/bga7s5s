@@ -40,7 +40,7 @@ class Reaction_01202 extends AttachmentReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCharacterDestroyed && $this->isAvailable())
+        if ($event instanceof EventCharacterDestroyed && $this->ownerIsAttached($event->theah) && $this->isAvailable())
         {
             $attachment = $this->getOwningAttachment($event->theah);
             if ($attachment->isAttached())
@@ -67,6 +67,10 @@ class Reaction_01202 extends AttachmentReaction
         if ($reactionId == 'saveCharacter')
         {
             $playerId = $game->getActivePlayerId();
+
+            $removedFromLockerEvent = EventFactory::createCardRemovedFromLockerEvent($playerId, $this->SavedCharacterId);
+            $game->theah->eventCheck($removedFromLockerEvent);
+
             $approachDeckEvent = EventFactory::createCharacterPutIntoApproachDeckEvent($playerId, $this->SavedCharacterId);
             $game->theah->eventCheck($approachDeckEvent);
 
@@ -75,20 +79,21 @@ class Reaction_01202 extends AttachmentReaction
             $unequipEvent = EventFactory::createAttachmentUnequippedEvent($playerId, $owningCharacter->Id, $attachment->Id);
             $game->theah->eventCheck($unequipEvent);
 
-            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->ControllerId, $attachment->Id, $attachment->Location);
-            $game->theah->eventCheck($discardEvent);
+            $lockerEvent = EventFactory::createCardSentToLockerEvent($attachment->ControllerId, $attachment->Id);
+            $game->theah->eventCheck($lockerEvent);
 
             $owner = $this->getOwningCard($game->theah);
             $targetCharacter = $game->theah->getCharacterById($this->SavedCharacterId);
-            $game->notifyAllPlayers('message', clienttranslate('${owner_inject_code}: ${player_name} used Reaction to put ${character_inject_code} into their Approach Deck.'), [
+            $game->notify->all('message', clienttranslate('${owner_inject_code}: ${player_name} used Reaction to put ${character_inject_code} into their Approach Deck.'), [
                 'owner_inject_code' => $owner->getInjectCode(),
                 'player_name' => $game->getActivePlayerName(),
                 'character_inject_code' => $targetCharacter->getInjectCode(),
             ]);
 
+            $game->theah->queueEvent($removedFromLockerEvent);
             $game->theah->queueEvent($approachDeckEvent);
             $game->theah->queueEvent($unequipEvent);
-            $game->theah->queueEvent($discardEvent);
+            $game->theah->queueEvent($lockerEvent);
         }
 
         $game->gamestate->nextState("done");
