@@ -13,14 +13,22 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01099a extends CardReaction
 {
+    private int $discardedCardId = 0;
+
     public function __construct()
     {
         parent::__construct();
         $this->Name = clienttranslate("Draw a Card after a Card is Discarded due to your effect");
+        $this->discardedCardId = 0;
     }
 
     public function getReactionDescription(Theah $theah): string
     {
+        if ($this->discardedCardId != 0)
+        {
+            $card = $theah->getCardById($this->discardedCardId);
+            return parent::getReactionDescription($theah) . $theah->game->translate($card->Name) . $theah->game->translate(' was discarded: ${you} may draw a card: ');
+        }
         return parent::getReactionDescription($theah) . $theah->game->translate('${you} may draw a card: ');
     }
 
@@ -40,8 +48,12 @@ class Reaction_01099a extends CardReaction
         && $this->isAvailable() && $event->asEffect)
         {
             $owner = $this->getOwningCard($event->theah);
+
             if ($event->sourceId == 0)
             {
+                $this->discardedCardId = $event->cardId;
+                $owner->IsUpdated = true;
+
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);
             }
@@ -51,6 +63,9 @@ class Reaction_01099a extends CardReaction
                 $source = $event->theah->getCardById($event->sourceId);
                 if ($source->ControllerId == $owner->ControllerId)
                 {
+                    $this->discardedCardId = $event->sourceId;
+                    $owner->IsUpdated = true;
+                    
                     $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($transition);
                 }
