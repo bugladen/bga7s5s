@@ -12,7 +12,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
@@ -1961,7 +1960,7 @@ trait FrameworkActionsTrait
             ]);
         }
 
-        $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = false, $asPlayed = true, $asEffect = true);
+        $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = false, $asPlayed = true);
         $this->theah->queueEvent($event);
 
         $riskPlayed = EventFactory::createRiskPlayedEvent($playerId, $card->Id);
