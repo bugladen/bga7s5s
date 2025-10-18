@@ -1785,7 +1785,7 @@ trait StatesTrait
             foreach ($character->Attachments as $attachmentId)
             {
                 $attachment = $this->theah->getAttachmentById($attachmentId);
-                if ($attachment->Engaged)
+                if ($attachment !== null && $attachment->Engaged)
                 {
                     $engardeEvent = EventFactory::createCardEngardedEvent($attachment->ControllerId, $attachment->Id);
                     $this->theah->queueEvent($engardeEvent);
