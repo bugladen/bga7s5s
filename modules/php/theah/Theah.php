@@ -189,6 +189,17 @@ class Theah
         }
     }
 
+    public function stackEvent(Event $event)
+    {
+        $this->buildCity();
+        try {
+            $this->eventCheck($event);
+            $this->db->stackEvent($event);
+        } catch (\Exception $e) {
+            $this->game->notify->all("message", clienttranslate($e->getMessage()), []);
+        }
+    }
+
     public function runEvents(bool $debug = false)
     {
         while (true) {
@@ -1158,9 +1169,9 @@ class Theah
         $this->db->deleteActionTriggeredEvents($actionId);
     }
 
-    public function deleteReactionTriggeredEvents(string $reactionId)
+    public function deleteRiskReactionTriggeredEvents(string $reactionId)
     {
-        $this->db->deleteReactionTriggeredEvents($reactionId);
+        $this->db->deleteRiskReactionTriggeredEvents($reactionId);
     }
 
     public function swapParticipantsInDuel(int $duelId, int $round, int $oldParticipantId, int $newParticipantId)

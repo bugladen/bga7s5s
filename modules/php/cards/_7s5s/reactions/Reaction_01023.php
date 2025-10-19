@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01023 extends RiskReaction
@@ -92,6 +93,22 @@ class Reaction_01023 extends RiskReaction
             $owner = $this->getOwningCard($event->theah);
             $owner->IsUpdated = true;
         }
+
+        if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
+        {
+            if ($event->reactionId == 'preventIntervention')
+            {
+                $game = $event->theah->game;
+                $owner = $this->getOwningCard($game->theah);
+                $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction. Other characters will not be allowed to intervene in this Challenge.'), [
+                    "reaction_inject_code" => $owner->getInjectCode(),
+                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                ]);
+    
+                $this->PreventIntervention = true;
+                $owner->IsUpdated = true;
+            }
+        }
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -128,22 +145,5 @@ class Reaction_01023 extends RiskReaction
 
         return $discount;
 
-    }
-
-    public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void
-    {
-        parent::reactionPaidFor($game, $state, $internalId, $reactionId);
-
-        if ($reactionId == 'preventIntervention')
-        {
-            $owner = $this->getOwningCard($game->theah);
-            $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction. Other characters will not be allowed to intervene in this Challenge.'), [
-                "reaction_inject_code" => $owner->getInjectCode(),
-                "player_name" => $game->getPlayerNameById($owner->ControllerId),
-            ]);
-
-            $this->PreventIntervention = true;
-            $owner->IsUpdated = true;
-        }
     }
 }

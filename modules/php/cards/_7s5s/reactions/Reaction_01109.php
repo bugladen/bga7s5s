@@ -2,16 +2,16 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_01109 extends CardReaction
+class Reaction_01109 extends CancelReaction
 {
     private int $RiskId;
     public function __construct()
@@ -47,14 +47,14 @@ class Reaction_01109 extends CardReaction
             {
                 $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $transitionEvent->priority = Event::HIGHEST_PRIORITY;
-                $event->theah->queueEvent($transitionEvent);
+                $event->theah->stackEvent($transitionEvent);
 
                 $this->RiskId = $event->riskId;
                 $owner->IsUpdated = true;
             }
         }
 
-        if ($event instanceof EventReactionTriggered && $event->reactionId == $this->Id)
+        if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
             $game = $event->theah->game;
@@ -63,11 +63,9 @@ class Reaction_01109 extends CardReaction
                 'reaction_inject_code' => $owner->getInjectCode(),
             ]);
 
-            $this->setUsed($game->theah, true);
-
-            //Delete any cancel Risk ActionTriggered or ReactionTriggered events
+            //Delete any cancel Risk ActionTriggered or RiskReactionTriggered events
             $game->theah->deleteActionTriggeredEvents($this->RiskId);
-            $game->theah->deleteReactionTriggeredEvents($this->Id);
+            $game->theah->deleteRiskReactionTriggeredEvents($this->RiskId);
             $this->RiskId = 0;
             $owner->IsUpdated = true;
         }
@@ -84,18 +82,5 @@ class Reaction_01109 extends CardReaction
         }
 
         $game->gamestate->nextState("done");
-    }
-
-    public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void
-    {
-        parent::reactionPaidFor($game, $state, $internalId, $reactionId);
-
-        if ($reactionId == 'cancel')
-        {
-            $owner = $this->getOwningCard($game->theah);
-
-            $triggeredEvent = EventFactory::createReactionTriggeredEvent($owner->ControllerId, $owner->Id, $this->Id, $reactionId);
-            $game->theah->queueEvent($triggeredEvent);
-        }
     }
 }

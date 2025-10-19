@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01088 extends RiskReaction
@@ -52,6 +53,21 @@ class Reaction_01088 extends RiskReaction
                 }
             }
         }
+
+        if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
+        {
+            if ($event->reactionId == 'cancelChallenge')
+            {
+                $game = $event->theah->game;
+                $owner = $this->getOwningCard($game->theah);
+                $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and cancelled the Mercenary Challenge.'), [
+                    "reaction_inject_code" => $owner->getInjectCode(),
+                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                ]);
+    
+                $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+            }
+        }
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -65,21 +81,5 @@ class Reaction_01088 extends RiskReaction
         }
 
         $game->gamestate->nextState('done');
-    }
-
-    public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void
-    {
-        parent::reactionPaidFor($game, $state, $internalId, $reactionId);
-
-        if ($reactionId == 'cancelChallenge')
-        {
-            $owner = $this->getOwningCard($game->theah);
-            $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and cancelled the Mercenary Challenge.'), [
-                "reaction_inject_code" => $owner->getInjectCode(),
-                "player_name" => $game->getPlayerNameById($owner->ControllerId),
-            ]);
-
-            $game->globals->set(Game::CHALLENGE_CANCELLED, true);
-        }
     }
 }

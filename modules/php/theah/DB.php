@@ -25,6 +25,17 @@ class DB
         $this->game->DbQuery($sql);
     }
 
+    public function stackEvent(Event $event)
+    {
+        $sql = "SELECT MIN(event_id) FROM events";
+        $id = intval($this->getUniqueValue($sql)) - 1;
+        $priority = $event->priority;
+        $serialized = addslashes(serialize($event));
+        $sql = "INSERT INTO events (event_id, event_priority, event_serialized) values ($id, $priority, '{$serialized}')";
+        /** @disregard P1013 */
+        $this->game->DbQuery($sql);
+    }
+
     public function getNextEvent()
     {
         $sql = "SELECT event_id as id, event_serialized as json FROM events ORDER BY event_priority LIMIT 1";
@@ -80,10 +91,10 @@ class DB
         $this->executeSql($sql);
     }
 
-    public function deleteReactionTriggeredEvents(string $reactionId)
+    public function deleteRiskReactionTriggeredEvents(string $reactionId)
     {
         $sql = "DELETE FROM events 
-                WHERE (event_serialized LIKE '%EventReactionTriggered%' AND event_serialized LIKE '%{$reactionId}%')";
+                WHERE (event_serialized LIKE '%EventRiskReactionTriggered%' AND event_serialized LIKE '%{$reactionId}%')";
         $this->executeSql($sql);
     }
 

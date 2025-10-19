@@ -17,7 +17,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
@@ -1963,8 +1965,25 @@ trait FrameworkActionsTrait
         $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = false, $asPlayed = true);
         $this->theah->queueEvent($event);
 
-        $riskPlayed = EventFactory::createRiskPlayedEvent($playerId, $card->Id);
-        $this->theah->queueEvent($riskPlayed);
+        if ($reaction instanceof CancelReaction)
+        {
+            $riskReactionTriggered = EventFactory::createRiskReactionTriggeredEvent($playerId,  $card->Id, $internalId, $reactionId);
+            $riskReactionTriggered->priority = Event::HIGHEST_PRIORITY;
+            $this->theah->stackEvent($riskReactionTriggered);
+            
+            $riskPlayed = EventFactory::createRiskPlayedEvent($playerId, $card->Id);   
+            $riskPlayed->priority = Event::HIGHEST_PRIORITY;
+            $this->theah->stackEvent($riskPlayed);
+        }
+        else
+        {
+
+            $riskPlayed = EventFactory::createRiskPlayedEvent($playerId, $card->Id);    
+            $this->theah->queueEvent($riskPlayed);
+    
+            $riskReactionTriggered = EventFactory::createRiskReactionTriggeredEvent($playerId,  $card->Id, $internalId, $reactionId);
+            $this->theah->queueEvent($riskReactionTriggered);
+        }
 
         $reaction->reactionPaidFor($this, $this->gamestate->state_id(), $internalId, $reactionId);
 

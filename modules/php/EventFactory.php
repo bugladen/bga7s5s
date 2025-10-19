@@ -62,13 +62,13 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTableSetup;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
@@ -731,16 +731,15 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $transition;
     }
 
-    public static function createReactionTriggeredEvent(int $playerId, int $performerId, string $reactionId, string $reactionAction): EventReactionTriggered
+    public static function createRiskReactionTriggeredEvent(int $playerId, int $sourceId, string $internalId, string $reactionId): EventRiskReactionTriggered
     {
-        $event = self::createEvent(Events::ReactionTriggered);
-        if ($event instanceof EventReactionTriggered)
+        $event = self::createEvent(Events::RiskReactionTriggered);
+        if ($event instanceof EventRiskReactionTriggered)
         {
             $event->playerId = $playerId;
-            $event->performerId = $performerId;
+            $event->sourceId = $sourceId;
+            $event->internalId = $internalId;
             $event->reactionId = $reactionId;
-            $event->reactionAction = $reactionAction;
-            $event->priority = Event::HIGHEST_PRIORITY;
         }
         return $event;
     }
