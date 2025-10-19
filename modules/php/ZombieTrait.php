@@ -242,12 +242,6 @@ trait ZombieTrait
                     $this->gamestate->nextState("");
                     break;
 
-                // Duel End States
-                case "duelEnd_01080":
-                    // Default action: Handle duel end
-                    $this->gamestate->nextState("");
-                    break;
-
                 // Dusk Phase States
                 case "duskPhaseBegin01177": // Penya choice
                 case "duskPhaseBegin01177_2": // Penya card order

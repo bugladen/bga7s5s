@@ -2214,7 +2214,6 @@ $machinestates = [
                     "transitions" => [
                         "back" => States::DUEL_END_REACTIONS, 
                         "paid" => States::DUEL_END_EVENTS, 
-                        "01080" => States::DUEL_END_01080,
                     ]
                 ],
                 

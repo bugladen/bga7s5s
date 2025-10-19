@@ -91,13 +91,6 @@ class Reaction_01080 extends RiskReaction
             }
         }
 
-        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
-        {
-            $performer = $event->theah->getCharacterById($this->DuelOpponentId);
-            $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $this->DuelLocation);
-            $event->theah->queueEvent($claimEvent);
-        }
-
         if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
         {
             if ($event->reactionId == "pressure")
@@ -118,9 +111,21 @@ class Reaction_01080 extends RiskReaction
                     'location_name' => $performer->Location,
                 ]);
     
-                $game->gamestate->nextState("01080");
+                [$success, $totals, $difference] = $game->pressureLocation($performer->ControllerId, $performer, Game::STAT_INFLUENCE);
+
+                $pressuredEvent = EventFactory::createLocationPressuredEvent($performer->ControllerId, $performer->Id, $this->DuelLocation, Game::STAT_INFLUENCE, $success, $totals, $difference);
+                $pressuredEvent->abilityId = $this->Id;
+                $game->theah->queueEvent($pressuredEvent);
             }
         }
+
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
+        {
+            $performer = $event->theah->getCharacterById($this->DuelOpponentId);
+            $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $this->DuelLocation);
+            $event->theah->queueEvent($claimEvent);
+        }
+
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -134,23 +139,5 @@ class Reaction_01080 extends RiskReaction
         }
 
         $game->gamestate->nextState("done");
-    }
-
-    public function stateFromReaction(Game $game, int $state, string $stateName): void
-    {
-        parent::stateFromReaction($game, $state, $stateName);
-
-        if ($state == States::DUEL_END_01080)
-        {
-            $performer = $game->theah->getCharacterById($this->DuelOpponentId);
-
-            [$success, $totals, $difference] = $game->pressureLocation($performer->ControllerId, $performer, Game::STAT_INFLUENCE);
-
-            $pressuredEvent = EventFactory::createLocationPressuredEvent($performer->ControllerId, $performer->Id, $this->DuelLocation, Game::STAT_INFLUENCE, $success, $totals, $difference);
-            $pressuredEvent->abilityId = $this->Id;
-            $game->theah->queueEvent($pressuredEvent);
-
-            $game->gamestate->nextState();
-        }
     }
 }
