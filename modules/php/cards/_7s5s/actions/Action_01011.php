@@ -15,7 +15,6 @@ class Action_01011 extends CharacterAction
     {
         parent::__construct();
         $this->Name = clienttranslate("Challenge Character Opposing an Adjacent Red Hand");
-        $this->RequiresPerformerSelected = true;
     }
 
     private function getTargetCharacters(int $playerId, Theah $theah): array
@@ -26,9 +25,12 @@ class Action_01011 extends CharacterAction
         foreach ($thugs as $thug)
         {
             $characters = $theah->getOpposingCharactersAtLocation($thug->Location, $playerId);
-            $targetCharacters = array_merge($targetCharacters, $characters);
+            foreach ($characters as $c)
+            {
+                $targetCharacters[$c->Id] = $c;
+            }
         }
-        $targetCharacters = array_values(array_unique($targetCharacters));
+        $targetCharacters = array_values($targetCharacters);
         
         return $targetCharacters;
     }
