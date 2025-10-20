@@ -14,6 +14,7 @@
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01042;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
@@ -1908,8 +1909,18 @@ trait StatesTrait
             //Brutes get discarded
             if ($character->hasTrait("Brute"))
             {
-                $discardedEvent = EventFactory::createCardDiscardedFromPlayEvent($character->ControllerId, $character->Id, $character->Location);
-                $this->theah->queueEvent($discardedEvent);
+                // Agent006: "If you happen to discard a Mercenary that has gained Brute from Cirilo's passive due to the Brute keyword rule (Brutes are discarded from play at the end of the Day), 
+                // the Mercenary being discarded this way goes to the City Deck discard."
+                if ($character instanceof CityCharacter)
+                {
+                    $discardedEvent = EventFactory::createCardAddedToCityDiscardPileEvent($character->ControllerId, $character->Id, $character->Location);
+                    $this->theah->queueEvent($discardedEvent);
+                }
+                else
+                {
+                    $discardedEvent = EventFactory::createCardDiscardedFromPlayEvent($character->ControllerId, $character->Id, $character->Location);
+                    $this->theah->queueEvent($discardedEvent);
+                }
             }
         }        
 

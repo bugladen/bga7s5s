@@ -381,6 +381,16 @@ trait EventHub
                     $deck->moveCard($event->cardId, Game::LOCATION_CITY_DISCARD);
 
                     $card = $theah->getCardById($event->cardId);
+                    if ($card instanceof Character)
+                    {
+                        //Character has been destroyed, so recreate it because it has no memory of past state
+                        $fullClassname = get_class($card);
+                        $pos = strrpos($fullClassname, '\\');
+                        $className = substr($fullClassname, $pos + 2);
+                        $card = $theah->game->instantiateCard($className, $card->Id);            
+                        $theah->addCardToWorld($card);
+                    }
+                    $card->Engaged = false;
                     $card->Location = Game::LOCATION_CITY_DISCARD;
                     $card->ControllerId = 0;
                     $card->IsUpdated = true;
@@ -440,7 +450,7 @@ trait EventHub
                         $fullClassname = get_class($card);
                         $pos = strrpos($fullClassname, '\\');
                         $className = substr($fullClassname, $pos + 2);
-                        $card = $theah->game->instantiateCard($className, $event->cardId);            
+                        $card = $theah->game->instantiateCard($className, $card->Id);            
                         $theah->addCardToWorld($card);
                     }
                     $card->Location = $discardPileName;
@@ -1504,6 +1514,7 @@ trait EventHub
                         }
                     else
                     {
+                        //Agent006: "Mercenary characters granted Brute by Cirilo's Passive would not have the Brute keyword upon destruction and leaving play and would be sent to the 'The Locker'"
                         $deck = $theah->game->getGameDeckObject();
                         $deck->moveCard($event->characterId, $locker);
 
