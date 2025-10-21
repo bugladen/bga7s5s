@@ -35,11 +35,9 @@ class Reaction_01181 extends AttachmentReaction
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Heal 1 Wound'), 'heal1Wound');
 
         $owner = $this->getOwningCharacter($theah);
-        if ($owner instanceof Character)
-        {
-            if ($owner && $owner->hasTrait("Strega") && $owner->Wounds > 1)
-                $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Heal 2 Wounds'), 'heal2Wounds');    
-        }
+        $character = $theah->getCharacterById($this->HealTargetId);
+        if ($owner->hasTrait("Strega") && $character->Wounds > 1)
+            $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Heal 2 Wounds'), 'heal2Wounds');    
 
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
 
