@@ -127,4 +127,6 @@ class Events
     const ReactionUsed = 'EventReactionUsed';
     const ManeuverUsed = 'EventManeuverUsed';
     const TechniqueUsed = 'EventTechniqueUsed';
+
+    const LocationBecomesUncontrolled = 'EventLocationBecomesUncontrolled';
 }

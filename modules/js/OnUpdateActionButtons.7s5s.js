@@ -784,6 +784,11 @@
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
 
+            'duelResolveManeuver_01110': () => {
+                this.addActionButton(`actTakeWound`, _('Take Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actLocationBecomesUncontrolled`, _('Location Becomes Uncontrolled'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
+
             'duelResolveManeuver_01165': () => {
                 args._private.args.techniques.forEach((technique) => {
                     this.addActionButton(`actChooseTechnique-${technique.Id}`, technique.Name, () => this.bgaPerformAction('actFromCardWithIds', {ids: JSON.stringify([technique.Id])}));

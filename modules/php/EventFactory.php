@@ -52,6 +52,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocatio
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontrolled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
@@ -578,6 +579,18 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->playerId = $playerId;
             $event->actorId = $actorId;
         }
+        return $event;
+    }
+
+    public static function createLocationBecomesUncontrolledEvent(int $playerId, string $location): EventLocationBecomesUncontrolled
+    {
+        $event = self::createEvent(Events::LocationBecomesUncontrolled);
+        if ($event instanceof EventLocationBecomesUncontrolled)
+        {
+            $event->playerId = $playerId;
+            $event->location = $location;
+        }
+
         return $event;
     }
 

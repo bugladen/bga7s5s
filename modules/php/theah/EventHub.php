@@ -71,6 +71,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontrolled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
@@ -703,6 +704,22 @@ trait EventHub
                         "card_inject_code" => $card->getInjectCode(),
                         "location" => $event->location,
                         "card" => $card->getPropertyArray($theah->game)
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventLocationBecomesUncontrolled:
+                $handler = function (Theah $theah, EventLocationBecomesUncontrolled $event)
+                {
+                    $location = $theah->getCityLocation($event->location);
+                    $theah->game->setControllerForLocation($location->Name, 0);
+                    $location->Controller = 0;
+        
+                    $theah->game->notify->all("locationUncontrolled", clienttranslate('${location_name} is now uncontrolled.'), [
+                        "i18n" => ["location_name"],
+                        "location_name" => $location->Name,
+                        "location" => $location->Name,
                     ]);
                 };
                 $handler($this, $event);
