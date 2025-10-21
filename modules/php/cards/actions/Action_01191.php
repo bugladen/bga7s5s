@@ -56,6 +56,9 @@ class Action_01191 extends AttachmentAction
                 $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $duckfootPistol->Id, 1, $duckfootPistol->getInjectCode());
                 $event->theah->queueEvent($woundEvent);
             }
+
+            $this->resetPlayerPassCount($event->theah->game);
+            // $this->setUsed() not called because this card is destroyed
         }
     }
 }

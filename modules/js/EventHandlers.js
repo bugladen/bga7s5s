@@ -581,7 +581,8 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             dojo.addClass(image, '_7sfs-selected');
             this.selectedCards.push(card.id);
         }
-        else if (this.selectedCards.length < this.numberOfCardsSelectable) {
+        else if (this.selectedCards.length < this.numberOfCardsSelectable) 
+        {
             dojo.addClass(image, '_7sfs-selected');
             this.selectedCards.push(card.id);
         }

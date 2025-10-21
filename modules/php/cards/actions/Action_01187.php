@@ -48,6 +48,9 @@ class Action_01187 extends AttachmentAction
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01187", $this->Id);
             $event->theah->queueEvent($transition);
+
+            $this->resetPlayerPassCount($event->theah->game);
+            // $this->setUsed() not called because this card is destroyed
         }
     }
 

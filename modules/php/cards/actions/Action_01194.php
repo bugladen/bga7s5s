@@ -169,6 +169,7 @@ class Action_01194 extends CharacterAction
             ]);
 
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState("characterChosen");
         }

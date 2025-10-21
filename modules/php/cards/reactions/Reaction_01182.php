@@ -23,7 +23,7 @@ class Reaction_01182 extends CardReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to Wound Character leaving Ekko\'s Location: ');
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to Wound Character leaving Eko\'s Location: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -69,9 +69,9 @@ class Reaction_01182 extends CardReaction
             $ekko = $this->getOwningCard($game->theah);
             $woundEvent = EventFactory::createCharacterWoundedEvent($this->TargetCharacterId, $ekko->Id, 1, $ekko->getInjectCode());
             $game->theah->queueEvent($woundEvent);
-    
+            
             $this->TargetCharacterId = 0;
-            $ekko->IsUpdated = true;            
+            $ekko->IsUpdated = true;
             $this->setUsed($game->theah, true);
         }
 
