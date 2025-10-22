@@ -56,6 +56,9 @@ class Reaction_01199 extends CardReaction
                 {
                     $this->TargetCharacterId = $challenger->Id;
                     $takama->IsUpdated = true;
+
+                    $transition = EventFactory::createReactionTransitionEvent($takama->ControllerId, $takama->Id, $this->Id);
+                    $event->queueEvent($transition);
                 }
                 else if ($defender->Location == $takama->Location && 
                     $takama->ControllerId == $defender->ControllerId && 
@@ -63,10 +66,7 @@ class Reaction_01199 extends CardReaction
                 {
                     $this->TargetCharacterId = $defender->Id;
                     $takama->IsUpdated = true;
-                }
-    
-                if ($this->TargetCharacterId != 0)
-                {
+
                     $transition = EventFactory::createReactionTransitionEvent($takama->ControllerId, $takama->Id, $this->Id);
                     $event->queueEvent($transition);
                 }
@@ -77,6 +77,7 @@ class Reaction_01199 extends CardReaction
         {
             $takama = $this->getOwningCharacter($event->theah);
             $this->TargetCharacterId = 0;
+            $takama->IsUpdated = true;
         }
     }
 
@@ -92,6 +93,9 @@ class Reaction_01199 extends CardReaction
             $event = EventFactory::createCharacterHealedEvent($this->TargetCharacterId, $takama->Id, 1, $takama->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
+
+            $this->TargetCharacterId = 0;
+            $takama->IsUpdated = true;
         }
 
         if ($reactionId == 'pass')

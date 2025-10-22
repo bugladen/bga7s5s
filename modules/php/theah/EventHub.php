@@ -519,6 +519,8 @@ trait EventHub
                 $handler = function (Theah $theah, EventCardMoved $event)
                 {
                     $card = $theah->getCardById($event->cardId);
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->moveCard($card->Id, $event->toLocation, $card->ControllerId);
                     $card->Location = $event->toLocation;
 
                     if ($event->engage && ! $card->Engaged)

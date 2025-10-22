@@ -508,16 +508,14 @@ trait FrameworkActionsTrait
 
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
         $card = $this->getCardObjectFromDb($cardId);       
-        $this->cards->moveCard($cardId, $location, $card->ControllerId);
 
         $this->notifyAllPlayers("message", clienttranslate('${player_name} performed a Move Action.'), [
         "player_name" => $playerName,
         ]);
 
-        $movedHome = $this->theah->createEvent(Events::CardMoved);
-        $movedHome = EventFactory::createCardMovedEvent($card->ControllerId, $card->Id, $card->Location, $location, $card->Location != Game::LOCATION_PLAYER_HOME);
-        $this->theah->eventCheck($movedHome);
-        $this->theah->queueEvent($movedHome);
+        $movedEvent = EventFactory::createCardMovedEvent($card->ControllerId, $card->Id, $card->Location, $location, $card->Location != Game::LOCATION_PLAYER_HOME);
+        $this->theah->eventCheck($movedEvent);
+        $this->theah->queueEvent($movedEvent);
 
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("destinationChosen");
