@@ -119,6 +119,16 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'highDramaPhase01111': () => {
+                if (item_id === undefined) return;
+
+                if (this.chooseList.getSelectedItems().length == 3) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
             'highDramaPhase01180_3': () => {
                 if (item_id === undefined) return;
                 var items = this.chooseList.getSelectedItems();

@@ -1296,7 +1296,34 @@
                     this.chooseList.setSelectionMode(0);
                 }
             },
+            
+            'highDramaPhase01111': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
 
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    $('choose_container_name').innerHTML = _("Cards in Your Discard Pile: ");
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+            'highDramaPhase01111_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    $('choose_container_name').innerHTML = _("Chosen Cards to Research");
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+            
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

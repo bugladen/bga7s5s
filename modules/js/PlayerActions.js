@@ -275,6 +275,24 @@ return declare('seventhseacityoffivesails.actions', null, {
         });
     },
 
+    onMultipleChooseListCardsConfirmed: function()
+    {
+        let cards = [];
+        this.chooseList.getSelectedItems().forEach((item) => {
+            const div = this.chooseList.getItemDivId(item.id);
+            const order = parseInt($(div).getAttribute('order'));
+            cards.push({order: order, id: item.id});
+        });
+
+        const ids = cards.map((card) => card.id);
+
+        this.bgaPerformAction('actFromCardWithIds', { 
+            'ids': JSON.stringify(ids),
+        }).catch(() =>  {
+        }).then(() =>  {
+        });        
+    },
+
     onRecruitCharacterConfirmed: function()
     {
         var items = this.factionHand.getSelectedItems();

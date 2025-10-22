@@ -704,6 +704,23 @@
                     this.resetCityLocations();
                 }
             },
+
+            'highDramaPhase01111': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+            'highDramaPhase01111_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
     
             'highDramaPhase01091': () => {
                 if (this.isCurrentPlayerActive()) 
