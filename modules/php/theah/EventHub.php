@@ -730,6 +730,7 @@ trait EventHub
             case $event instanceof EventLocationClaimed:
                 $handler = function (Theah $theah, EventLocationClaimed $event)
                 {
+                    $theah->game->setControllerForLocation($event->location, $event->playerId);
                     $this->cityLocations[$event->location]->Controller = $event->playerId;
 
                     $this->game->notifyAllPlayers("locationClaimed", clienttranslate('${player_name} Claimed <strong>${location_name}</strong>.'), [
@@ -782,8 +783,6 @@ trait EventHub
 
                     if ($event->highDramaBasicAction && $event->success)
                     {
-                        $theah->game->setControllerForLocation($performer->Location, $event->playerId);
-                
                         $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $performer->Id, $performer->Location);
                         $theah->eventCheck($claimEvent);
                         $theah->queueEvent($claimEvent);
