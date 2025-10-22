@@ -69,6 +69,9 @@ class Reaction_01199 extends CardReaction
                 {
                     $transition = EventFactory::createReactionTransitionEvent($takama->ControllerId, $takama->Id, $this->Id);
                     $event->queueEvent($transition);
+
+                    $this->TargetCharacterId = 0;
+                    $takama->IsUpdated = true;
                 }
             }
         }   
