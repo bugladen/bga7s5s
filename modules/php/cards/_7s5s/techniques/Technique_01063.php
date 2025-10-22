@@ -52,7 +52,7 @@ class Technique_01063 extends Technique
             if ($event->characterId == $bastien->Id)
             {
                 $inDuel = $event->theah->game->globals->get(Game::IN_DUEL);
-                if ($inDuel)
+                if ($inDuel && $event->wounds > 0)
                 {
                     $this->BastienWoundedThisRound = true;
                     $bastien->IsUpdated = true;
