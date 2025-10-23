@@ -152,7 +152,7 @@ class Maneuver_01079 extends Maneuver
                 $game->theah->eventCheck($unquipEvent);
                 $game->theah->queueEvent($unquipEvent);
 
-                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($adversary->ControllerId, $attachmentId, $adversary->Location, $owner->Id, $asEffect = true);
+                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($adversary->OwnerId, $attachmentId, $adversary->Location, $owner->Id, $asEffect = true);
                 $game->theah->eventCheck($discardEvent);
                 $game->theah->queueEvent($discardEvent);
 

@@ -221,12 +221,12 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardDiscardedFromHandEvent(int $playerId, int $cardId, int $sourceId, $asPayment = false, bool $asPlayed = false, bool $asEffect = false): EventCardDiscardedFromHand
+    public static function createCardDiscardedFromHandEvent(int $ownerId, int $cardId, int $sourceId, $asPayment = false, bool $asPlayed = false, bool $asEffect = false): EventCardDiscardedFromHand
     {
         $event = self::createEvent(Events::CardDiscardedFromHand);
         if ($event instanceof EventCardDiscardedFromHand)
         {
-            $event->playerId = $playerId;
+            $event->ownerId = $ownerId;
             $event->cardId = $cardId;
             $event->sourceId = $sourceId;
             $event->AsPayment = $asPayment;

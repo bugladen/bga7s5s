@@ -294,7 +294,7 @@ class Action_01180 extends CharacterAction
             $owner = $this->getOwningCard($game->theah);
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
-                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $owner->Id, $asPayment = true);
+                $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $owner->Id, $asPayment = true);
                 $game->theah->queueEvent($event);
             }
     

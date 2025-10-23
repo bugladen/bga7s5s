@@ -134,7 +134,8 @@ class Action_01091 extends CharacterAction
                 throw new \BgaUserException($game->translate("Card is not in your hand."));
             }
 
-            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($owner->ControllerId, $id, $owner->Id, false, false, false);
+            $card = $game->getCardObjectFromDb($id);
+            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $owner->Id, false, false, false);
             $game->theah->queueEvent($discardEvent);
 
             $this->announceAction($game);

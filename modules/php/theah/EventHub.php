@@ -411,7 +411,7 @@ trait EventHub
             case $event instanceof EventCardDiscardedFromHand:
                 $handler = function (Theah $theah, EventCardDiscardedFromHand $event)
                 {
-                    $discardPileName = $theah->game->getPlayerDiscardDeckName($event->playerId);
+                    $discardPileName = $theah->game->getPlayerDiscardDeckName($event->ownerId);
 
                     $card = $theah->getCardById($event->cardId);
                     $card->Location = $discardPileName;
@@ -428,9 +428,9 @@ trait EventHub
                         $message = '${player_name} discarded ${card_inject_code} as payment.';
 
                     $theah->game->notifyAllPlayers("cardDiscardedFromHand", clienttranslate($message), [
-                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "player_name" => $theah->game->getPlayerNameById($event->ownerId),
                         "card_inject_code" => $card->getInjectCode(),
-                        "playerId" => $event->playerId,
+                        "playerId" => $event->ownerId,
                         "card" => $card->getPropertyArray($theah->game),
                     ]);
                 };

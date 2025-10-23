@@ -152,9 +152,10 @@ class Action_01069 extends CharacterAction implements ISorcererAbility
 
             // Get the card discarded from the previous step
             $discardedCardId = $game->globals->get(Game::CHOSEN_CARD);
+            $discardedCard = $game->getCardObjectFromDb($discardedCardId);
 
             $owner = $this->getOwningCard($game->theah);
-            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($maxime->ControllerId, $discardedCardId, $owner->Id);
+            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardedCard->OwnerId, $discardedCard->Id, $owner->Id);
             $game->theah->queueEvent($discardEvent);
 
             $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($maxime->ControllerId, $id);

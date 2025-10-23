@@ -71,7 +71,7 @@ class Action_01102 extends AttachmentAction
             foreach ($ids as $id)
             {
                 $card = $game->theah->getCardById($id);
-                $event = EventFactory::createCardDiscardedFromHandEvent($card->ControllerId, $id, $card->Id, false, false, false);
+                $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $id, $card->Id, false, false, false);
                 $game->theah->queueEvent($event);
             }
 

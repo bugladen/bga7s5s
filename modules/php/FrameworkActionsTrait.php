@@ -468,7 +468,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0, $asPayment = true);
             //No check needed
             $this->theah->queueEvent($event);
         }
@@ -879,7 +879,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
 
@@ -1129,7 +1129,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
 
@@ -1166,7 +1166,7 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
-        $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $risk->Id, $sourceId = 0, $asPayment = false, $asPlayed = true);
+        $event = EventFactory::createCardDiscardedFromHandEvent($risk->OwnerId, $risk->Id, $sourceId = 0, $asPayment = false, $asPlayed = true);
         $this->theah->queueEvent($event);
 
         $this->globals->set(GAME::PASS_COUNT, 0);
@@ -1243,7 +1243,7 @@ trait FrameworkActionsTrait
         foreach ($cardIds as $cardId) 
         {
             $card = $this->getCardObjectFromDb($cardId);
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
 
@@ -1653,7 +1653,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $payCard = $this->getCardObjectFromDb($cardId);
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $payCard->Id, $sourceId = 0, $asPayment = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($payCard->OwnerId, $payCard->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
 
@@ -1947,7 +1947,7 @@ trait FrameworkActionsTrait
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
             $payCard = $this->getCardObjectFromDb($cardId);
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $payCard->Id, $sourceId = 0, $asPayment = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($payCard->OwnerId, $payCard->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
 
@@ -1960,7 +1960,7 @@ trait FrameworkActionsTrait
             ]);
         }
 
-        $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0, $asPayment = false, $asPlayed = true);
+        $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0, $asPayment = false, $asPlayed = true);
         $this->theah->queueEvent($event);
 
         if ($reaction instanceof CancelReaction)

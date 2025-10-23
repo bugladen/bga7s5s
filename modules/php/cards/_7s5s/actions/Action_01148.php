@@ -146,7 +146,7 @@ class Action_01148 extends SchemeCityAction
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $event = EventFactory::createCardDiscardedFromHandEvent($scheme->ControllerId, $card->Id, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createTransitionEvent($scheme->ControllerId, $scheme->Id, "01148_3", $this->Id);

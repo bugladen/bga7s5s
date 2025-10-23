@@ -4,7 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
 class EventCardDiscardedFromHand extends Event
 {
-    public $playerId;
+    public int $ownerId;
     public int $cardId;
     public int $sourceId; // The ID of the card that caused the discard.  Will be 0 if a framework action caused the discard.
     public bool $AsPayment;
@@ -15,7 +15,7 @@ class EventCardDiscardedFromHand extends Event
     {
         parent::__construct();
 
-        $this->playerId = 0;
+        $this->ownerId = 0;
         $this->cardId = 0;
         $this->sourceId = 0;
         $this->AsPayment = false;

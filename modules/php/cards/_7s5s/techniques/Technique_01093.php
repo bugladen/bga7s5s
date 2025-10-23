@@ -84,7 +84,8 @@ class Technique_01093 extends Technique
             }
 
             $owner = $this->getOwningCharacter($game->theah);
-            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($playerId, $id, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
+            $card = $game->getCardObjectFromDb($id);
+            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
             $game->theah->queueEvent($discardEvent);
 
             $game->gamestate->nextState();                

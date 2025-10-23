@@ -77,8 +77,9 @@ class Maneuver_01108a extends Maneuver
                 throw new \BgaUserException($game->translate("Card not in your hand"));
             }
 
+            $card = $game->getCardObjectFromDb($id);
             $owner = $this->getOwningCard($game->theah);
-            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($playerId, $id, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
+            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
             $game->theah->queueEvent($discardEvent);
 
             $game->gamestate->nextState();                

@@ -1333,7 +1333,7 @@ trait StatesTrait
             }
             else
             {
-                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0);
+                $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0);
                 $this->theah->queueEvent($event);
             }
         }
@@ -1880,8 +1880,7 @@ trait StatesTrait
         foreach ($cards as $purgatoryCard)
         {
             $card = $this->getCardObjectFromDb($purgatoryCard['id']);
-            $playerId = $card->ControllerId;
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $sourceId = 0);
+            $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0);
             $this->theah->queueEvent($event);
         }
 
@@ -1922,7 +1921,7 @@ trait StatesTrait
                 }
                 else
                 {
-                    $discardedEvent = EventFactory::createCardDiscardedFromPlayEvent($character->ControllerId, $character->Id, $character->Location);
+                    $discardedEvent = EventFactory::createCardDiscardedFromPlayEvent($character->OwnerId, $character->Id, $character->Location);
                     $this->theah->queueEvent($discardedEvent);
                 }
             }

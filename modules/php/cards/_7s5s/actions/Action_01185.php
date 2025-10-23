@@ -82,7 +82,7 @@ class Action_01185 extends EventCityAction
             $playerId = $game->getActivePlayerId();
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
-                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $riskyUndertaking->Id, $asPayment = true);
+                $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $riskyUndertaking->Id, $asPayment = true);
                 $game->theah->queueEvent($event);
             }
 

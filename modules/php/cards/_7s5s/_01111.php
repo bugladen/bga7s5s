@@ -48,10 +48,10 @@ class _01111 extends Risk implements IHasActions
         // If played this card goes to the locker
         if ($event instanceof EventCardDiscardedFromHand && $event->cardId == $this->Id && $event->AsPlayed)
         {
-            $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($event->playerId, $event->cardId);
+            $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($this->OwnerId, $this->Id);
             $event->theah->queueEvent($removeEvent);
             
-            $lockerEvent = EventFactory::createCardSentToLockerEvent($event->playerId, $event->cardId);
+            $lockerEvent = EventFactory::createCardSentToLockerEvent($this->OwnerId, $this->Id);
             $event->theah->queueEvent($lockerEvent);
         }
     }

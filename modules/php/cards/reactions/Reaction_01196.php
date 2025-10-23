@@ -84,11 +84,13 @@ class Reaction_01196 extends CardReaction
             'player_name' => $game->getPlayerNameById($game->getActivePlayerId()),
         ]);
 
-        $discardEvent = EventFactory::createCardDiscardedFromHandEvent($game->getActivePlayerId(), $cardId);
+        $angeline = $this->getOwningCharacter($game->theah);
+
+        $card = $game->getCardObjectFromDb($cardId);
+        $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $angeline->Id);
         $game->theah->eventCheck($discardEvent);
         
-        $angeline = $this->getOwningCharacter($game->theah);
-        $engardeEvent = EventFactory::createCardEngardedEvent($game->getActivePlayerId(), $angeline->Id);
+        $engardeEvent = EventFactory::createCardEngardedEvent($angeline->ControllerId, $angeline->Id, $angeline->Id);
         $game->theah->eventCheck($engardeEvent);
 
         $game->theah->queueEvent($discardEvent);

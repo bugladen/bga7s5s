@@ -89,7 +89,7 @@ class Action_01174 extends RiskAction
             $game->theah->queueEvent($unequipEvent);
 
             $owner = $this->getOwningCard($game->theah);
-            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->ControllerId, $attachment->Id, $attachment->Location, $owner->Id, $asEffect = true);
+            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location, $owner->Id, $asEffect = true);
             $game->theah->queueEvent($discardEvent);
 
             $game->gamestate->nextState();
