@@ -82,6 +82,11 @@ class Action_01197 extends CharacterAction
             foreach ($chosenCharacter->Attachments as $attachmentId)
             {
                 $attachment = $game->theah->getAttachmentById($attachmentId);
+                if ($attachment == null)
+                {
+                    continue;
+                }
+
                 $item = [
                     "id" => $attachment->Id,
                     "name" => $attachment->Name,

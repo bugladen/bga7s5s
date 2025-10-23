@@ -528,7 +528,12 @@ trait EventHub
                     if ($card instanceof Character) 
                     {
                         foreach ($card->Attachments as $attachmentId) {
-                            $attachment = $theah->getCardById($attachmentId);
+                            $attachment = $theah->getAttachmentById($attachmentId);
+                            if ($attachment == null)
+                            {
+                                continue;
+                            }
+
                             $attachment->Location = $event->toLocation;
                             $attachment->IsUpdated = true;
                         }

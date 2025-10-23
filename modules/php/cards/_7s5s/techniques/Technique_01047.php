@@ -29,7 +29,7 @@ class Technique_01047 extends Technique
         foreach ($owningCharacter->Attachments as $attachmentId)
         {
             $attachment = $theah->getAttachmentById($attachmentId);
-            if ($attachment->hasTrait("Melee") && $attachment->hasTrait("Weapon"))
+            if ($attachment && $attachment->hasTrait("Melee") && $attachment->hasTrait("Weapon"))
             {
                 return true;
             }
@@ -48,7 +48,7 @@ class Technique_01047 extends Technique
             foreach ($owningCharacter->Attachments as $attachmentId)
             {
                 $attachment = $event->theah->getAttachmentById($attachmentId);
-                if ($attachment->hasTrait("Melee") && $attachment->hasTrait("Weapon"))
+                if ($attachment && $attachment->hasTrait("Melee") && $attachment->hasTrait("Weapon"))
                 {
                     $event->riposte += 1;
                     $event->explanations[] = sprintf($event->theah->game->translate("%s: Technique [%s] adds 1 Riposte."), $attachment->getInjectCode(), $this->Name);

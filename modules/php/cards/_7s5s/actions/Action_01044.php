@@ -69,7 +69,7 @@ class Action_01044 extends SchemeCityAction
             foreach ($performer->Attachments as $attachmentId)
             {
                 $attachment = $game->theah->getAttachmentById($attachmentId);
-                if (! $attachment->Engaged)
+                if ($attachment && ! $attachment->Engaged)
                 {
                     $attachments[] = [
                         "id" => $attachment->Id,
@@ -241,7 +241,7 @@ class Action_01044 extends SchemeCityAction
             foreach ($performer->Attachments as $attachmentId)
             {
                 $attachment = $theah->getAttachmentById($attachmentId);
-                if (! $attachment->Engaged)
+                if ($attachment && ! $attachment->Engaged)
                 {
                     //Get opposing characters at the same location
                     $opposingAtLocation = $theah->getCharactersAtLocation($performer->Location);

@@ -37,7 +37,7 @@ class Maneuver_01054 extends Maneuver
         foreach ($actor->Attachments as $attachmentId)
         {
             $attachment = $theah->getAttachmentById($attachmentId);
-            if ($attachment->hasTrait("Eisenfaust"))
+            if ($attachment && $attachment->hasTrait("Eisenfaust"))
             {
                 return true;
             }
@@ -56,7 +56,7 @@ class Maneuver_01054 extends Maneuver
             foreach ($actor->Attachments as $attachmentId)
             {
                 $attachment = $event->theah->getAttachmentById($attachmentId);
-                if ($attachment->hasTrait("Eisenfaust"))
+                if ($attachment && $attachment->hasTrait("Eisenfaust"))
                 {
                     $event->discount += 1;
                     $owner = $this->getOwningCard($event->theah);

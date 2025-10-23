@@ -230,6 +230,8 @@ abstract class Character extends Card implements IHasTechniques
         foreach ($this->Attachments as $attachmentId)
         {
             $attachment = $theah->getCardById($attachmentId);
+            if ($attachment == null)
+                continue;
 
             $unattached = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $this->Id, $attachment->Id);
             $theah->queueEvent($unattached);

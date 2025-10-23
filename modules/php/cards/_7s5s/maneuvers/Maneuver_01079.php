@@ -36,7 +36,7 @@ class Maneuver_01079 extends Maneuver
         foreach ($adversary->Attachments as $attachmentId)
         {
             $attachment = $theah->getAttachmentById($attachmentId);
-            if ($attachment->hasTrait("Weapon"))
+            if ($attachment && $attachment->hasTrait("Weapon"))
             {
                 return true;
             }
@@ -84,7 +84,7 @@ class Maneuver_01079 extends Maneuver
             foreach ($adversary->Attachments as $attachmentId)
             {
                 $attachment = $game->theah->getAttachmentById($attachmentId);
-                if ($attachment->hasTrait("Weapon"))
+                if ($attachment && $attachment->hasTrait("Weapon"))
                 {
                     $attachments[] = ["id" => $attachment->Id, "name" => $attachment->Name];
                 }

@@ -29,7 +29,7 @@ class Maneuver_01061 extends Maneuver
             foreach($actor->Attachments as $attachmentId)
             {
                 $attachment = $event->theah->getAttachmentById($attachmentId);
-                if ($attachment->hasTrait("Weapon"))
+                if ($attachment && $attachment->hasTrait("Weapon"))
                 {
                     $drawCard = true;
                     break;
