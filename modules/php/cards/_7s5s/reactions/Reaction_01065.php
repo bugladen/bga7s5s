@@ -58,7 +58,7 @@ class Reaction_01065 extends CardReaction
                 foreach ($henri->Attachments as $attachmentId)
                 {
                     $attachment = $event->theah->getAttachmentById($attachmentId);
-                    if ($attachment->hasTrait("Weapon") && ! $attachment->Engaged)
+                    if ($attachment && $attachment->hasTrait("Weapon") && ! $attachment->Engaged)
                     {
                         $henriHasWeapon = true;
                         break;

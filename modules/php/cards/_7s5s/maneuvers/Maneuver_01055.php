@@ -28,7 +28,7 @@ class Maneuver_01055 extends Maneuver
         foreach ($actor->Attachments as $attachmentId)
         {
             $attachment = $theah->getAttachmentById($attachmentId);
-            if ($attachment->hasTrait("Weapon") && $attachment->hasTrait("Ranged"))
+            if ($attachment && $attachment->hasTrait("Weapon") && $attachment->hasTrait("Ranged"))
             {
                 return true;
             }

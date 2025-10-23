@@ -121,7 +121,10 @@ trait UtilitiesTrait
             foreach ($actor->Attachments as $attachmentId)
             {
                 $attachment = $this->theah->getCardById($attachmentId);
-                $attachments[] = $attachment->getPropertyArray($this);
+                if ($attachment)
+                {
+                    $attachments[] = $attachment->getPropertyArray($this);
+                }
             }
             $row['attachments'] = $attachments;
 

@@ -78,9 +78,15 @@ class Action_01194 extends CharacterAction
             $attachments = [];
             foreach ($adelheide->Attachments as $attachmentId)
             {
+                $attachment = $game->theah->getAttachmentById($attachmentId);
+                if ($attachment == null)
+                {
+                    continue;
+                }
+
                 $attachmentItem = [
                     "id" => $attachmentId,
-                    "name" => $game->translate($game->theah->getAttachmentById($attachmentId)->Name)
+                    "name" => $game->translate($attachment->Name)
                 ];
                 $attachments[] = $attachmentItem;
             }

@@ -30,7 +30,7 @@ class Action_01055 extends RiskCityAction
             foreach ($character->Attachments as $attachmentId)
             {
                 $attachment = $theah->getAttachmentById($attachmentId);
-                if ($attachment->hasTrait("Weapon") && $attachment->hasTrait("Ranged"))
+                if ($attachment && $attachment->hasTrait("Weapon") && $attachment->hasTrait("Ranged"))
                 {
                     $weapons++;
                 }
