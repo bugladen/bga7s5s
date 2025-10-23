@@ -395,6 +395,11 @@ class Theah
         return $maneuvers;
     }
 
+    public function getAllCards(): array
+    {
+        return $this->cards;
+    }
+
     public function getCardsInPlay(): array
     {
         $cards = array_filter($this->cards, fn($card) => $card->isControlled() && ($this->cardInCity($card) || $card->Location == Game::LOCATION_PLAYER_HOME));

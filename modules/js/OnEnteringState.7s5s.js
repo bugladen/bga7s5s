@@ -1323,6 +1323,14 @@
                     this.chooseList.setSelectionMode(1);
                 }
             },
+
+            'highDramaPhase01112': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
             
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 

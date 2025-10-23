@@ -802,6 +802,14 @@
                 }
             },
 
+            'highDramaPhase01112': () => {
+                if (this.isCurrentPlayerActive()) 
+                    {
+                        this.unhighlightCards(this.clientStateArgs.ids);
+                        this.clientStateArgs = {};
+                    }
+                },
+
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
