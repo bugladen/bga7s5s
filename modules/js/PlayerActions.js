@@ -374,7 +374,10 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaPhase01180_5'               : 'actFromCardWithIds',
         };
 
-        const action = actionArray[this.gamedatas.gamestate.name];
+        let action = actionArray[this.gamedatas.gamestate.name];
+
+        if (!action)
+            action = 'actFromCardWithIds';
 
         this.bgaPerformAction(action, { 
             'ids': JSON.stringify(items),

@@ -93,7 +93,7 @@ trait DeckTrait
         $locationCards = $this->cards->getCardsInLocation($location);
         foreach ($locationCards as $cardId) {
             $card = $this->getCardObjectFromDb($cardId['id']);
-            if ($playerId !== null && $card->OwnerId != $playerId)
+            if ($playerId !== null && $card->ControllerId != $playerId)
             {
                 unset($card);
                 continue;

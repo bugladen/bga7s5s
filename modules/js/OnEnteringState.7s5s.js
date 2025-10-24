@@ -2074,6 +2074,33 @@
                     this.factionHand.setSelectionMode(1);
                 }
             },
+
+            'duelResolveManeuver_01113_2': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    const cardId = args.args.args.attachmentId;
+                    const div = this.factionHand.getItemDivId(cardId);
+                    dojo.addClass(div, '_7sfs-unselectable');
+        
+                    dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                        id: div,
+                        cost: args.args.args.cost,
+                    }), div, "first" );    
+    
+                    const costDiv = $(`${div}_wealth_cost`);
+                    const cost = parseInt(costDiv.innerHTML);
+                    let discountedCost = cost - args.args.args.discount;
+                    discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                    if (discountedCost !== cost)
+                    {
+                        costDiv.innerHTML = parseInt(discountedCost);
+                        dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                    }
+    
+                    $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
+                    this.factionHand.setSelectionMode(2);
+                }
+            },
         
             'duelApplyCombatCardStats_01085': () => {
                 if (this.isCurrentPlayerActive()) {

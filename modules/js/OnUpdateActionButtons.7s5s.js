@@ -808,6 +808,15 @@
                 this.addActionButton(`actLocationBecomesUncontrolled`, _('Location Becomes Uncontrolled'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
 
+            'duelResolveManeuver_01113': () => {
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, `${_(attachment.location)}: ${_(attachment.name)}`, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+            'duelResolveManeuver_01113_2': () => {
+                this.addActionButton(`actPayForCards`, _('Confirm'), () => this.onPaymentConfirmedFromCard());
+            },
+
             'duelResolveManeuver_01165': () => {
                 args._private.args.techniques.forEach((technique) => {
                     this.addActionButton(`actChooseTechnique-${technique.Id}`, technique.Name, () => this.bgaPerformAction('actFromCardWithIds', {ids: JSON.stringify([technique.Id])}));
