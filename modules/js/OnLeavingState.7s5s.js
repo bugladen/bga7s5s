@@ -1002,6 +1002,13 @@
                 }
             },
 
+            'highDramaPhase01158': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode(0);
+                }
+            },
+
             'highDramaPhase01160': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCards(this.clientStateArgs.ids);
@@ -1344,7 +1351,7 @@
             },
 
             'duelResolveManeuver_01108': () => {
-            if (this.isCurrentPlayerActive()) 
+                if (this.isCurrentPlayerActive()) 
                 {
                     this.factionHand.setSelectionMode(0);
                 }

@@ -385,6 +385,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'highDramaPhase01158': () => {
+                if (this.factionHand.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
             'highDramaPhase01185': () => {
                 if (this.factionHand.getSelectedItems().length > 0) {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');
