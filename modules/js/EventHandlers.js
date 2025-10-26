@@ -365,6 +365,10 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'highDramaPhase01113_3': () => {
+                this.payForCard(item_id);
+            },
+
             'highDramaPhase01148_3': () => {
                 if (this.factionHand.getSelectedItems().length > 0) {
                     dojo.removeClass('actFactionCardSelected', 'disabled');

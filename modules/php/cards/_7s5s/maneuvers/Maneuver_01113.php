@@ -47,6 +47,13 @@ class Maneuver_01113 extends Maneuver
                 $cost = $attachment->WealthCost - $discount;
                 if ($handWealth >= $cost)
                 {
+                    [$hasRestrictions, $restrictionExplanation] = $theah->game->hasEquipRestrictions($actor, $attachment);
+
+                    if ($hasRestrictions)
+                    {
+                        continue;
+                    }
+        
                     $availableAttachments[] = $attachment;
                 }
             }
@@ -101,6 +108,12 @@ class Maneuver_01113 extends Maneuver
                     $cost = $attachment->WealthCost - $discount;
                     if ($handWealth >= $cost)
                     {
+                        [$hasRestrictions, $restrictionExplanation] = $game->hasEquipRestrictions($actor, $attachment);
+                        if ($hasRestrictions)
+                        {
+                            continue;
+                        }
+
                         $availableAttachments[] = ["id" => $attachment->Id, "name" => $attachment->Name, "location" => $game->translate("Attached")];
                     }
                 }
@@ -166,16 +179,12 @@ class Maneuver_01113 extends Maneuver
                 throw new \BgaUserException(sprintf($game->translate("You do not have enough Wealth (%d) to pay for the Attachment (%d with a discount of %d)."), $handWealth, $cost, $discount));
             }
 
-            if ($attachment->hasTrait("Armor") && $game->characterHasAttachmentOfType($actor, "Armor") && $attachment->hasEquipRestriction("Armor")) {
-                throw new \BgaUserException($game->translate("Character cannot have more than one Armor attachment."));
+            [$hasRestrictions, $restrictionExplanation] = $game->hasEquipRestrictions($actor, $attachment);
+            if ($hasRestrictions)
+            {
+                throw new \BgaUserException($restrictionExplanation);
             }
-            if ($attachment->hasTrait("Attire") && $game->characterHasAttachmentOfType($actor, "Attire") && $attachment->hasEquipRestriction("Attire")) {
-                throw new \BgaUserException($game->translate("Character cannot have more than one Attire attachment."));
-            }
-            if ($attachment->hasTrait("Weapon") && $game->characterHasAttachmentOfType($actor, "Weapon") && $attachment->hasEquipRestriction("Weapon")) {
-                throw new \BgaUserException($game->translate("Character cannot have more than one Weapon attachment."));
-            }
-            
+
             $attachment->ControllerId = $actor->ControllerId;
             $game->updateCardObjectInDb($attachment);
             $game->theah->addCardToWorld($attachment);

@@ -668,6 +668,20 @@ trait UtilitiesTrait
         $game->theah->queueEvent($event);
     }
 
+    public function hasEquipRestrictions(Character $character, Attachment $attachment) : array
+    {
+        if ($attachment->hasTrait("Armor") && $this->characterHasAttachmentOfType($character, "Armor") && $attachment->hasEquipRestriction("Armor")) {
+            return [true, $this->translate("Character cannot have more than one Armor attachment.")];
+        }
+        if ($attachment->hasTrait("Attire") && $this->characterHasAttachmentOfType($character, "Attire") && $attachment->hasEquipRestriction("Attire")) {
+            return [true, $this->translate("Character cannot have more than one Attire attachment.")];
+        }
+        if ($attachment->hasTrait("Weapon") && $this->characterHasAttachmentOfType($character, "Weapon") && $attachment->hasEquipRestriction("Weapon")) {
+            return [true, $this->translate("Character cannot have more than one Weapon attachment.")];
+        }
+        return [false, ""];
+    }
+
     //WIP. 
     public function inStateMachine(int $state)
     { 
