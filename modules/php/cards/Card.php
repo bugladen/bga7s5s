@@ -323,6 +323,14 @@ abstract class Card
             }
         }
 
+        if ($this instanceof IHasManeuvers)
+        {
+            foreach ($this->getManeuvers() as $maneuver)
+            {
+                $count += $maneuver->getNumberOfGambleCardsToReveal($theah, $actor, $explanations);
+            }
+        }
+
         if ($this instanceof IHasTechniques)
         {
             foreach ($this->getTechniques() as $technique)

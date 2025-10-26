@@ -1092,6 +1092,38 @@ trait StatesTrait
         $this->gamestate->nextState();
     }
 
+    //Handles whether special conditions (like Broken Time) exist for another combat card
+    public function stSetNextCombatCard(): void
+    {
+        $nextCombatCard = $this->globals->get(Game::NEXT_COMBAT_CARD, 0);
+        $rollTheBonesActivated = $this->globals->get(Game::ROLL_THE_BONES_ACTIVATED, false);
+        if ($nextCombatCard > 0)
+        {
+            $this->globals->delete(Game::NEXT_COMBAT_CARD);
+            $card = $this->theah->getCardById($nextCombatCard);
+
+            $this->globals->set(Game::CHOSEN_CARD, $card->Id);
+
+            if ($card->hasManeuversAvailableToPlayer($card->ControllerId, $this->theah))
+            {
+                $this->gamestate->nextState("useManeuver");
+            }
+            else
+            {
+                $this->gamestate->nextState("applyCombatCardStats");
+            }   
+        }
+        elseif ($rollTheBonesActivated)
+        {
+            $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
+            $this->gamestate->nextState("rollTheBones");
+        }
+        else
+        {
+            $this->gamestate->nextState("noMoreCombatCards");
+        }
+    }
+
     public function stDuelEndOfRound(): void
     {
         $this->theah->buildCity();
@@ -1182,6 +1214,8 @@ trait StatesTrait
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(GAME::REVEALED_CARDS);
         $this->globals->delete(Game::DUEL_GAMBLED);
+        $this->globals->delete(Game::GAMBLE_TYPE);
+        $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
         $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
 
@@ -1285,6 +1319,8 @@ trait StatesTrait
         $this->globals->delete(Game::DUEL_CHALLENGER);
         $this->globals->delete(Game::DUEL_DEFENDER);
         $this->globals->delete(Game::DUEL_GAMBLED);
+        $this->globals->delete(Game::GAMBLE_TYPE);
+        $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
         $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
         $this->globals->delete(Game::ABNORMAL_FLOW);
@@ -1938,31 +1974,5 @@ trait StatesTrait
         $transitionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
         $card = $this->theah->getCardById($sourceId);
         $card->stateFromCard($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $transitionId);
-    }
-
-    //Handles whether special conditions (like Broken Time) exist for another combat card
-    public function stSetNextCombatCard(): void
-    {
-        $nextCombatCard = $this->globals->get(Game::NEXT_COMBAT_CARD, 0);
-        if ($nextCombatCard > 0)
-        {
-            $this->globals->delete(Game::NEXT_COMBAT_CARD);
-            $card = $this->theah->getCardById($nextCombatCard);
-
-            $this->globals->set(Game::CHOSEN_CARD, $card->Id);
-
-            if ($card->hasManeuversAvailableToPlayer($card->ControllerId, $this->theah))
-            {
-                $this->gamestate->nextState("useManeuver");
-            }
-            else
-            {
-                $this->gamestate->nextState("applyCombatCardStats");
-            }   
-        }
-        else
-        {
-            $this->gamestate->nextState("noMoreCombatCards");
-        }
     }
 }

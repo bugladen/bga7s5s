@@ -1535,6 +1535,7 @@ trait FrameworkActionsTrait
                 "explanations" => $explanations,
             ]);
 
+        $this->globals->set(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_NORMAL);
         $this->globals->set(Game::GAMBLE_REVEAL_COUNT, $cardCount);
         $this->globals->set(Game::GAMBLE_REVEAL_EXPLANATIONS, $explanations);
 
@@ -1721,14 +1722,18 @@ trait FrameworkActionsTrait
         }
 
         $this->globals->set(Game::CHOSEN_CARD, $id);
-        $this->globals->set(Game::DUEL_GAMBLED, true);
 
         $duelId = $this->globals->get(Game::DUEL_ID);
         $round = $this->globals->get(Game::DUEL_ROUND);
 
-        //Set that the player has gambled
-        $sql = "UPDATE duel_round set gambled = 1 WHERE duel_id = $duelId AND round = $round";
-        $this->DbQuery($sql);
+        $this->globals->set(Game::DUEL_GAMBLED, true);
+        $gambleType = $this->globals->get(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_NORMAL);
+        if ($gambleType == Game::GAMBLE_TYPE_NORMAL)
+        {
+            //Set that the player has gambled
+            $sql = "UPDATE duel_round set gambled = 1 WHERE duel_id = $duelId AND round = $round";
+            $this->DbQuery($sql);
+        }
 
         $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
         $result = $this->getObjectListFromDB($sql)[0];

@@ -2060,6 +2060,7 @@ $machinestates = [
                 "transitions" => [
                     "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
+                    "rollTheBones" => States::DUEL_CHOOSE_GAMBLE_CARD,
                     "noMoreCombatCards" => States::DUEL_CHOOSE_ACTION
                 ]
             ],

@@ -163,6 +163,11 @@ class Game extends \Bga\GameFramework\Table
     final const GAMBLE_REVEAL_COUNT = "gambleRevealCount";
     final const GAMBLE_REVEAL_EXPLANATIONS = "gambleRevealExplanations";
 
+    final const ROLL_THE_BONES_ACTIVATED = "rollTheBonesActivated";
+    final const GAMBLE_TYPE = "gambleType";
+    final const GAMBLE_TYPE_NORMAL = 0;
+    final const GAMBLE_TYPE_ROLL_THE_DICE = 1;
+
     use DeckTrait;
     use StatesTrait;
     use FrameworkActionsTrait;
