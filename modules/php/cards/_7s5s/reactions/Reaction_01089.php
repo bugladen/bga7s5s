@@ -33,6 +33,8 @@ class Reaction_01089 extends CardReaction
             $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Move Soline to %s'), $locationName), "moveTo-$locationName");
         }
 
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), "pass");
+
         return $array;
     }
 
