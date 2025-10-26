@@ -421,6 +421,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 this.payForCard(item_id);
             },
 
+            'duelResolveManeuver_01115': () => {
+                if (this.factionHand.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
             'duelChooseTechnique_01093': () => {
                 if (this.factionHand.getSelectedItems().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');

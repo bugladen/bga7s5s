@@ -8,25 +8,22 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_duelResolveManeuver_01108a extends GameState
+class State_duelResolveManeuver_01115 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::DUEL_RESOLVE_MANEUVER_01108,
+            id: States::DUEL_RESOLVE_MANEUVER_01115,
             type: StateType::ACTIVE_PLAYER,
-            name: "duelResolveManeuver_01108",
+            name: "duelResolveManeuver_01115",
 
-            // optional
             description: clienttranslate('${actplayer} is choosing a card to discard.'),
-            descriptionMyTurn: clienttranslate('Life in the Canals') . clienttranslate(': ${you} must choose a card to discard:'),
+            descriptionMyTurn: clienttranslate('Taunt') . clienttranslate(': ${you} must choose a card to discard:'),
             transitions: [
                 "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
             ],
-            updateGameProgression: false,
-            initialPrivate: null,
         );
     }
     

@@ -1382,6 +1382,17 @@
                     }
             },
 
+            'highDramaPhase01115': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
@@ -2149,6 +2160,13 @@
     
                     $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
                     this.factionHand.setSelectionMode(2);
+                }
+            },
+
+            'duelResolveManeuver_01115': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode(1);
                 }
             },
         
