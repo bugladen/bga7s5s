@@ -1184,6 +1184,13 @@ body {
     background-color: lightgray;
     border-radius: 5px;
     padding: 5px;
+    /* Prevent text selection on mobile devices to allow tooltips to work */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Prevent context menu on long press on mobile */
+    -webkit-touch-callout: none;
 }
 
 ._7sfs-help-card {
