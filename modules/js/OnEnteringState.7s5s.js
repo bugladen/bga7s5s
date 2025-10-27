@@ -1611,6 +1611,16 @@
                 }
             },
 
+            'highDramaPhase01164': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const selectedLocationElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(selectedLocationElement.id);
+                    });
+                }
+            },
+
             'highDramaPhase01167_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     dojo.removeClass('choose_container', 'hidden');
@@ -2174,6 +2184,16 @@
                 if (this.isCurrentPlayerActive()) 
                 {
                     this.factionHand.setSelectionMode(1);
+                }
+            },
+
+            'duelResolveManeuver_01164': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const selectedLocationElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(selectedLocationElement.id);
+                    });
                 }
             },
         

@@ -1021,6 +1021,12 @@
                 }
             },
 
+            'highDramaPhase01164': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
             'highDramaPhase01167_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
@@ -1380,6 +1386,12 @@
                 if (this.isCurrentPlayerActive()) 
                 {
                     this.factionHand.setSelectionMode(0);
+                }
+            },
+
+            'duelResolveManeuver_01164': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
                 }
             },
 

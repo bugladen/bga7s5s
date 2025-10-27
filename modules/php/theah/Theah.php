@@ -332,6 +332,20 @@ class Theah
         return $locations;
     }
 
+    function getNonAdjacentCityLocations(string $location): array
+    {
+        $locations = $this->getCityLocations();
+        $locations = array_filter($locations, fn($loc) => $loc->Name != $location);
+        $adjacentLocations = $this->getAdjacentCityLocations($location);
+        
+        foreach ($adjacentLocations as $adjacentLocation)
+        {
+            $locations = array_filter($locations, fn($loc) => $loc->Name != $adjacentLocation);
+        }
+
+        return array_map(fn($loc) => $loc->Name, array_values($locations));
+    }
+
     function getActionFromHandDiscount(?Character $performer, CardAction $action): Array
     {
         $cards = $this->cards;
