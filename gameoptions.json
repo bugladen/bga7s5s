@@ -24,13 +24,7 @@
         },
         "startcondition": {
             "0": [],
-            "1": [
-              {
-                "type": "maxplayers",
-                "value": 3,
-                "message": "Assigned Random Unique option is available for 3 players maximum. Only 3 starter decks are currently available."
-              }
-            ]
+            "1": []
         }    
     }
 }
