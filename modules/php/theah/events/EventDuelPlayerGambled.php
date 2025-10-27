@@ -8,6 +8,8 @@ class EventDuelPlayerGambled extends Event
     public int $actorId;
     public int $adversaryId;
     public int $chosenCardId;
+    public int $revealCount;
+    public string $explanations;
 
     public function __construct()
     {
@@ -17,6 +19,8 @@ class EventDuelPlayerGambled extends Event
         $this->actorId = 0;
         $this->adversaryId = 0;
         $this->chosenCardId = 0;
+        $this->revealCount = 0;
+        $this->explanations = '';
     }
 }    
 

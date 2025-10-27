@@ -79,16 +79,18 @@ class Reaction_01196 extends CardReaction
             throw new \BgaUserException(sprintf($game->translate('Card not found: %d'), $cardId));
         }
 
-        $game->notifyAllPlayers("message", clienttranslate('${player_name} uses Angeline Dèmone\'s Reaction.'), 
+        $game->notify->all("message", clienttranslate('${player_name} uses Angeline Dèmone\'s Reaction.'), 
         [
             'player_name' => $game->getPlayerNameById($game->getActivePlayerId()),
         ]);
 
-        $discardEvent = EventFactory::createCardDiscardedFromHandEvent($game->getActivePlayerId(), $cardId);
+        $angeline = $this->getOwningCharacter($game->theah);
+        
+        $card = $game->getCardObjectFromDb($cardId);
+        $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $angeline->Id);
         $game->theah->eventCheck($discardEvent);
         
-        $angeline = $this->getOwningCharacter($game->theah);
-        $engardeEvent = EventFactory::createCardEngardedEvent($game->getActivePlayerId(), $angeline->Id);
+        $engardeEvent = EventFactory::createCardEngardedEvent($angeline->ControllerId, $angeline->Id, $angeline->Id);
         $game->theah->eventCheck($engardeEvent);
 
         $game->theah->queueEvent($discardEvent);

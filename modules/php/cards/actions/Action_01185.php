@@ -19,9 +19,9 @@ class Action_01185 extends EventCityAction
         $this->Name = clienttranslate("Add a Reknown");
     }    
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if (!parent::isAvailableToPlayer($playerId, $theah))
+        if (!parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -83,7 +83,7 @@ class Action_01185 extends EventCityAction
             $playerId = $game->getActivePlayerId();
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
-                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $asPayment = true);
+                $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $asPayment = true);
                 $game->theah->queueEvent($event);
             }
 

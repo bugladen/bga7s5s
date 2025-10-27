@@ -68,15 +68,6 @@ trait ArgumentsTrait
         ];
     }
 
-    public function argsPlanningPhaseEnd_01098_2(): array
-    {
-        $id = $this->globals->get(GAME::CATS_EMBARGO);
-        $card = $this->getCardObjectFromDb($id);
-        return [
-            "card" => $card->getPropertyArray($this)
-        ];
-    }
-
     public function argsHighDramaBeginning_01144(): array{
         return [
             "discount" => $this->globals->get(GAME::DISCOUNT)
@@ -683,11 +674,11 @@ trait ArgumentsTrait
 
         $card = $this->getCardObjectFromDb($cardId);
         if ($card instanceof IHasManeuvers)
-            $maneuvers = $card->getManeuversArray($this);
+            $maneuvers = $card->getManeuversArray($this, $mustBeAvailable = true);
 
-            $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
+        $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
 
-            return [
+        return [
             "_private" => [
                 "active" => [
                     "cardId" => $cardId,
@@ -724,7 +715,8 @@ trait ArgumentsTrait
     public function argsDuelChooseGambleCard(): array
     {
         $playerId = $this->getActivePlayerId();
-        $deckCards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, 2);
+        $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
+        $deckCards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
         $cards = [];
         foreach ($deckCards as $deckCard) {
             $card = $this->getCardObjectFromDb($deckCard['id']);

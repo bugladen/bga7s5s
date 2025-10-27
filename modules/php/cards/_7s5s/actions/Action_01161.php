@@ -22,9 +22,9 @@ class Action_01161 extends RiskAction implements ISorcererAbility
         $this->RequiresPerformerSelected = true;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
+        if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -96,11 +96,8 @@ class Action_01161 extends RiskAction implements ISorcererAbility
             $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id);
             $game->theah->queueEvent($engageEvent);
 
-            $game->createRiskAttachment($game, "01161_Boon", $owner->Id, $character->Location, $performer->ControllerId, $character->Id);
+            $game->createRiskAttachment($game, "01161_Boon", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id);
             
-            $this->announceAction($game);
-            $this->resetPlayerPassCount($game);
-
             $game->gamestate->nextState();
         }
     }

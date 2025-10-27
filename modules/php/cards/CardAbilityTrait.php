@@ -32,6 +32,11 @@ trait CardAbilityTrait
         $this->Used = false;
     }
 
+    public function getId(): string
+    {
+        return $this->Id;
+    }
+
     public function setId($id)
     {
         $this->Id = $id;
@@ -103,6 +108,7 @@ trait CardAbilityTrait
         $name = $game->translate($this->Name);
         return [
             "id" => $this->Id, 
+            "sourceId" => $owner->Id,
             "name" => $game->translate($owner->Name) . ': ' . $game->translate($name),
             "shortName" => $name,
             "available" => $this->isAvailable()

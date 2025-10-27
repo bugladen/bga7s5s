@@ -35,6 +35,7 @@ onUpdateActionButtons: function( stateName, args )
                 dojo.addClass('factionHand-container', 'hidden');
                 dojo.place( this.format_block( 'jstpl_deck_picker', {
                     banner_description: _('Select a Starter Deck to play with using the buttons above.  Or explore the available Factions using the buttons below, and click <strong>Select</strong> to choose that Faction.'),
+                    castille_description: _('<strong>Castille</strong>: Soline el Gato grew up on the streets and canals of the Castillian District of Five Sails and knows intimately what it takes to survive in a city such as Five Sails. The leader of a den of thieves and scoundrels, Soline uses her cunning and adaptability to always keep her opponents on their toes, not knowing what to expect. Soline’s style is one of disruption, making it increasingly difficult for an opponent to gain ground.'),
                     eisen_description: _('<strong>Eisen</strong>: An accomplished General in the War of the Cross, Kaspar Dietrich returned home to Eisen, only to find it in ruins, overrun by monsters. As such, he has a passionate distrust for all things sorcery and supernatural. Kaspar fled south to the port city of Five Sails where he hopes to use his formidable reputation as a master commander and strategist to build an army to reclaim his homeland. He utilizes strategies that involve making use of the city and the mercenaries and equipment available to him.'),
                     montaigne_description: _('<strong>Montaigne</strong>: Odette Dubois d’Arrent is the most recent arrival to the city. She is a courtier from Montaigne, a country that does not have a district or established foothold in Five Sails. She is tasked to help her patron expand his influence within the free city.  As such, she is eager to find allies. But she did not arrive in Five Sails alone. A small, but elite, group of skilled Musketeers accompanies her and protects her from the rougher elements of the City. Her strengths include movement and creative positioning to make the most of her political abilities and her Musketeer’s steel.'),
                     vodacce_description: _('<strong>Vodacce</strong>: “Don” Constanzo Scarpa loves his city, for Five Sails is indeed his city, and he is willing to do whatever it takes to protect it, even if it is from itself. Reputation, family and loyalty are the things that are of paramount importance to Constanzo as he tries to advance politically through the ranks of the city’s elite. Constanzo’s style is cutthroat and brutal where the ends always justify the means. He cares not for what or even who gets sacrificed along the way as long as it advances his goals.'),
@@ -337,6 +338,8 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelChooseGambleCard': () => {
+            if (args._private.cards.length == 0)
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },

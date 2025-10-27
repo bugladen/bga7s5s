@@ -2,15 +2,20 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01091;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 
-class _01091 extends Character
+class _01091 extends Character implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("'Madre' Dolores");
+        $this->Name = clienttranslate('"Madre" Dolores');
         $this->Image = "img/cards/7s5s/091.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
@@ -29,5 +34,9 @@ class _01091 extends Character
         ];
 
         $this->resetCard();
+
+        $this->Actions = [
+            new Action_01091(),
+        ];
     }
 }

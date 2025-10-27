@@ -48,9 +48,9 @@ class Action_01055 extends RiskCityAction
         return $validPerformers;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -173,8 +173,6 @@ class Action_01055 extends RiskCityAction
                 "target_inject_code" => $target->getInjectCode(),
                 "location_name" => $location
             ]);
-
-            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState("locationChosen");
         }

@@ -21,7 +21,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
@@ -485,6 +484,7 @@ trait StatesTrait
     public function stHighDramaPhase() {
         $this->gamestate->changeActivePlayer($this->globals->get(Game::FIRST_PLAYER));
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
+        $this->globals->delete(Game::PRESSURE_STAT);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
@@ -495,6 +495,7 @@ trait StatesTrait
     public function stHighDramaPlayerTurn()
     {
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
+        $this->globals->delete(Game::PRESSURE_STAT);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
@@ -505,9 +506,9 @@ trait StatesTrait
     }
 
 
-    public function stHighDramaClaim() 
+    public function stHighDramaPressureLocation() 
     {
-        $claimingPlayerId = $this->globals->get(GAME::CLAIMING_PLAYER);
+        $claimingPlayerId = $this->globals->get(GAME::PRESSURING_PLAYER);
         $this->gamestate->changeActivePlayer($claimingPlayerId);        
         $this->theah->buildCity();
 
@@ -521,11 +522,14 @@ trait StatesTrait
             $this->theah->queueEvent($engageEvent);
         }
         
-        list($success, $totals, $difference) = $this->pressureLocation($claimingPlayerId, $performer, Game::STAT_INFLUENCE);
+        $pressureStat = $this->globals->get(Game::PRESSURE_STAT, Game::STAT_INFLUENCE);
+        list($success, $totals, $difference) = $this->pressureLocation($claimingPlayerId, $performer, $pressureStat);
 
-        $pressureTypes = $this->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
-        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureTypes), $success, $totals, $difference);
-        $pressuredEvent->highDramaBasicAction = true;
+        $pressureStats = $this->theah->getPressureStats($performer, $pressureStat);
+        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureStats), $success, $totals, $difference);
+        $pressuredEvent->abilityId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, "");
+        $pressuredEvent->highDramaBasicAction = $this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false);
+        
         $this->theah->eventCheck($pressuredEvent);
         $this->theah->queueEvent($pressuredEvent);
 
@@ -1088,6 +1092,38 @@ trait StatesTrait
         $this->gamestate->nextState();
     }
 
+    //Handles whether special conditions (like Broken Time) exist for another combat card
+    public function stSetNextCombatCard(): void
+    {
+        $nextCombatCard = $this->globals->get(Game::NEXT_COMBAT_CARD, 0);
+        $rollTheBonesActivated = $this->globals->get(Game::ROLL_THE_BONES_ACTIVATED, false);
+        if ($nextCombatCard > 0)
+        {
+            $this->globals->delete(Game::NEXT_COMBAT_CARD);
+            $card = $this->theah->getCardById($nextCombatCard);
+
+            $this->globals->set(Game::CHOSEN_CARD, $card->Id);
+
+            if ($card->hasManeuversAvailableToPlayer($card->ControllerId, $this->theah))
+            {
+                $this->gamestate->nextState("useManeuver");
+            }
+            else
+            {
+                $this->gamestate->nextState("applyCombatCardStats");
+            }   
+        }
+        elseif ($rollTheBonesActivated)
+        {
+            $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
+            $this->gamestate->nextState("rollTheBones");
+        }
+        else
+        {
+            $this->gamestate->nextState("noMoreCombatCards");
+        }
+    }
+
     public function stDuelEndOfRound(): void
     {
         $this->theah->buildCity();
@@ -1178,6 +1214,10 @@ trait StatesTrait
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(GAME::REVEALED_CARDS);
         $this->globals->delete(Game::DUEL_GAMBLED);
+        $this->globals->delete(Game::GAMBLE_TYPE);
+        $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
+        $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
+        $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
 
         $this->gamestate->nextState();
     }
@@ -1279,6 +1319,10 @@ trait StatesTrait
         $this->globals->delete(Game::DUEL_CHALLENGER);
         $this->globals->delete(Game::DUEL_DEFENDER);
         $this->globals->delete(Game::DUEL_GAMBLED);
+        $this->globals->delete(Game::GAMBLE_TYPE);
+        $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
+        $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
+        $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
         $this->globals->delete(Game::ABNORMAL_FLOW);
 
         $sql = "SELECT challenging_player_id, defending_player_id, challenger_id, defender_id FROM duel where duel_id = $duelId";
@@ -1325,7 +1369,7 @@ trait StatesTrait
             }
             else
             {
-                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
+                $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0);
                 $this->theah->queueEvent($event);
             }
         }
@@ -1361,6 +1405,7 @@ trait StatesTrait
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(Game::PRESSURE_BONUS);
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
+        $this->globals->delete(Game::PRESSURE_STAT);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
@@ -1802,12 +1847,7 @@ trait StatesTrait
             {
                 if ($card instanceof ICityDeckCard && $card->ControllerId == 0)
                 {
-                    $discard = $this->theah->createEvent(Events::CardAddedToCityDiscardPile);
-                    if ($discard instanceof EventCardAddedToCityDiscardPile)
-                    {
-                        $discard->cardId = $card->Id;
-                        $discard->fromLocation = $location->Name;
-                    }    
+                    $discard = EventFactory::createCardAddedToCityDiscardPileEvent($card->ControllerId, $card->Id, $location->Name);
                     $this->theah->queueEvent($discard);
                 }
             }
@@ -1876,8 +1916,7 @@ trait StatesTrait
         foreach ($cards as $purgatoryCard)
         {
             $card = $this->getCardObjectFromDb($purgatoryCard['id']);
-            $playerId = $card->ControllerId;
-            $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id);
+            $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0);
             $this->theah->queueEvent($event);
         }
 
@@ -1918,7 +1957,7 @@ trait StatesTrait
                 }
                 else
                 {
-                    $discardedEvent = EventFactory::createCardDiscardedFromPlayEvent($character->ControllerId, $character->Id, $character->Location);
+                    $discardedEvent = EventFactory::createCardDiscardedFromPlayEvent($character->OwnerId, $character->Id, $character->Location);
                     $this->theah->queueEvent($discardedEvent);
                 }
             }
@@ -1935,31 +1974,5 @@ trait StatesTrait
         $transitionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
         $card = $this->theah->getCardById($sourceId);
         $card->stateFromCard($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $transitionId);
-    }
-
-    //Handles whether special conditions (like Broken Time) exist for another combat card
-    public function stSetNextCombatCard(): void
-    {
-        $nextCombatCard = $this->globals->get(Game::NEXT_COMBAT_CARD, 0);
-        if ($nextCombatCard > 0)
-        {
-            $this->globals->delete(Game::NEXT_COMBAT_CARD);
-            $card = $this->theah->getCardById($nextCombatCard);
-
-            $this->globals->set(Game::CHOSEN_CARD, $card->Id);
-
-            if ($card->hasManeuversAvailableToPlayer($card->ControllerId, $this->theah))
-            {
-                $this->gamestate->nextState("useManeuver");
-            }
-            else
-            {
-                $this->gamestate->nextState("applyCombatCardStats");
-            }   
-        }
-        else
-        {
-            $this->gamestate->nextState("noMoreCombatCards");
-        }
     }
 }

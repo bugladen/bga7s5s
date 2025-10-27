@@ -19,9 +19,9 @@ class Action_01086 extends RiskAction
         $this->Name = clienttranslate("Make Location Uncontrolled");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -110,17 +110,9 @@ class Action_01086 extends RiskAction
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01086)
         {
-            $location = $game->theah->getCityLocation($ids[0]);
-            $game->setControllerForLocation($location->Name, 0);
-            $location->Controller = 0;
-
-            $game->notify->all("locationUncontrolled", clienttranslate('${location_name} is now uncontrolled.'), [
-                "i18n" => ["location_name"],
-                "location_name" => $location->Name,
-                "location" => $location->Name,
-            ]);
-
-            $this->resetPlayerPassCount($game);
+            $location = $ids[0];
+            $event = EventFactory::createLocationBecomesUncontrolledEvent($game->getActivePlayerId(), $location);
+            $game->theah->queueEvent($event);
 
             $game->gamestate->nextState();
         }

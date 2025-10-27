@@ -388,25 +388,6 @@
                 }
             },
             
-            'planningPhaseEnd_01098': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.numberOfCardsSelectable = 1;
-                    let count = 0;
-                    for( const cardId in this.cardProperties ) {
-                        card = this.cardProperties[cardId];
-                        if (card.type === 'Character' && card.traits.includes('Leader') && card.controllerId && card.controllerId != this.getActivePlayerId()) {
-                            const image = $(`${card.divId}_image`);
-                            this.makeCardSelectable(image);
-    
-                            count++;
-                        }
-                    }
-                    if (count > 0) {
-                        dojo.addClass('actPass', 'disabled');
-                    }
-                }
-            },
-    
             'planningPhaseEnd_01098_2': () => {
                 dojo.removeClass('choose_container', 'hidden');
                 dojo.removeClass('chooseList', 'hidden');
@@ -1083,7 +1064,7 @@
                 }            
             },
     
-            'highDramaPhase01072_2' : () => {
+            'highDramaPhase01072' : () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
     
@@ -1103,7 +1084,7 @@
                 }
             },
     
-            'highDramaPhase01072_3' : () => {
+            'highDramaPhase01072_2' : () => {
                 if (this.isCurrentPlayerActive()) {
                     card = this.cardProperties[args.args.args.chosenCardId];
                     if (card)
@@ -1208,6 +1189,210 @@
                 }
             },
 
+            'highDramaPhase01091': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 2;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+            'highDramaPhase01091_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsChosen(args.args.args.ids);
+
+                    this.factionHand.setSelectionMode(1);
+                }            
+            },
+
+            'highDramaPhase01092': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+
+            'highDramaPhase01093': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
+            'highDramaPhase01097': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+
+            'highDramaPhase01102': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode(2);
+                }
+            },
+
+            'highDramaPhase01104': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+
+            'highDramaPhase01105': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+
+            'highDramaPhase01106_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Risks in ${opponentName}'s Discard Pile"),
+                        {
+                            opponentName: args.args.args.opponentName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+            
+            'highDramaPhase01111': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    $('choose_container_name').innerHTML = _("Cards in Your Discard Pile: ");
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+            'highDramaPhase01111_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    $('choose_container_name').innerHTML = _("Chosen Cards to Research");
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
+            'highDramaPhase01112': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+
+            'highDramaPhase01113_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    args.args.args.attachments.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    this.chooseList.setSelectionMode(1);
+                    
+                    var translated = dojo.string.substitute(
+                        _("Attachments in ${opponentName}'s Discard Pile: "),
+                        {
+                            opponentName: args.args.args.opponentName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+            'highDramaPhase01113_3': () => {
+                if (this.isCurrentPlayerActive()) 
+                    {
+                        const cardId = args.args.args.cardId;
+                        const div = this.factionHand.getItemDivId(cardId);
+                        dojo.addClass(div, '_7sfs-unselectable');
+            
+                        dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                            id: div,
+                            cost: args.args.args.cost,
+                        }), div, "first" );    
+        
+                        const costDiv = $(`${div}_wealth_cost`);
+                        const cost = parseInt(costDiv.innerHTML);
+                        let discountedCost = cost - args.args.args.discount;
+                        discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                        if (discountedCost !== cost)
+                        {
+                            costDiv.innerHTML = parseInt(discountedCost);
+                            dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                        }
+        
+                        $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
+                        this.factionHand.setSelectionMode(2);
+                    }
+            },
+
+            'highDramaPhase01115': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
@@ -1298,8 +1483,7 @@
     
                     this.factionHand.setSelectionMode(1);
                 }
-            },
-                
+            },                
     
             'highDramaPhase01149': () => {
                 if (this.isCurrentPlayerActive()) {
@@ -1406,6 +1590,13 @@
                 }
             },
 
+            'highDramaPhase01158': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode(1);
+                }
+            },
+
             'highDramaPhase01160': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
@@ -1417,6 +1608,16 @@
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
                     this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
+            'highDramaPhase01164': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const selectedLocationElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(selectedLocationElement.id);
+                    });
                 }
             },
 
@@ -1478,7 +1679,7 @@
         
                     $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
                     this.factionHand.setSelectionMode(2);
-                }
+                }            
             },
     
             'highDramaPhase01180' : () => {
@@ -1868,6 +2069,13 @@
                 }
             },
 
+            'duelChooseTechnique_01093': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode(1);
+                }
+            },
+
             'duelResolveManeuver_01051': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
@@ -1935,6 +2143,57 @@
                         });
                         this.chooseList.setSelectionMode(1);
                     }, 500);
+                }
+            },
+
+            'duelResolveManeuver_01108': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode(1);
+                }
+            },
+
+            'duelResolveManeuver_01113_2': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    const cardId = args.args.args.attachmentId;
+                    const div = this.factionHand.getItemDivId(cardId);
+                    dojo.addClass(div, '_7sfs-unselectable');
+        
+                    dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                        id: div,
+                        cost: args.args.args.cost,
+                    }), div, "first" );    
+    
+                    const costDiv = $(`${div}_wealth_cost`);
+                    const cost = parseInt(costDiv.innerHTML);
+                    let discountedCost = cost - args.args.args.discount;
+                    discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                    if (discountedCost !== cost)
+                    {
+                        costDiv.innerHTML = parseInt(discountedCost);
+                        dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                    }
+    
+                    $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
+                    this.factionHand.setSelectionMode(2);
+                }
+            },
+
+            'duelResolveManeuver_01115': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode(1);
+                }
+            },
+
+            'duelResolveManeuver_01164': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const selectedLocationElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(selectedLocationElement.id);
+                    });
                 }
             },
         

@@ -136,6 +136,9 @@ body {
     background-position: -250px -180px;
     width: 700px;
 }
+._7sfs-deck-picker-faction-image._7sfs-castille {
+    background-image: url('img/cards/deckpicker/089.jpg');
+}    
 ._7sfs-deck-picker-faction-image._7sfs-eisen {
     background-image: url('img/cards/deckpicker/035.jpg');
 }
@@ -323,6 +326,20 @@ body {
     background-image: url('img/cards/7s5s/200.jpg');
     background-size: 74px 101px;
     background-position: -27px -120px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: inline-block;
+    left: 33px;
+    top: 60px;
+    border: 2px solid orangered
+}
+
+._7sfs-cats-embargo-target-chip {
+    position: absolute;
+    background-image: url('img/cards/7s5s/098.jpg');
+    background-size: 222px 303px;
+    background-position: -121px -166px;
     width: 35px;
     height: 35px;
     border-radius: 50%;

@@ -20,9 +20,9 @@ class Action_01038 extends CharacterAction
         $this->Name = clienttranslate("Reveal Attachments");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
             return false;
 
         $otto = $this->getOwningCharacter($theah);

@@ -20,9 +20,9 @@ class Action_01180 extends CharacterAction
         $this->Name = clienttranslate("Equip Artifact from City Deck");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {  
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -293,7 +293,7 @@ class Action_01180 extends CharacterAction
             //Move the cards used to pay to the player's discard pile
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
-                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $asPayment = true);
+                $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $asPayment = true);
                 $game->theah->queueEvent($event);
             }
     

@@ -25,6 +25,17 @@ class DB
         $this->game->DbQuery($sql);
     }
 
+    public function stackEvent(Event $event)
+    {
+        $sql = "SELECT MIN(event_id) FROM events";
+        $id = intval($this->getUniqueValue($sql)) - 1;
+        $priority = $event->priority;
+        $serialized = addslashes(serialize($event));
+        $sql = "INSERT INTO events (event_id, event_priority, event_serialized) values ($id, $priority, '{$serialized}')";
+        /** @disregard P1013 */
+        $this->game->DbQuery($sql);
+    }
+
     public function getNextEvent()
     {
         $sql = "SELECT event_id as id, event_serialized as json FROM events ORDER BY event_priority LIMIT 1";
@@ -62,6 +73,28 @@ class DB
     {
         $sql = "DELETE FROM events 
                 WHERE (event_serialized LIKE '%EventLocationPressureResult%')";
+        $this->executeSql($sql);
+    }
+
+    //Use this to delete all reaction transition events that might pile up from other events
+    public function deleteTransitionEvents(string $reactionId)
+    {
+        $sql = "DELETE FROM events 
+                WHERE (event_serialized LIKE '%EventTransition%' AND event_serialized LIKE '%{$reactionId}%')";
+        $this->executeSql($sql);
+    }
+
+    public function deleteActionTriggeredEvents(string $actionId)
+    {
+        $sql = "DELETE FROM events 
+                WHERE (event_serialized LIKE '%EventActionTriggered%' AND event_serialized LIKE '%{$actionId}%')";
+        $this->executeSql($sql);
+    }
+
+    public function deleteRiskReactionTriggeredEvents(string $reactionId)
+    {
+        $sql = "DELETE FROM events 
+                WHERE (event_serialized LIKE '%EventRiskReactionTriggered%' AND event_serialized LIKE '%{$reactionId}%')";
         $this->executeSql($sql);
     }
 
@@ -182,7 +215,7 @@ class DB
         if ($actorId == $challengerId)
         {
             //Riposte sends threat back to adversary, only in the amount it reduced threat to the actor
-            $riposte = $eventRiposte < 0 ? 0 : $eventRiposte;
+            $riposte = $eventRiposte;
             if ($riposte > $endingChallengerThreat) 
                 $riposte = $endingChallengerThreat;
             $endingChallengerThreat -= $riposte;
@@ -190,14 +223,14 @@ class DB
             $results['riposte'] = $eventRiposte;
 
             //Parry reduces threat
-            $parry = $eventParry < 0 ? 0 : $eventParry;
+            $parry = $eventParry;
             if ($parry > $endingChallengerThreat) 
                 $parry = $endingChallengerThreat;
             $endingChallengerThreat -= $parry;
             $results['parry'] = $eventParry;
 
             //Thrust adds threat
-            $thrust = $eventThrust < 0 ? 0 : $eventThrust;
+            $thrust = $eventThrust;
             $endingDefenderThreat += $thrust;
             $results['thrust'] = $eventThrust;
 
@@ -206,7 +239,7 @@ class DB
         else if ($actorId == $defenderId)
         {
             //Riposte sends threat back to adversary, only in the amount it reduced threat to the actor
-            $riposte = $eventRiposte < 0 ? 0 : $eventRiposte;
+            $riposte = $eventRiposte;
             if ($riposte > $endingDefenderThreat) 
                 $riposte = $endingDefenderThreat;
             $endingDefenderThreat -= $riposte;
@@ -214,14 +247,14 @@ class DB
             $results['riposte'] = $eventRiposte;
          
             //Parry reduces threat
-            $parry = $eventParry < 0 ? 0 : $eventParry;
+            $parry = $eventParry;
             if ($parry > $endingDefenderThreat) 
                 $parry = $endingDefenderThreat;
             $endingDefenderThreat -= $parry;
             $results['parry'] = $eventParry;
 
             //Thrust adds threat
-            $thrust = $eventThrust < 0 ? 0 : $eventThrust;
+            $thrust = $eventThrust;
             $endingChallengerThreat += $thrust;
             $results['thrust'] = $eventThrust;
 

@@ -78,7 +78,7 @@ class _01147 extends Scheme implements IHasActions
             }
             $event->theah->queueEvent($reknown);
 
-            $attachment = $game->revealFirstCardTypeFromCityDeck($event->playerId, "Attachment");
+            $attachment = $game->revealFirstCardTypeFromCityDeck($event->playerId, "Attachment", $this->Id);
 
             if ($attachment)
             {

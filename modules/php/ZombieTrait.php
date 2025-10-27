@@ -53,7 +53,6 @@ trait ZombieTrait
                 // Planning Phase States
                 case "planningPhaseResolveSchemes_01016":
                 case "planningPhaseResolveSchemes_01016_2":
-                case "planningPhaseResolveSchemes_01098":
                 case "planningPhaseResolveSchemes_01125":
                 case "planningPhaseResolveSchemes_01125_2":
                 case "planningPhaseResolveSchemes_01125_3":
@@ -62,8 +61,6 @@ trait ZombieTrait
                 case "planningPhaseResolveSchemes_01143":
                 case "planningPhaseResolveSchemes_01144":
                 case "planningPhaseResolveSchemes_01144_2":
-                case "planningPhaseEnd_01098":
-                case "planningPhaseEnd_01098_2":
                     // Default action: Pass or take first available option
                     $this->actPass();
                     break;
@@ -245,12 +242,6 @@ trait ZombieTrait
                     $this->gamestate->nextState("");
                     break;
 
-                // Duel End States
-                case "duelEnd_01080":
-                    // Default action: Handle duel end
-                    $this->gamestate->nextState("");
-                    break;
-
                 // Dusk Phase States
                 case "duskPhaseBegin01177": // Penya choice
                 case "duskPhaseBegin01177_2": // Penya card order
@@ -298,7 +289,6 @@ trait ZombieTrait
                 // Acknowledgment States
                 case "planningPhaseResolveSchemes_01016_3":
                 case "planningPhaseResolveSchemes_01147": // Let's Haggle
-                case "planningPhaseEnd_01098_2": // The Cat's Embargo
                     $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
                     break;
 

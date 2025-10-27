@@ -70,6 +70,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontrolled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
@@ -409,7 +411,7 @@ trait EventHub
             case $event instanceof EventCardDiscardedFromHand:
                 $handler = function (Theah $theah, EventCardDiscardedFromHand $event)
                 {
-                    $discardPileName = $theah->game->getPlayerDiscardDeckName($event->playerId);
+                    $discardPileName = $theah->game->getPlayerDiscardDeckName($event->ownerId);
 
                     $card = $theah->getCardById($event->cardId);
                     $card->Location = $discardPileName;
@@ -426,9 +428,9 @@ trait EventHub
                         $message = '${player_name} discarded ${card_inject_code} as payment.';
 
                     $theah->game->notifyAllPlayers("cardDiscardedFromHand", clienttranslate($message), [
-                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "player_name" => $theah->game->getPlayerNameById($event->ownerId),
                         "card_inject_code" => $card->getInjectCode(),
-                        "playerId" => $event->playerId,
+                        "playerId" => $event->ownerId,
                         "card" => $card->getPropertyArray($theah->game),
                     ]);
                 };
@@ -593,29 +595,48 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
-            case $event instanceof EventCharacterInfluenceModified:
-                $handler = function (Theah $theah, EventCharacterInfluenceModified $event)
-                {
-                    $character = $theah->getCharacterById($event->CharacterId);
+                case $event instanceof EventCharacterFinesseModifed:
+                    $handler = function (Theah $theah, EventCharacterFinesseModifed $event)
+                    {
+                        $character = $theah->getCharacterById($event->CharacterId);
+                        $character->ModifiedFinesse = max(0, $event->NewFinesse);
+                        $character->IsUpdated = true;
+    
+                        $theah->game->notify->all("characterFinesseModifed", clienttranslate('The finesse of ${character_name} went from ${oldFinesse} to ${newFinesse} due to: ${reason}.'), [
+                            'i18n' => ['character_name'],
+                            "character_name" => $character->Name,
+                            "characterId" => $character->Id,
+                            "oldFinesse" => $event->OldFinesse, 
+                            "newFinesse" => $event->NewFinesse,
+                            "reason" => $event->Reason,
+                        ]);
+                    };
+                    $handler($this, $event);
+                    break;
+    
+                case $event instanceof EventCharacterInfluenceModified:
+                    $handler = function (Theah $theah, EventCharacterInfluenceModified $event)
+                    {
+                        $character = $theah->getCharacterById($event->CharacterId);
                     if ($character->DashedInfluence)
                     {
                         return;
                     }
                     
-                    $character->ModifiedInfluence = max(0, $event->NewInfluence);
-                    $character->IsUpdated = true;
+                        $character->ModifiedInfluence = max(0, $event->NewInfluence);
+                        $character->IsUpdated = true;
 
                     $theah->game->notify->all("characterInfluenceModified", clienttranslate('The influence of ${character_name} went from ${oldInfluence} to ${newInfluence} due to: ${reason}.'), [
-                        'i18n' => ['character_name'],
-                        "character_name" => $character->Name,
-                        "characterId" => $character->Id,
-                        "oldInfluence" => $event->OldInfluence, 
-                        "newInfluence" => $event->NewInfluence,
-                        "reason" => $event->Reason,
-                    ]);
-                };
-                $handler($this, $event);
-                break;
+                            'i18n' => ['character_name'],
+                            "character_name" => $character->Name,
+                            "characterId" => $character->Id,
+                            "oldInfluence" => $event->OldInfluence, 
+                            "newInfluence" => $event->NewInfluence,
+                            "reason" => $event->Reason,
+                        ]);
+                    };
+                    $handler($this, $event);
+                    break;
 
                 case $event instanceof EventCharacterMustered:
                     $handler = function (Theah $theah, EventCharacterMustered $event)
@@ -695,6 +716,22 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventLocationBecomesUncontrolled:
+                $handler = function (Theah $theah, EventLocationBecomesUncontrolled $event)
+                {
+                    $location = $theah->getCityLocation($event->location);
+                    $theah->game->setControllerForLocation($location->Name, 0);
+                    $location->Controller = 0;
+        
+                    $theah->game->notify->all("locationUncontrolled", clienttranslate('${location_name} is now uncontrolled.'), [
+                        "i18n" => ["location_name"],
+                        "location_name" => $location->Name,
+                        "location" => $location->Name,
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventLocationClaimed:
                 $handler = function (Theah $theah, EventLocationClaimed $event)
                 {
@@ -745,7 +782,7 @@ trait EventHub
                 $handler = function (Theah $theah, EventLocationPressureResult $event)
                 {
                     $performer = $theah->getCharacterById($event->performerId);
-                    $theah->game->notifyAllPlayers("message", clienttranslate('Pressure Result: ${result}.'), [
+                    $theah->game->notify->all("message", clienttranslate('Pressure Result: ${result}.'), [
                         "result" => $event->success ? clienttranslate("SUCCESS") : clienttranslate("FAILED"),
                     ]);
 
@@ -1434,9 +1471,18 @@ trait EventHub
                 $handler = function(Theah $theah, EventDuelPlayerGambled $event) {
                     $card = $theah->game->getCardObjectFromDb($event->chosenCardId);
                     $theah->addCardToWorld($card);
-                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} has gambled with ${card_inject_code}.'), [
+
+                    $message = clienttranslate('${player_name} has gambled with ${card_inject_code}. ${count} cards were revealed.');
+                    if ($event->explanations != '')
+                    {
+                        $message .= clienttranslate('<br>${explanations}');
+                    }
+
+                    $theah->game->notify->all("message", $message, [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "card_inject_code" => $card->getInjectCode(),
+                        "count" => $event->revealCount,
+                        "explanations" => $event->explanations,
                     ]);
                 };
                 $handler($this, $event);

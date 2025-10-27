@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01080 extends RiskReaction
@@ -90,12 +91,41 @@ class Reaction_01080 extends RiskReaction
             }
         }
 
+        if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
+        {
+            if ($event->reactionId == "pressure")
+            {
+                $game = $event->theah->game;
+                $performer = $game->theah->getCharacterById($this->DuelOpponentId);
+    
+                $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
+                $pressureStats = $game->theah->getPressureStats($performer, Game::STAT_INFLUENCE);
+                $event  = EventFactory::createPressureOccuringEvent($game->getActivePlayerId(), $performer->Id, $this->DuelLocation, $pressureStats);
+                $game->theah->queueEvent($event);
+    
+                $owner = $this->getOwningCard($game->theah);
+                $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used the Reaction to Pressure ${location_name}'), [
+                    "i18n" => ["location_name"],
+                    "reaction_inject_code" => $owner->getInjectCode(),
+                    'player_name' => $game->getPlayerNameById($performer->ControllerId),
+                    'location_name' => $performer->Location,
+                ]);
+    
+                [$success, $totals, $difference] = $game->pressureLocation($performer->ControllerId, $performer, Game::STAT_INFLUENCE);
+
+                $pressuredEvent = EventFactory::createLocationPressuredEvent($performer->ControllerId, $performer->Id, $this->DuelLocation, Game::STAT_INFLUENCE, $success, $totals, $difference);
+                $pressuredEvent->abilityId = $this->Id;
+                $game->theah->queueEvent($pressuredEvent);
+            }
+        }
+
         if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
         {
             $performer = $event->theah->getCharacterById($this->DuelOpponentId);
             $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $this->DuelLocation);
             $event->theah->queueEvent($claimEvent);
         }
+
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -109,48 +139,5 @@ class Reaction_01080 extends RiskReaction
         }
 
         $game->gamestate->nextState("done");
-    }
-
-    public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void
-    {
-        parent::reactionPaidFor($game, $state, $internalId, $reactionId);
-
-        if ($reactionId == "pressure")
-        {
-            $performer = $game->theah->getCharacterById($this->DuelOpponentId);
-
-            $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
-            $pressureTypes = $game->theah->getPressureTypes($performer, Game::STAT_INFLUENCE);
-            $event  = EventFactory::createPressureOccuringEvent($game->getActivePlayerId(), $performer->Id, $this->DuelLocation, $pressureTypes);
-            $game->theah->queueEvent($event);
-
-            $owner = $this->getOwningCard($game->theah);
-            $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used the Reaction to Pressure ${location_name}'), [
-                "i18n" => ["location_name"],
-                "reaction_inject_code" => $owner->getInjectCode(),
-                'player_name' => $game->getPlayerNameById($performer->ControllerId),
-                'location_name' => $performer->Location,
-            ]);
-
-            $game->gamestate->nextState("01080");
-        }
-    }
-
-    public function stateFromReaction(Game $game, int $state, string $stateName): void
-    {
-        parent::stateFromReaction($game, $state, $stateName);
-
-        if ($state == States::DUEL_END_01080)
-        {
-            $performer = $game->theah->getCharacterById($this->DuelOpponentId);
-
-            [$success, $totals, $difference] = $game->pressureLocation($performer->ControllerId, $performer, Game::STAT_INFLUENCE);
-
-            $pressuredEvent = EventFactory::createLocationPressuredEvent($performer->ControllerId, $performer->Id, $this->DuelLocation, Game::STAT_INFLUENCE, $success, $totals, $difference);
-            $pressuredEvent->abilityId = $this->Id;
-            $game->theah->queueEvent($pressuredEvent);
-
-            $game->gamestate->nextState();
-        }
     }
 }

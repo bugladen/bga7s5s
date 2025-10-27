@@ -21,9 +21,9 @@ class Action_01189a extends EventCityAction
         $this->RequiresPerformerSelected = true;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if (!parent::isAvailableToPlayer($playerId, $theah))
+        if (!parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -109,7 +109,7 @@ class Action_01189a extends EventCityAction
             $toEvent = EventFactory::createReknownAddedToLocationEvent($performer->ControllerId, $poo->Location, 1, "{$poo->getInjectCode()}: Moving Reknown from adjacent location to an adjacent location");
             $game->theah->eventCheck($toEvent);
     
-            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($poo->ControllerId, $poo->Id, $poo->Location);
+            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($poo->ControllerId, $poo->Id, $poo->Location, $poo->Id, $asEffect = true);
             $game->theah->eventCheck($discardEvent);
     
             $game->theah->queueEvent($engageEvent);

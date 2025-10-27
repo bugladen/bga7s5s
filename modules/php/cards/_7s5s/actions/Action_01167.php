@@ -21,9 +21,9 @@ class Action_01167 extends RiskAction
         $this->RequiresPerformerSelected = true;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -146,7 +146,7 @@ class Action_01167 extends RiskAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->getCardObjectFromDb($performerId);
             [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $attachment);
-            if ($discount > 0)
+            if ($discount != 0)
                 $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
                     "explanations" => $explanations,
                 ]);
@@ -218,14 +218,13 @@ class Action_01167 extends RiskAction
             //Move the cards used to pay to the player's discard pile
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
-                $event = EventFactory::createCardDiscardedFromHandEvent($owner->ControllerId, $card->Id, $asPayment = true);
+                $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $owner->Id, $asPayment = true);
                 $game->theah->queueEvent($event);
             }
     
             $deck = $game->getGameDeckObject();
             $deck->moveCard($attachment->Id, $performer->Location, $attachment->ControllerId);
     
-            $this->resetPlayerPassCount($game);
             $game->gamestate->nextState("attachmentEquipped");
         }
     }

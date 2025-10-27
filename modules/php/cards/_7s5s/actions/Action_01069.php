@@ -21,9 +21,9 @@ class Action_01069 extends CharacterAction implements ISorcererAbility
         $this->Name = clienttranslate("Recover Attachment from Discard Pile");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -152,8 +152,10 @@ class Action_01069 extends CharacterAction implements ISorcererAbility
 
             // Get the card discarded from the previous step
             $discardedCardId = $game->globals->get(Game::CHOSEN_CARD);
+            $discardedCard = $game->getCardObjectFromDb($discardedCardId);
 
-            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($maxime->ControllerId, $discardedCardId);
+            $owner = $this->getOwningCard($game->theah);
+            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardedCard->OwnerId, $discardedCard->Id, $owner->Id);
             $game->theah->queueEvent($discardEvent);
 
             $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($maxime->ControllerId, $id);

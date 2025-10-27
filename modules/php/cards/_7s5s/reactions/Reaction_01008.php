@@ -95,7 +95,7 @@ class Reaction_01008 extends CardReaction
                 {
                     if ($card->Location == Game::LOCATION_HAND)
                     {
-                        $game->notifyAllPlayers("cardRemovedFromHand", clienttranslate('Private: Temporary copy of ${card_inject_code} removed from your hand.'), [
+                        $game->notify->all("cardRemovedFromHand", clienttranslate('Private: Temporary copy of ${card_inject_code} removed from your hand.'), [
                             "card_inject_code" => $card->getInjectCode(),
                             "playerId" => $cesca->ControllerId,
                             "cardId" => $card->Id,
@@ -121,7 +121,7 @@ class Reaction_01008 extends CardReaction
 
     private function announceReaction(Game $game, ICardAbility $ability): void
     {
-        $game->notifyAllPlayers("message", clienttranslate('${character_inject_code}: ${player_name} used Reaction to copy the Sorcerer Ability [${ability_name}]'), [
+        $game->notify->all("message", clienttranslate('${character_inject_code}: ${player_name} used Reaction to copy the Sorcerer Ability [${ability_name}]'), [
             "i18n" => ["ability_name"],
             "character_inject_code" => $this->getOwningCharacter($game->theah)->getInjectCode(),
             "player_name" => $game->getActivePlayerName(),
@@ -264,10 +264,10 @@ class Reaction_01008 extends CardReaction
 
     private function copyCard(Game $game, string $className, int $playerId): Card
     {
-        $card = $game->createCardInLocation($className, Game::LOCATION_HAND, $playerId);
+        $card = $game->createCardInLocation($className, Game::LOCATION_HAND, $playerId, $playerId);
         $this->copiedCards[] = $card->Id;
 
-        $game->notifyPlayer($playerId, "drawCard", '${card_inject_code} was temporarily copied into your Faction Hand to immediately be used.', [
+        $game->notify->player($playerId, "drawCard", '${card_inject_code} was temporarily copied into your Faction Hand to immediately be used.', [
             "card_inject_code" => $card->getInjectCode(),
             "card" => $card->getPropertyArray($game),
         ]);

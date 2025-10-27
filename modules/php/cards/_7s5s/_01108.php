@@ -3,7 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver_01108;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01108a;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01108b;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 
@@ -35,7 +36,8 @@ class _01108 extends Risk implements IHasManeuvers
         $this->resetCard();
 
         $this->Maneuvers = [
-            new Maneuver_01108(),
+            new Maneuver_01108a(),
+            new Maneuver_01108b(),
         ];
     }
 }

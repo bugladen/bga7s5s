@@ -265,6 +265,17 @@ return declare('seventhseacityoffivesails.setup', null, {
         // For each card in the approach deck, create a stock item
         gamedatas.factionHand.forEach((card) => {
             this.addCardToDeck(this.factionHand, card);
+
+            //Check for any special conditions where a token has to be displayed
+            if (card.conditions.includes(this.CATS_EMBARGO_TARGET)) {
+                const div = this.factionHand.getItemDivId(card.id);
+                const id = `${card.id}_cats_embargo_target`;
+                dojo.place( this.format_block( 'jstpl_generic_chip', {
+                    id: id,
+                    class: '_7sfs-cats-embargo-target-chip',
+                }),  div, 'last');
+                this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>` );
+            }
         });
         this.factionHand.setSelectionMode(0);
 

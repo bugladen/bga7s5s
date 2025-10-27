@@ -11,7 +11,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
 
 class _01179 extends CityEventCard implements IHasActions
@@ -63,7 +62,7 @@ class _01179 extends CityEventCard implements IHasActions
             $game = $theah->game;
 
             // Notify players that the player has lost reknown
-            $game->notifyAllPlayers("message", clienttranslate(
+            $game->notify->all("message", clienttranslate(
                 '${card_inject_code} effect triggers. All players will transfer 1 Reknown to the card if able.'), [
                 "card_inject_code" => $this->getInjectCode(),
             ]);

@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -63,4 +64,5 @@ abstract class Technique implements ICardAbility
 
     public function stateFromTechnique(Game $game, int $state, string $stateName): void { }
 
+    public function getNumberOfGambleCardsToReveal(Theah $theah, Character $actor, Array &$explanations): int { return 0; }
 }

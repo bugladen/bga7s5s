@@ -605,17 +605,6 @@ $machinestates = [
             ]
         ],
 
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01098 => [
-                "name" => "planningPhaseResolveSchemes_01098",
-                "description" => clienttranslate('The Cat\'s Embargo: ${actplayer} must choose two city locations to place Reknown onto.'),
-                "descriptionmyturn" => clienttranslate('The Cat\'s Embargo: ${you} must choose two city locations to place Reknown onto:'),
-                "type" => "activeplayer",
-                "args" => "argsEmpty",
-                "possibleactions" => [
-                    "actCityLocationsForReknownSelected", 
-                ],
-                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-            ],
             States::PLANNING_PHASE_RESOLVE_SCHEMES_01125 => [
             "name" => "planningPhaseResolveSchemes_01125",
             "description" => clienttranslate('The Boar\'s Guile: ${actplayer} may choose a City Location to place a Reknown onto.'),
@@ -775,31 +764,7 @@ $machinestates = [
                 "paid" => States::PLANNING_PHASE_END_EVENTS, 
             ]
         ],
-        States::PLANNING_PHASE_END_01098 => [
-            "name" => "planningPhaseEnd_01098",
-            "description" => clienttranslate('The Cat\'s Embargo: ${actplayer} must choose an opponent to reveal a card from hand.'),
-            "descriptionmyturn" => clienttranslate('The Cat\'s Embargo: ${you} must choose an opponent to reveal a card from hand:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actPass",
-                "actPlanningPhaseEnd_01098", 
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_END_01098_2]
-        ],
-        States::PLANNING_PHASE_END_01098_2 => [
-            "name" => "planningPhaseEnd_01098_2",
-            "description" => clienttranslate('The Cat\'s Embargo: Your opponent(s) must acknowlege revealed card.'),
-            "descriptionmyturn" => clienttranslate('The Cat\'s Embargo: ${you} must must acknowlege revealed card:'),
-            "type" => "multipleactiveplayer",
-            "args" => "argsPlanningPhaseEnd_01098_2",
-            "action" => "stMultiPlayerInit",
-            "possibleactions" => [
-                "actMultipleOk", 
-            ],
-            "transitions" => ["multipleOk" => States::PLANNING_PHASE_END_EVENTS]
-        ],
-    
+
     States::HIGH_DRAMA_BEGINNING => [
         "name" => "highDramaBeginning",
         "description" => clienttranslate("Beginning of High Drama..."),
@@ -920,10 +885,8 @@ $machinestates = [
                 "01025" => States::HIGH_DRAMA_PLAYER_TURN_01025,
                 "01026" => States::HIGH_DRAMA_PLAYER_TURN_01026,
                 "01028" => States::HIGH_DRAMA_PLAYER_TURN_01028,
-                "01028_2" => States::HIGH_DRAMA_CLAIM_ACTION,
                 "01029" => States::HIGH_DRAMA_PLAYER_TURN_01029,
                 "01030" => States::HIGH_DRAMA_PLAYER_TURN_01030,
-                "01030_2" => States::HIGH_DRAMA_CLAIM_ACTION,
                 "01033" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01034" => States::HIGH_DRAMA_PLAYER_TURN_01034,
                 "01034_2" => States::HIGH_DRAMA_PLAYER_TURN_01034_2,
@@ -945,16 +908,29 @@ $machinestates = [
                 "01069" => States::HIGH_DRAMA_PLAYER_TURN_01069,
                 "01071" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01072" => States::HIGH_DRAMA_PLAYER_TURN_01072,
-                "01072_2" => States::HIGH_DRAMA_PLAYER_TURN_01072_2,
                 "01073" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
-                "01075" => States::HIGH_DRAMA_CLAIM_ACTION,
                 "01076" => States::HIGH_DRAMA_PLAYER_TURN_01076,
                 "01078" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01081" => States::HIGH_DRAMA_PLAYER_TURN_01081,
                 "01083" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01085" => States::HIGH_DRAMA_PLAYER_TURN_01085,
                 "01086" => States::HIGH_DRAMA_PLAYER_TURN_01086,
-                "01143" => States::HIGH_DRAMA_CLAIM_ACTION,
+                "01091" => States::HIGH_DRAMA_PLAYER_TURN_01091,
+                "01092" => States::HIGH_DRAMA_PLAYER_TURN_01092,
+                "01093" => States::HIGH_DRAMA_PLAYER_TURN_01093,
+                "01097" => States::HIGH_DRAMA_PLAYER_TURN_01097,
+                "01102" => States::HIGH_DRAMA_PLAYER_TURN_01102,
+                "01104" => States::HIGH_DRAMA_PLAYER_TURN_01104,
+                "01105" => States::HIGH_DRAMA_PLAYER_TURN_01105,
+                "01106" => States::HIGH_DRAMA_PLAYER_TURN_01106,
+                "01106_pay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
+                "01106_performer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
+                "01111" => States::HIGH_DRAMA_PLAYER_TURN_01111,
+                "01111_3" => States::HIGH_DRAMA_PLAYER_TURN_01111_3,
+                "01112" => States::HIGH_DRAMA_PLAYER_TURN_01112,
+                "01113" => States::HIGH_DRAMA_PLAYER_TURN_01113,
+                "01113_2" => States::HIGH_DRAMA_PLAYER_TURN_01113_3,
+                "01115" => States::HIGH_DRAMA_PLAYER_TURN_01115,
                 "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
                 "01148" => States::HIGH_DRAMA_PLAYER_TURN_01148,
                 "01148_3" => States::HIGH_DRAMA_PLAYER_TURN_01148_4,
@@ -964,8 +940,10 @@ $machinestates = [
                 "01152b" => States::HIGH_DRAMA_PLAYER_TURN_01152b,
                 "01156" => States::HIGH_DRAMA_PLAYER_TURN_01156,
                 "01156_3" => States::HIGH_DRAMA_PLAYER_TURN_01156_3,
+                "01158" => States::HIGH_DRAMA_PLAYER_TURN_01158,
                 "01160" => States::HIGH_DRAMA_PLAYER_TURN_01160,
                 "01161" => States::HIGH_DRAMA_PLAYER_TURN_01161,
+                "01164" => States::HIGH_DRAMA_PLAYER_TURN_01164,
                 "01167" => States::HIGH_DRAMA_PLAYER_TURN_01167,
                 "01171" => States::HIGH_DRAMA_PLAYER_TURN_01171,
                 "01172" => States::HIGH_DRAMA_PLAYER_TURN_01172,
@@ -981,7 +959,7 @@ $machinestates = [
                 "01198" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01200" => States::HIGH_DRAMA_PLAYER_TURN_01200,
                 "01205" => States::HIGH_DRAMA_PLAYER_TURN_01205,
-                "01206" => States::HIGH_DRAMA_CLAIM_ACTION,
+                "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
                 "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
@@ -1399,7 +1377,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_REACTIONS,
-                "endOfEvents" => States::HIGH_DRAMA_CLAIM_ACTION,
+                "endOfEvents" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "endOfGame" => States::END_GAME
                 ]
         ],
@@ -1433,10 +1411,10 @@ $machinestates = [
             ]
         ],
 
-        States::HIGH_DRAMA_CLAIM_ACTION => [
-            "name" => "highDramaClaimAction",
+        States::HIGH_DRAMA_PRESSURE_LOCATION => [
+            "name" => "highDramaPressureLocation",
             "type" => "game",
-            "action" => "stHighDramaClaim",
+            "action" => "stHighDramaPressureLocation",
             "transitions" => [
                 "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
             ]
@@ -1894,6 +1872,7 @@ $machinestates = [
                         "01036" => States::DUEL_CHOOSE_TECHNIQUE_01036,
                         "01063" => States::DUEL_CHOOSE_TECHNIQUE_01063,
                         "01067" => States::DUEL_CHOOSE_TECHNIQUE_01067,
+                        "01093" => States::DUEL_CHOOSE_TECHNIQUE_01093,
                         "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                         "endOfGame" => States::END_GAME
                         ]
@@ -1989,6 +1968,13 @@ $machinestates = [
                         "01077" => States::DUEL_RESOLVE_MANEUVER_01077,
                         "01079" => States::DUEL_RESOLVE_MANEUVER_01079,
                         "01079_2" => States::DUEL_RESOLVE_MANEUVER_01079_2,
+                        "01103" => States::DUEL_RESOLVE_MANEUVER_01103,
+                        "01108" => States::DUEL_RESOLVE_MANEUVER_01108,
+                        "01110" => States::DUEL_RESOLVE_MANEUVER_01110,
+                        "01113" => States::DUEL_RESOLVE_MANEUVER_01113,
+                        "01113_2" => States::DUEL_RESOLVE_MANEUVER_01113_2,
+                        "01115" => States::DUEL_RESOLVE_MANEUVER_01115,
+                        "01164" => States::DUEL_RESOLVE_MANEUVER_01164,
                         "01165" => States::DUEL_RESOLVE_MANEUVER_01165,
                         "reaction" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_REACTIONS,
                         "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS,
@@ -2079,6 +2065,7 @@ $machinestates = [
                 "transitions" => [
                     "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
+                    "rollTheBones" => States::DUEL_CHOOSE_GAMBLE_CARD,
                     "noMoreCombatCards" => States::DUEL_CHOOSE_ACTION
                 ]
             ],
@@ -2090,9 +2077,11 @@ $machinestates = [
                 "type" => "activeplayer",
                 "args" => "argsDuelChooseGambleCard",
                 "possibleactions" => [
+                    "actBack",
                     "actGambleCardChosen"
                 ],
                 "transitions" => [
+                    "back" => States::DUEL_CHOOSE_ACTION,
                     "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "noManeuver" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS
                 ]
@@ -2239,7 +2228,6 @@ $machinestates = [
                     "transitions" => [
                         "back" => States::DUEL_END_REACTIONS, 
                         "paid" => States::DUEL_END_EVENTS, 
-                        "01080" => States::DUEL_END_01080,
                     ]
                 ],
                 

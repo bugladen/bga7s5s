@@ -60,16 +60,17 @@ class Game extends \Bga\GameFramework\Table
     final const TURN_PHASE = "turnPhase";
     final const PLAYER_COUNT = "playerCount";
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
-    final const CATS_EMBARGO = "catsEmbargo";
     final const STAT_COMBAT = "Combat";
     final const STAT_FINESSE = "Finesse";
     final const STAT_INFLUENCE = "Influence";
+    final const STAT_RESOLVE = "Resolve";
     final const PASS_COUNT = "passCount";
     final const MULTI_STATE_INITIATING_PLAYER = "multiStateInitiatingPlayer";
 
     //Conditions
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";
     final const CRYSTAL_EYE_TARGET = "Crystal Eye Target";
+    final const CATS_EMBARGO_TARGET = "Cats Embargo Target";
 
     //Equip global variables
     final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';
@@ -79,9 +80,6 @@ class Game extends \Bga\GameFramework\Table
     final const SMUGGLED_ITEM_EQUIP_TYPE = 1;
     final const LETS_HAGGLE_EQUIP_TYPE = 2;
     
-    //Claim global variables
-    final const CLAIMING_PLAYER = "claimingPlayer";
-
     //Recruit global variables
     final const RECRUIT_TYPE = "recruitType";
     final const NORMAL_RECRUIT_TYPE = 0;
@@ -89,8 +87,10 @@ class Game extends \Bga\GameFramework\Table
     final const CIRILO_RECRUIT_TYPE = 2;
 
     //Pressure global variables
+    final const PRESSURING_PLAYER = "pressuringPlayer";
     final const CLAUD_ID = "claudeId"; //When Claude is in play, this is the ID of the card that caused the claim type
     final const CONSTANZO_ID = "constanzoId"; //When Contanzo is in play, this is the ID of the card that caused the claim type
+    final const PRESSURE_STAT = "pressureStat";
     final const PRESSURE_TYPE = "pressureType";
     final const PRESSURE_BONUS = "pressureBonus";
     final const IS_BASIC_CLAIM_ACTION = "isBasicClaimAction";
@@ -160,6 +160,13 @@ class Game extends \Bga\GameFramework\Table
     final const DUEL_ID = "duelId";
     final const DUEL_ROUND = "duelRound";
     final const DUEL_GAMBLED = "duelGambled";
+    final const GAMBLE_REVEAL_COUNT = "gambleRevealCount";
+    final const GAMBLE_REVEAL_EXPLANATIONS = "gambleRevealExplanations";
+
+    final const ROLL_THE_BONES_ACTIVATED = "rollTheBonesActivated";
+    final const GAMBLE_TYPE = "gambleType";
+    final const GAMBLE_TYPE_NORMAL = 0;
+    final const GAMBLE_TYPE_ROLL_THE_DICE = 1;
 
     use DeckTrait;
     use StatesTrait;

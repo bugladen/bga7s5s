@@ -22,9 +22,9 @@ class Action_01025 extends RiskAction implements ISorcererAbility
         $this->RequiresPerformerSelected = true;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -99,10 +99,7 @@ class Action_01025 extends RiskAction implements ISorcererAbility
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $game->createRiskAttachment($game, "01025_Burden", $owner->Id, $character->Location, $performer->ControllerId, $character->Id);
-
-            $this->announceAction($game);
-            $this->resetPlayerPassCount($game);
+            $game->createRiskAttachment($game, "01025_Burden", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id);
 
             $game->gamestate->nextState();
         }

@@ -82,14 +82,14 @@ class _01153 extends FactionAttachment
            if ($event->wounds > 0) 
            {
                 $game = $event->theah->game;
-                $game->notifyAllPlayers("message", clienttranslate('${card_inject_code}: Character this is attached to has taken a wound so this will be destroyed.'), [
+                $game->notify->all("message", clienttranslate('${card_inject_code}: Character this is attached to has taken a wound so this will be destroyed.'), [
                     "card_inject_code" => $this->getInjectCode(),
                 ]);
 
                 $detachEvent = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $event->characterId, $this->Id);
                 $event->theah->queueEvent($detachEvent);
 
-                $destroyEvent = EventFactory::createCardDiscardedFromPlayEvent($this->ControllerId, $this->Id, $this->Location);
+                $destroyEvent = EventFactory::createCardDiscardedFromPlayEvent($this->OwnerId, $this->Id, $this->Location, $this->Id, $asEffect = true);
                 $event->theah->queueEvent($destroyEvent);
            }
         }

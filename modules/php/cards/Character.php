@@ -107,19 +107,24 @@ abstract class Character extends Card implements IHasTechniques
         return $discount;
     }
 
-    public function getCombatPressureValue(): int
+    public function getCombatPressureValue(Theah $theah, string $location): int
     {
         return $this->ModifiedCombat;
     }
 
-    public function getFinessePressureValue(): int
+    public function getFinessePressureValue(Theah $theah, string $location): int
     {
         return $this->ModifiedFinesse;
     }
 
-    public function getInfluencePressureValue(): int
+    public function getInfluencePressureValue(Theah $theah, string $location): int
     {
         return $this->ModifiedInfluence;
+    }
+
+    public function getResolvePressureValue(Theah $theah, string $location): int
+    {
+        return $this->ModifiedResolve;
     }
 
     public function addAttachment(Attachment $attachment)
@@ -237,9 +242,9 @@ abstract class Character extends Card implements IHasTechniques
             $theah->queueEvent($unattached);
 
             if ($attachment instanceof CityAttachment)
-                $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($this->ControllerId, $attachment->Id, $attachment->Location);
+                $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($this->ControllerId, $attachment->Id, $attachment->Location, $this->Id, $asEffect = true);
             else
-                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location);
+                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location, $this->Id, $asEffect = true);
 
             $theah->queueEvent($discardEvent);
         }

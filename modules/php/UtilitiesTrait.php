@@ -15,6 +15,7 @@
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IFactionCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskAttachment;
 
@@ -212,6 +213,23 @@ trait UtilitiesTrait
         return $rounds;
     }
 
+    public function getCombatCardRiposteForRound(int $duelId, int $round)
+    {
+        $sql = "SELECT combat_card_id FROM duel_round_combat_card where duel_id = $duelId AND round = {$round}";
+        $combatCardIds = $this->getCollectionFromDB($sql);
+        $riposte = 0;
+        foreach ($combatCardIds as $combatCardId)
+        {
+            $card = $this->getCardObjectFromDb($combatCardId['combat_card_id']);
+            if ($card instanceof IFactionCard)
+            {
+                $riposte += $card->getRiposte();
+            }
+        }
+
+        return $riposte;
+    }
+
     public function getPlayerChosenScheme($playerId)
     {
         $sql = "SELECT selected_scheme_id FROM player WHERE player_id = $playerId";
@@ -387,7 +405,7 @@ trait UtilitiesTrait
             $playerInfluences[$playerId] = $player;
         }
 
-        $pressureTypes = $this->theah->getPressureTypes($performer, $pressureType);
+        $pressureStats = $this->theah->getPressureStats($performer, $pressureType);
 
         //Get the total influence of the characters at the location
         $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
@@ -408,7 +426,7 @@ trait UtilitiesTrait
             $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => ! $character->hasTrait("Mercenary"));
         }
 
-        foreach ($pressureTypes as $pressureType) 
+        foreach ($pressureStats as $pressureStat) 
         {
             foreach ($charactersAtLocation as $character) 
             {
@@ -423,16 +441,19 @@ trait UtilitiesTrait
                     }
                 }
 
-                switch ($pressureType) 
+                switch ($pressureStat) 
                 {
                     case Game::STAT_COMBAT:
-                        $playerInfluences[$playerId]['influence'] += $character->getCombatPressureValue();
+                        $playerInfluences[$playerId]['influence'] += $character->getCombatPressureValue($this->theah, $performer->Location);
                         break;
                     case Game::STAT_FINESSE:
-                        $playerInfluences[$playerId]['influence'] += $character->getFinessePressureValue();
+                        $playerInfluences[$playerId]['influence'] += $character->getFinessePressureValue($this->theah, $performer->Location);
                         break;
                     case Game::STAT_INFLUENCE:
-                        $playerInfluences[$playerId]['influence'] += $character->getInfluencePressureValue();
+                        $playerInfluences[$playerId]['influence'] += $character->getInfluencePressureValue($this->theah, $performer->Location);
+                        break;
+                    case Game::STAT_RESOLVE:
+                        $playerInfluences[$playerId]['influence'] += $character->getResolvePressureValue($this->theah, $performer->Location);
                         break;
                 }
             }
@@ -445,7 +466,7 @@ trait UtilitiesTrait
             }
 
             //If Pack Tactics is in play, add the Influence pressure bonus
-            if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::PACK_TACTICS_PRESSURE_TYPE) && $pressureType == Game::STAT_INFLUENCE)
+            if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::PACK_TACTICS_PRESSURE_TYPE) && $pressureStat == Game::STAT_INFLUENCE)
             {
                 $playerInfluences[$character->ControllerId]['influence'] += $this->globals->get(Game::PRESSURE_BONUS, 0);
             }
@@ -471,7 +492,6 @@ trait UtilitiesTrait
         if (count($ties) > 1)
             $difference = 0;
 
-        $pressureType = $this->globals->get(Game::PRESSURE_TYPE);
         if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE)
@@ -493,7 +513,7 @@ trait UtilitiesTrait
         }
     }
 
-    function revealFirstCardTypeFromCityDeck(int $playerId, string $type, bool $discardInsteadOfSink = false): ?Card
+    function revealFirstCardTypeFromCityDeck(int $playerId, string $type, int $sourceId = 0, bool $isEffect = false, bool $discardInsteadOfSink = false): ?Card
     {
         $count = $this->cards->countCardInLocation(Game::LOCATION_CITY_DECK);
         $cards = $this->getCardsOnTopOfCityDeck($count);
@@ -596,7 +616,7 @@ trait UtilitiesTrait
             //Send the revealed cards to the discard pile
             foreach ($revealed as $cardId)
             {
-                $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $cardId, Game::LOCATION_CITY_DECK);
+                $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $cardId, Game::LOCATION_CITY_DECK, $sourceId, $isEffect);
                 $this->theah->queueEvent($event);
             }
         }
@@ -627,7 +647,7 @@ trait UtilitiesTrait
         return ($global & $flag) == $flag;
     }
 
-    public function createRiskAttachment(Game $game, string $className, int $originalCardId, string $location, int $playerId, int $targetId)
+    public function createRiskAttachment(Game $game, string $className, int $originalCardId, string $location, int $ownerId, int $controllerId, int $targetId)
     {
         //Place original card in special hiding location
         $owner = $game->theah->getCardById($originalCardId);
@@ -637,15 +657,29 @@ trait UtilitiesTrait
         $moveEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($owner->ControllerId, $owner->Id);
         $game->theah->queueEvent($moveEvent);
 
-        $card = $game->createCardInLocation($className, $location, $playerId);
+        $card = $game->createCardInLocation($className, $location, $ownerId, $controllerId);
         if ($card instanceof IRiskAttachment)
         {
             $card->setOriginalCardId($owner->Id);
         }
         $game->updateCardObjectInDb($card);
 
-        $event = EventFactory::createAttachmentEquippedEvent($playerId, $targetId, $card->Id, 0, 0, $asAction = false);
+        $event = EventFactory::createAttachmentEquippedEvent($controllerId, $targetId, $card->Id, 0, 0, $asAction = false);
         $game->theah->queueEvent($event);
+    }
+
+    public function hasEquipRestrictions(Character $character, Attachment $attachment) : array
+    {
+        if ($attachment->hasTrait("Armor") && $this->characterHasAttachmentOfType($character, "Armor") && $attachment->hasEquipRestriction("Armor")) {
+            return [true, $this->translate("Character cannot have more than one Armor attachment.")];
+        }
+        if ($attachment->hasTrait("Attire") && $this->characterHasAttachmentOfType($character, "Attire") && $attachment->hasEquipRestriction("Attire")) {
+            return [true, $this->translate("Character cannot have more than one Attire attachment.")];
+        }
+        if ($attachment->hasTrait("Weapon") && $this->characterHasAttachmentOfType($character, "Weapon") && $attachment->hasEquipRestriction("Weapon")) {
+            return [true, $this->translate("Character cannot have more than one Weapon attachment.")];
+        }
+        return [false, ""];
     }
 
     //WIP. 

@@ -26,7 +26,7 @@ trait DeckTrait
         $cityDeck = $city_decks->decks[$cityDeckChoice];
 
         foreach ($cityDeck->cards as $cityCard)
-            $card = $this->createCardInLocation($cityCard, Game::LOCATION_CITY_DECK, 0);
+            $card = $this->createCardInLocation($cityCard, Game::LOCATION_CITY_DECK, 0, 0);
         
         $this->cards->shuffle(Game::LOCATION_CITY_DECK);
 
@@ -41,7 +41,7 @@ trait DeckTrait
             //Now that we have a deck, add the cards in the deck to the db
 
             // Leader
-            $card = $this->createCardInLocation($deck->leader, Game::LOCATION_PLAYER_HOME, $playerId);
+            $card = $this->createCardInLocation($deck->leader, Game::LOCATION_PLAYER_HOME, $playerId, $playerId);
 
             //Set the id of the leader card in the player record
             $sql = "UPDATE player SET leader_card_id = $card->Id WHERE player_id = $playerId";
@@ -61,7 +61,7 @@ trait DeckTrait
             $approachDeck = $deck->approach_deck;
             $cards = [];
             foreach ($approachDeck as $approachCard) {
-                $card = $this->createCardInLocation($approachCard, Game::LOCATION_APPROACH, $playerId);
+                $card = $this->createCardInLocation($approachCard, Game::LOCATION_APPROACH, $playerId, $playerId);
                 $cards[] = $card->getPropertyArray($this);
             }
 
@@ -79,7 +79,7 @@ trait DeckTrait
             foreach ($factionDeck as $factionCard) {
                 for ($i = 0; $i < $factionCard->count; $i++) 
                 {
-                    $card = $this->createCardInLocation($factionCard->id, $location, $playerId);
+                    $card = $this->createCardInLocation($factionCard->id, $location, $playerId, $playerId);
                     $cards[] = $card->getPropertyArray($this);
                 }
             }
@@ -93,7 +93,7 @@ trait DeckTrait
         $locationCards = $this->cards->getCardsInLocation($location);
         foreach ($locationCards as $cardId) {
             $card = $this->getCardObjectFromDb($cardId['id']);
-            if ($playerId !== null && $card->OwnerId != $playerId)
+            if ($playerId !== null && $card->ControllerId != $playerId)
             {
                 unset($card);
                 continue;
@@ -236,15 +236,15 @@ trait DeckTrait
         ]);
     }
 
-    public function createCardInLocation(string $className, string $location, int $playerId): Card
+    public function createCardInLocation(string $className, string $location, int $ownerId, int $controllerId): Card
     {
-        $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$className}', $playerId, '$location', $playerId)";
+        $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$className}', $controllerId, '$location', $controllerId)";
         $this->DbQuery($sql);
         $id = $this->DbGetLastId();
         
         $card = $this->instantiateCard($className, $id);
-        $card->OwnerId = $playerId;
-        $card->ControllerId = $playerId;
+        $card->OwnerId = $ownerId;
+        $card->ControllerId = $controllerId;
         $card->Location = $location;
         $this->updateCardObjectInDb($card);
 

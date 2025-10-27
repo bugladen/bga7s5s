@@ -9,7 +9,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
@@ -79,7 +78,7 @@ class _01126 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves. 
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. 
             ${player_name} may first choose an outermost city location. Then they will choose two locations to place reknown onto. '), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
@@ -99,7 +98,7 @@ class _01126 extends Scheme
             $playerId = $event->theah->game->getActivePlayerId();
             $deck = $event->theah->game->getGameDeckObject();
 
-            $event->theah->game->notifyAllPlayers('01126_2_scheme_moved', 
+            $event->theah->game->notify->all('01126_2_scheme_moved', 
                 clienttranslate('${scheme_inject_code} moved to ${location}'), [
                     'i18n' => ['location'],
                     "scheme_inject_code" => $this->getInjectCode(),
@@ -114,14 +113,7 @@ class _01126 extends Scheme
                 //Discard all city cards
                 if ($card instanceof ICityDeckCard)
                 {
-                    $discard = $event->theah->createEvent(Events::CardAddedToCityDiscardPile);
-                    if ($discard instanceof EventCardAddedToCityDiscardPile)
-                    {
-                        $discard->cardId = $card->Id;
-                        $discard->fromLocation = $this->chosenLocation;
-                        $discard->playerId = $playerId;
-                    }
-
+                    $discard = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $card->Id, $this->chosenLocation, $this->Id, $asEffect = true);
                     $event->theah->queueEvent($discard);
                 }
 

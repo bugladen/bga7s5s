@@ -189,6 +189,17 @@ class Theah
         }
     }
 
+    public function stackEvent(Event $event)
+    {
+        $this->buildCity();
+        try {
+            $this->eventCheck($event);
+            $this->db->stackEvent($event);
+        } catch (\Exception $e) {
+            $this->game->notify->all("message", clienttranslate($e->getMessage()), []);
+        }
+    }
+
     public function runEvents(bool $debug = false)
     {
         while (true) {
@@ -321,6 +332,20 @@ class Theah
         return $locations;
     }
 
+    function getNonAdjacentCityLocations(string $location): array
+    {
+        $locations = $this->getCityLocations();
+        $locations = array_filter($locations, fn($loc) => $loc->Name != $location);
+        $adjacentLocations = $this->getAdjacentCityLocations($location);
+        
+        foreach ($adjacentLocations as $adjacentLocation)
+        {
+            $locations = array_filter($locations, fn($loc) => $loc->Name != $adjacentLocation);
+        }
+
+        return array_map(fn($loc) => $loc->Name, array_values($locations));
+    }
+
     function getActionFromHandDiscount(?Character $performer, CardAction $action): Array
     {
         $cards = $this->cards;
@@ -382,6 +407,11 @@ class Theah
         }
 
         return $maneuvers;
+    }
+
+    public function getAllCards(): array
+    {
+        return $this->cards;
     }
 
     public function getCardsInPlay(): array
@@ -622,7 +652,7 @@ class Theah
 
         foreach ($this->Actions as $action)
         {
-            if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+            if ($action->isAvailableToPlayer($playerId, $this))
             {
                 $actionsArray[] = $action->getPropertyArray($this->game);
             }
@@ -636,7 +666,7 @@ class Theah
                 foreach ($actions as $actionItem)
                 {
                     $action = $card->getActionById($actionItem['id']);
-                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    if ($action->isAvailableToPlayer($playerId, $this))
                     {
                         $actionsArray[] = $actionItem;
                     }
@@ -659,7 +689,7 @@ class Theah
                 foreach ($actions as $actionItem)
                 {
                     $action = $card->getActionById($actionItem['id']);
-                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    if ($action->isAvailableToPlayer($playerId, $this))
                     {
                         $actionsArray[] = $actionItem;
                     }
@@ -681,7 +711,7 @@ class Theah
                 $actions = $card->getActions();
                 foreach ($actions as $action)
                 {
-                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    if ($action->isAvailableToPlayer($playerId, $this))
                     {
                         $actionsArray[] = $card->Id;
                     }
@@ -804,6 +834,20 @@ class Theah
         return $performers;
     }
 
+    public function getNumberOfGambleCardsToReveal(Character $actor): Array
+    {
+        $count = 2;
+        $explanations = [];
+        foreach ($this->cards as $card) {
+            $count += $card->getNumberOfGambleCardsToReveal($this, $actor, $explanations);
+        }
+        $count = $count < 0 ? 0 : $count;
+        $explanations = implode("<br>", $explanations);
+            
+        return [$count, $explanations];
+
+    }
+
     public function getOpposingCharactersAtLocation(string $location, int $playerId): array
     {
         $characters = $this->getCharactersAtLocation($location);
@@ -818,12 +862,12 @@ class Theah
         return $characters;
     }
 
-    function getPressureTypes(Character $performer, string $startingStatType): Array
+    function getPressureStats(Character $performer, string $startingStatType): Array
     {        
         $pressureTypes = [$startingStatType];
         $cardsInPlay = array_filter($this->cards, fn($card) => $this->cardInCity($card) || $card->Location == Game::LOCATION_PLAYER_HOME);
         foreach ($cardsInPlay as $card) {
-            $card->getPressureTypes($this, $performer, $pressureTypes);
+            $card->getPressureStats($this, $performer, $pressureTypes);
         }
         $pressureTypes = array_unique($pressureTypes);
         return $pressureTypes;
@@ -1058,7 +1102,7 @@ class Theah
 
         foreach ($this->Actions as $action)
         {
-            if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+            if ($action->isAvailableToPlayer($playerId, $this))
             {
                 $actionAvailable[] = $action;
             }
@@ -1071,7 +1115,7 @@ class Theah
                 $actions = $card->getActions();
                 foreach ($actions as $action)
                 {
-                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    if ($action->isAvailableToPlayer($playerId, $this))
                     {
                         $actionAvailable[] = $action;
                     }
@@ -1093,7 +1137,7 @@ class Theah
                 $actions = $card->getActions();
                 foreach ($actions as $action)
                 {
-                    if ($action->isAvailableToPlayer($playerId, $this, $this->game))
+                    if ($action->isAvailableToPlayer($playerId, $this))
                     {
                         $actionCards[] = $card;
                     }
@@ -1132,6 +1176,21 @@ class Theah
     public function deletePressureResultEvents()
     {
         $this->db->deletePressureResultEvents();
+    }
+
+    public function deleteTransitionEvents(string $reactionId)
+    {
+        $this->db->deleteTransitionEvents($reactionId);
+    }
+
+    public function deleteActionTriggeredEvents(string $actionId)
+    {
+        $this->db->deleteActionTriggeredEvents($actionId);
+    }
+
+    public function deleteRiskReactionTriggeredEvents(string $reactionId)
+    {
+        $this->db->deleteRiskReactionTriggeredEvents($reactionId);
     }
 
     public function swapParticipantsInDuel(int $duelId, int $round, int $oldParticipantId, int $newParticipantId)
@@ -1254,4 +1313,15 @@ class Theah
 
         return 0;
     }
+
+    public function duelParticipantWoundsTaken(int $participantId) : int
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT sum(wounds_taken) as wounds FROM duel_round WHERE duel_id = $duelId AND round <> $round AND actor_id = $participantId";
+        $result = $this->db->getUniqueValue($sql);
+        
+        return $result;
+    }
+
 }

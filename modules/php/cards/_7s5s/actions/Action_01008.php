@@ -19,9 +19,9 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
         $this->Name = clienttranslate("Reveal Top Card of your Faction Deck");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if (!parent::isAvailableToPlayer($playerId, $theah))
+        if (!parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -53,7 +53,7 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
             $cardInfo = $deck->getCardOnTop($location);
             $card = $game->getCardObjectFromDb($cardInfo['id']);
 
-            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} uses Action to Reveal the Top Card of their Faction Deck. (${card_inject_code})'), [
+            $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} uses Action to Reveal the Top Card of their Faction Deck. (${card_inject_code})'), [
                 "player_name" => $game->getActivePlayerName(),
                 "owner_inject_code" => $owner->getInjectCode(),
                 "card_inject_code" => $card->getInjectCode(),
@@ -100,7 +100,7 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
             $cardInfo = $deck->getCardOnTop($location);
             $card = $game->getCardObjectFromDb($cardInfo['id']);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has revealed ${card_inject_code}.'), [
+            $game->notify->all("message", clienttranslate('${player_name} has revealed ${card_inject_code}.'), [
                 "player_name" => $game->getActivePlayerName(),
                 "card_inject_code" => $card->getInjectCode(),
             ]);

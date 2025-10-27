@@ -24,7 +24,7 @@ trait DebugTrait
 {
     public function debug_AddCardToHand(string $className, int $playerId)
     {
-        $card = $this->createCardInLocation($className, Game::LOCATION_HAND, $playerId);
+        $card = $this->createCardInLocation($className, Game::LOCATION_HAND, $playerId, $playerId);
 
         $this->notifyPlayer($playerId, "drawCard", 'Debug Draw', [
             "card" => $card->getPropertyArray($this),
@@ -44,7 +44,7 @@ trait DebugTrait
         $card = $this->instantiateCard($className);
         if ($card) 
         {
-            $card = $this->createCardInLocation($className, Game::LOCATION_CITY_DECK, 0);
+            $card = $this->createCardInLocation($className, Game::LOCATION_CITY_DECK, 0, 0);
             $this->cards->insertCardOnExtremePosition($card->Id, Game::LOCATION_CITY_DECK, true);
         }
     }
@@ -52,12 +52,12 @@ trait DebugTrait
     public function debug_SetCardInPlayerDiscardPile(string $className, int $playerId)
     {
         $location = $this->getPlayerDiscardDeckName($playerId);
-        $this->createCardInLocation($className, $location, $playerId);
+        $this->createCardInLocation($className, $location, $playerId, $playerId);
     }
 
     public function debug_SetCardInCityDiscardPile(string $className)
     {
-        $this->createCardInLocation($className, Game::LOCATION_CITY_DISCARD, 0);
+        $this->createCardInLocation($className, Game::LOCATION_CITY_DISCARD, 0, 0);
     }
 
     public function debug_RecruitMercenary(int $cardId, int $playerId)
@@ -213,6 +213,21 @@ trait DebugTrait
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent($playerId, $card['id'], false, false);
             $this->theah->queueEvent($discardEvent);
         }
+        $this->theah->runEvents($debug = true);
+    }
+
+    public function debug_SetFirstPlayer(int $playerId)
+    {
+        $this->globals->set(Game::FIRST_PLAYER, $playerId);
+        $this->setNewPlayerOrder($playerId);
+
+        // Notify all players of the first player.
+        $this->notifyAllPlayers("firstPlayer", clienttranslate('DEBUG: ${player_name} is now the First Player.'), [
+            'player_name' => $this->getPlayerNameById($playerId),
+            'playerId' => $playerId
+        ]);    
+        $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
+        $this->theah->queueEvent($event);
         $this->theah->runEvents($debug = true);
     }
 }

@@ -69,7 +69,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
-            'highDramaPhase01072_3': () => {
+            'highDramaPhase01072_2': () => {
                 var items = this.approachDeck.getSelectedItems();
                 items.forEach((item) => {
                     if (item.id != item_id) {
@@ -113,6 +113,16 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
 
                 if (this.chooseList.getSelectedItems().length === 1) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
+            'highDramaPhase01111': () => {
+                if (item_id === undefined) return;
+
+                if (this.chooseList.getSelectedItems().length == 3) {
                     dojo.removeClass('actChooseCardSelected', 'disabled');
                 } else {
                     dojo.addClass('actChooseCardSelected', 'disabled');
@@ -285,25 +295,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaEquipActionPayForAttachmentFromHand': () => {
-                var items = this.factionHand.getSelectedItems();
-                let wealth = 0;
-                const div = this.factionHand.getItemDivId(item_id);                
-                if (item_id !== undefined && dojo.hasClass(div, '_7sfs-unselectable')) {
-                    this.factionHand.unselectItem(item_id);
-                    return;
-                }
-                items.forEach((item) => {
-                    const card = this.cardProperties[item.type];
-                    wealth += card.traits.includes('Wealth') ? 2 : 1;
-                    
-                });
-                var translated = dojo.string.substitute(
-                    _("(${wealth} Wealth worth of cards selected)"),
-                    {
-                        wealth: wealth
-                    }
-                );
-                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
+                this.payForCard(item_id);
             },
 
             'highDramaEquipActionPayForAttachmentFromPlay': () => {
@@ -324,25 +316,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
             
             'highDramaInHandActionPay': () => {
-                var items = this.factionHand.getSelectedItems();
-                let wealth = 0;
-                const div = this.factionHand.getItemDivId(item_id);                
-                if (item_id !== undefined && dojo.hasClass(div, '_7sfs-unselectable')) {
-                    this.factionHand.unselectItem(item_id);
-                    return;
-                }
-                items.forEach((item) => {
-                    const card = this.cardProperties[item.type];
-                    wealth += card.traits.includes('Wealth') ? 2 : 1;
-                    
-                });
-                var translated = dojo.string.substitute(
-                    _("(${wealth} Wealth worth of cards selected)"),
-                    {
-                        wealth: wealth
-                    }
-                );
-                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
+                this.payForCard(item_id);
             },
 
             'highDramaBruteActionChooseBrute': () => {
@@ -364,25 +338,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaBruteActionPayForBrute': () => {
-                var items = this.factionHand.getSelectedItems();
-                let wealth = 0;
-                const div = this.factionHand.getItemDivId(item_id);                
-                if (item_id !== undefined && dojo.hasClass(div, '_7sfs-unselectable')) {
-                    this.factionHand.unselectItem(item_id);
-                    return;
-                }
-                items.forEach((item) => {
-                    const card = this.cardProperties[item.type];
-                    wealth += card.traits.includes('Wealth') ? 2 : 1;
-                    
-                });
-                var translated = dojo.string.substitute(
-                    _("(${wealth} Wealth worth of cards selected)"),
-                    {
-                        wealth: wealth
-                    }
-                );
-                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
+                this.payForCard(item_id);
             },
 
             'highDramaPhase01069': () => {
@@ -391,6 +347,26 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 } else {
                     dojo.addClass('actChooseDiscardCards', 'disabled');
                 }
+            },
+
+            'highDramaPhase01091_2': () => {
+                if (this.factionHand.getSelectedItems().length > 0) {
+                    dojo.removeClass('actFactionCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actFactionCardSelected', 'disabled');
+                }
+            },
+
+            'highDramaPhase01102': () => {
+                if (this.factionHand.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
+            'highDramaPhase01113_3': () => {
+                this.payForCard(item_id);
             },
 
             'highDramaPhase01148_3': () => {
@@ -406,6 +382,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCards', 'disabled');
+                }
+            },
+
+            'highDramaPhase01158': () => {
+                if (this.factionHand.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
                 }
             },
 
@@ -430,25 +414,35 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duelPayForManeuverFromCombatCard': () => {
-                var items = this.factionHand.getSelectedItems();
-                let wealth = 0;
-                const div = this.factionHand.getItemDivId(item_id);                
-                if (item_id !== undefined && dojo.hasClass(div, '_7sfs-unselectable')) {
-                    this.factionHand.unselectItem(item_id);
-                    return;
+                this.payForCard(item_id);
+            },
+
+            'duelResolveManeuver_01108': () => {
+                if (this.factionHand.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
                 }
-                items.forEach((item) => {
-                    const card = this.cardProperties[item.type];
-                    wealth += card.traits.includes('Wealth') ? 2 : 1;
-                    
-                });
-                var translated = dojo.string.substitute(
-                    _("(${wealth} Wealth worth of cards selected)"),
-                    {
-                        wealth: wealth
-                    }
-                );
-                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
+            },
+
+            'duelResolveManeuver_01113_2': () => {
+                this.payForCard(item_id);
+            },
+
+            'duelResolveManeuver_01115': () => {
+                if (this.factionHand.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
+            'duelChooseTechnique_01093': () => {
+                if (this.factionHand.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
             },
 
             'duskPhaseDiscard': () => {
@@ -460,25 +454,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'playerPayForReaction': () => {
-                var items = this.factionHand.getSelectedItems();
-                let wealth = 0;
-                const div = this.factionHand.getItemDivId(item_id);                
-                if (item_id !== undefined && dojo.hasClass(div, '_7sfs-unselectable')) {
-                    this.factionHand.unselectItem(item_id);
-                    return;
-                }
-                items.forEach((item) => {
-                    const card = this.cardProperties[item.type];
-                    wealth += card.traits.includes('Wealth') ? 2 : 1;
-                    
-                });
-                var translated = dojo.string.substitute(
-                    _("(${wealth} Wealth worth of cards selected)"),
-                    {
-                        wealth: wealth
-                    }
-                );
-                $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
+                this.payForCard(item_id);
             },
 
 
@@ -635,6 +611,29 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
         this.myDlg.setContent( cards ); // Must be set before calling show() so that the size of the content is defined before positioning the dialog
         this.myDlg.show();
+    },
+
+    payForCard: function(item_id)
+    {
+        var items = this.factionHand.getSelectedItems();
+        let wealth = 0;
+        const div = this.factionHand.getItemDivId(item_id);                
+        if (item_id !== undefined && dojo.hasClass(div, '_7sfs-unselectable')) {
+            this.factionHand.unselectItem(item_id);
+            return;
+        }
+        items.forEach((item) => {
+            const card = this.cardProperties[item.type];
+            wealth += card.traits.includes('Wealth') ? 2 : 1;
+            
+        });
+        var translated = dojo.string.substitute(
+            _("(${wealth} Wealth worth of cards selected)"),
+            {
+                wealth: wealth
+            }
+        );
+        $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
     },
 
 })

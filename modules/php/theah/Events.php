@@ -104,9 +104,11 @@ class Events
     const ManeuverCanceled = 'EventManeuverCanceled';
     const TechniqueCanceled = 'EventTechniqueCanceled';
     const SorcererAbilityPlayed = 'EventSorcererAbilityPlayed';
+    const RiskPlayed = 'EventRiskPlayed';
 
     //Character events
     const CharacterInfluenceModified = 'EventCharacterInfluenceModified';
+    const CharacterFinesseModifed = 'EventCharacterFinesseModifed';
     const CharacterMustered = 'EventCharacterMustered';
     const CharacterLostBrute = 'EventCharacterLostBrute';
     
@@ -120,8 +122,11 @@ class Events
     const ChangeActivePlayer = 'EventChangeActivePlayer';
 
     const ActionTriggered = 'EventActionTriggered';
+    const RiskReactionTriggered = 'EventRiskReactionTriggered';
     const ActionUsed = 'EventActionUsed';
     const ReactionUsed = 'EventReactionUsed';
     const ManeuverUsed = 'EventManeuverUsed';
     const TechniqueUsed = 'EventTechniqueUsed';
+
+    const LocationBecomesUncontrolled = 'EventLocationBecomesUncontrolled';
 }

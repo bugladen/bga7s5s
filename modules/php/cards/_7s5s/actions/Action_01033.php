@@ -19,9 +19,9 @@ class Action_01033 extends RiskAction
         $this->RequiresPerformerSelected = true;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
+        if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -52,8 +52,6 @@ class Action_01033 extends RiskAction
             
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01033", $this->Id);
             $event->theah->queueEvent($transition);
-
-            $this->resetPlayerPassCount($game);
         }
     }
 }

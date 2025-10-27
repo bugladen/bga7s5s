@@ -2,10 +2,15 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01158;
 
-class _01158 extends FactionAttachment
+class _01158 extends FactionAttachment implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -32,5 +37,9 @@ class _01158 extends FactionAttachment
         ];
 
         $this->resetCard();
+
+        $this->Actions = [
+            new Action_01158(),
+        ];
     }
 }

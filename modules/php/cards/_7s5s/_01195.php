@@ -46,7 +46,7 @@ class _01195 extends CityAttachment
         // If placed in the discard pile, move to the bazaar.
         if ($event instanceof EventCardAddedToCityDiscardPile && $event->cardId === $this->Id)
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('Eager Blade was discarded.  Its ability will trigger and it will be moved to the Bazaar.'), []);
+            $event->theah->game->notify->all("message", clienttranslate('Eager Blade was discarded.  Its ability will trigger and it will be moved to the Bazaar.'), []);
 
             $moveEvent = EventFactory::createCityCardAddedToLocationEvent($this->Id, Game::LOCATION_CITY_BAZAAR);
             $event->queueEvent($moveEvent);
@@ -58,14 +58,14 @@ class _01195 extends CityAttachment
             $event->riposte += 1;
             $event->explanations[] = sprintf($event->theah->game->translate("%s: +1 Riposte"), $this->getInjectCode());
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${card_inject_code} was used with a combat card.  Its ability will trigger and it will be destroyed.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${card_inject_code} was used with a combat card.  Its ability will trigger and it will be destroyed.'), [
                 "card_inject_code" => $this->getInjectCode(),
             ]);
 
             $unequipEvent = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $this->AttachedToId, $this->Id);
             $event->queueEvent($unequipEvent);
 
-            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($this->ControllerId, $this->Id, $this->Location);
+            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($this->ControllerId, $this->Id, $this->Location, $this->Id, $asEffect = true);
             $event->queueEvent($discardEvent);
         }
     }

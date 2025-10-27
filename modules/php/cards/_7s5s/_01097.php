@@ -3,9 +3,18 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01097;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01097;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 
-class _01097 extends Character
+class _01097 extends Character implements IHasActions, IHasReactions
 {
+    use ActionTrait;
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -26,6 +35,14 @@ class _01097 extends Character
         $this->Traits = [
             "Pirate",
             "Aragosta",
+        ];
+
+        $this->Actions = [
+            new Action_01097(),
+        ];
+
+        $this->Reactions = [
+            new Reaction_01097(),
         ];
 
         $this->resetCard();

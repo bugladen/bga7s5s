@@ -18,9 +18,9 @@ class Action_01194 extends CharacterAction
         $this->Name = clienttranslate("Wound Target Opposing Character");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -157,7 +157,7 @@ class Action_01194 extends CharacterAction
             $game->theah->eventCheck($unequipEvent);
 
             //Discard the attachment
-            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($attachment->ControllerId, $attachmentId, $attachment->Location);
+            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($attachment->ControllerId, $attachmentId, $attachment->Location, $adelheide->Id, $asEffect = false);
             $game->theah->eventCheck($discardEvent);
 
             //Wound the target character
@@ -168,7 +168,7 @@ class Action_01194 extends CharacterAction
             $game->theah->queueEvent($discardEvent);
             $game->theah->queueEvent($woundEvent);
 
-            $game->notifyAllPlayers('message', clienttranslate('${player_name} uses Adelheide Schmidt\'s Action to wound ${character_name}.'), [
+            $game->notify->all('message', clienttranslate('${player_name} uses Adelheide Schmidt\'s Action to wound ${character_name}.'), [
                 'i18n' => ['character_name'],
                 'player_name' => $game->getActivePlayerName(),
                 'character_name' => $targetCharacter->Name,

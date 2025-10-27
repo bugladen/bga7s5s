@@ -120,7 +120,7 @@ class Maneuver_01079 extends Maneuver
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $game->notifyAllPlayers("message", clienttranslate('${maneuver_inject_code}: ${player_name} has chosen ${attachment_inject_code}.'), [
+            $game->notify->all("message", clienttranslate('${maneuver_inject_code}: ${player_name} has chosen ${attachment_inject_code}.'), [
                 "maneuver_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getActivePlayerName(),
                 "attachment_inject_code" => $attachment->getInjectCode(),
@@ -152,11 +152,11 @@ class Maneuver_01079 extends Maneuver
                 $game->theah->eventCheck($unquipEvent);
                 $game->theah->queueEvent($unquipEvent);
 
-                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($adversary->ControllerId, $attachmentId, $adversary->Location);
+                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($adversary->OwnerId, $attachmentId, $adversary->Location, $owner->Id, $asEffect = true);
                 $game->theah->eventCheck($discardEvent);
                 $game->theah->queueEvent($discardEvent);
 
-                $game->notifyAllPlayers("message", clienttranslate('${maneuver_inject_code}: ${player_name} has destroyed ${attachment_inject_code}.'), [
+                $game->notify->all("message", clienttranslate('${maneuver_inject_code}: ${player_name} has destroyed ${attachment_inject_code}.'), [
                     "maneuver_inject_code" => $owner->getInjectCode(),
                     "player_name" => $game->getActivePlayerName(),
                     "attachment_inject_code" => $attachment->getInjectCode(),
@@ -171,7 +171,7 @@ class Maneuver_01079 extends Maneuver
                 $game->theah->eventCheck($woundEvent);
                 $game->theah->queueEvent($woundEvent);
 
-                $game->notifyAllPlayers("message", clienttranslate('${maneuver_inject_code}: ${player_name} has chosen to take a wound.'), [
+                $game->notify->all("message", clienttranslate('${maneuver_inject_code}: ${player_name} has chosen to take a wound.'), [
                     "maneuver_inject_code" => $owner->getInjectCode(),
                     "player_name" => $game->getActivePlayerName(),
                 ]);

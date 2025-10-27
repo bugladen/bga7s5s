@@ -39,9 +39,9 @@ class Action_01058 extends RiskAction
         return $availablePerformers;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
+        if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
             return false;
 
         $performers = $this->getAvailablePerformers($playerId, $theah);
@@ -126,8 +126,6 @@ class Action_01058 extends RiskAction
             $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = true, $owner->Id);
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
-
-            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState();
         }

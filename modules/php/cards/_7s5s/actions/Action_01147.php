@@ -20,10 +20,10 @@ class Action_01147 extends SchemeCityAction
         $this->Name = clienttranslate("Equip Attachment From Bazaar");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
         //Parent already checks that the player has a character in the city
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -80,7 +80,7 @@ class Action_01147 extends SchemeCityAction
 
             $game->globals->set(Game::CHOSEN_CARD, $attachment->Id);
             [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $attachment);
-            if ($discount > 0)
+            if ($discount != 0)
                 $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
                     "explanations" => $explanations,
                 ]);

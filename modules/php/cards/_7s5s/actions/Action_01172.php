@@ -19,9 +19,9 @@ class Action_01172 extends RiskAction
         $this->RequiresPerformerSelected = true;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah))
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -104,8 +104,6 @@ class Action_01172 extends RiskAction
                 throw new \BgaUserException($game->translate("Target character is at the same location as the performer."));
             }
             
-            $this->resetPlayerPassCount($game);
-
             $owner = $this->getOwningCard($game->theah);
             if (! $performer->hasTrait('Strega'))
             {

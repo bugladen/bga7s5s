@@ -41,6 +41,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
@@ -51,6 +52,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocatio
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontrolled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
@@ -66,6 +68,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTableSetup;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
@@ -192,7 +196,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardAddedToCityDiscardPileEvent(int $playerId, int $cardId, string $location): EventCardAddedToCityDiscardPile
+    public static function createCardAddedToCityDiscardPileEvent(int $playerId, int $cardId, string $location, int $sourceId = 0, bool $asEffect = false): EventCardAddedToCityDiscardPile
     {
         $event = self::createEvent(Events::CardAddedToCityDiscardPile);
         if ($event instanceof EventCardAddedToCityDiscardPile)
@@ -200,6 +204,8 @@ class EventFactory
             $event->cardId = $cardId;
             $event->fromLocation = $location;
             $event->playerId = $playerId;
+            $event->sourceId = $sourceId;
+            $event->asEffect = $asEffect;
         }
         return $event;
     }
@@ -215,21 +221,23 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardDiscardedFromHandEvent(int $playerId, int $cardId, bool $asPayment = false, bool $asPlayed = false): EventCardDiscardedFromHand
+    public static function createCardDiscardedFromHandEvent(int $ownerId, int $cardId, int $sourceId, $asPayment = false, bool $asPlayed = false, bool $asEffect = false): EventCardDiscardedFromHand
     {
         $event = self::createEvent(Events::CardDiscardedFromHand);
         if ($event instanceof EventCardDiscardedFromHand)
         {
-            $event->playerId = $playerId;
+            $event->ownerId = $ownerId;
             $event->cardId = $cardId;
+            $event->sourceId = $sourceId;
             $event->AsPayment = $asPayment;
             $event->AsPlayed = $asPlayed;
+            $event->asEffect = $asEffect;
         }
 
         return $event;
     }
 
-    public static function createCardDiscardedFromPlayEvent(int $ownerId, int $cardId, string $location): EventCardDiscardedFromPlay
+    public static function createCardDiscardedFromPlayEvent(int $ownerId, int $cardId, string $location, int $sourceId = 0, bool $asEffect = false): EventCardDiscardedFromPlay
     {
         $event = self::createEvent(Events::CardDiscardedFromPlay);
         if ($event instanceof EventCardDiscardedFromPlay)
@@ -237,6 +245,8 @@ class EventFactory
             $event->ownerId = $ownerId;
             $event->cardId = $cardId;
             $event->fromLocation = $location;
+            $event->sourceId = $sourceId;
+            $event->asEffect = $asEffect;
         }
         return $event;
     }
@@ -428,6 +438,21 @@ class EventFactory
         return $event;
     }
 
+    public static function createCharacterFinesseModifedEvent(int $playerId, int $characterId, int $oldFinesse, int $newFinesse, string $reason = ''): EventCharacterFinesseModifed
+    {
+        $event = self::createEvent(Events::CharacterFinesseModifed);
+        if ($event instanceof EventCharacterFinesseModifed)
+        {
+            $event->PlayerId = $playerId;
+            $event->CharacterId = $characterId;
+            $event->OldFinesse = $oldFinesse;
+            $event->NewFinesse = $newFinesse;
+            $event->Reason = $reason;
+        }
+
+        return $event;
+    }
+
     public static function createCharacterInfluenceModifiedEvent(int $playerId, int $characterId, int $oldInfluence, int $newInfluence, string $reason = ''): EventCharacterInfluenceModified
     {
         $event = self::createEvent(Events::CharacterInfluenceModified);
@@ -554,6 +579,18 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->playerId = $playerId;
             $event->actorId = $actorId;
         }
+        return $event;
+    }
+
+    public static function createLocationBecomesUncontrolledEvent(int $playerId, string $location): EventLocationBecomesUncontrolled
+    {
+        $event = self::createEvent(Events::LocationBecomesUncontrolled);
+        if ($event instanceof EventLocationBecomesUncontrolled)
+        {
+            $event->playerId = $playerId;
+            $event->location = $location;
+        }
+
         return $event;
     }
 
@@ -707,6 +744,19 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $transition;
     }
 
+    public static function createRiskReactionTriggeredEvent(int $playerId, int $sourceId, string $internalId, string $reactionId): EventRiskReactionTriggered
+    {
+        $event = self::createEvent(Events::RiskReactionTriggered);
+        if ($event instanceof EventRiskReactionTriggered)
+        {
+            $event->playerId = $playerId;
+            $event->sourceId = $sourceId;
+            $event->internalId = $internalId;
+            $event->reactionId = $reactionId;
+        }
+        return $event;
+    }
+
     public static function createReactionUsedEvent(int $playerId, int $ownerId, string $reactionId, bool $used): EventReactionUsed
     {
         $event = self::createEvent(Events::ReactionUsed);
@@ -770,6 +820,18 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->actorId = $actorId;
             $event->adversaryId = $adversaryId;
             $event->techniqueId = $techniqueId;
+        }
+
+        return $event;
+    }
+
+    public static function createRiskPlayedEvent(int $playerId, int $riskId): EventRiskPlayed
+    {
+        $event = self::createEvent(Events::RiskPlayed);
+        if ($event instanceof EventRiskPlayed)
+        {
+            $event->playerId = $playerId;
+            $event->riskId = $riskId;
         }
 
         return $event;

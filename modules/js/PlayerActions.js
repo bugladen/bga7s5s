@@ -109,7 +109,6 @@ return declare('seventhseacityoffivesails.actions', null, {
     {
         const actions = {
             'planningPhaseResolveSchemes_01125_4'                   : 'actPlanningPhase_01125_4',
-            'planningPhaseEnd_01098'                                : 'actPlanningPhaseEnd_01098',
             'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
             'highDramaMoveActionChoosePerformer'                    : 'actHighDramaMoveActionPerformerChosen',
             'highDramaInPlayActionChoosePerformer'                  : 'actHighDramaInPlayActionPerformerChosen',  
@@ -179,7 +178,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         const card = Object.values(items)[0];
 
         const actions = {
-            'highDramaPhase01072_3'   : 'actFromCardWithId',
+            'highDramaPhase01072_2'   : 'actFromCardWithId',
         };
 
         const action = actions[this.gamedatas.gamestate.name];
@@ -225,10 +224,11 @@ return declare('seventhseacityoffivesails.actions', null, {
         const actionArray = {
             'highDramaEquipActionChooseAttachmentFromHand'  : 'actHighDramaEquipActionAttachmentFromHandSelected',
             'highDramaBruteActionChooseBrute'               : 'actHighDramaBruteActionBruteChosen',
-            'highDramaPhase01148_3'                         : 'actFromCardWithId',
         };
 
-        const action = actionArray[this.gamedatas.gamestate.name];
+        let action = actionArray[this.gamedatas.gamestate.name];
+        if (action === undefined)
+            action = 'actFromCardWithId';
 
         let errors = false;
         this.bgaPerformAction(action, { 
@@ -275,6 +275,24 @@ return declare('seventhseacityoffivesails.actions', null, {
         });
     },
 
+    onMultipleChooseListCardsConfirmed: function()
+    {
+        let cards = [];
+        this.chooseList.getSelectedItems().forEach((item) => {
+            const div = this.chooseList.getItemDivId(item.id);
+            const order = parseInt($(div).getAttribute('order'));
+            cards.push({order: order, id: item.id});
+        });
+
+        const ids = cards.map((card) => card.id);
+
+        this.bgaPerformAction('actFromCardWithIds', { 
+            'ids': JSON.stringify(ids),
+        }).catch(() =>  {
+        }).then(() =>  {
+        });        
+    },
+
     onRecruitCharacterConfirmed: function()
     {
         var items = this.factionHand.getSelectedItems();
@@ -312,10 +330,15 @@ return declare('seventhseacityoffivesails.actions', null, {
         var items = this.factionHand.getSelectedItems();
         items = items.map((item) => item.id);
 
+        let errors = false;
         this.bgaPerformAction('actPayForInHandAction', { 
             'payWithCards': JSON.stringify(items),
         }).catch(() =>  {
-        });        
+            errors = true;
+        }).then(() =>  {
+            if (!errors && this.clientStateArgs.chosenActionCardId) 
+                this.factionHand.removeFromStockById(this.clientStateArgs.chosenActionCardId);
+        });
     },
 
     onPaymentConfirmed: function()
@@ -351,7 +374,10 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaPhase01180_5'               : 'actFromCardWithIds',
         };
 
-        const action = actionArray[this.gamedatas.gamestate.name];
+        let action = actionArray[this.gamedatas.gamestate.name];
+
+        if (!action)
+            action = 'actFromCardWithIds';
 
         this.bgaPerformAction(action, { 
             'ids': JSON.stringify(items),
@@ -411,7 +437,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
-    onCardsDiscarded_01185: function()
+    onCardsDiscarded: function()
     {
         let items = this.factionHand.getSelectedItems();
         items = items.map((item) => item.id);

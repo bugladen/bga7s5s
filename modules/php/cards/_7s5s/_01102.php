@@ -3,6 +3,9 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 
 class _01102 extends Risk
 {
@@ -26,6 +29,19 @@ class _01102 extends Risk
         ];
 
         $this->resetCard();
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventDuelEndOfRound && $this->ControllerId == $event->playerId && $this->Location == Game::LOCATION_DUELING_LINE)
+        {
+            $game = $event->theah->game;
+            $adversaryId = $event->theah->getDuelOpponentId($event->actorId);
+            $adversary = $event->theah->getCharacterById($adversaryId);
+            $game->createRiskAttachment($game, "01102_Attachment", $this->Id, $adversary->Location, $this->ControllerId, $adversary->ControllerId, $adversary->Id);
+        }
     }
 }
 

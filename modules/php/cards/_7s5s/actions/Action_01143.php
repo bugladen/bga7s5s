@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 
  class Action_01143 extends SchemeCityAction
  {
@@ -35,7 +36,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
             $game = $event->theah->game;
             $scheme = $this->getOwningCard($event->theah);
 
-            $game->globals->set(Game::CLAIMING_PLAYER, $scheme->ControllerId);
+            $game->globals->set(Game::PRESSURING_PLAYER, $scheme->ControllerId);
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE);
 
@@ -46,15 +47,25 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
             $engageEvent = EventFactory::createCardEngagedEvent($scheme->ControllerId, $performerId);
             $event->theah->queueEvent($engageEvent);
 
-            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($scheme->ControllerId, $performerId, $performer->Location, [Game::STAT_INFLUENCE]);
+            $pressureStats = $event->theah->getPressureStats($performer, Game::STAT_INFLUENCE);
+            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($scheme->ControllerId, $performerId, $performer->Location, $pressureStats);
             $event->theah->queueEvent($pressureOccuringEvent);
 
-            $transitionEvent = EventFactory::createTransitionEvent($scheme->ControllerId, $scheme->Id, "01143", $this->Id);
+            $transitionEvent = EventFactory::createTransitionEvent($scheme->ControllerId, $scheme->Id, "pressureLocation", $this->Id);
             $event->theah->queueEvent($transitionEvent);
 
             $this->setUsed($event->theah, true);
             $this->resetPlayerPassCount($game);
         }
+
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
+        {
+            $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $event->theah->getCharacterById($performerId);
+            $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $performer->Location);
+            $event->theah->queueEvent($claimEvent);            
+        }
+
     }
 
  }

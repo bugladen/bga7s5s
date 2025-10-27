@@ -356,6 +356,7 @@ onEnteringState: function( stateName, args )
                 }
 
                 const chosenActionCardId = args.args._private.choseActionCardId;
+                this.clientStateArgs.chosenActionCardId = chosenActionCardId;
                 const card = this.cardProperties[chosenActionCardId];
 
                 let items = this.factionHand.getAllItems();
@@ -578,7 +579,6 @@ onEnteringState: function( stateName, args )
                     else
                     {
                         const cardId = args.args._private.combatCardId;
-                        div = this.factionHand.getItemDivId(cardId);
                         div = this.factionHand.getItemDivId(cardId);
                         dojo.addClass(div, '_7sfs-unselectable');
                     }

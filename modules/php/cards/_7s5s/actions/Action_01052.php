@@ -20,9 +20,9 @@ class Action_01052 extends RiskAction
         $this->RequiresPerformerSelected = true;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
+        if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
@@ -71,8 +71,6 @@ class Action_01052 extends RiskAction
 
             $healEvent = EventFactory::createCharacterHealedEvent($performerId, $owner->Id, 1, $owner->getInjectCode());
             $event->theah->queueEvent($healEvent);
-
-            $this->resetPlayerPassCount($game);
         }
     }
 }

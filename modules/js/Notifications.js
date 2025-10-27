@@ -35,13 +35,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardRemovedFromCityDiscardPile', 500],
             ['cardRemovedFromPlayerDiscardPile', 500],
             ['cardRemovedFromLocker', 500],
+            ['catsEmbargoTargetChosen', 500],
             ['challengeIssued', 500],
             ['challengeRejected', 500],
             ['challengeCancelled', 500],
             ['challengerSwapped', 500],
             ['characterDestroyed', 1000],
             ['characterHealed', 1000],
-            ['characterInfluenceModified', 1000],
+            ['characterFinesseModifed', 1],
+            ['characterInfluenceModified', 1],
             ['characterIntervened', 500],
             ['characterMustered', 1000],
             ['characterRecruited', 1000],
@@ -749,6 +751,23 @@ return declare('seventhseacityoffivesails.notifications', null, {
         player.locker.push(card);
     },
 
+    notif_characterFinesseModifed: function( notif )
+    {
+        debug( 'notif_characterFinesseModifed' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        card.modifiedFinesse = args.newFinesse;
+
+        const element = $(`${card.divId}_finesse_value`);
+        element.innerHTML = card.modifiedFinesse;
+        if (card.modifiedFinesse != card.finesse)
+            dojo.addClass(element, '_7sfs-modified-stat-value');
+        else
+            dojo.removeClass(element, '_7sfs-modified-stat-value');
+    },
+
     notif_characterInfluenceModified: function( notif )
     {
         debug( 'notif_characterInfluenceModified' );
@@ -772,11 +791,19 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
-        const card = this.cardProperties[args.card.id];
-        card.location = this.LOCATION_PLAYER_LOCKER;
+        let card = this.cardProperties[args.card.id];
+        if (card)
+        {
+            card.location = this.LOCATION_PLAYER_LOCKER;
 
-        dojo.destroy(card.divId);
-        card.divId = null;
+            dojo.destroy(card.divId);
+            card.divId = null;    
+        }
+        else
+        {
+            card = args.card;
+            this.cardProperties[card.id] = card;
+        }
 
         const player = this.gamedatas.players[args.playerId];
         player.locker.push(card);
@@ -955,6 +982,28 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }),  div, 'last');
 
         this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
+    },
+
+    notif_catsEmbargoTargetChosen: function( notif )
+    {
+        debug( 'notif_catsEmbargoTargetChosen' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions.push(this.CATS_EMBARGO_TARGET);
+
+            const div = this.factionHand.getItemDivId(args.cardId);
+            const id = `${args.cardId}_cats_embargo_target`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: '_7sfs-cats-embargo-target-chip',
+            }),  div, 'last');
+    
+            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>` );
+        }
     },
 
     notif_01126_2_scheme_moved: function( notif )
