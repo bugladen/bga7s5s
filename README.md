@@ -23,14 +23,11 @@ SFTP Upload the entire project directory up into the BGA server.
 
 ## State of the Project 
 
-- The core game mechanics are complete.
-    - All core actions are implemented.
-    - The game handles duels to completion.
-    - The game can declare a winner at the end of the fifth day using all win conditions described in the Core Rulebook.
-    - The game can declare a winner if, in a two-player game, a Leader is sent to the Locker.
-- Montaigne Starter Deck implemented
-- Eisen Starter Deck implemented
-- Vodacce Starter Deck implemented
+- The core game mechanics are implemented.
+- Castille Starter Deck
+- Eisen Starter Deck
+- Montaigne Starter Deck
+- Vodacce Starter Deck
 
 ## Sets Implemented 
 - Core (In Progress)
