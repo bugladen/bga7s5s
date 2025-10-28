@@ -153,6 +153,9 @@ class Action_01035 extends CharacterAction
             $sinkEvent = EventFactory::createCardAddedToCityDeckEvent($kaspar->ControllerId, $mercenaryId, false);
             $game->theah->queueEvent($sinkEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($kaspar->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState("pass");
         }
 

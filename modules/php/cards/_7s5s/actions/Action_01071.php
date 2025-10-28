@@ -55,6 +55,9 @@ class Action_01071 extends SchemeCityAction
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01071", $this->Id);
             $event->theah->queueEvent($transition);
+
+            //resetPlayerPassCount is called in stSetupChallenge
+            // $this->setUsed() is called in stSetupChallenge        
         }
 
         if ($event instanceof EventCharacterWounded)

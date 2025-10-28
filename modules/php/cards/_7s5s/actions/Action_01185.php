@@ -95,6 +95,9 @@ class Action_01185 extends EventCityAction
             $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $riskyUndertaking->Id, $location, $riskyUndertaking->Id, $asEffect = true);
             $game->theah->queueEvent($event);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState("cardsDiscarded");
 
             $this->resetPlayerPassCount($game);

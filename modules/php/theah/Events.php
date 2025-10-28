@@ -122,6 +122,7 @@ class Events
     const ChangeActivePlayer = 'EventChangeActivePlayer';
 
     const ActionTriggered = 'EventActionTriggered';
+    const ActionResolved = 'EventActionResolved';
     const RiskReactionTriggered = 'EventRiskReactionTriggered';
     const ActionUsed = 'EventActionUsed';
     const ReactionUsed = 'EventReactionUsed';

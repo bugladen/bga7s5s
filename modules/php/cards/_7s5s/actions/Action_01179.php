@@ -101,6 +101,9 @@ class Action_01179 extends EventCityAction
             $playerEvent = EventFactory::createPlayerGainsReknownEvent($playerId, 1);
             $event->theah->queueEvent($playerEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
+            $event->theah->queueEvent($actionResolvedEvent);
+
             $this->resetPlayerPassCount($event->theah->game);
             // $this->setUsed() not called because special use cases
             

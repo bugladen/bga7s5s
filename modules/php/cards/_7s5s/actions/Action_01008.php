@@ -137,13 +137,16 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
             //Sink card
             $deck->insertCardOnExtremePosition($cardInfo['id'], $location, false);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to sink ${card_inject_code}.'), [
+            $game->notify->all("message", clienttranslate('${player_name} has chosen to sink ${card_inject_code}.'), [
                 "player_name" => $game->getActivePlayerName(),
                 "card_inject_code" => $card->getInjectCode(),
             ]);
 
             $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState();
         }

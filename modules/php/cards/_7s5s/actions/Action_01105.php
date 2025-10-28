@@ -99,11 +99,18 @@ class Action_01105 extends RiskCityAction
 
         }
     
-        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
-            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01105", $this->Id);
-            $event->theah->queueEvent($transitionEvent);
+
+            if ($event->success)
+            {
+                $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01105", $this->Id);
+                $event->theah->queueEvent($transitionEvent);
+            }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 

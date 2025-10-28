@@ -2,7 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01025_Burden;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -100,6 +99,9 @@ class Action_01025 extends RiskAction implements ISorcererAbility
 
             $owner = $this->getOwningCard($game->theah);
             $game->createRiskAttachment($game, "01025_Burden", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState();
         }

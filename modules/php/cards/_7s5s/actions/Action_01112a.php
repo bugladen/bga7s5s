@@ -63,6 +63,9 @@ class Action_01112a extends RiskCityAction
 
             $uncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent($performer->ControllerId, $performer->Location);
             $event->theah->queueEvent($uncontrolledEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 }

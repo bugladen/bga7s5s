@@ -57,6 +57,9 @@ class Action_01191 extends AttachmentAction
                 $event->theah->queueEvent($woundEvent);
             }
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($character->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
+
             $this->resetPlayerPassCount($event->theah->game);
             // $this->setUsed() not called because this card is destroyed
         }

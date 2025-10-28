@@ -58,6 +58,9 @@ class Action_01103b extends RiskCityAction
             $owner = $this->getOwningCard($event->theah);
             $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $performerId, $owner->Id);
             $event->theah->queueEvent($engardeEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
 
     }

@@ -520,6 +520,8 @@ trait StatesTrait
             $engageEvent = EventFactory::createCardEngagedEvent($claimingPlayerId, $performer->Id);
             $this->theah->eventCheck($engageEvent);
             $this->theah->queueEvent($engageEvent);
+
+            $this->globals->set(GAME::PASS_COUNT, 0);
         }
         
         $pressureStat = $this->globals->get(Game::PRESSURE_STAT, Game::STAT_INFLUENCE);
@@ -533,7 +535,6 @@ trait StatesTrait
         $this->theah->eventCheck($pressuredEvent);
         $this->theah->queueEvent($pressuredEvent);
 
-        $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState();
     }
 
@@ -740,15 +741,19 @@ trait StatesTrait
     {
         $this->globals->set(GAME::PASS_COUNT, 0);
 
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->getCardObjectFromDb($performerId);
+
         if ($this->globals->get(GAME::CHALLENGE_ACCEPTED))
         {
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $this->theah->queueEvent($actionResolvedEvent);
+    
             $this->gamestate->nextState("accepted");
         }
         else
         {
             //Challenge was rejected, wound the target by the threat value.  
-            $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
-            $performer = $this->getCardObjectFromDb($performerId);
             $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
             $target = $this->getCardObjectFromDb($targetId);
 
@@ -828,7 +833,11 @@ trait StatesTrait
                     $this->theah->queueEvent($event);
                 }
             }
-
+            
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $this->theah->queueEvent($actionResolvedEvent);
+    
+    
             $this->gamestate->nextState("rejected");
         }
     }

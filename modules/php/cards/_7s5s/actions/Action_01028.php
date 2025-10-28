@@ -44,10 +44,16 @@ class Action_01028 extends RiskAction
             $event->theah->queueEvent($transition);
         }
 
-        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)
         {
-            $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $event->performerId, $event->location);
-            $event->theah->queueEvent($claimEvent);
+            if ($event->success)
+            {
+                $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $event->performerId, $event->location);
+                $event->theah->queueEvent($claimEvent);
+            }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($event->playerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 

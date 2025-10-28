@@ -58,6 +58,9 @@ class Action_01103a extends RiskCityAction
 
             $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $performerId, $performer->Location);
             $event->theah->queueEvent($claimEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 }

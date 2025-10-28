@@ -81,6 +81,9 @@ class Action_01102 extends AttachmentAction
                 $owner->removeRiskAttachment($game->theah);
             }
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $this->announceAction($game);
             $this->resetPlayerPassCount($game);
             $game->gamestate->nextState("cardsChosen");

@@ -161,6 +161,9 @@ class Action_01205 extends CharacterAction
             $game->theah->queueEvent($giacintoMoveEvent);
             $game->theah->queueEvent($victimMoveEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($giacinto->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $this->announceAction($game);
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);

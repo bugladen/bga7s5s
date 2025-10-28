@@ -95,14 +95,18 @@ class Action_01085 extends RiskAction implements ISorcererAbility
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01085)
         {
+            $porteTravel = $this->getOwningCard($game->theah);
+
             //Done
             if ($id == 0)
             {
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($porteTravel->ControllerId);
+                $game->theah->queueEvent($actionResolvedEvent);
+
                 $game->gamestate->nextState();
                 return;
             }
 
-            $porteTravel = $this->getOwningCard($game->theah);
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 

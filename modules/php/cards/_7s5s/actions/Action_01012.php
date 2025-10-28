@@ -94,6 +94,9 @@ class Action_01012 extends CharacterAction implements ISorcererAbility
             $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $target->Id, $target->Location);
             $game->theah->queueEvent($event);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
             

@@ -14,6 +14,7 @@
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
@@ -84,6 +85,17 @@ class EventFactory
     {
         $className = "\Bga\Games\SeventhSeaCityOfFiveSails\\theah\\events\\$eventName";
         $event = new $className();
+        return $event;
+    }
+
+    public static function createActionResolvedEvent(int $playerId): EventActionResolved
+    {
+        $event = self::createEvent(Events::ActionResolved);
+        if ($event instanceof EventActionResolved)
+        {
+            $event->playerId = $playerId;
+        }
+
         return $event;
     }
 

@@ -122,6 +122,9 @@ class Action_01115 extends RiskCityAction
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState();
         }
     }

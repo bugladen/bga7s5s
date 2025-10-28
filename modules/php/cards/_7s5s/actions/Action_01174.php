@@ -92,6 +92,9 @@ class Action_01174 extends RiskAction
             $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location, $owner->Id, $asEffect = true);
             $game->theah->queueEvent($discardEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState();
         }
     }

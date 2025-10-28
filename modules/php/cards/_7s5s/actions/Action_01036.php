@@ -64,8 +64,8 @@ class Action_01036 extends CharacterAction
             $transitionEvent = EventFactory::createTransitionEvent($daniella->ControllerId, $daniella->Id, "01036", $this->Id);
             $event->theah->queueEvent($transitionEvent);
 
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($event->theah, true);
+            //resetPlayerPassCount is called in stSetupChallenge
+            // $this->setUsed() is called in stSetupChallenge        
         }
     }
 

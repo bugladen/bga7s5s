@@ -50,7 +50,7 @@ class Action_01038 extends CharacterAction
                 $names[] = $card->getInjectCode();
             }
 
-            $event->theah->game->notifyAllPlayers('message', clienttranslate('${player_name} uses Otto Streit\'s Action to reveal Attachments from their deck. ${found} Attachment(s) have been revealed. 
+            $event->theah->game->notify->all('message', clienttranslate('${player_name} uses Otto Streit\'s Action to reveal Attachments from their deck. ${found} Attachment(s) have been revealed. 
             <p>Cards Revealed: ${names}'), [
                 'i18n' => ['card_name'],
                 'player_name' => $event->theah->game->getActivePlayerName(),
@@ -96,7 +96,7 @@ class Action_01038 extends CharacterAction
      
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01038_3)
         {
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to put any Attachments into their Faction Hand.  The cards have been sunk.'), [
+            $game->notify->all("message", clienttranslate('${player_name} chooses not to put any Attachments into their Faction Hand.  The cards have been sunk.'), [
                 "player_name" => $game->getActivePlayerName(),
             ]);
 
@@ -105,9 +105,12 @@ class Action_01038 extends CharacterAction
             $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($otto->ControllerId, $count);
             foreach ($deckCards as $deckCard) 
             {
-                $event = EventFactory::createCardAddedToFactionDeckEvent($game->getActivePlayerId(), $deckCard['id'], false);
+                $event = EventFactory::createCardAddedToFactionDeckEvent($otto->ControllerId, $deckCard['id'], false);
                 $game->theah->queueEvent($event);
             }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($otto->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("pass");
         }
@@ -151,10 +154,10 @@ class Action_01038 extends CharacterAction
             {
                 if ($deckCard['id'] == $id)
                 {
-                    $removeEvent = EventFactory::createCardRemovedFromPlayerFactionDeckEvent($game->getActivePlayerId(), $id);
+                    $removeEvent = EventFactory::createCardRemovedFromPlayerFactionDeckEvent($otto->ControllerId, $id);
                     $game->theah->eventCheck($removeEvent);
                     
-                    $addEvent = EventFactory::createCardAddedToHandEvent($game->getActivePlayerId(), $id);
+                    $addEvent = EventFactory::createCardAddedToHandEvent($otto->ControllerId, $id);
                     $game->theah->eventCheck($addEvent);
         
                     $game->theah->queueEvent($removeEvent);
@@ -163,10 +166,13 @@ class Action_01038 extends CharacterAction
                 }
                 else
                 {
-                    $event = EventFactory::createCardAddedToFactionDeckEvent($game->getActivePlayerId(), $deckCard['id'], false);
+                    $event = EventFactory::createCardAddedToFactionDeckEvent($otto->ControllerId, $deckCard['id'], false);
                     $game->theah->queueEvent($event);
                 }
             }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($otto->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("cardChosen");
         }

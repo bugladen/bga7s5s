@@ -118,9 +118,6 @@ class Action_01076 extends RiskAction implements ISorcererAbility
 
             $locationName = $game->globals->get(Game::CHOSEN_LOCATION);
 
-            $event = EventFactory::createSorcererAbilityPlayedEvent($bloodMark->ControllerId, $bloodMark->Id, $this->Id, $performer->Id, $performer->Location);
-            $game->theah->queueEvent($event);
-
             //Move Performer to chosen location
             $event = EventFactory::createCardMovedEvent($performer->ControllerId, $performer->Id, $performer->Location, $locationName, false, $bloodMark->Id);
             $game->theah->queueEvent($event);
@@ -130,6 +127,13 @@ class Action_01076 extends RiskAction implements ISorcererAbility
                 $event = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, $locationName, false, $bloodMark->Id);
                 $game->theah->queueEvent($event);
             }
+
+            $event = EventFactory::createSorcererAbilityPlayedEvent($bloodMark->ControllerId, $bloodMark->Id, $this->Id, $performer->Id, $performer->Location);
+            $game->theah->queueEvent($event);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($bloodMark->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
 
             $game->gamestate->nextState("characterChosen");
         }

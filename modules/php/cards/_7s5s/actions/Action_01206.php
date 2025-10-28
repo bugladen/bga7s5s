@@ -67,12 +67,19 @@ class Action_01206 extends AttachmentAction
             $this->setUsed($event->theah, true);
         }
 
-        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)
         {
             $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
-            $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $performer->Location);
-            $event->theah->queueEvent($claimEvent);            
+
+            if ($event->success)
+            {
+                $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $performer->Location);
+                $event->theah->queueEvent($claimEvent);            
+            }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
 
     }

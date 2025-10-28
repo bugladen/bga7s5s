@@ -124,6 +124,9 @@ class Action_01171 extends RiskAction
                 $game->theah->queueEvent($moveEvent);
             }
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState();
         }
     }

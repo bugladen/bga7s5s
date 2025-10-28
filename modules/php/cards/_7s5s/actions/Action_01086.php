@@ -111,8 +111,12 @@ class Action_01086 extends RiskAction
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01086)
         {
             $location = $ids[0];
-            $event = EventFactory::createLocationBecomesUncontrolledEvent($game->getActivePlayerId(), $location);
+            $owner = $this->getOwningCard($game->theah);
+            $event = EventFactory::createLocationBecomesUncontrolledEvent($owner->ControllerId, $location);
             $game->theah->queueEvent($event);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState();
         }

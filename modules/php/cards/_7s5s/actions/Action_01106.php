@@ -236,6 +236,10 @@ class Action_01106 extends RiskAction
 
                 $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01106_pay", $this->Id);        
                 $game->theah->queueEvent($transition);
+
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $actionResolvedEvent->priority = Event::TRANSITION_PRIORITY;
+                $game->theah->queueEvent($actionResolvedEvent);
             }
 
             $game->gamestate->nextState("actionChosen");

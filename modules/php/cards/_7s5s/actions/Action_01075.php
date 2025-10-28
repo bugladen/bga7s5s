@@ -70,12 +70,17 @@ class Action_01075 extends AttachmentAction
             $this->resetPlayerPassCount($game);
         }
 
-        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)
         {
             $performer = $this->getOwningCharacter($event->theah);
-            $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $performer->Location);
-            $event->theah->queueEvent($claimEvent);            
-        }
+            if ($event->success)
+            {
+                $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $performer->Location);
+                $event->theah->queueEvent($claimEvent);            
+            }
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
+        }
     }
 }

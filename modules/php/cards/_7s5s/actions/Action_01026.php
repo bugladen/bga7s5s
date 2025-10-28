@@ -110,6 +110,9 @@ class Action_01026 extends RiskAction
                 $game->theah->queueEvent($moveEvent);
             }
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState();
         }
     }

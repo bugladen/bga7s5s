@@ -48,6 +48,9 @@ class Action_01094 extends CharacterAction
             
             $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $owner->Id, $owner->Id);
             $event->theah->queueEvent($engardeEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 }

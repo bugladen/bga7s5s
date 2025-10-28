@@ -517,6 +517,9 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($movedEvent);
         $this->theah->queueEvent($movedEvent);
 
+        $actionResolvedEvent = EventFactory::createActionResolvedEvent($card->ControllerId);
+        $this->theah->queueEvent($actionResolvedEvent);
+
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("destinationChosen");
     }
@@ -648,6 +651,9 @@ trait FrameworkActionsTrait
             $this->theah->eventCheck($engageEvent);
             $this->theah->queueEvent($engageEvent);
         }
+
+        $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
+        $this->theah->queueEvent($actionResolvedEvent);
 
         $this->actRecruitMercenary($recruitId, $payWithCards);
         $this->globals->set(GAME::PASS_COUNT, 0);
@@ -885,6 +891,9 @@ trait FrameworkActionsTrait
 
         $this->cards->moveCard($attachment->Id, $performer->Location, $attachment->ControllerId);
         $this->theah->queueEvent($equipAttachmentEvent);
+
+        $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
+        $this->theah->queueEvent($actionResolvedEvent);
 
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("attachmentEquipped");
@@ -1156,9 +1165,6 @@ trait FrameworkActionsTrait
             "explanations" => $explanations,
         ]);
 
-        //Reset the player pass count 
-        $this->globals->set(GAME::PASS_COUNT, 0);
-
         $event = EventFactory::createRiskPlayedEvent($playerId, $risk->Id);
         $this->theah->queueEvent($event);
 
@@ -1169,7 +1175,9 @@ trait FrameworkActionsTrait
         $event = EventFactory::createCardDiscardedFromHandEvent($risk->OwnerId, $risk->Id, $sourceId = 0, $asPayment = false, $asPlayed = true);
         $this->theah->queueEvent($event);
 
+        //Reset the player pass count 
         $this->globals->set(GAME::PASS_COUNT, 0);
+        
         $this->gamestate->nextState("actionPaidFor");
     }
 
@@ -1249,6 +1257,9 @@ trait FrameworkActionsTrait
 
         $musterEvent = EventFactory::createCharacterMusteredEvent($playerId, $brute->Id, Game::LOCATION_PLAYER_HOME);
         $this->theah->queueEvent($musterEvent);
+
+        $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
+        $this->theah->queueEvent($actionResolvedEvent);
 
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("brutePaidFor");

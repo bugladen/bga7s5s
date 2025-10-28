@@ -288,6 +288,9 @@ class Action_01113 extends RiskCityAction
     
             $musterEvent = EventFactory::createAttachmentEquippedEvent($performer->ControllerId, $performer->Id, $attachment->Id, $discount, $cost, $asAction = false, $explanations);
             $game->theah->queueEvent($musterEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
     
             $game->gamestate->nextState();
 

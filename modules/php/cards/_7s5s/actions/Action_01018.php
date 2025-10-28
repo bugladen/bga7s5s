@@ -52,6 +52,10 @@ class Action_01018 extends CharacterAction
 
             $event = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
             $game->theah->queueEvent($event);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
         }
     }
 }

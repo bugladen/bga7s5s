@@ -128,6 +128,9 @@ class Action_01097 extends CharacterAction
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $target->Id, $owner->Id);
             $game->theah->queueEvent($engageEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $this->announceAction($game);
             $this->resetPlayerPassCount($game);
             $this->setUsed($game->theah, true);

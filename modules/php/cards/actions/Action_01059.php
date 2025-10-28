@@ -67,6 +67,9 @@ class Action_01059 extends RiskCityAction
             $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $performer->Id, $performer->Location, $location, $engage = false, $owner->Id);
             $game->theah->queueEvent($moveEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState();
         }
     }

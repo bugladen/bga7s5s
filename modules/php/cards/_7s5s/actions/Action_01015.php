@@ -113,7 +113,7 @@ class Action_01015 extends SchemeCityAction
                 throw new \BgaUserException($game->translate("Character is not at the same location"));
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code}: ${player_name} used the [${action_name}] action.'), [
+            $game->notify->all("message", clienttranslate('${scheme_inject_code}: ${player_name} used the [${action_name}] action.'), [
                 "i18n" => ["action_name"],
                 "scheme_inject_code" => $scheme->getInjectCode(),
                 "action_name" => $this->Name,
@@ -126,6 +126,9 @@ class Action_01015 extends SchemeCityAction
 
             $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $scheme->Id, 1, $scheme->getInjectCode());
             $game->theah->queueEvent($woundEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);

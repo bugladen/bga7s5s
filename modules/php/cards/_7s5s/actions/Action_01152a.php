@@ -120,6 +120,9 @@ class Action_01152a extends SchemeCityAction
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $this->announceAction($game);
 
             $this->setUsed($game->theah, true);

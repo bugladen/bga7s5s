@@ -99,6 +99,9 @@ class Action_01019 extends CharacterAction
             $event = EventFactory::createCharacterWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $game->theah->queueEvent($event);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState("characterChosen");
         }
     }

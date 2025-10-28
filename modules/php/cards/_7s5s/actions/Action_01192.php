@@ -109,6 +109,10 @@ class Action_01192 extends CharacterAction
                 "player_name" => $game->getActivePlayerName(),
             ]);
 
+            $gustavo = $this->getOwningCharacter($game->theah);
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($gustavo->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState("pass");
         }
     }
@@ -170,6 +174,9 @@ class Action_01192 extends CharacterAction
                     $game->theah->queueEvent($event);
                 }
             }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($gustavo->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("cardChosen");
         }

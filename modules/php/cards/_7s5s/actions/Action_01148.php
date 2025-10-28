@@ -202,6 +202,9 @@ class Action_01148 extends SchemeCityAction
                 return;
             }
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($scheme->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState("cancel");
         }
     }

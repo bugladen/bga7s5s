@@ -208,6 +208,9 @@ class Action_01197 extends CharacterAction
             $game->theah->eventCheck($moveAttachment);
             $game->theah->queueEvent($moveAttachment);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($kalla->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState("characterChosen");
         }
     }

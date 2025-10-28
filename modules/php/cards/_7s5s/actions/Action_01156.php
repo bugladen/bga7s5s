@@ -160,6 +160,9 @@ class Action_01156 extends AttachmentAction
 
                 $woundEvent = EventFactory::createCharacterWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
+
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+                $game->theah->queueEvent($actionResolvedEvent);
             }
             else
             {
@@ -200,6 +203,9 @@ class Action_01156 extends AttachmentAction
                 $woundEvent = EventFactory::createCharacterWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
             }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($musket->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState();
         }

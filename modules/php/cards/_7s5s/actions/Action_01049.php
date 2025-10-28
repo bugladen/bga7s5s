@@ -162,6 +162,9 @@ class Action_01049 extends AttachmentAction
                 $game->theah->queueEvent($engageEvent);
             }
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState();
         }
     }

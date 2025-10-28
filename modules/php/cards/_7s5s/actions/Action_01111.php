@@ -173,6 +173,9 @@ class Action_01111 extends RiskAction
             $addEvent = EventFactory::createCardAddedToHandEvent($owner->ControllerId, $id);
             $game->theah->queueEvent($addEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState();
         }
     }

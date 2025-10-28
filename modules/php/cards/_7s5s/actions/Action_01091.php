@@ -106,6 +106,9 @@ class Action_01091 extends CharacterAction
                 $healEvent = EventFactory::createCharacterHealedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode());
                 $game->theah->queueEvent($healEvent);
 
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $game->theah->queueEvent($actionResolvedEvent);
+
                 $this->setUsed($game->theah, true);
                 $this->announceAction($game);
                 $this->resetPlayerPassCount($game);
@@ -149,6 +152,9 @@ class Action_01091 extends CharacterAction
                 $event = EventFactory::createCharacterHealedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode());
                 $game->theah->queueEvent($event);
             }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("cardChosen");
         }

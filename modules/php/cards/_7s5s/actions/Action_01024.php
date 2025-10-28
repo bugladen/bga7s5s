@@ -95,6 +95,9 @@ class Action_01024 extends RiskAction
             $event = EventFactory::createCharacterMusteredEvent($owner->ControllerId, $thug->Id, $leader->Location);
             $game->theah->queueEvent($event);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState();
         }
     }

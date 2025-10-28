@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -52,7 +53,7 @@ class Action_01072 extends CardAction
             $leader = $event->theah->getLeaderByPlayerId($event->playerId);
 
             $scheme = $this->getOwningCard($event->theah);
-            $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${player_name} used Action.
+            $game->notify->all("message", clienttranslate('${action_inject_code}: ${player_name} used Action.
             They will pressure the location, discard a City Card, and muster a Character from their Approach Deck.'), [
                 "action_inject_code" => $scheme->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($leader->ControllerId)
@@ -61,41 +62,34 @@ class Action_01072 extends CardAction
             $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $leader->Id);
             $event->theah->queueEvent($engageEvent);
 
+            $game->globals->set(Game::CHOSEN_PERFORMER, $leader->Id);
+            $game->globals->set(Game::PRESSURING_PLAYER, $leader->ControllerId);
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
-            $pressureTypes = $event->theah->getPressureTypes($leader, Game::STAT_INFLUENCE);
-            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($leader->ControllerId, $leader->Id, $leader->Location, $pressureTypes);
+            $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE);
+
+            $pressureStats = $event->theah->getPressureStats($leader, Game::STAT_INFLUENCE);
+            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($leader->ControllerId, $leader->Id, $leader->Location, $pressureStats);
             $event->theah->queueEvent($pressureOccuringEvent);
 
             $scheme = $this->getOwningCard($event->theah);
-            $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $scheme->Id, "01072", $this->Id);
+            $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $scheme->Id, "pressureLocation", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
 
-        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
-        {
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)
+        {            
             $owner = $this->getOwningCard($event->theah);
-            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01072_2", $this->Id);
-            $event->theah->queueEvent($transitionEvent);
-        }
-    }
 
-    public function stateFromAction(Game $game, int $state, string $stateName): void
-    {
-        parent::stateFromAction($game, $state, $stateName);
-
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01072)
-        {
-            $owner = $this->getOwningCard($game->theah);
-            $leader = $game->theah->getLeaderByPlayerId($owner->ControllerId);
-
-            $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE);
-            [$success, $totals, $difference] = $game->pressureLocation($owner->ControllerId, $leader, Game::STAT_INFLUENCE);
-
-            $pressuredEvent = EventFactory::createLocationPressuredEvent($owner->ControllerId, $leader->Id, $leader->Location, Game::STAT_INFLUENCE, $success, $totals, $difference);
-            $pressuredEvent->abilityId = $this->Id;
-            $game->theah->queueEvent($pressuredEvent);
-
-            $game->gamestate->nextState();
+            if ($event->success)
+            {
+                $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01072", $this->Id);
+                $event->theah->queueEvent($transitionEvent);
+            }
+            else
+            {
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $event->theah->queueEvent($actionResolvedEvent);
+            }
         }
     }
 
@@ -103,7 +97,7 @@ class Action_01072 extends CardAction
     {
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01072_2)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01072)
         {
             //Get a list of City Cards at the leader's location
             $leader = $game->theah->getLeaderByPlayerId($game->getActivePlayerId());
@@ -117,7 +111,7 @@ class Action_01072 extends CardAction
             $args["schemeId"] = $scheme->Id;
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01072_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01072_2)
         {
             $args["chosenCardId"] = $game->globals->get(Game::CHOSEN_CARD);
 
@@ -132,7 +126,7 @@ class Action_01072 extends CardAction
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01072_2)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01072)
         {
             $leader = $game->theah->getLeaderByPlayerId($game->getActivePlayerId());
 
@@ -171,7 +165,7 @@ class Action_01072 extends CardAction
             $game->gamestate->nextState();
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01072_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01072_2)
         {
             $playerId = $game->getActivePlayerId();
             $cards = $game->theah->getCardObjectsAtLocation(Game::LOCATION_APPROACH, $playerId);
@@ -206,8 +200,7 @@ class Action_01072 extends CardAction
                 ]);
 
                 $discardedCard = $game->theah->getCardById($discardedCard);
-                $owner = $this->getOwningCard($game->theah);
-                $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $discardedCard->Id, $discardedCard->Location, $owner->Id, $asEffect = true);
+                $event = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $discardedCard->Id, $discardedCard->Location);
                 $game->theah->queueEvent($event);
             }
 
@@ -224,6 +217,10 @@ class Action_01072 extends CardAction
             }
 
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("cardChosen");
         }

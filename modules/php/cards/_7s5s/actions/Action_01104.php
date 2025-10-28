@@ -103,6 +103,9 @@ class Action_01104 extends RiskCityAction
             $moveEvent = EventFactory::createCardMovedEvent($owner->ControllerId, $performer->Id, $performer->Location, Game::LOCATION_PLAYER_HOME, true, $owner->Id);
             $game->theah->queueEvent($moveEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState();
         }
     }

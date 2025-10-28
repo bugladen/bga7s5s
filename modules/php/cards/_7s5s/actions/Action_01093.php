@@ -97,6 +97,9 @@ class Action_01093 extends CharacterAction
             $moveEvent = EventFactory::createCardMovedEvent($owner->ControllerId, $owner->Id, $owner->Location, $location->Name, $engage = false, $owner->Id);
             $game->theah->queueEvent($moveEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $this->resetPlayerPassCount($game);
             $this->announceAction($game);
             $this->setUsed($game->theah, true);

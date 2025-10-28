@@ -76,11 +76,20 @@ class Action_01072 extends CardAction
             $event->theah->queueEvent($transitionEvent);
         }
 
-        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
-        {
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)
+        {            
             $owner = $this->getOwningCard($event->theah);
-            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01072", $this->Id);
-            $event->theah->queueEvent($transitionEvent);
+
+            if ($event->success)
+            {
+                $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01072", $this->Id);
+                $event->theah->queueEvent($transitionEvent);
+            }
+            else
+            {
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $event->theah->queueEvent($actionResolvedEvent);
+            }
         }
     }
 
@@ -208,6 +217,10 @@ class Action_01072 extends CardAction
             }
 
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("cardChosen");
         }

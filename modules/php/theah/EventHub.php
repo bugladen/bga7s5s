@@ -786,11 +786,17 @@ trait EventHub
                         "result" => $event->success ? clienttranslate("SUCCESS") : clienttranslate("FAILED"),
                     ]);
 
-                    if ($event->highDramaBasicAction && $event->success)
+                    if ($event->highDramaBasicAction)
                     {
-                        $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $performer->Id, $performer->Location);
-                        $theah->eventCheck($claimEvent);
-                        $theah->queueEvent($claimEvent);
+                        if ($event->success)
+                        {
+                            $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $performer->Id, $performer->Location);
+                            $theah->eventCheck($claimEvent);
+                            $theah->queueEvent($claimEvent);
+                        }
+
+                        $actionResolvedEvent = EventFactory::createActionResolvedEvent($event->playerId);
+                        $theah->queueEvent($actionResolvedEvent);
                     }
                 };
                 $handler($this, $event);

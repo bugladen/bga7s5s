@@ -83,6 +83,9 @@ class Action_01062 extends CharacterAction
             $event->theah->eventCheck($moveEvent);
             $event->theah->queueEvent($moveEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
+
             $this->setUsed($event->theah, true);
             $this->resetPlayerPassCount($game);
         }

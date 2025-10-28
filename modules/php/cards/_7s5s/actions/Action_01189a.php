@@ -111,11 +111,14 @@ class Action_01189a extends EventCityAction
     
             $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($poo->ControllerId, $poo->Id, $poo->Location, $poo->Id, $asEffect = true);
             $game->theah->eventCheck($discardEvent);
-    
+
             $game->theah->queueEvent($engageEvent);
             $game->theah->queueEvent($fromEvent);
             $game->theah->queueEvent($toEvent);
             $game->theah->queueEvent($discardEvent);
+    
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
     
             $this->announceAction($game);
 

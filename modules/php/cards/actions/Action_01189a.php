@@ -116,6 +116,9 @@ class Action_01189a extends EventCityAction
             $game->theah->queueEvent($fromEvent);
             $game->theah->queueEvent($toEvent);
             $game->theah->queueEvent($discardEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
     
             $this->announceAction($game);
 

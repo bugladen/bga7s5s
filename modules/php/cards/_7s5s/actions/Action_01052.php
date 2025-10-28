@@ -71,6 +71,9 @@ class Action_01052 extends RiskAction
 
             $healEvent = EventFactory::createCharacterHealedEvent($performerId, $owner->Id, 1, $owner->getInjectCode());
             $event->theah->queueEvent($healEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 }

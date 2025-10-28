@@ -168,6 +168,9 @@ class Action_01194 extends CharacterAction
             $game->theah->queueEvent($discardEvent);
             $game->theah->queueEvent($woundEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($adelheide->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->notify->all('message', clienttranslate('${player_name} uses Adelheide Schmidt\'s Action to wound ${character_name}.'), [
                 'i18n' => ['character_name'],
                 'player_name' => $game->getActivePlayerName(),

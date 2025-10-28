@@ -97,6 +97,9 @@ class Action_01017 extends CharacterAction
             $event = EventFactory::createCardEngagedEvent($owner->ControllerId, $target->Id, $owner->Id, $owner->getInjectCode());
             $game->theah->queueEvent($event);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState("characterChosen");
         }
     }
