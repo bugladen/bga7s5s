@@ -45,7 +45,8 @@ class Maneuver_01108a extends Maneuver
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
-            $adversaryId = $event->theah->getDuelOpponentId($owner->ControllerId);
+            $actor = $event->theah->getDuelRoundActor();
+            $adversaryId = $event->theah->getDuelOpponentId($actor->Id);
             $adversary = $event->theah->getCharacterById($adversaryId);
             $transitionEvent = EventFactory::createTransitionEvent($adversary->ControllerId, $owner->Id, "01108", $this->Id);
             $event->theah->queueEvent($transitionEvent);
