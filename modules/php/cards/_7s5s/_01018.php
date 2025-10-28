@@ -30,8 +30,8 @@ class _01018 extends Brute implements IHasActions
         $this->Influence = 0;
         $this->DashedInfluence = true;
 
-        $this->Riposte = 1;
-        $this->Parry = 1;
+        $this->Riposte = 0;
+        $this->Parry = 2;
         $this->Thrust = 0;
 
         $this->WealthCost = 0;
