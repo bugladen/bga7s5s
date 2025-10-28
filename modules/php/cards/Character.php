@@ -148,6 +148,7 @@ abstract class Character extends Card implements IHasTechniques
             $this->ModifiedInfluence -= $attachment->InfluenceModifier;
 
             unset($this->Attachments[$index]);
+            $this->Attachments = array_values($this->Attachments);
             $this->IsUpdated = true;
         }
     }
@@ -270,7 +271,7 @@ abstract class Character extends Card implements IHasTechniques
         $properties['dashedFinesse'] = $this->DashedFinesse;
         $properties['dashedInfluence'] = $this->DashedInfluence;
 
-        $properties['attachments'] = $this->Attachments;
+        $properties['attachments'] = array_values($this->Attachments);
 
         $properties['type'] = 'Character';
 

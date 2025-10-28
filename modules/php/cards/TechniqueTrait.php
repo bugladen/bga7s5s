@@ -92,7 +92,7 @@ trait TechniqueTrait
 
     public function removeTechnique(Technique $technique, Game $game)
     {
-        $this->Techniques = array_filter($this->Techniques, fn($t) => $t->Id != $technique->Id);
+        $this->Techniques = array_values(array_filter($this->Techniques, fn($t) => $t->Id != $technique->Id));
 
         $game->notifyAllPlayers('techniqueRemoved', clienttranslate('${character_inject_code} has lost Technique: ${technique_name}.'), [
             'i18n' => ['technique_name'],

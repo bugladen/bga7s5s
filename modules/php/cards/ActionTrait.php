@@ -95,7 +95,7 @@ trait ActionTrait
 
     public function removeAction(CardAction $action, Game $game, bool $notify = true)
     {
-        $this->Actions = array_filter($this->Actions, fn($a) => $a->Id != $action->Id);
+        $this->Actions = array_values(array_filter($this->Actions, fn($a) => $a->Id != $action->Id));
 
         if ($notify)
         {

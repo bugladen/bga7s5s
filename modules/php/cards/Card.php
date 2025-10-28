@@ -438,8 +438,8 @@ abstract class Card
         if (empty($this->ModifiedTraits))
             $this->ModifiedTraits = $this->Traits;
 
-        $properties['traits'] = $this->ModifiedTraits;
-        $properties['conditions'] = $this->Conditions;
+        $properties['traits'] = array_values($this->ModifiedTraits);
+        $properties['conditions'] = array_values($this->Conditions);
 
         if ($this instanceof IWealthCost) $this->addWealthCostProperties($properties);
         if ($this instanceof ICityDeckCard) $this->addCityProperties($properties);
