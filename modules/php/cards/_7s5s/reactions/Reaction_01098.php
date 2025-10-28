@@ -22,14 +22,13 @@ class Reaction_01098 extends CardReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} may choose to gain a Reknown after Cat\'s Embargo Chosen Card is played: '));
+        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} will gain a Reknown because the Cat\'s Embargo chosen card was played: '));
     }
 
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Gain Reknown'), 'gainReknown');
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
         return $array;
     }
 
