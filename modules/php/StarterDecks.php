@@ -135,12 +135,7 @@ class StarterDecks
                         { "id": "01172", "count": 2 },
                         { "id": "01174", "count": 1 }
                     ]
-                }
-            ]
-        }
-        JSON;
-        
-        /*
+                },
                 {
                     "id": "SDUsurra",
                     "name": "Usurra Starter",
@@ -173,6 +168,8 @@ class StarterDecks
                         { "id": "01172", "count": 2 },
                         { "id": "01176", "count": 1 }
                     ]
-                },
-        */
+                }
+            ]
+        }
+        JSON;
 }

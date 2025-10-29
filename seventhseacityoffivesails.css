@@ -148,6 +148,9 @@ body {
 ._7sfs-deck-picker-faction-image._7sfs-vodacce {
     background-image: url('img/cards/deckpicker/006.jpg');
 }    
+._7sfs-deck-picker-faction-image._7sfs-usurra {
+    background-image: url('img/cards/deckpicker/116.jpg');
+}    
 
 #city {
     position: relative;
