@@ -65,6 +65,9 @@ trait FrameworkActionsTrait
         $passCount++;        
         $this->globals->set(GAME::PASS_COUNT, $passCount);
 
+        $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
+        $this->theah->queueEvent($actionResolvedEvent);
+
         if ($passCount >= $this->globals->get(GAME::PLAYER_COUNT)) 
             $this->gamestate->nextState("end");
         else
