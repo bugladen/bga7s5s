@@ -16,7 +16,7 @@ class _01124 extends Character
         $this->ExpansionNumber = 1;
         $this->CardNumber = 124;
 
-        $this->Faction = "Usurra";
+        $this->Faction = "Ussura";
         $this->Title = "Ancient Witch";
         $this->Resolve = 3;
         $this->Combat = 1;
@@ -25,7 +25,7 @@ class _01124 extends Character
 
         $this->Traits = [
             "Sorcerer",
-            "Usurra",
+            "Ussura",
         ];
 
         $this->resetCard();

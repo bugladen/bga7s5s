@@ -18,7 +18,7 @@ class _01120 extends Character
         $this->ExpansionNumber = 1;
         $this->CardNumber = 120;
 
-        $this->Faction = "Usurra";
+        $this->Faction = "Ussura";
         $this->Title = "Resolute Scribe";
         $this->Resolve = 3;
         $this->Combat = 0;
@@ -27,7 +27,7 @@ class _01120 extends Character
 
         $this->Traits = [
             "Academic",
-            "Usurra",
+            "Ussura",
         ];
 
         $this->resetCard();

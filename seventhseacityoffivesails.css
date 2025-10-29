@@ -148,7 +148,7 @@ body {
 ._7sfs-deck-picker-faction-image._7sfs-vodacce {
     background-image: url('img/cards/deckpicker/006.jpg');
 }    
-._7sfs-deck-picker-faction-image._7sfs-usurra {
+._7sfs-deck-picker-faction-image._7sfs-ussura {
     background-image: url('img/cards/deckpicker/116.jpg');
 }    
 
@@ -424,7 +424,7 @@ body {
 ._7sfs-home-castille { background-color: #F46D2A; }
 ._7sfs-home-eisen { background-color: #8B9C9E; }
 ._7sfs-home-montaigne { background-color: #B5BF5D; }
-._7sfs-home-usurra { background-color: #ACF075; }
+._7sfs-home-ussura { background-color: #ACF075; }
 ._7sfs-home-vodacce { background-color: #E7AE4D; }
 
 
@@ -618,7 +618,7 @@ body {
 ._7sfs-seal-montaigne-home {
     background-position: -310px -84px;
 }
-._7sfs-seal-usurra-home {
+._7sfs-seal-ussura-home {
     background-position: -465px -84px;
 }
 ._7sfs-seal-vodacce-home {
@@ -642,7 +642,7 @@ body {
 ._7sfs-seal-montaigne-score {
     background-position: -126px -34px;
 }
-._7sfs-seal-usurra-score {
+._7sfs-seal-ussura-score {
     background-position: -188px -34px;
 }
 ._7sfs-seal-vodacce-score {

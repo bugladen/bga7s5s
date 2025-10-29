@@ -20,7 +20,7 @@ class _01125 extends Scheme
         $this->ExpansionNumber = 1;
         $this->CardNumber = 125;
 
-        $this->Faction = "Usurra";
+        $this->Faction = "Ussura";
         $this->Initiative = 40;
         $this->PanacheModifier = 1;
 

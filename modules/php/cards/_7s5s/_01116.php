@@ -16,7 +16,7 @@ class _01116 extends Leader
         $this->ExpansionNumber = 1;
         $this->CardNumber = 116;
 
-        $this->Faction = "Usurra";
+        $this->Faction = "Ussura";
         $this->Title = "The Boar";
         $this->Resolve = 12;
         $this->Combat = 4;
@@ -30,7 +30,7 @@ class _01116 extends Leader
             "Exile",
             "Hero",
             "Sorcerer",
-            "Usurra",
+            "Ussura",
         ];
 
         $this->resetCard();

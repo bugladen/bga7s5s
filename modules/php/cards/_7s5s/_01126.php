@@ -30,7 +30,7 @@ class _01126 extends Scheme
         $this->ExpansionNumber = 1;
         $this->CardNumber = 126;
 
-        $this->Faction = "Usurra";
+        $this->Faction = "Ussura";
         $this->Initiative = 34;
         $this->PanacheModifier = 0;
 

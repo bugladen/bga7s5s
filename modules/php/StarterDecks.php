@@ -104,6 +104,39 @@ class StarterDecks
                     ]
                 },
                 {
+                    "id": "SDUssura",
+                    "name": "Ussura Starter",
+                    "faction": "Ussura",
+                    "leader": "01116",
+                    "approach_deck": [ "01125", "01126", "01144", "01150", "01145", "01123", "01124", "01118", "01122", "01120" ],
+                    "faction_deck": [
+                        { "id": "01127", "count": 1 },
+                        { "id": "01128", "count": 2 },
+                        { "id": "01130", "count": 2 },
+                        { "id": "01131", "count": 1 },
+                        { "id": "01132", "count": 2 },
+                        { "id": "01133", "count": 2 },
+                        { "id": "01134", "count": 2 },
+                        { "id": "01135", "count": 2 },
+                        { "id": "01136", "count": 2 },
+                        { "id": "01137", "count": 2 },
+                        { "id": "01138", "count": 2 },
+                        { "id": "01139", "count": 1 },
+                        { "id": "01140", "count": 2 },
+                        { "id": "01141", "count": 2 },
+                        { "id": "01142", "count": 1 },
+                        { "id": "01153", "count": 2 },
+                        { "id": "01155", "count": 2 },
+                        { "id": "01159b", "count": 1 },
+                        { "id": "01161", "count": 2 },
+                        { "id": "01162", "count": 1 },
+                        { "id": "01165", "count": 2 },
+                        { "id": "01168", "count": 1 },
+                        { "id": "01172", "count": 2 },
+                        { "id": "01176", "count": 1 }
+                    ]
+                },
+                {
                     "id": "SDVodacce",
                     "name": "Vodacce Starter",
                     "faction": "Vodacce",
@@ -134,39 +167,6 @@ class StarterDecks
                         { "id": "01171", "count": 2 },
                         { "id": "01172", "count": 2 },
                         { "id": "01174", "count": 1 }
-                    ]
-                },
-                {
-                    "id": "SDUsurra",
-                    "name": "Usurra Starter",
-                    "faction": "Eisen",
-                    "leader": "01116",
-                    "approach_deck": [ "01125", "01126", "01144", "01150", "01145", "01123", "01124", "01118", "01122", "01120" ],
-                    "faction_deck": [
-                        { "id": "01127", "count": 1 },
-                        { "id": "01128", "count": 2 },
-                        { "id": "01130", "count": 2 },
-                        { "id": "01131", "count": 1 },
-                        { "id": "01132", "count": 2 },
-                        { "id": "01133", "count": 2 },
-                        { "id": "01134", "count": 2 },
-                        { "id": "01135", "count": 2 },
-                        { "id": "01136", "count": 2 },
-                        { "id": "01137", "count": 2 },
-                        { "id": "01138", "count": 2 },
-                        { "id": "01139", "count": 1 },
-                        { "id": "01140", "count": 2 },
-                        { "id": "01141", "count": 2 },
-                        { "id": "01142", "count": 1 },
-                        { "id": "01153", "count": 2 },
-                        { "id": "01155", "count": 2 },
-                        { "id": "01159b", "count": 1 },
-                        { "id": "01161", "count": 2 },
-                        { "id": "01162", "count": 1 },
-                        { "id": "01165", "count": 2 },
-                        { "id": "01168", "count": 1 },
-                        { "id": "01172", "count": 2 },
-                        { "id": "01176", "count": 1 }
                     ]
                 }
             ]

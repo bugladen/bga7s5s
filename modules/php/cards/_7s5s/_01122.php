@@ -16,7 +16,7 @@ class _01122 extends Character
         $this->ExpansionNumber = 1;
         $this->CardNumber = 122;
 
-        $this->Faction = "Usurra";
+        $this->Faction = "Ussura";
         $this->Title = "Incorrigible Drunk";
         $this->Resolve = 6;
         $this->Combat = 3;
