@@ -201,19 +201,15 @@ class Maneuver_01113 extends Maneuver
             $game->globals->set(Game::CHOSEN_ATTACHMENT, $attachment->Id);
 
             $game->globals->set(Game::CHOSEN_CARD_COST, $attachment->WealthCost);
-            [$discount, $explanations] = $game->theah->getEquipDiscount($actor, $attachment);
-            if ($discount != 0)
-                $game->notify->player($actor->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                    "explanations" => $explanations,
-                ]);
-            $game->globals->set(Game::DISCOUNT, $discount);
-            $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
     
             $discardEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($adversary->ControllerId, $attachment->Id);
             $game->theah->queueEvent($discardEvent);
 
             $addedToHandEvent = EventFactory::createCardAddedToHandEvent($actor->ControllerId, $attachment->Id);
             $game->theah->queueEvent($addedToHandEvent);
+
+            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
+            $game->theah->queueEvent($event);
 
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01113_2", $this->Id);
             $game->theah->queueEvent($transition);

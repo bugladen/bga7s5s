@@ -168,6 +168,12 @@ class Game extends \Bga\GameFramework\Table
     final const GAMBLE_TYPE_NORMAL = 0;
     final const GAMBLE_TYPE_ROLL_THE_DICE = 1;
 
+    //Pay state global variables
+    final const PAY_STATE_IN_HAND_ACTION = 0;
+    final const PAY_STATE_EQUIP_ATTACHMENT = 1;
+    final const PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD = 2;
+    final const PAY_STATE_IN_HAND_REACTION = 3;
+
     use DeckTrait;
     use StatesTrait;
     use FrameworkActionsTrait;

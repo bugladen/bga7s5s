@@ -224,22 +224,17 @@ class Action_01113 extends RiskCityAction
             $game->theah->queueEvent($discardEvent);
 
             $game->globals->set(Game::CHOSEN_ATTACHMENT, $attachment->Id);
-
             $game->globals->set(Game::CHOSEN_CARD_COST, $attachment->WealthCost);
-            [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $attachment);
-            if ($discount != 0)
-                $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                    "explanations" => $explanations,
-                ]);
-            $game->globals->set(Game::DISCOUNT, $discount);
-            $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
-    
+
             $discardEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($opponentId, $attachment->Id);
             $game->theah->queueEvent($discardEvent);
 
             $addedToHandEvent = EventFactory::createCardAddedToHandEvent($performer->ControllerId, $attachment->Id);
             $game->theah->queueEvent($addedToHandEvent);
 
+            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
+            $game->theah->queueEvent($event);
+            
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01113_2", $this->Id);
             $game->theah->queueEvent($transition);
 

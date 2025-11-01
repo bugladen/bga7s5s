@@ -120,6 +120,8 @@ class Events
     //Game Flow events
     const Transition = 'EventTransition';
     const ChangeActivePlayer = 'EventChangeActivePlayer';
+    const EnteringPayState = 'EventEnteringPayState';
+    const CalculatePayDiscount = 'EventCalculatePayDiscount';
 
     const ActionTriggered = 'EventActionTriggered';
     const ActionResolved = 'EventActionResolved';

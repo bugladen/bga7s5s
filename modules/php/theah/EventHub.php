@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlaye
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCalculatePayDiscount;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
@@ -71,6 +72,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontrolled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
@@ -1613,6 +1615,79 @@ trait EventHub
                         "card_inject_code" => $card->getInjectCode(),
                         "card" => $card->getPropertyArray($theah->game),
                     ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventEnteringPayState:
+                $handler = function ($theah, EventEnteringPayState $event)
+                {
+                    $payDiscountEvent = EventFactory::createCalculatePayDiscountEvent($event->playerId, $event->cardId, $event->payStateType);
+                    $payDiscountEvent->priority = $event->priority;
+                    $theah->queueEvent($payDiscountEvent);
+                    if ($event->wasStacked)
+                    {
+                        $theah->stackEvent($payDiscountEvent);
+                    }
+                    else
+                    {
+                        $theah->queueEvent($payDiscountEvent);
+                    }
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCalculatePayDiscount:
+                $handler = function ($theah, EventCalculatePayDiscount $event)
+                {
+
+                    $discount = 0;
+                    $explanations = '';
+
+                    if ($event->payStateType == Game::PAY_STATE_IN_HAND_ACTION)
+                    {
+                        $actionId = $theah->game->globals->get(GAME::CHOSEN_ACTION);
+                        $action = $theah->getInHandActionById($actionId);
+                        $performer = null;
+                        if ($action->RequiresPerformerSelected)
+                        {
+                            $performerId = $theah->game->globals->get(Game::CHOSEN_PERFORMER);
+                            $performer = $theah->getCharacterById($performerId);
+                        }
+
+                        [$discount, $explanations] = $theah->getActionFromHandDiscount($performer, $action);           
+                    }
+
+                    if ($event->payStateType == Game::PAY_STATE_IN_HAND_REACTION)
+                    {
+                        $internalId = $theah->game->globals->get(Game::TRANSITION_INTERNAL_ID);
+                        $card = $theah->getCardById($event->cardId);
+                        $reaction = $card->getReactionById($internalId);
+                        [$discount, $explanations] = $theah->getReactionFromHandDiscount($reaction);
+                    }
+
+                    if ($event->payStateType == Game::PAY_STATE_EQUIP_ATTACHMENT)
+                    {
+                        $performerId = $theah->game->globals->get(Game::CHOSEN_PERFORMER);
+                        $performer = $theah->getCharacterById($performerId);
+                        $attachment = $theah->getAttachmentById($event->cardId);
+
+                        [$discount, $explanations] = $theah->getEquipDiscount($performer, $attachment);
+                    }
+
+                    if ($event->payStateType == Game::PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD)
+                    {
+                        $combatCard = $theah->getCardById($event->cardId);
+                        [$discount, $explanations] = $theah->getManeuverFromCombatCardDiscount($combatCard);
+                    }
+
+                    if ($discount != 0)
+                    $theah->game->notify->player($event->playerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+                        "explanations" => $explanations,
+                    ]);
+
+                    $theah->game->globals->set(Game::DISCOUNT, $discount);
+                    $theah->game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
                 };
                 $handler($this, $event);
                 break;

@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
@@ -42,7 +43,12 @@ abstract class CardReaction extends Reaction implements ICardAbility
         return sprintf($theah->game->translate('${you} must now select cards to pay for Reaction: %s'), $this->Name);
     }
 
-    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction): int
+    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction, Array &$explanations): int
+    {
+        return 0;
+    }
+
+    public function getManeuverFromCombatCardDiscount(Theah $theah, Risk $combatCard, Array &$explanations): int
     {
         return 0;
     }

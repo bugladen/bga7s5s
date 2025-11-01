@@ -308,7 +308,19 @@ abstract class Card
         }
     }
 
-    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, Array &$explanations): int { return 0; }
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, Array &$explanations): int 
+    { 
+        $discount = 0;
+        if ($this instanceof IHasReactions)
+        {
+            foreach ($this->getReactions() as $reaction)
+            {
+                $discount += $reaction->getEquipDiscount($theah, $performer, $attachment, $explanations);
+            }
+        }
+
+        return $discount;
+    }
 
     public function getParleyDiscount(Theah $theah, Character $performer, bool $parleying, Array &$explanations) : int { return 0; }
 
@@ -463,20 +475,41 @@ abstract class Card
             }
         }
 
+        if ($this instanceof IHasReactions)
+        {
+            foreach ($this->getReactions() as $reaction)
+            {
+                $discount += $reaction->getActionFromHandDiscount($theah, $performer, $requestedAction, $explanations);
+            }
+        }
+
         return $discount;
     }
 
-    public function getReactionFromHandDiscount(Theah $theah, CardReaction $requestedReaction): int
+    public function getReactionFromHandDiscount(Theah $theah, CardReaction $requestedReaction, Array &$explanations): int
     {
         $discount = 0;
         if ($this instanceof IHasReactions)
         {
             foreach ($this->getReactions() as $reaction)
             {
-                $discount += $reaction->getReactionFromHandDiscount($theah, $requestedReaction);
+                $discount += $reaction->getReactionFromHandDiscount($theah, $requestedReaction, $explanations);
             }
         }
 
+        return $discount;
+    }
+
+    public function getManeuverFromCombatCardDiscount(Theah $theah, Risk $combatCard, Array &$explanations): int
+    {
+        $discount = 0;
+        if ($this instanceof IHasReactions)
+        {
+            foreach ($this->getReactions() as $reaction)
+            {
+                $discount += $reaction->getManeuverFromCombatCardDiscount($theah, $combatCard, $explanations);
+            }
+        }
         return $discount;
     }
 

@@ -63,6 +63,7 @@ $machinestates = [
         "transitions" => [
             "01006" => States::SETUP_TABLE_01006,
             "reaction" => States::SETUP_TABLE_REACTIONS,
+            "pay" => States::SETUP_TABLE_PAY_FOR_REACTION,
             "endOfEvents" => States::DAWN_NEW_DAY,
             "endOfGame" => States::END_GAME
         ]
@@ -78,7 +79,6 @@ $machinestates = [
         ],
         "transitions" => [
             "done" => States::SETUP_TABLE_EVENTS, 
-            "pay" => States::SETUP_TABLE_PAY_FOR_REACTION,
         ]
     ],
     States::SETUP_TABLE_PAY_FOR_REACTION => [
@@ -112,6 +112,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::DAWN_NEW_DAY_REACTIONS,
+                "pay" => States::DAWN_NEW_DAY_PAY_FOR_REACTION,
                 "endOfEvents" => States::DAWN_BEGINNING,
                 "endOfGame" => States::END_GAME
             ]
@@ -127,7 +128,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::DAWN_NEW_DAY_EVENTS, 
-                "pay" => States::DAWN_NEW_DAY_PAY_FOR_REACTION,
             ]
         ],
         States::DAWN_NEW_DAY_PAY_FOR_REACTION => [
@@ -160,6 +160,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::DAWN_BEGINNING_REACTIONS,
+                "pay" => States::DAWN_BEGINNING_PAY_FOR_REACTION,
                 "endOfEvents" => States::DAWN_CITY_CARDS,
                 "endOfGame" => States::END_GAME
             ]
@@ -175,7 +176,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::DAWN_BEGINNING_EVENTS, 
-                "pay" => States::DAWN_BEGINNING_PAY_FOR_REACTION,
             ]
         ],
         States::DAWN_BEGINNING_PAY_FOR_REACTION => [
@@ -208,8 +208,10 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::DAWN_CITY_CARDS_REACTIONS,
+                "pay" => States::DAWN_CITY_CARDS_PAY_FOR_REACTION,
                 "endOfEvents" => States::DAWN_ENDING,
-                "endOfGame" => States::END_GAME]
+                "endOfGame" => States::END_GAME
+            ]
         ],
         States::DAWN_CITY_CARDS_REACTIONS => [
             "name" => "playerReaction",
@@ -222,7 +224,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::DAWN_CITY_CARDS_EVENTS, 
-                "pay" => States::DAWN_CITY_CARDS_PAY_FOR_REACTION,
             ]
         ],
         States::DAWN_CITY_CARDS_PAY_FOR_REACTION => [
@@ -255,6 +256,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::DAWN_ENDING_REACTIONS,
+                "pay" => States::DAWN_ENDING_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_BEGINNING,
                 "endOfGame" => States::END_GAME
             ]
@@ -270,7 +272,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::DAWN_ENDING_EVENTS, 
-                "pay" => States::DAWN_ENDING_PAY_FOR_REACTION,
             ]
         ],
         States::DAWN_ENDING_PAY_FOR_REACTION => [
@@ -303,6 +304,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::PLANNING_PHASE_BEGINNING_REACTIONS,
+                "pay" => States::PLANNING_PHASE_BEGINNING_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE,
                 "endOfGame" => States::END_GAME
             ]
@@ -318,7 +320,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_BEGINNING_EVENTS, 
-                "pay" => States::PLANNING_PHASE_BEGINNING_PAY_FOR_REACTION,
             ]
         ],
         States::PLANNING_PHASE_BEGINNING_PAY_FOR_REACTION => [
@@ -364,6 +365,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_REACTIONS,
+                "pay" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER,
                 "endOfGame" => States::END_GAME
             ]
@@ -379,7 +381,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS, 
-                "pay" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_PAY_FOR_REACTION,
             ]
         ],
         States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_PAY_FOR_REACTION => [
@@ -412,6 +413,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_REACTIONS,
+                "pay" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS,
                 "endOfGame" => States::END_GAME
             ]
@@ -427,7 +429,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_EVENTS, 
-                "pay" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_PAY_FOR_REACTION,
             ]
         ],
         States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_PAY_FOR_REACTION => [
@@ -460,6 +461,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_REACTIONS,
+                "pay" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_MUSTER,
                 "endOfGame" => States::END_GAME
             ]
@@ -475,7 +477,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS, 
-                "pay" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_PAY_FOR_REACTION,
             ]
         ],
         States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_PAY_FOR_REACTION => [
@@ -509,6 +510,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::PLANNING_PHASE_MUSTER_REACTIONS,
+                "pay" => States::PLANNING_PHASE_MUSTER_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_RESOLVE_SCHEMES,
                 "endOfGame" => States::END_GAME
             ]
@@ -524,7 +526,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_MUSTER_EVENTS, 
-                "pay" => States::PLANNING_PHASE_MUSTER_PAY_FOR_REACTION,
             ]
         ],
         States::PLANNING_PHASE_MUSTER_PAY_FOR_REACTION => [
@@ -571,6 +572,7 @@ $machinestates = [
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
                 "01152" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_SCHEMES_REACTIONS,
+                "pay" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_DRAW,
                 "endOfGame" => States::END_GAME
             ]
@@ -586,7 +588,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS, 
-                "pay" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PAY_FOR_REACTION,
             ]
         ],
         States::PLANNING_PHASE_RESOLVE_SCHEMES_PAY_FOR_REACTION => [
@@ -731,6 +732,7 @@ $machinestates = [
             "transitions" => [
                 "01098" => States::PLANNING_PHASE_END_01098,
                 "reaction" => States::PLANNING_PHASE_END_REACTIONS,
+                "pay" => States::PLANNING_PHASE_END_PAY_FOR_REACTION,
                 "endOfEvents" => States::HIGH_DRAMA_BEGINNING,
                 "endOfGame" => States::END_GAME
             ]
@@ -746,7 +748,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::PLANNING_PHASE_END_EVENTS, 
-                "pay" => States::PLANNING_PHASE_END_PAY_FOR_REACTION,
             ]
         ],
         States::PLANNING_PHASE_END_PAY_FOR_REACTION => [
@@ -780,6 +781,7 @@ $machinestates = [
             "transitions" => [
                 "01144" => States::HIGH_DRAMA_BEGINNING_01144,
                 "reaction" => States::HIGH_DRAMA_BEGINNING_REACTIONS,
+                "pay" => States::HIGH_DRAMA_BEGINNING_PAY_FOR_REACTION,
                 "endOfEvents" => States::HIGH_DRAMA_PHASE,
                 "endOfGame" => States::END_GAME
                 ]
@@ -795,7 +797,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::HIGH_DRAMA_BEGINNING_EVENTS, 
-                "pay" => States::HIGH_DRAMA_BEGINNING_PAY_FOR_REACTION,
             ]
         ],
         States::HIGH_DRAMA_BEGINNING_PAY_FOR_REACTION => [
@@ -945,10 +946,12 @@ $machinestates = [
                 "01161" => States::HIGH_DRAMA_PLAYER_TURN_01161,
                 "01164" => States::HIGH_DRAMA_PLAYER_TURN_01164,
                 "01167" => States::HIGH_DRAMA_PLAYER_TURN_01167,
+                "01167_2" => States::HIGH_DRAMA_PLAYER_TURN_01167_3,
                 "01171" => States::HIGH_DRAMA_PLAYER_TURN_01171,
                 "01172" => States::HIGH_DRAMA_PLAYER_TURN_01172,
                 "01174" => States::HIGH_DRAMA_PLAYER_TURN_01174,
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
+                "01180_4" => States::HIGH_DRAMA_PLAYER_TURN_01180_5,
                 "01187" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION,
                 "01185" => States::HIGH_DRAMA_PLAYER_TURN_01185,
                 "01189a" => States::HIGH_DRAMA_PLAYER_TURN_01189a,
@@ -963,6 +966,7 @@ $machinestates = [
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
                 "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
+                "pay" => States::HIGH_DRAMA_PLAYER_TURN_PAY_FOR_REACTION,
                 "endOfEvents" => States::NEXT_PLAYER,
                 "endOfGame" => States::END_GAME
                 ]
@@ -978,7 +982,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
-                "pay" => States::HIGH_DRAMA_PLAYER_TURN_PAY_FOR_REACTION,
             ]
         ],
         States::HIGH_DRAMA_PLAYER_TURN_PAY_FOR_REACTION => [
@@ -1064,6 +1067,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_REACTIONS,
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE,
                     "endOfGame" => States::END_GAME
                     ]
@@ -1079,7 +1083,6 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS, 
-                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_PAY_FOR_REACTION,
                 ]
             ],
             States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_PAY_FOR_REACTION => [
@@ -1112,6 +1115,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_REACTIONS,
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE,
                     "endOfGame" => States::END_GAME
                 ]
@@ -1127,7 +1131,6 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_EVENTS, 
-                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_PAY_FOR_REACTION,
                 ]
             ],
             States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_PAY_FOR_REACTION => [
@@ -1161,6 +1164,7 @@ $machinestates = [
                 "transitions" => [
                     "01063" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01063,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_REACTIONS,
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED,
                     "endOfGame" => States::END_GAME
                     ]
@@ -1176,7 +1180,6 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS, 
-                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_PAY_FOR_REACTION,
                 ]
             ],
             States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_PAY_FOR_REACTION => [
@@ -1235,6 +1238,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_REACTIONS,
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION,
                     "endOfGame" => States::END_GAME
                     ]
@@ -1250,7 +1254,6 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_EVENTS, 
-                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_PAY_FOR_REACTION,
                 ]
             ],
             States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_PAY_FOR_REACTION => [
@@ -1283,6 +1286,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_REACTIONS,
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_PAY_FOR_REACTION,
                     "endOfEvents" => States::NEXT_PLAYER,
                     "endOfGame" => States::END_GAME
                     ]
@@ -1298,7 +1302,6 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_EVENTS, 
-                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_PAY_FOR_REACTION,
                 ]
             ],
             States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_PAY_FOR_REACTION => [
@@ -1322,6 +1325,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_REACTIONS,
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_PAY_FOR_REACTION,
                     "endOfEvents" => States::DUEL_STARTED,
                     "endOfGame" => States::END_GAME
                     ]
@@ -1337,7 +1341,6 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS, 
-                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_PAY_FOR_REACTION,
                 ]
             ],
             States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_PAY_FOR_REACTION => [
@@ -1377,6 +1380,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_REACTIONS,
+                "pay" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_PAY_FOR_REACTION,
                 "endOfEvents" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "endOfGame" => States::END_GAME
                 ]
@@ -1392,7 +1396,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_EVENTS, 
-                "pay" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_PAY_FOR_REACTION,
             ]
         ],
         States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_PAY_FOR_REACTION => [
@@ -1464,10 +1467,50 @@ $machinestates = [
                 "actBack",
             ],
             "transitions" => [
-                "attachmentSelected" => States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_HAND, 
+                "attachmentSelected" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_EVENTS, 
                 "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION
             ]
         ],
+        States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_EVENTS => [
+            "name" => "highDramaEquipActionChooseAttachmentFromHandEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "reaction" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_REACTIONS,
+                "pay" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_PAY_FOR_REACTION,
+                "endOfEvents" => States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_HAND,
+                "endOfGame" => States::END_GAME
+                ]
+        ],
+        States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actReactionForState", 
+            ],
+            "transitions" => [
+                "done" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_EVENTS, 
+            ]
+        ],
+        States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_REACTIONS, 
+                "paid" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_EVENTS, 
+            ]
+        ],
+        
         States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_HAND => [
             "name" => "highDramaEquipActionPayForAttachmentFromHand",
             "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -1495,8 +1538,47 @@ $machinestates = [
                 "actBack",
             ],
             "transitions" => [
-                "attachmentSelected" => States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_PLAY, 
+                "attachmentSelected" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_EVENTS, 
                 "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION
+            ]
+        ],
+        States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_EVENTS => [
+            "name" => "highDramaEquipActionChooseAttachmentFromPlayEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "reaction" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_REACTIONS,
+                "pay" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_PAY_FOR_REACTION,
+                "endOfEvents" => States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_PLAY,
+                "endOfGame" => States::END_GAME
+                ]
+        ],
+        States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actReactionForState", 
+            ],
+            "transitions" => [
+                "done" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_EVENTS, 
+            ]
+        ],
+        States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_REACTIONS, 
+                "paid" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_EVENTS, 
             ]
         ],
         States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_PLAY => [
@@ -1663,7 +1745,7 @@ $machinestates = [
                     "actBack",
                 ],
                 "transitions" => [
-                    "inHandActionChosen" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
+                    "inHandActionChosen" => States::HIGH_DRAMA_IN_HAND_ACTION_EVENTS,
                     "requiresPerformerSelected" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                     "back" => States::HIGH_DRAMA_PLAYER_TURN
                 ]
@@ -1679,10 +1761,51 @@ $machinestates = [
                     "actBack",
                 ],
                 "transitions" => [
-                    "inHandActionPerformerChosen" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
+                    "inHandActionPerformerChosen" => States::HIGH_DRAMA_IN_HAND_ACTION_EVENTS,
                     "back" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_ACTION
                 ]
             ],
+
+            States::HIGH_DRAMA_IN_HAND_ACTION_EVENTS => [
+                "name" => "highDramaInHandActionEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "reaction" => States::HIGH_DRAMA_IN_HAND_ACTION_REACTIONS,
+                    "pay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY_FOR_REACTION,
+                    "endOfEvents" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
+                    "endOfGame" => States::END_GAME
+                    ]
+            ],
+            States::HIGH_DRAMA_IN_HAND_ACTION_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsForStatePrivate",
+                "possibleactions" => [
+                    "actReactionForState", 
+                ],
+                "transitions" => [
+                    "done" => States::HIGH_DRAMA_IN_HAND_ACTION_EVENTS, 
+                ]
+            ],
+            States::HIGH_DRAMA_IN_HAND_ACTION_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsForStatePrivate",
+                "possibleactions" => [
+                    "actBack",
+                    "actPayForReaction", 
+                ],
+                "transitions" => [
+                    "back" => States::HIGH_DRAMA_IN_HAND_ACTION_REACTIONS, 
+                    "paid" => States::HIGH_DRAMA_IN_HAND_ACTION_EVENTS, 
+                ]
+            ],
+
             States::HIGH_DRAMA_IN_HAND_ACTION_PAY => [
                 "name" => "highDramaInHandActionPay",
                 "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -1744,6 +1867,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "reaction" => States::DUEL_STARTED_REACTIONS,
+                    "pay" => States::DUEL_STARTED_PAY_FOR_REACTION,
                     "endOfEvents" => States::DUEL_NEW_ROUND,
                     "endOfGame" => States::END_GAME
                     ]
@@ -1759,7 +1883,6 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "done" => States::DUEL_STARTED_EVENTS, 
-                    "pay" => States::DUEL_STARTED_PAY_FOR_REACTION,
                 ]
             ],
             States::DUEL_STARTED_PAY_FOR_REACTION => [
@@ -1791,6 +1914,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "reaction" => States::DUEL_NEW_ROUND_REACTIONS,
+                    "pay" => States::DUEL_NEW_ROUND_PAY_FOR_REACTION,
                     "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                     "endOfGame" => States::END_GAME
                     ]
@@ -1806,7 +1930,6 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "done" => States::DUEL_NEW_ROUND_EVENTS, 
-                    "pay" => States::DUEL_NEW_ROUND_PAY_FOR_REACTION,
                 ]
             ],
             States::DUEL_NEW_ROUND_PAY_FOR_REACTION => [
@@ -1868,6 +1991,7 @@ $machinestates = [
                     "action" => "stRunEvents",
                     "transitions" => [
                         "reaction" => States::DUEL_CHOOSE_TECHNIQUE_REACTIONS,
+                        "pay" => States::DUEL_CHOOSE_TECHNIQUE_PAY_FOR_REACTION,
                         "01013" => States::DUEL_CHOOSE_TECHNIQUE_01013,
                         "01036" => States::DUEL_CHOOSE_TECHNIQUE_01036,
                         "01063" => States::DUEL_CHOOSE_TECHNIQUE_01063,
@@ -1888,7 +2012,6 @@ $machinestates = [
                     ],
                     "transitions" => [
                         "done" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS, 
-                        "pay" => States::DUEL_CHOOSE_TECHNIQUE_PAY_FOR_REACTION,
                     ]
                 ],
                 States::DUEL_CHOOSE_TECHNIQUE_PAY_FOR_REACTION => [
@@ -1977,6 +2100,7 @@ $machinestates = [
                         "01164" => States::DUEL_RESOLVE_MANEUVER_01164,
                         "01165" => States::DUEL_RESOLVE_MANEUVER_01165,
                         "reaction" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_REACTIONS,
+                        "pay" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                         "endOfGame" => States::END_GAME
                         ]
@@ -1992,7 +2116,6 @@ $machinestates = [
                     ],
                     "transitions" => [
                         "done" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS, 
-                        "pay" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_PAY_FOR_REACTION,
                     ]
                 ],
                 States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_PAY_FOR_REACTION => [
@@ -2025,6 +2148,7 @@ $machinestates = [
                     "transitions" => [
                         "01085" => States::DUEL_APPLY_COMBAT_CARD_STATS_01085,
                         "reaction" => States::DUEL_APPLY_COMBAT_CARD_STATS_REACTIONS,
+                        "pay" => States::DUEL_APPLY_COMBAT_CARD_STATS_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_SET_NEXT_COMBAT_CARD,
                         "endOfGame" => States::END_GAME
                     ]
@@ -2040,7 +2164,6 @@ $machinestates = [
                     ],
                     "transitions" => [
                         "done" => States::DUEL_APPLY_COMBAT_CARD_STATS_EVENTS, 
-                        "pay" => States::DUEL_APPLY_COMBAT_CARD_STATS_PAY_FOR_REACTION,
                     ]
                 ],
                 States::DUEL_APPLY_COMBAT_CARD_STATS_PAY_FOR_REACTION => [
@@ -2092,6 +2215,7 @@ $machinestates = [
                     "action" => "stRunEvents",
                     "transitions" => [
                         "reaction" => States::DUEL_CHOOSE_GAMBLE_CARD_REACTIONS,
+                        "pay" => States::DUEL_CHOOSE_GAMBLE_CARD_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                         "endOfGame" => States::END_GAME
                     ]
@@ -2107,7 +2231,6 @@ $machinestates = [
                     ],
                     "transitions" => [
                         "done" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS, 
-                        "pay" => States::DUEL_CHOOSE_GAMBLE_CARD_PAY_FOR_REACTION,
                     ]
                 ],
                 States::DUEL_CHOOSE_GAMBLE_CARD_PAY_FOR_REACTION => [
@@ -2140,6 +2263,7 @@ $machinestates = [
                     "transitions" => [
                         "01031" => States::DUEL_END_OF_ROUND_01031,
                         "reaction" => States::DUEL_END_OF_ROUND_REACTIONS,
+                        "pay" => States::DUEL_END_OF_ROUND_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_NEXT_PLAYER,
                         "endOfGame" => States::END_GAME
                     ]
@@ -2155,7 +2279,6 @@ $machinestates = [
                     ],
                     "transitions" => [
                         "done" => States::DUEL_END_OF_ROUND_EVENTS, 
-                        "pay" => States::DUEL_END_OF_ROUND_PAY_FOR_REACTION,
                     ]
                 ],
                 States::DUEL_END_OF_ROUND_PAY_FOR_REACTION => [
@@ -2197,6 +2320,7 @@ $machinestates = [
                     "action" => "stRunEvents",
                     "transitions" => [
                         "reaction" => States::DUEL_END_REACTIONS,
+                        "pay" => States::DUEL_END_PAY_FOR_REACTION,
                         "endOfEvents" => States::NEXT_PLAYER,
                         "endOfGame" => States::END_GAME
                     ]
@@ -2212,7 +2336,6 @@ $machinestates = [
                     ],
                     "transitions" => [
                         "done" => States::DUEL_END_EVENTS, 
-                        "pay" => States::DUEL_END_PAY_FOR_REACTION,
                     ]
                 ],
                 States::DUEL_END_PAY_FOR_REACTION => [
@@ -2247,6 +2370,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::NEXT_PLAYER_REACTIONS,
+                "pay" => States::NEXT_PLAYER_PAY_FOR_REACTION,
                 "endOfEvents" => States::NEXT_PLAYER_SET_CURRENT_PLAYER,
                 "endOfGame" => States::END_GAME
                 ]
@@ -2262,7 +2386,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::NEXT_PLAYER_EVENTS, 
-                "pay" => States::NEXT_PLAYER_PAY_FOR_REACTION,
             ]
         ],
         States::NEXT_PLAYER_PAY_FOR_REACTION => [
@@ -2299,6 +2422,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::HIGH_DRAMA_END_REACTIONS,
+                "pay" => States::HIGH_DRAMA_END_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLUNDER_PHASE_BEGIN,
                 "endOfGame" => States::END_GAME
             ]
@@ -2314,7 +2438,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::HIGH_DRAMA_END_EVENTS, 
-                "pay" => States::HIGH_DRAMA_END_PAY_FOR_REACTION,
             ]
         ],
         States::HIGH_DRAMA_END_PAY_FOR_REACTION => [
@@ -2345,6 +2468,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::PLUNDER_PHASE_BEGIN_REACTIONS,
+                "pay" => States::PLUNDER_PHASE_BEGIN_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLUNDER_CHECK_DOMINANCE_VICTORY,
                 "endOfGame" => States::END_GAME
             ]
@@ -2360,7 +2484,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::PLUNDER_PHASE_BEGIN_EVENTS, 
-                "pay" => States::PLUNDER_PHASE_BEGIN_PAY_FOR_REACTION,
             ]
         ],
         States::PLUNDER_PHASE_BEGIN_PAY_FOR_REACTION => [
@@ -2400,6 +2523,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::PLUNDER_GAIN_REKNOWN_REACTIONS,
+                "pay" => States::PLUNDER_GAIN_REKNOWN_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLUNDER_CHECK_ECONOMIC_VICTORY,
                 "endOfGame" => States::END_GAME]
         ],
@@ -2414,7 +2538,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::PLUNDER_GAIN_REKNOWN_EVENTS, 
-                "pay" => States::PLUNDER_GAIN_REKNOWN_PAY_FOR_REACTION,
             ]
         ],
         States::PLUNDER_GAIN_REKNOWN_PAY_FOR_REACTION => [
@@ -2463,6 +2586,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::PLUNDER_PHASE_END_REACTIONS,
+                "pay" => States::PLUNDER_PHASE_END_PAY_FOR_REACTION,
                 "endOfEvents" => States::DUSK_PHASE_BEGIN,
                 "endOfGame" => States::END_GAME
             ]
@@ -2478,7 +2602,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::PLUNDER_PHASE_END_EVENTS, 
-                "pay" => States::PLUNDER_PHASE_END_PAY_FOR_REACTION,
             ]
         ],
         States::PLUNDER_PHASE_END_PAY_FOR_REACTION => [
@@ -2510,6 +2633,7 @@ $machinestates = [
             "transitions" => [
                 "01177" => States::DUSK_PHASE_BEGIN_01177,
                 "reaction" => States::DUSK_PHASE_BEGIN_REACTIONS,
+                "pay" => States::DUSK_PHASE_BEGIN_PAY_FOR_REACTION,
                 "endOfEvents" => States::DUSK_PHASE_CLEANUP,
                 "endOfGame" => States::END_GAME
             ]
@@ -2525,7 +2649,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::DUSK_PHASE_BEGIN_EVENTS, 
-                "pay" => States::DUSK_PHASE_BEGIN_PAY_FOR_REACTION,
             ]
         ],
         States::DUSK_PHASE_BEGIN_PAY_FOR_REACTION => [
@@ -2556,6 +2679,7 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "reaction" => States::DUSK_PHASE_CLEANUP_REACTIONS,
+                    "pay" => States::DUSK_PHASE_CLEANUP_PAY_FOR_REACTION,
                     "endOfEvents" => States::DUSK_PHASE_DISCARD,
                     "endOfGame" => States::END_GAME
                 ]
@@ -2571,7 +2695,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::DUSK_PHASE_CLEANUP_EVENTS, 
-                "pay" => States::DUSK_PHASE_CLEANUP_PAY_FOR_REACTION,
             ]
         ],
         States::DUSK_PHASE_CLEANUP_PAY_FOR_REACTION => [
@@ -2608,6 +2731,7 @@ $machinestates = [
             "action" => "stDuskPhaseDiscardEvents",
             "transitions" => [
                 "reaction" => States::DUSK_PHASE_DISCARD_REACTIONS,
+                "pay" => States::DUSK_PHASE_DISCARD_PAY_FOR_REACTION,
                 "endOfEvents" => States::DUSK_PHASE_END,
                 "endOfGame" => States::END_GAME
             ]
@@ -2623,7 +2747,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::DUSK_PHASE_DISCARD_EVENTS, 
-                "pay" => States::DUSK_PHASE_DISCARD_PAY_FOR_REACTION,
             ]
         ],
         States::DUSK_PHASE_DISCARD_PAY_FOR_REACTION => [
@@ -2654,6 +2777,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::DUSK_PHASE_END_REACTIONS,
+                "pay" => States::DUSK_PHASE_END_PAY_FOR_REACTION,
                 "endOfEvents" => States::DUSK_END_OF_DAY,
                 "endOfGame" => States::END_GAME
             ]
@@ -2669,7 +2793,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::DUSK_PHASE_END_EVENTS, 
-                "pay" => States::DUSK_PHASE_END_PAY_FOR_REACTION,
             ]
         ],
         States::DUSK_PHASE_END_PAY_FOR_REACTION => [
@@ -2700,6 +2823,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "reaction" => States::DUSK_END_OF_DAY_REACTIONS,
+                "pay" => States::DUSK_END_OF_DAY_PAY_FOR_REACTION,
                 "endOfEvents" => States::DAWN_NEW_DAY,
                 "endOfGame" => States::END_GAME
             ]
@@ -2715,7 +2839,6 @@ $machinestates = [
             ],
             "transitions" => [
                 "done" => States::DUSK_END_OF_DAY_EVENTS, 
-                "pay" => States::DUSK_END_OF_DAY_PAY_FOR_REACTION,
             ]
         ],
         States::DUSK_END_OF_DAY_PAY_FOR_REACTION => [

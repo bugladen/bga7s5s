@@ -1185,7 +1185,7 @@ $machinestates += [
         ],
         "transitions" => [
             "back" => States::HIGH_DRAMA_PLAYER_TURN_01180,
-            "performerChosen" => States::HIGH_DRAMA_PLAYER_TURN_01180_5
+            "performerChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
     States::HIGH_DRAMA_PLAYER_TURN_01180_5 => [

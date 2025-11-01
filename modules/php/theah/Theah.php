@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions\Reaction_CrewCapLimit;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -360,6 +361,19 @@ class Theah
         return [$discount, $explanations];
     }
 
+    function getManeuverFromCombatCardDiscount(Risk $combatCard): Array
+    {
+        $cards = $this->cards;
+        $discount = 0;
+        $explanations = [];
+        foreach ($cards as $card) {
+            $discount += $card->getManeuverFromCombatCardDiscount($this, $combatCard, $explanations);
+        }
+
+        $explanations = implode("<br>", $explanations);
+        return [$discount, $explanations];
+    }
+
     function getAvailableAttachmentsAtLocation($location)
     {
         $attachments = [];
@@ -532,11 +546,15 @@ class Theah
 
     function getAttachmentById($id): ?Attachment
     {
-        foreach ($this->cards as $card) {
-            if ($card->Id == $id && $card instanceof Attachment) {
-                return $card;
-            }
+        if (array_key_exists($id, $this->cards)) {
+            return $this->cards[$id];
         }
+
+        $card = $this->db->getCardObject($id);
+        if ($card) {
+            return $card;
+        }
+
         return null;
     }
 
@@ -873,13 +891,17 @@ class Theah
         return $pressureTypes;
     }
 
-    function getReactionFromHandDiscount(CardReaction $reaction): int
+    function getReactionFromHandDiscount(CardReaction $reaction): Array
     {
         $discount = 0;
+        $explanations = [];
+
         foreach ($this->cards as $card) {
-            $discount += $card->getReactionFromHandDiscount($this, $reaction);
+            $discount += $card->getReactionFromHandDiscount($this, $reaction, $explanations);
         }
-        return $discount;
+
+        $explanations = implode("<br>", $explanations);
+        return [$discount, $explanations];
     }
 
     function getTechniqueById($id): ?Technique

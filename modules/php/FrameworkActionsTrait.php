@@ -727,13 +727,8 @@ trait FrameworkActionsTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
-        [$discount, $explanations] = $this->theah->getEquipDiscount($performer, $attachment);
-        if ($discount != 0)
-            $this->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                "explanations" => $explanations,
-            ]);
-        $this->globals->set(Game::DISCOUNT, $discount);
-        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+        $event = EventFactory::createEnteringPayStateEvent($playerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
+        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("attachmentSelected");
     }
@@ -757,13 +752,8 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHOSEN_CARD, $attachmentId);
 
-        [$discount, $explanations] = $this->theah->getEquipDiscount($performer, $attachment);
-        if ($discount != 0)
-            $this->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                "explanations" => $explanations,
-            ]);
-        $this->globals->set(Game::DISCOUNT, $discount);
-        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+        $event = EventFactory::createEnteringPayStateEvent($performer->ControllerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
+        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("attachmentSelected");
     }
@@ -1047,14 +1037,9 @@ trait FrameworkActionsTrait
         }
         else
         {
-            [$discount, $explanations] = $this->theah->getActionFromHandDiscount($performer = null, $action);
-            $this->globals->set(Game::DISCOUNT, $discount);
-            $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
-
-            if ($discount != 0)
-                $this->notify->player($player_id, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                    "explanations" => $explanations,
-                ]);
+            $card = $action->getOwningCard($this->theah);
+            $event = EventFactory::createEnteringPayStateEvent($player_id, $card->Id, Game::PAY_STATE_IN_HAND_ACTION);
+            $this->theah->queueEvent($event);
     
             $this->gamestate->nextState("inHandActionChosen");
         }
@@ -1072,14 +1057,9 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
-        [$discount, $explanations] = $this->theah->getActionFromHandDiscount($performer, $action);
-        $this->globals->set(Game::DISCOUNT, $discount);
-        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
-
-        if ($discount != 0)
-            $this->notify->player($playerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                "explanations" => $explanations,
-            ]);
+        $card = $action->getOwningCard($this->theah);
+        $event = EventFactory::createEnteringPayStateEvent($playerId, $card->Id, Game::PAY_STATE_IN_HAND_ACTION);
+        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("inHandActionPerformerChosen");
     }
@@ -1604,6 +1584,9 @@ trait FrameworkActionsTrait
 
         $this->globals->set(Game::CHOSEN_MANEUVER, $maneuverId);
 
+        $event = EventFactory::createEnteringPayStateEvent($this->getActivePlayerId(), $card->Id, Game::PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD);
+        $this->theah->queueEvent($event);
+
         $this->gamestate->nextState("maneuverChosen");
     }
 
@@ -1938,7 +1921,7 @@ trait FrameworkActionsTrait
 
         $reactionId = $this->globals->get(Game::REACTION_ID);
 
-        $discount = $this->theah->getReactionFromHandDiscount($reaction);
+        [$discount, $explanations] = $this->theah->getReactionFromHandDiscount($reaction);
 
         $cost = $card->WealthCost - $discount;
         if ($cost < 0) $cost = 0;

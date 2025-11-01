@@ -124,9 +124,9 @@ class Reaction_01023 extends RiskReaction
         $game->gamestate->nextState('done');
     }
 
-    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction) : int
+    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction, Array &$explanations) : int
     {
-        $discount = parent::getReactionFromHandDiscount($theah, $reaction);
+        $discount = parent::getReactionFromHandDiscount($theah, $reaction, $explanations);
 
         $owner = $this->getOwningCard($theah);
         if ($owner->Location == Game::LOCATION_HAND && $reaction->Id == $this->Id)

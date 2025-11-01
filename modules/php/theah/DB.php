@@ -27,12 +27,13 @@ class DB
 
     public function stackEvent(Event $event)
     {
-        $sql = "SELECT MIN(event_id) FROM events";
-        $id = intval($this->getUniqueValue($sql)) - 1;
-        $priority = $event->priority;
+        $sql = "SELECT MIN(event_priority) FROM events WHERE event_priority < 0";
+        $minPriority = intval($this->getUniqueValue($sql));
+        $priority = $minPriority ? $minPriority - 1 : -1; // Start at -1 and go more negative
+        
+        $event->wasStacked = true;
         $serialized = addslashes(serialize($event));
-        $sql = "INSERT INTO events (event_id, event_priority, event_serialized) values ($id, $priority, '{$serialized}')";
-        /** @disregard P1013 */
+        $sql = "INSERT INTO events (event_priority, event_serialized) values ($priority, '{$serialized}')";
         $this->game->DbQuery($sql);
     }
 

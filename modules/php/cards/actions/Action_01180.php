@@ -55,7 +55,7 @@ class Action_01180 extends CharacterAction
 
             $kaj = $this->getOwningCard($event->theah);
             $game = $event->theah->game;
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
+            $game->notify->all("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
                 'i18n' => ['action'],
                 'player_name' => $game->getActivePlayerName(),
                 'action' => $this->Name,
@@ -63,7 +63,7 @@ class Action_01180 extends CharacterAction
             ]);
 
             $this->setUsed($event->theah, true);
-            $event->theah->game->notifyAllPlayers('message', clienttranslate('${action_inject_code}: ${count} Artifacts found in the top 4 cards of the City Deck. (${names})'), [
+            $game->notify->all('message', clienttranslate('${action_inject_code}: ${count} Artifacts found in the top 4 cards of the City Deck. (${names})'), [
                 'action_inject_code' => $kaj->getInjectCode(),
                 'count' => $count,
                 'names' => implode(', ', $names)
@@ -133,7 +133,7 @@ class Action_01180 extends CharacterAction
         {
             $deckCards = $game->getCardsOnTopOfCityDeck(4);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to Equip any Artifacts.'), [
+            $game->notify->all("message", clienttranslate('${player_name} chooses not to Equip any Artifacts.'), [
                 "player_name" => $game->getActivePlayerName(),
             ]);
 
@@ -223,13 +223,13 @@ class Action_01180 extends CharacterAction
                 throw new \BgaUserException(sprintf($game->translate("You do not have enough Wealth to equip this card (with a discount of %s)."), $discount));
             }        
         
-            if ($discount > 0)
-                $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                    "explanations" => $explanations,
-                ]);
-            $game->globals->set(Game::DISCOUNT, $discount);
-            $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
             $game->globals->set(Game::CHOSEN_PERFORMER, $id);
+
+            $event = EventFactory::createEnteringPayStateEvent($performer->ControllerId, $chosenAttachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
+            $game->theah->queueEvent($event);
+
+            $transition = EventFactory::createTransitionEvent($performer->ControllerId, $performer->Id, "01180_4", $this->Id);
+            $game->theah->queueEvent($transition);
 
             $game->gamestate->nextState("performerChosen");
         }

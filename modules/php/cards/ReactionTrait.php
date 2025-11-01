@@ -89,7 +89,8 @@ trait ReactionTrait
 
         $args['descriptionmyturn'] = $reaction->getReactionPayForDescription($game->theah);
         $args['reactionId'] = $this->Id;
-        $args['discount'] = $game->theah->getReactionFromHandDiscount($reaction);
+
+        $args['discount'] = $game->globals->get(Game::DISCOUNT);
     }
 
     public function updateReactionOwnerIds($id)

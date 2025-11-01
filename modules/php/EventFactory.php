@@ -21,6 +21,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlaye
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCalculatePayDiscount;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToFactionDeck;
@@ -53,6 +54,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocatio
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontrolled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
@@ -177,6 +179,19 @@ class EventFactory
             $event->playerId = $playerId;
             $event->characterId = $characterId;
             $event->attachmentId = $attachmentId;
+        }
+
+        return $event;
+    }
+
+    public static function createCalculatePayDiscountEvent(int $playerId, int $cardId, int $payStateType): EventCalculatePayDiscount
+    {
+        $event = self::createEvent(Events::CalculatePayDiscount);
+        if ($event instanceof EventCalculatePayDiscount)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+            $event->payStateType = $payStateType;
         }
 
         return $event;
@@ -594,6 +609,19 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
+    public static function createEnteringPayStateEvent(int $playerId, int $cardId, int $payStateType): EventEnteringPayState
+    {
+        $event = self::createEvent(Events::EnteringPayState);
+        if ($event instanceof EventEnteringPayState)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+            $event->payStateType = $payStateType;
+        }
+        
+        return $event;
+    }
+
     public static function createLocationBecomesUncontrolledEvent(int $playerId, string $location): EventLocationBecomesUncontrolled
     {
         $event = self::createEvent(Events::LocationBecomesUncontrolled);
@@ -750,6 +778,21 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $transition->sourceId = $sourceId;
             $transition->internalId = $internalId;
             $transition->transition = 'reaction';
+            $transition->priority = Event::REACTION_PRIORITY;
+        }
+
+        return $transition;
+    }
+
+    public static function createReactionPayTransitionEvent(int $playerId, int $sourceId, string $internalId): EventTransition
+    {
+        $transition = self::createEvent(Events::Transition);
+        if ($transition instanceof EventTransition)
+        {
+            $transition->playerId = $playerId;
+            $transition->sourceId = $sourceId;
+            $transition->internalId = $internalId;
+            $transition->transition = 'pay';
             $transition->priority = Event::REACTION_PRIORITY;
         }
 

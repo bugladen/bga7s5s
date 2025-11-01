@@ -91,7 +91,6 @@ class Action_01167 extends RiskAction
             $args['chosenAttachment'] = $chosenAttachment->getPropertyArray($game);
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->getCardObjectFromDb($performerId);
             $args['performerId'] = $performerId;
 
             $discount = $game->globals->get(Game::DISCOUNT);
@@ -145,15 +144,15 @@ class Action_01167 extends RiskAction
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->getCardObjectFromDb($performerId);
-            [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $attachment);
-            if ($discount != 0)
-                $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                    "explanations" => $explanations,
-                ]);
-            $game->globals->set(Game::DISCOUNT, $discount);
-            $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
-
             $game->globals->set(Game::CHOSEN_CARD, $id);
+
+            $event = EventFactory::createEnteringPayStateEvent($performer->ControllerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
+            $game->theah->queueEvent($event);
+
+            $owner = $this->getOwningCard($game->theah);
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01167_2", $this->Id);
+            $game->theah->queueEvent($transition);
+            
             $game->gamestate->nextState("attachmentChosen");
         }
     }

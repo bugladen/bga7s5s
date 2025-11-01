@@ -225,14 +225,8 @@ class Action_01106 extends RiskAction
             }
             else
             {
-                [$discount, $explanations] = $game->theah->getActionFromHandDiscount($performer = null, $action);
-                $game->globals->set(Game::DISCOUNT, $discount);
-                $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
-                
-                if ($discount != 0)
-                    $game->notify->player($owner->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                        "explanations" => $explanations,
-                    ]);
+                $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $riskCard->Id, Game::PAY_STATE_IN_HAND_ACTION);
+                $game->theah->queueEvent($event);
 
                 $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01106_pay", $this->Id);        
                 $game->theah->queueEvent($transition);
