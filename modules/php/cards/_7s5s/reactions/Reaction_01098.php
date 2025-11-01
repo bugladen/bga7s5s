@@ -76,19 +76,29 @@ class Reaction_01098 extends CardReaction
     {
         parent::performReaction($game, $state, $internalId, $reactionId);
 
-        if ($reactionId == 'gainReknown')
+        if ($reactionId == 'gainReknown' )
         {
             $owner = $this->getOwningCard($game->theah);
+            if ($this->isAvailable())
+            {
             
-            $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} used Reaction to gain a Reknown after Cat\'s Embargo card is played'), [
-                "card_inject_code" => $owner->getInjectCode(),
-                "player_name" => $game->getActivePlayerName(),
-            ]);
-
-            $event = EventFactory::createPlayerGainsReknownEvent($owner->ControllerId, 1);
-            $game->theah->queueEvent($event);
-
-            $this->setUsed($game->theah, true);
+                $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} used Reaction to gain a Reknown after Cat\'s Embargo card is played'), [
+                    "card_inject_code" => $owner->getInjectCode(),
+                    "player_name" => $game->getActivePlayerName(),
+                ]);
+    
+                $event = EventFactory::createPlayerGainsReknownEvent($owner->ControllerId, 1);
+                $game->theah->queueEvent($event);
+    
+                $this->setUsed($game->theah, true);
+            }
+            else
+            {
+                $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} already used this Reaction to gain a Reknown this turn. No additional Reknown will be gained.'), [
+                    "card_inject_code" => $owner->getInjectCode(),
+                    "player_name" => $game->getActivePlayerName(),
+                ]);
+            }
         }
 
         $game->gamestate->nextState("done");
