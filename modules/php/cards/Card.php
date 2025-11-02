@@ -407,7 +407,7 @@ abstract class Card
 
     public function removeCondition($condition)
     {
-        $this->Conditions = array_filter($this->Conditions, fn($c) => $c != $condition );
+        $this->Conditions = array_values(array_filter($this->Conditions, fn($c) => $c != $condition ));
         $this->IsUpdated = true;
     }
 

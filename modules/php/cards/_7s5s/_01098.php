@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPhasePlanningEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -82,6 +83,29 @@ class _01098 extends Scheme implements IHasReactions
             $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "01098");
             $event->theah->queueEvent($transition);
         }
+
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            $game = $event->theah->game;
+            $pickedCard = $game->getCardObjectFromDb($this->EmbargoedCardId);
+
+            $class = $pickedCard::class;
+            $class = substr($class, strrpos($class, '\\') + 2);
+
+            $deck = $game->getGameDeckObject();
+            $cards = $deck->getCardsOfType($class);
+
+            foreach ($cards as $card) {
+                $card = $game->getCardObjectFromDb($card['id']);
+                $card->removeCondition(Game::CATS_EMBARGO_TARGET);
+                $game->updateCardObjectInDb($card);
+                $game->theah->addCardToWorld($card);
+    
+                $game->notify->player($pickedCard->ControllerId, "catsEmbargoTargetRemoved", "", [
+                    "cardId" => $card->Id,
+                ]);
+            }
+        }
     }
 
     public function argsFromCard(Game $game, int $state, string $stateName, string $internalId): array
@@ -135,6 +159,7 @@ class _01098 extends Scheme implements IHasReactions
             if ($scheme instanceof _01098) {
                 $scheme->EmbargoedCardId = $pickedCard->Id;
                 $game->updateCardObjectInDb($scheme);
+                $game->theah->addCardToWorld($pickedCard);
             }        
     
             $game->globals->set(Game::CHOSEN_CARD, $pickedCard->Id);
