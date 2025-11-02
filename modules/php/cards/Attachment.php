@@ -68,5 +68,10 @@ abstract class Attachment extends Card implements IWealthCost
     {
         return true;
     }
+
+    public function canAttachTo(Character $character): bool
+    {
+        return true;
+    }
     
 }

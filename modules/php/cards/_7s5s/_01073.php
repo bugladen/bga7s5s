@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01073;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
@@ -59,4 +60,13 @@ class _01073 extends FactionAttachment implements IHasActions
         }
     }
 
+    public function canAttachTo(Character $character): bool
+    {
+        if (! parent::canAttachTo($character))
+        {
+            return false;
+        }
+
+        return $character->hasTrait("Duelist");
+    }
 }

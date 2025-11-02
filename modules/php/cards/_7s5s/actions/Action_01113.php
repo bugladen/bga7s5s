@@ -38,8 +38,8 @@ class Action_01113 extends RiskCityAction
             $cost = $card->WealthCost - $discount;
             if ($handWealth >= $cost)
             {
-                [$hasRestrictions, $restrictionExplanation] = $theah->game->hasEquipRestrictions($performer, $card);
-                if ($hasRestrictions)
+                [$hasRestrictions, $restrictionExplanation] = $theah->game->hasEquipRestrictions($performer, $card);                
+                if ($hasRestrictions || ! $card->canAttachTo($performer))
                 {
                     continue;
                 }
@@ -71,6 +71,11 @@ class Action_01113 extends RiskCityAction
 
             foreach ($performers as $performer)
             {
+                if (! $performer->hasTrait("Pirate"))
+                {
+                    continue;
+                }
+
                 $availableAttachments = $this->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer, $theah);
                 if (count($availableAttachments) > 0)
                 {
@@ -80,6 +85,13 @@ class Action_01113 extends RiskCityAction
 
         }
         return false;
+    }
+
+    public function getPerformersForAction(int $playerId, Theah $theah): array
+    {
+        $performers = parent::getPerformersForAction($playerId, $theah);
+        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait("Pirate")));
+        return $performers;
     }
 
     public function handleEvent(Event $event)
@@ -166,6 +178,11 @@ class Action_01113 extends RiskCityAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
+            if (! $performer->hasTrait("Pirate"))
+            {
+                throw new \BgaUserException($game->translate("Performer is not a Pirate"));
+            }
+
             $availableAttachments = $this->attachmentsAvailableFromOpponentDiscardPile($id, $performer, $game->theah);
             if (count($availableAttachments) == 0)
             {
@@ -214,7 +231,12 @@ class Action_01113 extends RiskCityAction
             if ($hasRestrictions)
             {
                 throw new \BgaUserException($restrictionExplanation);
-            }   
+            }
+
+            if (! $attachment->canAttachTo($performer))
+            {
+                throw new \BgaUserException($game->translate("Attachment cannot be attached to the Performer."));
+            }
 
             $attachment->ControllerId = $performer->ControllerId;
             $game->updateCardObjectInDb($attachment);

@@ -49,7 +49,7 @@ class Maneuver_01113 extends Maneuver
                 {
                     [$hasRestrictions, $restrictionExplanation] = $theah->game->hasEquipRestrictions($actor, $attachment);
 
-                    if ($hasRestrictions)
+                    if ($hasRestrictions || ! $attachment->canAttachTo($actor))
                     {
                         continue;
                     }
@@ -68,6 +68,13 @@ class Maneuver_01113 extends Maneuver
             $cost = $card->WealthCost - $discount;
             if ($handWealth >= $cost)
             {
+                [$hasRestrictions, $restrictionExplanation] = $theah->game->hasEquipRestrictions($actor, $card);
+
+                if ($hasRestrictions || ! $card->canAttachTo($actor))
+                {
+                    continue;
+                }
+    
                 $availableAttachments[] = $card;
             }
         }
@@ -109,7 +116,7 @@ class Maneuver_01113 extends Maneuver
                     if ($handWealth >= $cost)
                     {
                         [$hasRestrictions, $restrictionExplanation] = $game->hasEquipRestrictions($actor, $attachment);
-                        if ($hasRestrictions)
+                        if ($hasRestrictions || ! $attachment->canAttachTo($actor))
                         {
                             continue;
                         }
@@ -124,6 +131,12 @@ class Maneuver_01113 extends Maneuver
             $cards = array_filter($cards, fn($card) => $card instanceof Attachment);
             foreach ($cards as $card)
             {
+                [$hasRestrictions, $restrictionExplanation] = $game->hasEquipRestrictions($actor, $card);
+                if ($hasRestrictions || ! $card->canAttachTo($actor))
+                {
+                    continue;
+                }
+
                 $availableAttachments[] = ["id" => $card->Id, "name" => $card->Name, "location" => $game->translate("Discard Pile")];
             }
 
@@ -156,6 +169,12 @@ class Maneuver_01113 extends Maneuver
             }
 
             $actor = $game->theah->getDuelRoundActor();
+
+            if (! $actor->hasTrait("Pirate"))
+            {
+                throw new \BgaUserException($game->translate("Actor is not a Pirate"));
+            }
+
             $adversaryId = $game->theah->getDuelOpponentId($actor->Id);
             $adversary = $game->theah->getCharacterById($adversaryId);
             $owner = $this->getOwningCard($game->theah);
@@ -169,6 +188,17 @@ class Maneuver_01113 extends Maneuver
             if ($attachment->Location != $discardPileName && $attachment->Location != $adversary->Location)
             {
                 throw new \BgaUserException($game->translate("Card is not in the Adversary's Discard Pile or Attached to Adversary"));
+            }
+
+            [$hasRestrictions, $restrictionExplanation] = $game->hasEquipRestrictions($actor, $attachment);
+            if ($hasRestrictions)
+            {
+                throw new \BgaUserException($restrictionExplanation);
+            }
+
+            if (! $attachment->canAttachTo($actor))
+            {
+                throw new \BgaUserException($game->translate("Attachment cannot be attached to the Actor."));
             }
 
             [$discount, $explanations] = $game->theah->getEquipDiscount($actor, $attachment);
