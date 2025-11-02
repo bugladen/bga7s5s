@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01085;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -12,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 
-class _01085 extends Risk implements IHasActions
+class _01085 extends Risk implements IHasActions, ISorcererAbility
 {
     use ActionTrait;
 
@@ -96,7 +97,7 @@ class _01085 extends Risk implements IHasActions
                 throw new \BgaUserException($game->translate("Character is not a Sorcerer"));
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chose ${sorcerer_name} as their Porté Travel Sorcerer.'), [
+            $game->notify->all("message", clienttranslate('${player_name} chose ${sorcerer_name} as their Porté Travel Sorcerer.'), [
                 'i18n' => ['sorcerer_name'],
                 "player_name" => $game->getActivePlayerName(),
                 "sorcerer_name" => $sorcerer->Name,
