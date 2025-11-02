@@ -3,8 +3,6 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -21,34 +19,6 @@ class Action_01113 extends RiskCityAction
 
         $this->Name = clienttranslate("Take Control of Attachment in Opponent's Discard Pile");
         $this->RequiresPerformerSelected = true;
-    }
-
-    private function attachmentsAvailableFromOpponentDiscardPile(int $opponentId, Character $performer, Theah $theah): array
-    {
-        $owner = $this->getOwningCard($theah);
-        $handWealth = $theah->game->handWealthCount($owner->ControllerId);
-
-        $discardPileName = $theah->game->getPlayerDiscardDeckName($opponentId);
-        $cards = $theah->getCardObjectsAtLocation($discardPileName);
-        $cards = array_filter($cards, fn($card) => $card instanceof Attachment);
-        $availableAttachments = [];
-        foreach ($cards as $card)
-        {
-            [$discount, $explanations] = $theah->getEquipDiscount($performer, $card);
-            $cost = $card->WealthCost - $discount;
-            if ($handWealth >= $cost)
-            {
-                [$hasRestrictions, $restrictionExplanation] = $theah->game->hasEquipRestrictions($performer, $card);                
-                if ($hasRestrictions || ! $card->canAttachTo($performer))
-                {
-                    continue;
-                }
-
-                $availableAttachments[] = $card;
-            }
-        }
-        return $availableAttachments;
-
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -76,7 +46,7 @@ class Action_01113 extends RiskCityAction
                     continue;
                 }
 
-                $availableAttachments = $this->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer, $theah);
+                $availableAttachments = $theah->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer);
                 if (count($availableAttachments) > 0)
                 {
                     return true;
@@ -124,7 +94,7 @@ class Action_01113 extends RiskCityAction
                     continue;
                 }
 
-                $availableAttachments = $this->attachmentsAvailableFromOpponentDiscardPile($playerId, $performer, $game->theah);
+                $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($playerId, $performer);
                 if (count($availableAttachments) > 0)
                 {
                     $opponents[] = ['id' => $playerId, 'name' => $player['player_name']];
@@ -145,7 +115,7 @@ class Action_01113 extends RiskCityAction
             $args['opponentName'] = $game->getPlayerNameById($opponentId);
 
             $opponentId = $game->globals->get(Game::CHOSEN_OPPONENT);
-            $availableAttachments = $this->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer, $game->theah);
+            $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer);
 
             $args['attachments'] = array_map(fn($attachment) => $attachment->getPropertyArray($game), $availableAttachments);
         }
@@ -183,7 +153,7 @@ class Action_01113 extends RiskCityAction
                 throw new \BgaUserException($game->translate("Performer is not a Pirate"));
             }
 
-            $availableAttachments = $this->attachmentsAvailableFromOpponentDiscardPile($id, $performer, $game->theah);
+            $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($id, $performer);
             if (count($availableAttachments) == 0)
             {
                 throw new \BgaUserException($game->translate("No attachments available from this opponent's discard pile"));

@@ -28,8 +28,30 @@ class Action_01167 extends RiskAction
             return false;
         }
 
-        $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        return count($characters) > 0;
+        $performers = $theah->getCharactersInCityByPlayerId($playerId);
+
+        $players = $theah->game->loadPlayersBasicInfos();
+        foreach ($players as $opponentId => $opponent)
+        {
+            if ($opponentId == $playerId)
+            {
+                continue;
+            }
+
+            foreach ($performers as $performer)
+            {
+                $availableAttachments = $theah->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer);
+                $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
+
+                if (count($availableAttachments) > 0)
+                {
+                    return true;
+                }
+            }           
+
+        }
+
+        return false;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
@@ -61,8 +83,22 @@ class Action_01167 extends RiskAction
             $players = $game->loadPlayersBasicInfos();
             foreach ( $players as $playerId => $player ) 
             {
-                if ($playerId != $owner->ControllerId)
-                    $opponents[] = ['id' => $playerId, 'name' => $player['player_name']];
+                if ($playerId == $owner->ControllerId)
+                {
+                    continue;
+                }
+
+                $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+                $performer = $game->theah->getCharacterById($performerId);
+                $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($playerId, $performer);                
+                $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
+
+                if (count($availableAttachments) == 0)
+                {
+                    continue;
+                }
+
+                $opponents[] = ['id' => $playerId, 'name' => $player['player_name']];
             }        
 
             $args['opponents'] = $opponents;
@@ -71,17 +107,17 @@ class Action_01167 extends RiskAction
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01167_2)
         {
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
             $args["performerId"] = $performerId;
 
             $opponentId = $game->globals->get(Game::CHOSEN_OPPONENT);
             $opponentName = $game->getPlayerNameById($opponentId);
             $args["opponentName"] = $opponentName;
 
-            $discardName = $game->getPlayerDiscardDeckName($opponentId);
-            $attachments = $game->theah->getCardObjectsAtLocation($discardName);
-            $attachments = array_values(array_filter($attachments, fn($attachment) => $attachment instanceof Attachment && ! $attachment->hasTrait('Unique')));
+            $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer);
+            $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
 
-            $args["cards"] = array_map(fn($attachment) => $attachment->getPropertyArray($game), $attachments);
+            $args["cards"] = array_map(fn($attachment) => $attachment->getPropertyArray($game), $availableAttachments);
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01167_3)
@@ -111,6 +147,15 @@ class Action_01167 extends RiskAction
             if ( ! isset($players[$id]))
             {
                 throw new \BgaUserException($game->translate("Invalid opponent"));
+            }
+
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
+            $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($id, $performer);
+            $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
+            if (count($availableAttachments) == 0)
+            {
+                throw new \BgaUserException($game->translate("No attachments available from this opponent's discard pile"));
             }
 
             $game->notify->all("message", clienttranslate('${player_name} has chosen to look at <strong>${opponentName}</strong>\'s Discard Pile.'), [

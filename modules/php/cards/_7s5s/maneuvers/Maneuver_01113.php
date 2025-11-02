@@ -59,26 +59,7 @@ class Maneuver_01113 extends Maneuver
             }
         }
 
-        $discardPileName = $theah->game->getPlayerDiscardDeckName($adversary->ControllerId);
-        $cards = $theah->getCardObjectsAtLocation($discardPileName);
-        $cards = array_filter($cards, fn($card) => $card instanceof Attachment);
-        foreach ($cards as $card)
-        {
-            [$discount, $explanations] = $theah->getEquipDiscount($actor, $card);
-            $cost = $card->WealthCost - $discount;
-            if ($handWealth >= $cost)
-            {
-                [$hasRestrictions, $restrictionExplanation] = $theah->game->hasEquipRestrictions($actor, $card);
-
-                if ($hasRestrictions || ! $card->canAttachTo($actor))
-                {
-                    continue;
-                }
-    
-                $availableAttachments[] = $card;
-            }
-        }
-
+        $availableAttachments = $theah->attachmentsAvailableFromOpponentDiscardPile($adversary->ControllerId, $actor);
         return count($availableAttachments) > 0;
     }
 
@@ -126,18 +107,10 @@ class Maneuver_01113 extends Maneuver
                 }
             }
 
-            $discardPileName = $game->getPlayerDiscardDeckName($adversary->ControllerId);
-            $cards = $game->theah->getCardObjectsAtLocation($discardPileName);
-            $cards = array_filter($cards, fn($card) => $card instanceof Attachment);
-            foreach ($cards as $card)
+            $attachmentsFromDiscardPile = $game->theah->attachmentsAvailableFromOpponentDiscardPile($adversary->ControllerId, $actor);
+            foreach ($attachmentsFromDiscardPile as $attachment)
             {
-                [$hasRestrictions, $restrictionExplanation] = $game->hasEquipRestrictions($actor, $card);
-                if ($hasRestrictions || ! $card->canAttachTo($actor))
-                {
-                    continue;
-                }
-
-                $availableAttachments[] = ["id" => $card->Id, "name" => $card->Name, "location" => $game->translate("Discard Pile")];
+                $availableAttachments[] = ["id" => $attachment->Id, "name" => $attachment->Name, "location" => $game->translate("Discard Pile"), "cost" => $attachment->WealthCost, "discount" => 0, "explanations" => []];
             }
 
             $args["attachments"] = $availableAttachments;
