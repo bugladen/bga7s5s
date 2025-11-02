@@ -390,9 +390,17 @@ return declare('seventhseacityoffivesails.actions', null, {
         var items = this.factionHand.getSelectedItems();
         items = items.map((item) => item.id);
 
+        let errors = false;
         this.bgaPerformAction('actDuelPayForManeuverFromCombatCard', { 
             'payWithCards': JSON.stringify(items),
         }).catch(() =>  {
+            errors = true;
+        }).then(() =>  {
+            if (!errors)
+            {
+                items.forEach((item) => this.factionHand.removeFromStockById(item));
+                this.factionHand.removeFromStockById(this.clientStateArgs.combatCardId);
+            }
         });        
     },
 
