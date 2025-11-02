@@ -49,7 +49,7 @@ class _01146 extends Scheme implements IHasReactions
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves.  Reknown will be added to The Docks and The Forum.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  Renown will be added to The Docks and The Forum.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 

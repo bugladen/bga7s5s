@@ -17,7 +17,7 @@ class Action_01179 extends EventCityAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Take a Reknown");
+        $this->Name = clienttranslate("Take a Renown");
         $this->RequiresPerformerSelected = true;
     }
 
@@ -88,7 +88,7 @@ class Action_01179 extends EventCityAction
             $playerId = $performer->ControllerId;
             $this->playersUsed[] = $playerId;
     
-            $event->theah->game->notify->all("message", clienttranslate('${player_name} used Siren\'s Scream to take a Reknown.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${player_name} used Siren\'s Scream to take a Renown.'), [
                 "player_name" => $event->theah->game->getPlayerNameById($playerId),
             ]);    
     

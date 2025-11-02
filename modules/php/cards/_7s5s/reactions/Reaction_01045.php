@@ -15,18 +15,18 @@ class Reaction_01045 extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Gain Reknown at High Drama End");
+        $this->Name = clienttranslate("Gain Renown at High Drama End");
     }
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to gain 1 Reknown at the end of the High Drama: ');
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to gain 1 Renown at the end of the High Drama: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Gain Reknown'), 'gainReknown');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Gain Renown'), 'gainReknown');
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
 
         return $array;
@@ -76,7 +76,7 @@ class Reaction_01045 extends CardReaction
             $event = EventFactory::createPlayerGainsReknownEvent($soe->ControllerId, 1);
             $game->theah->queueEvent($event);
 
-            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} activates Reaction and gains 1 Reknown'), [
+            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} activates Reaction and gains 1 Renown'), [
                 'owner_inject_code' => $soe->getInjectCode(),
                 'player_name' => $game->getPlayerNameById($soe->ControllerId),
             ]);

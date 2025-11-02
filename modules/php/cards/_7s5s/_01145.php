@@ -42,14 +42,14 @@ class _01145 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('The first part of ${scheme_inject_code} now resolves. ${player_name} must move a Reknown from one location to another.
-            Then, Reknown will be added to all locations that have none.'), [
+            $event->theah->game->notify->all("message", clienttranslate('The first part of ${scheme_inject_code} now resolves. ${player_name} must move a Renown from one location to another.
+            Then, Renown will be added to all locations that have none.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('The second part of ${scheme_inject_code} will happen after. Each player draws a card.
-            Then, the player with the least Reknown draw a card  Then the player with the fewest characters will draw a card.'), [
+            $event->theah->game->notify->all("message", clienttranslate('The second part of ${scheme_inject_code} will happen after. Each player draws a card.
+            Then, the player with the least Renown draw a card  Then the player with the fewest characters will draw a card.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
     
@@ -72,7 +72,7 @@ class _01145 extends Scheme
         if ($fromLocation == 'Pass' || $toLocation == 'Pass')
         {
             $game->notifyAllPlayers('message', 
-                clienttranslate('${player_name} has chosen to pass on moving a reknown.'), [
+                clienttranslate('${player_name} has chosen to pass on moving a Renown.'), [
                 "player_name" => $playerName,
             ]);
         }
@@ -80,7 +80,7 @@ class _01145 extends Scheme
         {
             if ($game->getReknownForLocation($fromLocation) == 0)
             {
-                throw new \BgaUserException(sprintf($game->translate("%s does not have any reknown to move."), $fromLocation));
+                throw new \BgaUserException(sprintf($game->translate("%s does not have any Renown to move."), $fromLocation));
             }
    
             $playerAdded = $game->theah->createEvent(Events::ReknownRemovedFromLocation);
@@ -121,7 +121,7 @@ class _01145 extends Scheme
                 $docksAdded->playerId = $playerId;
                 $docksAdded->location = Game::LOCATION_CITY_DOCKS;
                 $docksAdded->amount = 1;
-                $docksAdded->description = "{$scheme->getInjectCode()} - location had no reknown";
+                $docksAdded->description = "{$scheme->getInjectCode()} - location had no Renown";
             }
             // No pre-event check needed - not a player choice
             $game->theah->queueEvent($docksAdded);
@@ -141,7 +141,7 @@ class _01145 extends Scheme
                 $forumAdded->playerId = $playerId;
                 $forumAdded->location = Game::LOCATION_CITY_FORUM;
                 $forumAdded->amount = 1;
-                $forumAdded->description = "{$scheme->getInjectCode()} - location had no reknown";
+                $forumAdded->description = "{$scheme->getInjectCode()} - location had no Renown";
             }
             // No pre-event check needed - not a player choice
             $game->theah->queueEvent($forumAdded);
@@ -161,7 +161,7 @@ class _01145 extends Scheme
                 $forumAdded->playerId = $playerId;
                 $forumAdded->location = Game::LOCATION_CITY_BAZAAR;
                 $forumAdded->amount = 1;
-                $forumAdded->description = "{$scheme->getInjectCode()} - location had no reknown";
+                $forumAdded->description = "{$scheme->getInjectCode()} - location had no Renown";
             }
             // No pre-event check needed - not a player choice
             $game->theah->queueEvent($forumAdded);
@@ -181,7 +181,7 @@ class _01145 extends Scheme
                 $forumAdded->playerId = $playerId;
                 $forumAdded->location = Game::LOCATION_CITY_OLES_INN;
                 $forumAdded->amount = 1;
-                $forumAdded->description = "{$scheme->getInjectCode()} - location had no reknown";
+                $forumAdded->description = "{$scheme->getInjectCode()} - location had no Renown";
             }
             // No pre-event check needed - not a player choice
             $game->theah->queueEvent($forumAdded);
@@ -201,7 +201,7 @@ class _01145 extends Scheme
                 $forumAdded->playerId = $playerId;
                 $forumAdded->location = Game::LOCATION_CITY_GOVERNORS_GARDEN;
                 $forumAdded->amount = 1;
-                $forumAdded->description = "{$scheme->getInjectCode()} - location had no reknown";
+                $forumAdded->description = "{$scheme->getInjectCode()} - location had no Renown";
             }
             // No pre-event check needed - not a player choice
             $game->theah->queueEvent($forumAdded);
@@ -234,7 +234,7 @@ class _01145 extends Scheme
 
         if ($lowestPlayer != 0)
         {
-            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, sprintf($game->translate("%s effect - player has fewest reknown"), $this->getInjectCode()));   
+            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, sprintf($game->translate("%s effect - player has fewest Renown"), $this->getInjectCode()));   
             //No need for a check
             $game->theah->queueEvent($addEvent);
         }

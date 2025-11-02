@@ -1346,4 +1346,31 @@ class Theah
         return $result;
     }
 
+    public function attachmentsAvailableFromOpponentDiscardPile(int $opponentId, Character $performer): array
+    {
+        $handWealth = $this->game->handWealthCount($performer->ControllerId);
+
+        $discardPileName = $this->game->getPlayerDiscardDeckName($opponentId);
+        $cards = $this->getCardObjectsAtLocation($discardPileName);
+        $cards = array_filter($cards, fn($card) => $card instanceof Attachment);
+        $availableAttachments = [];
+        foreach ($cards as $card)
+        {
+            [$discount, $explanations] = $this->getEquipDiscount($performer, $card);
+            $cost = $card->WealthCost - $discount;
+            if ($handWealth >= $cost)
+            {
+                [$hasRestrictions, $restrictionExplanation] = $this->game->hasEquipRestrictions($performer, $card);                
+                if ($hasRestrictions || ! $card->canAttachTo($performer))
+                {
+                    continue;
+                }
+
+                $availableAttachments[] = $card;
+            }
+        }
+        return $availableAttachments;
+
+    }
+
 }

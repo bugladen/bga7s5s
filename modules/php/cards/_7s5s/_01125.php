@@ -38,9 +38,9 @@ class _01125 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves. 
-            ${player_name} may first choose a city location to place reknown onto. 
-            If they choose not to, they may move a Reknown from a city location to an adjacent location. 
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. 
+            ${player_name} may first choose a city location to place Renown onto. 
+            If they choose not to, they may move a Renown from a city location to an adjacent location. 
             Lastly, they will choose an enemy character.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,

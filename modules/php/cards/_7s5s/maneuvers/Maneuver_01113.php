@@ -49,7 +49,7 @@ class Maneuver_01113 extends Maneuver
                 {
                     [$hasRestrictions, $restrictionExplanation] = $theah->game->hasEquipRestrictions($actor, $attachment);
 
-                    if ($hasRestrictions)
+                    if ($hasRestrictions || ! $attachment->canAttachTo($actor))
                     {
                         continue;
                     }
@@ -59,19 +59,7 @@ class Maneuver_01113 extends Maneuver
             }
         }
 
-        $discardPileName = $theah->game->getPlayerDiscardDeckName($adversary->ControllerId);
-        $cards = $theah->getCardObjectsAtLocation($discardPileName);
-        $cards = array_filter($cards, fn($card) => $card instanceof Attachment);
-        foreach ($cards as $card)
-        {
-            [$discount, $explanations] = $theah->getEquipDiscount($actor, $card);
-            $cost = $card->WealthCost - $discount;
-            if ($handWealth >= $cost)
-            {
-                $availableAttachments[] = $card;
-            }
-        }
-
+        $availableAttachments = $theah->attachmentsAvailableFromOpponentDiscardPile($adversary->ControllerId, $actor);
         return count($availableAttachments) > 0;
     }
 
@@ -109,7 +97,7 @@ class Maneuver_01113 extends Maneuver
                     if ($handWealth >= $cost)
                     {
                         [$hasRestrictions, $restrictionExplanation] = $game->hasEquipRestrictions($actor, $attachment);
-                        if ($hasRestrictions)
+                        if ($hasRestrictions || ! $attachment->canAttachTo($actor))
                         {
                             continue;
                         }
@@ -119,12 +107,10 @@ class Maneuver_01113 extends Maneuver
                 }
             }
 
-            $discardPileName = $game->getPlayerDiscardDeckName($adversary->ControllerId);
-            $cards = $game->theah->getCardObjectsAtLocation($discardPileName);
-            $cards = array_filter($cards, fn($card) => $card instanceof Attachment);
-            foreach ($cards as $card)
+            $attachmentsFromDiscardPile = $game->theah->attachmentsAvailableFromOpponentDiscardPile($adversary->ControllerId, $actor);
+            foreach ($attachmentsFromDiscardPile as $attachment)
             {
-                $availableAttachments[] = ["id" => $card->Id, "name" => $card->Name, "location" => $game->translate("Discard Pile")];
+                $availableAttachments[] = ["id" => $attachment->Id, "name" => $attachment->Name, "location" => $game->translate("Discard Pile"), "cost" => $attachment->WealthCost, "discount" => 0, "explanations" => []];
             }
 
             $args["attachments"] = $availableAttachments;
@@ -156,6 +142,12 @@ class Maneuver_01113 extends Maneuver
             }
 
             $actor = $game->theah->getDuelRoundActor();
+
+            if (! $actor->hasTrait("Pirate"))
+            {
+                throw new \BgaUserException($game->translate("Actor is not a Pirate"));
+            }
+
             $adversaryId = $game->theah->getDuelOpponentId($actor->Id);
             $adversary = $game->theah->getCharacterById($adversaryId);
             $owner = $this->getOwningCard($game->theah);
@@ -169,6 +161,17 @@ class Maneuver_01113 extends Maneuver
             if ($attachment->Location != $discardPileName && $attachment->Location != $adversary->Location)
             {
                 throw new \BgaUserException($game->translate("Card is not in the Adversary's Discard Pile or Attached to Adversary"));
+            }
+
+            [$hasRestrictions, $restrictionExplanation] = $game->hasEquipRestrictions($actor, $attachment);
+            if ($hasRestrictions)
+            {
+                throw new \BgaUserException($restrictionExplanation);
+            }
+
+            if (! $attachment->canAttachTo($actor))
+            {
+                throw new \BgaUserException($game->translate("Attachment cannot be attached to the Actor."));
             }
 
             [$discount, $explanations] = $game->theah->getEquipDiscount($actor, $attachment);

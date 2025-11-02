@@ -16,13 +16,13 @@ class Reaction_01099b extends CardReaction
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate("Add a Reknown to a Different Location after a Location is Claimed");
+        $this->Name = clienttranslate("Add a Renown to a Different Location after a Location is Claimed");
         $this->claimedLocation = "";
     }
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may add a Reknown to a different location: ');
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may add a Renown to a different location: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -73,7 +73,7 @@ class Reaction_01099b extends CardReaction
             $event = EventFactory::createReknownAddedToLocationEvent($owner->ControllerId, $locationName, 1, $owner->getInjectCode());
             $game->theah->queueEvent($event);
 
-            $game->notify->all("message", clienttranslate('${player_name} uses ${reaction_inject_code} to add a Reknown to ${location_name}.'), [
+            $game->notify->all("message", clienttranslate('${player_name} uses ${reaction_inject_code} to add a Renown to ${location_name}.'), [
                 'player_name' => $game->getActivePlayerName(),
                 'reaction_inject_code' => $owner->getInjectCode(),
                 'location_name' => $locationName,

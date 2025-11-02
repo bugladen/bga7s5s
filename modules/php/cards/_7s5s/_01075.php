@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01075;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -54,8 +55,18 @@ class _01075 extends FactionAttachment implements IHasActions
             $performer = $event->theah->getCharacterById($event->characterId);
             if ($performer->hasTrait("Diplomat"))
             {
-                throw new \BgaUserException($event->theah->game->translate("You cannot Equip Tabard of thje Fallen Musketeer to a Diplomat."));
+                throw new \BgaUserException($event->theah->game->translate("You cannot Equip Tabard of the Fallen Musketeer to a Diplomat."));
             }
         }
+    }
+
+    public function canAttachTo(Character $character): bool
+    {
+        if (! parent::canAttachTo($character))
+        {
+            return false;
+        }
+
+        return ! $character->hasTrait("Diplomat");
     }
 }

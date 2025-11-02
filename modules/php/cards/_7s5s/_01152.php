@@ -57,8 +57,8 @@ class _01152 extends Scheme implements IHasActions
         {
             $state = GameStateBuilder::create()
                 ->name(States::PLANNING_PHASE_RESOLVE_SCHEMES_01152)
-                ->description(clienttranslate('Until Morale Improves') . clienttranslate(': ${actplayer} may choose a City Location to place a Reknown onto.'))
-                ->descriptionMyTurn(clienttranslate('Until Morale Improves') . clienttranslate(': ${you} may choose a City Location to place a Reknown onto: '))
+                ->description(clienttranslate('Until Morale Improves') . clienttranslate(': ${actplayer} may choose a City Location to place a Renown onto.'))
+                ->descriptionMyTurn(clienttranslate('Until Morale Improves') . clienttranslate(': ${you} may choose a City Location to place a Renown onto: '))
                 ->type(StateType::ACTIVE_PLAYER)
                 ->args("argsEmpty")
                 ->possibleActions([
@@ -81,9 +81,9 @@ class _01152 extends Scheme implements IHasActions
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves. 
-            ${player_name} may choose a city location to place reknown onto. 
-            If they choose not to, they may move a Reknown from a city location to an adjacent location.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. 
+            ${player_name} may choose a city location to place Renown onto. 
+            If they choose not to, they may move a Renown from a city location to an adjacent location.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);
@@ -126,7 +126,7 @@ class _01152 extends Scheme implements IHasActions
             //Check if the location actually has reknown to move
             $reknown = $game->getReknownForLocation($location);
             if ($reknown <= 0)
-                throw new \BgaUserException(sprintf($game->translate("%s does not have any reknown to move."), $location));
+                throw new \BgaUserException(sprintf($game->translate("%s does not have any Renown to move."), $location));
     
             $game->globals->set(GAME::CHOSEN_LOCATION, $location);
     

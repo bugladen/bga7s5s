@@ -23,19 +23,20 @@ class Action_01097 extends CharacterAction
         $deck = $theah->game->getGameDeckObject();
 
         $owner = $this->getOwningCharacter($theah);
-        $ownerDeckName = $theah->game->getPlayerFactionDeckName($owner->ControllerId);
-        $ownerDeckCount = $deck->countCardsInLocation($ownerDeckName);
+        $hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
+        $ownerHandCount = count($hand);
 
         $targets = [];
         $characters = $theah->getOpposingCharactersAtLocation($owner->Location, $playerId);
         foreach ($characters as $character)
         {
-            $deckName = $theah->game->getPlayerFactionDeckName($character->ControllerId);            
-            $deckCount = $deck->countCardsInLocation($deckName);
-            
-            if ($deckCount < $ownerDeckCount)
+
+            $hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $character->ControllerId);
+            $handCount = count($hand);
+
+            if ($handCount < $ownerHandCount)
             {
-                $targets[] = $character;
+                $targets[$character->Id] = $character;
             }
         }
 
@@ -81,7 +82,7 @@ class Action_01097 extends CharacterAction
             $args["performerId"] = $performerId;
 
             $characters = $this->getTargetsForAction($game->getActivePlayerId(), $game->theah);
-            $args["ids"] = array_map(fn($character) => $character->Id, $characters);
+            $args["ids"] = array_map(fn($character) => $character->Id, array_values($characters));
         }
 
         return $args;
@@ -111,18 +112,15 @@ class Action_01097 extends CharacterAction
                 throw new \BgaUserException($game->translate("Character is not at the same location as the Performer"));
             }
 
-            $deck = $game->theah->game->getGameDeckObject();
+            $ownerHand = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
+            $ownerHandCount = count($ownerHand);
 
-            $owner = $this->getOwningCharacter($game->theah);
-            $ownerDeckName = $game->theah->game->getPlayerFactionDeckName($owner->ControllerId);
-            $ownerDeckCount = $deck->countCardsInLocation($ownerDeckName);
+            $targetHand = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $target->ControllerId);
+            $targetHandCount = count($targetHand);
 
-            $deckName = $game->theah->game->getPlayerFactionDeckName($target->ControllerId);
-            $deckCount = $deck->countCardsInLocation($deckName);
-
-            if ($deckCount >= $ownerDeckCount)
+            if ($targetHandCount >= $ownerHandCount)
             {
-                throw new \BgaUserException($game->translate("Target character's owner has more cards in their deck than the Performer's owner"));
+                throw new \BgaUserException($game->translate("Target character's owner has more or equal number of cards in their hand than yours"));
             }
 
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $target->Id, $owner->Id);

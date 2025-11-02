@@ -51,16 +51,31 @@ class _01069 extends Character implements IHasActions
         {
             $ignoreWounds = false;
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source->Id == $this->Id)
+            if ($source->Id == $this->Id || $source->ControllerId == $this->ControllerId)
             {
-                //Check to see if ability is a Sorcerer ability
-                $ability = $source->getAbilityById($event->abilityId);
-                $ignoreWounds = ($ability && $ability instanceof ISorcererAbility) || $source->hasTrait("Sorcerer");
+                $sorcererAbility = false;
+                if ($event->abilityId != '')
+                {
+                    $ability = $source->getAbilityById($event->abilityId);
+                    if ($ability && $ability instanceof ISorcererAbility)
+                    {
+                        $sorcererAbility = true;
+                    }
+                }
+                else
+                {
+                    if ($source instanceof ISorcererAbility)
+                    {
+                        $sorcererAbility = true;
+                    }
+                }
+
+                $ignoreWounds = $sorcererAbility || $source->hasTrait("Sorcerer");
             }
 
             if ($ignoreWounds)
             {
-                $event->theah->game->notifyAllPlayers("message", clienttranslate('${character_inject_code} ignores wounds from Sorceries and Sorcerer abilities he performs. ${wounds} wound(s) ignored from ${source_inject_code}.'), [
+                $event->theah->game->notify->all("message", clienttranslate('${character_inject_code} ignores wounds from Sorceries and Sorcerer abilities he performs. ${wounds} wound(s) ignored from ${source_inject_code}.'), [
                     "character_inject_code" => $this->getInjectCode(),
                     "source_inject_code" => $source->getInjectCode(),
                     "wounds" => $event->wounds,

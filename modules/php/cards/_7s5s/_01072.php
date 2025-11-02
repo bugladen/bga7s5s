@@ -48,7 +48,7 @@ class _01072 extends Scheme implements IHasActions
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose a city location with no Reknown to place reknown onto.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose a city location with no Renown to place Renown onto.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);
@@ -69,7 +69,7 @@ class _01072 extends Scheme implements IHasActions
             $locations = array_filter($locations, fn($location) => $location->Reknown == 0);
             if (count($locations) > 0)
             {
-                throw new \BgaUserException($game->translate("There are locations with no Reknown."));
+                throw new \BgaUserException($game->translate("There are locations with no Renown."));
             }
 
             $game->gamestate->nextState("");
@@ -87,7 +87,7 @@ class _01072 extends Scheme implements IHasActions
             $loc = $game->theah->getCityLocation($location);
             if ($loc->Reknown > 0)
             {
-                throw new \BgaUserException(sprintf($game->translate("%s already has reknown."), $location));
+                throw new \BgaUserException(sprintf($game->translate("%s already has Renown."), $location));
             }
 
             $reknownEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());

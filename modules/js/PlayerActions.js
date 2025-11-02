@@ -78,8 +78,8 @@ return declare('seventhseacityoffivesails.actions', null, {
         };
 
         const clientMessageArray = {
-            'planningPhaseResolveSchemes_01126_2_client': _("Leshiye of the Wood: ${you} must choose two other locations to place Reknown onto: "),
-            'planningPhaseResolveSchemes_01145_2_client': _("Inspire Generosity: ${you} must choose a location to move the Reknown to: "),
+            'planningPhaseResolveSchemes_01126_2_client': _("Leshiye of the Wood: ${you} must choose two other locations to place Renown onto: "),
+            'planningPhaseResolveSchemes_01145_2_client': _("Inspire Generosity: ${you} must choose a location to move the Renown to: "),
         };
 
         let action = actionMap[this.gamedatas.gamestate.name];
@@ -390,9 +390,17 @@ return declare('seventhseacityoffivesails.actions', null, {
         var items = this.factionHand.getSelectedItems();
         items = items.map((item) => item.id);
 
+        let errors = false;
         this.bgaPerformAction('actDuelPayForManeuverFromCombatCard', { 
             'payWithCards': JSON.stringify(items),
         }).catch(() =>  {
+            errors = true;
+        }).then(() =>  {
+            if (!errors)
+            {
+                items.forEach((item) => this.factionHand.removeFromStockById(item));
+                this.factionHand.removeFromStockById(this.clientStateArgs.combatCardId);
+            }
         });        
     },
 

@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPhasePlanningEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -54,7 +55,7 @@ class _01098 extends Scheme implements IHasReactions
         //Two locations will each get one Reknown.
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose two city locations to place reknown onto.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose two city locations to place Renown onto.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);
@@ -81,6 +82,29 @@ class _01098 extends Scheme implements IHasReactions
             //Transition to the state where player chooses an opponent.
             $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "01098");
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            $game = $event->theah->game;
+            $pickedCard = $game->getCardObjectFromDb($this->EmbargoedCardId);
+
+            $class = $pickedCard::class;
+            $class = substr($class, strrpos($class, '\\') + 2);
+
+            $deck = $game->getGameDeckObject();
+            $cards = $deck->getCardsOfType($class);
+
+            foreach ($cards as $card) {
+                $card = $game->getCardObjectFromDb($card['id']);
+                $card->removeCondition(Game::CATS_EMBARGO_TARGET);
+                $game->updateCardObjectInDb($card);
+                $game->theah->addCardToWorld($card);
+    
+                $game->notify->player($pickedCard->ControllerId, "catsEmbargoTargetRemoved", "", [
+                    "cardId" => $card->Id,
+                ]);
+            }
         }
     }
 
@@ -135,6 +159,7 @@ class _01098 extends Scheme implements IHasReactions
             if ($scheme instanceof _01098) {
                 $scheme->EmbargoedCardId = $pickedCard->Id;
                 $game->updateCardObjectInDb($scheme);
+                $game->theah->addCardToWorld($pickedCard);
             }        
     
             $game->globals->set(Game::CHOSEN_CARD, $pickedCard->Id);

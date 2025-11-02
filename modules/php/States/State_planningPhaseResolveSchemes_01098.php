@@ -20,8 +20,8 @@ class State_planningPhaseResolveSchemes_01098 extends GameState
             name: "planningPhaseResolveSchemes_01098",
 
             // optional
-            description: clienttranslate('The Cat\'s Embargo') . clienttranslate(': ${actplayer} must choose two city locations to place Reknown onto: '),
-            descriptionMyTurn: clienttranslate('The Cat\'s Embargo') . clienttranslate(': ${you} must choose two city locations to place Reknown onto: '),
+            description: clienttranslate('The Cat\'s Embargo') . clienttranslate(': ${actplayer} must choose two city locations to place Renown onto: '),
+            descriptionMyTurn: clienttranslate('The Cat\'s Embargo') . clienttranslate(': ${you} must choose two city locations to place Renown onto: '),
             transitions: [
                 "" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
             ],

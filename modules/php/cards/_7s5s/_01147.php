@@ -55,7 +55,7 @@ class _01147 extends Scheme implements IHasActions
             $game = $event->theah->game;
 
             $game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  
-            Reknown will be added to The Forum and The Grand Bazaar. 
+            Renown will be added to The Forum and The Grand Bazaar. 
             Cards will be revealed from the City Deck until an Attachment is revealed, then added to The Grand Bazaar.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);

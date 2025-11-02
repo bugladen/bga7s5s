@@ -125,7 +125,7 @@ class Action_01085 extends RiskAction implements ISorcererAbility
                 "performer_inject_code" => $performer->getInjectCode(),
             ]);
 
-            $event = EventFactory::createCharacterWoundedEvent($performer->Id, $porteTravel->Id, 1, $porteTravel->getInjectCode());
+            $event = EventFactory::createCharacterWoundedEvent($performer->Id, $porteTravel->Id, 1, $porteTravel->getInjectCode(), $this->Id);
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 

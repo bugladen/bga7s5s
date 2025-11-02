@@ -36,6 +36,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardRemovedFromPlayerDiscardPile', 500],
             ['cardRemovedFromLocker', 500],
             ['catsEmbargoTargetChosen', 500],
+            ['catsEmbargoTargetRemoved', 1],
             ['challengeIssued', 500],
             ['challengeRejected', 500],
             ['challengeCancelled', 500],
@@ -1003,6 +1004,22 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }),  div, 'last');
     
             this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>` );
+        }
+    },
+
+    notif_catsEmbargoTargetRemoved: function( notif )
+    {
+        debug( 'notif_catsEmbargoTargetRemoved' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.CATS_EMBARGO_TARGET);
+
+            const id = `${args.cardId}_cats_embargo_target`;
+            dojo.destroy(id);    
         }
     },
 
