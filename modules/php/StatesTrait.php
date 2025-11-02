@@ -1529,11 +1529,11 @@ trait StatesTrait
 
         if (count($winners) == 0)
         {
-            $this->notifyAllPlayers("message", clienttranslate('No player has achieved an ECONOMIC VICTORY by gaining 7 or more reknown.'), []);
+            $this->notifyAllPlayers("message", clienttranslate('No player has achieved an ECONOMIC VICTORY by gaining 7 or more Renown.'), []);
         }
         else if (count($winners) == 1)
         {
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} has achieved an ECONOMIC VICTORY by gaining 7 or more reknown.'), [
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} has achieved an ECONOMIC VICTORY by gaining 7 or more Renown.'), [
                 "player_name" => $this->getPlayerNameById($winners[0])
             ]);
 
@@ -1545,7 +1545,7 @@ trait StatesTrait
             $day = $this->getGameStateValue(Game::DAY);
             if ($day < 5)
             {
-                $this->notifyAllPlayers("message", clienttranslate('Multiple players have achieved an ECONOMIC VICTORY by gaining 7 or more reknown. Another day will be played.'), []);
+                $this->notifyAllPlayers("message", clienttranslate('Multiple players have achieved an ECONOMIC VICTORY by gaining 7 or more Renown. Another day will be played.'), []);
                 $this->gamestate->nextState("endOfGame");
                 return;
             }
@@ -1588,7 +1588,7 @@ trait StatesTrait
 
             if (count($reknownWinners) == 1)
             {
-                $this->notifyAllPlayers("message", clienttranslate('${player_name} has achieved a VICTORY by having the most reknown.'), [
+                $this->notifyAllPlayers("message", clienttranslate('${player_name} has achieved a VICTORY by having the most Renown.'), [
                     "player_name" => $this->getPlayerNameById($highestReknownPlayer)
                 ]);
 
@@ -1599,7 +1599,7 @@ trait StatesTrait
             $playerList = "";
             foreach ($reknownWinners as $playerId)
                 $playerList .= "<p>" . $this->getPlayerNameById($playerId);
-            $this->notifyAllPlayers("message", clienttranslate('There is a tie amongst the players with the most Reknown of ${reknown}. Tied players: ${tied_players}
+            $this->notifyAllPlayers("message", clienttranslate('There is a tie amongst the players with the most Renown of ${reknown}. Tied players: ${tied_players}
             <p>Number of controlled locations will now be counted to break the tie.'), [
                 "reknown" => $highestReknown,
                 "tied_players" => $playerList

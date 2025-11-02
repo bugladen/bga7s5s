@@ -168,13 +168,13 @@ trait FrameworkActionsTrait
             $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
-            $event->description = "The Boar's Guile: Adding Reknown to Location";
+            $event->description = "The Boar's Guile: Adding Renown to Location";
         }
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
         $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('Private: You have chosen to place reknown onto ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
+            clienttranslate('Private: You have chosen to place renown onto ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
             'i18n' => ['location'],
             "location" => $location
         ]);
@@ -185,7 +185,7 @@ trait FrameworkActionsTrait
     public function actPlanningPhase_01125_Pass()
     {
         $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('Private: You have chosen to pass placing reknown onto a location.  Per The Boar\'s Guile you will now choose a city location to move a Reknown FROM.'), []);
+            clienttranslate('Private: You have chosen to pass placing renown onto a location.  Per The Boar\'s Guile you will now choose a city location to move a Renown FROM.'), []);
 
         $this->gamestate->nextState("pass");
     }
@@ -197,14 +197,14 @@ trait FrameworkActionsTrait
         //Check if the location actually has reknown to move
         $reknown = $this->getReknownForLocation($location);
         if ($reknown <= 0) 
-            throw new \BgaUserException(sprintf(self::_("%s does not have any reknown to move."), $location));
+            throw new \BgaUserException(sprintf(self::_("%s does not have any renown to move."), $location));
         
-        $event = EventFactory::createReknownRemovedFromLocationEvent($this->getActivePlayerId(), $location, 1, "The Boar's Guile: Moving Reknown from one Location to an adjacent location");
+        $event = EventFactory::createReknownRemovedFromLocationEvent($this->getActivePlayerId(), $location, 1, "The Boar's Guile: Moving Renown from one Location to an adjacent location");
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
         $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('Private: You have chosen to move reknown from ${location}.  You must now choose a location to move the Reknown TO.'), [
+            clienttranslate('Private: You have chosen to move renown from ${location}.  You must now choose a location to move the Renown TO.'), [
             'i18n' => ['location'],
             "location" => $location
         ]);
@@ -217,7 +217,7 @@ trait FrameworkActionsTrait
     public function actPlanningPhase_01125_2_Pass()
     {
         $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('Private: You have passed choosing a location to move reknown from.  Per The Boar\'s Guile you must now choose an enemy character to target.'), []);
+            clienttranslate('Private: You have passed choosing a location to move renown from.  Per The Boar\'s Guile you must now choose an enemy character to target.'), []);
 
         $this->gamestate->nextState("pass");
     }
@@ -231,13 +231,13 @@ trait FrameworkActionsTrait
             $event->playerId = $this->getActivePlayerId();
             $event->location = $location;
             $event->amount = 1;
-            $event->description = "The Boar's Guile: Moving Reknown from one Location to an adjacent location";
+            $event->description = "The Boar's Guile: Moving Renown from one Location to an adjacent location";
         }
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
         $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('Private: You have chosen to move reknown to ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
+            clienttranslate('Private: You have chosen to move renown to ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
             'i18n' => ['location'],
             "location" => $location
         ]);
@@ -285,7 +285,7 @@ trait FrameworkActionsTrait
                 $event->playerId = $this->getActivePlayerId();
                 $event->location = $location;
                 $event->amount = 1;
-                $event->description = "Leshiye of the Wood: Adding Reknown to Location";
+                $event->description = "Leshiye of the Wood: Adding Renown to Location";
             }
             $this->theah->eventCheck($event);        
         }

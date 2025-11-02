@@ -46,7 +46,7 @@ class _01149 extends Scheme implements IHasActions
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  Reknown will be added to The Docks and The Grand Bazaar.  A new City Card will be added to The Docks.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  Renown will be added to The Docks and The Grand Bazaar.  A new City Card will be added to The Docks.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 

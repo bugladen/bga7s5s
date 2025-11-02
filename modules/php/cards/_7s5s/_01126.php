@@ -56,14 +56,14 @@ class _01126 extends Scheme
         if ($event instanceof EventReknownAddedToLocation) 
         {
             if ($event->location == $this->chosenLocation)
-                throw new \BgaUserException($event->theah->game->translate(("Leshiye of the Wood does not allow Reknown to be placed at its location.")));    
+                throw new \BgaUserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be placed at its location.")));    
         }
 
         //We have to allow the reknown to be removed by the scheme itself
         if ($event instanceof EventReknownRemovedFromLocation && $event->source != $this->Name) 
         {
             if ($event->location == $this->chosenLocation)
-                throw new \BgaUserException($event->theah->game->translate(("Leshiye of the Wood does not allow Reknown to be removed from its location.")));    
+                throw new \BgaUserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be removed from its location.")));    
         }
 
         if ($event instanceof EventLocationClaimed && $event->location == $this->chosenLocation)

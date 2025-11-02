@@ -17,18 +17,18 @@ class Reaction_01098 extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Gain a Reknown after Cat's Embargo card is played");
+        $this->Name = clienttranslate("Gain a Renown after Cat's Embargo card is played");
     }
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} will gain a Reknown because the Cat\'s Embargo chosen card was played: '));
+        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} will gain a Renown because the Cat\'s Embargo chosen card was played: '));
     }
 
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Gain Reknown'), 'gainReknown');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Gain Renown'), 'gainReknown');
         return $array;
     }
 
@@ -82,7 +82,7 @@ class Reaction_01098 extends CardReaction
             if ($this->isAvailable())
             {
             
-                $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} used Reaction to gain a Reknown after Cat\'s Embargo card is played'), [
+                $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} used Reaction to gain a Renown after Cat\'s Embargo card is played'), [
                     "card_inject_code" => $owner->getInjectCode(),
                     "player_name" => $game->getActivePlayerName(),
                 ]);
@@ -94,7 +94,7 @@ class Reaction_01098 extends CardReaction
             }
             else
             {
-                $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} already used this Reaction to gain a Reknown this turn. No additional Reknown will be gained.'), [
+                $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} already used this Reaction to gain a Renown this turn. No additional Renown will be gained.'), [
                     "card_inject_code" => $owner->getInjectCode(),
                     "player_name" => $game->getActivePlayerName(),
                 ]);

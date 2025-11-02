@@ -49,7 +49,7 @@ class _01179 extends CityEventCard implements IHasActions
         parent::eventCheck($event);
 
         if ($event instanceof EventCardAddedToCityDiscardPile && $event->cardId == $this->Id && $this->Reknown > 0)
-            throw new \BgaUserException($event->theah->game->translate("Siren's Scream will not be discarded while it has Reknown on it."));
+            throw new \BgaUserException($event->theah->game->translate("Siren's Scream will not be discarded while it has Renown on it."));
     }
 
     public function handleEvent(Event $event)
@@ -63,7 +63,7 @@ class _01179 extends CityEventCard implements IHasActions
 
             // Notify players that the player has lost reknown
             $game->notify->all("message", clienttranslate(
-                '${card_inject_code} effect triggers. All players will transfer 1 Reknown to the card if able.'), [
+                '${card_inject_code} effect triggers. All players will transfer 1 Renown to the card if able.'), [
                 "card_inject_code" => $this->getInjectCode(),
             ]);
 

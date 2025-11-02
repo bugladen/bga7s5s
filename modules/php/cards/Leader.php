@@ -76,7 +76,7 @@ abstract class Leader extends Character
                 //Modify current by half, rounded up
                 $new = ceil($current / 2);
 
-                $event->theah->game->notifyAllPlayers("message", clienttranslate('${player_name} will lose half of their reknown (${old_reknown} to ${new_reknown}).'), [
+                $event->theah->game->notify->all("message", clienttranslate('${player_name} will lose half of their Renown (${old_reknown} to ${new_reknown}).'), [
                     "player_name" => $event->theah->game->getPlayerNameById($this->ControllerId),
                     "old_reknown" => $current,
                     "new_reknown" => $new,

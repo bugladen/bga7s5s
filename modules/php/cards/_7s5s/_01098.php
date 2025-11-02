@@ -55,7 +55,7 @@ class _01098 extends Scheme implements IHasReactions
         //Two locations will each get one Reknown.
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
-            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose two city locations to place reknown onto.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose two city locations to place Renown onto.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);

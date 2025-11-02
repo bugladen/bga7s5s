@@ -39,7 +39,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         this.addTooltipHtml( 'city-discard', `<div class='_7sfs-basic-tooltip'>${_('City Discard Pile')}</div>` );
         this.addTooltipHtml( 'day-indicator', `<div class='_7sfs-basic-tooltip'>${_('The Current Day')}</div>` );
         this.addTooltipHtml( 'city-day-phase', `<div class='_7sfs-basic-tooltip'>${_('The Current Phase of the Day')}</div>` );
-        this.addTooltipHtmlToClass('_7sfs-city-reknown-chip', `<div class='_7sfs-basic-tooltip'>${_('Current Reknown on this City Location')}</div>` );
+        this.addTooltipHtmlToClass('_7sfs-city-reknown-chip', `<div class='_7sfs-basic-tooltip'>${_('Current Renown on this City Location')}</div>` );
 
         //Update the day
         if (gamedatas.day > 0) {
@@ -76,7 +76,7 @@ return declare('seventhseacityoffivesails.setup', null, {
                 handCount: player.handCount,
                 faction: player.leader?.faction.toLowerCase() ?? '',
             });
-            this.addTooltipHtml( `${playerId}-score-reknown`, `<div class='_7sfs-basic-tooltip'>${_('Current Reknown')}</div>` );
+            this.addTooltipHtml( `${playerId}-score-reknown`, `<div class='_7sfs-basic-tooltip'>${_('Current Renown')}</div>` );
             this.addTooltipHtml( `${playerId}-score-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Cap')}</div>` );
             this.addTooltipHtml( `${playerId}-score-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
             this.addTooltipHtml( `${playerId}-score-hand-count`, `<div class='_7sfs-basic-tooltip'>${_('Number of cards in Faction Hand')}</div>` );

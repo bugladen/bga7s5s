@@ -40,8 +40,8 @@ class _01144 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id)
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose a city location to place reknown onto.
-            Then if they have the fewest Reknown, they may add a Reknown to a different location.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose a city location to place renown onto.
+            Then if they have the fewest Renown, they may add a Renown to a different location.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);

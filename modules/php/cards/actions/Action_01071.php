@@ -82,7 +82,7 @@ class Action_01071 extends SchemeCityAction
                         $event->theah->queueEvent($loseEvent);
                         
                         $owner = $this->getOwningCard($event->theah);
-                        $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${agressor_name} is the first player to wound in this duel. They will steal 1 Reknown from ${player_name}.'), [
+                        $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${agressor_name} is the first player to wound in this duel. They will steal 1 Renown from ${player_name}.'), [
                             "action_inject_code" => $owner->getInjectCode(),
                             "agressor_name" => $game->getPlayerNameById($agressor->ControllerId),
                             "player_name" => $game->getPlayerNameById($woundedCharacter->ControllerId),
@@ -91,7 +91,7 @@ class Action_01071 extends SchemeCityAction
                     else
                     {
                         $owner = $this->getOwningCard($event->theah);
-                        $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${agressor_name} is the first player to wound in this duel. However, ${player_name} has no Reknown to steal.'), [
+                        $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${agressor_name} is the first player to wound in this duel. However, ${player_name} has no Renown to steal.'), [
                             "action_inject_code" => $owner->getInjectCode(),
                             "agressor_name" => $game->getPlayerNameById($agressor->ControllerId),
                             "player_name" => $game->getPlayerNameById($woundedCharacter->ControllerId),

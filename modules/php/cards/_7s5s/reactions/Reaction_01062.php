@@ -15,12 +15,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
         {
             parent::__construct();
 
-            $this->Name = clienttranslate("Move Adjacent Reknown to Odette's Location");
+            $this->Name = clienttranslate("Move Adjacent Renown to Odette's Location");
         }
 
         public function getReactionDescription(Theah $theah): string
         {
-            return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to move adjacent Reknown to Odette\'s location: ');
+            return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to move adjacent Renown to Odette\'s location: ');
         }
 
         public function getReactionButtonProperties(Theah $theah): array
@@ -34,7 +34,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
                 $location = $theah->getCityLocation($locationName);
                 if ($location->Reknown > 0)
                 {
-                    $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Move Reknown from %s'), $locationName), "moveFrom-$locationName");
+                    $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Move Renown from %s'), $locationName), "moveFrom-$locationName");
                 }
             }
             $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
@@ -83,7 +83,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 
-                $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and moved 1 Reknown from ${location_name} to ${odette_location}.'), [
+                $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and moved 1 Renown from ${location_name} to ${odette_location}.'), [
                     "i18n" => ["location_name", "odette_location"],
                     "reaction_inject_code" => $odette->getInjectCode(),
                     "player_name" => $game->getPlayerNameById($odette->ControllerId),

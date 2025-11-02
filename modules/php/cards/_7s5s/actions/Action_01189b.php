@@ -16,7 +16,7 @@ class Action_01189b extends EventCityAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Move Reknown to Adjacent Location");
+        $this->Name = clienttranslate("Move Renown to Adjacent Location");
 
         $this->RequiresPerformerSelected = true;
     }
@@ -96,16 +96,16 @@ class Action_01189b extends EventCityAction
             $reknown = $game->getReknownForLocation($poo->Location);
             if ($reknown <= 0)
             {
-                throw new \BgaUserException(sprintf($game->translate("%s does not have any reknown to move."), $poo->Location));
+                throw new \BgaUserException(sprintf($game->translate("%s does not have any Renown to move."), $poo->Location));
             }
 
             $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $poo->Id);
             $game->theah->eventCheck($engageEvent);
     
-            $fromEvent = EventFactory::createReknownRemovedFromLocationEvent($performer->ControllerId, $poo->Location, 1, "{$poo->getInjectCode()}: Moving Reknown to adjacent location");
+            $fromEvent = EventFactory::createReknownRemovedFromLocationEvent($performer->ControllerId, $poo->Location, 1, "{$poo->getInjectCode()}: Moving Renown to adjacent location");
             $game->theah->eventCheck($fromEvent);
     
-            $toEvent = EventFactory::createReknownAddedToLocationEvent($performer->ControllerId, $location->Name, 1, "{$poo->getInjectCode()}: Moving Reknown to adjacent location");
+            $toEvent = EventFactory::createReknownAddedToLocationEvent($performer->ControllerId, $location->Name, 1, "{$poo->getInjectCode()}: Moving Renown to adjacent location");
             $game->theah->eventCheck($toEvent);
     
             $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($poo->ControllerId, $poo->Id, $poo->Location, $poo->Id, $asEffect = true);

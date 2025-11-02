@@ -18,7 +18,7 @@ class Reaction_01200 extends AttachmentReaction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Gain Reknown");
+        $this->Name = clienttranslate("Gain Renown");
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -28,13 +28,13 @@ class Reaction_01200 extends AttachmentReaction
         {
             $card = $theah->getCardById($skull->ChosenCard);
         }
-        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('Chosen card %s was played.${you} may choose to gain Reknown: '), $card->Name);
+        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('Chosen card %s was played.${you} may choose to gain Renown: '), $card->Name);
     }
 
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Gain Reknown'), 'gainReknown');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Gain Renown'), 'gainReknown');
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
         return $array;
     }
@@ -73,7 +73,7 @@ class Reaction_01200 extends AttachmentReaction
         if ($reactionId == "gainReknown")
         {
             $owner = $this->getOwningCard($game->theah);
-            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to gain a Reknown.'), [
+            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to gain a Renown.'), [
                 "owner_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getActivePlayerName(), 
             ]);

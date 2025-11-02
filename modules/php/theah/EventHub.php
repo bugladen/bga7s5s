@@ -823,7 +823,7 @@ trait EventHub
                     $card->IsUpdated = true;
 
                     // Notify players that the player has lost reknown
-                    $theah->game->notifyAllPlayers("reknownUpdatedOnCard", clienttranslate('${player_name} added ${amount} Reknown to ${card_name} (${total} now on card).'), [
+                    $theah->game->notify->all("reknownUpdatedOnCard", clienttranslate('${player_name} added ${amount} Renown to ${card_name} (${total} now on card).'), [
                         'i18n' => ['card_name'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
                         "cardId" => $card->Id,
@@ -845,7 +845,7 @@ trait EventHub
                     $card->IsUpdated = true;
 
                     // Notify players that the player has lost reknown
-                    $theah->game->notifyAllPlayers("reknownUpdatedOnCard", clienttranslate('${player_name} removed ${amount} Reknown from ${card_name} (${total} now on card).'), [
+                    $theah->game->notify->all("reknownUpdatedOnCard", clienttranslate('${player_name} removed ${amount} Renown from ${card_name} (${total} now on card).'), [
                         'i18n' => ['card_name'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
                         "cardId" => $card->Id,
@@ -876,7 +876,7 @@ trait EventHub
                         $db->setPlayerReknown($playerId, $reknown);
 
                         // Notify players that the player has lost reknown
-                        $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} loses ${amount} reknown (now at ${total}).'), [
+                        $this->game->notify->all("playerReknownUpdated", clienttranslate('${player_name} loses ${amount} Renown (now at ${total}).'), [
                             "player_id" => $event->playerId,
                             "player_name" => $this->game->getPlayerNameById($playerId),
                             "amount" => $event->amount,
@@ -897,7 +897,7 @@ trait EventHub
                     $db->setPlayerReknown($playerId, $reknown);
 
                     // Notify players that the player has gained reknown
-                    $this->game->notifyAllPlayers("playerReknownUpdated", clienttranslate('${player_name} gains ${amount} reknown (now at ${total}).'), [
+                    $this->game->notify->all("playerReknownUpdated", clienttranslate('${player_name} gains ${amount} Renown (now at ${total}).'), [
                         "player_id" => $event->playerId,
                         "player_name" => $this->game->getPlayerNameById($playerId),
                         "amount" => $event->amount,
@@ -928,7 +928,7 @@ trait EventHub
                 $this->cityLocations[$event->location]->Reknown += $event->amount;
 
                 // Notify players that the player has lost reknown
-                $this->game->notifyAllPlayers("reknownAddedToLocation", clienttranslate('${amount} reknown ADDED to ${location} ${source}.'), [
+                $this->game->notify->all("reknownAddedToLocation", clienttranslate('${amount} Renown ADDED to ${location} ${source}.'), [
                     'i18n' => ['location'],
                     "location" => $event->location,
                     "amount" => $event->amount,
@@ -946,7 +946,7 @@ trait EventHub
                 $this->cityLocations[$event->location]->Reknown -= $event->amount;
 
                 // Notify players that the player has lost reknown
-                $this->game->notifyAllPlayers("reknownRemovedFromLocation", clienttranslate('${amount} reknown REMOVED from ${location} ${source}.'), [
+                $this->game->notify->all("reknownRemovedFromLocation", clienttranslate('${amount} Renown REMOVED from ${location} ${source}.'), [
                     'i18n' => ['location'],
                     "location" => $event->location,
                     "amount" => $event->amount,
@@ -1648,7 +1648,7 @@ trait EventHub
             case $event instanceof EventPlayerTakeReknownForControlledLocation:
                 $handler = function ($theah, EventPlayerTakeReknownForControlledLocation $event)
                 {
-                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} controls ${location_name} and will receive ${reknown} Reknown.'), [
+                    $theah->game->notify->all("message", clienttranslate('${player_name} controls ${location_name} and will receive ${reknown} Renown.'), [
                         'i18n' => ['location_name'],
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "location_name" => $event->location,

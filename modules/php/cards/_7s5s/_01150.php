@@ -47,7 +47,7 @@ class _01150 extends Scheme
 
             $game = $event->theah->game;
 
-            $game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves. A Reknown will be added to the The Forum.  Opponents MAY then choose a city location. One Reknown will move from chosen location to The Forum.'), [
+            $game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. A Renown will be added to the The Forum.  Opponents MAY then choose a city location. One Renown will move from chosen location to The Forum.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
@@ -86,7 +86,7 @@ class _01150 extends Scheme
             }
             $playerNames = implode(", ", $playerNames);
 
-            $game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code}: ${player_names} has/have added Reknown to The Forums and may intervene this turn.'), [
+            $game->notify->all("message", clienttranslate('${scheme_inject_code}: ${player_names} has/have added Renown to The Forums and may intervene this turn.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_names" => $playerNames
             ]);
@@ -117,7 +117,7 @@ class _01150 extends Scheme
 
                 if ( ! in_array($playerId, $this->interveneList))
                 {
-                    throw new \BgaUserException($game->translate("Parley Gone Wrong: You cannot intervene at The Forum because you did not contribute Reknown to The Forum."));
+                    throw new \BgaUserException($game->translate("Parley Gone Wrong: You cannot intervene at The Forum because you did not contribute Renown to The Forum."));
                 }
             }
         }
@@ -152,7 +152,7 @@ class _01150 extends Scheme
     {
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01150)
         {
-            $game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code}: ${player_name} has passed choosing a location to remove reknown from.'), [
+            $game->notify->all("message", clienttranslate('${scheme_inject_code}: ${player_name} has passed choosing a location to remove Renown from.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $game->getActivePlayerName()
             ]);

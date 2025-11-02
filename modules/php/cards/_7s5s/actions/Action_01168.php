@@ -13,7 +13,7 @@ class Action_01168 extends RiskAction
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate("Spend a Reknown, Draw a Card");
+        $this->Name = clienttranslate("Spend a Renown, Draw a Card");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
