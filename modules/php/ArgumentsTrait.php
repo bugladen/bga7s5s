@@ -642,8 +642,8 @@ trait ArgumentsTrait
             return [
                 "_private" => [
                     "active" => [
-                        "maneuversAvailable" => count($characterManeuevers) > 0 && $playedManeuversCount == 0,
-                        "techniquesAvailable" => count($techniques) > 0 && $playedTechniquesCount == 0,
+                        "maneuversAvailable" => $combatCardsCount > 0 && count($characterManeuevers) > 0 && $playedManeuversCount == 0,
+                        "techniquesAvailable" => $combatCardsCount > 0 && count($techniques) > 0 && $playedTechniquesCount == 0,
                         "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $combatCardsCount == 0,
                         "gamblesLeft" => $gamblesLeft,
                         "combatCardAvailable" => $combatCardsCount == 0,
