@@ -96,6 +96,8 @@ class Action_01026 extends RiskAction
             }
 
             $owner = $this->getOwningCard($game->theah);
+
+            $performer->unEquipAllAttachments($game->theah);
             $destroyedEvent = EventFactory::createCharacterDestroyedEvent($performer->ControllerId, $performer->Id, $owner->getInjectCode());
             $game->theah->queueEvent($destroyedEvent);
 

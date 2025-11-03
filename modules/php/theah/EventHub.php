@@ -193,7 +193,7 @@ trait EventHub
                     $attachment->AttachedToId = $event->toCharacterId;
                     $attachment->IsUpdated = true;
 
-                    $theah->game->notifyAllPlayers("attachmentUnequipped", clienttranslate(''), [
+                    $theah->game->notify->all("attachmentUnequipped", clienttranslate(''), [
                         "player_id" => $event->playerId,
                         "attachmentId" => $attachment->Id,
                         "characterId" => $character->Id,
@@ -205,6 +205,9 @@ trait EventHub
 
                     if ($character->Wounds >= $character->ModifiedResolve && ! $character->IsDying)
                     {
+                        $character->IsDying = true;
+                        $character->IsUpdated = true;
+                        $character->unEquipAllAttachments($event->theah);
                         $destroyEvent = EventFactory::createCharacterDestroyedEvent($character->ControllerId, $character->Id, sprintf($this->game->translate("Has unequipped %s"), $attachment->Name));
                         $this->queueEvent($destroyEvent);
                     }
@@ -254,7 +257,7 @@ trait EventHub
                     $modifiedFinesse = $character->ModifiedFinesse;
                     $modifiedInfluence = $character->ModifiedInfluence;
 
-                    $theah->game->notifyAllPlayers("attachmentUnequipped", clienttranslate('${attachment_inject_code} has been unequipped from ${character_inject_code}.'), [
+                    $theah->game->notify->all("attachmentUnequipped", clienttranslate('${attachment_inject_code} has been unequipped from ${character_inject_code}.'), [
                         "player_id" => $event->playerId,
                         "attachment_inject_code" => $attachment->getInjectCode(),
                         "character_inject_code" => $character->getInjectCode(),
@@ -268,6 +271,9 @@ trait EventHub
 
                     if ($character->Wounds >= $character->ModifiedResolve && ! $character->IsDying)
                     {
+                        $character->IsDying = true;
+                        $character->IsUpdated = true;
+                        $character->unEquipAllAttachments($event->theah);
                         $destroyEvent = EventFactory::createCharacterDestroyedEvent($character->ControllerId, $character->Id, sprintf($this->game->translate("Has unequipped %s"), $attachment->Name));
                         $this->queueEvent($destroyEvent);
                     }
