@@ -1149,9 +1149,9 @@ trait StatesTrait
 
         $actorId = $values['actor_id'];
         $actor = $this->theah->getCharacterById($actorId);
-        
-        $adversaryId = $this->theah->getDuelOpponentId($actorId);
-        $adversary = $this->theah->getCharacterById($adversaryId);
+
+        //Will get last known state of the opponent if they are in the discard or locker
+        $adversary = $this->theah->getDuelRoundOpponent();
 
         //Any threat remaining for the actor is applied
         $threat = 0;

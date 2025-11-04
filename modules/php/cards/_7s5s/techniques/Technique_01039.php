@@ -36,6 +36,11 @@ class Technique_01039 extends Technique
         $adversaryId = $theah->getDuelOpponentId($philip->Id);
         $adversary = $theah->getCharacterById($adversaryId);
 
+        if ($theah->game->characterIsInDiscardOrLocker($adversary))
+        {
+            return false;
+        }
+
         if ( ! $adversary->Engaged)
             return false;
 
@@ -50,18 +55,7 @@ class Technique_01039 extends Technique
         {
             $philip = $this->getOwningCharacter($event->theah);
 
-            $game = $event->theah->game;
-            $inDuel = $game->globals->get(Game::IN_DUEL);
-            $adversaryId = 0;
-            if ($inDuel)
-            {
-                $adversaryId = $event->theah->getDuelOpponentId($philip->Id);
-            }
-            else
-            {
-                $adversaryId = $game->globals->get(Game::CHOSEN_TARGET);
-            }
-
+            $adversaryId = $event->theah->getDuelOpponentId($philip->Id);
             $adversary = $event->theah->getCharacterById($adversaryId);
 
             $mercenaries = $event->theah->getCharactersAtLocation($philip->Location);

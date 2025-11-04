@@ -682,6 +682,11 @@ trait UtilitiesTrait
         return [false, ""];
     }
 
+    public function characterIsInDiscardOrLocker(Character $character) : bool
+    {
+        return strpos($character->Location, "Discard-") !== false || strpos($character->Location, "Locker-") !== false;
+    }
+
     //WIP. 
     public function inStateMachine(int $state)
     { 

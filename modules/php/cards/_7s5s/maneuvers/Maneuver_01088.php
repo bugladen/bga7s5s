@@ -21,9 +21,7 @@ class Maneuver_01088 extends Maneuver
         if ( ! parent::isAvailableToPlayer($playerId, $theah))
             return false;
 
-        $actor = $theah->getDuelRoundActor();
-        $adversaryId = $theah->getDuelOpponentId($actor->Id);
-        $adversary = $theah->getCharacterById($adversaryId);
+        $adversary = $theah->getDuelRoundOpponent();
 
         return $adversary->hasTrait("Mercenary");
     }

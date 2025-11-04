@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Maneuver_01110 extends Maneuver
 {
@@ -16,6 +17,24 @@ class Maneuver_01110 extends Maneuver
         parent::__construct();
 
         $this->Name = clienttranslate("Wound Adversary");
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if (! parent::isAvailableToPlayer($playerId, $theah))
+        {
+            return false;
+        }
+
+        $actor = $theah->getDuelRoundActor();
+        $adversaryId = $theah->getDuelOpponentId($actor->Id);
+        $adversary = $theah->getCharacterById($adversaryId);
+        if ($theah->game->characterIsInDiscardOrLocker($adversary))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function handleEvent(Event $event)
