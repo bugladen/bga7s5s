@@ -183,7 +183,7 @@
     
             'planningPhaseResolveSchemes_01125_3': () => {
                 if (this.isCurrentPlayerActive()) {
-                    const selectedLocationElement = dojo.query(`[data-location="${args.args.location}"]`)[0];
+                    const selectedLocationElement = dojo.query(`[data-location="${args.args.args.location}"]`)[0];
     
                     const locations = this.getListOfLocationsAdjacentToLocation(selectedLocationElement.id);
                     this.numberOfCityLocationsSelectable = 1;

@@ -54,13 +54,6 @@ trait ArgumentsTrait
         ];
     }
 
-    public function argsPlanningPhaseResolveSchemes_01125_3(): array
-    {
-        return [
-            "location" => $this->globals->get(GAME::CHOSEN_LOCATION)
-        ];
-    }
-
     public function argsPlanningPhaseResolveSchemes_01144_2(): array
     {
         return [

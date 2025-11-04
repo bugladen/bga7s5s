@@ -66,9 +66,6 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01016': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01071': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01098': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_01125': 'actPlanningPhase_01125',
-            'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2',
-            'planningPhaseResolveSchemes_01125_3': 'actPlanningPhase_01125_3',
             'planningPhaseResolveSchemes_01126': 'planningPhaseResolveSchemes_01126_2_client',
             'planningPhaseResolveSchemes_01144': 'actPlanningPhase_01144',
             'planningPhaseResolveSchemes_01144_2': 'actPlanningPhase_01144_2',
@@ -108,7 +105,6 @@ return declare('seventhseacityoffivesails.actions', null, {
     onChooseInPlayCardConfirmed: function()
     {
         const actions = {
-            'planningPhaseResolveSchemes_01125_4'                   : 'actPlanningPhase_01125_4',
             'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
             'highDramaMoveActionChoosePerformer'                    : 'actHighDramaMoveActionPerformerChosen',
             'highDramaInPlayActionChoosePerformer'                  : 'actHighDramaInPlayActionPerformerChosen',  
@@ -500,9 +496,8 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaPlayerTurn'                       : 'actHighDramaPass',
             'highDramaPhase01180_3'                     : 'actPassWithPass',
             'planningPhaseResolveSchemes_01016_2'       : 'actPassWithPass',
-            'planningPhaseResolveSchemes_01125'         : 'actPlanningPhase_01125_Pass',
-            'planningPhaseResolveSchemes_01125_2'       : 'actPlanningPhase_01125_2_Pass',
-            'planningPhaseResolveSchemes_01125_4'       : 'actPlanningPhase_01125_4_Pass',
+            'planningPhaseResolveSchemes_01125'         : 'actFromCardPass',
+            'planningPhaseResolveSchemes_01125_2'       : 'actFromCardPass',
             'planningPhaseResolveSchemes_01145'         : 'actPlanningPhase_01145_Pass',            
             'planningPhaseResolveSchemes_01145_2_client': 'actPlanningPhase_01145_Pass',            
             'planningPhaseResolveSchemes_01152'         : 'actPassWithPass',

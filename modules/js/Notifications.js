@@ -85,6 +85,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['updateRoundThreats', 500],
             ['updateRoundWithCombatStats', 500],
             ['yevgeniAdversaryChosen', 500],
+            ['yevgeniAdversaryRemoved', 1],
         ];
 
         notifs.forEach((notif) => {
@@ -964,6 +965,22 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }),  imageElement, 'last');
 
         this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
+    },
+
+    notif_yevgeniAdversaryRemoved: function( notif )
+    {
+        debug( 'notif_yevgeniAdversaryRemoved' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.ADVERSARY_OF_YEVGENI);
+
+            const id = `${card.divId}_yevgeni_adversary`;
+            dojo.destroy(id);    
+        }
     },
 
     notif_crystalEyeTargetChosen: function( notif )

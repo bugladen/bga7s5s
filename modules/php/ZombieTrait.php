@@ -47,16 +47,14 @@ trait ZombieTrait
                 case "planningPhaseResolveSchemes_01150":
                 case "planningPhaseResolveSchemes_01071":
                 case "planningPhaseResolveSchemes_01072":
+                case "planningPhaseResolveSchemes_01125_3":
+                case "planningPhaseResolveSchemes_01125_4":
                     $this->gamestate->nextState("");
                     break;
 
                 // Planning Phase States
                 case "planningPhaseResolveSchemes_01016":
                 case "planningPhaseResolveSchemes_01016_2":
-                case "planningPhaseResolveSchemes_01125":
-                case "planningPhaseResolveSchemes_01125_2":
-                case "planningPhaseResolveSchemes_01125_3":
-                case "planningPhaseResolveSchemes_01125_4":
                 case "planningPhaseResolveSchemes_01126":
                 case "planningPhaseResolveSchemes_01143":
                 case "planningPhaseResolveSchemes_01144":
@@ -65,6 +63,8 @@ trait ZombieTrait
                     $this->actPass();
                     break;
 
+                case "planningPhaseResolveSchemes_01125":
+                case "planningPhaseResolveSchemes_01125_2":
                 case "planningPhaseResolveSchemes_01152":
                 case "planningPhaseResolveSchemes_01152_2":
                 case "planningPhaseResolveSchemes_01152_3":
