@@ -55,5 +55,7 @@ class Reaction_01116a extends CardReaction
 
             $this->setUsed($game->theah, true);
         }
+
+        $game->gamestate->nextState("done");
     }
 }

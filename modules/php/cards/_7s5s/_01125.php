@@ -55,9 +55,14 @@ class _01125 extends Scheme
             $event->theah->queueEvent($transition);            
         }
 
-        if ($event instanceof EventDuelCalculateCombatCardStats)
+        if ($event instanceof EventDuelCalculateCombatCardStats && $this->Location == Game::LOCATION_PLAYER_HOME)
         {
-            
+            $adversary = $event->theah->getDuelRoundOpponent();
+            if ($adversary->hasCondition(Game::ADVERSARY_OF_YEVGENI))
+            {
+                $event->thrust += 1;
+                $event->explanations[] = sprintf($event->theah->game->translate("%s increases Thrust by +1, because %s is an Adversary of Yevgeni. "), $this->getInjectCode(), $adversary->getInjectCode());
+            }
         }
 
         if ($event instanceof EventDuskPhaseBegin && $this->Location == Game::LOCATION_PLAYER_HOME)
