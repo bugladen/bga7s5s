@@ -33,6 +33,11 @@ class Maneuver_01079 extends Maneuver
         $adversaryId = $theah->getDuelOpponentId($actor->Id);
         $adversary = $theah->getCharacterById($adversaryId);
 
+        if ($theah->game->characterIsInDiscardOrLocker($adversary))
+        {
+            return false;
+        }
+
         foreach ($adversary->Attachments as $attachmentId)
         {
             $attachment = $theah->getAttachmentById($attachmentId);

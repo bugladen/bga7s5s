@@ -29,6 +29,11 @@ class Maneuver_01033 extends Maneuver
         $adversaryId = $theah->getDuelOpponentId($actor->Id);
         $adversary = $theah->getCharacterById($adversaryId);
 
+        if ($theah->game->characterIsInDiscardOrLocker($adversary))
+        {
+            return false;
+        }
+
         return $actor->ModifiedInfluence > $adversary->ModifiedInfluence;
     }
 

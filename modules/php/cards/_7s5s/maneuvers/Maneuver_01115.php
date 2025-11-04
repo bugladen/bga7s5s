@@ -25,8 +25,7 @@ class Maneuver_01115 extends Maneuver
             return false;
 
         $actor = $theah->getDuelRoundActor();
-        $adversaryId = $theah->getDuelOpponentId($actor);
-        $adversary = $theah->getCharacterById($adversaryId);
+        $adversary = $theah->getDuelRoundOpponent();
 
         return $actor->ModifiedFinesse > $adversary->ModifiedFinesse;
     }
@@ -38,9 +37,7 @@ class Maneuver_01115 extends Maneuver
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
-            $actor = $event->theah->getDuelRoundActor();
-            $adversaryId = $event->theah->getDuelOpponentId($actor);
-            $adversary = $event->theah->getCharacterById($adversaryId);
+            $adversary = $event->theah->getDuelRoundOpponent();
 
             $transitionEvent = EventFactory::createTransitionEvent($adversary->ControllerId, $owner->Id, "01115", $this->Id);
             $event->theah->queueEvent($transitionEvent);

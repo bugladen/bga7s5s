@@ -31,7 +31,20 @@ class Technique_01063 extends Technique
             return false;
 
         $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
-        return $inDuel;
+        if (! $inDuel)
+        {
+            return false;
+        }
+
+        $actor = $theah->getDuelRoundActor();
+        $adversaryId = $theah->getDuelOpponentId($actor->Id);
+        $adversary = $theah->getCharacterById($adversaryId);
+        if ($theah->game->characterIsInDiscardOrLocker($adversary))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function handleEvent(Event $event)

@@ -30,6 +30,11 @@ class Maneuver_01165 extends Maneuver
         $adversaryId = $theah->getDuelOpponentId($actor);
         $adversary = $theah->getCharacterById($adversaryId);
 
+        if ($theah->game->characterIsInDiscardOrLocker($adversary))
+        {
+            return false;
+        }
+
         $techniques = $adversary instanceof IHasTechniques ? $adversary->getTechniques() : [];
         if (count($techniques) > 0)
             return true;

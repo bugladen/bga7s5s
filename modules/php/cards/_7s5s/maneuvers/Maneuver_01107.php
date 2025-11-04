@@ -34,6 +34,13 @@ class Maneuver_01107 extends Maneuver
         }
 
         $actor = $theah->getDuelRoundActor();
+        $adversaryId = $theah->getDuelOpponentId($actor->Id);
+        $adversary = $theah->getCharacterById($adversaryId);
+        if ($theah->game->characterIsInDiscardOrLocker($adversary))
+        {
+            return false;
+        }
+
         $woundsTaken = $theah->duelParticipantWoundsTaken($actor->Id);
         return ($woundsTaken > 0);
     }

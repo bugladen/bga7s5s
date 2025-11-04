@@ -25,6 +25,14 @@ class Maneuver_01055 extends Maneuver
         }
 
         $actor = $theah->getDuelRoundActor();
+        $adversaryId = $theah->getDuelOpponentId($actor->Id);
+        $adversary = $theah->getCharacterById($adversaryId);
+
+        if ($theah->game->characterIsInDiscardOrLocker($adversary))
+        {
+            return false;
+        }
+
         foreach ($actor->Attachments as $attachmentId)
         {
             $attachment = $theah->getAttachmentById($attachmentId);

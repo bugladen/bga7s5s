@@ -129,12 +129,13 @@ class Maneuver_01031 extends Maneuver
                 throw new \BgaUserException($game->translate("Target character is not at the same location as Dante."));
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('${card_inject_code}: ${player_name} has chosen ${thug_inject_code} to destroy.'), [
+            $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} has chosen ${thug_inject_code} to destroy.'), [
                 "card_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getActivePlayerName(),
                 "thug_inject_code" => $thug->getInjectCode(),
             ]);
 
+            $thug->unEquipAllAttachments($game->theah);
             $event = EventFactory::createCharacterDestroyedEvent($thug->ControllerId, $thug->Id, $owner->getInjectCode());
             $game->theah->queueEvent($event);
 

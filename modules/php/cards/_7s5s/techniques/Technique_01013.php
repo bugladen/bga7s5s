@@ -38,8 +38,7 @@ class Technique_01013 extends Technique
         }
 
         $actor = $theah->getDuelRoundActor();
-        $adversaryId = $theah->getDuelOpponentId($actor->Id);
-        $adversary = $theah->getCharacterById($adversaryId);
+        $adversary = $theah->getDuelRoundOpponent();
 
         return $actor->Wounds >= $adversary->Wounds;
     }

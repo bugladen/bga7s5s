@@ -593,7 +593,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
             //Remove the attachment from the list
             list = list.filter((card) => card.id !== attachment.id);
             let equipped = list.find((card) => card.id == attachment.attachedToId);
-            this.attachCard(equipped, attachment);
+            if (equipped)            
+                this.attachCard(equipped, attachment);
         });
         return list;
     },

@@ -1316,6 +1316,29 @@ class Theah
         return $duel['challenger_id'];
     }
 
+    public function getDuelRoundOpponent() : ?Character
+    {
+        $actor = $this->getDuelRoundActor();
+        $opponentId = $this->getDuelOpponentId($actor->Id);
+        $opponent = $this->getCharacterById($opponentId);
+
+        if ($this->game->characterIsInDiscardOrLocker($opponent))
+        {
+            $duelId = $this->game->globals->get(Game::DUEL_ID);
+            $round = $this->game->globals->get(Game::DUEL_ROUND) - 1;
+
+            if ($round > 0)
+            {
+                $sql = "SELECT actor_serialized FROM duel_round WHERE duel_id = $duelId AND round = $round";
+                $result = $this->db->getObject($sql);
+                $opponent = unserialize($result['actor_serialized']);
+                var_dump($opponent);
+            }
+        }
+
+        return $opponent;
+    }
+
 
 
     public function getCurrentDuelThreat($characterId) : int

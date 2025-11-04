@@ -1391,17 +1391,16 @@ trait FrameworkActionsTrait
         $this->globals->set(GAME::TRANSITION_INTERNAL_ID, $technique->Id);
 
         $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
-        $adversary = $this->theah->getCharacterById($adversaryId);
 
         $activateEvent = EventFactory::createTechniqueActivatedEvent($playerId, $actor->Id, $technique->Id);
         $this->theah->eventCheck($activateEvent);
         $this->theah->queueEvent($activateEvent);
 
-        $resolveEvent = EventFactory::createResolveTechniqueEvent($playerId, $actor->Id, $adversary->Id, $technique->Id);
+        $resolveEvent = EventFactory::createResolveTechniqueEvent($playerId, $actor->Id, $adversaryId, $technique->Id);
         $this->theah->eventCheck($resolveEvent);
         $this->theah->queueEvent($resolveEvent);
 
-        $threatEvent = EventFactory::createDuelCalculateTechniqueValuesEvent($actor->Id, $adversary->Id, $technique->Id);
+        $threatEvent = EventFactory::createDuelCalculateTechniqueValuesEvent($actor->Id, $adversaryId, $technique->Id);
         $this->theah->eventCheck($threatEvent);
         $this->theah->queueEvent($threatEvent);
 
@@ -1548,13 +1547,12 @@ trait FrameworkActionsTrait
         $this->theah->queueEvent($activateEvent);
 
         $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
-        $adversary = $this->theah->getCharacterById($adversaryId);
 
         $resolveEvent = $this->theah->createEvent(Events::ResolveManeuver);
         if ($resolveEvent instanceof EventResolveManeuver)
         {
             $resolveEvent->playerId = $playerId;
-            $resolveEvent->adversaryId = $adversary->Id;
+            $resolveEvent->adversaryId = $adversaryId;
             $resolveEvent->maneuverId = $maneuver->Id;
         }
         $this->theah->eventCheck($resolveEvent);
@@ -1564,7 +1562,7 @@ trait FrameworkActionsTrait
         if ($threatEvent instanceof EventDuelCalculateManeuverValues)
         {
             $threatEvent->actorId = $actor->Id;
-            $threatEvent->adversaryId = $adversary->Id;
+            $threatEvent->adversaryId = $adversaryId;
             $threatEvent->maneuverId = $maneuver->Id;
         }
         $this->theah->eventCheck($threatEvent);

@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Maneuver_01082 extends Maneuver
 {
@@ -20,6 +21,24 @@ class Maneuver_01082 extends Maneuver
         $this->Name = clienttranslate("Final Strike: +2 Threat and Gain Lethal");
 
         $this->FinalStrikeParticipantId = 0;
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if (! parent::isAvailableToPlayer($playerId, $theah))
+        {
+            return false;
+        }
+
+        $actor = $theah->getDuelRoundActor();
+        $adversaryId = $theah->getDuelOpponentId($actor->Id);
+        $adversary = $theah->getCharacterById($adversaryId);
+        if ($theah->game->characterIsInDiscardOrLocker($adversary))
+        {
+            return false;
+        }
+        
+        return true;
     }
 
     public function handleEvent(Event $event)
@@ -56,7 +75,7 @@ class Maneuver_01082 extends Maneuver
                 $event->theah->queueEvent($threatModifiedEvent);
 
                 $owner = $this->getOwningCard($game->theah);
-                $game->notifyAllPlayers("message", clienttranslate('${maneuver_inject_code}: ${character_inject_code} used Final Strike to add 2 Threat to ${adversary_inject_code} and gain Lethal.'), [
+                $game->notify->all("message", clienttranslate('${maneuver_inject_code}: ${character_inject_code} used Final Strike to add 2 Threat to ${adversary_inject_code} and gain Lethal.'), [
                     "maneuver_inject_code" => $owner->getInjectCode(),
                     "character_inject_code" => $character->getInjectCode(),
                     "adversary_inject_code" => $adversary->getInjectCode(),
