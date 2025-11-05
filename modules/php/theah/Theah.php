@@ -1310,7 +1310,6 @@ class Theah
                 $sql = "SELECT actor_serialized FROM duel_round WHERE duel_id = $duelId AND round = $round";
                 $result = $this->db->getObject($sql);
                 $opponent = unserialize($result['actor_serialized']);
-                var_dump($opponent);
             }
         }
 
