@@ -36,16 +36,6 @@ return declare('seventhseacityoffivesails.actions', null, {
     {
         //Special logic for specific states
         const methods = {
-            planningPhaseResolveSchemes_01126_2_client: () => {
-                const leshiyeLocation = $(this.clientStateArgs.selectedCityLocations[0]).getAttribute('data-location');
-                const locations = this.selectedCityLocations.map((loc) => $(loc).getAttribute('data-location'));
-
-                this.bgaPerformAction('actPlanningPhase_01126_2', { 
-                    'leshiyeLocation': leshiyeLocation,
-                    'locations': JSON.stringify(locations),
-                });
-            },
-
             planningPhaseResolveSchemes_01145_2_client: () => {
                 const fromLocation = $(this.clientStateArgs.selectedCityLocations[0]).getAttribute('data-location');
                 const toLocation = $(this.selectedCityLocations[0]).getAttribute('data-location');
@@ -66,7 +56,6 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01016': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01071': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01098': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_01126': 'planningPhaseResolveSchemes_01126_2_client',
             'planningPhaseResolveSchemes_01144': 'actPlanningPhase_01144',
             'planningPhaseResolveSchemes_01144_2': 'actPlanningPhase_01144_2',
             'planningPhaseResolveSchemes_01145': 'planningPhaseResolveSchemes_01145_2_client',
@@ -75,7 +64,6 @@ return declare('seventhseacityoffivesails.actions', null, {
         };
 
         const clientMessageArray = {
-            'planningPhaseResolveSchemes_01126_2_client': _("Leshiye of the Wood: ${you} must choose two other locations to place Renown onto: "),
             'planningPhaseResolveSchemes_01145_2_client': _("Inspire Generosity: ${you} must choose a location to move the Renown to: "),
         };
 

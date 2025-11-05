@@ -606,18 +606,6 @@ $machinestates = [
             ]
         ],
 
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01126 => [
-            "name" => "planningPhaseResolveSchemes_01126",
-            "description" => clienttranslate('Leshiye of the Wood: ${actplayer} must choose options for Leshiye of the Wood.'),
-            "descriptionmyturn" => clienttranslate('Leshiye of the Wood: ${you} must choose an outer City Location for Leshiye of the Wood:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actPlanningPhase_01126_2",
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-        ],
-
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01144 => [
             "name" => "planningPhaseResolveSchemes_01144",
             "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose a city location to place Renown onto.'),

@@ -228,17 +228,21 @@
             },
                     
     
-            'planningPhaseResolveSchemes_01126_2_client': () => {
+            'planningPhaseResolveSchemes_01126_2': () => {
                 if (this.isCurrentPlayerActive()) {
-                    const selectedLocationElement = $(this.clientStateArgs.selectedCityLocations[0]);
+                    const selectedLocationElement = dojo.query(`[data-location="${args.args.args.chosenLocation}"]`)[0];
                     const locations = this.getListofAvailableCityLocationImages();
                     this.numberOfCityLocationsSelectable = 2;
                     locations.forEach((location) => {
                         const imageElement = $(location);
-                        if (imageElement.id == selectedLocationElement.id) return;
-    
-                        this.makeCityLocationSelectable(location);
-                    });
+                        if (imageElement.id == selectedLocationElement.id)
+                            {
+                                this.markCityLocationAsChosen(location);
+                                return;
+                            }
+
+                            this.makeCityLocationSelectable(location);
+                        });
                 }
             },
     

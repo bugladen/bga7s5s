@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
@@ -14,11 +15,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class _01126 extends Scheme
 {
-    public string $chosenLocation = '';
+    public string $ChosenLocation = '';
 
     public function __construct()
     {
@@ -45,7 +45,7 @@ class _01126 extends Scheme
     public function getPropertyArray(Game $game): array
     {
         $properties = parent::getPropertyArray($game);
-        $properties['chosenLocation'] = $this->chosenLocation;
+        $properties['chosenLocation'] = $this->ChosenLocation;
         return $properties;
     }
 
@@ -55,18 +55,18 @@ class _01126 extends Scheme
 
         if ($event instanceof EventReknownAddedToLocation) 
         {
-            if ($event->location == $this->chosenLocation)
+            if ($event->location == $this->ChosenLocation)
                 throw new \BgaUserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be placed at its location.")));    
         }
 
         //We have to allow the reknown to be removed by the scheme itself
         if ($event instanceof EventReknownRemovedFromLocation && $event->source != $this->Name) 
         {
-            if ($event->location == $this->chosenLocation)
+            if ($event->location == $this->ChosenLocation)
                 throw new \BgaUserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be removed from its location.")));    
         }
 
-        if ($event instanceof EventLocationClaimed && $event->location == $this->chosenLocation)
+        if ($event instanceof EventLocationClaimed && $event->location == $this->ChosenLocation)
         {
             throw new \BgaUserException($event->theah->game->translate(("Leshiye of the Wood does not allow locations to be claimed at its location.")));    
         }
@@ -85,11 +85,7 @@ class _01126 extends Scheme
             ]);
 
             //Transition to the state where player can choose a location.
-            $transition = $event->theah->createEvent(Events::Transition);
-            if ($transition instanceof EventTransition) {
-                $transition->playerId = $event->playerId;
-                $transition->transition = '01126';
-            }
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, "01126");
             $event->theah->queueEvent($transition);
         }
 
@@ -107,13 +103,13 @@ class _01126 extends Scheme
             ]);    
 
             //Get all cards in the chosen location
-            $cards = $event->theah->getCardObjectsAtLocation($this->chosenLocation);
+            $cards = $event->theah->getCardObjectsAtLocation($this->ChosenLocation);
             foreach ($cards as $card)
             {
                 //Discard all city cards
                 if ($card instanceof ICityDeckCard)
                 {
-                    $discard = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $card->Id, $this->chosenLocation, $this->Id, $asEffect = true);
+                    $discard = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $card->Id, $this->ChosenLocation, $this->Id, $asEffect = true);
                     $event->theah->queueEvent($discard);
                 }
 
@@ -122,24 +118,107 @@ class _01126 extends Scheme
                 {
                     $deck->moveCard($card->Id, Game::LOCATION_PLAYER_HOME, $card->ControllerId);;
 
-                    $movedHome = EventFactory::createCardMovedEvent($this->ControllerId, $card->Id, $this->chosenLocation, Game::LOCATION_PLAYER_HOME, false);
+                    $movedHome = EventFactory::createCardMovedEvent($this->ControllerId, $card->Id, $this->ChosenLocation, Game::LOCATION_PLAYER_HOME, false);
                     $event->theah->queueEvent($movedHome);
                 }
             }
 
             //Discard all reknown at chosen location
-            $location = $event->theah->getCityLocation($this->chosenLocation);
+            $location = $event->theah->getCityLocation($this->ChosenLocation);
             if ($location->Reknown > 0)
             {
                 $reknown = $event->theah->createEvent(Events::ReknownRemovedFromLocation);
                 if ($reknown instanceof EventReknownRemovedFromLocation)
                 {
-                    $reknown->location = $this->chosenLocation;
+                    $reknown->location = $this->ChosenLocation;
                     $reknown->amount = $location->Reknown;
                     $reknown->source = $this->Name;
                 }
                 $event->theah->queueEvent($reknown);
             }
+        }
+    }
+
+    public function argsFromCard(Game $game, int $state, string $stateName, string $internalId): array
+    {
+        $args = parent::argsFromCard($game, $state, $stateName, $internalId);
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2)
+        {
+            $args["chosenLocation"] = $this->ChosenLocation;
+        }
+
+        return $args;
+    }
+
+    public function actFromCardWithIds(Game $game, int $state, string $stateName, string $internalId, array $ids): void
+    {
+        parent::actFromCardWithIds($game, $state, $stateName, $internalId, $ids);
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01126)
+        {
+            $location = $ids[0];
+
+            if (!in_array($location, $game->theah->getOuterCityLocations()))
+            {
+                throw new \BgaUserException($game->translate("Location is not an outer city location."));
+            }
+
+            $this->ChosenLocation = $location;
+            $game->updateCardObjectInDb($this);
+            $game->theah->addCardToWorld($this);
+            $game->globals->set(Game::CHOSEN_LOCATION, $location);
+
+            $game->gamestate->nextState("locationChosen");
+        }
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2)
+        {
+            $playerId = $game->getActivePlayerId();
+            $playerName = $game->getActivePlayerName();
+    
+            $locations = $ids;
+    
+            //Check to be sure renown can be added to locations
+            foreach ($locations as $location) {
+                $reknownEvent = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
+                $game->theah->eventCheck($reknownEvent);
+                $game->theah->queueEvent($reknownEvent);
+            }
+    
+            //Check if event can be run
+            $schemeMoveEvent = $game->theah->createEvent(Events::SchemeMovedToCity);
+            if ($schemeMoveEvent instanceof EventSchemeMovedToCity) {
+                $schemeMoveEvent->scheme = $this;
+                $schemeMoveEvent->location = $this->ChosenLocation;
+                $schemeMoveEvent->playerId = $playerId;
+            }
+            $game->theah->eventCheck($schemeMoveEvent);
+    
+            $game->notify->all('message', 
+                clienttranslate('${player_name} has chosen ${location} as the Chosen Location for ${scheme_inject_code}.'), [
+                'i18n' => ['location'],
+                "player_name" => $playerName,
+                "location" => $this->ChosenLocation,
+                "scheme_inject_code" => $this->getInjectCode(),
+            ]);
+
+            foreach ($locations as $location) {
+                $event = $game->theah->createEvent(Events::ReknownAddedToLocation);
+                if ($event instanceof EventReknownAddedToLocation) {
+                    $event->playerId = $playerId;
+                    $event->location = $location;
+                    $event->amount = 1;
+                }
+                $game->theah->eventCheck($event);
+                $game->theah->queueEvent($event);
+            }
+    
+            // Move Leshiye of the Wood to the chosen location
+            $game->theah->queueEvent($schemeMoveEvent);
+    
+            // Go back and finish running the Scheme events
+            $game->gamestate->nextState("locationsChosen");
         }
     }
 }

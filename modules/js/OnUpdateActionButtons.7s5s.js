@@ -105,8 +105,9 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     
-            'planningPhaseResolveSchemes_01126_2_client': () => {
-                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+            'planningPhaseResolveSchemes_01126_2': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     

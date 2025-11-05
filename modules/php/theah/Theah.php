@@ -333,6 +333,21 @@ class Theah
         return $locations;
     }
 
+    function getOuterCityLocations(): array
+    {
+        $playerCount = $this->game->getPlayerCount();
+        switch ($playerCount) {
+            case 1:
+            case 2:
+                return [Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_BAZAAR];
+            case 3:
+                return [Game::LOCATION_CITY_OLES_INN, Game::LOCATION_CITY_BAZAAR];
+            case 4:
+                return [Game::LOCATION_CITY_OLES_INN, Game::LOCATION_CITY_GOVERNORS_GARDEN];
+        }
+        return [];
+    }
+
     function getNonAdjacentCityLocations(string $location): array
     {
         $locations = $this->getCityLocations();
@@ -1332,7 +1347,6 @@ class Theah
                 $sql = "SELECT actor_serialized FROM duel_round WHERE duel_id = $duelId AND round = $round";
                 $result = $this->db->getObject($sql);
                 $opponent = unserialize($result['actor_serialized']);
-                var_dump($opponent);
             }
         }
 

@@ -177,6 +177,35 @@ $machinestates += [
                 "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
             ],
 
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01126 => [
+            "name" => "planningPhaseResolveSchemes_01126",
+            "description" => clienttranslate('Leshiye of the Wood: ${actplayer} must choose options for Leshiye of the Wood.'),
+            "descriptionmyturn" => clienttranslate('Leshiye of the Wood: ${you} must choose an outer City Location for Leshiye of the Wood:'),
+            "type" => "activeplayer",
+            "args" => "argsEmpty",
+            "possibleactions" => [
+                "actFromCardWithLocations",
+            ],
+            "transitions" => [
+                "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2,
+                "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS // Zombie mode will pass here
+            ]
+        ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2 => [
+            "name" => "planningPhaseResolveSchemes_01126_2",
+            "description" => clienttranslate('Leshiye of the Wood: ${actplayer} must choose options for Leshiye of the Wood.'),
+            "descriptionmyturn" => clienttranslate('Leshiye of the Wood: ${you} must choose two other locations to place Renown onto:'),
+            "type" => "activeplayer",
+            "args" => "argsForState",
+            "possibleactions" => [
+                "actBack",
+                "actFromCardWithLocations",
+            ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126,
+                "locationsChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
+            ]
+        ],
 
     States::PLANNING_PHASE_RESOLVE_SCHEMES_01143 => [
         "name" => "planningPhaseResolveSchemes_01143",
