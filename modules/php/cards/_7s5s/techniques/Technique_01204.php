@@ -42,7 +42,7 @@ class Technique_01204 extends Technique
         {
             $attachment = $this->getOwningCard($event->theah);
             $character = $this->getOwningCharacter($event->theah);
-            $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $attachment->Id, 1, $attachment->getInjectCode());
+            $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $attachment->Id, 1, $attachment->getInjectCode(), $this->Id);
             $event->theah->queueEvent($woundEvent);
 
             $this->ReduceAdversaryParry = true;
