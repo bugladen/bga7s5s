@@ -383,7 +383,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             //Destroy the old card element
             dojo.destroy(oldCard.divId);
         }
-        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
+
+        $(`${performer.controllerId}-score-hand-count`).innerHTML = args.handCount;
 
         this.attachCard(performer, attachment);
         this.cardProperties[attachment.id] = attachment;
@@ -486,8 +487,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             this.addCardToDeck(this.factionHand, notif.args.card);
         }
 
-        const count = parseInt($(`${notif.args.player_id}-score-hand-count`).innerHTML) + 1;
-        $(`${notif.args.player_id}-score-hand-count`).innerHTML = count;
+        $(`${notif.args.player_id}-score-hand-count`).innerHTML = notif.args.handCount;
     },
 
     notif_drawCard: function( notif )
@@ -581,11 +581,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         let card = args.card;
         this.cardProperties[card.id] = card;
 
-        if (notif.args.playerId == this.player_id)
-        {
-            this.factionHand.removeFromStockById(card.id);
-            $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
-        }
+        $(`${args.playerId}-score-hand-count`).innerHTML = args.handCount;
 
         card.location = this.LOCATION_PLAYER_DISCARD;
         const player = this.gamedatas.players[args.playerId];
@@ -602,8 +598,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (notif.args.playerId == this.player_id)
         {
             this.factionHand.removeFromStockById(args.cardId);
-            $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
         }
+
+        $(`${notif.args.playerId}-score-hand-count`).innerHTML = args.handCount;
     },
 
     notif_cardMoved: function( notif )
@@ -1255,9 +1252,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             {
                 this.factionHand.removeFromStockById(combatCard.id);
             }
-            const count = parseInt($(`${combatCard.controllerId}-score-hand-count`).innerHTML) - 1;
-            $(`${combatCard.controllerId}-score-hand-count`).innerHTML = count;
-
+            $(`${combatCard.controllerId}-score-hand-count`).innerHTML = args.handCount;
         }
         else
         {
