@@ -518,13 +518,9 @@ class Theah
 
     function getCharacterById($id): ?Character
     {
-        if (array_key_exists($id, $this->cards)) {
-            return $this->cards[$id];
-        }
-
-        $card = $this->db->getCardObject($id);
-        if ($card) {
-            return $card;
+        $character = $this->getCardById($id);
+        if ($character instanceof Character) {
+            return $character;
         }
 
         return null;
@@ -532,11 +528,11 @@ class Theah
 
     function getAttachmentById($id): ?Attachment
     {
-        foreach ($this->cards as $card) {
-            if ($card->Id == $id && $card instanceof Attachment) {
-                return $card;
-            }
-        }
+        $attachment = $this->getCardById($id);
+        if ($attachment instanceof Attachment) {
+            return $attachment;
+        }   
+
         return null;
     }
 

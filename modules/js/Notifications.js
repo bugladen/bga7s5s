@@ -416,36 +416,44 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const attachment = this.cardProperties[args.attachmentId];
         const character = this.cardProperties[args.characterId];
 
-        attachment.attachmentIndex = null;
-        attachment.attachedToId = null;
-        attachment.controllerId = 0;
-        
-        this.unattachCard(character, attachment);
+        if (attachment)
+        {
+            attachment.attachmentIndex = null;
+            attachment.attachedToId = null;
+            attachment.controllerId = 0;
+        }
 
-        character.modifiedResolve = args.modifiedResolve;
-        character.modifiedCombat = args.modifiedCombat;
-        character.modifiedFinesse = args.modifiedFinesse;
-        character.modifiedInfluence = args.modifiedInfluence;
+        if (character)
+        {
+            character.modifiedResolve = args.modifiedResolve;
+            character.modifiedCombat = args.modifiedCombat;
+            character.modifiedFinesse = args.modifiedFinesse;
+            character.modifiedInfluence = args.modifiedInfluence;
+        }
 
-        //Create a placeholder html element in front of the performer
-        const placeholderId = "unequip-placeholder";
-        dojo.place(`<div id="${placeholderId}"></div>`, character.divId, 'before');
+        if (attachment && character)
+        {
+            this.unattachCard(character, attachment);
+            
+            //Create a placeholder html element in front of the performer
+            const placeholderId = "unequip-placeholder";
+            dojo.place(`<div id="${placeholderId}"></div>`, character.divId, 'before');
 
-        //Destroy attachment element
-        dojo.destroy(attachment.divId);
+            //Destroy attachment element
+            dojo.destroy(attachment.divId);
 
-        //Destroy old character element
-        dojo.destroy(character.divId);
+            //Destroy old character element
+            dojo.destroy(character.divId);
 
-        //Create the new attachment element    
-        this.createCard(attachment.divId, attachment, placeholderId);
+            //Create the new attachment element    
+            this.createCard(attachment.divId, attachment, placeholderId);
 
-        //Create the new character element    
-        this.createCard(character.divId, character, placeholderId);
+            //Create the new character element    
+            this.createCard(character.divId, character, placeholderId);
 
-        //Destroy the placeholder
-        dojo.destroy(placeholderId);
-
+            //Destroy the placeholder
+            dojo.destroy(placeholderId);
+        }
     },
 
     notif_factionResolveCardDraw: function( notif )
