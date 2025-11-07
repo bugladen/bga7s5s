@@ -62,16 +62,17 @@ class Action_01159 extends RiskAction
     {
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
         $characters = array_filter($characters, fn($character) => $character->Engaged);
+        $availablePerformers = [];
         foreach ($characters as $character)
         {
             $location = $theah->getCityLocation($character->Location);
             if ($location->Controller == $playerId)
             {
-                return [$character];
+                $availablePerformers[] = $character;
             }
         }
 
-        return $characters;
+        return $availablePerformers;
     }
 
     public function handleEvent(Event $event)
