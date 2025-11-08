@@ -562,10 +562,6 @@ class Theah
             return $attachment;
         }
 
-        $card = $this->db->getCardObject($id);
-        if ($card) {
-            return $card;
-
         return null;
     }
 
