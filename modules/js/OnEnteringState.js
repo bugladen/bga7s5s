@@ -509,6 +509,7 @@ onEnteringState: function( stateName, args )
 
                 const reactionId = args.args._private.args.reactionId;
                 const card = this.cardProperties[reactionId];
+                this.clientStateArgs.reactionCardId = reactionId;
 
                 let items = this.factionHand.getAllItems();
 

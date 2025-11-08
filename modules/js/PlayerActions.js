@@ -444,6 +444,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).then(() =>  {
             if (!errors)
             {
+                this.factionHand.removeFromStockById(this.clientStateArgs.reactionCardId);
                 items.forEach((item) => this.factionHand.removeFromStockById(item));
             }
         });        
