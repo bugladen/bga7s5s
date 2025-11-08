@@ -1179,6 +1179,11 @@ class Theah
         $this->db->deleteTransitionEvents($reactionId);
     }
 
+    public function areTransitionEventsOfTypeForPlayerQueued(int $playerId, string $reactionType): bool
+    {
+        return $this->db->areTransitionEventsOfTypeForPlayerQueued($playerId, $reactionType);
+    }
+
     public function deleteActionTriggeredEvents(string $actionId)
     {
         $this->db->deleteActionTriggeredEvents($actionId);

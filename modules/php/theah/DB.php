@@ -76,6 +76,13 @@ class DB
         $this->executeSql($sql);
     }
 
+    public function areTransitionEventsOfTypeForPlayerQueued(int $playerId, string $reactionType): bool
+    {
+        $sql = "SELECT COUNT(*) FROM events 
+                WHERE (event_serialized LIKE '%EventTransition%' AND event_serialized LIKE '%{$playerId}%' AND event_serialized LIKE '%{$reactionType}%')";
+        return $this->getUniqueValue($sql) > 0;
+    }
+
     //Use this to delete all reaction transition events that might pile up from other events
     public function deleteTransitionEvents(string $reactionId)
     {
