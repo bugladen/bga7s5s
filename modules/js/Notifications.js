@@ -63,6 +63,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['firstPlayer', 2000],
             ['locationClaimed', 500],
             ['locationUncontrolled', 500],
+            ['maryamBenuPleromaAbilityUsed', 500],
+            ['maryamBenuPleromaAbilityRemoved', 500],
             ['maneuverUsed', 1],
             ['newDay', 1000],
             ['newDuelRound', 500],
@@ -969,6 +971,41 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }),  imageElement, 'last');
 
         this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
+    },
+
+    notif_maryamBenuPleromaAbilityUsed: function( notif )
+    {
+        debug( 'notif_maryamBenuPleromaAbilityUsed' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        card.conditions.push(this.MARYAM_BENU_PLEROMA_ABILITY_USED);
+
+        const imageElement = dojo.query('._7sfs-card', card.divId)[0];
+        const id = `${card.divId}_maryam_benu_pleroma_ability_used`;
+        dojo.place( this.format_block( 'jstpl_generic_chip', {
+            id: id,
+            class: '_7sfs-maryam-benu-pleroma-ability-used-chip',
+        }),  imageElement, 'last');
+
+        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
+    },
+
+    notif_maryamBenuPleromaAbilityRemoved: function( notif )
+    {
+        debug( 'notif_maryamBenuPleromaAbilityRemoved' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.MARYAM_BENU_PLEROMA_ABILITY_USED);
+
+            const id = `${args.cardId}_maryam_benu_pleroma_ability_used`;
+            dojo.destroy(id);    
+        }
     },
 
     notif_crystalEyeTargetChosen: function( notif )

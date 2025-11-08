@@ -8,6 +8,7 @@ class EventChallengeIssued extends Event
     public int $challengerId;
     public int $defenderId;
     public string $activatedTechniqueId;
+    public int $sourceId;
 
     public function __construct()
     {
@@ -17,6 +18,7 @@ class EventChallengeIssued extends Event
         $this->challengerId = 0;
         $this->defenderId = 0;
         $this->activatedTechniqueId = 0;
+        $this->sourceId = 0;
     }
  
 }

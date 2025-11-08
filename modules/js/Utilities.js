@@ -209,6 +209,15 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }),  `${divId}_image`, 'last');
             this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
         }
+        if (character.conditions.includes(this.MARYAM_BENU_PLEROMA_ABILITY_USED)) {
+            //Get the first child of element divId
+            const id = `${divId}_maryam_benu_pleroma_ability_used`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: '_7sfs-maryam_benu_pleroma_ability_used-chip',
+            }),  `${divId}_image`, 'last');
+            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
+        }
         if (character.conditions.includes(this.CHALLENGER)) {
             id = `${divId}_challenger`;
             dojo.place( this.format_block( 'jstpl_generic_chip', {
