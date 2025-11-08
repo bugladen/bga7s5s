@@ -117,7 +117,7 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaRecruitActionChooseMercenary': () => {
-            if (args.recruitType == this.NORMAL_RECRUIT_TYPE || args.recruitType == this.CIRILO_RECRUIT_TYPE)
+            if (args.recruitType == this.NORMAL_RECRUIT_TYPE)
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
