@@ -54,19 +54,6 @@ trait ArgumentsTrait
         ];
     }
 
-    public function argsPlanningPhaseResolveSchemes_01144_2(): array
-    {
-        return [
-            "location" => $this->globals->get(GAME::CHOSEN_LOCATION)
-        ];
-    }
-
-    public function argsHighDramaBeginning_01144(): array{
-        return [
-            "discount" => $this->globals->get(GAME::DISCOUNT)
-        ];
-    }
-
     public function argPlayerTurn(): array
     {
         $this->theah->buildCity();

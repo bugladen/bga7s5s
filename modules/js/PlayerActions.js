@@ -56,8 +56,6 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01016': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01071': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01098': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_01144': 'actPlanningPhase_01144',
-            'planningPhaseResolveSchemes_01144_2': 'actPlanningPhase_01144_2',
             'planningPhaseResolveSchemes_01145': 'planningPhaseResolveSchemes_01145_2_client',
             'planningPhaseResolveSchemes_01145_2_client': 'actPlanningPhase_01145',
             'highDramaMoveActionChooseLocation': 'actHighDramaMoveActionDestinationChosen',
@@ -93,7 +91,6 @@ return declare('seventhseacityoffivesails.actions', null, {
     onChooseInPlayCardConfirmed: function()
     {
         const actions = {
-            'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
             'highDramaMoveActionChoosePerformer'                    : 'actHighDramaMoveActionPerformerChosen',
             'highDramaInPlayActionChoosePerformer'                  : 'actHighDramaInPlayActionPerformerChosen',  
             'highDramaInHandActionChoosePerformer'                  : 'actHighDramaInHandActionPerformerChosen',  
@@ -106,10 +103,6 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaChallengeActionChooseTarget'                  : 'actHighDramaChallengeActionTargetChosen',
             'highDramaChallengeActionAcceptChallenge'               : 'actHighDramaChallengeActionIntervene', 
             'highDramaPhase01060_2'                                 : 'actFromCardWithIds',
-        };
-
-        const clientMessages = {
-            'highDramaBeginning_01144_client'                       : _("${you} must choose cards from your Faction Hand to pay for selected Mercenary: "),
         };
 
         let action = actions[this.gamedatas.gamestate.name];
@@ -283,7 +276,6 @@ return declare('seventhseacityoffivesails.actions', null, {
         items = items.map((item) => item.id);
 
         const actionArray = {
-            'highDramaBeginning_01144_client'               : 'actHighDramaBeginning_01144',
             'highDramaRecruitActionPayForMercenary'         : 'actHighDramaRecruitActionPayForMercenary',
         };
 
@@ -301,25 +293,6 @@ return declare('seventhseacityoffivesails.actions', null, {
                         items.forEach((item) => this.factionHand.removeFromStockById(item));
                     }
                 });
-                break;
-
-            case 'actHighDramaBeginning_01144':
-                this.bgaPerformAction(action, { 
-                'recruitId': this.clientStateArgs.selectedCards[0],
-                'payWithCards': JSON.stringify(items),
-                }).catch(() =>  {
-                    errors = true;
-                }).then(() =>  {
-                    if (!errors)
-                    {
-                        items.forEach((item) => this.factionHand.removeFromStockById(item));
-                    }
-                    if (this.gamedatas.gamestate.name == 'highDramaBeginning_01144_client')
-                        this.setClientState('highDramaBeginning_01144',
-                            {
-                                'descriptionmyturn' : _("${you} may choose a Mercenary from a City Location to recruit to your home: "),
-                            })
-                });        
                 break;
         }
     },

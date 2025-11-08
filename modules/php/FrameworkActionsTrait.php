@@ -159,65 +159,6 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhase_01144(string $locations)
-    {
-        $locations = json_decode($locations, true);
-        $location = array_shift($locations);
-        $activePlayerId = $this->getActivePlayerId();
-        $playerName = $this->getActivePlayerName();
-
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) {
-            $event->playerId = $this->getActivePlayerId();
-            $event->location = $location;
-            $event->amount = 1;
-            $event->description = $playerName;
-        }
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->globals->set(GAME::CHOSEN_LOCATION, $location);
-
-        // Get all the reknown to compare
-        $players = $this->getObjectListFromDb("SELECT player_id, player_score score FROM player ORDER BY player_score DESC");
-        if (count($players) == 1) {
-            $this->gamestate->nextState("fewestReknown");                
-            return;
-        }
-
-        if ($players[0]['player_id'] != $activePlayerId) {
-            $this->gamestate->nextState("notFewestReknown");                
-            return;
-        }
-
-        if ($players[0]['score'] == $players[1]['score']) {
-            $this->gamestate->nextState("notFewestReknown");                
-            return;
-        }
-
-        $this->gamestate->nextState("fewestReknown");
-    }
-
-    public function actPlanningPhase_01144_2(string $locations)
-    {
-        $locations = json_decode($locations, true);
-        $location = array_shift($locations);
-        $playerName = $this->getActivePlayerName();
-
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) {
-            $event->playerId = $this->getActivePlayerId();
-            $event->location = $location;
-            $event->amount = 1;
-            $event->description = $playerName;
-        }
-
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->gamestate->nextState("");
-    }
-
     public function actPlanningPhase_01145(string $fromLocation, string $toLocation)
     {
         $playerId = $this->getActivePlayerId();
@@ -236,7 +177,7 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    private function actRecruitMercenary(int $recruitId, string $payWithCards)
+    public function actRecruitMercenary(int $recruitId, string $payWithCards)
     {
         $character = $this->getCardObjectFromDb($recruitId);
         if ($character == null)
@@ -298,12 +239,6 @@ trait FrameworkActionsTrait
             //No check needed
             $this->theah->queueEvent($event);
         }
-    }
-
-    public function actHighDramaBeginning_01144(int $recruitId, string $payWithCards)
-    {
-        $this->actRecruitMercenary($recruitId, $payWithCards);
-        $this->gamestate->nextState("");
     }
 
     public function actHighDramaMoveActionStart()

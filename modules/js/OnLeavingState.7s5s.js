@@ -173,7 +173,9 @@
                 }
             },
     
-            'highDramaBeginning_01144_client': () => {
+            'highDramaBeginning_01144_2': () => {
+                this.unhighlightCharacterChosen(this.clientStateArgs.mercenaryId);
+                
                 this.factionHand.setSelectionMode(0);
                 this.clientStateArgs = {};
                 $('faction_hand_info').innerHTML = '';

@@ -606,32 +606,6 @@ $machinestates = [
             ]
         ],
 
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01144 => [
-            "name" => "planningPhaseResolveSchemes_01144",
-            "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose a city location to place Renown onto.'),
-            "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose a city location to place Renown onto:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actPlanningPhase_01144", 
-            ],
-            "transitions" => [
-                "fewestReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_2,
-                "notFewestReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
-            ]
-        ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_2 => [
-                "name" => "planningPhaseResolveSchemes_01144_2",
-                "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose a different city location to place Renown onto.'),
-                "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose a different city location to place Renown onto:'),
-                "type" => "activeplayer",
-                "args" => "argsPlanningPhaseResolveSchemes_01144_2",
-                "possibleactions" => [
-                    "actPlanningPhase_01144_2", 
-                ],
-                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-            ],
-
         States::PLANNING_PHASE_RESOLVE_SCHEMES_01145 => [
             "name" => "planningPhaseResolveSchemes_01145",
             "description" => clienttranslate('Inspire Generosity: ${actplayer} is choosing options for Inspire Generosity.'),
@@ -749,18 +723,6 @@ $machinestates = [
                 "back" => States::HIGH_DRAMA_BEGINNING_REACTIONS, 
                 "paid" => States::HIGH_DRAMA_BEGINNING_EVENTS, 
             ]
-        ],
-        States::HIGH_DRAMA_BEGINNING_01144 => [
-            "name" => "highDramaBeginning_01144",
-            "description" => clienttranslate('Filling The Ranks: ${actplayer} may choose a Mercenary from a City Location to recruit to their home'),
-            "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} may choose a Mercenary from a City Location to recruit to your home:'),
-            "type" => "activeplayer",
-            "args" => "argsHighDramaBeginning_01144",
-            "possibleactions" => [
-                "actHighDramaBeginning_01144", 
-                "actPass"
-            ],
-            "transitions" => ["" => States::HIGH_DRAMA_BEGINNING_EVENTS]
         ],
 
     States::HIGH_DRAMA_PHASE => [

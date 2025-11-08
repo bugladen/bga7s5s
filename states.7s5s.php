@@ -220,6 +220,34 @@ $machinestates += [
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
 
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01144 => [
+        "name" => "planningPhaseResolveSchemes_01144",
+        "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose a city location to place Renown onto.'),
+        "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose a city location to place Renown onto:'),
+        "type" => "activeplayer",
+        "args" => "argsEmpty",
+        "possibleactions" => [
+            "actFromCardWithLocations", 
+            "actPass",
+        ],
+        "transitions" => [
+            "fewestReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_2,
+            "notFewestReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
+            "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS //Zombie mode will pass here
+        ]
+    ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_2 => [
+            "name" => "planningPhaseResolveSchemes_01144_2",
+            "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose a different city location to place Renown onto.'),
+            "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose a different city location to place Renown onto:'),
+            "type" => "activeplayer",
+            "args" => "argsForState",
+            "possibleactions" => [
+                "actFromCardWithLocations", 
+            ],
+            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+        ],
+
     States::PLANNING_PHASE_RESOLVE_SCHEMES_01147 => [
         "name" => "planningPhaseResolveSchemes_01147",
         "description" => clienttranslate('Let\'s Haggle') . clienttranslate(': Your opponent(s) must acknowledge revealed cards.'),
@@ -276,21 +304,48 @@ $machinestates += [
                 "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3
                 ]
             ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3 => [
-                "name" => "planningPhaseResolveSchemes_01152_3",
-                "description" => clienttranslate('Until Morale Improves') . clienttranslate(': ${actplayer} must choose an adjacent City Location to move the Renown TO.'),
-                "descriptionmyturn" => clienttranslate('Until Morale Improves') . clienttranslate(': ${you} must choose an adjacent City Location to move the Renown TO:'),
-                "type" => "activeplayer",
-                "args" => "argsForState",
-                "possibleactions" => [
-                    "actBack",
-                    "actFromCardWithLocations"
-                ],
-                "transitions" => [
-                    "back" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2,
-                    "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
-                ]
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3 => [
+            "name" => "planningPhaseResolveSchemes_01152_3",
+            "description" => clienttranslate('Until Morale Improves') . clienttranslate(': ${actplayer} must choose an adjacent City Location to move the Renown TO.'),
+            "descriptionmyturn" => clienttranslate('Until Morale Improves') . clienttranslate(': ${you} must choose an adjacent City Location to move the Renown TO:'),
+            "type" => "activeplayer",
+            "args" => "argsForState",
+            "possibleactions" => [
+                "actBack",
+                "actFromCardWithLocations"
             ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2,
+                "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
+            ]
+        ],
+
+    States::HIGH_DRAMA_BEGINNING_01144 => [
+        "name" => "highDramaBeginning_01144",
+        "description" => clienttranslate('Filling The Ranks: ${actplayer} may choose a Mercenary from a City Location to recruit to their home'),
+        "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} may choose a Mercenary from a City Location to recruit to your home:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId", 
+            "actPassWithPass"
+        ],
+        "transitions" => [
+            "mercenaryChosen" => States::HIGH_DRAMA_BEGINNING_01144_2,
+            "pass" => States::HIGH_DRAMA_BEGINNING_EVENTS
+        ]
+    ],
+        States::HIGH_DRAMA_BEGINNING_01144_2 => [
+            "name" => "highDramaBeginning_01144_2",
+            "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose cards from your Faction Hand to pay for selected Mercenary'),
+            "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose cards from your Faction Hand to pay for selected Mercenary: '),
+            "type" => "activeplayer",
+            "args" => "argsForState",
+            "possibleactions" => [
+                "actFromCardWithIds", 
+            ],
+            "transitions" => ["" => States::HIGH_DRAMA_BEGINNING_EVENTS]
+        ],
 
     States::HIGH_DRAMA_PLAYER_TURN_01008 => [
         "name" => "highDramaPhase01008",

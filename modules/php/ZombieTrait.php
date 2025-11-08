@@ -49,6 +49,7 @@ trait ZombieTrait
                 case "planningPhaseResolveSchemes_01072":
                 case "planningPhaseResolveSchemes_01125_3":
                 case "planningPhaseResolveSchemes_01125_4":
+                case "planningPhaseResolveSchemes_01144_2":
                     $this->gamestate->nextState("");
                     break;
 
@@ -56,8 +57,6 @@ trait ZombieTrait
                 case "planningPhaseResolveSchemes_01016":
                 case "planningPhaseResolveSchemes_01016_2":
                 case "planningPhaseResolveSchemes_01143":
-                case "planningPhaseResolveSchemes_01144":
-                case "planningPhaseResolveSchemes_01144_2":
                     // Default action: Pass or take first available option
                     $this->actPass();
                     break;
@@ -65,6 +64,7 @@ trait ZombieTrait
                 case "planningPhaseResolveSchemes_01125":
                 case "planningPhaseResolveSchemes_01125_2":
                 case "planningPhaseResolveSchemes_01126":
+                case "planningPhaseResolveSchemes_01144":
                 case "planningPhaseResolveSchemes_01152":
                 case "planningPhaseResolveSchemes_01152_2":
                 case "planningPhaseResolveSchemes_01152_3":
@@ -74,6 +74,14 @@ trait ZombieTrait
 
                 case "planningPhaseResolveSchemes_01126_2":
                     $this->actBack();
+                    break;
+
+                case "highDramaBeginning_01144":
+                    $this->actPass("pass");
+                    break;
+
+                case "highDramaBeginning_01144_2":
+                    $this->gamestate->nextState("");
                     break;
 
                 // High Drama Player Turn States

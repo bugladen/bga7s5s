@@ -223,7 +223,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
     {
         const methods = {
 
-            'highDramaBeginning_01144_client': () => {
+            'highDramaBeginning_01144_2': () => {
                 var items = this.factionHand.getSelectedItems();
                 let wealth = 0;
                 items.forEach((item) => {

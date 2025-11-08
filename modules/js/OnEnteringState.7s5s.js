@@ -268,7 +268,7 @@
     
             'planningPhaseResolveSchemes_01144_2': () => {
                 if (this.isCurrentPlayerActive()) {
-                    const selectedLocationElement = dojo.query(`[data-location="${args.args.location}"]`)[0];
+                    const selectedLocationElement = dojo.query(`[data-location="${args.args.args.location}"]`)[0];
     
                     const locations = this.getListofAvailableCityLocationImages();
                     this.numberOfCityLocationsSelectable = 1;
@@ -405,7 +405,6 @@
             'highDramaBeginning_01144': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
-                    this.clientStateArgs.discount = args.args.discount;
                     for( const cardId in this.cardProperties ) {
                         card = this.cardProperties[cardId];
                         if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) ) {
@@ -413,7 +412,7 @@
                             this.makeCardSelectable(image);
     
                             const cost = $(`${card.divId}_wealth_cost`);
-                            let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
+                            let discountedCost = parseInt(cost.innerHTML) - args.args.args.discount;
                             discountedCost = discountedCost < 0 ? 0 : discountedCost;
                             cost.innerHTML = parseInt(discountedCost);
                             dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
@@ -422,15 +421,15 @@
                 }
             },
     
-            'highDramaBeginning_01144_client': () => {
-                const card = this.cardProperties[this.clientStateArgs.selectedCards[0]];
+            'highDramaBeginning_01144_2': () => {
+                const card = this.cardProperties[args.args.args.mercenaryId];
                 const image = $(`${card.divId}_image`);
-                dojo.addClass(image, '_7sfs-selectable');
+                dojo.addClass(image, '_7sfs-chosen');
+                this.clientStateArgs.mercenaryId = args.args.args.mercenaryId;
     
                 const cost = $(`${card.divId}_wealth_cost`);
-                let discountedCost = parseInt(cost.innerHTML) - this.clientStateArgs.discount;
+                let discountedCost = card.wealthCost - args.args.args.discount;
                 discountedCost = discountedCost < 0 ? 0 : discountedCost;
-                this.clientStateArgs.discountedCost = discountedCost;
                 cost.innerHTML = parseInt(discountedCost);
                 dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
     

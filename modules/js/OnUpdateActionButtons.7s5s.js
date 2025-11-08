@@ -178,12 +178,12 @@
     
             'highDramaBeginning_01144': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
+                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actPassWithPass', {})) 
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
-            'highDramaBeginning_01144_client': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onRecruitCharacterConfirmed());
+            'highDramaBeginning_01144_2': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onPaymentConfirmedFromCard());
             },
 
             'highDramaPhase01008': () => {
