@@ -71,7 +71,8 @@ class Game extends \Bga\GameFramework\Table
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";
     final const CRYSTAL_EYE_TARGET = "Crystal Eye Target";
     final const CATS_EMBARGO_TARGET = "Cats Embargo Target";
-
+    final const MARYAM_BENU_PLEROMA_ABILITY_USED = "Maryam Benu Pleroma Ability Used";
+    
     //Equip global variables
     final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';
     

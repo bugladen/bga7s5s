@@ -13,6 +13,8 @@
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01042;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01078;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
@@ -586,6 +588,7 @@ trait StatesTrait
         $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE, "");
 
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID, 0);
 
         $this->globals->set(Game::CHALLENGE_CANCELLED, false);
 
@@ -596,6 +599,7 @@ trait StatesTrait
             $challengeEvent->challengerId = $performer->Id;
             $challengeEvent->defenderId = $target->Id;
             $challengeEvent->activatedTechniqueId = $techniqueId;
+            $challengeEvent->sourceId = $sourceId;
         }
         $this->theah->queueEvent($challengeEvent);
 
@@ -656,10 +660,27 @@ trait StatesTrait
 
     public function stChallengeActionCheckCancelled()
     {
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->theah->getCharacterById($performerId);
         $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
         $target = $this->theah->getCharacterById($targetId);
 
-        $cancelled = $target->ControllerId == 0 || $this->globals->get(Game::CHALLENGE_CANCELLED);
+        //Special edge case handling for Maryam Benu Pleroma and Defending Honor
+        if ($performer instanceof _01186 && ! $performer->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED))
+        {
+            $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+            if ($sourceId != 0)
+            {
+                $source = $this->theah->getCardById($sourceId);
+                if ($source instanceof _01078)
+                {
+                    $performer->addMaryamCondition($this);
+                    $this->globals->set(Game::CHALLENGE_CANCELLED, true);
+                }
+            }
+        }
+
+        $cancelled = $target->ControllerId == 0 || $this->globals->get(Game::CHALLENGE_CANCELLED, false);
         if ($cancelled)
         {
             $challengerId = $this->globals->get(GAME::CHOSEN_PERFORMER);

@@ -107,6 +107,7 @@ function (dojo, declare) {
             this.ADVERSARY_OF_YEVGENI = 'Adversary of Yevgeni';
             this.CRYSTAL_EYE_TARGET = 'Crystal Eye Target';
             this.CATS_EMBARGO_TARGET = 'Cats Embargo Target';
+            this.MARYAM_BENU_PLEROMA_ABILITY_USED = 'Maryam Benu Pleroma Ability Used';
             this.CHALLENGER = 'Challenger';
             this.DEFENDER = 'Defender';
 

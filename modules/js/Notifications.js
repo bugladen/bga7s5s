@@ -63,6 +63,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['firstPlayer', 2000],
             ['locationClaimed', 500],
             ['locationUncontrolled', 500],
+            ['maryamBenuPleromaAbilityUsed', 500],
+            ['maryamBenuPleromaAbilityRemoved', 500],
             ['maneuverUsed', 1],
             ['newDay', 1000],
             ['newDuelRound', 500],
@@ -384,7 +386,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             //Destroy the old card element
             dojo.destroy(oldCard.divId);
         }
-        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
+
+        $(`${performer.controllerId}-score-hand-count`).innerHTML = args.handCount;
 
         this.attachCard(performer, attachment);
         this.cardProperties[attachment.id] = attachment;
@@ -417,36 +420,44 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const attachment = this.cardProperties[args.attachmentId];
         const character = this.cardProperties[args.characterId];
 
-        attachment.attachmentIndex = null;
-        attachment.attachedToId = null;
-        attachment.controllerId = 0;
-        
-        this.unattachCard(character, attachment);
+        if (attachment)
+        {
+            attachment.attachmentIndex = null;
+            attachment.attachedToId = null;
+            attachment.controllerId = 0;
+        }
 
-        character.modifiedResolve = args.modifiedResolve;
-        character.modifiedCombat = args.modifiedCombat;
-        character.modifiedFinesse = args.modifiedFinesse;
-        character.modifiedInfluence = args.modifiedInfluence;
+        if (character)
+        {
+            character.modifiedResolve = args.modifiedResolve;
+            character.modifiedCombat = args.modifiedCombat;
+            character.modifiedFinesse = args.modifiedFinesse;
+            character.modifiedInfluence = args.modifiedInfluence;
+        }
 
-        //Create a placeholder html element in front of the performer
-        const placeholderId = "unequip-placeholder";
-        dojo.place(`<div id="${placeholderId}"></div>`, character.divId, 'before');
+        if (attachment && character)
+        {
+            this.unattachCard(character, attachment);
+            
+            //Create a placeholder html element in front of the performer
+            const placeholderId = "unequip-placeholder";
+            dojo.place(`<div id="${placeholderId}"></div>`, character.divId, 'before');
 
-        //Destroy attachment element
-        dojo.destroy(attachment.divId);
+            //Destroy attachment element
+            dojo.destroy(attachment.divId);
 
-        //Destroy old character element
-        dojo.destroy(character.divId);
+            //Destroy old character element
+            dojo.destroy(character.divId);
 
-        //Create the new attachment element    
-        this.createCard(attachment.divId, attachment, placeholderId);
+            //Create the new attachment element    
+            this.createCard(attachment.divId, attachment, placeholderId);
 
-        //Create the new character element    
-        this.createCard(character.divId, character, placeholderId);
+            //Create the new character element    
+            this.createCard(character.divId, character, placeholderId);
 
-        //Destroy the placeholder
-        dojo.destroy(placeholderId);
-
+            //Destroy the placeholder
+            dojo.destroy(placeholderId);
+        }
     },
 
     notif_factionResolveCardDraw: function( notif )
@@ -479,8 +490,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             this.addCardToDeck(this.factionHand, notif.args.card);
         }
 
-        const count = parseInt($(`${notif.args.player_id}-score-hand-count`).innerHTML) + 1;
-        $(`${notif.args.player_id}-score-hand-count`).innerHTML = count;
+        $(`${notif.args.player_id}-score-hand-count`).innerHTML = notif.args.handCount;
     },
 
     notif_drawCard: function( notif )
@@ -574,11 +584,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         let card = args.card;
         this.cardProperties[card.id] = card;
 
-        if (notif.args.playerId == this.player_id)
-        {
-            this.factionHand.removeFromStockById(card.id);
-            $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
-        }
+        $(`${args.playerId}-score-hand-count`).innerHTML = args.handCount;
 
         card.location = this.LOCATION_PLAYER_DISCARD;
         const player = this.gamedatas.players[args.playerId];
@@ -595,8 +601,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (notif.args.playerId == this.player_id)
         {
             this.factionHand.removeFromStockById(args.cardId);
-            $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
         }
+
+        $(`${notif.args.playerId}-score-hand-count`).innerHTML = args.handCount;
     },
 
     notif_cardMoved: function( notif )
@@ -983,6 +990,41 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
+    notif_maryamBenuPleromaAbilityUsed: function( notif )
+    {
+        debug( 'notif_maryamBenuPleromaAbilityUsed' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        card.conditions.push(this.MARYAM_BENU_PLEROMA_ABILITY_USED);
+
+        const imageElement = dojo.query('._7sfs-card', card.divId)[0];
+        const id = `${card.divId}_maryam_benu_pleroma_ability_used`;
+        dojo.place( this.format_block( 'jstpl_generic_chip', {
+            id: id,
+            class: '_7sfs-maryam-benu-pleroma-ability-used-chip',
+        }),  imageElement, 'last');
+
+        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
+    },
+
+    notif_maryamBenuPleromaAbilityRemoved: function( notif )
+    {
+        debug( 'notif_maryamBenuPleromaAbilityRemoved' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.MARYAM_BENU_PLEROMA_ABILITY_USED);
+
+            const id = `${args.cardId}_maryam_benu_pleroma_ability_used`;
+            dojo.destroy(id);    
+        }
+    },
+
     notif_crystalEyeTargetChosen: function( notif )
     {
         debug( 'notif_crystalEyeTargetChosen' );
@@ -1264,9 +1306,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             {
                 this.factionHand.removeFromStockById(combatCard.id);
             }
-            const count = parseInt($(`${combatCard.controllerId}-score-hand-count`).innerHTML) - 1;
-            $(`${combatCard.controllerId}-score-hand-count`).innerHTML = count;
-
+            $(`${combatCard.controllerId}-score-hand-count`).innerHTML = args.handCount;
         }
         else
         {

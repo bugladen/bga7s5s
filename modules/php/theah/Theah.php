@@ -547,13 +547,9 @@ class Theah
 
     function getCharacterById($id): ?Character
     {
-        if (array_key_exists($id, $this->cards)) {
-            return $this->cards[$id];
-        }
-
-        $card = $this->db->getCardObject($id);
-        if ($card) {
-            return $card;
+        $character = $this->getCardById($id);
+        if ($character instanceof Character) {
+            return $character;
         }
 
         return null;
@@ -561,14 +557,14 @@ class Theah
 
     function getAttachmentById($id): ?Attachment
     {
-        if (array_key_exists($id, $this->cards)) {
-            return $this->cards[$id];
+        $attachment = $this->getCardById($id);
+        if ($attachment instanceof Attachment) {
+            return $attachment;
         }
 
         $card = $this->db->getCardObject($id);
         if ($card) {
             return $card;
-        }
 
         return null;
     }
@@ -1218,6 +1214,11 @@ class Theah
     public function deleteTransitionEvents(string $reactionId)
     {
         $this->db->deleteTransitionEvents($reactionId);
+    }
+
+    public function areTransitionEventsOfTypeForPlayerQueued(int $playerId, string $reactionType): bool
+    {
+        return $this->db->areTransitionEventsOfTypeForPlayerQueued($playerId, $reactionType);
     }
 
     public function deleteActionTriggeredEvents(string $actionId)

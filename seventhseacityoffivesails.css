@@ -324,6 +324,20 @@ body {
     border: 2px solid orangered
 }
 
+._7sfs-maryam-benu-pleroma-ability-used-chip {
+    position: absolute;
+    background-image: url('img/cards/7s5s/186.jpg');
+    background-size: 247px 337px;
+    background-position: -120px -54px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: inline-block;
+    left: 80px;
+    top: 60px;
+    border: 2px solid orangered
+}
+
 ._7sfs-crystal-eye-target-chip {
     position: absolute;
     background-image: url('img/cards/7s5s/200.jpg');

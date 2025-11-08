@@ -2,9 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAmARiskThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 
-class _01162 extends Risk
+class _01162 extends Risk implements IAmARiskThatTargetsCharacters
 {
     public function __construct()
     {

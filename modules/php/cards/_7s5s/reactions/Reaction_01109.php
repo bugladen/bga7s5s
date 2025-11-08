@@ -45,12 +45,16 @@ class Reaction_01109 extends CancelReaction
             $risk = $event->theah->getCardById($event->riskId);
             if ($risk instanceof Risk && $risk->ControllerId != $owner->ControllerId && ! $risk->hasTrait("Sorcery"))
             {
-                $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $transitionEvent->priority = Event::HIGHEST_PRIORITY;
-                $event->theah->stackEvent($transitionEvent);
-
-                $this->RiskId = $event->riskId;
-                $owner->IsUpdated = true;
+                //Make sure there is not another copy of this reaction queued
+                if (! $event->theah->areTransitionEventsOfTypeForPlayerQueued($owner->ControllerId, "Reaction_01109"))
+                {
+                    $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $transitionEvent->priority = Event::HIGHEST_PRIORITY;
+                    $event->theah->stackEvent($transitionEvent);
+    
+                    $this->RiskId = $event->riskId;
+                    $owner->IsUpdated = true;
+                }
             }
         }
 

@@ -124,7 +124,7 @@ class Action_01015 extends SchemeCityAction
             $destroyEvent = EventFactory::createCharacterDestroyedEvent($performer->ControllerId, $performer->Id, $scheme->getInjectCode());
             $game->theah->queueEvent($destroyEvent);
 
-            $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $scheme->Id, 1, $scheme->getInjectCode());
+            $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $scheme->Id, 1, $scheme->getInjectCode(), $this->Id);
             $game->theah->queueEvent($woundEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);

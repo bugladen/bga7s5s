@@ -288,17 +288,32 @@ return declare('seventhseacityoffivesails.actions', null, {
         };
 
         const action = actionArray[this.gamedatas.gamestate.name];
+        let errors = false;
         switch (action) {
             case 'actHighDramaRecruitActionPayForMercenary':
                 this.bgaPerformAction(action, { 
                     'payWithCards': JSON.stringify(items),
+                }).catch(() =>  {
+                    errors = true;
+                }).then(() =>  {
+                    if (!errors)
+                    {
+                        items.forEach((item) => this.factionHand.removeFromStockById(item));
+                    }
                 });
                 break;
-                case 'actHighDramaBeginning_01144':
-                    this.bgaPerformAction(action, { 
-                    'recruitId': this.clientStateArgs.selectedCards[0],
-                    'payWithCards': JSON.stringify(items),
+
+            case 'actHighDramaBeginning_01144':
+                this.bgaPerformAction(action, { 
+                'recruitId': this.clientStateArgs.selectedCards[0],
+                'payWithCards': JSON.stringify(items),
                 }).catch(() =>  {
+                    errors = true;
+                }).then(() =>  {
+                    if (!errors)
+                    {
+                        items.forEach((item) => this.factionHand.removeFromStockById(item));
+                    }
                     if (this.gamedatas.gamestate.name == 'highDramaBeginning_01144_client')
                         this.setClientState('highDramaBeginning_01144',
                             {
@@ -320,8 +335,11 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
-            if (!errors && this.clientStateArgs.chosenActionCardId) 
+            if (!errors && this.clientStateArgs.chosenActionCardId)
+            {
                 this.factionHand.removeFromStockById(this.clientStateArgs.chosenActionCardId);
+                items.forEach((item) => this.factionHand.removeFromStockById(item));
+            }
         });
     },
 
@@ -344,7 +362,10 @@ return declare('seventhseacityoffivesails.actions', null, {
             errors = true;
         }).then(() =>  {
             if (!errors && this.clientStateArgs.chosenCardId) 
+            {
                 this.factionHand.removeFromStockById(this.clientStateArgs.chosenCardId);
+                items.forEach((item) => this.factionHand.removeFromStockById(item));
+            }
         });            
     },
 
@@ -354,7 +375,6 @@ return declare('seventhseacityoffivesails.actions', null, {
         items = items.map((item) => item.id);
 
         const actionArray = {
-            'highDramaPhase01167_3'               : 'actFromCardWithIds',
             'highDramaPhase01180_5'               : 'actFromCardWithIds',
         };
 
@@ -363,9 +383,16 @@ return declare('seventhseacityoffivesails.actions', null, {
         if (!action)
             action = 'actFromCardWithIds';
 
+        let errors = false;
         this.bgaPerformAction(action, { 
             'ids': JSON.stringify(items),
         }).catch(() =>  {
+            errors = true;
+        }).then(() =>  {
+            if (!errors)
+            {
+                items.forEach((item) => this.factionHand.removeFromStockById(item));
+            }
         });        
     },
 
@@ -393,9 +420,17 @@ return declare('seventhseacityoffivesails.actions', null, {
         var items = this.factionHand.getSelectedItems();
         items = items.map((item) => item.id);
 
+        let errors = false;
         this.bgaPerformAction('actPayForReaction', { 
             'payWithCards': JSON.stringify(items),
         }).catch(() =>  {
+            errors = true;
+        }).then(() =>  {
+            if (!errors)
+            {
+                this.factionHand.removeFromStockById(this.clientStateArgs.reactionCardId);
+                items.forEach((item) => this.factionHand.removeFromStockById(item));
+            }
         });        
     },
 

@@ -31,7 +31,7 @@ class Action_01009 extends CharacterAction
         }
 
         $characters = $theah->getCharactersAtLocation($owner->Location, $includeUncontrolled = true);
-        $characters = array_filter($characters, fn($character) => $character->hasTrait("Mercenary"));
+        $characters = array_filter($characters, fn($character) => !$character->isControlled() && $character->hasTrait("Mercenary"));
         return count($characters) > 0;
     }
 

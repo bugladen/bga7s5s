@@ -159,6 +159,8 @@ trait EventHub
                             $message .= clienttranslate('<br>${explanations}');
                         }
                     }
+
+                    $deck = $theah->game->getGameDeckObject();
                     $theah->game->notify->all("attachmentEquipped", $message, [
                         "player_id" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
@@ -173,6 +175,7 @@ trait EventHub
                         "modifiedFinesse" => $modifiedFinesse,
                         "modifiedInfluence" => $modifiedInfluence,
                         "explanations" => $event->explanations,
+                        'handCount' => count($deck->getPlayerHand($event->playerId))
                     ]);
                 };
                 $handler($this, $event);
@@ -294,7 +297,7 @@ trait EventHub
                     $hand = $deck->getCardsInLocation(Game::LOCATION_HAND, $event->playerId);
                     $count = count($hand);
     
-                    $theah->game->notifyPlayer($event->playerId, "drawCard", clienttranslate('Private: You drew ${card_inject_code} because of ${reason}.'), [
+                    $theah->game->notify->player($event->playerId, "drawCard", clienttranslate('Private: You drew ${card_inject_code} because of ${reason}.'), [
                         'i18n' => ['card_name', 'reason'],
                         "card_inject_code" => $card->getInjectCode(),
                         "card" => $card->getPropertyArray($theah->game),
@@ -302,7 +305,7 @@ trait EventHub
                     ]);
     
                     // Notify players that card has been added to hand
-                    $theah->game->notifyAllPlayers("drawCardMessage", clienttranslate('${player_name} drew a card into their Faction Hand because of ${reason}.'), [
+                    $theah->game->notify->all("drawCardMessage", clienttranslate('${player_name} drew a card into their Faction Hand because of ${reason}.'), [
                         'i18n' => ['reason'],
                         "playerId" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
@@ -379,6 +382,7 @@ trait EventHub
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
                         "card_inject_code" => $card->getInjectCode(),
                         "card" => $card->getPropertyArray($this->game),
+                        "handCount" => count($deck->getPlayerHand($event->playerId)),
                     ]);
                 };
                 $handler($this, $event);
@@ -435,11 +439,12 @@ trait EventHub
                     if ($event->AsPayment)
                         $message = '${player_name} discarded ${card_inject_code} as payment.';
 
-                    $theah->game->notifyAllPlayers("cardDiscardedFromHand", clienttranslate($message), [
+                    $theah->game->notify->all("cardDiscardedFromHand", clienttranslate($message), [
                         "player_name" => $theah->game->getPlayerNameById($event->ownerId),
                         "card_inject_code" => $card->getInjectCode(),
                         "playerId" => $event->ownerId,
                         "card" => $card->getPropertyArray($theah->game),
+                        "handCount" => count($deckObject->getPlayerHand($event->ownerId)),
                     ]);
                 };
                 $handler($this, $event);
@@ -1237,6 +1242,7 @@ trait EventHub
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
                         $effects .= sprintf($theah->game->translate("<p>Defender Threat went from %d to %d. %s"), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"], $defenderThreatIsLethalText);
 
+                    $deck = $theah->game->getGameDeckObject();
                     $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('Duel Update: ${character_inject_code} adds the Technique [<strong>${effect_name}</strong>] from ${card_inject_code}. ${effects}'), [
                         'i18n' => ['character_name', 'effect_name', 'effects'],
                         "round" => $round,
@@ -1257,6 +1263,7 @@ trait EventHub
                         "endingDefenderThreatAfter"  => $results["endingDefenderThreatAfter"],
                         "defenderThreatIsLethal"  => $results["defenderThreatIsLethal"],
                         "wounds" => $results["wounds"],
+                        "handCount" => count($deck->getPlayerHand($actor->ControllerId)),
                     ]);                    
                 };    
                 $handler($this, $event);
