@@ -1963,9 +1963,6 @@
             'highDramaPhase01197_3' : () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
-                    card = this.cardProperties[args.args.args.performerId];
-                    let image = $(`${card.divId}_image`);
-                    dojo.addClass(image, '_7sfs-chosen');
     
                     card = this.cardProperties[args.args.args.chosenCharacterId];
                     image = $(`${card.divId}_image`);
@@ -1976,7 +1973,6 @@
                         const image = $(`${card.divId}_image`);
                         this.makeCardSelectable(image);
                     });
-                    this.clientStateArgs.performerId = args.args.args.performerId;
                     this.clientStateArgs.chosenCharacterId = args.args.args.chosenCharacterId;
                     this.clientStateArgs.targetCharacterIds = args.args.args.targetCharacterIds;
                 }

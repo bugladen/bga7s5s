@@ -195,6 +195,7 @@ class Action_01197 extends CharacterAction
                 throw new \BgaUserException($game->translate("Target character is not at Kalla's location."));
             }
 
+            $this->announceAction($game);
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
 
