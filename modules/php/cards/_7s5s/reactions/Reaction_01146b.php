@@ -65,7 +65,7 @@ class Reaction_01146b extends CardReaction
             }
         }
 
-        if ($event instanceof EventManeuverActivated)
+        if ($event instanceof EventManeuverActivated && $this->isAvailable())
         {
             $game = $event->theah->game;
             $inDuel = $game->globals->get(Game::IN_DUEL);
