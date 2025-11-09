@@ -296,7 +296,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.place( this.format_block( 'jstpl_reknown_chip', {
                 id: divId,
                 amount: event.reknown,
-            }),  event.divId, 'last');
+            }),  `${event.divId}_image`, 'last');
             }
     },  
 

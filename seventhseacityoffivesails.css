@@ -296,9 +296,9 @@ body {
     text-align:center;
 }
 ._7sfs-card-reknown-chip {
-    position: relative;
-    left: 60px;
-    bottom: 75px;
+    position: absolute;
+    left: 35px;
+    top: 35px;
     z-index: 20;
 }
 ._7sfs-city-reknown-chip {
