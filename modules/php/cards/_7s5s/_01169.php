@@ -71,4 +71,10 @@ class _01169 extends Risk
             }
         }
     }
+
+    public function cancelEscape()
+    {
+        $this->EscapeDuel = false;
+        $this->IsUpdated = true;
+    }
 }

@@ -29,6 +29,7 @@ class DB
     {
         $sql = "SELECT MIN(event_id) FROM events";
         $id = intval($this->getUniqueValue($sql)) - 1;
+        $id = $id <= 0 ? 1 : $id;
         $priority = $event->priority;
         $serialized = addslashes(serialize($event));
         $sql = "INSERT INTO events (event_id, event_priority, event_serialized) values ($id, $priority, '{$serialized}')";

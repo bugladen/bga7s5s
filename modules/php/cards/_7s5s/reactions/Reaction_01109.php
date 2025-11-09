@@ -2,11 +2,15 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01169;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -14,16 +18,18 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 class Reaction_01109 extends CancelReaction
 {
     private int $RiskId;
+    private string $ManeuverId = '';
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate("Cancel a Sorcery Risk Card");
+        $this->Name = clienttranslate("Cancel a Non-Sorcery Risk Card");
         $this->RiskId = 0;
+        $this->ManeuverId = '';
     }
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to cancel the Sorcery Risk just played: ');
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to cancel the Risk just played: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -57,6 +63,43 @@ class Reaction_01109 extends CancelReaction
                 }
             }
         }
+        
+        if ($event instanceof EventManeuverActivated && $this->isAvailable())
+        {
+            $game = $event->theah->game;
+            $owner = $this->getOwningCard($event->theah);
+            $maneuver = $event->theah->getManeuverById($event->maneuverId);
+            $risk = $maneuver->getOwningCard($event->theah);
+            if ($event->playerId != $owner->ControllerId && ! $risk->hasTrait("Sorcery") && !$maneuver instanceof ISorcererAbility)
+            {
+                $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $reactionEvent->priority = Event::HIGH_PRIORITY;
+                $event->theah->stackEvent($reactionEvent);
+
+                $this->RiskId = $risk->Id;
+                $this->ManeuverId = $event->maneuverId;
+                $owner->IsUpdated = true;
+            }
+        }
+
+        //Edge case: Not Today
+        if ($event instanceof EventDuelCalculateCombatCardStats && $this->isAvailable())
+        {
+            $game = $event->theah->game;
+            $card = $event->theah->getCardById($event->combatCardId);
+            $owner = $this->getOwningCard($event->theah);
+            if ($event->actorId != $owner->ControllerId && $card instanceof _01169)
+            {
+
+                $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $reactionEvent->priority = Event::HIGHEST_PRIORITY;
+                $event->theah->stackEvent($reactionEvent);                
+
+                $this->RiskId = $event->combatCardId;
+                $owner->IsUpdated = true;
+            }
+
+        }
 
         if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
         {
@@ -67,9 +110,24 @@ class Reaction_01109 extends CancelReaction
                 'reaction_inject_code' => $owner->getInjectCode(),
             ]);
 
+            //Edge case: Not Today
+            $risk = $game->theah->getCardById($this->RiskId);
+            if ($risk instanceof _01169)
+            {
+                $risk->cancelEscape();
+            }
+
             //Delete any cancel Risk ActionTriggered or RiskReactionTriggered events
             $game->theah->deleteActionTriggeredEvents($this->RiskId);
             $game->theah->deleteRiskReactionTriggeredEvents($this->RiskId);
+
+            // Cancel Maneuver if it exists
+            if ($this->ManeuverId != 0)
+            {
+                $game->theah->deleteManeuverEvents($this->ManeuverId);
+                $this->ManeuverId = 0;
+            }
+
             $this->RiskId = 0;
             $owner->IsUpdated = true;
         }
