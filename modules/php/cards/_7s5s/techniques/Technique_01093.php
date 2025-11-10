@@ -43,8 +43,8 @@ class Technique_01093 extends Technique
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
-            $adversaryId = $event->theah->getDuelOpponentId($owner->Id);
-            $adversary = $event->theah->getCharacterById($adversaryId);
+            $adversary = $event->theah->getDuelRoundOpponent();
+
             $transition = EventFactory::createTransitionEvent($adversary->ControllerId, $owner->Id, "01093", $this->Id);
             $event->theah->queueEvent($transition);
 

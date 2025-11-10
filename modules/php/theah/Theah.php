@@ -1301,6 +1301,7 @@ class Theah
         $opponentId = $this->getDuelOpponentId($actor->Id);
         $opponent = $this->getCharacterById($opponentId);
 
+        //Get last known information about the opponent
         if ($this->game->characterIsInDiscardOrLocker($opponent))
         {
             $duelId = $this->game->globals->get(Game::DUEL_ID);

@@ -19,7 +19,7 @@ class _01093 extends Character implements IHasActions, IHasTechniques
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Maya De La Rioja");
+        $this->Name = clienttranslate("Maya de La Rioja");
         $this->Image = "img/cards/7s5s/093.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
