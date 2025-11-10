@@ -603,7 +603,7 @@ trait StatesTrait
         }
         $this->theah->queueEvent($challengeEvent);
 
-        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE)
+        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE)
         {
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
             $this->theah->queueEvent($engageEvent);
