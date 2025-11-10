@@ -51,7 +51,8 @@ class _01101 extends FactionAttachment implements IHasTechniques
     {
         $count = parent::getNumberOfGambleCardsToReveal($theah, $actor, $explanations);
 
-        if ($this->isAttached() && $this->attachedTo($theah)->ControllerId == $actor->ControllerId)
+        $attachedTo = $this->attachedTo($theah);
+        if ($this->isAttached() && $actor->Id == $attachedTo->Id)
         {
             $explanations[] = sprintf($theah->game->translate("%s: +1 for being attached to acting character."), $this->getInjectCode());
             $count += 1;

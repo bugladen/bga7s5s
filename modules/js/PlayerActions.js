@@ -308,11 +308,14 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
-            if (!errors && this.clientStateArgs.chosenActionCardId)
+            if (!errors)
             {
-                this.factionHand.removeFromStockById(this.clientStateArgs.chosenActionCardId);
+                if (this.clientStateArgs.chosenActionCardId)
+                    this.factionHand.removeFromStockById(this.clientStateArgs.chosenActionCardId);
+                
                 items.forEach((item) => this.factionHand.removeFromStockById(item));
             }
+
         });
     },
 
@@ -334,9 +337,11 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
-            if (!errors && this.clientStateArgs.chosenCardId) 
+            if (!errors) 
             {
-                this.factionHand.removeFromStockById(this.clientStateArgs.chosenCardId);
+                if (this.clientStateArgs.chosenCardId)
+                    this.factionHand.removeFromStockById(this.clientStateArgs.chosenCardId);
+
                 items.forEach((item) => this.factionHand.removeFromStockById(item));
             }
         });            

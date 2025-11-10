@@ -880,7 +880,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             dojo.place( this.format_block( 'jstpl_reknown_chip', {
                 id: divId,
                 amount: args.total,
-            }),  card.divId, 'last');
+            }),  `${card.divId}_image`, 'last');
         }
     },
 

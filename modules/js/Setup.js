@@ -130,7 +130,7 @@ return declare('seventhseacityoffivesails.setup', null, {
             {
                 const divId = this.createCardId(card, this.LOCATION_PLAYER_HOME);
                 const location = this.getTargetElementForLocation(this.LOCATION_PLAYER_HOME, playerId);
-                this.createCharacterCard(divId, playerInfo.color, card, location, this.inDuel);
+                this.createCard(divId, card, location, this.inDuel);
             });
     
         }

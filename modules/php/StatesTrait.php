@@ -603,7 +603,7 @@ trait StatesTrait
         }
         $this->theah->queueEvent($challengeEvent);
 
-        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE)
+        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE)
         {
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
             $this->theah->queueEvent($engageEvent);
@@ -767,9 +767,6 @@ trait StatesTrait
 
         if ($this->globals->get(GAME::CHALLENGE_ACCEPTED))
         {
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $this->theah->queueEvent($actionResolvedEvent);
-    
             $this->gamestate->nextState("accepted");
         }
         else
@@ -856,8 +853,7 @@ trait StatesTrait
             }
             
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $this->theah->queueEvent($actionResolvedEvent);
-    
+            $this->theah->queueEvent($actionResolvedEvent);    
     
             $this->gamestate->nextState("rejected");
         }
@@ -1403,6 +1399,9 @@ trait StatesTrait
                 $this->theah->queueEvent($event);
             }
         }
+
+        $actionResolvedEvent = EventFactory::createActionResolvedEvent($challenger->ControllerId);
+        $this->theah->queueEvent($actionResolvedEvent);
 
         $this->gamestate->nextState();
     }

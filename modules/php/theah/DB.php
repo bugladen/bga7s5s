@@ -27,9 +27,9 @@ class DB
 
     public function stackEvent(Event $event)
     {
-        $sql = "SELECT MIN(event_priority) FROM events WHERE event_priority < 0";
-        $minPriority = intval($this->getUniqueValue($sql));
-        $priority = $minPriority ? $minPriority - 1 : -1; // Start at -1 and go more negative
+        $sql = "SELECT MIN(event_priority) FROM events";
+        $priority = intval($this->getUniqueValue($sql)) - 1;
+        $event->priority = $priority;
         
         $event->wasStacked = true;
         $serialized = addslashes(serialize($event));

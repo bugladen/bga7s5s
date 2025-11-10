@@ -1233,10 +1233,6 @@
             'highDramaPhase01197_3': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    card = this.cardProperties[this.clientStateArgs.performerId];
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
-    
                     card = this.cardProperties[this.clientStateArgs.chosenCharacterId];
                     const chosenImage = $(`${card.divId}_image`);
                     dojo.removeClass(chosenImage, '_7sfs-chosen');

@@ -129,12 +129,9 @@ trait EventHub
                 {
                     $performer = $theah->getCharacterById($event->characterId);                    
                     $attachment = $theah->getAttachmentById($event->attachmentId);
-                    // If the attachment is not in the world (came from the City Deck), add it
-                    if ($attachment == null)
-                    {
-                        $attachment = $theah->game->getCardObjectFromDb($event->attachmentId);
-                        $theah->addCardToWorld($attachment);
-                    }
+
+                    //Attachments might not be in the world (came from the City Deck, or created by an action), add it to the world
+                    $theah->addCardToWorld($attachment);
 
                     $performer->addAttachment($attachment);
                     $modifiedResolve = $performer->ModifiedResolve;
