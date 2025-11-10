@@ -767,9 +767,6 @@ trait StatesTrait
 
         if ($this->globals->get(GAME::CHALLENGE_ACCEPTED))
         {
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $this->theah->queueEvent($actionResolvedEvent);
-    
             $this->gamestate->nextState("accepted");
         }
         else
@@ -856,8 +853,7 @@ trait StatesTrait
             }
             
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $this->theah->queueEvent($actionResolvedEvent);
-    
+            $this->theah->queueEvent($actionResolvedEvent);    
     
             $this->gamestate->nextState("rejected");
         }
@@ -1403,6 +1399,9 @@ trait StatesTrait
                 $this->theah->queueEvent($event);
             }
         }
+
+        $actionResolvedEvent = EventFactory::createActionResolvedEvent($challenger->ControllerId);
+        $this->theah->queueEvent($actionResolvedEvent);
 
         $this->gamestate->nextState();
     }
