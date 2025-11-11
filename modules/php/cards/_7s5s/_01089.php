@@ -19,6 +19,8 @@ class _01089 extends Leader implements IHasReactions
 {
     use ReactionTrait;
 
+    public int $AffectedCharacterId = 0;
+
     public function __construct()
     {
         parent::__construct();
@@ -76,25 +78,29 @@ class _01089 extends Leader implements IHasReactions
             if ($challenger->Location == $this->Location && $challenger->ControllerId == $this->ControllerId)
             {
                 $this->lowerFinesse($defender, $event->theah);
+                $this->AffectedCharacterId = $defender->Id;
+                $this->IsUpdated = true;
             }
             else if ($defender->Location == $this->Location && $defender->ControllerId == $this->ControllerId)
             {
                 $this->lowerFinesse($challenger, $event->theah);
+                $this->AffectedCharacterId = $challenger->Id;
+                $this->IsUpdated = true;
             }
         }
 
         if ($event instanceof EventDuelEnd)
         {
-            $challenger = $event->theah->getCharacterById($event->challengerId);
-            $defender = $event->theah->getCharacterById($event->defenderId);
+            if ($this->AffectedCharacterId > 0)
+            {
+                $affectedCharacter = $event->theah->getCharacterById($this->AffectedCharacterId);
+                if (!$event->theah->game->characterIsInDiscardOrLocker($affectedCharacter))
+                {
+                    $this->raiseFinesse($affectedCharacter, $event->theah); 
+                }
 
-            if ($challenger->Location == $this->Location && $challenger->ControllerId == $this->ControllerId)
-            {
-                $this->raiseFinesse($defender, $event->theah);
-            }
-            else if ($defender->Location == $this->Location && $defender->ControllerId == $this->ControllerId)
-            {
-                $this->raiseFinesse($challenger, $event->theah);
+                $this->AffectedCharacterId = 0;
+                $this->IsUpdated = true;
             }
         }
 
@@ -110,6 +116,8 @@ class _01089 extends Leader implements IHasReactions
                 $this->lowerFinesse($newDefender, $event->theah);
                 $this->raiseFinesse($oldDefender, $event->theah);
 
+                $this->AffectedCharacterId = $newDefender->Id;
+                $this->IsUpdated = true;
             }
         }
 
@@ -124,6 +132,9 @@ class _01089 extends Leader implements IHasReactions
                 $newChallenger = $event->theah->getCharacterById($event->newChallengerId);
                 $this->lowerFinesse($newChallenger, $event->theah);
                 $this->raiseFinesse($oldChallenger, $event->theah);
+
+                $this->AffectedCharacterId = $newChallenger->Id;
+                $this->IsUpdated = true;
             }
         }
     }
