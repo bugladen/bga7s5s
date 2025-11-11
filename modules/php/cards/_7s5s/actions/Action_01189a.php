@@ -37,6 +37,13 @@ class Action_01189a extends EventCityAction
             return false;
         }
 
+        $characters = $theah->getCharactersAtLocationByPlayerId($poo->Location, $playerId);
+        $characters = array_filter($characters, fn($character) => ! $character->Engaged);
+        if (count($characters) == 0)
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -49,6 +56,13 @@ class Action_01189a extends EventCityAction
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01189a", $this->Id);
             $event->theah->queueEvent($transition);
         }
+    }
+
+    public function getPerformersForAction(int $playerId, Theah $theah): array
+    {
+        $performers = parent::getPerformersForAction($playerId, $theah);
+        $performers = array_filter($performers, fn($performer) => ! $performer->Engaged);
+        return array_values($performers);
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array 
