@@ -923,7 +923,7 @@ class Theah
         $influence = 0;
         $characters = $this->getCharactersInPlayByPlayerId($playerId);
         foreach ($characters as $character) {
-            $influence += $character->Influence;
+            $influence += $character->ModifiedInfluence;
         }
         return $influence;
     }
