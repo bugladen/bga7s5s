@@ -16,7 +16,7 @@ class Action_01158 extends AttachmentAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Discard Card.  Draw Card.");
+        $this->Name = clienttranslate("Discard Card, then Draw Card");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool

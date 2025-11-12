@@ -511,25 +511,28 @@ onEnteringState: function( stateName, args )
                 const card = this.cardProperties[reactionId];
                 this.clientStateArgs.reactionCardId = reactionId;
 
-                let items = this.factionHand.getAllItems();
-
                 let div = this.factionHand.getItemDivId(reactionId);
-                dojo.addClass(div, '_7sfs-unselectable');
+                div = $(div);
 
-                dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
-                    id: div,
-                    cost: card.wealthCost,
-                }), div, "first" );    
-    
-                const costDiv = $(`${div}_wealth_cost`);
-                const cost = parseInt(costDiv.innerHTML);
-                let discountedCost = cost - args.args._private.args.discount;
-                discountedCost = discountedCost < 0 ? 0 : discountedCost;
-                if (discountedCost !== cost)
+                if (div)
                 {
-                    this.clientStateArgs.discountedCost = discountedCost;
-                    costDiv.innerHTML = parseInt(discountedCost);
-                    dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                    dojo.addClass(div, '_7sfs-unselectable');
+
+                    dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                        id: div,
+                        cost: card.wealthCost,
+                    }), div, "first" );    
+        
+                    const costDiv = $(`${div}_wealth_cost`);
+                    const cost = parseInt(costDiv.innerHTML);
+                    let discountedCost = cost - args.args._private.args.discount;
+                    discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                    if (discountedCost !== cost)
+                    {
+                        this.clientStateArgs.discountedCost = discountedCost;
+                        costDiv.innerHTML = parseInt(discountedCost);
+                        dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                    }
                 }
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
