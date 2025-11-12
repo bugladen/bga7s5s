@@ -512,6 +512,8 @@ onEnteringState: function( stateName, args )
                 this.clientStateArgs.reactionCardId = reactionId;
 
                 let div = this.factionHand.getItemDivId(reactionId);
+                div = $(div);
+
                 if (div)
                 {
                     dojo.addClass(div, '_7sfs-unselectable');
