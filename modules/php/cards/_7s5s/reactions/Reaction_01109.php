@@ -55,7 +55,6 @@ class Reaction_01109 extends CancelReaction
                 if (! $event->theah->areTransitionEventsOfTypeForPlayerQueued($owner->ControllerId, "Reaction_01109"))
                 {
                     $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                    $transitionEvent->priority = Event::HIGHEST_PRIORITY;
                     $event->theah->stackEvent($transitionEvent);
     
                     $this->RiskId = $event->riskId;
@@ -73,7 +72,6 @@ class Reaction_01109 extends CancelReaction
             if ($event->playerId != $owner->ControllerId && ! $risk->hasTrait("Sorcery") && !$maneuver instanceof ISorcererAbility)
             {
                 $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $reactionEvent->priority = Event::HIGH_PRIORITY;
                 $event->theah->stackEvent($reactionEvent);
 
                 $this->RiskId = $risk->Id;
@@ -92,7 +90,6 @@ class Reaction_01109 extends CancelReaction
             {
 
                 $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $reactionEvent->priority = Event::HIGHEST_PRIORITY;
                 $event->theah->stackEvent($reactionEvent);                
 
                 $this->RiskId = $event->combatCardId;
