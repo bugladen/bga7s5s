@@ -27,8 +27,12 @@ class DB
 
     public function stackEvent(Event $event)
     {
+        $priority = Event::HIGHEST_PRIORITY;
         $sql = "SELECT MIN(event_priority) FROM events";
-        $priority = intval($this->getUniqueValue($sql)) - 1;
+        $result = $this->getUniqueValue($sql);
+        if ($result !== NULL)
+            $priority = intval($result) - 1;
+
         $event->priority = $priority;
         
         $event->wasStacked = true;

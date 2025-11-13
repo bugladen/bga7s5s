@@ -1724,11 +1724,9 @@ trait FrameworkActionsTrait
         if ($reaction instanceof CancelReaction)
         {
             $riskReactionTriggered = EventFactory::createRiskReactionTriggeredEvent($playerId,  $card->Id, $internalId, $reactionId);
-            $riskReactionTriggered->priority = Event::HIGHEST_PRIORITY;
             $this->theah->stackEvent($riskReactionTriggered);
             
             $riskPlayed = EventFactory::createRiskPlayedEvent($playerId, $card->Id);   
-            $riskPlayed->priority = Event::HIGHEST_PRIORITY;
             $this->theah->stackEvent($riskPlayed);
         }
         else
