@@ -476,7 +476,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( 'notif_factionResolveCardDrawPublic' );
         debug( notif );
 
-        $(`${notif.args.playerId}-score-hand-count`).innerHTML = notif.args.count;
+        if (notif.args.playerId == this.player_id)
+        {
+            return;
+        }
+
+        const element = $(`${notif.args.playerId}-score-hand-count`);
+        const handCount = parseInt(element.innerHTML);
+        element.innerHTML = handCount + notif.args.count;
     },
 
     notif_cardAddedToHand: function( notif )
