@@ -606,19 +606,6 @@ $machinestates = [
             ]
         ],
 
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01145 => [
-            "name" => "planningPhaseResolveSchemes_01145",
-            "description" => clienttranslate('Inspire Generosity: ${actplayer} is choosing options for Inspire Generosity.'),
-            "descriptionmyturn" => clienttranslate('Inspire Generosity: ${you} must choose a city location to move a Renown from:'),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actPlanningPhase_01145",
-                "actPlanningPhase_01145_Pass"
-            ],
-            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-        ],
-    
     States::PLANNING_PHASE_DRAW => [
         "name" => "planningPhaseDraw",
         "description" => clienttranslate('Drawing Cards...'),

@@ -43,7 +43,6 @@ trait ZombieTrait
 
                 case "planningPhaseResolveSchemes_01044":
                 case "planningPhaseResolveSchemes_01045":
-                case "planningPhaseResolveSchemes_01145":
                 case "planningPhaseResolveSchemes_01150":
                 case "planningPhaseResolveSchemes_01071":
                 case "planningPhaseResolveSchemes_01072":
@@ -65,6 +64,8 @@ trait ZombieTrait
                 case "planningPhaseResolveSchemes_01125_2":
                 case "planningPhaseResolveSchemes_01126":
                 case "planningPhaseResolveSchemes_01144":
+                case "planningPhaseResolveSchemes_01145":
+                case "planningPhaseResolveSchemes_01145_2":
                 case "planningPhaseResolveSchemes_01152":
                 case "planningPhaseResolveSchemes_01152_2":
                 case "planningPhaseResolveSchemes_01152_3":

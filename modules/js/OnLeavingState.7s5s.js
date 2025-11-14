@@ -117,7 +117,7 @@
                 this.resetCityLocations();
             },
     
-            'planningPhaseResolveSchemes_01145_2_client': () => {
+            'planningPhaseResolveSchemes_01145_2': () => {
                 this.resetCityLocations();
             },
     

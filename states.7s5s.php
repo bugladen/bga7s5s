@@ -248,7 +248,45 @@ $machinestates += [
             "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
         ],
 
-    States::PLANNING_PHASE_RESOLVE_SCHEMES_01147 => [
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01145 => [
+        "name" => "planningPhaseResolveSchemes_01145",
+        "description" => clienttranslate('Inspire Generosity: ${actplayer} is choosing options for Inspire Generosity.'),
+        "descriptionmyturn" => clienttranslate('Inspire Generosity: ${you} must choose a city location to move a Renown from:'),
+        "type" => "activeplayer",
+        "args" => "argsEmpty",
+        "possibleactions" => [
+            "actFromCardWithLocations",
+            "actFromCardPass"
+        ],
+        "transitions" => [
+            "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_2,
+            "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_3
+        ]
+    ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_2 => [
+            "name" => "planningPhaseResolveSchemes_01145_2",
+            "description" => clienttranslate('Inspire Generosity: ${actplayer} is choosing options for Inspire Generosity.'),
+            "descriptionmyturn" => clienttranslate('Inspire Generosity: ${you} must choose a city location to move the Renown to:'),
+            "type" => "activeplayer",
+            "args" => "argsForState",
+            "possibleactions" => [
+                "actFromCardWithLocations",
+            ],
+            "transitions" => [
+                "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_3,
+                "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS // Zombie mode will pass here
+                ]
+        ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_3 => [
+            "name" => "planningPhaseResolveSchemes_01145_3",
+            "type" => "game",
+            "action" => "stFromCard",
+            "transitions" => [
+                "" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
+            ]
+        ],
+    
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01147 => [
         "name" => "planningPhaseResolveSchemes_01147",
         "description" => clienttranslate('Let\'s Haggle') . clienttranslate(': Your opponent(s) must acknowledge revealed cards.'),
         "descriptionmyturn" => clienttranslate('Let\'s Haggle') . clienttranslate(': ${you} must acknowledge revealed cards:'),

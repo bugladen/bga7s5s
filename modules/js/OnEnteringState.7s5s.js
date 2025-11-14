@@ -302,9 +302,9 @@
                 }
             },
     
-            'planningPhaseResolveSchemes_01145_2_client': () => {
+            'planningPhaseResolveSchemes_01145_2': () => {
                 if (this.isCurrentPlayerActive()) {
-                    const selectedLocationElement = $(this.clientStateArgs.selectedCityLocations[0]);
+                    const selectedLocationElement = dojo.query(`[data-location="${args.args.args.chosenLocation}"]`)[0];
                     const locations = this.getListofAvailableCityLocationImages();
                     this.numberOfCityLocationsSelectable = 1;
                     locations.forEach((location) => {

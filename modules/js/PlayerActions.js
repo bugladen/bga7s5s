@@ -36,16 +36,8 @@ return declare('seventhseacityoffivesails.actions', null, {
     {
         //Special logic for specific states
         const methods = {
-            planningPhaseResolveSchemes_01145_2_client: () => {
-                const fromLocation = $(this.clientStateArgs.selectedCityLocations[0]).getAttribute('data-location');
-                const toLocation = $(this.selectedCityLocations[0]).getAttribute('data-location');
-
-                this.bgaPerformAction('actPlanningPhase_01145', { 
-                    'fromLocation': fromLocation,
-                    'toLocation': toLocation,
-                });
-            }
         }
+
 
         if (methods[this.gamedatas.gamestate.name]) {
             methods[this.gamedatas.gamestate.name]();
@@ -56,13 +48,10 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01016': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01071': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01098': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_01145': 'planningPhaseResolveSchemes_01145_2_client',
-            'planningPhaseResolveSchemes_01145_2_client': 'actPlanningPhase_01145',
             'highDramaMoveActionChooseLocation': 'actHighDramaMoveActionDestinationChosen',
         };
 
         const clientMessageArray = {
-            'planningPhaseResolveSchemes_01145_2_client': _("Inspire Generosity: ${you} must choose a location to move the Renown to: "),
         };
 
         let action = actionMap[this.gamedatas.gamestate.name];
@@ -499,8 +488,6 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01016_2'       : 'actPassWithPass',
             'planningPhaseResolveSchemes_01125'         : 'actFromCardPass',
             'planningPhaseResolveSchemes_01125_2'       : 'actFromCardPass',
-            'planningPhaseResolveSchemes_01145'         : 'actPlanningPhase_01145_Pass',            
-            'planningPhaseResolveSchemes_01145_2_client': 'actPlanningPhase_01145_Pass',            
             'planningPhaseResolveSchemes_01152'         : 'actPassWithPass',
             'planningPhaseResolveSchemes_01152_2'       : 'actPassWithPass',
             'highDramaChallengeActionActivateTechnique' : 'actHighDramaChallengeActionActivateTechnique_Pass',

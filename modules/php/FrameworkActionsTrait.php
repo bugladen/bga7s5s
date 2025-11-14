@@ -159,24 +159,6 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhase_01145(string $fromLocation, string $toLocation)
-    {
-        $playerId = $this->getActivePlayerId();
-        $scheme = $this->getPlayerChosenScheme($playerId);
-        $scheme->planningPhaseAction($this, $fromLocation, $toLocation);
-
-        $this->gamestate->nextState("");
-    }
-
-    public function actPlanningPhase_01145_Pass()
-    {
-        $playerId = $this->getActivePlayerId();
-        $scheme = $this->getPlayerChosenScheme($playerId);
-        $scheme->planningPhaseAction($this, 'Pass', 'Pass');
-
-        $this->gamestate->nextState("");
-    }
-
     public function actRecruitMercenary(int $recruitId, string $payWithCards)
     {
         $character = $this->getCardObjectFromDb($recruitId);
