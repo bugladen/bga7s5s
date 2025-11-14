@@ -52,10 +52,9 @@ class Reaction_01116b extends CardReaction
             if ($event->playerId == $yevgeni->ControllerId)
             {
                 $card = $event->theah->game->getCardObjectFromDb($event->cardId);
-                if ($card instanceof IWealthCost && $card->getWealthCost() > 0)
+                if (! $card instanceof Character && $card instanceof IWealthCost && $card->getWealthCost() > 0)
                 {
                     $transition = EventFactory::createReactionTransitionEvent($yevgeni->ControllerId, $yevgeni->Id, $this->Id);
-                    $transition->priority = Event::HIGHEST_PRIORITY;
                     $event->theah->stackEvent($transition);
                 }
             }
