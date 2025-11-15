@@ -8,7 +8,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -126,6 +128,13 @@ class Reaction_01080 extends RiskReaction
             $event->theah->queueEvent($claimEvent);
         }
 
+        if ($event instanceof EventPlayerTurnEnd && ($this->DuelOpponentId != 0 || $this->DuelLocation != ''))
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $this->DuelOpponentId = 0;
+            $this->DuelLocation = '';
+            $owner->IsUpdated = true;
+        }
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
