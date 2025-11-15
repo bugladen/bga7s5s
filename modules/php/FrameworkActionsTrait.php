@@ -1165,7 +1165,10 @@ trait FrameworkActionsTrait
         if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE && ! $character instanceof Leader) {
             throw new \BgaUserException(self::_("Legendary Reputation: Only Leaders can Intervene"));
         }
-
+        else if ($challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE)
+        {
+            throw new \BgaUserException(self::_("Valeri Mikhailov: No Characters can Intervene."));
+        }
 
         //Reset the conditions for defender
         $target->removeCondition(Game::DUEL_DEFENDER);

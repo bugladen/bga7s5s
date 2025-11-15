@@ -850,6 +850,15 @@
                 }
             },
 
+            'highDramaPhase01123': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
