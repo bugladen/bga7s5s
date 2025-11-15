@@ -66,6 +66,8 @@ class Reaction_01124 extends CardReaction
 
             $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $owner->Id, $owner->Id);
             $game->theah->queueEvent($engardeEvent);
+
+            $this->setUsed($game->theah, true);
         }
 
         $game->gamestate->nextState("done");
