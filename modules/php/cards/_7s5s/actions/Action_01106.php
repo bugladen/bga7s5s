@@ -109,6 +109,7 @@ class Action_01106 extends RiskAction
             $owner = $this->getOwningCard($game->theah);
             $cards = [];
             $actions = [];
+            $handWealth = $game->handWealthCount($owner->ControllerId);
             foreach ($cardInfos as $cardInfo)
             {
                 $card = $game->getCardObjectFromDb($cardInfo['id']);
@@ -120,10 +121,12 @@ class Action_01106 extends RiskAction
                         $cardActions = $card->getActions();
                         foreach ($cardActions as $action)
                         {
-                            if ($action->isAvailableToPlayer($owner->ControllerId, $game->theah, $overrideInHandCheck = true))
+                            [$discount, $explanations] = $game->theah->getActionFromHandDiscount(null, $action);
+                            $cost = $card->WealthCost - $discount;
+                            if ($handWealth >= $cost && $action->isAvailableToPlayer($owner->ControllerId, $game->theah, $overrideInHandCheck = true))
                             {
                                 $actions[] = $action->getPropertyArray($game);
-                            }
+                            }   
                         }
                     }
                 }
