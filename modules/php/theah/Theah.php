@@ -565,6 +565,16 @@ class Theah
         return null;
     }
 
+    function getRiskById($id): ?Risk
+    {
+        $risk = $this->getCardById($id);
+        if ($risk instanceof Risk) {
+            return $risk;
+        }
+
+        return null;
+    }
+
     function getCharactersInPlay(): array
     {
         $characters = [];
@@ -1405,7 +1415,38 @@ class Theah
             }
         }
         return $availableAttachments;
+    }
 
+    public function sorceryRisksAvailableFromDiscardPile(Character $performer): array
+    {
+        $handWealth = $this->game->handWealthCount($performer->ControllerId);
+
+        $discardPileName = $this->game->getPlayerDiscardDeckName($performer->ControllerId);
+        $cards = $this->getCardObjectsAtLocation($discardPileName);
+        $cards = array_filter($cards, fn($card) => $card instanceof Risk && $card->hasTrait("Sorcery"));
+
+        $availableRisks = [];
+        foreach ($cards as $card)
+        {
+            if ($card instanceof IHasActions)
+            {
+                $actions = $card->getActions();
+                foreach ($actions as $action)
+                {
+                    if ($action->isAvailableToPlayer($performer->ControllerId, $this, $overrideInHandCheck = true))
+                    {
+                        [$discount, $explanations] = $this->getActionFromHandDiscount($performer, $action);
+                        $cost = $card->WealthCost - $discount;
+                        if ($handWealth >= $cost)
+                        {
+                            $availableRisks[$card->Id] = $card;
+                        }
+                    }
+                }
+            }
+        }
+
+        return array_values($availableRisks);
     }
 
 }

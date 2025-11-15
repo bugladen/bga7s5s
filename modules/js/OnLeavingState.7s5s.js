@@ -859,6 +859,17 @@
                 }
             },
 
+            'highDramaPhase01124': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

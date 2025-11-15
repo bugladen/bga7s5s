@@ -1407,6 +1407,23 @@
                 }            
             },
 
+            'highDramaPhase01124': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    
+                    $('choose_container_name').innerHTML = _("Sorcery Risks in Your Discard Pile");
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

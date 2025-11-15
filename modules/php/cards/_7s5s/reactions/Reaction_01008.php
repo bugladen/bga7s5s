@@ -157,7 +157,7 @@ class Reaction_01008 extends CardReaction
                 $this->announceReaction($game, $ability);
             }
 
-            //Daniella Dietrich's Action
+            //Sibella Scarpa
             if ($ability instanceof Action_01012)
             {
                 $copyAction = true;
