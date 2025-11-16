@@ -51,7 +51,7 @@ class Reaction_01118 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventSorcererAbilityPlayed)
+        if ($event instanceof EventSorcererAbilityPlayed && $this->isAvailable())
         {
             $elina = $this->getOwningCharacter($event->theah);
 
@@ -80,7 +80,7 @@ class Reaction_01118 extends CardReaction
             $game->theah->eventCheck($reknownAddedEvent);
             $game->theah->queueEvent($reknownAddedEvent);
 
-            $game->notify->all("message", clienttranslate('${player_name} uses ${reaction_inject_code} Reaction to move Renown from ${location_name} to her Location.'), [
+            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} uses Reaction to move Renown from ${location_name} to her Location.'), [
                 "player_name" => $game->getPlayerNameById($elina->ControllerId),
                 "reaction_inject_code" => $elina->getInjectCode(),
                 "location_name" => $location,
