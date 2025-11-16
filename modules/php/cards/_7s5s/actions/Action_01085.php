@@ -125,6 +125,9 @@ class Action_01085 extends RiskAction implements ISorcererAbility
                 "performer_inject_code" => $performer->getInjectCode(),
             ]);
 
+            $event = EventFactory::createSorcererAbilityPlayedEvent($porteTravel->ControllerId, $porteTravel->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
+            $game->theah->queueEvent($event);
+
             $event = EventFactory::createCharacterWoundedEvent($performer->Id, $porteTravel->Id, 1, $porteTravel->getInjectCode(), $this->Id);
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
@@ -136,9 +139,6 @@ class Action_01085 extends RiskAction implements ISorcererAbility
             $transition = EventFactory::createTransitionEvent($performer->ControllerId, $porteTravel->Id, "01085", $this->Id);
             $game->theah->queueEvent($transition);
             
-            $event = EventFactory::createSorcererAbilityPlayedEvent($porteTravel->ControllerId, $porteTravel->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
-            $game->theah->queueEvent($event);
-
             $game->gamestate->nextState();
         }
     }

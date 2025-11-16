@@ -96,6 +96,13 @@ class DB
         $this->executeSql($sql);
     }
 
+    public function deleteEventsTargetingCard(int $cardId)
+    {
+        $sql = "DELETE FROM events 
+                WHERE (event_serialized LIKE '%Id\";i:{$cardId}%')";
+        $this->executeSql($sql);
+    }
+
     public function deleteActionTriggeredEvents(string $actionId)
     {
         $sql = "DELETE FROM events 

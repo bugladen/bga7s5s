@@ -168,6 +168,9 @@ class Action_01124 extends CharacterAction
 
             $game->updateCardObjectInDb($card);
 
+            $sorceryEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
+            $game->theah->queueEvent($sorceryEvent);
+    
             $addEvent = EventFactory::createCardAddedToHandEvent($owner->ControllerId, $card->Id);
             $game->theah->queueEvent($addEvent);
 
@@ -179,9 +182,6 @@ class Action_01124 extends CharacterAction
                 $game->globals->set(GAME::ABNORMAL_FLOW, true);
             }
 
-            $sorceryEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
-            $game->theah->queueEvent($sorceryEvent);
-    
             if ($action->RequiresPerformerSelected)
             {
                 $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01124_performer", $this->Id);

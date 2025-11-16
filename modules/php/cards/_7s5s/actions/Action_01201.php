@@ -61,7 +61,7 @@ class Action_01201 extends CharacterAction implements ISorcererAbility
             $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $ravenna->getInjectCode());
             $event->theah->queueEvent($addEvent);
 
-            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($ravenna->ControllerId, $ravenna->Id, $this->Id, $ravenna->Id, $ravenna->Location);
+            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($ravenna->ControllerId, $ravenna->Id, $this->Id, $ravenna->Id, $ravenna->Id, $ravenna->Location);
             $event->theah->queueEvent($sorcererEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($ravenna->ControllerId);

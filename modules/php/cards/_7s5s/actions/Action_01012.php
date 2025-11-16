@@ -84,14 +84,14 @@ class Action_01012 extends CharacterAction implements ISorcererAbility
 
             $this->announceAction($game);
 
+            $owner = $this->getOwningCharacter($game->theah);
+            $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
+            $game->theah->queueEvent($event);
+
             $event = EventFactory::createCharacterWoundedEvent($performer->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createCharacterWoundedEvent($target->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($event);
-
-            $owner = $this->getOwningCharacter($game->theah);
-            $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $target->Id, $target->Location);
             $game->theah->queueEvent($event);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

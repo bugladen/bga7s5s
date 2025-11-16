@@ -154,8 +154,10 @@ class Action_01069 extends CharacterAction implements ISorcererAbility
             $discardedCardId = $game->globals->get(Game::CHOSEN_CARD);
             $discardedCard = $game->getCardObjectFromDb($discardedCardId);
 
-            $owner = $this->getOwningCard($game->theah);
-            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardedCard->OwnerId, $discardedCard->Id, $owner->Id);
+            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($maxime->ControllerId, $maxime->Id, $this->Id, $maxime->Id, $maxime->Id, $maxime->Location);
+            $game->theah->queueEvent($sorcererEvent);
+
+            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardedCard->OwnerId, $discardedCard->Id, $maxime->Id);
             $game->theah->queueEvent($discardEvent);
 
             $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($maxime->ControllerId, $id);
@@ -163,9 +165,6 @@ class Action_01069 extends CharacterAction implements ISorcererAbility
 
             $addEvent = EventFactory::createCardAddedToHandEvent($maxime->ControllerId, $id);
             $game->theah->queueEvent($addEvent);
-
-            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($maxime->ControllerId, $maxime->Id, $this->Id, $maxime->Id, $maxime->Location);
-            $game->theah->queueEvent($sorcererEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($maxime->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
