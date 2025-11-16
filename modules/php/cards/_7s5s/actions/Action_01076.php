@@ -128,7 +128,7 @@ class Action_01076 extends RiskAction implements ISorcererAbility
                 $game->theah->queueEvent($event);
             }
 
-            $event = EventFactory::createSorcererAbilityPlayedEvent($bloodMark->ControllerId, $bloodMark->Id, $this->Id, $performer->Id, $performer->Location);
+            $event = EventFactory::createSorcererAbilityPlayedEvent($bloodMark->ControllerId, $bloodMark->Id, $this->Id, $performer->Id, $performer->Id, $performer->Location);
             $game->theah->queueEvent($event);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($bloodMark->ControllerId);

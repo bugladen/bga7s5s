@@ -850,6 +850,14 @@
                 }
             },
 
+            'highDramaPhase01118': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase01123': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

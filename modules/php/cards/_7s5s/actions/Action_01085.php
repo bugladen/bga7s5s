@@ -136,7 +136,7 @@ class Action_01085 extends RiskAction implements ISorcererAbility
             $transition = EventFactory::createTransitionEvent($performer->ControllerId, $porteTravel->Id, "01085", $this->Id);
             $game->theah->queueEvent($transition);
             
-            $event = EventFactory::createSorcererAbilityPlayedEvent($porteTravel->ControllerId, $porteTravel->Id, $this->Id, $target->Id, $target->Location);
+            $event = EventFactory::createSorcererAbilityPlayedEvent($porteTravel->ControllerId, $porteTravel->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
             $game->theah->queueEvent($event);
 
             $game->gamestate->nextState();

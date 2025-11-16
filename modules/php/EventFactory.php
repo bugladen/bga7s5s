@@ -892,7 +892,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createSorcererAbilityPlayedEvent(int $playerId, int $sourceId, string $abilityId, int $targetId = 0, string $targetLocation = ""): EventSorcererAbilityPlayed
+    public static function createSorcererAbilityPlayedEvent(int $playerId, int $sourceId, string $abilityId, int $performerId = 0, int $targetId = 0, string $targetLocation = ""): EventSorcererAbilityPlayed
     {
         $event = self::createEvent(Events::SorcererAbilityPlayed);
         if ($event instanceof EventSorcererAbilityPlayed)
@@ -900,6 +900,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->playerId = $playerId;
             $event->sourceId = $sourceId;
             $event->abilityId = $abilityId;
+            $event->performerId = $performerId;
             $event->targetId = $targetId;
             $event->targetLocation = $targetLocation;
         }
