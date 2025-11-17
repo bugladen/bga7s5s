@@ -18,6 +18,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 class Reaction_01116b extends CardReaction
 {
     private bool $IsActive;
+    private int $PayStateType;
+    private int $CardId = 0;
 
     public function __construct()
     {
@@ -25,6 +27,8 @@ class Reaction_01116b extends CardReaction
 
         $this->Name = "Receive a Discount of -1 when paying for non-Character cards";
         $this->IsActive = false;
+        $this->PayStateType = 0;
+        $this->CardId = 0;
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -54,6 +58,11 @@ class Reaction_01116b extends CardReaction
                 $card = $event->theah->game->getCardObjectFromDb($event->cardId);
                 if (! $card instanceof Character && $card instanceof IWealthCost && $card->getWealthCost() > 0)
                 {
+                    $this->PayStateType = $event->payStateType;
+                    $this->CardId = $event->cardId;
+                    $owner = $this->getOwningCard($event->theah);
+                    $owner->IsUpdated = true;
+
                     $transition = EventFactory::createReactionTransitionEvent($yevgeni->ControllerId, $yevgeni->Id, $this->Id);
                     $event->theah->stackEvent($transition);
                 }
@@ -66,6 +75,8 @@ class Reaction_01116b extends CardReaction
             if ($event->playerId == $yevgeni->ControllerId)
             {
                 $this->IsActive = false;
+                $this->CardId = 0;
+                $this->PayStateType = 0;
                 $yevgeni->IsUpdated = true;
             }
         }
@@ -79,6 +90,7 @@ class Reaction_01116b extends CardReaction
         {
             $owner = $this->getOwningCard($game->theah);
             $this->IsActive = true;
+
             $this->setUsed($game->theah, true);
             $game->theah->addCardToWorld($owner);
         }
@@ -93,10 +105,10 @@ class Reaction_01116b extends CardReaction
         if ($this->IsActive)
         {
             $owner = $this->getOwningCard($theah);
-            if ($owner->Id == $performer->Id)
+            if ($owner->ControllerId == $performer->ControllerId)
             {
                 $discount += 1;
-                $explanations[] = sprintf($theah->game->translate("%s: -1 because Reaction is active and he is the performer."), $owner->getInjectCode());
+                $explanations[] = sprintf($theah->game->translate("%s: -1 because Reaction is active."), $owner->getInjectCode());
             }
         }       
 
@@ -111,7 +123,7 @@ class Reaction_01116b extends CardReaction
         {
             $owner = $this->getOwningCard($theah);
             $reactionOwner = $requestedReaction->getOwningCard($theah);
-            if ($owner->Id == $reactionOwner->Id)
+            if ($owner->ControllerId == $reactionOwner->ControllerId)
             {
                 $discount += 1;
                 $explanations[] = sprintf($theah->game->translate("%s: -1 because Reaction is active."), $owner->getInjectCode());
@@ -127,10 +139,10 @@ class Reaction_01116b extends CardReaction
         if ($this->IsActive)
         {
             $owner = $this->getOwningCard($theah);
-            if ($owner->Id == $performer->Id)
+            if ($owner->ControllerId == $performer->ControllerId)
             {
                 $discount += 1;
-                $explanations[] = sprintf($theah->game->translate("%s: -1 because Reaction is active and he is the performer."), $owner->getInjectCode());
+                $explanations[] = sprintf($theah->game->translate("%s: -1 because Reaction is active."), $owner->getInjectCode());
             }
         }
 
@@ -145,7 +157,7 @@ class Reaction_01116b extends CardReaction
         {
             $actor = $theah->getDuelRoundActor();
             $owner = $this->getOwningCard($theah);
-            if ($owner->Id == $actor->Id)
+            if ($owner->ControllerId == $actor->ControllerId)
             {
                 $discount += 1;
                 $explanations[] = sprintf($theah->game->translate("%s: -1 because Reaction is active."), $owner->getInjectCode());
