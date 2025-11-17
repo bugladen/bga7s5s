@@ -29,6 +29,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardDiscardedFromHand', 500],
             ['cardRemovedFromHand', 500],
             ['cardDiscardedFromPlay', 500],
+            ['cardRemovedFromPlay', 500],
             ['cardEngaged', 1000],
             ['cardEngarded', 1000],
             ['cardMoved', 1000],
@@ -572,7 +573,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
-        const card = this.cardProperties[args.cardId];
+        const card = this.cardProperties[args.cardId];        
         card.location = this.LOCATION_PLAYER_DISCARD;
 
         dojo.destroy(card.divId);
@@ -612,6 +613,23 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         $(`${notif.args.playerId}-score-hand-count`).innerHTML = args.handCount;
     },
+
+    notif_cardRemovedFromPlay: function( notif )
+    {
+        debug( 'notif_cardRemovedFromPlay' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.location = args.toLocation;
+
+            dojo.destroy(card.divId);
+            card.divId = null;
+        }
+    },
+
 
     notif_cardMoved: function( notif )
     {

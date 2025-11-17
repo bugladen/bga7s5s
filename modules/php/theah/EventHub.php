@@ -26,6 +26,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
@@ -586,6 +587,25 @@ trait EventHub
                         "playerId" => $event->playerId,
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
                         "cardId" => $card->Id
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCardRemovedFromPlay:
+                $handler = function (Theah $theah, EventCardRemovedFromPlay $event)
+                {
+                    $card = $theah->getCardById($event->cardId);
+                    $card->Location = $event->toLocation;
+                    $card->IsUpdated = true;
+
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->moveCard($card->Id, $event->toLocation, $card->ControllerId);
+
+                    $this->game->notifyAllPlayers("cardRemovedFromPlay", clienttranslate('${card_inject_code} removed from play.'), [
+                        "card_inject_code" => $card->getInjectCode(),
+                        "cardId" => $card->Id,
+                        "toLocation" => $event->toLocation,
                     ]);
                 };
                 $handler($this, $event);

@@ -1804,6 +1804,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+                    "01127" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "reaction" => States::DUEL_NEW_ROUND_REACTIONS,
                     "pay" => States::DUEL_NEW_ROUND_PAY_FOR_REACTION,
                     "endOfEvents" => States::DUEL_CHOOSE_ACTION,
