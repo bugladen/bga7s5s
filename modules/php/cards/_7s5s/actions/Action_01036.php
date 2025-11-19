@@ -30,7 +30,10 @@ class Action_01036 extends CharacterAction
 
         $characters = $theah->getCharactersAtLocation($daniella->Location);
 
-        $mercenaries = array_filter($characters, fn($character) => $character->ControllerId == $daniella->ControllerId && $character->hasTrait("Mercenary", $daniella));
+        $mercenaries = array_filter($characters, fn($character) => 
+            $character->ControllerId == $daniella->ControllerId && 
+            $character->hasTrait("Mercenary", $daniella) &&
+            $character->canChallenge());
         if (count($mercenaries) == 0)
             return false;
 
@@ -45,7 +48,10 @@ class Action_01036 extends CharacterAction
     {
         $daniella = $this->getOwningCharacter($theah);
         $performers = $theah->getCharactersAtLocation($daniella->Location);
-        $performers = array_filter($performers, fn($performer) => $performer->ControllerId == $daniella->ControllerId && $performer->hasTrait("Mercenary", $daniella));
+        $performers = array_filter($performers, fn($performer) => 
+            $performer->ControllerId == $daniella->ControllerId && 
+            $performer->hasTrait("Mercenary", $daniella) &&
+            $performer->canChallenge());
 
         return $performers;
     }

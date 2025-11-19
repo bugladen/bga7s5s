@@ -2,7 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\AttachmentReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -12,7 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01181 extends AttachmentReaction
 {
-    public int $HealTargetId;
+    public Array $HealTargetIds = [];
 
     public function __construct()
     {
@@ -20,12 +19,14 @@ class Reaction_01181 extends AttachmentReaction
 
         $this->Name = clienttranslate('Heal Wounds');
 
-        $this->HealTargetId = 0;
+        $this->HealTargetIds = [];
     }
 
     public function getReactionDescription(Theah $theah): string
     {
-        $character = $theah->getCharacterById($this->HealTargetId);
+        //Pop the first target id from the array
+        $id = $this->HealTargetIds[0];
+        $character = $theah->getCharacterById($id);
         return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} may choose to Heal Wounds from %s: '), $character->Name);
     }
 
@@ -35,7 +36,8 @@ class Reaction_01181 extends AttachmentReaction
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Heal 1 Wound'), 'heal1Wound');
 
         $owner = $this->getOwningCharacter($theah);
-        $character = $theah->getCharacterById($this->HealTargetId);
+        $id = $this->HealTargetIds[0];
+        $character = $theah->getCharacterById($id);
         if ($owner->hasTrait("Strega") && $character->Wounds > 1)
             $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Heal 2 Wounds'), 'heal2Wounds');    
 
@@ -54,7 +56,7 @@ class Reaction_01181 extends AttachmentReaction
             $character = $event->theah->getCardById($event->characterId);
             if ($character->Location == $attachment->Location && ! $attachment->Engaged) 
             {
-                $this->HealTargetId =  $event->characterId;
+                $this->HealTargetIds[] =  $event->characterId;
                 $attachment->IsUpdated = true;
 
                 $transition = EventFactory::createReactionTransitionEvent($attachment->ControllerId, $attachment->Id, $this->Id);
@@ -78,6 +80,15 @@ class Reaction_01181 extends AttachmentReaction
             $this->healWound($game, 2);
         }
 
+        if ($reactionId == "pass")
+        {
+            //Remove the first target id from the array
+            array_shift($this->HealTargetIds);
+            $attachment = $this->getOwningCard($game->theah);
+            $game->theah->addCardToWorld($attachment);
+            $game->updateCardObjectInDb($attachment);
+        }
+
         $game->gamestate->nextState("done");
     }
     
@@ -86,12 +97,20 @@ class Reaction_01181 extends AttachmentReaction
         $this->setUsed($game->theah, true);
 
         $attachment = $this->getOwningCard($game->theah);
-        $attachment->IsUpdated = true;
+
+        //Pop the first target id from the array.  The rest are removed.
+        $id = array_shift($this->HealTargetIds);
+        $this->HealTargetIds = [];
+        $game->theah->addCardToWorld($attachment);
+        $game->updateCardObjectInDb($attachment);
+
+        //Delete any remaining transition events for this reaction
+        $game->theah->deleteTransitionEvents($this->Id);
 
         $engageEvent = EventFactory::createCardEngagedEvent($attachment->ControllerId, $attachment->Id);
         $game->theah->queueEvent($engageEvent);
 
-        $healedEvent = EventFactory::createCharacterHealedEvent($this->HealTargetId, $attachment->Id, $wounds, $attachment->getInjectCode());
+        $healedEvent = EventFactory::createCharacterHealedEvent($id, $attachment->Id, $wounds, $attachment->getInjectCode());
         $game->theah->queueEvent($healedEvent);
     }
 }

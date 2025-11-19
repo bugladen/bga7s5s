@@ -41,7 +41,7 @@ class Reaction_01027 extends CancelReaction
         if ($event instanceof EventLocationPressured && $event->success && $event->difference <= 1)
         {
             $risk = $this->getOwningCard($event->theah);
-            if ($risk->Location == Game::LOCATION_HAND)
+            if ($event->playerId != $risk->ControllerId && $risk->Location == Game::LOCATION_HAND)
             {
                 $this->event = clone $event;
                 unset($this->event->theah);

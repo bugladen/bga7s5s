@@ -27,10 +27,22 @@ class Action_01034 extends RiskAction
             return false;
         }
 
-        $characters = $theah->getCharactersinCityWithOpposingCharacters($playerId);
-        $characters = array_values(array_filter($characters, fn($character) => $character->Engaged));
+        $performers = $theah->getCharactersinCityWithOpposingCharacters($playerId);
+        $performers = array_values(array_filter($performers, fn($performer) => $performer->Engaged));
 
-        return count($characters) > 0;
+        $availablePerformers = [];
+        foreach ($performers as $performer)
+        {
+            $opposingCharacters = $theah->getCharactersAtLocation($performer->Location);
+            $opposingCharacters = array_filter($opposingCharacters, fn($character) => $character->isNotControlledByPlayer($playerId) && ! $character->Engaged);
+            if (count($opposingCharacters) > 0)
+            {
+                $availablePerformers[] = $performer;
+                break;
+            }
+        }
+
+        return count($availablePerformers) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
@@ -148,6 +160,11 @@ class Action_01034 extends RiskAction
     {
         parent::actFromActionPass($game, $state);
 
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01034)
+        {
+            $game->gamestate->nextState();
+        }
+        
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01034_2)
         {
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
