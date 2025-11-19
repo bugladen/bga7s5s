@@ -545,7 +545,7 @@ trait StatesTrait
         $this->theah->buildCity();
         $id = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($id);
-        if ($performer->Engaged)
+        if ($performer->Engaged || $performer->hasTrait("Mercenary"))
         {
             //Discount might have special abilities above parleying
             [$discount, $explanations] = $this->theah->getParleyDiscount($performer, false);
