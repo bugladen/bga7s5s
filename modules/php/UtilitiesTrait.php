@@ -474,17 +474,34 @@ trait UtilitiesTrait
 
         //Get the player with the most influence
         $maxInfluence = 0;
-        $difference = 0;
         $maxPlayerId = 0;
         $totals = "";
         foreach ($playerInfluences as $playerId => $player) 
         {
             $totals .= "{$this->getPlayerNameById($playerId)}:({$player['influence']}) ";
             if ($player['influence'] > $maxInfluence) {
-                $difference = $player['influence'] - $maxInfluence;
                 $maxInfluence = $player['influence'];
                 $maxPlayerId = $playerId;
             }
+        }
+
+        //Find the difference between the max influence and the next highest influence of the other players
+        if (count($playerInfluences) == 1)
+        {
+            $difference = $maxInfluence;
+        }
+        else
+        {
+            $nextHighestInfluence = 0;
+            foreach ($playerInfluences as $playerId => $player)
+            {
+                if ($playerId == $maxPlayerId) continue;
+                if ($player['influence'] > $nextHighestInfluence)
+                {
+                    $nextHighestInfluence = $player['influence'];
+                }
+            }
+            $difference = $maxInfluence - $nextHighestInfluence;
         }
 
         //Check for ties
