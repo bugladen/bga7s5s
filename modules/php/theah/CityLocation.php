@@ -14,4 +14,9 @@ class CityLocation
         $this->Reknown = 0;
         $this->Controller = 0;
     }
+
+    public function isControlled(): bool
+    {
+        return $this->Controller > 0;
+    }
 }

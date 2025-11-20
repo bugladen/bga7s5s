@@ -320,7 +320,7 @@ body {
     border-radius: 50%;
     display: inline-block;
     left: 80px;
-    top: 60px;
+    top: 0px;
     border: 2px solid orangered
 }
 
@@ -329,6 +329,20 @@ body {
     background-image: url('img/cards/7s5s/186.jpg');
     background-size: 247px 337px;
     background-position: -120px -54px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: inline-block;
+    left: 80px;
+    top: 30px;
+    border: 2px solid orangered
+}
+
+._7sfs-indomitable-will-condition-chip {
+    position: absolute;
+    background-image: url('img/cards/7s5s/130.jpg');
+    background-size: 123px 168px;
+    background-position: -49px -29px;
     width: 25px;
     height: 25px;
     border-radius: 50%;

@@ -218,6 +218,15 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }),  `${divId}_image`, 'last');
             this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
         }
+        if (character.conditions.includes(this.INDOMITABLE_WILL_CONDITION)) {
+            //Get the first child of element divId
+            const id = `${divId}_indomitable_will_condition`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: '_7sfs-indomitable-will-condition-chip',
+            }),  `${divId}_image`, 'last');
+            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("This character has Indomitable Will")}</div>` );
+        }
         if (character.conditions.includes(this.CHALLENGER)) {
             id = `${divId}_challenger`;
             dojo.place( this.format_block( 'jstpl_generic_chip', {

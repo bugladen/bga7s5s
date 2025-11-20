@@ -66,6 +66,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['locationUncontrolled', 500],
             ['maryamBenuPleromaAbilityUsed', 500],
             ['maryamBenuPleromaAbilityRemoved', 500],
+            ['indomitableWillConditionStarted', 500],
+            ['indomitableWillConditionEnded', 500],
             ['maneuverUsed', 1],
             ['newDay', 1000],
             ['newDuelRound', 500],
@@ -1046,6 +1048,41 @@ return declare('seventhseacityoffivesails.notifications', null, {
             card.conditions = card.conditions.filter(condition => condition !== this.MARYAM_BENU_PLEROMA_ABILITY_USED);
 
             const id = `${args.cardId}_maryam_benu_pleroma_ability_used`;
+            dojo.destroy(id);    
+        }
+    },
+
+    notif_indomitableWillConditionStarted: function( notif )
+    {
+        debug( 'notif_indomitableWillConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        card.conditions.push(this.INDOMITABLE_WILL_CONDITION);
+
+        const imageElement = dojo.query('._7sfs-card', card.divId)[0];
+        const id = `${card.divId}_indomitable_will_condition`;
+        dojo.place( this.format_block( 'jstpl_generic_chip', {
+            id: id,
+            class: '_7sfs-indomitable-will-condition-chip',
+        }),  imageElement, 'last');
+
+        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("This character has Indomitable Will")}</div>` );
+    },
+
+    notif_indomitableWillConditionEnded: function( notif )
+    {
+        debug( 'notif_indomitableWillConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.INDOMITABLE_WILL_CONDITION);
+
+            const id = `${args.cardId}_indomitable_will_condition`;
             dojo.destroy(id);    
         }
     },

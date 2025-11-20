@@ -109,6 +109,7 @@ function (dojo, declare) {
             this.CRYSTAL_EYE_TARGET = 'Crystal Eye Target';
             this.CATS_EMBARGO_TARGET = 'Cats Embargo Target';
             this.MARYAM_BENU_PLEROMA_ABILITY_USED = 'Maryam Benu Pleroma Ability Used';
+            this.INDOMITABLE_WILL_CONDITION = 'Indomitable Will Condition';
             this.CHALLENGER = 'Challenger';
             this.DEFENDER = 'Defender';
 
