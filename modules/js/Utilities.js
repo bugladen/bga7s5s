@@ -214,7 +214,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             const id = `${divId}_maryam_benu_pleroma_ability_used`;
             dojo.place( this.format_block( 'jstpl_generic_chip', {
                 id: id,
-                class: '_7sfs-maryam_benu_pleroma_ability_used-chip',
+                class: '_7sfs-maryam-benu-pleroma-ability-used-chip',
             }),  `${divId}_image`, 'last');
             this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
         }
