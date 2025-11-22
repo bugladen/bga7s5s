@@ -121,16 +121,20 @@ class Action_01130 extends RiskAction
 
             $performer->addCondition(Game::INDOMITABLE_WILL_CONDITION);
 
-            $game->notify->all("indomitableWillConditionStarted", '${character_inject_code} has gained Indomitable Will.', [
-                "character_inject_code" => $performer->getInjectCode(),
-                "cardId" => $performer->Id,
-            ]);
-
             $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performerId, $performer->Location);
             $event->theah->queueEvent($claimEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);
+
+            $this->announceAction($game);
+            $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
+
+            $game->notify->all("indomitableWillConditionStarted", '${character_inject_code} has gained Indomitable Will.', [
+                "character_inject_code" => $performer->getInjectCode(),
+                "cardId" => $performer->Id,
+            ]);
        }
 
        if ($event instanceof EventCardMoved && $this->IsActive)

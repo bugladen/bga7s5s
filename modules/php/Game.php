@@ -148,6 +148,7 @@ class Game extends \Bga\GameFramework\Table
     final const SERVO_SCARPA_CHALLENGE_TYPE = 8;
     final const VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
     final const VALERI_MIKHAILOV_CHALLENGE_TYPE = 10;
+    final const IRON_AND_VELVET_CHALLENGE_TYPE = 11;
 
     //Duel global variables
     //Duel Names
