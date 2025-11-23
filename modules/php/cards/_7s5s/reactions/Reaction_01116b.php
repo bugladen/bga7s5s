@@ -98,6 +98,8 @@ class Reaction_01116b extends CardReaction
             $owner = $this->getOwningCard($game->theah);
             $this->IsActive = true;
 
+            $game->globals->set(Game::ABNORMAL_FLOW, true);
+
             $this->setUsed($game->theah, true);
             $game->theah->addCardToWorld($owner);
         }

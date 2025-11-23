@@ -852,6 +852,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
         });
     },
     
-    
+    makeHomeEndcapMarkerSelectable: function() {
+        var home = $(`${this.getActivePlayerId()}-home-anchor`);
+        dojo.addClass(home, '_7sfs-home-endcap-marker');
+        dojo.addClass(home, '_7sfs-selectable');
+        dojo.style(home, 'cursor', 'pointer');
+        const handle = dojo.connect($(home), 'onclick', this, 'onCityLocationClicked');
+        this.connects.push(handle);                
+    },
 })
 });

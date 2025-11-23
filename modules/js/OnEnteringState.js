@@ -54,12 +54,7 @@ onEnteringState: function( stateName, args )
                 args.args.locations.forEach((location) => {
                     if (location == this.LOCATION_PLAYER_HOME)
                     {
-                        var home = $(`${this.getActivePlayerId()}-home-anchor`);
-                        dojo.addClass(home, '_7sfs-home-endcap-marker');
-                        dojo.addClass(home, '_7sfs-selectable');
-                        dojo.style(home, 'cursor', 'pointer');
-                        const handle = dojo.connect($(home), 'onclick', this, 'onCityLocationClicked');
-                        this.connects.push(handle);                
+                        this.makeHomeEndcapMarkerSelectable();
                     }
                     else
                     {

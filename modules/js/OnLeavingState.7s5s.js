@@ -878,6 +878,15 @@
                 }
             },
 
+            'highDramaPhase01133': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+                }
+            },
+
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
@@ -1412,6 +1421,12 @@
                 if (this.isCurrentPlayerActive()) 
                 {
                     this.factionHand.setSelectionMode(0);
+                }
+            },
+
+            'duelResolveManeuver_01133': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
                 }
             },
 

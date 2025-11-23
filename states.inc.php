@@ -824,6 +824,7 @@ $machinestates = [
                 "01124_pay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
                 "01124_performer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "01131" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "01133" => States::HIGH_DRAMA_PLAYER_TURN_01133,
                 "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
                 "01148" => States::HIGH_DRAMA_PLAYER_TURN_01148,
                 "01148_3" => States::HIGH_DRAMA_PLAYER_TURN_01148_4,
@@ -1952,10 +1953,41 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "reaction" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_REACTIONS,
+                        "pay" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD,
                         "endOfGame" => States::END_GAME
                         ]
                 ],
+                States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_REACTIONS => [
+                    "name" => "playerReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsForStatePrivate",
+                    "possibleactions" => [
+                        "actReactionForState", 
+                    ],
+                    "transitions" => [
+                        "done" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_EVENTS, 
+                    ]
+                ],
+                States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_PAY_FOR_REACTION => [
+                    "name" => "playerPayForReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsForStatePrivate",
+                    "possibleactions" => [
+                        "actBack",
+                        "actPayForReaction", 
+                    ],
+                    "transitions" => [
+                        "back" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_REACTIONS, 
+                        "paid" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_EVENTS, 
+                    ]
+                ],
+
             States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD => [
                 "name" => "duelPayForManeuverFromCombatCard",
                 "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
@@ -1990,6 +2022,7 @@ $machinestates = [
                         "01113" => States::DUEL_RESOLVE_MANEUVER_01113,
                         "01113_2" => States::DUEL_RESOLVE_MANEUVER_01113_2,
                         "01115" => States::DUEL_RESOLVE_MANEUVER_01115,
+                        "01133" => States::DUEL_RESOLVE_MANEUVER_01133,
                         "01164" => States::DUEL_RESOLVE_MANEUVER_01164,
                         "01165" => States::DUEL_RESOLVE_MANEUVER_01165,
                         "reaction" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_REACTIONS,
