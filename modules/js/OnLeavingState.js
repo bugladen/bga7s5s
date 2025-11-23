@@ -167,13 +167,7 @@ onLeavingState: function( stateName )
                 let div = this.factionHand.getItemDivId(this.clientStateArgs.actionCardId);
                 dojo.removeClass(div, '_7sfs-selected');
 
-                for ( const cardId in this.cardProperties ) {
-                    card = this.cardProperties[cardId];
-                    if (this.isCardInCity(card.id)) {
-                        const image = $(`${card.divId}_image`);
-                        this.clearCardAsSelectable(image);
-                    }
-                }
+                this.unhighlightCards(this.clientStateArgs.ids);
                 this.clientStateArgs = {};
             }
         },

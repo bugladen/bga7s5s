@@ -336,11 +336,9 @@ onEnteringState: function( stateName, args )
 
                 this.numberOfCardsSelectable = 1;
                 args.args._private.ids.forEach((cardId) => {
-                    card = this.cardProperties[cardId];
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
-                    this.makeCardSelectable(image);
+                    this.highlightCardsAsSelectable([cardId]);
                 });
+                this.clientStateArgs.ids = args.args._private.ids;
             }
         },
 
