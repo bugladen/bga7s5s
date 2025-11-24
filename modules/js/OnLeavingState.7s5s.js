@@ -1493,6 +1493,8 @@
                     dojo.addClass('choose_container', 'hidden');
                     dojo.addClass('chooseList', 'hidden');
                     this.chooseList.removeAll();
+
+                    delete this.addSortTagToCard.order;
                 }
             },   
                 

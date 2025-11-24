@@ -931,7 +931,7 @@
             },
     
             'duskPhaseBegin01177_2': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onCardsChosen_01177_2());
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onCardsSorted());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
