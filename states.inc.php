@@ -825,6 +825,7 @@ $machinestates = [
                 "01124_performer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "01131" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01133" => States::HIGH_DRAMA_PLAYER_TURN_01133,
+                "01134" => States::HIGH_DRAMA_PLAYER_TURN_01134,
                 "01147" => States::HIGH_DRAMA_PLAYER_TURN_01147,
                 "01148" => States::HIGH_DRAMA_PLAYER_TURN_01148,
                 "01148_3" => States::HIGH_DRAMA_PLAYER_TURN_01148_4,

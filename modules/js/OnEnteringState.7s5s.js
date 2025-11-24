@@ -1461,6 +1461,73 @@
                 }          
             },
 
+            'highDramaPhase01134': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const performerId = args.args.args.performerId;
+                    this.highlightCharacterChosen(performerId);
+                    this.clientStateArgs.performerId = performerId;
+                }
+            },
+            'highDramaPhase01134_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+
+                    const performerId = args.args.args.performerId;
+                    this.highlightCharacterChosen(performerId);
+                    this.clientStateArgs.performerId = performerId;
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    this.clientStateArgs.cards = args.args.args.cards;
+
+                    const performer = this.cardProperties[performerId];
+                    this.gamedatas.gamestate.descriptionmyturn = 
+                        this.gamedatas.gamestate.descriptionmyturn.replace(`[X]`, performer.modifiedInfluence);
+                    this.updatePageTitle();
+        
+                    var translated = dojo.string.substitute(
+                        _("Top 5 Cards in ${opponentName}'s Faction Deck"),
+                        {
+                            opponentName: args.args.args.opponentName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+            'highDramaPhase01134_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    const performerId = args.args.args.performerId;
+                    this.highlightCharacterChosen(performerId);
+                    this.clientStateArgs.performerId = performerId;
+
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Cards not discarded from the Top 5 in ${opponentName}'s Faction Deck"),
+                        {
+                            opponentName: args.args.args.opponentName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+            'highDramaPhase01134_4': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const performerId = args.args.args.performerId;
+                    this.highlightCharacterChosen(performerId);
+                    this.clientStateArgs.performerId = performerId;
+                }
+            },
+
             'highDramaPhase01147': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

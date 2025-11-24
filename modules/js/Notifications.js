@@ -26,6 +26,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardAddedToCityDeck', 500],
             ['cardAddedToCityDiscardPile', 500],
             ['cardAddedToHand', 2000],
+            ['cardAddedToPlayerDiscardPile', 500],
             ['cardDiscardedFromHand', 500],
             ['cardRemovedFromHand', 500],
             ['cardDiscardedFromPlay', 500],
@@ -568,6 +569,21 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.gamedatas.cityDiscard.push(card);
 
     },
+
+    notif_cardAddedToPlayerDiscardPile: function( notif )
+    {
+        debug( 'notif_cardAddedToPlayerDiscardPile' );
+        debug( notif );
+
+        const args = notif.args;
+        let card = args.card;
+        this.cardProperties[card.id] = card;
+
+        card.location = this.LOCATION_PLAYER_DISCARD;
+        const player = this.gamedatas.players[args.playerId];
+        player.discard.push(card);
+    },
+    
 
     notif_cardDiscardedFromPlay: function( notif )
     {

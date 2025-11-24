@@ -446,7 +446,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
-    onCardsChosen_01177_2: function()
+    onCardsSorted: function()
     {
         let cards = [];
         this.chooseList.getSelectedItems().forEach((item) => {
