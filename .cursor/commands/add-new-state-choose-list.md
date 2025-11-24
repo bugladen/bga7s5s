@@ -19,7 +19,7 @@ Will create a new GameState class and add supporting entries to other files. The
 2. Place the file in the `modules\php\States` folder
 3. Name the file `State_*` and append the name provided in the parameters.
 4. In the `name` parameter of the constructor use the name provided in the parameters.
-5. In the `descriptionMyTurn` parameter update the second clientTranslate parameter to `: ${you} must choose a location `
+5. In the `descriptionMyTurn` parameter update the second clientTranslate parameter to `: ${you} must choose a card `
 6. In the `id` parameter of the constructor use the pattern from State_highDramaPhase01097.php but use the correct name from the command parameters.
 
 ## Steps to update the OnEnteringState file
