@@ -141,7 +141,7 @@ class Reaction_01109 extends CancelReaction
             $event->priority = Event::HIGHEST_PRIORITY;
             $game->theah->stackEvent($event);
 
-            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION);
+            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
             $event->priority = Event::HIGHEST_PRIORITY;
             $game->theah->stackEvent($event);
         }

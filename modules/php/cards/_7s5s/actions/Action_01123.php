@@ -124,6 +124,9 @@ class Action_01123 extends CharacterAction
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState("opponentChosen");
         }
     }

@@ -96,6 +96,9 @@ class Action_01118 extends CharacterAction
             $this->resetPlayerPassCount($game);
             $this->setUsed($game->theah, true);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($elina->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState("locationChosen");
         }
     }

@@ -52,6 +52,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterLostBrute;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
@@ -185,13 +186,14 @@ class EventFactory
         return $event;
     }
 
-    public static function createCalculatePayDiscountEvent(int $playerId, int $cardId, int $payStateType): EventCalculatePayDiscount
+    public static function createCalculatePayDiscountEvent(int $playerId, int $cardId, int $payStateType, string $internalId = ""): EventCalculatePayDiscount
     {
         $event = self::createEvent(Events::CalculatePayDiscount);
         if ($event instanceof EventCalculatePayDiscount)
         {
             $event->playerId = $playerId;
             $event->cardId = $cardId;
+            $event->internalId = $internalId;
             $event->payStateType = $payStateType;
         }
 
@@ -599,6 +601,18 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
+    public static function createCombatCardAnnouncedEvent(int $playerId, int $cardId): EventCombatCardAnnounced
+    {
+        $event = self::createEvent(Events::CombatCardAnnounced);
+        if ($event instanceof EventCombatCardAnnounced)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+        }
+
+        return $event;
+    }
+
     public static function createDuelCalculateTechniqueValuesEvent(int $actorId, int $adversaryId, string $techniqueId): EventDuelCalculateTechniqueValues
     {
         $event = self::createEvent(Events::DuelCalculateTechniqueValues);
@@ -623,7 +637,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createEnteringPayStateEvent(int $playerId, int $cardId, int $payStateType): EventEnteringPayState
+    public static function createEnteringPayStateEvent(int $playerId, int $cardId, int $payStateType, string $internalId = ''): EventEnteringPayState
     {
         $event = self::createEvent(Events::EnteringPayState);
         if ($event instanceof EventEnteringPayState)
@@ -631,6 +645,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->playerId = $playerId;
             $event->cardId = $cardId;
             $event->payStateType = $payStateType;
+            $event->internalId = $internalId;
         }
         
         return $event;

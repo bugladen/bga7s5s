@@ -73,6 +73,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontrolled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
@@ -741,6 +742,18 @@ trait EventHub
                         "card_inject_code" => $card->getInjectCode(),
                         "location" => $event->location,
                         "card" => $card->getPropertyArray($theah->game)
+                    ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCombatCardAnnounced:
+                $handler = function (Theah $theah, EventCombatCardAnnounced $event)
+                {
+                    $card = $theah->getCardById($event->cardId);
+                    $theah->game->notify->all("message", clienttranslate('${player_name} announces ${card_inject_code} as their Combat Card.'), [
+                        "player_name" => $this->game->getPlayerNameById($event->playerId),
+                        "card_inject_code" => $card->getInjectCode(),
                     ]);
                 };
                 $handler($this, $event);
@@ -1652,7 +1665,7 @@ trait EventHub
             case $event instanceof EventEnteringPayState:
                 $handler = function ($theah, EventEnteringPayState $event)
                 {
-                    $payDiscountEvent = EventFactory::createCalculatePayDiscountEvent($event->playerId, $event->cardId, $event->payStateType);
+                    $payDiscountEvent = EventFactory::createCalculatePayDiscountEvent($event->playerId, $event->cardId, $event->payStateType, $event->internalId);
                     $payDiscountEvent->priority = $event->priority;
                     $theah->queueEvent($payDiscountEvent);
                     if ($event->wasStacked)
@@ -1690,9 +1703,8 @@ trait EventHub
 
                     if ($event->payStateType == Game::PAY_STATE_IN_HAND_REACTION)
                     {
-                        $internalId = $theah->game->globals->get(Game::TRANSITION_INTERNAL_ID);
                         $card = $theah->getCardById($event->cardId);
-                        $reaction = $card->getReactionById($internalId);
+                        $reaction = $card->getReactionById($event->internalId);
                         [$discount, $explanations] = $theah->getReactionFromHandDiscount($reaction);
                     }
 

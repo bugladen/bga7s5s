@@ -902,6 +902,11 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'duelResolveManeuver_01135': () => {
+                this.addActionButton(`btnEngage`, _('+2 Parry'), () => this.bgaPerformAction('actFromCardWithId', { id: 1}));
+                this.addActionButton(`btnPass`, _('Wound Adversary and Give -2 Thrust Next Round'), () => this.bgaPerformAction('actFromCardWithId', { id: 2}));
+            },
+
             'duelResolveManeuver_01164': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');

@@ -66,6 +66,7 @@ class Events
     const ManeuverActivated = 'EventManeuverActivated';
 
     //Duel Events
+    const CombatCardAnnounced = 'EventCombatCardAnnounced';
     const DuelStarted = 'EventDuelStarted';
     const DuelNewRound = 'EventDuelNewRound';
     const ResolveTechnique = 'EventResolveTechnique';

@@ -77,7 +77,7 @@ class Reaction_01088 extends CancelReaction
         if ($reactionId == 'cancelChallenge')
         {
             $owner = $this->getOwningCard($game->theah);
-            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION);
+            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);

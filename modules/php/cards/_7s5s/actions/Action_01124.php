@@ -190,20 +190,20 @@ class Action_01124 extends CharacterAction implements ISorcererAbility
             }
             else
             {
-                $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $riskCard->Id, Game::PAY_STATE_IN_HAND_ACTION);
+                $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $riskCard->Id, Game::PAY_STATE_IN_HAND_ACTION, $newActionId);
                 $game->theah->queueEvent($event);
 
                 $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01124_pay", $this->Id);        
                 $game->theah->queueEvent($transition);
-
-                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-                $actionResolvedEvent->priority = Event::TRANSITION_PRIORITY;
-                $game->theah->queueEvent($actionResolvedEvent);
             }
 
             $this->announceAction($game);
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $actionResolvedEvent->priority = Event::CHANGE_ACTIVE_PLAYER_PRIORITY;
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("actionChosen");        
         }

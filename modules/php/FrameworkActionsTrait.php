@@ -781,7 +781,7 @@ trait FrameworkActionsTrait
         else
         {
             $card = $action->getOwningCard($this->theah);
-            $event = EventFactory::createEnteringPayStateEvent($player_id, $card->Id, Game::PAY_STATE_IN_HAND_ACTION);
+            $event = EventFactory::createEnteringPayStateEvent($player_id, $card->Id, Game::PAY_STATE_IN_HAND_ACTION, $action->Id);
             $this->theah->queueEvent($event);
     
             $this->gamestate->nextState("inHandActionChosen");
@@ -801,7 +801,7 @@ trait FrameworkActionsTrait
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
         $card = $action->getOwningCard($this->theah);
-        $event = EventFactory::createEnteringPayStateEvent($playerId, $card->Id, Game::PAY_STATE_IN_HAND_ACTION);
+        $event = EventFactory::createEnteringPayStateEvent($playerId, $card->Id, Game::PAY_STATE_IN_HAND_ACTION, $action->Id);
         $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("inHandActionPerformerChosen");
@@ -1297,9 +1297,13 @@ trait FrameworkActionsTrait
 
         $this->globals->set(Game::CHOSEN_CARD, $card->Id);
 
+        $event = EventFactory::createCombatCardAnnouncedEvent($playerId, $card->Id);
+        $this->theah->queueEvent($event);
+
         if ($card->hasManeuversAvailableToPlayer($playerId, $this->theah))
         {
-            $this->gamestate->nextState("useManeuver");
+            $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "useManeuver");
+            $this->theah->queueEvent($transitionEvent);
         }
         else
         {
@@ -1307,8 +1311,11 @@ trait FrameworkActionsTrait
             $this->updateCardObjectInDb($card);
             $this->cards->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId);
 
-            $this->gamestate->nextState("applyCombatCardStats");
+            $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "applyCombatCardStats");
+            $this->theah->queueEvent($transitionEvent);
         }   
+
+        $this->gamestate->nextState("combatCardChosen");
     }
 
     public function actDuelUseManeuverFromCombatCard(string $maneuverId)

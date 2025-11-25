@@ -219,7 +219,7 @@ class Action_01106 extends RiskAction
                 $game->globals->set(GAME::CHOSEN_ACTION, $newActionId);
                 $game->globals->set(GAME::TRANSITION_INTERNAL_ID, $newActionId);
                 $game->globals->set(GAME::ABNORMAL_FLOW, true);
-                }
+            }
     
             if ($action->RequiresPerformerSelected)
             {
@@ -228,7 +228,7 @@ class Action_01106 extends RiskAction
             }
             else
             {
-                $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $riskCard->Id, Game::PAY_STATE_IN_HAND_ACTION);
+                $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $riskCard->Id, Game::PAY_STATE_IN_HAND_ACTION, $newActionId);
                 $game->theah->queueEvent($event);
 
                 $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01106_pay", $this->Id);        

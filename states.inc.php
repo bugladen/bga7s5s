@@ -1857,13 +1857,55 @@ $machinestates = [
                 "actDuelEndDuel"
             ],
             "transitions" => [
+                "combatCardChosen" => States::DUEL_COMBAT_CARD_EVENTS,
                 "chooseTechnique" => States::DUEL_CHOOSE_TECHNIQUE,
-                "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                 "chooseGambleCard" => States::DUEL_CHOOSE_GAMBLE_CARD,
-                "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                 "doneWithRound" => States::DUEL_END_OF_ROUND,
             ]
         ],
+            States::DUEL_COMBAT_CARD_EVENTS => [
+                "name" => "duelChooseActionEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "01135" => States::DUEL_CHOOSE_GAMBLE_CARD,
+                    "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
+                    "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
+                    "reaction" => States::DUEL_COMBAT_CARD_REACTIONS,
+                    "pay" => States::DUEL_COMBAT_CARD_PAY_FOR_REACTION,
+                    "endOfEvents" => States::DUEL_CHOOSE_ACTION,
+                    "endOfGame" => States::END_GAME
+                    ]
+            ],
+            States::DUEL_COMBAT_CARD_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsForStatePrivate",
+                "possibleactions" => [
+                    "actReactionForState", 
+                ],
+                "transitions" => [
+                    "done" => States::DUEL_COMBAT_CARD_EVENTS, 
+                ]
+            ],
+            States::DUEL_COMBAT_CARD_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsForStatePrivate",
+                "possibleactions" => [
+                    "actBack",
+                    "actPayForReaction", 
+                ],
+                "transitions" => [
+                    "back" => States::DUEL_COMBAT_CARD_REACTIONS, 
+                    "paid" => States::DUEL_COMBAT_CARD_EVENTS, 
+                ]
+            ],
+
             States::DUEL_CHOOSE_TECHNIQUE => [
                 "name" => "duelChooseTechnique",
                 "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
@@ -2024,6 +2066,7 @@ $machinestates = [
                         "01113_2" => States::DUEL_RESOLVE_MANEUVER_01113_2,
                         "01115" => States::DUEL_RESOLVE_MANEUVER_01115,
                         "01133" => States::DUEL_RESOLVE_MANEUVER_01133,
+                        "01135" => States::DUEL_RESOLVE_MANEUVER_01135,
                         "01164" => States::DUEL_RESOLVE_MANEUVER_01164,
                         "01165" => States::DUEL_RESOLVE_MANEUVER_01165,
                         "reaction" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_REACTIONS,
