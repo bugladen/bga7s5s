@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Maneuver_01133 extends Maneuver implements ISorcererAbility
 {
@@ -42,6 +43,17 @@ class Maneuver_01133 extends Maneuver implements ISorcererAbility
         }
 
         return $args;
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if (! parent::isAvailableToPlayer($playerId, $theah))
+        {
+            return false;
+        }
+
+        $actor = $theah->getDuelRoundActor();
+        return $actor->hasTrait("Sorcerer");
     }
 
     public function actFromManeuverWithIds(Game $game, int $state, string $stateName, array $ids): void
