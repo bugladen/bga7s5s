@@ -1384,6 +1384,7 @@ trait EventHub
                         $message = clienttranslate('Duel Update: ${character_inject_code} has activated the Maneuver [${effect_name}] from ${card_inject_code} ${effects}');
                     }
 
+                    $deck = $theah->game->getGameDeckObject();
                     $theah->game->notifyAllPlayers("updateRoundWithCombatStats", $message, [
                         'i18n' => ['character_name', 'effect_name', 'effects'],
                         "round" => $round,
@@ -1404,6 +1405,7 @@ trait EventHub
                         "challengerThreatIsLethal"  => $results["challengerThreatIsLethal"],
                         "defenderThreatIsLethal"  => $results["defenderThreatIsLethal"],
                         "wounds" => $results["wounds"],
+                        "handCount" => count($deck->getPlayerHand($actor->ControllerId)),
                     ]);                    
                 };    
                 $handler($this, $event);
@@ -1464,6 +1466,7 @@ trait EventHub
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
                         $effects .= sprintf($theah->game->translate("<p>Defender Threat went from %d to %d. %s"), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"], $defenderThreatIsLethalText);
 
+                    $deck = $theah->game->getGameDeckObject();
                     $theah->game->notifyAllPlayers("updateRoundWithCombatStats", clienttranslate('Duel Update: ${player_name} has played ${card_inject_code} as their Combat Card. ${effects}'), [
                         'i18n' => ['effect_name', 'effects'],
                         "round" => $round,
@@ -1485,6 +1488,7 @@ trait EventHub
                         "challengerThreatIsLethal"  => $results["challengerThreatIsLethal"],
                         "defenderThreatIsLethal"  => $results["defenderThreatIsLethal"],
                         "wounds" => $results["wounds"],
+                        "handCount" => count($deck->getPlayerHand($playerId)),
                     ]);
                 };
                 $handler($this, $event);
