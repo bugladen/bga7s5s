@@ -2,10 +2,15 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01137;
 
-class _01137 extends Risk
+class _01137 extends Risk implements IHasReactions
 {
+    use ReactionTrait;
+    
     public function __construct()
     {
         parent::__construct();
@@ -28,5 +33,8 @@ class _01137 extends Risk
 
         $this->resetCard();
 
+        $this->Reactions = [
+            new Reaction_01137(),
+        ];
     }
 }

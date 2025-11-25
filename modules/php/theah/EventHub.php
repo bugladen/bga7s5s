@@ -553,13 +553,27 @@ trait EventHub
                         }
                     }
 
-                    $this->game->notifyAllPlayers("cardMoved", clienttranslate('${card_inject_code} moved from ${fromLocation} to ${toLocation}.'), [
+                    $message = clienttranslate('${card_inject_code} moved from ${fromLocation} to ${toLocation}');
+                    if ($event->sourceId != 0)
+                    {
+                        $source = $theah->getCardById($event->sourceId);
+                        $message .= clienttranslate(' due to: ${source_inject_code}.');
+                        $sourceCode = $source->getInjectCode();
+                    }
+                    else
+                    {
+                        $message .= clienttranslate('.');
+                        $sourceCode = "";
+                    }
+
+                    $this->game->notifyAllPlayers("cardMoved", $message, [
                         'i18n' => ['fromLocation', 'toLocation'],
                         "card_inject_code" => $card->getInjectCode(),
                         "cardId" => $card->Id,
                         "fromLocation" => $event->fromLocation,
                         "toLocation" => $event->toLocation,
-                        "engage" => $card->Engaged
+                        "engage" => $card->Engaged,
+                        "source_inject_code" => $sourceCode,
                     ]);
                 };
                 $handler($this, $event);    
