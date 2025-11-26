@@ -44,6 +44,9 @@ class Action_01168 extends RiskAction
             $addEvent = EventFactory::createCardDrawnEvent($event->playerId, sprintf($game->translate("%s effect"), $owner->getInjectCode()));
             $game->theah->queueEvent($addEvent);
 
+            $removeFromDiscardEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($event->playerId, $owner->Id);
+            $game->theah->queueEvent($removeFromDiscardEvent);
+
             $lockerEvent = EventFactory::createCardSentToLockerEvent($event->playerId, $owner->Id);
             $game->theah->queueEvent($lockerEvent);
 
