@@ -916,6 +916,12 @@
                 this.addActionButton(`btnPass`, _('Wound Adversary and Give -2 Thrust Next Round'), () => this.bgaPerformAction('actFromCardWithId', { id: 2}));
             },
 
+            'duelResolveManeuver_01142': () => {
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+
             'duelResolveManeuver_01164': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');

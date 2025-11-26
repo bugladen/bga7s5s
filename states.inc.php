@@ -2068,6 +2068,7 @@ $machinestates = [
                         "01115" => States::DUEL_RESOLVE_MANEUVER_01115,
                         "01133" => States::DUEL_RESOLVE_MANEUVER_01133,
                         "01135" => States::DUEL_RESOLVE_MANEUVER_01135,
+                        "01142" => States::DUEL_RESOLVE_MANEUVER_01142,
                         "01164" => States::DUEL_RESOLVE_MANEUVER_01164,
                         "01165" => States::DUEL_RESOLVE_MANEUVER_01165,
                         "reaction" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_REACTIONS,
