@@ -599,6 +599,15 @@
                 this.addActionButton(`btnPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
             },
 
+            'highDramaPhase01138': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+            'highDramaPhase01138_2': () => {
+                this.addActionButton(`btnEngage`, _('Engage'), () => this.bgaPerformAction('actFromCardWithId', { id: 1}));
+                this.addActionButton(`btnNoEngage`, _('Do Not Engage'), () => this.bgaPerformAction('actFromCardWithId', { id: 0}));
+            },
+
             'highDramaPhase01147': () => {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
