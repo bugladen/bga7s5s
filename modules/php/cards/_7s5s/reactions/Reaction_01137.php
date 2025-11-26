@@ -102,10 +102,10 @@ class Reaction_01137 extends RiskReaction
         {
             $owner = $this->getOwningCard($game->theah);
             $event = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-            $game->theah->stackEvent($event);
+            $game->theah->queueEvent($event);
 
             $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
-            $game->theah->stackEvent($event);
+            $game->theah->queueEvent($event);
             
             $this->FollowCharacterId = str_replace("follow-", "", $reactionId);
             $owner->IsUpdated = true;
