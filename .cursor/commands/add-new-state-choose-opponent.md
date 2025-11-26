@@ -17,7 +17,7 @@ Will create a new GameState class and add supporting entries to other files. The
 2. Place the file in the `modules\php\States` folder
 3. Name the file `State_*` and append the name provided in the parameters.
 4. In the `name` parameter of the constructor use the name provided in the parameters.
-5. In the `descriptionMyTurn` parameter update the second clientTranslate parameter to `: ${you} must choose an opponent `
+5. In the `descriptionMyTurn` parameter of the constructor there are two calls to clientTranslate().  Update the parameter in the second clientTranslate() call to `: ${you} must choose an opponent `
 6. In the `id` parameter of the constructor use the pattern from State_highDramaPhase01097.php but use the correct name from the command parameters.
 
 ## Steps to update the OnUpdateActionButtons file
