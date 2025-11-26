@@ -52,10 +52,5 @@ abstract class CardReaction extends Reaction implements ICardAbility
     {
         return 0;
     }
-    
-    public function reactionPaidFor(Game $game, int $state, string $internalId, string $reactionId): void 
-    {
-        $this->setUsed($game->theah, true);
-    }
-
+   
 }

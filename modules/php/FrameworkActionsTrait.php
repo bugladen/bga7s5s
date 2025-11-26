@@ -1730,9 +1730,6 @@ trait FrameworkActionsTrait
             $riskReactionTriggered = EventFactory::createRiskReactionTriggeredEvent($playerId,  $card->Id, $internalId, $reactionId);
             $this->theah->queueEvent($riskReactionTriggered);
         }
-
-        $reaction->reactionPaidFor($this, $this->gamestate->state_id(), $internalId, $reactionId);
-
         $this->gamestate->nextState("paid");
    }
 
