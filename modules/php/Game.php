@@ -66,6 +66,7 @@ class Game extends \Bga\GameFramework\Table
     final const STAT_RESOLVE = "Resolve";
     final const PASS_COUNT = "passCount";
     final const MULTI_STATE_INITIATING_PLAYER = "multiStateInitiatingPlayer";
+    final const EXTRA_ACTIONS = "extraActions";
 
     //Conditions
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";
