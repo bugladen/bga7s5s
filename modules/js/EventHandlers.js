@@ -129,6 +129,32 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'highDramaPhase01134_2': () => {
+                const performerId = this.clientStateArgs.performerId;                
+                const performer = this.cardProperties[performerId];
+                const maxSelected = performer.modifiedInfluence;
+
+                if (this.chooseList.getSelectedItems().length > maxSelected) {
+                    this.chooseList.unselectItem(item_id);
+                }
+                
+                if (this.chooseList.getSelectedItems().length === maxSelected) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
+            'highDramaPhase01134_3': () => {
+                this.addSortTagToCard(item_id);
+
+                if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }                
+            },
+
             'highDramaPhase01180_3': () => {
                 if (item_id === undefined) return;
                 var items = this.chooseList.getSelectedItems();
@@ -170,36 +196,9 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duskPhaseBegin01177_2': () => {
-                // Declare static var named order
-                if (typeof this.onChooseCardClicked.order === 'undefined') {
-                    this.onChooseCardClicked.order = 0;
-                }
+                this.addSortTagToCard(item_id);
 
-                if (this.chooseList.isSelected(item_id) && this.onChooseCardClicked.order < 3) 
-                {                    
-                    const div = this.chooseList.getItemDivId(item_id);
-
-                    //Set the data element to the order of the card
-                    $(div).setAttribute('order', ++this.onChooseCardClicked.order);
-
-                    // Create a small red square html element to show that the card is selected
-                    dojo.place(this.format_block('jstpl_number_order_chip', {
-                        id: this.onChooseCardClicked.order,
-                    }), div, 'last');
-                } else {
-                    this.onChooseCardClicked.order = 0;
-                    this.chooseList.unselectAll();
-
-                    // Remove all the red square html elements
-                    dojo.query('._7sfs-number-order-chip').forEach((element) => {
-                        //Delete the data element named order on the parent div
-                        element.parentNode.removeAttribute('order');                        
-                        
-                        dojo.destroy(element);
-                    });
-                }
-
-                if (this.chooseList.getSelectedItems().length === 3) {
+                if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
                     dojo.removeClass('actChooseCardSelected', 'disabled');
                 } else {
                     dojo.addClass('actChooseCardSelected', 'disabled');
@@ -223,7 +222,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
     {
         const methods = {
 
-            'highDramaBeginning_01144_client': () => {
+            'highDramaBeginning_01144_2': () => {
                 var items = this.factionHand.getSelectedItems();
                 let wealth = 0;
                 items.forEach((item) => {
@@ -489,7 +488,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         }
 
         //Enable the confirm button if we have the right number of locations selected
-        if (this.selectedCityLocations.length > 0) {
+        if (this.selectedCityLocations.length == this.numberOfCityLocationsSelectable) {
             dojo.removeClass('actCityLocationsSelected', 'disabled');
         } else {
             dojo.addClass('actCityLocationsSelected', 'disabled');
@@ -634,6 +633,41 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             }
         );
         $('faction_hand_info').innerHTML = items.length > 0 ? translated : '';
+    },
+
+    addSortTagToCard: function(item_id)
+    {
+        // Declare static var named order
+        if (typeof this.addSortTagToCard.order === 'undefined') {
+            this.addSortTagToCard.order = 0;
+        }
+
+        const length = this.chooseList.getAllItems().length;
+        if (this.chooseList.isSelected(item_id) && this.addSortTagToCard.order < length) 
+        {                    
+            const div = this.chooseList.getItemDivId(item_id);
+
+            //Set the data element to the order of the card
+            $(div).setAttribute('order', ++this.addSortTagToCard.order);
+
+            // Create a small red square html element to show that the card is selected
+            dojo.place(this.format_block('jstpl_number_order_chip', {
+                id: this.addSortTagToCard.order,
+            }), div, 'last');
+        } 
+        else 
+        {
+            this.addSortTagToCard.order = 0;
+            this.chooseList.unselectAll();
+
+            // Remove all the red square html elements
+            dojo.query('._7sfs-number-order-chip').forEach((element) => {
+                //Delete the data element named order on the parent div
+                element.parentNode.removeAttribute('order');                        
+                
+                dojo.destroy(element);
+            });
+        }
     },
 
 })

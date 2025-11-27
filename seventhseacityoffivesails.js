@@ -99,6 +99,8 @@ function (dojo, declare) {
             this.MOVE_ALONG_CHALLENGE_TYPE = 7;
             this.SERVO_SCARPA_CHALLENGE_TYPE = 8;
             this.VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
+            this.VALERI_MIKHAILOV_CHALLENGE_TYPE = 10;
+            this.IRON_AND_VELVET_CHALLENGE_TYPE = 11;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 100;
@@ -108,6 +110,7 @@ function (dojo, declare) {
             this.CRYSTAL_EYE_TARGET = 'Crystal Eye Target';
             this.CATS_EMBARGO_TARGET = 'Cats Embargo Target';
             this.MARYAM_BENU_PLEROMA_ABILITY_USED = 'Maryam Benu Pleroma Ability Used';
+            this.INDOMITABLE_WILL_CONDITION = 'Indomitable Will Condition';
             this.CHALLENGER = 'Challenger';
             this.DEFENDER = 'Defender';
 

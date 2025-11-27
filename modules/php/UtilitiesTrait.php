@@ -704,15 +704,4 @@ trait UtilitiesTrait
         return strpos($character->Location, "Discard-") !== false || strpos($character->Location, "Locker-") !== false;
     }
 
-    //WIP. 
-    public function inStateMachine(int $state)
-    { 
-        return array_key_exists($state, $this->gamestate->states);
-    }
-
-    //WIP. 
-    public function addState(int $stateNumber, Array $state)
-    {
-        $this->gamestate->states[$stateNumber] = $state;
-    }
 }

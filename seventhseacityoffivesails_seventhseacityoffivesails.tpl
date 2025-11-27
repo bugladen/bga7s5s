@@ -56,6 +56,11 @@ var jstpl_deck_picker = `
       <div class="_7sfs-deck-picker-tab-text">\${montaigne_description}</div>
     </div>
 
+    <div class="_7sfs-deck-picker-tab-content" data-deck-name="Ussura" id="SDUssura">
+      <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-ussura"></div>
+      <div class="_7sfs-deck-picker-tab-text">\${ussura_description}</div>
+    </div>
+    
     <div class="_7sfs-deck-picker-tab-content" data-deck-name="Vodacce" id="SDVodacce">
       <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-vodacce"></div>
       <div class="_7sfs-deck-picker-tab-text">\${vodacce_description}</div>
@@ -65,7 +70,8 @@ var jstpl_deck_picker = `
       <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(1)">Castille</button>
       <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(2)">Eisen</button>
       <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(3)">Montaigne</button>
-      <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(4)">Vodacce</button>
+      <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(4)">Ussura</button>
+      <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(5)">Vodacce</button>
       <button id="btnDeckSelect" class="deck-picker-button" disabled onclick="gameui.deckPickerDeckSelected()">\${select_description}</button>
     </div>
   </div>

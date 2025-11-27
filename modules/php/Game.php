@@ -66,12 +66,14 @@ class Game extends \Bga\GameFramework\Table
     final const STAT_RESOLVE = "Resolve";
     final const PASS_COUNT = "passCount";
     final const MULTI_STATE_INITIATING_PLAYER = "multiStateInitiatingPlayer";
+    final const EXTRA_ACTIONS = "extraActions";
 
     //Conditions
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";
     final const CRYSTAL_EYE_TARGET = "Crystal Eye Target";
     final const CATS_EMBARGO_TARGET = "Cats Embargo Target";
     final const MARYAM_BENU_PLEROMA_ABILITY_USED = "Maryam Benu Pleroma Ability Used";
+    final const INDOMITABLE_WILL_CONDITION = "Indomitable Will Condition";
     
     //Equip global variables
     final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';
@@ -146,6 +148,8 @@ class Game extends \Bga\GameFramework\Table
     final const MOVE_ALONG_CHALLENGE_TYPE = 7;
     final const SERVO_SCARPA_CHALLENGE_TYPE = 8;
     final const VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
+    final const VALERI_MIKHAILOV_CHALLENGE_TYPE = 10;
+    final const IRON_AND_VELVET_CHALLENGE_TYPE = 11;
 
     //Duel global variables
     //Duel Names
@@ -168,6 +172,12 @@ class Game extends \Bga\GameFramework\Table
     final const GAMBLE_TYPE = "gambleType";
     final const GAMBLE_TYPE_NORMAL = 0;
     final const GAMBLE_TYPE_ROLL_THE_DICE = 1;
+
+    //Pay state global variables
+    final const PAY_STATE_IN_HAND_ACTION = 0;
+    final const PAY_STATE_EQUIP_ATTACHMENT = 1;
+    final const PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD = 2;
+    final const PAY_STATE_IN_HAND_REACTION = 3;
 
     use DeckTrait;
     use StatesTrait;

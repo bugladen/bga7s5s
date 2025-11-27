@@ -18,12 +18,14 @@ abstract class Event
     public int $priority;
     public bool $runEventHubAfterCards;
     public bool $canceled;
+    public bool $wasStacked;
 
     public function __construct()
     {
         $this->priority = Event::MEDIUM_PRIORITY;
         $this->runEventHubAfterCards = false;
         $this->canceled = false;
+        $this->wasStacked = false;
     }
 
     public function queueEvent(Event $event)

@@ -218,6 +218,15 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }),  `${divId}_image`, 'last');
             this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
         }
+        if (character.conditions.includes(this.INDOMITABLE_WILL_CONDITION)) {
+            //Get the first child of element divId
+            const id = `${divId}_indomitable_will_condition`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: '_7sfs-indomitable-will-condition-chip',
+            }),  `${divId}_image`, 'last');
+            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("This character has Indomitable Will")}</div>` );
+        }
         if (character.conditions.includes(this.CHALLENGER)) {
             id = `${divId}_challenger`;
             dojo.place( this.format_block( 'jstpl_generic_chip', {
@@ -546,6 +555,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const handle = dojo.connect($(location), 'onclick', this, 'onCityLocationClicked');
         this.connects.push(handle);
     },
+
+    markCityLocationAsChosen: function(location) {
+        dojo.addClass(location, '_7sfs-chosen');
+    },
     
     makeCardSelectable: function(image) {
         dojo.addClass(image, '_7sfs-selectable');
@@ -559,6 +572,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         locations.forEach((location) => {
             dojo.removeClass(location, '_7sfs-selectable');
             dojo.removeClass(location, '_7sfs-selected');
+            dojo.removeClass(location, '_7sfs-chosen');
             dojo.style(location, 'cursor', 'default');
         });
 
@@ -612,6 +626,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         //Move all the leaders to the beginning of the list
         const leaders = list.filter((card) => card.traits.includes('Leader'));
         list = leaders.concat(list.filter((card) => !card.traits.includes('Leader')));
+
+        //Move all the schemes to the beginning of the list
+        const schemes = list.filter((card) => card.type == 'Scheme');
+        list = schemes.concat(list.filter((card) => card.type != 'Scheme'));
 
         //Move all characters that are not controlled to the beginning of the list
         const characters = list.filter((card) => card.type === 'Character' && card.controllerId == 0);
@@ -834,6 +852,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
         });
     },
     
-    
+    makeHomeEndcapMarkerSelectable: function() {
+        var home = $(`${this.getActivePlayerId()}-home-anchor`);
+        dojo.addClass(home, '_7sfs-home-endcap-marker');
+        dojo.addClass(home, '_7sfs-selectable');
+        dojo.style(home, 'cursor', 'pointer');
+        const handle = dojo.connect($(home), 'onclick', this, 'onCityLocationClicked');
+        this.connects.push(handle);                
+    },
 })
 });

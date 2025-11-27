@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01128;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01128;
 
 class _01128 extends FactionAttachment implements IHasTechniques
 {
@@ -19,7 +19,7 @@ class _01128 extends FactionAttachment implements IHasTechniques
         $this->Image = "img/cards/7s5s/128.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
-        $this->Faction = "Usurra";
+        $this->Faction = "Ussura";
 
         $this->ResolveModifier = 0;
         $this->CombatModifier = 0;

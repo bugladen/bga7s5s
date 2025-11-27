@@ -66,6 +66,7 @@ class Events
     const ManeuverActivated = 'EventManeuverActivated';
 
     //Duel Events
+    const CombatCardAnnounced = 'EventCombatCardAnnounced';
     const DuelStarted = 'EventDuelStarted';
     const DuelNewRound = 'EventDuelNewRound';
     const ResolveTechnique = 'EventResolveTechnique';
@@ -97,6 +98,7 @@ class Events
     const CardHidden = 'EventCardHidden';
     const CardSentToLocker = 'EventCardSentToLocker';
     const CardRemovedFromLocker = 'EventCardRemovedFromLocker';
+    const CardRemovedFromPlay = 'EventCardRemovedFromPlay';
     const CharacterDestroyed = 'EventCharacterDestroyed';
     const CharacterHealed = 'EventCharacterHealed';
     const CharacterPutIntoApproachDeck = 'EventCharacterPutIntoApproachDeck';
@@ -120,6 +122,8 @@ class Events
     //Game Flow events
     const Transition = 'EventTransition';
     const ChangeActivePlayer = 'EventChangeActivePlayer';
+    const EnteringPayState = 'EventEnteringPayState';
+    const CalculatePayDiscount = 'EventCalculatePayDiscount';
 
     const ActionTriggered = 'EventActionTriggered';
     const ActionResolved = 'EventActionResolved';

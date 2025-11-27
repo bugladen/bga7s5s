@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver_01142;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01142;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 
@@ -19,7 +19,7 @@ class _01142 extends Risk implements IHasManeuvers
         $this->Image = "img/cards/7s5s/142.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
-        $this->Faction = "Usurra";
+        $this->Faction = "Ussura";
 
         $this->WealthCost = 1;
         $this->Riposte = 2;

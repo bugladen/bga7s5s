@@ -117,16 +117,20 @@ class Reaction_01023 extends RiskReaction
 
         if ($reactionId == 'preventIntervention')
         {
-            $game->gamestate->nextState('pay');
-            return;
+            $owner = $this->getOwningCard($game->theah);
+            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
+            $game->theah->queueEvent($event);
+
+            $event = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+            $game->theah->queueEvent($event);
         }
 
         $game->gamestate->nextState('done');
     }
 
-    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction) : int
+    public function getReactionFromHandDiscount(Theah $theah, CardReaction $reaction, Array &$explanations) : int
     {
-        $discount = parent::getReactionFromHandDiscount($theah, $reaction);
+        $discount = parent::getReactionFromHandDiscount($theah, $reaction, $explanations);
 
         $owner = $this->getOwningCard($theah);
         if ($owner->Location == Game::LOCATION_HAND && $reaction->Id == $this->Id)

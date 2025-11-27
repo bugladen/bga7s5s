@@ -48,7 +48,7 @@ class State_highDramaPhase01113_2 extends GameState
 
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->nextState();
+        $this->game->actBack();
     }
 
 }

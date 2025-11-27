@@ -45,36 +45,6 @@ class _01152 extends Scheme implements IHasActions
         ];
     }
 
-    public function addStates(Game $game)
-    {
-        parent::addStates($game);
-
-        //WIP
-        //This an attempt to move state construction out of the monolithic states.inc.php file.
-        //There is currently no callback from the framework to add states after the state array is built.
-        //So this is on hold for now.
-        if (!$game->inStateMachine(States::PLANNING_PHASE_RESOLVE_SCHEMES_01152))
-        {
-            $state = GameStateBuilder::create()
-                ->name(States::PLANNING_PHASE_RESOLVE_SCHEMES_01152)
-                ->description(clienttranslate('Until Morale Improves') . clienttranslate(': ${actplayer} may choose a City Location to place a Renown onto.'))
-                ->descriptionMyTurn(clienttranslate('Until Morale Improves') . clienttranslate(': ${you} may choose a City Location to place a Renown onto: '))
-                ->type(StateType::ACTIVE_PLAYER)
-                ->args("argsEmpty")
-                ->possibleActions([
-                    "actFromCardWithLocations", 
-                    "actFromCardPass"
-                ])
-                ->transitions([
-                    "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2, 
-                    "reknownPlaced" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
-                ])
-                ->build();
-
-            $game->addState(States::PLANNING_PHASE_RESOLVE_SCHEMES_01152, $state);
-        }
-    }
-
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);

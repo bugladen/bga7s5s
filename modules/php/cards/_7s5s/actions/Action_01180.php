@@ -223,13 +223,13 @@ class Action_01180 extends CharacterAction
                 throw new \BgaUserException(sprintf($game->translate("You do not have enough Wealth to equip this card (with a discount of %s)."), $discount));
             }        
         
-            if ($discount != 0)
-                $game->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                    "explanations" => $explanations,
-                ]);
-            $game->globals->set(Game::DISCOUNT, $discount);
-            $game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
             $game->globals->set(Game::CHOSEN_PERFORMER, $id);
+
+            $event = EventFactory::createEnteringPayStateEvent($performer->ControllerId, $chosenAttachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
+            $game->theah->queueEvent($event);
+
+            $transition = EventFactory::createTransitionEvent($performer->ControllerId, $performer->Id, "01180_4", $this->Id);
+            $game->theah->queueEvent($transition);
 
             $game->gamestate->nextState("performerChosen");
         }

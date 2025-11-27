@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions\Reaction_CrewCapLimit;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -332,6 +333,21 @@ class Theah
         return $locations;
     }
 
+    function getOuterCityLocations(): array
+    {
+        $playerCount = $this->game->getPlayerCount();
+        switch ($playerCount) {
+            case 1:
+            case 2:
+                return [Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_BAZAAR];
+            case 3:
+                return [Game::LOCATION_CITY_OLES_INN, Game::LOCATION_CITY_BAZAAR];
+            case 4:
+                return [Game::LOCATION_CITY_OLES_INN, Game::LOCATION_CITY_GOVERNORS_GARDEN];
+        }
+        return [];
+    }
+
     function getNonAdjacentCityLocations(string $location): array
     {
         $locations = $this->getCityLocations();
@@ -357,6 +373,19 @@ class Theah
 
         $explanations = implode("<br>", $explanations);
             
+        return [$discount, $explanations];
+    }
+
+    function getManeuverFromCombatCardDiscount(Risk $combatCard): Array
+    {
+        $cards = $this->cards;
+        $discount = 0;
+        $explanations = [];
+        foreach ($cards as $card) {
+            $discount += $card->getManeuverFromCombatCardDiscount($this, $combatCard, $explanations);
+        }
+
+        $explanations = implode("<br>", $explanations);
         return [$discount, $explanations];
     }
 
@@ -531,7 +560,17 @@ class Theah
         $attachment = $this->getCardById($id);
         if ($attachment instanceof Attachment) {
             return $attachment;
-        }   
+        }
+
+        return null;
+    }
+
+    function getRiskById($id): ?Risk
+    {
+        $risk = $this->getCardById($id);
+        if ($risk instanceof Risk) {
+            return $risk;
+        }
 
         return null;
     }
@@ -868,13 +907,17 @@ class Theah
         return $pressureTypes;
     }
 
-    function getReactionFromHandDiscount(CardReaction $reaction): int
+    function getReactionFromHandDiscount(CardReaction $reaction): Array
     {
         $discount = 0;
+        $explanations = [];
+
         foreach ($this->cards as $card) {
-            $discount += $card->getReactionFromHandDiscount($this, $reaction);
+            $discount += $card->getReactionFromHandDiscount($this, $reaction, $explanations);
         }
-        return $discount;
+
+        $explanations = implode("<br>", $explanations);
+        return [$discount, $explanations];
     }
 
     function getTechniqueById($id): ?Technique
@@ -1178,6 +1221,11 @@ class Theah
         $this->db->deleteTransitionEvents($reactionId);
     }
 
+    public function deleteEventsTargetingCard(int $cardId)
+    {
+        $this->db->deleteEventsTargetingCard($cardId);
+    }
+
     public function areTransitionEventsOfTypeForPlayerQueued(int $playerId, string $reactionType): bool
     {
         return $this->db->areTransitionEventsOfTypeForPlayerQueued($playerId, $reactionType);
@@ -1371,7 +1419,38 @@ class Theah
             }
         }
         return $availableAttachments;
+    }
 
+    public function sorceryRisksAvailableFromDiscardPile(Character $performer): array
+    {
+        $handWealth = $this->game->handWealthCount($performer->ControllerId);
+
+        $discardPileName = $this->game->getPlayerDiscardDeckName($performer->ControllerId);
+        $cards = $this->getCardObjectsAtLocation($discardPileName);
+        $cards = array_filter($cards, fn($card) => $card instanceof Risk && $card->hasTrait("Sorcery"));
+
+        $availableRisks = [];
+        foreach ($cards as $card)
+        {
+            if ($card instanceof IHasActions)
+            {
+                $actions = $card->getActions();
+                foreach ($actions as $action)
+                {
+                    if ($action->isAvailableToPlayer($performer->ControllerId, $this, $overrideInHandCheck = true))
+                    {
+                        [$discount, $explanations] = $this->getActionFromHandDiscount($performer, $action);
+                        $cost = $card->WealthCost - $discount;
+                        if ($handWealth >= $cost)
+                        {
+                            $availableRisks[$card->Id] = $card;
+                        }
+                    }
+                }
+            }
+        }
+
+        return array_values($availableRisks);
     }
 
 }

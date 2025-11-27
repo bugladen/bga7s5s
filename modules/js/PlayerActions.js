@@ -36,26 +36,8 @@ return declare('seventhseacityoffivesails.actions', null, {
     {
         //Special logic for specific states
         const methods = {
-            planningPhaseResolveSchemes_01126_2_client: () => {
-                const leshiyeLocation = $(this.clientStateArgs.selectedCityLocations[0]).getAttribute('data-location');
-                const locations = this.selectedCityLocations.map((loc) => $(loc).getAttribute('data-location'));
-
-                this.bgaPerformAction('actPlanningPhase_01126_2', { 
-                    'leshiyeLocation': leshiyeLocation,
-                    'locations': JSON.stringify(locations),
-                });
-            },
-
-            planningPhaseResolveSchemes_01145_2_client: () => {
-                const fromLocation = $(this.clientStateArgs.selectedCityLocations[0]).getAttribute('data-location');
-                const toLocation = $(this.selectedCityLocations[0]).getAttribute('data-location');
-
-                this.bgaPerformAction('actPlanningPhase_01145', { 
-                    'fromLocation': fromLocation,
-                    'toLocation': toLocation,
-                });
-            }
         }
+
 
         if (methods[this.gamedatas.gamestate.name]) {
             methods[this.gamedatas.gamestate.name]();
@@ -66,20 +48,10 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01016': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01071': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01098': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_01125': 'actPlanningPhase_01125',
-            'planningPhaseResolveSchemes_01125_2': 'actPlanningPhase_01125_2',
-            'planningPhaseResolveSchemes_01125_3': 'actPlanningPhase_01125_3',
-            'planningPhaseResolveSchemes_01126': 'planningPhaseResolveSchemes_01126_2_client',
-            'planningPhaseResolveSchemes_01144': 'actPlanningPhase_01144',
-            'planningPhaseResolveSchemes_01144_2': 'actPlanningPhase_01144_2',
-            'planningPhaseResolveSchemes_01145': 'planningPhaseResolveSchemes_01145_2_client',
-            'planningPhaseResolveSchemes_01145_2_client': 'actPlanningPhase_01145',
             'highDramaMoveActionChooseLocation': 'actHighDramaMoveActionDestinationChosen',
         };
 
         const clientMessageArray = {
-            'planningPhaseResolveSchemes_01126_2_client': _("Leshiye of the Wood: ${you} must choose two other locations to place Renown onto: "),
-            'planningPhaseResolveSchemes_01145_2_client': _("Inspire Generosity: ${you} must choose a location to move the Renown to: "),
         };
 
         let action = actionMap[this.gamedatas.gamestate.name];
@@ -108,8 +80,6 @@ return declare('seventhseacityoffivesails.actions', null, {
     onChooseInPlayCardConfirmed: function()
     {
         const actions = {
-            'planningPhaseResolveSchemes_01125_4'                   : 'actPlanningPhase_01125_4',
-            'highDramaBeginning_01144'                              : 'highDramaBeginning_01144_client',
             'highDramaMoveActionChoosePerformer'                    : 'actHighDramaMoveActionPerformerChosen',
             'highDramaInPlayActionChoosePerformer'                  : 'actHighDramaInPlayActionPerformerChosen',  
             'highDramaInHandActionChoosePerformer'                  : 'actHighDramaInHandActionPerformerChosen',  
@@ -122,10 +92,6 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaChallengeActionChooseTarget'                  : 'actHighDramaChallengeActionTargetChosen',
             'highDramaChallengeActionAcceptChallenge'               : 'actHighDramaChallengeActionIntervene', 
             'highDramaPhase01060_2'                                 : 'actFromCardWithIds',
-        };
-
-        const clientMessages = {
-            'highDramaBeginning_01144_client'                       : _("${you} must choose cards from your Faction Hand to pay for selected Mercenary: "),
         };
 
         let action = actions[this.gamedatas.gamestate.name];
@@ -299,7 +265,6 @@ return declare('seventhseacityoffivesails.actions', null, {
         items = items.map((item) => item.id);
 
         const actionArray = {
-            'highDramaBeginning_01144_client'               : 'actHighDramaBeginning_01144',
             'highDramaRecruitActionPayForMercenary'         : 'actHighDramaRecruitActionPayForMercenary',
         };
 
@@ -317,25 +282,6 @@ return declare('seventhseacityoffivesails.actions', null, {
                         items.forEach((item) => this.factionHand.removeFromStockById(item));
                     }
                 });
-                break;
-
-            case 'actHighDramaBeginning_01144':
-                this.bgaPerformAction(action, { 
-                'recruitId': this.clientStateArgs.selectedCards[0],
-                'payWithCards': JSON.stringify(items),
-                }).catch(() =>  {
-                    errors = true;
-                }).then(() =>  {
-                    if (!errors)
-                    {
-                        items.forEach((item) => this.factionHand.removeFromStockById(item));
-                    }
-                    if (this.gamedatas.gamestate.name == 'highDramaBeginning_01144_client')
-                        this.setClientState('highDramaBeginning_01144',
-                            {
-                                'descriptionmyturn' : _("${you} may choose a Mercenary from a City Location to recruit to your home: "),
-                            })
-                });        
                 break;
         }
     },
@@ -500,7 +446,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         });        
     },
 
-    onCardsChosen_01177_2: function()
+    onCardsSorted: function()
     {
         let cards = [];
         this.chooseList.getSelectedItems().forEach((item) => {
@@ -540,11 +486,8 @@ return declare('seventhseacityoffivesails.actions', null, {
             'highDramaPlayerTurn'                       : 'actHighDramaPass',
             'highDramaPhase01180_3'                     : 'actPassWithPass',
             'planningPhaseResolveSchemes_01016_2'       : 'actPassWithPass',
-            'planningPhaseResolveSchemes_01125'         : 'actPlanningPhase_01125_Pass',
-            'planningPhaseResolveSchemes_01125_2'       : 'actPlanningPhase_01125_2_Pass',
-            'planningPhaseResolveSchemes_01125_4'       : 'actPlanningPhase_01125_4_Pass',
-            'planningPhaseResolveSchemes_01145'         : 'actPlanningPhase_01145_Pass',            
-            'planningPhaseResolveSchemes_01145_2_client': 'actPlanningPhase_01145_Pass',            
+            'planningPhaseResolveSchemes_01125'         : 'actFromCardPass',
+            'planningPhaseResolveSchemes_01125_2'       : 'actFromCardPass',
             'planningPhaseResolveSchemes_01152'         : 'actPassWithPass',
             'planningPhaseResolveSchemes_01152_2'       : 'actPassWithPass',
             'highDramaChallengeActionActivateTechnique' : 'actHighDramaChallengeActionActivateTechnique_Pass',

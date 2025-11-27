@@ -78,6 +78,9 @@ class Action_01046a extends AttachmentAction
 
             $attachedTo = $this->getOwningCharacter($game->theah);
 
+            $sorceryEvent = EventFactory::createSorcererAbilityPlayedEvent($darkGift->ControllerId, $darkGift->Id, $this->Id, $attachedTo->Id, $attachedTo->Id, $attachedTo->Location);
+            $game->theah->queueEvent($sorceryEvent);
+
             $engageEvent = EventFactory::createCardEngagedEvent($darkGift->ControllerId, $darkGift->Id, $darkGift->Id);
             $game->theah->eventCheck($engageEvent);
 

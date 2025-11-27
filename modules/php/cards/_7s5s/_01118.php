@@ -2,10 +2,19 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01118;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01118;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 
-class _01118 extends Character
+class _01118 extends Character implements IHasActions, IHasReactions
 {
+    use ActionTrait;
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -16,7 +25,7 @@ class _01118 extends Character
         $this->ExpansionNumber = 1;
         $this->CardNumber = 118;
 
-        $this->Faction = "Usurra";
+        $this->Faction = "Ussura";
         $this->Title = "Slient Schemer";
         $this->Resolve = 4;
         $this->Combat = 2;
@@ -25,10 +34,18 @@ class _01118 extends Character
 
         $this->Traits = [
             "Sorcerer",
-            "Usurra",
+            "Ussura",
         ];
 
         $this->resetCard();
+
+        $this->Actions = [
+            new Action_01118(),
+        ];
+
+        $this->Reactions = [
+            new Reaction_01118(),
+        ];
     }
 
 }

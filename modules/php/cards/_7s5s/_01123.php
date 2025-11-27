@@ -2,12 +2,19 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01123;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_01123;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01123;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 
-
-class _01123 extends Character 
+class _01123 extends Character implements IHasActions, IHasTechniques
 {
+    use ActionTrait;
+    use TechniqueTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -18,7 +25,7 @@ class _01123 extends Character
         $this->ExpansionNumber = 1;
         $this->CardNumber = 123;
 
-        $this->Faction = "Usurra";
+        $this->Faction = "Ussura";
         $this->Title = "Champion Narcissist";
         $this->Resolve = 4;
         $this->Combat = 2;
@@ -27,10 +34,14 @@ class _01123 extends Character
 
         $this->Traits = [
             "Duelist",
-            "Usurra",
+            "Ussura",
         ];
 
         $this->resetCard();
+
+        $this->Actions = [
+            new Action_01123(),
+        ];
 
         $this->Techniques = [
             new Technique_01123(),

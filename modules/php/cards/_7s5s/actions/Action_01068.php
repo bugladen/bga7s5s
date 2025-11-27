@@ -149,19 +149,19 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
                 throw new \BgaUserException($game->translate("Léontine cannot move character to the same location as herself."));
             }
 
+            $characterId = $game->globals->get(Game::CHOSEN_CARD);
+            $character = $game->theah->getCharacterById($characterId);
+
+            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($leontine->ControllerId, $leontine->Id, $this->Id, $leontine->Id, $character->Id, $leontine->Location);
+            $game->theah->queueEvent($sorcererEvent);
+
             $woundEvent = EventFactory::createCharacterWoundedEvent($leontine->Id, $leontine->Id, 1, $leontine->getInjectCode(), $this->Id);
             $game->theah->eventCheck($woundEvent);
             $game->theah->queueEvent($woundEvent);
 
-            $characterId = $game->globals->get(Game::CHOSEN_CARD);
-            $character = $game->theah->getCharacterById($characterId);
-
             $moveEvent = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, $location->Name, $engage = false);
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
-
-            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($leontine->ControllerId, $leontine->Id, $this->Id, $leontine->Id, $leontine->Location);
-            $game->theah->queueEvent($sorcererEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($leontine->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);

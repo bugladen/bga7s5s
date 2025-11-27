@@ -39,7 +39,7 @@ class _01188 extends CityCharacter
 
         $this->Traits = [
             'Mercenary',
-            'Usurra',
+            'Ussura',
         ];
 
         $this->resetCard();

@@ -123,6 +123,90 @@ $machinestates += [
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
 
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01125 => [
+        "name" => "planningPhaseResolveSchemes_01125",
+        "description" => clienttranslate('The Boar\'s Guile: ${actplayer} may choose a City Location to place a Renown onto.'),
+        "descriptionmyturn" => clienttranslate('The Boar\'s Guile: ${you} may choose a City Location to place a Renown onto: '),
+        "type" => "activeplayer",
+        "args" => "argsEmpty",
+        "possibleactions" => [
+            "actFromCardWithLocations",
+            "actFromCardPass"
+        ],
+        "transitions" => [
+            "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_2,
+            "reknownPlaced" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4
+            ]
+        ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_2 => [
+            "name" => "planningPhaseResolveSchemes_01125_2",
+            "description" => clienttranslate('The Boar\'s Guile: ${actplayer} must choose a City Location to move a Renown FROM, if able.'),
+            "descriptionmyturn" => clienttranslate('The Boar\'s Guile: ${you} must choose a City Location to move a Renown FROM, if able: '),
+            "type" => "activeplayer",
+            "args" => "argsEmpty",
+            "possibleactions" => [
+                "actFromCardWithLocations",
+                "actFromCardPass"
+            ],
+            "transitions" => [
+                "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4,
+                "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_3
+                ]
+            ],
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_3 => [
+                "name" => "planningPhaseResolveSchemes_01125_3",
+                "description" => clienttranslate('The Boar\'s Guile: ${actplayer} must choose an adjacent City Location to move the Renown TO.'),
+                "descriptionmyturn" => clienttranslate('The Boar\'s Guile: ${you} must choose an adjacent City Location to move the Renown TO:'),
+                "type" => "activeplayer",
+                "args" => "argsForState",
+                "possibleactions" => [
+                    "actFromCardWithLocations"
+                ],
+                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4]
+            ],
+            States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4 => [
+                "name" => "planningPhaseResolveSchemes_01125_4",
+                "description" => clienttranslate('The Boar\'s Guile: ${actplayer} must choose an enemy Character.'),
+                "descriptionmyturn" => clienttranslate('The Boar\'s Guile: ${you} must choose an enemy Character:'),
+                "type" => "activeplayer",
+                "args" => "argsEmpty",
+                "possibleactions" => [
+                    "actFromCardWithId",
+                    "actPass"
+                ],
+                "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+            ],
+
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01126 => [
+            "name" => "planningPhaseResolveSchemes_01126",
+            "description" => clienttranslate('Leshiye of the Wood: ${actplayer} must choose options for Leshiye of the Wood.'),
+            "descriptionmyturn" => clienttranslate('Leshiye of the Wood: ${you} must choose an outer City Location for Leshiye of the Wood:'),
+            "type" => "activeplayer",
+            "args" => "argsEmpty",
+            "possibleactions" => [
+                "actFromCardWithLocations",
+            ],
+            "transitions" => [
+                "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2,
+                "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS // Zombie mode will pass here
+            ]
+        ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2 => [
+            "name" => "planningPhaseResolveSchemes_01126_2",
+            "description" => clienttranslate('Leshiye of the Wood: ${actplayer} must choose options for Leshiye of the Wood.'),
+            "descriptionmyturn" => clienttranslate('Leshiye of the Wood: ${you} must choose two other locations to place Renown onto:'),
+            "type" => "activeplayer",
+            "args" => "argsForState",
+            "possibleactions" => [
+                "actBack",
+                "actFromCardWithLocations",
+            ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01126,
+                "locationsChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
+            ]
+        ],
+
     States::PLANNING_PHASE_RESOLVE_SCHEMES_01143 => [
         "name" => "planningPhaseResolveSchemes_01143",
         "description" => clienttranslate('Contempt and Hatred') . clienttranslate(': ${actplayer} may choose a city location to place Renown onto.'),
@@ -136,7 +220,73 @@ $machinestates += [
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
 
-    States::PLANNING_PHASE_RESOLVE_SCHEMES_01147 => [
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01144 => [
+        "name" => "planningPhaseResolveSchemes_01144",
+        "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose a city location to place Renown onto.'),
+        "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose a city location to place Renown onto:'),
+        "type" => "activeplayer",
+        "args" => "argsEmpty",
+        "possibleactions" => [
+            "actFromCardWithLocations", 
+            "actPass",
+        ],
+        "transitions" => [
+            "fewestReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_2,
+            "notFewestReknown" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
+            "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS //Zombie mode will pass here
+        ]
+    ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_2 => [
+            "name" => "planningPhaseResolveSchemes_01144_2",
+            "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose a different city location to place Renown onto.'),
+            "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose a different city location to place Renown onto:'),
+            "type" => "activeplayer",
+            "args" => "argsForState",
+            "possibleactions" => [
+                "actFromCardWithLocations", 
+            ],
+            "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
+        ],
+
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_01145 => [
+        "name" => "planningPhaseResolveSchemes_01145",
+        "description" => clienttranslate('Inspire Generosity: ${actplayer} is choosing options for Inspire Generosity.'),
+        "descriptionmyturn" => clienttranslate('Inspire Generosity: ${you} must choose a city location to move a Renown from:'),
+        "type" => "activeplayer",
+        "args" => "argsEmpty",
+        "possibleactions" => [
+            "actFromCardWithLocations",
+            "actFromCardPass"
+        ],
+        "transitions" => [
+            "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_2,
+            "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_3
+        ]
+    ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_2 => [
+            "name" => "planningPhaseResolveSchemes_01145_2",
+            "description" => clienttranslate('Inspire Generosity: ${actplayer} is choosing options for Inspire Generosity.'),
+            "descriptionmyturn" => clienttranslate('Inspire Generosity: ${you} must choose a city location to move the Renown to:'),
+            "type" => "activeplayer",
+            "args" => "argsForState",
+            "possibleactions" => [
+                "actFromCardWithLocations",
+            ],
+            "transitions" => [
+                "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_3,
+                "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS // Zombie mode will pass here
+                ]
+        ],
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_3 => [
+            "name" => "planningPhaseResolveSchemes_01145_3",
+            "type" => "game",
+            "action" => "stFromCard",
+            "transitions" => [
+                "" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
+            ]
+        ],
+    
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01147 => [
         "name" => "planningPhaseResolveSchemes_01147",
         "description" => clienttranslate('Let\'s Haggle') . clienttranslate(': Your opponent(s) must acknowledge revealed cards.'),
         "descriptionmyturn" => clienttranslate('Let\'s Haggle') . clienttranslate(': ${you} must acknowledge revealed cards:'),
@@ -192,21 +342,48 @@ $machinestates += [
                 "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3
                 ]
             ],
-            States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3 => [
-                "name" => "planningPhaseResolveSchemes_01152_3",
-                "description" => clienttranslate('Until Morale Improves') . clienttranslate(': ${actplayer} must choose an adjacent City Location to move the Renown TO.'),
-                "descriptionmyturn" => clienttranslate('Until Morale Improves') . clienttranslate(': ${you} must choose an adjacent City Location to move the Renown TO:'),
-                "type" => "activeplayer",
-                "args" => "argsForState",
-                "possibleactions" => [
-                    "actBack",
-                    "actFromCardWithLocations"
-                ],
-                "transitions" => [
-                    "back" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2,
-                    "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
-                ]
+        States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3 => [
+            "name" => "planningPhaseResolveSchemes_01152_3",
+            "description" => clienttranslate('Until Morale Improves') . clienttranslate(': ${actplayer} must choose an adjacent City Location to move the Renown TO.'),
+            "descriptionmyturn" => clienttranslate('Until Morale Improves') . clienttranslate(': ${you} must choose an adjacent City Location to move the Renown TO:'),
+            "type" => "activeplayer",
+            "args" => "argsForState",
+            "possibleactions" => [
+                "actBack",
+                "actFromCardWithLocations"
             ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2,
+                "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
+            ]
+        ],
+
+    States::HIGH_DRAMA_BEGINNING_01144 => [
+        "name" => "highDramaBeginning_01144",
+        "description" => clienttranslate('Filling The Ranks: ${actplayer} may choose a Mercenary from a City Location to recruit to their home'),
+        "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} may choose a Mercenary from a City Location to recruit to your home:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId", 
+            "actPassWithPass"
+        ],
+        "transitions" => [
+            "mercenaryChosen" => States::HIGH_DRAMA_BEGINNING_01144_2,
+            "pass" => States::HIGH_DRAMA_BEGINNING_EVENTS
+        ]
+    ],
+        States::HIGH_DRAMA_BEGINNING_01144_2 => [
+            "name" => "highDramaBeginning_01144_2",
+            "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose cards from your Faction Hand to pay for selected Mercenary'),
+            "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose cards from your Faction Hand to pay for selected Mercenary: '),
+            "type" => "activeplayer",
+            "args" => "argsForState",
+            "possibleactions" => [
+                "actFromCardWithIds", 
+            ],
+            "transitions" => ["" => States::HIGH_DRAMA_BEGINNING_EVENTS]
+        ],
 
     States::HIGH_DRAMA_PLAYER_TURN_01008 => [
         "name" => "highDramaPhase01008",
@@ -1185,7 +1362,7 @@ $machinestates += [
         ],
         "transitions" => [
             "back" => States::HIGH_DRAMA_PLAYER_TURN_01180,
-            "performerChosen" => States::HIGH_DRAMA_PLAYER_TURN_01180_5
+            "performerChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
     States::HIGH_DRAMA_PLAYER_TURN_01180_5 => [

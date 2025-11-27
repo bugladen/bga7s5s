@@ -26,9 +26,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardAddedToCityDeck', 500],
             ['cardAddedToCityDiscardPile', 500],
             ['cardAddedToHand', 2000],
+            ['cardAddedToPlayerDiscardPile', 500],
             ['cardDiscardedFromHand', 500],
             ['cardRemovedFromHand', 500],
             ['cardDiscardedFromPlay', 500],
+            ['cardRemovedFromPlay', 500],
             ['cardEngaged', 1000],
             ['cardEngarded', 1000],
             ['cardMoved', 1000],
@@ -65,6 +67,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['locationUncontrolled', 500],
             ['maryamBenuPleromaAbilityUsed', 500],
             ['maryamBenuPleromaAbilityRemoved', 500],
+            ['indomitableWillConditionStarted', 500],
+            ['indomitableWillConditionEnded', 500],
             ['maneuverUsed', 1],
             ['newDay', 1000],
             ['newDuelRound', 500],
@@ -87,6 +91,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['updateRoundThreats', 500],
             ['updateRoundWithCombatStats', 500],
             ['yevgeniAdversaryChosen', 500],
+            ['yevgeniAdversaryRemoved', 1],
         ];
 
         notifs.forEach((notif) => {
@@ -565,13 +570,28 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
     },
 
+    notif_cardAddedToPlayerDiscardPile: function( notif )
+    {
+        debug( 'notif_cardAddedToPlayerDiscardPile' );
+        debug( notif );
+
+        const args = notif.args;
+        let card = args.card;
+        this.cardProperties[card.id] = card;
+
+        card.location = this.LOCATION_PLAYER_DISCARD;
+        const player = this.gamedatas.players[args.playerId];
+        player.discard.push(card);
+    },
+    
+
     notif_cardDiscardedFromPlay: function( notif )
     {
         debug( 'notif_cardDiscardedFromPlay' );
         debug( notif );
 
         const args = notif.args;
-        const card = this.cardProperties[args.cardId];
+        const card = this.cardProperties[args.cardId];        
         card.location = this.LOCATION_PLAYER_DISCARD;
 
         dojo.destroy(card.divId);
@@ -611,6 +631,23 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         $(`${notif.args.playerId}-score-hand-count`).innerHTML = args.handCount;
     },
+
+    notif_cardRemovedFromPlay: function( notif )
+    {
+        debug( 'notif_cardRemovedFromPlay' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.location = args.toLocation;
+
+            dojo.destroy(card.divId);
+            card.divId = null;
+        }
+    },
+
 
     notif_cardMoved: function( notif )
     {
@@ -980,6 +1017,22 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
     },
 
+    notif_yevgeniAdversaryRemoved: function( notif )
+    {
+        debug( 'notif_yevgeniAdversaryRemoved' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.ADVERSARY_OF_YEVGENI);
+
+            const id = `${card.divId}_yevgeni_adversary`;
+            dojo.destroy(id);    
+        }
+    },
+
     notif_maryamBenuPleromaAbilityUsed: function( notif )
     {
         debug( 'notif_maryamBenuPleromaAbilityUsed' );
@@ -1011,6 +1064,41 @@ return declare('seventhseacityoffivesails.notifications', null, {
             card.conditions = card.conditions.filter(condition => condition !== this.MARYAM_BENU_PLEROMA_ABILITY_USED);
 
             const id = `${args.cardId}_maryam_benu_pleroma_ability_used`;
+            dojo.destroy(id);    
+        }
+    },
+
+    notif_indomitableWillConditionStarted: function( notif )
+    {
+        debug( 'notif_indomitableWillConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        card.conditions.push(this.INDOMITABLE_WILL_CONDITION);
+
+        const imageElement = dojo.query('._7sfs-card', card.divId)[0];
+        const id = `${card.divId}_indomitable_will_condition`;
+        dojo.place( this.format_block( 'jstpl_generic_chip', {
+            id: id,
+            class: '_7sfs-indomitable-will-condition-chip',
+        }),  imageElement, 'last');
+
+        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("This character has Indomitable Will")}</div>` );
+    },
+
+    notif_indomitableWillConditionEnded: function( notif )
+    {
+        debug( 'notif_indomitableWillConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.INDOMITABLE_WILL_CONDITION);
+
+            const id = `${args.cardId}_indomitable_will_condition`;
             dojo.destroy(id);    
         }
     },

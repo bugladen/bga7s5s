@@ -5,12 +5,9 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class _01145 extends Scheme
 {
@@ -54,199 +51,152 @@ class _01145 extends Scheme
             ]);
     
             //Transition to the state where player can choose two locations.
-            $transition = $event->theah->createEvent(Events::Transition);
-            if ($transition instanceof EventTransition) {
-                $transition->playerId = $event->playerId;
-                $transition->transition = '01145';
-            }
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, '01145');
             $event->theah->queueEvent($transition);
         }
     }
 
-    public function planningPhaseAction($game, $fromLocation, $toLocation)
+    public function argsFromCard(Game $game, int $state, string $stateName, string $internalId): array
     {
-        $playerId = $game->getActivePlayerId();
-        $playerName = $game->getActivePlayerName();
-        $playerCount = $game->globals->get(Game::PLAYER_COUNT);
-
-        if ($fromLocation == 'Pass' || $toLocation == 'Pass')
+        $args = parent::argsFromCard($game, $state, $stateName, $internalId);
+        
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_2)
         {
-            $game->notifyAllPlayers('message', 
-                clienttranslate('${player_name} has chosen to pass on moving a Renown.'), [
-                "player_name" => $playerName,
-            ]);
+            $args["chosenLocation"] = $game->globals->get(Game::CHOSEN_LOCATION);
         }
-        else
+
+        return $args;
+    }
+
+    public function actFromCardPass(Game $game, int $state, string $stateName, string $internalId): void
+    {
+        parent::actFromCardPass($game, $state, $stateName, $internalId);
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01145)
         {
+            $locations = $game->theah->getCityLocations();
+            $locations = array_filter($locations, fn($location) => $location->Reknown > 0);
+            if (count($locations) > 0)
+            {
+                throw new \BgaUserException($game->translate("There are locations with Renown to move."));
+            }
+
+            $game->gamestate->nextState("pass");
+        }
+    }
+
+    public function actFromCardWithIds(Game $game, int $state, string $stateName, string $internalId, array $ids): void
+    {
+        parent::actFromCardWithIds($game, $state, $stateName, $internalId, $ids);
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01145)
+        {
+            $fromLocation = $ids[0];
+
             if ($game->getReknownForLocation($fromLocation) == 0)
             {
                 throw new \BgaUserException(sprintf($game->translate("%s does not have any Renown to move."), $fromLocation));
             }
-   
-            $playerAdded = $game->theah->createEvent(Events::ReknownRemovedFromLocation);
-            if ($playerAdded instanceof EventReknownRemovedFromLocation) {
-                $playerAdded->playerId = $playerId;
-                $playerAdded->location = $fromLocation;
-                $playerAdded->amount = 1;
-                $playerAdded->source = $playerName;
-            }
-            $game->theah->eventCheck($playerAdded);
-            $game->theah->queueEvent($playerAdded);
+
+            $game->globals->set(Game::CHOSEN_LOCATION, $fromLocation);
+
+            $game->gamestate->nextState("locationChosen");
+        }
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_2)
+        {
+            $fromLocation = $game->globals->get(Game::CHOSEN_LOCATION);
+            $toLocation = $ids[0];
+
+            $playerId = $game->getActivePlayerId();
     
-            $playerAdded = $game->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($playerAdded instanceof EventReknownAddedToLocation) {
-                $playerAdded->playerId = $playerId;
-                $playerAdded->location = $toLocation;
-                $playerAdded->amount = 1;
-                $playerAdded->description = $playerName;
-            }
+            $playerRemoved = EventFactory::createReknownRemovedFromLocationEvent($playerId, $fromLocation, 1, $this->getInjectCode());
+            $game->theah->eventCheck($playerRemoved);
+            $game->theah->queueEvent($playerRemoved);
+    
+            $playerAdded = EventFactory::createReknownAddedToLocationEvent($playerId, $toLocation, 1, $this->getInjectCode());
             $game->theah->eventCheck($playerAdded);
             $game->theah->queueEvent($playerAdded);
-        }
 
-        $scheme = $game->getPlayerChosenScheme($playerId);
+            $game->globals->set(Game::CHOSEN_CARD, $toLocation);
 
-        //Place Reknown at locations that have none
-        $amount = $game->getReknownForLocation(Game::LOCATION_CITY_DOCKS);
-        if ($toLocation == Game::LOCATION_CITY_DOCKS) {
-            $amount++;
+            $game->gamestate->nextState("locationChosen");
         }
-        if ($fromLocation == Game::LOCATION_CITY_DOCKS) {
-            $amount--;
-        }
-        if ($amount == 0)
+    }
+
+    public function stateFromCard(Game $game, int $state, string $stateName, string $internalId): void
+    {
+        parent::stateFromCard($game, $state, $stateName, $internalId);
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_3)
         {
-            $docksAdded = $game->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($docksAdded instanceof EventReknownAddedToLocation) {
-                $docksAdded->playerId = $playerId;
-                $docksAdded->location = Game::LOCATION_CITY_DOCKS;
-                $docksAdded->amount = 1;
-                $docksAdded->description = "{$scheme->getInjectCode()} - location had no Renown";
+            $toLocation = $game->globals->get(Game::CHOSEN_CARD);
+            $fromLocation = $game->globals->get(Game::CHOSEN_LOCATION);
+
+            $playerId = $game->getActivePlayerId();
+
+            //Place Reknown at locations that have none
+            $locations = $game->theah->getCityLocations();
+            foreach ($locations as $location)
+            {
+                $amount = $location->Reknown;
+                if ($toLocation == $location->Name) {
+                    $amount++;
+                }
+                if ($fromLocation == $location->Name) {
+                    $amount--;
+                }
+
+                if ($amount == 0)
+                {
+                    $reknownEvent = EventFactory::createReknownAddedToLocationEvent($playerId, $location->Name, 1, $this->getInjectCode());
+                    $game->theah->queueEvent($reknownEvent);
+                }
             }
-            // No pre-event check needed - not a player choice
-            $game->theah->queueEvent($docksAdded);
-        }
 
-        $amount = $game->getReknownForLocation(Game::LOCATION_CITY_FORUM);
-        if ($toLocation == Game::LOCATION_CITY_FORUM) {
-            $amount++;
-        }
-        if ($fromLocation == Game::LOCATION_CITY_FORUM) {
-            $amount--;
-        }
-        if ($amount == 0)
-        {
-            $forumAdded = $game->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($forumAdded instanceof EventReknownAddedToLocation) {
-                $forumAdded->playerId = $playerId;
-                $forumAdded->location = Game::LOCATION_CITY_FORUM;
-                $forumAdded->amount = 1;
-                $forumAdded->description = "{$scheme->getInjectCode()} - location had no Renown";
+            //Each player will now draw a card
+            $players = $game->loadPlayersBasicInfos();
+            foreach ($players as $playerId => $player) {
+                $addEvent = EventFactory::createCardDrawnEvent($playerId, sprintf($game->translate("%s effect"), $this->getInjectCode()));
+                $game->theah->queueEvent($addEvent);
             }
-            // No pre-event check needed - not a player choice
-            $game->theah->queueEvent($forumAdded);
-        }
 
-        $amount = $game->getReknownForLocation(Game::LOCATION_CITY_BAZAAR);
-        if ($toLocation == Game::LOCATION_CITY_BAZAAR) {
-            $amount++;
-        }
-        if ($fromLocation == Game::LOCATION_CITY_BAZAAR) {
-            $amount--;
-        }
-        if ($amount == 0)
-        {
-            $forumAdded = $game->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($forumAdded instanceof EventReknownAddedToLocation) {
-                $forumAdded->playerId = $playerId;
-                $forumAdded->location = Game::LOCATION_CITY_BAZAAR;
-                $forumAdded->amount = 1;
-                $forumAdded->description = "{$scheme->getInjectCode()} - location had no Renown";
+            //Now the player with the least amount of reknown will draw a card
+            // Get all the reknown to compare
+            $db = $game->theah->getDBObject();
+            $lowestPlayer = 0;
+            $players = $db->getObjectList("SELECT player_id, player_score score FROM player ORDER BY player_score");
+            $firstPlayer = $players[0]['player_id'];  
+            if (count($players) == 1) {
+                $lowestPlayer = $firstPlayer;
             }
-            // No pre-event check needed - not a player choice
-            $game->theah->queueEvent($forumAdded);
-        }
-
-        $amount = $game->getReknownForLocation(Game::LOCATION_CITY_OLES_INN);
-        if ($toLocation == Game::LOCATION_CITY_OLES_INN) {
-            $amount++;
-        }
-        if ($fromLocation == Game::LOCATION_CITY_OLES_INN) {
-            $amount--;
-        }
-        if ($playerCount > 2 && $amount == 0)
-        {
-            $forumAdded = $game->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($forumAdded instanceof EventReknownAddedToLocation) {
-                $forumAdded->playerId = $playerId;
-                $forumAdded->location = Game::LOCATION_CITY_OLES_INN;
-                $forumAdded->amount = 1;
-                $forumAdded->description = "{$scheme->getInjectCode()} - location had no Renown";
+            else
+            {
+                $lowest = $players[0]['score'];
+                $secondLowest = $players[1]['score'];
+                if ($lowest != $secondLowest) {
+                    $lowestPlayer = $players[0]['player_id'];
+                }    
             }
-            // No pre-event check needed - not a player choice
-            $game->theah->queueEvent($forumAdded);
-        }
 
-        $amount = $game->getReknownForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
-        if ($toLocation == Game::LOCATION_CITY_GOVERNORS_GARDEN) {
-            $amount++;
-        }
-        if ($fromLocation == Game::LOCATION_CITY_GOVERNORS_GARDEN) {
-            $amount--;
-        }
-        if ($playerCount > 3 && $amount == 0)
-        {
-            $forumAdded = $game->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($forumAdded instanceof EventReknownAddedToLocation) {
-                $forumAdded->playerId = $playerId;
-                $forumAdded->location = Game::LOCATION_CITY_GOVERNORS_GARDEN;
-                $forumAdded->amount = 1;
-                $forumAdded->description = "{$scheme->getInjectCode()} - location had no Renown";
+            if ($lowestPlayer != 0)
+            {
+                $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, sprintf($game->translate("%s effect - player has fewest Renown"), $this->getInjectCode()));   
+                //No need for a check
+                $game->theah->queueEvent($addEvent);
             }
-            // No pre-event check needed - not a player choice
-            $game->theah->queueEvent($forumAdded);
-        }
+            
+            //Lastly, the player with the fewest characters will draw a card
+            [$lowestPlayer, $lowestCount] = $game->getPlayerControllingFewestCharacters();
 
-        //Each player will now draw a card
-        $players = $game->loadPlayersBasicInfos();
-        foreach ($players as $playerId => $player) {
-            $addEvent = EventFactory::createCardDrawnEvent($playerId, sprintf($game->translate("%s effect"), $this->getInjectCode()));
-            $game->theah->queueEvent($addEvent);
-        }
+            if ($lowestPlayer != null)
+            {
+                $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, sprintf($game->translate("%s effect - player has fewest characters in play"), $this->getInjectCode()));
+                //No need for a check
+                $game->theah->queueEvent($addEvent);
+            }
 
-        //Now the player with the least amount of reknown will draw a card
-        // Get all the reknown to compare
-        $db = $game->theah->getDBObject();
-        $lowestPlayer = 0;
-        $players = $db->getObjectList("SELECT player_id, player_score score FROM player ORDER BY player_score");
-        $firstPlayer = $players[0]['player_id'];  
-        if (count($players) == 1) {
-            $lowestPlayer = $firstPlayer;
-        }
-        else
-        {
-            $lowest = $players[0]['score'];
-            $secondLowest = $players[1]['score'];
-            if ($lowest != $secondLowest) {
-                $lowestPlayer = $players[0]['player_id'];
-            }    
-        }
-
-        if ($lowestPlayer != 0)
-        {
-            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, sprintf($game->translate("%s effect - player has fewest Renown"), $this->getInjectCode()));   
-            //No need for a check
-            $game->theah->queueEvent($addEvent);
-        }
-        
-        //Lastly, the player with the fewest characters will draw a card
-        list($lowestPlayer, $lowestCount) = $game->getPlayerControllingFewestCharacters();
-
-        if ($lowestPlayer != null && $lowestPlayer == $this->ControllerId)
-        {
-            $addEvent = EventFactory::createCardDrawnEvent($lowestPlayer, sprintf($game->translate("%s effect - player has fewest characters in play"), $this->getInjectCode()));
-            //No need for a check
-            $game->theah->queueEvent($addEvent);
+            $game->gamestate->nextState();
         }
     }
 }

@@ -1442,8 +1442,20 @@ trait StatesTrait
 
         $this->globals->delete(Game::SMUGGLED_ITEM_ATTACHMENT_ID);
 
-        $nextPlayerId = $this->getPlayerAfter($currentPlayerId);
-        $this->globals->set(Game::CURRENT_PLAYER, $nextPlayerId);
+        $extraActions = $this->globals->get(Game::EXTRA_ACTIONS, 0);
+        if ($extraActions > 0)
+        {
+            $this->globals->set(Game::EXTRA_ACTIONS, $extraActions - 1);
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} NOW HAS ${extra_actions} EXTRA ACTION(S) LEFT'), [
+                "player_name" => $this->getPlayerNameById($currentPlayerId),
+                "extra_actions" => $extraActions
+            ]);
+        }
+        else
+        {
+            $nextPlayerId = $this->getPlayerAfter($currentPlayerId);
+            $this->globals->set(Game::CURRENT_PLAYER, $nextPlayerId);
+        }
 
         $event = EventFactory::createPlayerTurnEndEvent($currentPlayerId);
         $this->theah->queueEvent($event);

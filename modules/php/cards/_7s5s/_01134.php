@@ -3,9 +3,14 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01134;
 
-class _01134 extends Risk
+class _01134 extends Risk implements IHasActions
 {
+    use ActionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -14,7 +19,7 @@ class _01134 extends Risk
         $this->Image = "img/cards/7s5s/134.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
-        $this->Faction = "Usurra";
+        $this->Faction = "Ussura";
 
         $this->WealthCost = 0;
         $this->Riposte = 0;
@@ -27,6 +32,10 @@ class _01134 extends Risk
         ];
 
         $this->resetCard();
+
+        $this->Actions = [
+            new Action_01134(),
+        ];
     }
 
 }

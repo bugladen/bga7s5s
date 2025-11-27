@@ -34,9 +34,10 @@ class DB
             $priority = intval($result) - 1;
 
         $event->priority = $priority;
+        
+        $event->wasStacked = true;
         $serialized = addslashes(serialize($event));
         $sql = "INSERT INTO events (event_priority, event_serialized) values ($priority, '{$serialized}')";
-        /** @disregard P1013 */
         $this->game->DbQuery($sql);
     }
 
@@ -92,6 +93,13 @@ class DB
     {
         $sql = "DELETE FROM events 
                 WHERE (event_serialized LIKE '%EventTransition%' AND event_serialized LIKE '%{$reactionId}%')";
+        $this->executeSql($sql);
+    }
+
+    public function deleteEventsTargetingCard(int $cardId)
+    {
+        $sql = "DELETE FROM events 
+                WHERE (event_serialized LIKE '%Id\";i:{$cardId}%')";
         $this->executeSql($sql);
     }
 

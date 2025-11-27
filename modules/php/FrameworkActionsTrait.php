@@ -159,261 +159,7 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actPlanningPhase_01125(string $locations)
-    {
-        $location = json_decode($locations, true)[0];
-        
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) {
-            $event->playerId = $this->getActivePlayerId();
-            $event->location = $location;
-            $event->amount = 1;
-            $event->description = "The Boar's Guile: Adding Renown to Location";
-        }
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('Private: You have chosen to place renown onto ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
-            'i18n' => ['location'],
-            "location" => $location
-        ]);
-
-        $this->gamestate->nextState("reknownPlaced");
-    }
-
-    public function actPlanningPhase_01125_Pass()
-    {
-        $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('Private: You have chosen to pass placing renown onto a location.  Per The Boar\'s Guile you will now choose a city location to move a Renown FROM.'), []);
-
-        $this->gamestate->nextState("pass");
-    }
-
-    public function actPlanningPhase_01125_2(string $locations)
-    {
-        $location = json_decode($locations, true)[0];
-
-        //Check if the location actually has reknown to move
-        $reknown = $this->getReknownForLocation($location);
-        if ($reknown <= 0) 
-            throw new \BgaUserException(sprintf(self::_("%s does not have any renown to move."), $location));
-        
-        $event = EventFactory::createReknownRemovedFromLocationEvent($this->getActivePlayerId(), $location, 1, "The Boar's Guile: Moving Renown from one Location to an adjacent location");
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('Private: You have chosen to move renown from ${location}.  You must now choose a location to move the Renown TO.'), [
-            'i18n' => ['location'],
-            "location" => $location
-        ]);
-        
-        $this->globals->set(GAME::CHOSEN_LOCATION, $location);
-
-        $this->gamestate->nextState("locationChosen");
-    }
-
-    public function actPlanningPhase_01125_2_Pass()
-    {
-        $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('Private: You have passed choosing a location to move renown from.  Per The Boar\'s Guile you must now choose an enemy character to target.'), []);
-
-        $this->gamestate->nextState("pass");
-    }
-
-    public function actPlanningPhase_01125_3(string $locations)
-    {
-        $location = json_decode($locations, true)[0];
-
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) {
-            $event->playerId = $this->getActivePlayerId();
-            $event->location = $location;
-            $event->amount = 1;
-            $event->description = "The Boar's Guile: Moving Renown from one Location to an adjacent location";
-        }
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('Private: You have chosen to move renown to ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
-            'i18n' => ['location'],
-            "location" => $location
-        ]);
-
-        $this->gamestate->nextState("");
-    }
-
-    public function actPlanningPhase_01125_4(int $id)
-    {
-        $playerName = $this->getActivePlayerName();
-        $character = $this->getCardObjectFromDb($id);
-
-        $this->notifyAllPlayers('yevgeniAdversaryChosen', 
-            clienttranslate('${player_name} has chosen ${character_inject_code} as Yevgeni\'s Adversary.'), [
-            "player_name" => $playerName,
-            "character_inject_code" => $character->getInjectCode(),
-            "cardId" => $character->Id,
-        ]);
-
-        $character->addCondition(Game::ADVERSARY_OF_YEVGENI);
-        $this->updateCardObjectInDb($character);
-
-        $this->gamestate->nextState("");
-    }
-
-    public function actPlanningPhase_01125_4_Pass()
-    {
-        $this->notifyPlayer($this->getActivePlayerId(), 'message', 
-            clienttranslate('Private: You have passed choosing a character as an adversary.'), []);
-
-        $this->gamestate->nextState("");
-    }
-
-    public function actPlanningPhase_01126_2(string $leshiyeLocation, string $locations)
-    {
-        $playerId = $this->getActivePlayerId();
-        $playerName = $this->getActivePlayerName();
-
-        $locations = json_decode($locations, true);
-
-        //Check to be sure location can be added to locations
-        foreach ($locations as $location) {
-            $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($event instanceof EventReknownAddedToLocation) {
-                $event->playerId = $this->getActivePlayerId();
-                $event->location = $location;
-                $event->amount = 1;
-                $event->description = "Leshiye of the Wood: Adding Renown to Location";
-            }
-            $this->theah->eventCheck($event);        
-        }
-
-        //Get the chosen scheme card for the player
-        $scheme = $this->getPlayerChosenScheme($playerId);
-
-        //Check if event can be run
-        $schemeMoveEvent = $this->theah->createEvent(Events::SchemeMovedToCity);
-        if ($schemeMoveEvent instanceof EventSchemeMovedToCity) {
-            $schemeMoveEvent->scheme = $scheme;
-            $schemeMoveEvent->location = $leshiyeLocation;
-            $schemeMoveEvent->playerId = $playerId;
-        }
-        $this->theah->eventCheck($schemeMoveEvent);
-
-        $this->notifyAllPlayers('message', 
-            clienttranslate('${player_name} has chosen ${location} as the Chosen Location for ${scheme_inject_code}.'), [
-            'i18n' => ['location'],
-            "player_name" => $playerName,
-            "location" => $leshiyeLocation,
-            "scheme_inject_code" => $scheme->getInjectCode(),
-        ]);
-
-
-        if ($scheme instanceof \Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01126) {
-            $scheme->chosenLocation = $leshiyeLocation;
-            $this->updateCardObjectInDb($scheme);
-        }
-
-        foreach ($locations as $location) {
-            $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($event instanceof EventReknownAddedToLocation) {
-                $event->playerId = $this->getActivePlayerId();
-                $event->location = $location;
-                $event->amount = 1;
-                $event->description = "Leshiye of the Wood: Adding Reknown to Location";
-            }
-            $this->theah->eventCheck($event);
-            $this->theah->queueEvent($event);
-        }
-
-        // Move Leshiye of the Wood to the chosen location
-        $this->cards->moveCard($scheme->Id, $leshiyeLocation, $playerId);
-        $this->theah->queueEvent($schemeMoveEvent);
-
-        // Go back and finish running the Scheme events
-        $this->gamestate->nextState("");
-    }
-
-    public function actPlanningPhase_01144(string $locations)
-    {
-        $locations = json_decode($locations, true);
-        $location = array_shift($locations);
-        $activePlayerId = $this->getActivePlayerId();
-        $playerName = $this->getActivePlayerName();
-
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) {
-            $event->playerId = $this->getActivePlayerId();
-            $event->location = $location;
-            $event->amount = 1;
-            $event->description = $playerName;
-        }
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->globals->set(GAME::CHOSEN_LOCATION, $location);
-
-        // Get all the reknown to compare
-        $players = $this->getObjectListFromDb("SELECT player_id, player_score score FROM player ORDER BY player_score DESC");
-        if (count($players) == 1) {
-            $this->gamestate->nextState("fewestReknown");                
-            return;
-        }
-
-        if ($players[0]['player_id'] != $activePlayerId) {
-            $this->gamestate->nextState("notFewestReknown");                
-            return;
-        }
-
-        if ($players[0]['score'] == $players[1]['score']) {
-            $this->gamestate->nextState("notFewestReknown");                
-            return;
-        }
-
-        $this->gamestate->nextState("fewestReknown");
-    }
-
-    public function actPlanningPhase_01144_2(string $locations)
-    {
-        $locations = json_decode($locations, true);
-        $location = array_shift($locations);
-        $playerName = $this->getActivePlayerName();
-
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) {
-            $event->playerId = $this->getActivePlayerId();
-            $event->location = $location;
-            $event->amount = 1;
-            $event->description = $playerName;
-        }
-
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
-        $this->gamestate->nextState("");
-    }
-
-    public function actPlanningPhase_01145(string $fromLocation, string $toLocation)
-    {
-        $playerId = $this->getActivePlayerId();
-        $scheme = $this->getPlayerChosenScheme($playerId);
-        $scheme->planningPhaseAction($this, $fromLocation, $toLocation);
-
-        $this->gamestate->nextState("");
-    }
-
-    public function actPlanningPhase_01145_Pass()
-    {
-        $playerId = $this->getActivePlayerId();
-        $scheme = $this->getPlayerChosenScheme($playerId);
-        $scheme->planningPhaseAction($this, 'Pass', 'Pass');
-
-        $this->gamestate->nextState("");
-    }
-
-    private function actRecruitMercenary(int $recruitId, string $payWithCards)
+    public function actRecruitMercenary(int $recruitId, string $payWithCards)
     {
         $character = $this->getCardObjectFromDb($recruitId);
         if ($character == null)
@@ -475,12 +221,6 @@ trait FrameworkActionsTrait
             //No check needed
             $this->theah->queueEvent($event);
         }
-    }
-
-    public function actHighDramaBeginning_01144(int $recruitId, string $payWithCards)
-    {
-        $this->actRecruitMercenary($recruitId, $payWithCards);
-        $this->gamestate->nextState("");
     }
 
     public function actHighDramaMoveActionStart()
@@ -730,13 +470,8 @@ trait FrameworkActionsTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
-        [$discount, $explanations] = $this->theah->getEquipDiscount($performer, $attachment);
-        if ($discount != 0)
-            $this->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                "explanations" => $explanations,
-            ]);
-        $this->globals->set(Game::DISCOUNT, $discount);
-        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+        $event = EventFactory::createEnteringPayStateEvent($playerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
+        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("attachmentSelected");
     }
@@ -760,13 +495,8 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHOSEN_CARD, $attachmentId);
 
-        [$discount, $explanations] = $this->theah->getEquipDiscount($performer, $attachment);
-        if ($discount != 0)
-            $this->notify->player($performer->ControllerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                "explanations" => $explanations,
-            ]);
-        $this->globals->set(Game::DISCOUNT, $discount);
-        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+        $event = EventFactory::createEnteringPayStateEvent($performer->ControllerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
+        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("attachmentSelected");
     }
@@ -1050,14 +780,9 @@ trait FrameworkActionsTrait
         }
         else
         {
-            [$discount, $explanations] = $this->theah->getActionFromHandDiscount($performer = null, $action);
-            $this->globals->set(Game::DISCOUNT, $discount);
-            $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
-
-            if ($discount != 0)
-                $this->notify->player($player_id, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                    "explanations" => $explanations,
-                ]);
+            $card = $action->getOwningCard($this->theah);
+            $event = EventFactory::createEnteringPayStateEvent($player_id, $card->Id, Game::PAY_STATE_IN_HAND_ACTION, $action->Id);
+            $this->theah->queueEvent($event);
     
             $this->gamestate->nextState("inHandActionChosen");
         }
@@ -1075,14 +800,9 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
-        [$discount, $explanations] = $this->theah->getActionFromHandDiscount($performer, $action);
-        $this->globals->set(Game::DISCOUNT, $discount);
-        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
-
-        if ($discount != 0)
-            $this->notify->player($playerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                "explanations" => $explanations,
-            ]);
+        $card = $action->getOwningCard($this->theah);
+        $event = EventFactory::createEnteringPayStateEvent($playerId, $card->Id, Game::PAY_STATE_IN_HAND_ACTION, $action->Id);
+        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("inHandActionPerformerChosen");
     }
@@ -1445,7 +1165,10 @@ trait FrameworkActionsTrait
         if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE && ! $character instanceof Leader) {
             throw new \BgaUserException(self::_("Legendary Reputation: Only Leaders can Intervene"));
         }
-
+        else if ($challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE)
+        {
+            throw new \BgaUserException(self::_("Valeri Mikhailov: No Characters can Intervene."));
+        }
 
         //Reset the conditions for defender
         $target->removeCondition(Game::DUEL_DEFENDER);
@@ -1574,9 +1297,13 @@ trait FrameworkActionsTrait
 
         $this->globals->set(Game::CHOSEN_CARD, $card->Id);
 
+        $event = EventFactory::createCombatCardAnnouncedEvent($playerId, $card->Id);
+        $this->theah->queueEvent($event);
+
         if ($card->hasManeuversAvailableToPlayer($playerId, $this->theah))
         {
-            $this->gamestate->nextState("useManeuver");
+            $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "useManeuver");
+            $this->theah->queueEvent($transitionEvent);
         }
         else
         {
@@ -1584,8 +1311,11 @@ trait FrameworkActionsTrait
             $this->updateCardObjectInDb($card);
             $this->cards->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId);
 
-            $this->gamestate->nextState("applyCombatCardStats");
+            $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "applyCombatCardStats");
+            $this->theah->queueEvent($transitionEvent);
         }   
+
+        $this->gamestate->nextState("combatCardChosen");
     }
 
     public function actDuelUseManeuverFromCombatCard(string $maneuverId)
@@ -1605,6 +1335,9 @@ trait FrameworkActionsTrait
         }
 
         $this->globals->set(Game::CHOSEN_MANEUVER, $maneuverId);
+
+        $event = EventFactory::createEnteringPayStateEvent($this->getActivePlayerId(), $card->Id, Game::PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD);
+        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("maneuverChosen");
     }
@@ -1939,7 +1672,7 @@ trait FrameworkActionsTrait
 
         $reactionId = $this->globals->get(Game::REACTION_ID);
 
-        $discount = $this->theah->getReactionFromHandDiscount($reaction);
+        [$discount, $explanations] = $this->theah->getReactionFromHandDiscount($reaction);
 
         $cost = $card->WealthCost - $discount;
         if ($cost < 0) $cost = 0;
@@ -1997,9 +1730,6 @@ trait FrameworkActionsTrait
             $riskReactionTriggered = EventFactory::createRiskReactionTriggeredEvent($playerId,  $card->Id, $internalId, $reactionId);
             $this->theah->queueEvent($riskReactionTriggered);
         }
-
-        $reaction->reactionPaidFor($this, $this->gamestate->state_id(), $internalId, $reactionId);
-
         $this->gamestate->nextState("paid");
    }
 
