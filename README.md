@@ -24,10 +24,7 @@ SFTP Upload the entire project directory up into the BGA server.
 ## State of the Project 
 
 - The core game mechanics are implemented.
-- Castille Starter Deck
-- Eisen Starter Deck
-- Montaigne Starter Deck
-- Vodacce Starter Deck
+- All Core Set starter decks are implemented
 
 ## Sets Implemented 
 - Core (In Progress)
