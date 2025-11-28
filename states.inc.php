@@ -29,8 +29,8 @@ $machinestates = [
 
     States::PICK_DECKS => [
         "name" => "pickDecks",
-        "description" => clienttranslate('Your opponent(s) must pick a deck to play with.'),
-        "descriptionmyturn" => clienttranslate('${you} must pick your deck to play with:'),
+        "description" => clienttranslate('Your opponent(s) is selecting a deck to play with.'),
+        "descriptionmyturn" => clienttranslate('Quick buttons for Available Starter Decks:'),
         "type" => "multipleactiveplayer",
         "args" => "argAvailableDecks",
         "action" => "stMultiPlayerInit",
