@@ -92,6 +92,7 @@ trait FrameworkActionsTrait
     public function actPickDeck(string $deck_type, string $deck_id, string $deck_json): void
     {
         $playerId = $this->getCurrentPlayerId();
+        $valid = false;
 
         if ($deck_type === 'starter') 
         {
@@ -107,12 +108,48 @@ trait FrameworkActionsTrait
             ]);
 
             $deck_json = addslashes(json_encode($deck));
+            $valid = true;
+        }
+        else if ($deck_type === 'custom')
+        {
+            //Validate the deck JSON
+            if (! json_validate($deck_json))
+            {
+                throw new \BgaUserException(self::_("Invalid deck JSON."));
+            }
+
+            $deck = json_decode($deck_json);
+            $errors = [];
+            if (DeckValidator::validate($this, $deck, $errors))
+            {
+                $deck_json = addslashes(json_encode($deck));
+                $valid = true;
+
+                $this->notify->player($playerId, 'message', clienttranslate('Private: Your custom deck `${deck_name}` has been validated and accepted.'), [
+                    'deck_name' => $deck->name,
+                ]);
+            }
+            else
+            {
+                $this->notify->player($playerId, 'message', clienttranslate('Private: The following errors were encountered with your custom deck:'), []);
+                foreach ($errors as $error)
+                {
+                    $this->notify->player($playerId, 'message', $error, ['error' => $error]);
+                }
+            }
+        }
+        else
+        {
+            throw new \BgaUserException(sprintf(self::_("%s is not a valid deck type."), $deck_type));
         }
 
-        $sql = "UPDATE player SET deck_source = '$deck_json' WHERE player_id='$playerId'";
-        $this->DbQuery($sql);
-
-        $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked'); // deactivate player; if none left, transition to 'deckPicked' state
+        if ($valid)
+        {
+            $sql = "UPDATE player SET deck_source = '$deck_json' WHERE player_id='$playerId'";
+            $this->DbQuery($sql);
+    
+            $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked'); // deactivate player; if none left, transition to 'deckPicked' state
+        }
     }
 
     public function actDayPlanned(int $scheme, int $character): void

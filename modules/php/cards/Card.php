@@ -38,7 +38,7 @@ abstract class Card
         $this->ExpansionName = "";
         $this->ExpansionNumber = 0;
         $this->CardNumber = 0;
-        $this->Faction = "";
+        $this->Faction = "Neutral";
         $this->Engaged = false;
 
         $this->Location = "";

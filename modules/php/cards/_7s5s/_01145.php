@@ -21,7 +21,6 @@ class _01145 extends Scheme
         $this->ExpansionNumber = 1;
         $this->CardNumber = 145;
 
-        $this->Faction = "";
         $this->Initiative = 15;
         $this->PanacheModifier = 0;
 

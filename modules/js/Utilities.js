@@ -33,11 +33,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const tabs = document.querySelectorAll('._7sfs-deck-picker-tab-content');
         tabs.forEach((tab, i) => {
             if (this.selectedDeck === i) {
-                var deckPickerButtons = document.querySelectorAll('.deck-picker-button');
-                deckPickerButtons.forEach((button) => {
-                    button.disabled = true;
-                });
-                
                 const id = tab.getAttribute('id');
                 this.onStarterDeckSelected(id);
             }

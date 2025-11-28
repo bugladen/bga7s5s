@@ -23,7 +23,6 @@ class _01144 extends Scheme
         $this->ExpansionNumber = 1;
         $this->CardNumber = 144;
 
-        $this->Faction = "";
         $this->Initiative = 50;
         $this->PanacheModifier = 0;
 

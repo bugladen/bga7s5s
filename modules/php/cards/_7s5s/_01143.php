@@ -29,7 +29,6 @@ class _01143 extends Scheme implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 143;
 
-        $this->Faction = "";
         $this->Initiative = 43;
         $this->PanacheModifier = 0;
 

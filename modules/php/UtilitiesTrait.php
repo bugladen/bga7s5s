@@ -298,7 +298,7 @@ trait UtilitiesTrait
         return $count;
     }
 
-    public function instantiateCard(string $cardClass, ?int $id = null) : Card 
+    public function getCardClassName(string $cardClass): string
     {
         //Pull the first two characters of the card id to get the set
         $set = substr($cardClass, 0, 2);
@@ -311,7 +311,12 @@ trait UtilitiesTrait
                 $set = "_7s5s";
         }
 
-        $className = "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$cardClass";
+        return "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$cardClass";
+    }
+
+    public function instantiateCard(string $cardClass, ?int $id = null) : Card 
+    {
+        $className = $this->getCardClassName($cardClass);
         $card = new $className();
         if ($id) 
         {
