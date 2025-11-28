@@ -25,7 +25,7 @@ class _01013 extends Character implements IHasTechniques, IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 13;
 
-        $this->Faction = "Vodacce";
+        $this->initializeFaction("Vodacce");
         $this->Title = "Mouse Among Rats";
         $this->Resolve = 4;
         $this->Combat = 3;

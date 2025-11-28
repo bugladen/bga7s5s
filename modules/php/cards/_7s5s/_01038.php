@@ -20,7 +20,7 @@ class _01038 extends Character implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 38;
 
-        $this->Faction = "Eisen";
+        $this->initializeFaction("Eisen");
         $this->Title = "Industrous Ironmonger";
         $this->Resolve = 4;
         $this->Combat = 1;

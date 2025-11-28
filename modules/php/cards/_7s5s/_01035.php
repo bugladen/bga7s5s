@@ -23,7 +23,7 @@ class _01035 extends Leader implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 35;
 
-        $this->Faction = "Eisen";
+        $this->initializeFaction("Eisen");
         $this->Title = "Old Iron";
         $this->Resolve = 9;
         $this->Combat = 3;

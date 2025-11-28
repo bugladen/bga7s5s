@@ -31,7 +31,7 @@ class _01008 extends Character implements IHasActions, IHasReactions, IHasTechni
         $this->ExpansionNumber = 1;
         $this->CardNumber = 8;
 
-        $this->Faction = "Vodacce";
+        $this->initializeFaction("Vodacce");
         $this->Title = "Sadistic Weaver";
         $this->Resolve = 5;
         $this->Combat = 1;

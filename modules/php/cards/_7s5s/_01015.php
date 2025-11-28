@@ -29,7 +29,7 @@ class _01015 extends Scheme implements IHasActions, IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 15;
 
-        $this->Faction = "Vodacce";
+        $this->initializeFaction("Vodacce");
         $this->Initiative = 60;
         $this->PanacheModifier = 0;
 

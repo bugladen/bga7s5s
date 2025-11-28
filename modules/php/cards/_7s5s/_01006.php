@@ -27,7 +27,7 @@ class _01006 extends Leader implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 6;
 
-        $this->Faction = "Vodacce";
+        $this->initializeFaction("Vodacce");
         $this->Title = "Unrepentant Patriarch";
         $this->Resolve = 7;
         $this->Combat = 2;

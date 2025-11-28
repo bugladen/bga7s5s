@@ -24,7 +24,7 @@ class _01116 extends Leader implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 116;
 
-        $this->Faction = "Ussura";
+        $this->initializeFaction("Ussura");
         $this->Title = "The Boar";
         $this->Resolve = 12;
         $this->Combat = 4;

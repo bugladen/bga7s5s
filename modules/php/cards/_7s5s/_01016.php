@@ -26,7 +26,7 @@ class _01016 extends Scheme implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 16;
 
-        $this->Faction = "Vodacce";
+        $this->initializeFaction("Vodacce");
         $this->Initiative = 73;
         $this->PanacheModifier = -1;
 

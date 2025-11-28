@@ -29,7 +29,7 @@ class _01071 extends Scheme implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 71;
 
-        $this->Faction = "Montaigne";
+        $this->initializeFaction("Montaigne");
         $this->Initiative = 26;
         $this->PanacheModifier = -1;
 

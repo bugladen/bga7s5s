@@ -25,7 +25,7 @@ class _01085 extends Risk implements IHasActions, ISorcererAbility
         $this->Image = "img/cards/7s5s/085.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
-        $this->Faction = "Montaigne";
+        $this->initializeFaction("Montaigne");
         
         $this->WealthCost = 0;
         $this->Riposte = 0;

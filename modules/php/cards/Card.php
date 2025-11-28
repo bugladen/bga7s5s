@@ -19,6 +19,7 @@ abstract class Card
     public int $ExpansionNumber;
     public int $CardNumber;
     public string $Faction;
+    public Array $Factions = [];
     public bool $Engaged;
     public Array $Traits = [];
     public Array $ModifiedTraits = [];
@@ -38,7 +39,7 @@ abstract class Card
         $this->ExpansionName = "";
         $this->ExpansionNumber = 0;
         $this->CardNumber = 0;
-        $this->Faction = "Neutral";
+        $this->initializeFaction("Neutral");
         $this->Engaged = false;
 
         $this->Location = "";
@@ -436,7 +437,7 @@ abstract class Card
             'controllerId' => $this->ControllerId,
             'name' => $this->Name,
             'image' => $this->Image,
-            'faction' => $this->Faction,
+            'faction' => $this->getFactionForPropertyDisplay(),
             'location' => $this->Location,
             'engaged' => $this->Engaged,
             'reknown' => $this->Reknown,
@@ -592,5 +593,40 @@ abstract class Card
     public function resetCard()
     {
         $this->ModifiedTraits = $this->Traits;
+    }
+
+    public function addFaction(string $faction): void
+    {
+        if (!in_array($faction, $this->Factions))
+        {
+            $this->Factions[] = $faction;
+            $this->IsUpdated = true;
+        }
+    }
+
+    public function hasFaction(string $faction): bool
+    {
+        //Hack to prevent older games from breaking
+        if (empty($this->Factions))
+            $this->Factions = [ $this->Faction ];
+
+        return in_array($faction, $this->Factions);
+    }
+
+    public function initializeFaction(string $faction): void
+    {
+        $this->Factions = [];
+        $this->Factions[] = $faction;
+    }
+
+    public function getFactionForPropertyDisplay(): string
+    {
+        //Hack to prevent older games from breaking
+        if (empty($this->Factions))
+        {
+            return $this->Faction;
+        }
+
+        return $this->Factions[0];
     }
 }

@@ -21,7 +21,7 @@ class _01101 extends FactionAttachment implements IHasTechniques
         $this->Image = "img/cards/7s5s/101.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
-        $this->Faction = "Castille";
+        $this->initializeFaction("Castille");
         
         $this->ResolveModifier = 0;
         $this->CombatModifier = 0;

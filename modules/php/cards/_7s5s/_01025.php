@@ -21,7 +21,7 @@ class _01025 extends Risk implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 25;
 
-        $this->Faction = 'Vodacce';
+        $this->initializeFaction('Vodacce');
 
         $this->Riposte = 0;
         $this->Parry = 2;

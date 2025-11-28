@@ -25,7 +25,7 @@ class _01011 extends Character implements IHasActions, IHasTechniques
         $this->ExpansionNumber = 1;
         $this->CardNumber = 11;
 
-        $this->Faction = "Vodacce";
+        $this->initializeFaction("Vodacce");
         $this->Title = "Haughty Heir";
         $this->Resolve = 5;
         $this->Combat = 3;

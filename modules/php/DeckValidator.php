@@ -67,7 +67,7 @@ class DeckValidator
             return false;
         }
 
-        if ($card->Faction != $faction && $card->Faction != "Neutral")
+        if (!$card->hasFaction($faction) && !$card->hasFaction("Neutral"))
         {
             $errors[] = sprintf(clienttranslate('The leader card %s does not belong to the %s faction and is not Neutral.'), $deck->leader, $faction);
             return false;
@@ -106,7 +106,7 @@ class DeckValidator
                 $errors[] = sprintf(clienttranslate('The approach card %s has the Brute trait, which is not allowed in the Approach deck.'), $approachCard);
             }
 
-            if ($card->Faction != $faction && $card->Faction != "Neutral")
+            if (!$card->hasFaction($faction) && !$card->hasFaction("Neutral"))
             {
                 $errors[] = sprintf(clienttranslate('The approach card %s does not belong to the %s faction and is not Neutral.'), $approachCard, $faction);
             }
@@ -155,7 +155,7 @@ class DeckValidator
                 $errors[] = sprintf(clienttranslate('There is more than one line item entry for card %s - "%s" in the Faction deck.'), $factionCard->id, $card->Name);
             }
 
-            if ($card->Faction != $faction && $card->Faction != "Neutral")
+            if (!$card->hasFaction($faction) && !$card->hasFaction("Neutral"))
             {
                 $errors[] = sprintf(clienttranslate('The faction card %s - "%s" does not belong to the %s faction and is not Neutral.'), $factionCard->id, $card->Name, $faction);
             }

@@ -21,7 +21,7 @@ class _01017 extends Brute implements IHasActions
         $this->CardNumber = 17;
 
         $this->Title = 'Hoodlum';
-        $this->Faction = 'Vodacce';
+        $this->initializeFaction('Vodacce');
 
         $this->Resolve = 2;
         $this->Combat = 1;

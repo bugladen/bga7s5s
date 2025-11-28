@@ -45,6 +45,10 @@ trait DeckTrait
             // Leader
             $card = $this->createCardInLocation($deck->leader, Game::LOCATION_PLAYER_HOME, $playerId, $playerId);
 
+            //The Leader's faction is the same as the deck's faction.  This will override any original factions of the leader card.
+            $card->initializeFaction($faction);
+            $this->updateCardObjectInDb($card);
+
             //Set the id of the leader card in the player record
             $sql = "UPDATE player SET leader_card_id = $card->Id WHERE player_id = $playerId";
             $this->DbQuery($sql);

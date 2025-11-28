@@ -25,7 +25,7 @@ class _01062 extends Leader implements IHasActions, IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 62;
 
-        $this->Faction = "Montaigne";
+        $this->initializeFaction("Montaigne");
         $this->Title = "Genteel Spy";
         $this->Resolve = 5;
         $this->Combat = 1;

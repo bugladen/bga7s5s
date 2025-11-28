@@ -27,7 +27,7 @@ class _01044 extends Scheme implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 44;
 
-        $this->Faction = "Eisen";
+        $this->initializeFaction("Eisen");
         $this->Initiative = 37;
         $this->PanacheModifier = -1;
 

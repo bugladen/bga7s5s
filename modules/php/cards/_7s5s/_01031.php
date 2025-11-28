@@ -21,7 +21,7 @@ class _01031 extends Risk implements IHasManeuvers
         $this->ExpansionNumber = 1;
         $this->CardNumber = 31;
 
-        $this->Faction = 'Vodacce';
+        $this->initializeFaction('Vodacce');
 
         $this->Riposte = 0;
         $this->Parry = 0;

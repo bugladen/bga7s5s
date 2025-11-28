@@ -21,7 +21,7 @@ class _01068 extends Character implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 68;
 
-        $this->Faction = "Montaigne";
+        $this->initializeFaction("Montaigne");
         $this->Title = "Lithe Lioness";
         $this->Resolve = 5;
         $this->Combat = 2;

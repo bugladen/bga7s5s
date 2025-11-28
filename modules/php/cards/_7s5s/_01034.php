@@ -22,7 +22,7 @@ class _01034 extends Risk implements IHasActions, IAmARiskThatTargetsCharacters
         $this->ExpansionNumber = 1;
         $this->CardNumber = 34;
 
-        $this->Faction = 'Vodacce';
+        $this->initializeFaction('Vodacce');
 
         $this->Riposte = 0;
         $this->Parry = 2;

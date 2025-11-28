@@ -22,7 +22,7 @@ class _01075 extends FactionAttachment implements IHasActions
         $this->Image = "img/cards/7s5s/075.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
-        $this->Faction = 'Montaigne';
+        $this->initializeFaction('Montaigne');
         
         $this->ResolveModifier = 0;
         $this->CombatModifier = 0;

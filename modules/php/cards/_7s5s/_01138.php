@@ -20,7 +20,7 @@ class _01138 extends Risk implements IHasActions, IAmARiskThatTargetsCharacters
         $this->Image = "img/cards/7s5s/138.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
-        $this->Faction = "Ussura";
+        $this->initializeFaction("Ussura");
 
         $this->WealthCost = 1;
         $this->Riposte = 0;

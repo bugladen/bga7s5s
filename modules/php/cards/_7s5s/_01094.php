@@ -22,7 +22,7 @@ class _01094 extends Character implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 94;
 
-        $this->Faction = "Castille";
+        $this->initializeFaction("Castille");
         $this->Title = "Handyman and Husband";
         $this->Resolve = 5;
         $this->Combat = 0;

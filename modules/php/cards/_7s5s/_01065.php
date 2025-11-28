@@ -23,7 +23,7 @@ class _01065 extends Character implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 67;
 
-        $this->Faction = "Montaigne";
+        $this->initializeFaction("Montaigne");
         $this->Title = "Maestro Machinist";
         $this->Resolve = 4;
         $this->Combat = 3;
