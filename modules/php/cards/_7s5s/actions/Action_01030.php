@@ -128,7 +128,7 @@ class Action_01030 extends RiskAction implements ISorcererAbility
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::PULL_THE_STRAND_PRESSURE_TYPE);
 
-            $pressureStats = $game->theah->getPressureStats($performer, Game::STAT_INFLUENCE);
+            $pressureStats = $game->theah->getPressureStats($performer, $performer->Location, Game::STAT_INFLUENCE);
             $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, $owner->Id, $performer->Location, $pressureStats);
             $game->theah->queueEvent($pressureOccuringEvent);
 

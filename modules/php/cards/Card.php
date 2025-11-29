@@ -426,7 +426,7 @@ abstract class Card
         return 0;
     }
 
-    public function getPressureStats(Theah $theah, Character $performer, Array &$pressureTypes): void {}
+    public function getPressureStats(Theah $theah, ?Character $performer, string $location, Array &$pressureTypes): void {}
     
     public function getPropertyArray(Game $game)
     {

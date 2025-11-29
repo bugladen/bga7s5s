@@ -9,7 +9,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01028 extends RiskAction
 {
@@ -20,18 +19,6 @@ class Action_01028 extends RiskAction
         $this->Name = clienttranslate('Move Thugs and Pressure City Location');
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
-    {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
-        {
-            return false;
-        }
-
-        $thugs = $theah->getCharactersInCityByPlayerId($playerId);
-        $thugs = array_filter($thugs, fn($thug) => $thug->hasTrait('Thug'));
-
-        return count($thugs) > 0;
-    }
 
     public function handleEvent(Event $event)
     {
@@ -123,23 +110,6 @@ class Action_01028 extends RiskAction
                 $pressureBonus++;
             }
 
-            $performer = null;
-            if (count($ids) > 0)
-            {
-                $performer = $game->theah->getCharacterById($ids[0]);
-            }
-            else
-            {
-                $characters = $game->theah->getCharactersAtLocation($location);
-                $characters = array_values(array_filter($characters, fn($c) => $c->ControllerId == $owner->ControllerId));
-                $performer = $characters[0];
-            }
-
-            if ($performer == null)
-            {
-                throw new \BgaUserException($game->translate("No thugs were moved and no performer found at the pressure location"));
-            }
-
             $game->notify->all("message", clienttranslate('${card_inject_code} ${count} Thugs were moved to the pressure location which will add +${bonus} to ${player_name}\'s Influence value'), [
                 'card_inject_code' => $owner->getInjectCode(),
                 'count' => count($ids),
@@ -147,15 +117,14 @@ class Action_01028 extends RiskAction
                 'player_name' => $game->getPlayerNameById($owner->ControllerId),
             ]);
 
-
-            $game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+            $game->globals->set(Game::CHOSEN_PERFORMER, 0);
             $game->globals->set(Game::PRESSURING_PLAYER, $owner->ControllerId);
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::PACK_TACTICS_PRESSURE_TYPE);
             $game->globals->set(Game::PRESSURE_BONUS, $pressureBonus);
 
-            $pressureStats = $game->theah->getPressureStats($performer, Game::STAT_INFLUENCE);
-            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, $owner->Id, $location, $pressureStats);
+            $pressureStats = $game->theah->getPressureStats(null, $location, Game::STAT_INFLUENCE);
+            $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, 0, $location, $pressureStats);
             $game->theah->queueEvent($pressureOccuringEvent);
 
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "pressureLocation", $this->Id);

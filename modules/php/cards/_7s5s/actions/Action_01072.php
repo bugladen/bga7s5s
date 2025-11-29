@@ -67,7 +67,7 @@ class Action_01072 extends CardAction
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE);
 
-            $pressureStats = $event->theah->getPressureStats($leader, Game::STAT_INFLUENCE);
+            $pressureStats = $event->theah->getPressureStats($leader, $leader->Location, Game::STAT_INFLUENCE);
             $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($leader->ControllerId, $leader->Id, $leader->Location, $pressureStats);
             $event->theah->queueEvent($pressureOccuringEvent);
 

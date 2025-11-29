@@ -514,11 +514,20 @@ trait StatesTrait
         $this->theah->buildCity();
 
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
-        $performer = $this->getCardObjectFromDb($performerId);
+        if ($performerId != 0)        
+        {
+            $performer = $this->getCardObjectFromDb($performerId);
+            $location = $performer->Location;
+        }
+        else
+        {
+            $performer = null;
+            $location = $this->globals->get(GAME::CHOSEN_LOCATION);
+        }
         
         if ($this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false))
         {
-            $engageEvent = EventFactory::createCardEngagedEvent($claimingPlayerId, $performer->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($claimingPlayerId, $performerId);
             $this->theah->eventCheck($engageEvent);
             $this->theah->queueEvent($engageEvent);
 
@@ -526,10 +535,10 @@ trait StatesTrait
         }
         
         $pressureStat = $this->globals->get(Game::PRESSURE_STAT, Game::STAT_INFLUENCE);
-        list($success, $totals, $difference) = $this->pressureLocation($claimingPlayerId, $performer, $pressureStat);
+        list($success, $totals, $difference) = $this->pressureLocation($claimingPlayerId, $performer, $location, $pressureStat);
 
-        $pressureStats = $this->theah->getPressureStats($performer, $pressureStat);
-        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureStats), $success, $totals, $difference);
+        $pressureStats = $this->theah->getPressureStats($performer, $location, $pressureStat);
+        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer?->Id, $location, implode(", ", $pressureStats), $success, $totals, $difference);
         $pressuredEvent->abilityId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, "");
         $pressuredEvent->highDramaBasicAction = $this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false);
         

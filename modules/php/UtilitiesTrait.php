@@ -396,7 +396,7 @@ trait UtilitiesTrait
         return in_array($state, $array);
     }
 
-    function pressureLocation(int $attemptingPlayerId, Character $performer, string $pressureType): Array
+    function pressureLocation(int $attemptingPlayerId, ?Character $performer, string $location, string $pressureType): Array
     {
         //Get an array of players to keep track of their influence at the location 
         $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player");
@@ -405,19 +405,19 @@ trait UtilitiesTrait
             $playerInfluences[$playerId] = $player;
         }
 
-        $pressureStats = $this->theah->getPressureStats($performer, $pressureType);
+        $pressureStats = $this->theah->getPressureStats($performer, $location, $pressureType);
 
         //Get the total influence of the characters at the location
-        $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
+        $charactersAtLocation = $this->theah->getCharactersAtLocation($location);
 
         //If Claude reaction has been activated, and claim is at Claude's location,
         //then we only want to count the performer and en garde characters
         if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CLAUDE_PRESSURE_TYPE))
         {
             $claude = $this->theah->getCardById($this->globals->get(Game::CLAUD_ID));
-            if ($claude->Location == $performer->Location)
+            if ($claude->Location == $location)
             {
-                $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => $character->Id == $performer->Id || ! $character->Engaged);
+                $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => $character->Id == $performer?->Id || ! $character->Engaged);
             }
         }
 
@@ -444,16 +444,16 @@ trait UtilitiesTrait
                 switch ($pressureStat) 
                 {
                     case Game::STAT_COMBAT:
-                        $playerInfluences[$playerId]['influence'] += $character->getCombatPressureValue($this->theah, $performer->Location);
+                        $playerInfluences[$playerId]['influence'] += $character->getCombatPressureValue($this->theah, $location);
                         break;
                     case Game::STAT_FINESSE:
-                        $playerInfluences[$playerId]['influence'] += $character->getFinessePressureValue($this->theah, $performer->Location);
+                        $playerInfluences[$playerId]['influence'] += $character->getFinessePressureValue($this->theah, $location);
                         break;
                     case Game::STAT_INFLUENCE:
-                        $playerInfluences[$playerId]['influence'] += $character->getInfluencePressureValue($this->theah, $performer->Location);
+                        $playerInfluences[$playerId]['influence'] += $character->getInfluencePressureValue($this->theah, $location);
                         break;
                     case Game::STAT_RESOLVE:
-                        $playerInfluences[$playerId]['influence'] += $character->getResolvePressureValue($this->theah, $performer->Location);
+                        $playerInfluences[$playerId]['influence'] += $character->getResolvePressureValue($this->theah, $location);
                         break;
                 }
             }
@@ -468,7 +468,7 @@ trait UtilitiesTrait
             //If Pack Tactics is in play, add the Influence pressure bonus
             if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::PACK_TACTICS_PRESSURE_TYPE) && $pressureStat == Game::STAT_INFLUENCE)
             {
-                $playerInfluences[$character->ControllerId]['influence'] += $this->globals->get(Game::PRESSURE_BONUS, 0);
+                $playerInfluences[$attemptingPlayerId]['influence'] += $this->globals->get(Game::PRESSURE_BONUS, 0);
             }
         }
 

@@ -808,13 +808,14 @@ trait EventHub
             case $event instanceof EventLocationPressured:
                 $handler = function (Theah $theah, EventLocationPressured $event)
                 {
-                    $performer = $theah->getCharacterById($event->performerId);
-                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} chose ${performer_inject_code} to Pressure ${location}.
+                    $performer = $event->performerId ? $theah->getCharacterById($event->performerId) : null;
+                    $performerInjectCode = $performer ? $performer->getInjectCode() : "";
+                    $theah->game->notify->all("message", clienttranslate('${player_name} chose ${performer_inject_code} to Pressure ${location}.
                     <br>Pressure Type: ${pressureType}
                     <br>Influence Totals: ${totals}'), [
                         'i18n' => ['location', 'pressureType'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "performer_inject_code" => $performer->getInjectCode(),
+                        "performer_inject_code" => $performerInjectCode,
                         "location" => $event->location,
                         "pressureType" => $event->pressureType,
                         "totals" => $event->totalsExplanation,
@@ -837,7 +838,6 @@ trait EventHub
             case $event instanceof EventLocationPressureResult:
                 $handler = function (Theah $theah, EventLocationPressureResult $event)
                 {
-                    $performer = $theah->getCharacterById($event->performerId);
                     $theah->game->notify->all("message", clienttranslate('Pressure Result: ${result}.'), [
                         "result" => $event->success ? clienttranslate("SUCCESS") : clienttranslate("FAILED"),
                     ]);
@@ -846,7 +846,7 @@ trait EventHub
                     {
                         if ($event->success)
                         {
-                            $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $performer->Id, $performer->Location);
+                            $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $event->performerId, $event->location);
                             $theah->eventCheck($claimEvent);
                             $theah->queueEvent($claimEvent);
                         }

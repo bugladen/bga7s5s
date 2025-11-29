@@ -663,7 +663,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createLocationClaimedEvent(int $playerId, int $performerId, string $location): EventLocationClaimed
+    public static function createLocationClaimedEvent(int $playerId, ?int $performerId, string $location): EventLocationClaimed
     {
         $event = self::createEvent(Events::LocationClaimed);
         if ($event instanceof EventLocationClaimed)
@@ -676,7 +676,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createLocationPressuredEvent(int $playerId, int $performerId, string $location, string $pressureType, bool $success, string $totalsExplanation, int $difference): EventLocationPressured
+    public static function createLocationPressuredEvent(int $playerId, ?int $performerId, string $location, string $pressureType, bool $success, string $totalsExplanation, int $difference): EventLocationPressured
     {
         $event = self::createEvent(Events::LocationPressured);
         if ($event instanceof EventLocationPressured)
@@ -693,7 +693,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createLocationPressureResultEvent(int $playerId, int $performerId, string $location, string $pressureType, bool $success, string $totalsExplanation, bool $highDramaBasicAction, string $abilityId): EventLocationPressureResult
+    public static function createLocationPressureResultEvent(int $playerId, ?int $performerId, string $location, string $pressureType, bool $success, string $totalsExplanation, bool $highDramaBasicAction, string $abilityId): EventLocationPressureResult
     {
         $event = self::createEvent(Events::LocationPressureResult);
         if ($event instanceof EventLocationPressureResult)

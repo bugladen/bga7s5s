@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 class EventLocationClaimed extends Event
 {
     public int $playerId;
-    public int $performerId;
+    public ?int $performerId;
     public string $location;
 
     public function __construct()
