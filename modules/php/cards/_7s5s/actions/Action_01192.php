@@ -55,7 +55,7 @@ class Action_01192 extends CharacterAction
                 $card = $event->theah->game->getCardObjectFromDb($deckCard['id']);
                 if ($card instanceof Risk)
                 {
-                    $names[] = $event->theah->game->translate($card->Name);
+                    $names[] = $card->getInjectCode();
                     $found++;
                 }
             }
