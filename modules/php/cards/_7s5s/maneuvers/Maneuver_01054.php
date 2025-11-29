@@ -2,10 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -51,24 +51,31 @@ class Maneuver_01054 extends Maneuver
         return false;
     }
 
+    public function getManeuverFromCombatCardDiscount(Theah $theah, Card $combatCard, Array &$explanations): int
+    {
+        $discount = parent::getManeuverFromCombatCardDiscount($theah, $combatCard, $explanations);
+
+        $owner = $this->getOwningCard($theah);
+        if ($owner->Id == $combatCard->Id)
+        {
+            $actor = $theah->getDuelRoundActor();
+            foreach ($actor->Attachments as $attachmentId)
+            {
+                $attachment = $theah->getAttachmentById($attachmentId);
+                if ($attachment && $attachment->hasTrait("Eisenfaust"))
+                {
+                    $discount += 1;
+                    $explanations[] = sprintf($theah->game->translate("%s reduces the cost of Maneuver by 1 because your participant has an Eisenfaust Attachment."), $owner->getInjectCode());
+                }
+            }    
+        }
+
+        return $discount;
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
-
-        if ($event instanceof EventDuelGetCostForManeuverFromHand && $event->maneuverId == $this->Id)
-        {
-            $actor = $event->theah->getDuelRoundActor();
-            foreach ($actor->Attachments as $attachmentId)
-            {
-                $attachment = $event->theah->getAttachmentById($attachmentId);
-                if ($attachment && $attachment->hasTrait("Eisenfaust"))
-                {
-                    $event->discount += 1;
-                    $owner = $this->getOwningCard($event->theah);
-                    $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the cost of Maneuver by 1 because your participant has an Eisenfaust Attachment."), $owner->getInjectCode());
-                }
-            }
-        }
 
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {

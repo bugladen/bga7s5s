@@ -44,7 +44,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCar
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
@@ -1326,21 +1325,6 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
-            case $event instanceof EventDuelGetCostForManeuverFromHand:
-                //This is a post-handling event, so after any chance of cost modification, 
-                //we can set the cost in the globals to set up for argsDuelPayForManeuverFromCombatCard
-                $handler = function (Theah $theah, EventDuelGetCostForManeuverFromHand $event)
-                {
-                    foreach ($event->explanations as $explanation) {
-                        $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation), []);
-                    }
-
-                    $theah->game->globals->set(Game::CHOSEN_CARD_COST, $event->cost);
-                    $theah->game->globals->set(Game::DISCOUNT, $event->discount);
-                };
-                $handler($this, $event);
-                break;
-
             case $event instanceof EventManeuverActivated:
                 $handler = function ($theah, EventManeuverActivated $event)
                 {
@@ -1724,7 +1708,6 @@ trait EventHub
                 {
                     $payDiscountEvent = EventFactory::createCalculatePayDiscountEvent($event->playerId, $event->cardId, $event->payStateType, $event->internalId);
                     $payDiscountEvent->priority = $event->priority;
-                    $theah->queueEvent($payDiscountEvent);
                     if ($event->wasStacked)
                     {
                         $theah->stackEvent($payDiscountEvent);

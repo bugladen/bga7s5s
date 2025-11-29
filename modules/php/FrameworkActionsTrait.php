@@ -1336,9 +1336,6 @@ trait FrameworkActionsTrait
 
         $this->globals->set(Game::CHOSEN_MANEUVER, $maneuverId);
 
-        $event = EventFactory::createEnteringPayStateEvent($this->getActivePlayerId(), $card->Id, Game::PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD);
-        $this->theah->queueEvent($event);
-
         $this->gamestate->nextState("maneuverChosen");
     }
 

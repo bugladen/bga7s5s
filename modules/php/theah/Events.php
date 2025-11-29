@@ -73,7 +73,6 @@ class Events
     const DuelCalculateTechniqueValues = 'EventDuelCalculateTechniqueValues';
     const ResolveManeuver = 'EventResolveManeuver';
     const DuelCalculateManeuverValues = 'EventDuelCalculateManeuverValues';
-    const DuelGetCostForManeuverFromHand = 'EventDuelGetCostForManeuverFromHand';
     const DuelCalculateCombatCardStats = 'EventDuelCalculateCombatCardStats';
     const DuelPlayerGambled = 'EventDuelPlayerGambled';
     const DuelActionsDone = 'EventDuelActionsDone';

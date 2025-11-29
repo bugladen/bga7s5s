@@ -498,7 +498,7 @@ abstract class Card
         return $discount;
     }
 
-    public function getManeuverFromCombatCardDiscount(Theah $theah, Risk $combatCard, Array &$explanations): int
+    public function getManeuverFromCombatCardDiscount(Theah $theah, Card $combatCard, Array &$explanations): int
     {
         $discount = 0;
         if ($this instanceof IHasReactions)
@@ -506,6 +506,14 @@ abstract class Card
             foreach ($this->getReactions() as $reaction)
             {
                 $discount += $reaction->getManeuverFromCombatCardDiscount($theah, $combatCard, $explanations);
+            }
+        }
+
+        if ($this instanceof IHasManeuvers)
+        {
+            foreach ($this->getManeuvers() as $maneuver)
+            {
+                $discount += $maneuver->getManeuverFromCombatCardDiscount($theah, $combatCard, $explanations);
             }
         }
         return $discount;

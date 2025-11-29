@@ -26,7 +26,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
@@ -1097,22 +1096,9 @@ trait StatesTrait
     {
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
         $card = $this->getCardObjectFromDb($cardId);
-        $cost = $card->WealthCost;
+        $this->globals->set(Game::CHOSEN_CARD_COST, $card->WealthCost);
 
-        $actor = $this->theah->getDuelRoundActor();
-        $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
-
-        $maneuverId = $this->globals->get(GAME::CHOSEN_MANEUVER);
-
-        $event = $this->theah->createEvent(Events::DuelGetCostForManeuverFromHand);
-        if ($event instanceof EventDuelGetCostForManeuverFromHand)
-        {
-            $event->actorId = $actor->Id;
-            $event->adversaryId = $adversaryId;
-            $event->combatCardId = $cardId;
-            $event->maneuverId = $maneuverId;
-            $event->cost = $cost;
-        }
+        $event = EventFactory::createEnteringPayStateEvent($this->getActivePlayerId(), $card->Id, Game::PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD);
         $this->theah->queueEvent($event);
 
         $this->gamestate->nextState();
