@@ -757,7 +757,7 @@ class Theah
         //Filter out any duplicates
         $actionsArray = array_unique($actionsArray, SORT_REGULAR);
 
-        return $actionsArray;
+        return array_values($actionsArray);
     }
 
     function getBrutesAvailableToPlayer($playerId): array
@@ -904,7 +904,7 @@ class Theah
             $card->getPressureStats($this, $performer, $location, $pressureTypes);
         }
         $pressureTypes = array_unique($pressureTypes);
-        return $pressureTypes;
+        return array_values($pressureTypes);
     }
 
     function getReactionFromHandDiscount(CardReaction $reaction): Array
