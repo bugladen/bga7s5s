@@ -19,7 +19,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
@@ -28,7 +27,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 
 trait FrameworkActionsTrait
 {
@@ -1482,6 +1480,9 @@ trait FrameworkActionsTrait
 
         $actorId = $result['actor_id'];
         $adversaryId = $this->theah->getDuelOpponentId($actorId);
+
+        $event = EventFactory::createCombatCardAnnouncedEvent($playerId, $card->Id);
+        $this->theah->queueEvent($event);
 
         $explanations = $this->globals->get(Game::GAMBLE_REVEAL_EXPLANATIONS, '');
         $event = $this->theah->createEvent(Events::DuelPlayerGambled);

@@ -58,6 +58,9 @@ class Reaction_01127 extends AttachmentReaction
             $owner = $this->getOwningCard($game->theah);
             $character = $this->getOwningCharacter($game->theah);
 
+            $event = EventFactory::createCombatCardAnnouncedEvent($character->ControllerId, $owner->Id);
+            $game->theah->queueEvent($event);
+
             $unequipEvent = EventFactory::createAttachmentUnequippedEvent($character->ControllerId, $character->Id, $owner->Id);
             $game->theah->queueEvent($unequipEvent);
 
