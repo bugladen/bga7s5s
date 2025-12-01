@@ -112,9 +112,7 @@ class Action_01134 extends RiskAction implements ISorcererAbility
             $game->globals->set(Game::CHOSEN_OPPONENT, $id);
 
             $owner = $this->getOwningCard($game->theah);
-            $deck = $game->getGameDeckObject($owner->ControllerId);
-            $deckName = $game->getPlayerFactionDeckName($id);
-            $deckCards = $deck->getCardsOnTop(5, $deckName);
+            $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($id, 5);
             $cards = [];
             foreach ($deckCards as $deckCard)
             {
