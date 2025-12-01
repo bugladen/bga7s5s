@@ -235,7 +235,7 @@ class Reaction_01008 extends CardReaction
                 $cesca->IsUpdated = true;
 
                 $game->globals->set(Game::ABNORMAL_FLOW, true);
-                $transition = EventFactory::createActionTriggeredEvent($cesca->ControllerId, $cesca->Id, $action->Id);
+                $transition = EventFactory::createActionTriggeredEvent($cesca->ControllerId, $cesca->Id, $cesca->Id, $action->Id);
                 $game->theah->queueEvent($transition);
     
                 $this->setUsed($game->theah, true);

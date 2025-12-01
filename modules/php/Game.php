@@ -67,6 +67,7 @@ class Game extends \Bga\GameFramework\Table
     final const PASS_COUNT = "passCount";
     final const MULTI_STATE_INITIATING_PLAYER = "multiStateInitiatingPlayer";
     final const EXTRA_ACTIONS = "extraActions";
+    final const OVERRIDE_AS_NOT_FIRST_PLAYER = "overrideAsNotFirstPlayer";
 
     //Conditions
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";

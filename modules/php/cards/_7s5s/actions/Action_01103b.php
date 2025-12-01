@@ -3,13 +3,14 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatDependsOnNotBeingFirstPlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01103b extends RiskCityAction
+class Action_01103b extends RiskCityAction implements IAbilityThatDependsOnNotBeingFirstPlayer
 {
     public function __construct()
     {
@@ -26,8 +27,9 @@ class Action_01103b extends RiskCityAction
             return false;
         }
         
-        $firstPlayer = $theah->game->globals->get(Game::FIRST_PLAYER);
-        if ($firstPlayer == $playerId)
+        $forcedNotFirstPlayer = $theah->game->globals->get(Game::OVERRIDE_AS_NOT_FIRST_PLAYER, false);
+        $isfirstPlayer = $theah->game->globals->get(Game::FIRST_PLAYER) == $playerId && ! $forcedNotFirstPlayer;
+        if ($isfirstPlayer)
         {
             return false;
         }

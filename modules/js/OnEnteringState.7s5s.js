@@ -1229,8 +1229,15 @@
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;
                     args.args.args.locationIds.forEach((locationId) => {
-                        const imageElement = this.getCityLocationElement(locationId);
-                        this.makeCityLocationSelectable(imageElement);
+                        if (locationId == this.LOCATION_PLAYER_HOME)
+                        {
+                            this.makeHomeEndcapMarkerSelectable();
+                        }
+                        else
+                        {
+                            const imageElement = this.getCityLocationElement(locationId);
+                            this.makeCityLocationSelectable(imageElement);
+                        }
                     });
 
                     card = this.cardProperties[args.args.args.performerId];
@@ -2216,6 +2223,27 @@
                 }
             },
 
+            'duelNewRound_01090': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    this.addCardToDeck(this.chooseList, args.args.args.card);
+        
+                    var translated = dojo.string.substitute(
+                        _("Top Card in ${opponentName}'s Faction Deck"),
+                        {
+                            opponentName: args.args.args.opponentName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(0);
+
+                    this.factionHand.setSelectionMode(1);
+                }
+            },
+
             'duelChooseTechnique_01036': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;
@@ -2260,6 +2288,22 @@
                     dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
+            },
+
+            'duelChooseTechnique_01090': () => {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                
+                this.addCardToDeck(this.chooseList, args.args.args.card);
+    
+                var translated = dojo.string.substitute(
+                    _("Top Card in ${opponentName}'s Faction Deck"),
+                    {
+                        opponentName: args.args.args.opponentName
+                    }
+                );
+                $('choose_container_name').innerHTML = translated;
+                this.chooseList.setSelectionMode(0);
             },
 
             'duelResolveManeuver_01059': () => {

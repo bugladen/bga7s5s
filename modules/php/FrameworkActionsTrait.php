@@ -759,7 +759,7 @@ trait FrameworkActionsTrait
             if ($action instanceof CardAction)
                 $id = $action->OwnerId;
 
-            $event = EventFactory::createActionTriggeredEvent($player_id, $id, $actionId);
+            $event = EventFactory::createActionTriggeredEvent($player_id, $id, $id, $actionId);
             $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
     
@@ -773,10 +773,12 @@ trait FrameworkActionsTrait
         $performer = $this->getCardObjectFromDb($id);
 
         $actionId = $this->globals->get(GAME::CHOSEN_ACTION, '');
+        $action = $this->theah->getInPlayActionById($actionId);
+        $sourceId = $action->OwnerId;
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
-        $event = EventFactory::createActionTriggeredEvent($playerId, $performer->Id, $actionId);
+        $event = EventFactory::createActionTriggeredEvent($playerId, $performer->Id, $sourceId, $actionId);
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
@@ -928,7 +930,7 @@ trait FrameworkActionsTrait
         $event = EventFactory::createRiskPlayedEvent($playerId, $risk->Id);
         $this->theah->queueEvent($event);
 
-        $event = EventFactory::createActionTriggeredEvent($playerId, $performerId, $actionId);
+        $event = EventFactory::createActionTriggeredEvent($playerId, $performerId, $risk->Id, $actionId);
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 

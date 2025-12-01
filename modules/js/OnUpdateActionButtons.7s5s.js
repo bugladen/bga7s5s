@@ -828,6 +828,12 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
         
+            'duelNewRound_01090': () => {
+                this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onCardDiscarded());
+                this.addActionButton(`actTakeWound`, _('Take Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
+                dojo.addClass('actChooseDiscardCard', 'disabled');
+            },
+
             'duelChooseTechnique_01013': () => {
                 this.addActionButton(`btnParry`, _('+1 Parry'), () => this.bgaPerformAction('actFromCardWithId', { id: 0}));
                 this.addActionButton(`btnThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', { id: 1}));
@@ -846,6 +852,10 @@
             'duelChooseTechnique_01067': () => {
                 this.addActionButton(`actThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
                 this.addActionButton(`actRiposte`, _('+1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
+
+            'duelChooseTechnique_01090': () => {
+                this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
             },
 
             'duelChooseTechnique_01093': () => {

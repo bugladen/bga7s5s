@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatDependsOnNotBeingFirstPlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -11,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01112b extends RiskAction
+class Action_01112b extends RiskAction implements IAbilityThatDependsOnNotBeingFirstPlayer
 {
     public function __construct()
     {
@@ -35,8 +36,9 @@ class Action_01112b extends RiskAction
         }
 
         $owner = $this->getOwningCard($theah);
-        $firstPlayerId = $theah->game->globals->get(Game::FIRST_PLAYER, false);
-        return $owner->ControllerId != $firstPlayerId;
+        $forcedNotFirstPlayer = $theah->game->globals->get(Game::OVERRIDE_AS_NOT_FIRST_PLAYER, false);
+        $isFirstPlayer = $theah->game->globals->get(Game::FIRST_PLAYER) == $playerId && ! $forcedNotFirstPlayer;
+        return ! $isFirstPlayer;
     }
 
     public function handleEvent(Event $event)

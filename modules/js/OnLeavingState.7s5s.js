@@ -1382,6 +1382,18 @@
                 }
             },
 
+            'duelNewRound_01090': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+
+                    this.factionHand.setSelectionMode(0);
+                }
+            },
+
             'duelChooseTechnique_01036': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
@@ -1399,6 +1411,13 @@
                     const performerImage = $(`${card.divId}_image`);
                     dojo.removeClass(performerImage, '_7sfs-chosen');
                 }
+            },
+
+            'duelChooseTechnique_01090': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
             },
 
             'duelChooseTechnique_01093': () => {

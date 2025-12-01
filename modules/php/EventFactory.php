@@ -103,13 +103,14 @@ class EventFactory
         return $event;
     }
 
-    public static function createActionTriggeredEvent(int $playerId, int $performerId, string $actionId): EventActionTriggered
+    public static function createActionTriggeredEvent(int $playerId, int $performerId, int $sourceId,string $actionId): EventActionTriggered
     {
         $event = self::createEvent(Events::ActionTriggered);
         if ($event instanceof EventActionTriggered)
         {
             $event->playerId = $playerId;
             $event->performerId = $performerId;
+            $event->sourceId = $sourceId;
             $event->actionId = $actionId;
         }
 
