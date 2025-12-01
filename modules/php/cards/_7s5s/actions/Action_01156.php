@@ -85,7 +85,7 @@ class Action_01156 extends AttachmentAction
             }
 
             $charactersIds = array_unique($charactersIds);
-            $args['charactersIds'] = $charactersIds;
+            $args['charactersIds'] = array_values($charactersIds);
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01156_3)
