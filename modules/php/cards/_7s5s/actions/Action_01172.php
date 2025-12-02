@@ -30,8 +30,8 @@ class Action_01172 extends RiskAction
         $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait('Sorcerer')));
         foreach ($performers as $performer)
         {
-            $characters = $theah->getCharactersInCityByPlayerId($playerId);
-            $characters = array_filter($characters, fn($character) => $character->Location != $performer->Location);
+            $characters = $theah->getCharactersInPlay();
+            $characters = array_filter($characters, fn($character) => $theah->cardInCity($character) && $character->Location != $performer->Location);
             if (count($characters) > 0)
             {
                 return true;
@@ -71,8 +71,7 @@ class Action_01172 extends RiskAction
 
             $characters = $game->theah->getCharactersInPlay();
             $characters = array_filter($characters, fn($character) => $game->theah->cardInCity($character) && $character->Location != $performer->Location);
-            $characters = array_values(array_filter($characters, fn($character) => $character->Id != $performerId));
-            $args["ids"] = array_map(fn($character) => $character->Id, $characters);
+            $args["ids"] = array_map(fn($character) => $character->Id, array_values($characters));
         }
         
         return $args;
@@ -110,6 +109,9 @@ class Action_01172 extends RiskAction
                 $woundEvent = EventFactory::createCharacterWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
             }
+
+            $sorcererAbilityPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
+            $game->theah->queueEvent($sorcererAbilityPlayedEvent);
 
             $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, false, $owner->Id);
             $game->theah->queueEvent($moveEvent);
