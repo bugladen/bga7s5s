@@ -86,7 +86,7 @@ class Reaction_01109 extends CancelReaction
             $game = $event->theah->game;
             $card = $event->theah->getCardById($event->combatCardId);
             $owner = $this->getOwningCard($event->theah);
-            if ($event->actorId != $owner->ControllerId && $card instanceof _01169)
+            if ($card->ControllerId != $owner->ControllerId && $card instanceof _01169)
             {
 
                 $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
