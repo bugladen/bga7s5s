@@ -579,8 +579,8 @@
             },
 
             'highDramaPhase01134': () => {
-                args.args.opponents.forEach((opponent) => {
-                    this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
+                args.args.decks.forEach((deck) => {
+                    this.addActionButton(`actChooseDeck-${deck.id}`, deck.name, () => this.bgaPerformAction('actFromCardWithId', {id: deck.id}));
                 });
             },
 

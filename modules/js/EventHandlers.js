@@ -138,7 +138,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     this.chooseList.unselectItem(item_id);
                 }
                 
-                if (this.chooseList.getSelectedItems().length === maxSelected) {
+                if (this.chooseList.getSelectedItems().length <= maxSelected) {
                     dojo.removeClass('actChooseCardSelected', 'disabled');
                 } else {
                     dojo.addClass('actChooseCardSelected', 'disabled');

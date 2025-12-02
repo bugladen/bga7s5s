@@ -20,7 +20,7 @@ class State_highDramaPhase01134_2 extends GameState
             name: "highDramaPhase01134_2",
 
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Matushka\'s Sight') . clienttranslate(': ${you} may choose [X] card(s) to discard: '),
+            descriptionMyTurn: clienttranslate('Matushka\'s Sight') . clienttranslate(': ${you} may choose up to [X] card(s) to discard: '),
             transitions: [
                 "cardsChosen" => States::HIGH_DRAMA_PLAYER_TURN_01134_3,
                 "pass" => States::HIGH_DRAMA_PLAYER_TURN_01134_3,
