@@ -6,13 +6,16 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01008;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01012;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01030;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01068;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01069;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01076;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01085;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01161;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01172;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01201;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -64,8 +67,8 @@ class Reaction_01008 extends CardReaction
             $cesca = $this->getOwningCharacter($event->theah);
             $source = $event->theah->getCardById($event->sourceId);
 
-            //If the ability is from the cesca herself, or the target is at the same location as cesca, we can copy the ability.
-            if ($source?->Id == $cesca->Id || ($event->targetId != 0 && $event->targetLocation == $cesca->Location))
+            //If the ability is from the cesca herself, or she is the performer, or the target is at the same location as cesca, we can copy the ability.
+            if ($source?->Id == $cesca->Id || $event->performerId == $cesca->Id || ($event->targetId != 0 && $event->targetLocation == $cesca->Location))
             {
                 $this->sourceId = $event->sourceId;
                 $this->sourceAbilityId = $event->abilityId;
@@ -93,12 +96,14 @@ class Reaction_01008 extends CardReaction
                 $card = $game->getCardObjectFromDb($cardId);
                 if ($card)
                 {
+                    $deck = $game->getGameDeckObject();
                     if ($card->Location == Game::LOCATION_HAND)
                     {
                         $game->notify->all("cardRemovedFromHand", clienttranslate('Private: Temporary copy of ${card_inject_code} removed from your hand.'), [
                             "card_inject_code" => $card->getInjectCode(),
                             "playerId" => $cesca->ControllerId,
                             "cardId" => $card->Id,
+                            'handCount' => count($deck->getPlayerHand($cesca->ControllerId)),
                         ]);
                     }
 
@@ -147,6 +152,22 @@ class Reaction_01008 extends CardReaction
             $cardCopied = false;
             $action = null;
 
+            //Blood Mark
+            if ($ability instanceof Action_01076)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01076", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01076");
+            }
+
+            //Boon
+            if ($ability instanceof Action_01161)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01161", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01161");
+            }
+
             //Cesca's Reveal Top Card of your Faction Deck ability
             if ($ability instanceof Action_01008)
             {
@@ -155,26 +176,6 @@ class Reaction_01008 extends CardReaction
 
                 $this->setUsed($game->theah, true);
                 $this->announceReaction($game, $ability);
-            }
-
-            //Sibella Scarpa
-            if ($ability instanceof Action_01012)
-            {
-                $copyAction = true;
-                $action = new Action_01012();
-                $action->setId("Action_01012");
-                $action->setOwnerId($cesca->Id);
-                if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
-            }
-
-            //Pull the Strand
-            if ($ability instanceof Action_01030)
-            {
-                $copyAction = true;
-                $action = new Action_01030();
-                $action->setId("Action_01030");
-                $action->setOwnerId($cesca->Id);
-                if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
             }
 
             //Léontine Giroux
@@ -187,24 +188,6 @@ class Reaction_01008 extends CardReaction
                 if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
             }
 
-            //Maxime De Lafayette
-            if ($ability instanceof Action_01069)
-            {
-                $copyAction = true;
-                $action = new Action_01069();
-                $action->setId("Action_01069");
-                $action->setOwnerId($cesca->Id);
-                if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
-            }
-            
-            //Blood Mark
-            if ($ability instanceof Action_01076)
-            {
-                $cardCopied = true;
-                $card = $this->copyCard($game, "01076", $cesca->ControllerId);
-                $ability = $card->getAbilityById("{$card->Id}_Action_01076");
-            }
-
             //Porté Travel
             if ($ability instanceof Action_01085)
             {
@@ -213,12 +196,38 @@ class Reaction_01008 extends CardReaction
                 $ability = $card->getAbilityById("{$card->Id}_Action_01085");
             }
 
+            //Pull
+            if ($ability instanceof Action_01172)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01172", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01172");
+            }
+
+            //Pull the Strand
+            if ($ability instanceof Action_01030)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01030", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01030");
+            }
+
             //Ravenna Destine
             if ($ability instanceof Action_01201)
             {
                 $copyAction = true;
                 $action = new Action_01201();
                 $action->setId("Action_01201");
+                $action->setOwnerId($cesca->Id);
+                if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
+            }
+
+            //Sibella Scarpa
+            if ($ability instanceof Action_01012)
+            {
+                $copyAction = true;
+                $action = new Action_01012();
+                $action->setId("Action_01012");
                 $action->setOwnerId($cesca->Id);
                 if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
             }
@@ -244,6 +253,22 @@ class Reaction_01008 extends CardReaction
 
             if ($cardCopied)
             {
+                if ($ability instanceof Action && ! $ability->isAvailableToPlayer($cesca->ControllerId, $game->theah))
+                {
+                    throw new \BgaUserException($game->translate("Action is not available to perform due to prerequisites."));
+                }
+
+                [$discount, $explanations] = $game->theah->getACtionFromHandDiscount($cesca, $ability);
+                if ($card instanceof IWealthCost)
+                {
+                    $cost = $card->getWealthCost() - $discount;
+                }
+                $handWealth = $game->handWealthCount($cesca->ControllerId);
+                if ($handWealth < $cost)
+                {
+                    throw new \BgaUserException(sprintf($game->translate("You do not have enough Wealth (%d) to pay for the Card (%d with a discount of %d)."), $handWealth, $cost, $discount));
+                }                
+
                 $cesca->IsUpdated = true;
 
                 $game->globals->set(Game::CHOSEN_PERFORMER, $cesca->Id);
