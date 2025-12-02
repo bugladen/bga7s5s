@@ -700,7 +700,7 @@ trait EventHub
                             $message = clienttranslate('${player_name} plays ${character_inject_code} at ${location}.');
         
                         // Notify players of mustered character
-                        $theah->game->notifyAllPlayers("characterMustered", $message, [
+                        $theah->game->notify->all("characterMustered", $message, [
                             'i18n' => ['location'],
                             "player_id" => $event->playerId,
                             "player_name" => $theah->game->getPlayerNameById($event->playerId),
@@ -708,6 +708,16 @@ trait EventHub
                             "location" => $event->location,
                             "character" => $character->getPropertyArray($theah->game),
                         ]);
+
+                        if ($character instanceof Brute)
+                        {
+                            $deck = $theah->game->getGameDeckObject();
+                            $theah->game->notify->all("cardRemovedFromHand", '', [
+                                "playerId" => $event->playerId,
+                                "cardId" => $event->characterId,
+                                'handCount' => count($deck->getPlayerHand($event->playerId)),
+                            ]);
+                        }
                     };
                     $handler($this, $event);
                     break;
