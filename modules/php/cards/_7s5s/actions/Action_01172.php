@@ -69,8 +69,8 @@ class Action_01172 extends RiskAction
             $performer = $game->theah->getCharacterById($performerId);
             $args["performerId"] = $performerId;
 
-            $characters = $game->theah->getCharactersInCityByPlayerId($performer->ControllerId);
-            $characters = array_filter($characters, fn($character) => $character->Location != $performer->Location);
+            $characters = $game->theah->getCharactersInPlay();
+            $characters = array_filter($characters, fn($character) => $game->theah->cardInCity($character) && $character->Location != $performer->Location);
             $characters = array_values(array_filter($characters, fn($character) => $character->Id != $performerId));
             $args["ids"] = array_map(fn($character) => $character->Id, $characters);
         }
@@ -111,7 +111,7 @@ class Action_01172 extends RiskAction
                 $game->theah->queueEvent($woundEvent);
             }
 
-            $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, false, $performer->Id);
+            $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, false, $owner->Id);
             $game->theah->queueEvent($moveEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
