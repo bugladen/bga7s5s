@@ -52,8 +52,7 @@ class Maneuver_01052 extends Maneuver
             {
                 $owner = $this->getOwningCard($event->theah);
                 $game = $event->theah->game;
-                $lockerName = $game->getPlayerLockerName($actor->ControllerId);
-                if ($actor->Location != $lockerName && $actor->Location != Game::LOCATION_HAND && $actor->Wounds > 0)
+                if (! $game->characterIsInDiscardOrLocker($actor) && $actor->Location != Game::LOCATION_HAND && $actor->Wounds > 0)
                 {
                     $healEvent = EventFactory::createCharacterHealedEvent($actor->Id, $owner->Id, 1, $owner->getInjectCode());
                     $event->theah->queueEvent($healEvent);
