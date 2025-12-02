@@ -31,7 +31,7 @@ class Action_01172 extends RiskAction
         foreach ($performers as $performer)
         {
             $characters = $theah->getCharactersInPlay();
-            $characters = array_filter($characters, fn($character) => $theah->cardInCity($character) && $character->Location != $performer->Location);
+            $characters = array_filter($characters, fn($character) => $character->Location != $performer->Location);
             if (count($characters) > 0)
             {
                 return true;
@@ -70,7 +70,7 @@ class Action_01172 extends RiskAction
             $args["performerId"] = $performerId;
 
             $characters = $game->theah->getCharactersInPlay();
-            $characters = array_filter($characters, fn($character) => $game->theah->cardInCity($character) && $character->Location != $performer->Location);
+            $characters = array_filter($characters, fn($character) => $character->Location != $performer->Location);
             $args["ids"] = array_map(fn($character) => $character->Id, array_values($characters));
         }
         
