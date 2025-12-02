@@ -35,9 +35,14 @@ class Maneuver_01059 extends Maneuver
         if ($event instanceof EventDuelEndOfRound && $this->selectedLocation != "")
         {
             $actor = $event->theah->getDuelRoundActor();
+
+            $game = $event->theah->game;
             $owner = $this->getOwningCard($event->theah);
-            $moveEvent = EventFactory::createCardMovedEvent($owner->ControllerId, $actor->Id, $actor->Location, $this->selectedLocation, $engage = false, $owner->Id);
-            $event->theah->queueEvent($moveEvent);
+            if (! $game->characterIsInDiscardOrLocker($actor))
+            {
+                $moveEvent = EventFactory::createCardMovedEvent($owner->ControllerId, $actor->Id, $actor->Location, $this->selectedLocation, $engage = false, $owner->Id);
+                $event->theah->queueEvent($moveEvent);    
+            }
 
             $this->selectedLocation = "";
             $owner->IsUpdated = true;
