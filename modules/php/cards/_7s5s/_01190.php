@@ -65,7 +65,7 @@ class _01190 extends CityCharacter
             $defender = $event->theah->getCardById($event->defenderId);
             if ($this->Id != $event->defenderId && $defender->Location == $this->Location && ! $this->Engaged)
             {
-                throw new \BgaUserException($event->theah->game->translate("Sigurd Ulfsen must be the target of the challenge if he is En Garge and in the same location."));
+                throw new \BgaUserException($event->theah->game->translate("Sigurd Ulfsen must be the target of the challenge if he is en garde and in the same location."));
             }
         }
     }

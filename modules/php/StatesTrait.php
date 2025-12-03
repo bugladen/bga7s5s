@@ -609,6 +609,7 @@ trait StatesTrait
             $challengeEvent->activatedTechniqueId = $techniqueId;
             $challengeEvent->sourceId = $sourceId;
         }
+        $this->theah->eventCheck($challengeEvent);
         $this->theah->queueEvent($challengeEvent);
 
         if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE)
