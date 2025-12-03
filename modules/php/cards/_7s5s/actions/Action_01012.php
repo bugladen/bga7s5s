@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -11,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01012 extends CharacterAction implements ISorcererAbility
+class Action_01012 extends CharacterAction implements ISorcererAbility, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -85,8 +86,6 @@ class Action_01012 extends CharacterAction implements ISorcererAbility
             $this->announceAction($game);
 
             $owner = $this->getOwningCharacter($game->theah);
-            $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
-            $game->theah->queueEvent($event);
 
             $event = EventFactory::createCharacterWoundedEvent($performer->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
             $game->theah->queueEvent($event);
@@ -94,12 +93,15 @@ class Action_01012 extends CharacterAction implements ISorcererAbility
             $event = EventFactory::createCharacterWoundedEvent($target->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
             $game->theah->queueEvent($event);
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
-
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
             
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
+            $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
+            $game->theah->queueEvent($event);
+
             $game->gamestate->nextState("opposingCharacterChosen");
         }
     }

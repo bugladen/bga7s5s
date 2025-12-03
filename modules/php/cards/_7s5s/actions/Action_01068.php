@@ -152,9 +152,6 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
             $characterId = $game->globals->get(Game::CHOSEN_CARD);
             $character = $game->theah->getCharacterById($characterId);
 
-            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($leontine->ControllerId, $leontine->Id, $this->Id, $leontine->Id, $character->Id, $leontine->Location);
-            $game->theah->queueEvent($sorcererEvent);
-
             $woundEvent = EventFactory::createCharacterWoundedEvent($leontine->Id, $leontine->Id, 1, $leontine->getInjectCode(), $this->Id);
             $game->theah->eventCheck($woundEvent);
             $game->theah->queueEvent($woundEvent);
@@ -163,12 +160,15 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($leontine->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
-
             $this->announceAction($game);
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($leontine->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
+            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($leontine->ControllerId, $leontine->Id, $this->Id, $leontine->Id, $character->Id, $leontine->Location);
+            $game->theah->queueEvent($sorcererEvent);
 
             $game->gamestate->nextState("locationChosen");
         }

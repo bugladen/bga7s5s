@@ -142,11 +142,11 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
                 "card_inject_code" => $card->getInjectCode(),
             ]);
 
-            $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
-            $game->theah->queueEvent($event);
-
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
+
+            $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
+            $game->theah->queueEvent($event);
 
             $game->gamestate->nextState();
         }

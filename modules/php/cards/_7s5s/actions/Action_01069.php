@@ -154,9 +154,6 @@ class Action_01069 extends CharacterAction implements ISorcererAbility
             $discardedCardId = $game->globals->get(Game::CHOSEN_CARD);
             $discardedCard = $game->getCardObjectFromDb($discardedCardId);
 
-            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($maxime->ControllerId, $maxime->Id, $this->Id, $maxime->Id, $maxime->Id, $maxime->Location);
-            $game->theah->queueEvent($sorcererEvent);
-
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardedCard->OwnerId, $discardedCard->Id, $maxime->Id);
             $game->theah->queueEvent($discardEvent);
 
@@ -166,11 +163,14 @@ class Action_01069 extends CharacterAction implements ISorcererAbility
             $addEvent = EventFactory::createCardAddedToHandEvent($maxime->ControllerId, $id);
             $game->theah->queueEvent($addEvent);
 
+            $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
+
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($maxime->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
+            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($maxime->ControllerId, $maxime->Id, $this->Id, $maxime->Id, $maxime->Id, $maxime->Location);
+            $game->theah->queueEvent($sorcererEvent);
 
             $game->gamestate->nextState("attachmentChosen");
         }

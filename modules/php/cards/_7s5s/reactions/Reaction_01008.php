@@ -4,15 +4,15 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01008;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01012;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01025;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01030;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01068;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01076;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01085;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01133;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01161;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01172;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01201;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
@@ -66,9 +66,13 @@ class Reaction_01008 extends CardReaction
         {
             $cesca = $this->getOwningCharacter($event->theah);
             $source = $event->theah->getCardById($event->sourceId);
+            $ability = $source->getAbilityById($event->abilityId);
 
-            //If the ability is from the cesca herself, or she is the performer, or the target is at the same location as cesca, we can copy the ability.
-            if ($source?->Id == $cesca->Id || $event->performerId == $cesca->Id || ($event->targetId != 0 && $event->targetLocation == $cesca->Location))
+            //From Rules Team: the ability MUST say "target character" or similar wording in the card text in order for this reaction to trigger
+            $abilityTargetedCharacterAtHerLocation = $ability instanceof IAbilityThatTargetsCharacters && $event->targetId != 0 && $event->targetLocation == $cesca->Location;
+
+            //If the ability is from the cesca herself, or she is the performer, or the ability targeted a character at her location
+            if ($source?->Id == $cesca->Id || $event->performerId == $cesca->Id || $abilityTargetedCharacterAtHerLocation)
             {
                 $this->sourceId = $event->sourceId;
                 $this->sourceAbilityId = $event->abilityId;
@@ -152,14 +156,6 @@ class Reaction_01008 extends CardReaction
             $cardCopied = false;
             $action = null;
 
-            //Blood Mark
-            if ($ability instanceof Action_01076)
-            {
-                $cardCopied = true;
-                $card = $this->copyCard($game, "01076", $cesca->ControllerId);
-                $ability = $card->getAbilityById("{$card->Id}_Action_01076");
-            }
-
             //Boon
             if ($ability instanceof Action_01161)
             {
@@ -168,7 +164,7 @@ class Reaction_01008 extends CardReaction
                 $ability = $card->getAbilityById("{$card->Id}_Action_01161");
             }
 
-            //Cesca's Reveal Top Card of your Faction Deck ability
+            //Cesca's own ability to Reveal Top Card of your Faction Deck
             if ($ability instanceof Action_01008)
             {
                 $event = EventFactory::createTransitionEvent($cesca->ControllerId, $cesca->Id, "01008", $ability->Id);
@@ -178,14 +174,20 @@ class Reaction_01008 extends CardReaction
                 $this->announceReaction($game, $ability);
             }
 
-            //Léontine Giroux
-            if ($ability instanceof Action_01068)
+            //Fates' Burden
+            if ($ability instanceof Action_01025)
             {
-                $copyAction = true;
-                $action = new Action_01068();
-                $action->setId("Action_01068");
-                $action->setOwnerId($cesca->Id);
-                if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01025", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01025");
+            }
+
+            //Matushka's Efficiency
+            if ($ability instanceof Action_01133)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01133", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01133");
             }
 
             //Porté Travel
@@ -210,16 +212,6 @@ class Reaction_01008 extends CardReaction
                 $cardCopied = true;
                 $card = $this->copyCard($game, "01030", $cesca->ControllerId);
                 $ability = $card->getAbilityById("{$card->Id}_Action_01030");
-            }
-
-            //Ravenna Destine
-            if ($ability instanceof Action_01201)
-            {
-                $copyAction = true;
-                $action = new Action_01201();
-                $action->setId("Action_01201");
-                $action->setOwnerId($cesca->Id);
-                if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
             }
 
             //Sibella Scarpa
