@@ -2,11 +2,12 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Maneuver_01086 extends Maneuver
 {
@@ -17,21 +18,28 @@ class Maneuver_01086 extends Maneuver
         $this->Name = clienttranslate("Engage or Wound Adversary");
     }
 
-    public function handleEvent(Event $event)
+    public function getManeuverFromCombatCardDiscount(Theah $theah, Card $combatCard, Array &$explanations): int
     {
-        parent::handleEvent($event);
+        $discount = parent::getManeuverFromCombatCardDiscount($theah, $combatCard, $explanations);
 
-        if ($event instanceof EventDuelGetCostForManeuverFromHand && $event->maneuverId == $this->Id)
+        $owner = $this->getOwningCard($theah);
+        if ($owner->Id == $combatCard->Id)
         {
-            $owner = $this->getOwningCard($event->theah);
-            $adversary = $event->theah->getCharacterById($event->adversaryId);
+            $adversary = $theah->getDuelRoundOpponent();
 
             if ($adversary->hasTrait("Mercenary"))
             {
-                $event->discount += 1;
-                $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the cost of Maneuver by 1 because your Adversary is a Mercenary."), $owner->Name);
+                $discount += 1;
+                $explanations[] = sprintf($theah->game->translate("%s reduces the cost of Maneuver by 1 because your Adversary is a Mercenary."), $owner->getInjectCode());
             }
         }
+
+        return $discount;
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
 
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {

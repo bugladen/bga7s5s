@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 class EventLocationPressureResult extends Event
 {
     public int $playerId;
-    public int $performerId;
+    public ?int $performerId;
     public string $location;
     public string $pressureType;
     public string $totalsExplanation;
@@ -18,7 +18,7 @@ class EventLocationPressureResult extends Event
         parent::__construct();
 
         $this->playerId = 0;
-        $this->performerId = 0;
+        $this->performerId = null;
         $this->location = "";
         $this->pressureType = "";
         $this->totalsExplanation = "";

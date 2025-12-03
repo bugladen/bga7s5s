@@ -879,11 +879,20 @@
             },
 
             'highDramaPhase01133': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase01133_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
-                    card = this.cardProperties[this.clientStateArgs.performerId];
-                    const image = $(`${card.divId}_image`);
-                    dojo.removeClass(image, '_7sfs-chosen');
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
                 }
             },
 

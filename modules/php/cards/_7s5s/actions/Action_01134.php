@@ -61,24 +61,29 @@ class Action_01134 extends RiskAction implements ISorcererAbility
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $args['performerId'] = $performerId;
 
-            $opponents = [];
+            $decks = [];
             $players = $game->loadPlayersBasicInfos();
             foreach ($players as $playerId => $player)
             {
-                if ($playerId == $game->getActivePlayerId())
-                {
-                    continue;
-                }
-
-                $opponents[] = ['id' => $playerId, 'name' => $player['player_name']];
+                $decks[] = ['id' => $playerId, 'name' => $player['player_name']];
             }
-            $args['opponents'] = $opponents;
+            $decks[] = ['id' => 0, 'name' => clienttranslate(Game::LOCATION_CITY_DECK)];
+
+            $args['decks'] = $decks;
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01134_2 || $state == States::HIGH_DRAMA_PLAYER_TURN_01134_3)
         {
             $opponentId = $game->globals->get(Game::CHOSEN_OPPONENT);
-            $opponentName = $game->getPlayerNameById($opponentId);
+            if ($opponentId == 0)
+            {
+                $opponentName = clienttranslate(Game::LOCATION_CITY_DECK);
+            }
+            else
+            {
+                $opponentName = $game->getPlayerNameById($opponentId);
+            }
+            
             $args['opponentName'] = $opponentName;
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
@@ -104,7 +109,7 @@ class Action_01134 extends RiskAction implements ISorcererAbility
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01134)
         {
             $players = $game->loadPlayersBasicInfos();
-            if (! isset($players[$id]))
+            if (! isset($players[$id]) && $id != 0)
             {
                 throw new \BgaUserException($game->translate("Invalid opponent"));
             }
@@ -112,7 +117,22 @@ class Action_01134 extends RiskAction implements ISorcererAbility
             $game->globals->set(Game::CHOSEN_OPPONENT, $id);
 
             $owner = $this->getOwningCard($game->theah);
-            $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($id, 5);
+            if ($id == 0)
+            {
+                $deckCards = $game->getCardsOnTopOfCityDeck(5);
+                $game->notify->all("message", clienttranslate('${player_name} has chosen to look at the top 5 cards of the City Deck.'), [
+                    "player_name" => $game->getActivePlayerName(),
+                    
+                ]);
+            }
+            else
+            {
+                $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($id, 5);
+                $game->notify->all("message", clienttranslate('${player_name} has chosen to look at the top 5 cards of ${opponent_name}\'s Faction Deck.'), [
+                    "player_name" => $game->getActivePlayerName(),
+                    "opponent_name" => $game->getPlayerNameById($id),
+                ]);
+            }
             $cards = [];
             foreach ($deckCards as $deckCard)
             {
@@ -166,8 +186,16 @@ class Action_01134 extends RiskAction implements ISorcererAbility
             $deck = $game->getGameDeckObject($owner->ControllerId);
 
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
-            $deckName = $game->getPlayerFactionDeckName($playerId);
-            $discardName = $game->getPlayerDiscardDeckName($playerId);
+            if ($playerId == 0)
+            {
+                $deckName = Game::LOCATION_CITY_DECK;
+                $discardName = Game::LOCATION_CITY_DISCARD;
+            }
+            else
+            {
+                $deckName = $game->getPlayerFactionDeckName($playerId);
+                $discardName = $game->getPlayerDiscardDeckName($playerId);
+            }
 
             foreach ($ids as $id)
             {
@@ -192,7 +220,17 @@ class Action_01134 extends RiskAction implements ISorcererAbility
 
             foreach ($ids as $id)
             {
-                $game->notify->all("cardAddedToPlayerDiscardPile", clienttranslate('${card_inject_code} has been moved to the discard pile.'), [
+                if ($playerId == 0)
+                {
+                    $notification = "cardAddedToCityDiscardPile";
+                }
+                else
+                {
+                    $notification = "cardAddedToPlayerDiscardPile";
+                }
+
+                $card = $game->getCardObjectFromDb($id);
+                $game->notify->all($notification, clienttranslate('${card_inject_code} has been moved to the discard pile.'), [
                     "card_inject_code" => $card->getInjectCode(),
                     "playerId" => $playerId,
                     "card" => $card->getPropertyArray($game),
@@ -211,8 +249,16 @@ class Action_01134 extends RiskAction implements ISorcererAbility
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01134_3)
         {
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
-            $opponentName = $game->getPlayerNameById($playerId);
-            $deckName = $game->getPlayerFactionDeckName($playerId);
+            if ($playerId == 0)
+            {
+                $deckName = Game::LOCATION_CITY_DECK;
+                $opponentName = clienttranslate(Game::LOCATION_CITY_DECK);
+            }
+            else
+            {
+                $deckName = $game->getPlayerFactionDeckName($playerId);
+                $opponentName = $game->getPlayerNameById($playerId);
+            }
             $deck = $game->getGameDeckObject();
 
             $remainingCards = json_decode($game->globals->get(Game::CHOSEN_CARD));
@@ -231,7 +277,15 @@ class Action_01134 extends RiskAction implements ISorcererAbility
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} has chosen the order of the remaining cards in ${opponent_name}\'s Faction Deck.'), [
+            if ($playerId == 0)
+            {
+                $message = clienttranslate('${card_inject_code}: ${player_name} has chosen the order of the remaining cards in the City Deck.');
+            }
+            else
+            {
+                $message = clienttranslate('${card_inject_code}: ${player_name} has chosen the order of the remaining cards in ${opponent_name}\'s Faction Deck.');
+            }
+            $game->notify->all("message", $message, [
                 "card_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getActivePlayerName(),
                 "opponent_name" => $opponentName,

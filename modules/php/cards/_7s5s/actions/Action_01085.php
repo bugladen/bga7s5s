@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -11,14 +12,19 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01085 extends RiskAction implements ISorcererAbility
+class Action_01085 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters
 {
+    public int $LastTargetId = 0;
+    public string $LastTargetLocation = "";
+
     public function __construct()
     {
         parent::__construct();
         
         $this->Name = clienttranslate("Move Character to Performer's Location");
         $this->RequiresPerformerSelected = true;
+        $this->LastTargetId = 0;
+        $this->LastTargetLocation = "";
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -97,18 +103,21 @@ class Action_01085 extends RiskAction implements ISorcererAbility
         {
             $porteTravel = $this->getOwningCard($game->theah);
 
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
+
             //Done
             if ($id == 0)
             {
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($porteTravel->ControllerId);
                 $game->theah->queueEvent($actionResolvedEvent);
 
+                $event = EventFactory::createSorcererAbilityPlayedEvent($porteTravel->ControllerId, $porteTravel->Id, $this->Id, $performer->Id, $this->LastTargetId, $this->LastTargetLocation);
+                $game->theah->queueEvent($event);
+    
                 $game->gamestate->nextState();
                 return;
             }
-
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
 
             $target = $game->theah->getCharacterById($id);
             if ($target == null)
@@ -125,8 +134,10 @@ class Action_01085 extends RiskAction implements ISorcererAbility
                 "performer_inject_code" => $performer->getInjectCode(),
             ]);
 
-            $event = EventFactory::createSorcererAbilityPlayedEvent($porteTravel->ControllerId, $porteTravel->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
-            $game->theah->queueEvent($event);
+            $this->LastTargetId = $target->Id;
+            $this->LastTargetLocation = $target->Location;
+            $game->updateCardObjectInDb($porteTravel);
+            $game->theah->addCardToWorld($porteTravel);
 
             $event = EventFactory::createCharacterWoundedEvent($performer->Id, $porteTravel->Id, 1, $porteTravel->getInjectCode(), $this->Id);
             $game->theah->eventCheck($event);

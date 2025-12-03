@@ -183,7 +183,6 @@ class _01126 extends Scheme
             foreach ($locations as $location) {
                 $reknownEvent = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
                 $game->theah->eventCheck($reknownEvent);
-                $game->theah->queueEvent($reknownEvent);
             }
     
             //Check if event can be run
@@ -204,14 +203,8 @@ class _01126 extends Scheme
             ]);
 
             foreach ($locations as $location) {
-                $event = $game->theah->createEvent(Events::ReknownAddedToLocation);
-                if ($event instanceof EventReknownAddedToLocation) {
-                    $event->playerId = $playerId;
-                    $event->location = $location;
-                    $event->amount = 1;
-                }
-                $game->theah->eventCheck($event);
-                $game->theah->queueEvent($event);
+                $reknownEvent = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
+                $game->theah->queueEvent($reknownEvent);
             }
     
             // Move Leshiye of the Wood to the chosen location

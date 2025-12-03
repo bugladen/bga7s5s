@@ -21,7 +21,7 @@ class State_highDramaPhase01134 extends GameState
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Matushka\'s Sight') . clienttranslate(': ${you} must choose an opponent to look at the top 5 cards of their Faction Deck: '),
+            descriptionMyTurn: clienttranslate('Matushka\'s Sight') . clienttranslate(': ${you} must choose a player Faction Deck or the City Deck: '),
             transitions: [
                 "opponentChosen" => States::HIGH_DRAMA_PLAYER_TURN_01134_2,
                 "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,

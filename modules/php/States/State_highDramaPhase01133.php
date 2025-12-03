@@ -21,9 +21,11 @@ class State_highDramaPhase01133 extends GameState
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Matushka\'s Efficiency') . clienttranslate(': ${you} must choose a location to move to:'),
+            descriptionMyTurn: clienttranslate('Matushka\'s Efficiency') . clienttranslate(': ${you} must choose a character to move:'),
             transitions: [
-                "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+                "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_01133_2,
+                "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,
@@ -36,20 +38,15 @@ class State_highDramaPhase01133 extends GameState
     } 
 
     #[PossibleAction]
-    public function actBack(): void
+    public function actFromCardWithId(string $id): void
     {
-        $this->game->actBack();
-    }
-
-    #[PossibleAction]
-    public function actFromCardWithLocations(string $locations): void
-    {
-        $this->game->actFromCardWithLocations($locations);
+        $this->game->actFromCardWithId($id);
     }
 
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->nextState();
+        $this->game->gamestate->nextState("zombie");
     }
 
 }
+

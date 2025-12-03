@@ -705,7 +705,7 @@ trait FrameworkActionsTrait
 
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
         $this->globals->set(Game::IS_BASIC_CLAIM_ACTION, true);
-        $pressureStats = $this->theah->getPressureStats($performer, Game::STAT_INFLUENCE);
+        $pressureStats = $this->theah->getPressureStats($performer, $performer->Location, Game::STAT_INFLUENCE);
         $claimEvent = EventFactory::createPressureOccuringEvent($activePlayerId, $performer->Id, $performer->Location, $pressureStats);
         $this->theah->eventCheck($claimEvent);
         $this->theah->queueEvent($claimEvent);
@@ -1372,9 +1372,6 @@ trait FrameworkActionsTrait
         }
 
         $this->globals->set(Game::CHOSEN_MANEUVER, $maneuverId);
-
-        $event = EventFactory::createEnteringPayStateEvent($this->getActivePlayerId(), $card->Id, Game::PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD);
-        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("maneuverChosen");
     }

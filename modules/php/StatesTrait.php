@@ -26,7 +26,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
@@ -515,11 +514,20 @@ trait StatesTrait
         $this->theah->buildCity();
 
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
-        $performer = $this->getCardObjectFromDb($performerId);
+        if ($performerId != 0)        
+        {
+            $performer = $this->getCardObjectFromDb($performerId);
+            $location = $performer->Location;
+        }
+        else
+        {
+            $performer = null;
+            $location = $this->globals->get(GAME::CHOSEN_LOCATION);
+        }
         
         if ($this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false))
         {
-            $engageEvent = EventFactory::createCardEngagedEvent($claimingPlayerId, $performer->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($claimingPlayerId, $performerId);
             $this->theah->eventCheck($engageEvent);
             $this->theah->queueEvent($engageEvent);
 
@@ -527,10 +535,10 @@ trait StatesTrait
         }
         
         $pressureStat = $this->globals->get(Game::PRESSURE_STAT, Game::STAT_INFLUENCE);
-        list($success, $totals, $difference) = $this->pressureLocation($claimingPlayerId, $performer, $pressureStat);
+        list($success, $totals, $difference) = $this->pressureLocation($claimingPlayerId, $performer, $location, $pressureStat);
 
-        $pressureStats = $this->theah->getPressureStats($performer, $pressureStat);
-        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer->Id, $performer->Location, implode(", ", $pressureStats), $success, $totals, $difference);
+        $pressureStats = $this->theah->getPressureStats($performer, $location, $pressureStat);
+        $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer?->Id, $location, implode(", ", $pressureStats), $success, $totals, $difference);
         $pressuredEvent->abilityId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, "");
         $pressuredEvent->highDramaBasicAction = $this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false);
         
@@ -601,6 +609,7 @@ trait StatesTrait
             $challengeEvent->activatedTechniqueId = $techniqueId;
             $challengeEvent->sourceId = $sourceId;
         }
+        $this->theah->eventCheck($challengeEvent);
         $this->theah->queueEvent($challengeEvent);
 
         if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE)
@@ -1097,22 +1106,9 @@ trait StatesTrait
     {
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
         $card = $this->getCardObjectFromDb($cardId);
-        $cost = $card->WealthCost;
+        $this->globals->set(Game::CHOSEN_CARD_COST, $card->WealthCost);
 
-        $actor = $this->theah->getDuelRoundActor();
-        $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
-
-        $maneuverId = $this->globals->get(GAME::CHOSEN_MANEUVER);
-
-        $event = $this->theah->createEvent(Events::DuelGetCostForManeuverFromHand);
-        if ($event instanceof EventDuelGetCostForManeuverFromHand)
-        {
-            $event->actorId = $actor->Id;
-            $event->adversaryId = $adversaryId;
-            $event->combatCardId = $cardId;
-            $event->maneuverId = $maneuverId;
-            $event->cost = $cost;
-        }
+        $event = EventFactory::createEnteringPayStateEvent($this->getActivePlayerId(), $card->Id, Game::PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD);
         $this->theah->queueEvent($event);
 
         $this->gamestate->nextState();

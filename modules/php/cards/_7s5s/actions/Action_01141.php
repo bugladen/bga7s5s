@@ -50,7 +50,7 @@ class Action_01141 extends RiskAction
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->globals->set(Game::PRESSURE_STAT, Game::STAT_COMBAT);
 
-            $pressureStats = $event->theah->getPressureStats($performer, Game::STAT_COMBAT);
+            $pressureStats = $event->theah->getPressureStats($performer, $performer->Location, Game::STAT_COMBAT);
             $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($performer->ControllerId, $performer->Id, $performer->Location, $pressureStats);
             $game->theah->queueEvent($pressureOccuringEvent);
 

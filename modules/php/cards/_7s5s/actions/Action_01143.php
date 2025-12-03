@@ -47,7 +47,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult
             $engageEvent = EventFactory::createCardEngagedEvent($scheme->ControllerId, $performerId);
             $event->theah->queueEvent($engageEvent);
 
-            $pressureStats = $event->theah->getPressureStats($performer, Game::STAT_INFLUENCE);
+            $pressureStats = $event->theah->getPressureStats($performer, $performer->Location, Game::STAT_INFLUENCE);
             $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($scheme->ControllerId, $performerId, $performer->Location, $pressureStats);
             $event->theah->queueEvent($pressureOccuringEvent);
 

@@ -574,13 +574,19 @@
             },
 
             'highDramaPhase01133': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase01133_2': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
             'highDramaPhase01134': () => {
-                args.args.opponents.forEach((opponent) => {
-                    this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
+                args.args.decks.forEach((deck) => {
+                    this.addActionButton(`actChooseDeck-${deck.id}`, deck.name, () => this.bgaPerformAction('actFromCardWithId', {id: deck.id}));
                 });
             },
 

@@ -2,12 +2,12 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -50,22 +50,29 @@ class Maneuver_01079 extends Maneuver
         return false;
     }
 
+    public function getManeuverFromCombatCardDiscount(Theah $theah, Card $combatCard, Array &$explanations): int
+    {
+        $discount = parent::getManeuverFromCombatCardDiscount($theah, $combatCard, $explanations);
+        
+        $owner = $this->getOwningCard($theah);
+        if ($owner->Id == $combatCard->Id)
+        {
+            $actor = $theah->getDuelRoundActor();
+            $adversary = $theah->getDuelRoundOpponent();
+    
+            if ($actor->ModifiedFinesse > $adversary->ModifiedFinesse)
+            {
+                $discount += 1;
+                $explanations[] = sprintf($theah->game->translate("%s reduces the cost of Maneuver by 1 because your participant has a higher Finesse Stat."), $owner->getInjectCode());
+            }
+        }
+
+        return $discount;
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
-
-        if ($event instanceof EventDuelGetCostForManeuverFromHand && $event->maneuverId == $this->Id)
-        {
-            $owner = $this->getOwningCard($event->theah);
-            $actor = $event->theah->getDuelRoundActor();
-            $adversary = $event->theah->getCharacterById($event->adversaryId);
-
-            if ($actor->ModifiedFinesse > $adversary->ModifiedFinesse)
-            {
-                $event->discount += 1;
-                $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the cost of Maneuver by 1 because your participant has a higher Finesse Stat."), $owner->getInjectCode());
-            }
-        }
 
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {

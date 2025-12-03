@@ -101,7 +101,7 @@ class Reaction_01080 extends RiskReaction
                 $performer = $game->theah->getCharacterById($this->DuelOpponentId);
     
                 $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
-                $pressureStats = $game->theah->getPressureStats($performer, Game::STAT_INFLUENCE);
+                $pressureStats = $game->theah->getPressureStats($performer, $this->DuelLocation, Game::STAT_INFLUENCE);
                 $event  = EventFactory::createPressureOccuringEvent($game->getActivePlayerId(), $performer->Id, $this->DuelLocation, $pressureStats);
                 $game->theah->queueEvent($event);
     
@@ -113,7 +113,7 @@ class Reaction_01080 extends RiskReaction
                     'location_name' => $performer->Location,
                 ]);
     
-                [$success, $totals, $difference] = $game->pressureLocation($performer->ControllerId, $performer, Game::STAT_INFLUENCE);
+                [$success, $totals, $difference] = $game->pressureLocation($performer->ControllerId, $performer, $this->DuelLocation, Game::STAT_INFLUENCE);
 
                 $pressuredEvent = EventFactory::createLocationPressuredEvent($performer->ControllerId, $performer->Id, $this->DuelLocation, Game::STAT_INFLUENCE, $success, $totals, $difference);
                 $pressuredEvent->abilityId = $this->Id;

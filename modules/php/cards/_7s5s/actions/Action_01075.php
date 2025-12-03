@@ -59,7 +59,7 @@ class Action_01075 extends AttachmentAction
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id);
             $event->theah->queueEvent($engageEvent);
 
-            $pressureStats = $event->theah->getPressureStats($owner, Game::STAT_INFLUENCE);
+            $pressureStats = $event->theah->getPressureStats($owner, $owner->Location, Game::STAT_INFLUENCE);
             $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, $owner->Id, $owner->Location, $pressureStats);
             $event->theah->queueEvent($pressureOccuringEvent);
 

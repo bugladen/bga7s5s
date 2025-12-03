@@ -169,9 +169,6 @@ class Action_01124 extends CharacterAction implements ISorcererAbility
 
             $game->updateCardObjectInDb($card);
 
-            $sorceryEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
-            $game->theah->queueEvent($sorceryEvent);
-    
             $addEvent = EventFactory::createCardAddedToHandEvent($owner->ControllerId, $card->Id);
             $game->theah->queueEvent($addEvent);
 
@@ -205,6 +202,9 @@ class Action_01124 extends CharacterAction implements ISorcererAbility
             $actionResolvedEvent->priority = Event::CHANGE_ACTIVE_PLAYER_PRIORITY;
             $game->theah->queueEvent($actionResolvedEvent);
 
+            $sorceryEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
+            $game->theah->queueEvent($sorceryEvent);
+    
             $game->gamestate->nextState("actionChosen");        
         }
     }

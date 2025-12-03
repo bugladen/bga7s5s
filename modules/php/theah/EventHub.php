@@ -44,7 +44,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCar
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGetCostForManeuverFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
@@ -701,7 +700,7 @@ trait EventHub
                             $message = clienttranslate('${player_name} plays ${character_inject_code} at ${location}.');
         
                         // Notify players of mustered character
-                        $theah->game->notifyAllPlayers("characterMustered", $message, [
+                        $theah->game->notify->all("characterMustered", $message, [
                             'i18n' => ['location'],
                             "player_id" => $event->playerId,
                             "player_name" => $theah->game->getPlayerNameById($event->playerId),
@@ -709,6 +708,16 @@ trait EventHub
                             "location" => $event->location,
                             "character" => $character->getPropertyArray($theah->game),
                         ]);
+
+                        if ($character instanceof Brute)
+                        {
+                            $deck = $theah->game->getGameDeckObject();
+                            $theah->game->notify->all("cardRemovedFromHand", '', [
+                                "playerId" => $event->playerId,
+                                "cardId" => $event->characterId,
+                                'handCount' => count($deck->getPlayerHand($event->playerId)),
+                            ]);
+                        }
                     };
                     $handler($this, $event);
                     break;
@@ -809,13 +818,14 @@ trait EventHub
             case $event instanceof EventLocationPressured:
                 $handler = function (Theah $theah, EventLocationPressured $event)
                 {
-                    $performer = $theah->getCharacterById($event->performerId);
-                    $theah->game->notifyAllPlayers("message", clienttranslate('${player_name} chose ${performer_inject_code} to Pressure ${location}.
+                    $performer = $event->performerId ? $theah->getCharacterById($event->performerId) : null;
+                    $performerInjectCode = $performer ? $performer->getInjectCode() : "";
+                    $theah->game->notify->all("message", clienttranslate('${player_name} chose ${performer_inject_code} to Pressure ${location}.
                     <br>Pressure Type: ${pressureType}
                     <br>Influence Totals: ${totals}'), [
                         'i18n' => ['location', 'pressureType'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "performer_inject_code" => $performer->getInjectCode(),
+                        "performer_inject_code" => $performerInjectCode,
                         "location" => $event->location,
                         "pressureType" => $event->pressureType,
                         "totals" => $event->totalsExplanation,
@@ -838,7 +848,6 @@ trait EventHub
             case $event instanceof EventLocationPressureResult:
                 $handler = function (Theah $theah, EventLocationPressureResult $event)
                 {
-                    $performer = $theah->getCharacterById($event->performerId);
                     $theah->game->notify->all("message", clienttranslate('Pressure Result: ${result}.'), [
                         "result" => $event->success ? clienttranslate("SUCCESS") : clienttranslate("FAILED"),
                     ]);
@@ -847,7 +856,7 @@ trait EventHub
                     {
                         if ($event->success)
                         {
-                            $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $performer->Id, $performer->Location);
+                            $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $event->performerId, $event->location);
                             $theah->eventCheck($claimEvent);
                             $theah->queueEvent($claimEvent);
                         }
@@ -1326,21 +1335,6 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
-            case $event instanceof EventDuelGetCostForManeuverFromHand:
-                //This is a post-handling event, so after any chance of cost modification, 
-                //we can set the cost in the globals to set up for argsDuelPayForManeuverFromCombatCard
-                $handler = function (Theah $theah, EventDuelGetCostForManeuverFromHand $event)
-                {
-                    foreach ($event->explanations as $explanation) {
-                        $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation), []);
-                    }
-
-                    $theah->game->globals->set(Game::CHOSEN_CARD_COST, $event->cost);
-                    $theah->game->globals->set(Game::DISCOUNT, $event->discount);
-                };
-                $handler($this, $event);
-                break;
-
             case $event instanceof EventManeuverActivated:
                 $handler = function ($theah, EventManeuverActivated $event)
                 {
@@ -1724,7 +1718,6 @@ trait EventHub
                 {
                     $payDiscountEvent = EventFactory::createCalculatePayDiscountEvent($event->playerId, $event->cardId, $event->payStateType, $event->internalId);
                     $payDiscountEvent->priority = $event->priority;
-                    $theah->queueEvent($payDiscountEvent);
                     if ($event->wasStacked)
                     {
                         $theah->stackEvent($payDiscountEvent);

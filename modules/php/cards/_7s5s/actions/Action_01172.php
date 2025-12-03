@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -10,7 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01172 extends RiskAction
+class Action_01172 extends RiskAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -30,7 +31,7 @@ class Action_01172 extends RiskAction
         $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait('Sorcerer')));
         foreach ($performers as $performer)
         {
-            $characters = $theah->getCharactersInCityByPlayerId($playerId);
+            $characters = $theah->getCharactersInPlay();
             $characters = array_filter($characters, fn($character) => $character->Location != $performer->Location);
             if (count($characters) > 0)
             {
@@ -69,10 +70,9 @@ class Action_01172 extends RiskAction
             $performer = $game->theah->getCharacterById($performerId);
             $args["performerId"] = $performerId;
 
-            $characters = $game->theah->getCharactersInCityByPlayerId($performer->ControllerId);
+            $characters = $game->theah->getCharactersInPlay();
             $characters = array_filter($characters, fn($character) => $character->Location != $performer->Location);
-            $characters = array_values(array_filter($characters, fn($character) => $character->Id != $performerId));
-            $args["ids"] = array_map(fn($character) => $character->Id, $characters);
+            $args["ids"] = array_map(fn($character) => $character->Id, array_values($characters));
         }
         
         return $args;
@@ -111,11 +111,14 @@ class Action_01172 extends RiskAction
                 $game->theah->queueEvent($woundEvent);
             }
 
-            $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, false, $performer->Id);
+            $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, false, $owner->Id);
             $game->theah->queueEvent($moveEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
+
+            $sorcererAbilityPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
+            $game->theah->queueEvent($sorcererAbilityPlayedEvent);
 
             $game->gamestate->nextState();
         }

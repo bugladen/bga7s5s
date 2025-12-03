@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01133;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -14,7 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01133 extends RiskAction implements ISorcererAbility
+class Action_01133 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -78,6 +79,21 @@ class Action_01133 extends RiskAction implements ISorcererAbility
             $performer = $game->theah->getCharacterById($performerId);
             $args["performerId"] = $performerId;
 
+            $characters = $game->theah->getCharactersAtLocation($performer->Location);
+            $characters = array_filter($characters, fn($character) => $character->ControllerId == $performer->ControllerId);
+            $args["ids"] = array_map(fn($character) => $character->Id, array_values($characters));
+        }
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01133_2)
+        {
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
+            $args["performerId"] = $performerId;
+
+            $characterId = $game->globals->get(Game::CHOSEN_TARGET);
+            $character = $game->theah->getCharacterById($characterId);
+            $args["characterId"] = $characterId;
+
             $locations = $game->theah->getCityLocations();
             $availableLocations = array_filter($locations, fn($location) => $location->Name != $performer->Location);
             $ids = array_map(fn($location) => $location->Name, array_values($availableLocations));
@@ -93,28 +109,62 @@ class Action_01133 extends RiskAction implements ISorcererAbility
         return $args;
     }
 
-    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void
+    public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
-        parent::actFromActionWithIds($game, $state, $stateName, $ids);
+        parent::actFromActionWithId($game, $state, $stateName, $id);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01133)
         {
-            $owner = $this->getOwningCard($game->theah);
-            $location = $ids[0];
+            $character = $game->theah->getCharacterById($id);
+            if ($character == null)
+            {
+                throw new \BgaUserException($game->translate("Character not found"));
+            }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
-            $moveEvent = EventFactory::createCardMovedEvent($owner->ControllerId, $performer->Id, $performer->Location, $location, $engage = false, $owner->Id);
+            if ($character->ControllerId != $performer->ControllerId)
+            {
+                throw new \BgaUserException($game->translate("Character is not controlled by the same player as the performer"));
+            }
+
+            if ($character->Location != $performer->Location)
+            {
+                throw new \BgaUserException($game->translate("Character is not at the same location as the performer"));
+            }
+
+            $game->globals->set(Game::CHOSEN_TARGET, $id);
+            $game->gamestate->nextState("characterChosen");
+
+        }
+    }
+
+    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void
+    {
+        parent::actFromActionWithIds($game, $state, $stateName, $ids);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01133_2)
+        {
+            $owner = $this->getOwningCard($game->theah);
+            $location = $ids[0];
+
+            $characterId = $game->globals->get(Game::CHOSEN_TARGET);
+            $character = $game->theah->getCharacterById($characterId);
+
+            $moveEvent = EventFactory::createCardMovedEvent($owner->ControllerId, $character->Id, $character->Location, $location, $engage = false, $owner->Id);
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
+
+            $this->resetPlayerPassCount($game);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $this->resetPlayerPassCount($game);
+            $sorcererAbilityPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $character->Id, $character->Id, $character->Location);
+            $game->theah->queueEvent($sorcererAbilityPlayedEvent);
 
-            $game->gamestate->nextState();
+            $game->gamestate->nextState("locationChosen");
         }
     }
 }

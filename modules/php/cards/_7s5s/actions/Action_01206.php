@@ -55,7 +55,7 @@ class Action_01206 extends AttachmentAction
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $event->theah->game->setGlobalFlag(Game::PRESSURE_TYPE, Game::CAPTAINS_COAT_PRESSURE_TYPE);
 
-            $pressureStats = $event->theah->getPressureStats($performer, Game::STAT_INFLUENCE);
+            $pressureStats = $event->theah->getPressureStats($performer, $performer->Location, Game::STAT_INFLUENCE);
             $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($performer->ControllerId, $performer->Id, $performer->Location, $pressureStats);
             $event->theah->queueEvent($pressureOccuringEvent);
 

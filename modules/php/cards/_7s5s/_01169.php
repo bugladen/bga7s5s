@@ -51,23 +51,27 @@ class _01169 extends Risk
             $this->EscapeDuel = false;
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${card_inject_code} activates: ${character_name} is wounded and is moved to Home.'), [
-                "card_inject_code" => $this->getInjectCode(),
-                "character_name" => $event->theah->getDuelRoundActor()->Name,
-            ]);
-
+            $game = $event->theah->game;
             $actor = $event->theah->getDuelRoundActor();
 
-            $woundEvent = EventFactory::createCharacterWoundedEvent($actor->Id, $this->Id, 1, $this->getInjectCode());
-            $event->theah->queueEvent($woundEvent);
-
-            $moveEvent = EventFactory::createCardMovedEvent($actor->ControllerId, $actor->Id, $actor->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $this->Id);
-            $event->theah->queueEvent($moveEvent);
-
-            if (! $this->Engaged)
+            if (! $game->characterIsInDiscardOrLocker($actor))
             {
-                $engageEvent = EventFactory::createCardEngagedEvent($actor->ControllerId, $actor->Id, $this->Id);
-                $event->theah->queueEvent($engageEvent);
+                $game->notify->all("message", clienttranslate('${card_inject_code} activates: ${character_name} is wounded and is moved to Home.'), [
+                    "card_inject_code" => $this->getInjectCode(),
+                    "character_name" => $actor->Name,
+                ]);
+    
+                $woundEvent = EventFactory::createCharacterWoundedEvent($actor->Id, $this->Id, 1, $this->getInjectCode());
+                $event->theah->queueEvent($woundEvent);
+    
+                $moveEvent = EventFactory::createCardMovedEvent($actor->ControllerId, $actor->Id, $actor->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $this->Id);
+                $event->theah->queueEvent($moveEvent);
+    
+                if (! $this->Engaged)
+                {
+                    $engageEvent = EventFactory::createCardEngagedEvent($actor->ControllerId, $actor->Id, $this->Id);
+                    $event->theah->queueEvent($engageEvent);
+                }
             }
         }
     }
