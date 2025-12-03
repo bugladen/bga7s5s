@@ -1441,6 +1441,17 @@
 
             'highDramaPhase01133': () => {
                 if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+
+            'highDramaPhase01133_2': () => {
+                if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;
                     args.args.args.locationIds.forEach((locationId) => {
                         if (locationId == this.LOCATION_PLAYER_HOME)
@@ -1454,10 +1465,14 @@
                         }
                     });
 
-                    card = this.cardProperties[args.args.args.performerId];
-                    const image = $(`${card.divId}_image`);
-                    dojo.addClass(image, '_7sfs-chosen');
+                    this.highlightCharacterChosen(args.args.args.performerId);
                     this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    if (args.args.args.characterId != args.args.args.performerId)
+                    {
+                        this.highlightCharacterChosen(args.args.args.characterId);
+                    }
+                    this.clientStateArgs.characterId = args.args.args.characterId;
                 }          
             },
 
