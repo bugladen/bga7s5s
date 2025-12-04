@@ -33,14 +33,14 @@ class Action_01133 extends RiskAction implements ISorcererAbility, IAbilityThatT
         }
 
         $performers = $theah->getCharactersInPlayByPlayerId($playerId);
-        $performers = array_filter($performers, fn($performer) => ! $performer->Engaged && $performer->hasTrait("Sorcerer"));
+        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Sorcerer"));
         return count($performers) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = $theah->getCharactersInPlayByPlayerId($playerId);
-        $performers = array_filter($performers, fn($performer) => ! $performer->Engaged && $performer->hasTrait("Sorcerer"));
+        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Sorcerer"));
         return array_values($performers);
     }
 
@@ -149,6 +149,9 @@ class Action_01133 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $owner = $this->getOwningCard($game->theah);
             $location = $ids[0];
 
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
+
             $characterId = $game->globals->get(Game::CHOSEN_TARGET);
             $character = $game->theah->getCharacterById($characterId);
 
@@ -157,11 +160,15 @@ class Action_01133 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $game->theah->queueEvent($moveEvent);
 
             $this->resetPlayerPassCount($game);
+            $game->notify->all("message", clienttranslate('${card_inject_code}: ${performer_inject_code} was the Performer.'), [
+                "card_inject_code" => $owner->getInjectCode(),
+                "performer_inject_code" => $performer->getInjectCode(),
+            ]);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $sorcererAbilityPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $character->Id, $character->Id, $character->Location);
+            $sorcererAbilityPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId, $character->Id, $character->Location);
             $game->theah->queueEvent($sorcererAbilityPlayedEvent);
 
             $game->gamestate->nextState("locationChosen");

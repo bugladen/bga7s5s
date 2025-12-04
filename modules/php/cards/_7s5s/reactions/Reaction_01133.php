@@ -39,8 +39,9 @@ class Reaction_01133 extends RiskReaction
         if ($event instanceof EventEnteringPayState)
         {
             $owner = $this->getOwningCard($event->theah);
-            $inDuel = $event->theah->game->globals->get(Game::IN_DUEL);
-            if ($event->cardId == $owner->Id && ! $inDuel)
+            $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $event->theah->getCharacterById($performerId);
+            if ($event->cardId == $owner->Id && ! $performer->Engaged)
             {
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->stackEvent($transition);
