@@ -44,28 +44,32 @@ class Reaction_01140 extends RiskReaction
 
         if ($event instanceof EventCardMoved && $this->isAvailable())
         {
-            // Skip if this is the event we already processed and stored
-            if ($this->eventCardMoved !== null && 
-                $this->eventCardMoved->cardId == $event->cardId &&
-                $this->eventCardMoved->fromLocation == $event->fromLocation &&
-                $this->eventCardMoved->toLocation == $event->toLocation &&
-                $this->eventCardMoved->initiatingPlayerId == $event->initiatingPlayerId)
-            {
-                return; // This is the event we're about to release, don't catch it again
-            }
-            
             $owner = $this->getOwningCard($event->theah);
-            $card = $event->theah->getCardById($event->cardId);
-            if ($card instanceof Character && $card->ControllerId == $owner->ControllerId)
+            if ($owner->Location == Game::LOCATION_HAND)
             {
-                $owner->IsUpdated = true;
-                $this->eventCardMoved = clone $event;
-                unset($this->eventCardMoved->theah);
+                // Skip if this is the event we already processed and stored
+                if ($this->eventCardMoved !== null && 
+                    $this->eventCardMoved->cardId == $event->cardId &&
+                    $this->eventCardMoved->fromLocation == $event->fromLocation &&
+                    $this->eventCardMoved->toLocation == $event->toLocation &&
+                    $this->eventCardMoved->initiatingPlayerId == $event->initiatingPlayerId)
+                {
+                    return; // This is the event we're about to release, don't catch it again
+                }
+                
+                $owner = $this->getOwningCard($event->theah);
+                $card = $event->theah->getCardById($event->cardId);
+                if ($card instanceof Character && $card->ControllerId == $owner->ControllerId)
+                {
+                    $owner->IsUpdated = true;
+                    $this->eventCardMoved = clone $event;
+                    unset($this->eventCardMoved->theah);
 
-                $event->canceled = true;
+                    $event->canceled = true;
 
-                $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->queueEvent($reactionTransitionEvent);
+                    $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->queueEvent($reactionTransitionEvent);
+                }
             }
         }
 
