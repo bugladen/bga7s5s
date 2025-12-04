@@ -88,7 +88,7 @@ class Action_01118 extends CharacterAction
             $characters = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($elina->ControllerId));
             if (count($characters) > 0)
             {
-                $engardeEvent = EventFactory::createCardEngardedEvent($elina->ControllerId, $elina->Id, $characters[0]->Id);
+                $engardeEvent = EventFactory::createCardEngardedEvent($elina->ControllerId, $elina->Id, $elina->Id);
                 $game->theah->queueEvent($engardeEvent);
             }
 
