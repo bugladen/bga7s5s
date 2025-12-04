@@ -55,18 +55,21 @@ class Reaction_01137 extends RiskReaction
         if ($event instanceof EventCardMoved && $this->isAvailable())
         {
             $owner = $this->getOwningCard($event->theah);
-            $card = $event->theah->getCardById($event->cardId);
-
-            $charactersAtLocation = $event->theah->getCharactersAtLocationByPlayerId($event->fromLocation, $owner->ControllerId);
-            if ($card->ControllerId != $owner->ControllerId && $event->toLocation != Game::LOCATION_PLAYER_HOME && count($charactersAtLocation) > 0)
+            if ($owner->Location == Game::LOCATION_HAND)
             {
-                $this->FromLocation = $event->fromLocation;
-                $this->ToLocation = $event->toLocation;
-                $this->TargetCharacterId = $event->cardId;
-                $owner->IsUpdated = true;
+                $card = $event->theah->getCardById($event->cardId);
 
-                $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->queueEvent($reactionTransitionEvent);
+                $charactersAtLocation = $event->theah->getCharactersAtLocationByPlayerId($event->fromLocation, $owner->ControllerId);
+                if ($card->ControllerId != $owner->ControllerId && $event->toLocation != Game::LOCATION_PLAYER_HOME && count($charactersAtLocation) > 0)
+                {
+                    $this->FromLocation = $event->fromLocation;
+                    $this->ToLocation = $event->toLocation;
+                    $this->TargetCharacterId = $event->cardId;
+                    $owner->IsUpdated = true;
+    
+                    $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->queueEvent($reactionTransitionEvent);
+                }
             }
         }
 
