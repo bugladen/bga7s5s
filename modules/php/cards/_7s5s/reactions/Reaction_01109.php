@@ -48,17 +48,20 @@ class Reaction_01109 extends CancelReaction
         if ($event instanceof EventRiskPlayed && $this->isAvailable())
         {
             $owner = $this->getOwningCard($event->theah);
-            $risk = $event->theah->getCardById($event->riskId);
-            if ($risk instanceof Risk && $risk->ControllerId != $owner->ControllerId && ! $risk->hasTrait("Sorcery"))
+            if ($owner->Location == Game::LOCATION_HAND)
             {
-                //Make sure there is not another copy of this reaction queued
-                if (! $event->theah->areTransitionEventsOfTypeForPlayerQueued($owner->ControllerId, "Reaction_01109"))
+                $risk = $event->theah->getCardById($event->riskId);
+                if ($risk instanceof Risk && $risk->ControllerId != $owner->ControllerId && ! $risk->hasTrait("Sorcery"))
                 {
-                    $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                    $event->theah->stackEvent($transitionEvent);
-    
-                    $this->RiskId = $event->riskId;
-                    $owner->IsUpdated = true;
+                    //Make sure there is not another copy of this reaction queued
+                    if (! $event->theah->areTransitionEventsOfTypeForPlayerQueued($owner->ControllerId, "Reaction_01109"))
+                    {
+                        $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                        $event->theah->stackEvent($transitionEvent);
+        
+                        $this->RiskId = $event->riskId;
+                        $owner->IsUpdated = true;
+                    }
                 }
             }
         }
@@ -67,16 +70,19 @@ class Reaction_01109 extends CancelReaction
         {
             $game = $event->theah->game;
             $owner = $this->getOwningCard($event->theah);
-            $maneuver = $event->theah->getManeuverById($event->maneuverId);
-            $risk = $maneuver->getOwningCard($event->theah);
-            if ($event->playerId != $owner->ControllerId && ! $risk->hasTrait("Sorcery") && !$maneuver instanceof ISorcererAbility)
+            if ($owner->Location == Game::LOCATION_HAND)
             {
-                $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->stackEvent($reactionEvent);
-
-                $this->RiskId = $risk->Id;
-                $this->ManeuverId = $event->maneuverId;
-                $owner->IsUpdated = true;
+                $maneuver = $event->theah->getManeuverById($event->maneuverId);
+                $risk = $maneuver->getOwningCard($event->theah);
+                if ($event->playerId != $owner->ControllerId && ! $risk->hasTrait("Sorcery") && !$maneuver instanceof ISorcererAbility)
+                {
+                    $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->stackEvent($reactionEvent);
+    
+                    $this->RiskId = $risk->Id;
+                    $this->ManeuverId = $event->maneuverId;
+                    $owner->IsUpdated = true;
+                }
             }
         }
 
@@ -84,18 +90,20 @@ class Reaction_01109 extends CancelReaction
         if ($event instanceof EventDuelCalculateCombatCardStats && $this->isAvailable())
         {
             $game = $event->theah->game;
-            $card = $event->theah->getCardById($event->combatCardId);
             $owner = $this->getOwningCard($event->theah);
-            if ($card->ControllerId != $owner->ControllerId && $card instanceof _01169)
+            if ($owner->Location == Game::LOCATION_HAND)
             {
-
-                $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->stackEvent($reactionEvent);                
-
-                $this->RiskId = $event->combatCardId;
-                $owner->IsUpdated = true;
+                $card = $event->theah->getCardById($event->combatCardId);
+                if ($card->ControllerId != $owner->ControllerId && $card instanceof _01169)
+                {
+    
+                    $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->stackEvent($reactionEvent);                
+    
+                    $this->RiskId = $event->combatCardId;
+                    $owner->IsUpdated = true;
+                }
             }
-
         }
 
         if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
