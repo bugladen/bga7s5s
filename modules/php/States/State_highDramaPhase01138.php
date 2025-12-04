@@ -21,7 +21,7 @@ class State_highDramaPhase01138 extends GameState
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Ruzarushitel') . clienttranslate(': ${you} must choose a Character to manipulate: '),
+            descriptionMyTurn: clienttranslate('Razrushitel') . clienttranslate(': ${you} must choose a Character to manipulate: '),
             transitions: [
                 "wound" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 "manipulate" => States::HIGH_DRAMA_PLAYER_TURN_01138_2,
