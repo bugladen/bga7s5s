@@ -1265,6 +1265,10 @@
                 }
             },
 
+            'highDramaPhase01095': () => {
+                this.factionHand.setSelectionMode(1);
+            },
+
             'highDramaPhase01104': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

@@ -777,6 +777,10 @@
                 }
             },
 
+            'highDramaPhase01095': () => {
+                this.factionHand.setSelectionMode(0);
+            },
+
             'highDramaPhase01104': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
