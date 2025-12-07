@@ -369,7 +369,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         });            
     },
 
-    notif_attachmentEquipped: function( notif )
+    notif_attachmentEquipped: async function( notif )
     {
         debug( 'notif_attachmentEquipped' );
         debug( notif );
@@ -410,6 +410,19 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         //Create the new character element    
         this.createCard(performer.divId, performer, placeholderId);
+
+        // Add pop scale animation to the newly created element
+        const newElement = $(performer.divId);
+        if (newElement && this.animationManager) {
+            await newElement.animate([
+                { transform: 'scale(0.8)' },
+                { transform: 'scale(1.1)' },
+                { transform: 'scale(1)' }
+            ], {
+                duration: 300,
+                easing: 'ease-out'
+            }).finished;
+        }
 
         //Destroy the placeholder
         dojo.destroy(placeholderId);
@@ -585,7 +598,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
     },
     
 
-    notif_cardDiscardedFromPlay: function( notif )
+    notif_cardDiscardedFromPlay: async function( notif )
     {
         debug( 'notif_cardDiscardedFromPlay' );
         debug( notif );
@@ -593,6 +606,19 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
         const card = this.cardProperties[args.cardId];        
         card.location = this.LOCATION_PLAYER_DISCARD;
+
+        const cardElement = $(card.divId);
+        
+        // Animate the card shrinking to nothing
+        if (cardElement && this.animationManager) {
+            await cardElement.animate([
+                { transform: 'scale(1)', opacity: 1 },
+                { transform: 'scale(0)', opacity: 0 }
+            ], {
+                duration: 400,
+                easing: 'ease-in'
+            }).finished;
+        }
 
         dojo.destroy(card.divId);
         card.divId = null;
@@ -632,7 +658,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         $(`${notif.args.playerId}-score-hand-count`).innerHTML = args.handCount;
     },
 
-    notif_cardRemovedFromPlay: function( notif )
+    notif_cardRemovedFromPlay: async function( notif )
     {
         debug( 'notif_cardRemovedFromPlay' );
         debug( notif );
@@ -643,13 +669,26 @@ return declare('seventhseacityoffivesails.notifications', null, {
         {
             card.location = args.toLocation;
 
+            const cardElement = $(card.divId);
+            
+            // Animate the card shrinking to nothing
+            if (cardElement && this.animationManager) {
+                await cardElement.animate([
+                    { transform: 'scale(1)', opacity: 1 },
+                    { transform: 'scale(0)', opacity: 0 }
+                ], {
+                    duration: 400,
+                    easing: 'ease-in'
+                }).finished;
+            }
+
             dojo.destroy(card.divId);
             card.divId = null;
         }
     },
 
 
-    notif_cardMoved: function( notif )
+    notif_cardMoved: async function( notif )
     {
         debug( 'notif_cardMoved' );
         debug( notif );
@@ -657,19 +696,30 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
 
         const card = this.cardProperties[args.cardId];
+        const oldDivId = card.divId;
+        const oldElement = $(oldDivId);
+        
         card.engaged = args.engage;
         card.location = args.toLocation;
 
-        //Destroy the old card element
-        dojo.destroy(card.divId);
-
-        //Create the new card element
+        // Get the destination target (returns string ID, need to convert to DOM element)
         const cardId = this.createCardId(card, args.toLocation);
-        const target = this.getTargetElementForLocation(args.toLocation, card.controllerId);
-        this.createCard(cardId, card, target);
+        const targetId = this.getTargetElementForLocation(args.toLocation, card.controllerId);
+        const targetElement = $(targetId);
+
+        // Animate the old element to the destination, then replace it with the new element
+        if (oldElement && targetElement && this.animationManager) {
+            await this.animationManager.slideAndAttach(oldElement, targetElement);
+        }
+
+        // Destroy the old card element after animation completes
+        dojo.destroy(oldDivId);
+
+        // Create the new card element at the destination
+        this.createCard(cardId, card, targetId);
     },
 
-    notif_cardEngaged: function( notif )
+    notif_cardEngaged: async function( notif )
     {
         debug( 'notif_cardEngaged' );
         debug( notif );
@@ -678,10 +728,23 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const card = this.cardProperties[args.cardId];
         card.engaged = true;
-        dojo.addClass(`${card.divId}_image`, '_7sfs-engaged');
+        
+        const cardElement = $(`${card.divId}_image`);
+        dojo.addClass(cardElement, '_7sfs-engaged');
+        
+        // Add a subtle scale pulse animation for visual feedback
+        if (cardElement && this.animationManager) {
+            await cardElement.animate([
+                { transform: 'rotate(90deg) scale(1.05)' },
+                { transform: 'rotate(90deg) scale(1)' }
+            ], {
+                duration: 200,
+                easing: 'ease-out'
+            }).finished;
+        }
     },
 
-    notif_cardEngarded: function( notif )
+    notif_cardEngarded: async function( notif )
     {
         debug( 'notif_cardEngarded' );
         debug( notif );
@@ -690,7 +753,20 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const card = this.cardProperties[args.cardId];
         card.engaged = false;
-        dojo.removeClass(`${card.divId}_image`, '_7sfs-engaged');
+        
+        const cardElement = $(`${card.divId}_image`);
+        dojo.removeClass(cardElement, '_7sfs-engaged');
+        
+        // Add a subtle scale pulse animation for visual feedback
+        if (cardElement && this.animationManager) {
+            await cardElement.animate([
+                { transform: 'rotate(0deg) scale(1.05)' },
+                { transform: 'rotate(0deg) scale(1)' }
+            ], {
+                duration: 200,
+                easing: 'ease-out'
+            }).finished;
+        }
     },
 
     notif_characterMustered: function (notif) 

@@ -694,6 +694,7 @@ body {
     display: inline-block;
     margin-left:25px;
     margin-right:5px;
+    transition: transform 0.7s ease, margin-left 0.7s ease;
 
     background-image: var(--card_image);
     background-size: 205px 280px;
