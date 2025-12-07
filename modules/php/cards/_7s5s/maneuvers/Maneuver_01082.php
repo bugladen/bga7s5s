@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -82,6 +83,13 @@ class Maneuver_01082 extends Maneuver
                     "adversary_name" => $adversary->Name,
                 ]);
             }
+        }
+
+        if ($event instanceof EventDuelNewRound && $this->FinalStrikeParticipantId != 0)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
+            $this->FinalStrikeParticipantId = 0;
         }
     }
 }
