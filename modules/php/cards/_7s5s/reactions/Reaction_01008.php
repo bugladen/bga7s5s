@@ -62,7 +62,7 @@ class Reaction_01008 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventSorcererAbilityPlayed && ! $this->Used)
+        if ($event instanceof EventSorcererAbilityPlayed && $this->isAvailable())
         {
             $cesca = $this->getOwningCharacter($event->theah);
             $source = $event->theah->getCardById($event->sourceId);
