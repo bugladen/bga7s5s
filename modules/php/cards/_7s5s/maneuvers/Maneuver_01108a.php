@@ -32,7 +32,7 @@ class Maneuver_01108a extends Maneuver
             return false;
         }
 
-        $adversaryId = $theah->getDuelOpponentId($playerId);
+        $adversaryId = $theah->getDuelOpponentId($actor->Id);
         $adversary = $theah->getCharacterById($adversaryId);
         $hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $adversary->ControllerId);
         return count($hand) > 0;
