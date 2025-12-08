@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 
 class _01200 extends CityAttachment implements IHasReactions
 {
@@ -57,10 +58,33 @@ class _01200 extends CityAttachment implements IHasReactions
 
         if ($event instanceof EventAttachmentEquipped && $this->Id == $event->attachmentId)
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('Crystal Eye has been equipped and its Forced Ability will trigger.'), []);
+            $event->theah->game->notify->all("message", clienttranslate('Crystal Eye has been equipped and its Forced Ability will trigger.'), []);
 
             $transition = EventFactory::createTransitionEvent($event->theah->game->getActivePlayerId(), $this->Id, "01200");
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventAttachmentUnequipped && $this->Id == $event->attachmentId)
+        {
+            $game = $event->theah->game;
+            if ($this->ChosenCard != 0)
+            {
+                $character = $game->getCardObjectFromDb($this->ChosenCard);
+                if ($character != null)
+                {
+                    $character->removeCondition(Game::CRYSTAL_EYE_TARGET);
+                    $game->updateCardObjectInDb($character);
+                    $game->notify->player($character->ControllerId, 'crystalEyeTargetRemoved', clienttranslate('${skull_inject_code}: ${card_inject_code} has been been removed as a target.'), [
+                        "skull_inject_code" => $this->getInjectCode(),
+                        "card_inject_code" => $character->getInjectCode(),
+                        "cardId" => $character->Id,
+                        "playerId" => $character->ControllerId,
+                    ]);
+                }
+
+                $this->ChosenCard = 0;
+                $this->IsUpdated = true;
+            }
         }
     }
 
@@ -68,7 +92,7 @@ class _01200 extends CityAttachment implements IHasReactions
     {
         $args = parent::argsFromCard($game, $state, $stateName, $internalId);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200 || $state == States::DUEL_END_OF_ROUND_01200 || $state == States::DUEL_RESOLVE_MANEUVER_01200)
         {
             $opponents = [];
             $players = $game->loadPlayersBasicInfos();
@@ -81,7 +105,7 @@ class _01200 extends CityAttachment implements IHasReactions
             $args['opponents'] = $opponents;
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200_2)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200_2 || $state == States::DUEL_END_OF_ROUND_01200_2 || $state == States::DUEL_RESOLVE_MANEUVER_01200_2)
         {
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
 
@@ -107,7 +131,7 @@ class _01200 extends CityAttachment implements IHasReactions
         parent::actFromCardWithId($game, $state, $stateName, $actionId, $id);
         
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200 || $state == States::DUEL_END_OF_ROUND_01200 || $state == States::DUEL_RESOLVE_MANEUVER_01200)
         {
             $players = $game->loadPlayersBasicInfos();
             if ( ! isset($players[$id]))
@@ -115,7 +139,7 @@ class _01200 extends CityAttachment implements IHasReactions
                 throw new \BgaUserException($game->translate("Invalid opponent"));
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen to look at <strong>${opponentName}</strong>\'s Approach Deck.'), [
+            $game->notify->all("message", clienttranslate('${player_name} has chosen to look at <strong>${opponentName}</strong>\'s Approach Deck.'), [
                 'player_name' => $game->getActivePlayerName(),
                 'opponentName' => $players[$id]['player_name'],
             ]);
@@ -124,7 +148,7 @@ class _01200 extends CityAttachment implements IHasReactions
             $game->gamestate->nextState();
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200_2)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200_2 || $state == States::DUEL_END_OF_ROUND_01200_2 || $state == States::DUEL_RESOLVE_MANEUVER_01200_2)
         {
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
             $activePlayerId = $game->getActivePlayerId();
@@ -142,20 +166,20 @@ class _01200 extends CityAttachment implements IHasReactions
             $game->updateCardObjectInDb($card);
 
             $players = $game->loadPlayersBasicInfos();
-            $game->notifyAllPlayers('crystalEyeTargetMessage', clienttranslate('${player_name} has chosen a card from ${opponentName}\'s Approach Deck as the target for Crystal Eye.'), [
+            $game->notify->all('crystalEyeTargetMessage', clienttranslate('${player_name} has chosen a card from ${opponentName}\'s Approach Deck as the target for Crystal Eye.'), [
                 "player_name" => $activePlayerName,
                 "opponentName" => $players[$playerId]['player_name'],
                 "choosingPlayerId" => $activePlayerId,
                 "targetplayerId" => $playerId,
             ]);
 
-            $game->notifyPlayer($activePlayerId, "message", 
+            $game->notify->player($activePlayerId, "message", 
             clienttranslate('Private: You have chosen ${card_inject_code} as the target for Crystal Eye.'), [
                 "card_inject_code" => $card->getInjectCode(),
                 ]);
     
 
-            $game->notifyPlayer($playerId, 'crystalEyeTargetChosen', 
+            $game->notify->player($playerId, 'crystalEyeTargetChosen', 
             clienttranslate('Private: ${player_name} has chosen ${card_inject_code} as the target for Crystal Eye.'), [
                 "player_name" => $activePlayerName,
                 "card_inject_code" => $card->getInjectCode(),

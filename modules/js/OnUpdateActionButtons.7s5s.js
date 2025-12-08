@@ -944,6 +944,17 @@
                 });
             },
     
+            'duelResolveManeuver_01200': () => {
+                args.args.opponents.forEach((opponent) => {
+                    this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
+                });
+            },
+    
+            'duelResolveManeuver_01200_2': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'duelApplyCombatCardStats_01085': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
@@ -952,6 +963,17 @@
             'duelEndOfRound_01031': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+    
+            'duelEndOfRound_01200': () => {
+                args.args.opponents.forEach((opponent) => {
+                    this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
+                });
+            },
+    
+            'duelEndOfRound_01200_2': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     

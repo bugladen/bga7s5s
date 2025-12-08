@@ -1496,10 +1496,26 @@
                 }
             },
 
+            'duelResolveManeuver_01200_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                }
+            },
+
             'duelEndOfRound_01031': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCards(this.clientStateArgs.ids);
                     this.clientStateArgs = {};
+                }
+            },
+
+            'duelEndOfRound_01200_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
                 }
             },
 

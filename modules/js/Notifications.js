@@ -54,6 +54,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cityCardAddedToLocation', 1000],
             ['cityDiscardShuffled', 500],
             ['crystalEyeTargetChosen', 500],
+            ['crystalEyeTargetRemoved', 500],
             ['defenderSwapped', 500],
             ['drawCard', 2000],
             ['drawCardMessage', 100],
@@ -1307,6 +1308,22 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }),  div, 'last');
 
         this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
+    },
+
+    notif_crystalEyeTargetRemoved: function( notif )
+    {
+        debug( 'notif_crystalEyeTargetRemoved' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.CRYSTAL_EYE_TARGET);
+        }
+
+        const id = `${args.cardId}_crystal_eye_target`;
+        dojo.destroy(id);    
     },
 
     notif_catsEmbargoTargetChosen: function( notif )
