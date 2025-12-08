@@ -559,7 +559,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
-    notif_cardAddedToCityDiscardPile: function( notif )
+    notif_cardAddedToCityDiscardPile: async function( notif )
     {
         debug( 'notif_cardAddedToCityDiscardPile' );
         debug( notif );
@@ -570,6 +570,19 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card)
         {
             card.location = this.LOCATION_CITY_DISCARD;
+
+            const cardElement = $(card.divId);
+            
+            // Animate the card shrinking to nothing
+            if (cardElement && this.animationManager) {
+                await cardElement.animate([
+                    { transform: 'scale(1)', opacity: 1 },
+                    { transform: 'scale(0)', opacity: 0 }
+                ], {
+                    duration: 400,
+                    easing: 'ease-in'
+                }).finished;
+            }
 
             dojo.destroy(card.divId);
             card.divId = null;
@@ -719,7 +732,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.createCard(cardId, card, targetId);
     },
 
-    notif_cardEngaged: async function( notif )
+    notif_cardEngaged: function( notif )
     {
         debug( 'notif_cardEngaged' );
         debug( notif );
@@ -731,20 +744,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
         
         const cardElement = $(`${card.divId}_image`);
         dojo.addClass(cardElement, '_7sfs-engaged');
-        
-        // Add a subtle scale pulse animation for visual feedback
-        if (cardElement && this.animationManager) {
-            await cardElement.animate([
-                { transform: 'rotate(90deg) scale(1.05)' },
-                { transform: 'rotate(90deg) scale(1)' }
-            ], {
-                duration: 200,
-                easing: 'ease-out'
-            }).finished;
-        }
+        // CSS transition on ._7sfs-card handles the smooth rotation animation
     },
 
-    notif_cardEngarded: async function( notif )
+    notif_cardEngarded: function( notif )
     {
         debug( 'notif_cardEngarded' );
         debug( notif );
@@ -756,17 +759,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         
         const cardElement = $(`${card.divId}_image`);
         dojo.removeClass(cardElement, '_7sfs-engaged');
-        
-        // Add a subtle scale pulse animation for visual feedback
-        if (cardElement && this.animationManager) {
-            await cardElement.animate([
-                { transform: 'rotate(0deg) scale(1.05)' },
-                { transform: 'rotate(0deg) scale(1)' }
-            ], {
-                duration: 200,
-                easing: 'ease-out'
-            }).finished;
-        }
+        // CSS transition on ._7sfs-card handles the smooth rotation animation
     },
 
     notif_characterMustered: function (notif) 
@@ -913,7 +906,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             dojo.removeClass(element, '_7sfs-modified-stat-value');
     },
 
-    notif_cardSentToLocker: function( notif )
+    notif_cardSentToLocker: async function( notif )
     {
         debug( 'notif_cardSentToLocker' );
         debug( notif );
@@ -923,6 +916,19 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card)
         {
             card.location = this.LOCATION_PLAYER_LOCKER;
+
+            const cardElement = $(card.divId);
+            
+            // Animate the card shrinking to nothing
+            if (cardElement && this.animationManager) {
+                await cardElement.animate([
+                    { transform: 'scale(1)', opacity: 1 },
+                    { transform: 'scale(0)', opacity: 0 }
+                ], {
+                    duration: 400,
+                    easing: 'ease-in'
+                }).finished;
+            }
 
             dojo.destroy(card.divId);
             card.divId = null;    
@@ -958,7 +964,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         dojo.style('day-indicator', 'display', 'block');
     },
 
-    notif_cityCardAddedToLocation: function( notif )
+    notif_cityCardAddedToLocation: async function( notif )
     {
         debug( 'notif_cityCardAddedToLocation' );
         debug( notif );
@@ -969,6 +975,18 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const target = this.getTargetElementForLocation(args.location, card.controllerId);
         const cardId = this.createCardId(card, args.location);
         this.createCard(cardId, card, target);
+
+        // Animate the card growing from nothing to full size
+        const cardElement = $(cardId);
+        if (cardElement && this.animationManager) {
+            await cardElement.animate([
+                { transform: 'scale(0)', opacity: 0 },
+                { transform: 'scale(1)', opacity: 1 }
+            ], {
+                duration: 400,
+                easing: 'ease-out'
+            }).finished;
+        }
     },
 
     notif_playerReknownUpdated: function( notif )
