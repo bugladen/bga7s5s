@@ -26,23 +26,21 @@ class Maneuver_01165 extends Maneuver
         if (! $inDuel)
             return false;
 
-        $actor = $theah->getDuelRoundActor($playerId);
-        $adversaryId = $theah->getDuelOpponentId($actor);
-        $adversary = $theah->getCharacterById($adversaryId);
+        $adversary = $theah->getDuelRoundOpponent();
 
         if ($theah->game->characterIsInDiscardOrLocker($adversary))
         {
             return false;
         }
 
-        $techniques = $adversary instanceof IHasTechniques ? $adversary->getTechniques() : [];
+        $techniques = $adversary instanceof IHasTechniques ? $adversary->getTechniquesAvailableToPlayer($theah->game, $playerId) : [];
         if (count($techniques) > 0)
             return true;
 
         foreach ($adversary->Attachments as $attachmentId)
         {
             $attachment = $theah->getAttachmentById($attachmentId);
-            $techniques = $attachment instanceof IHasTechniques ? $attachment->getTechniques() : [];
+            $techniques = $attachment instanceof IHasTechniques ? $attachment->getTechniquesAvailableToPlayer($theah->game, $playerId) : [];
             if (count($techniques) > 0)
                 return true;
         }
@@ -72,21 +70,19 @@ class Maneuver_01165 extends Maneuver
         if ($state == States::DUEL_RESOLVE_MANEUVER_01165)
         {
             $playerId = $game->getActivePlayerId();
-            $actor = $game->theah->getDuelRoundActor($playerId);
-            $adversaryId = $game->theah->getDuelOpponentId($actor);
-            $adversary = $game->theah->getCharacterById($adversaryId);
+            $adversary = $game->theah->getDuelRoundOpponent();
 
             $techniquesArray = [];
             $techniques = $adversary instanceof IHasTechniques ? $adversary->getTechniquesAvailableToPlayer($game, $playerId) : [];
             if (count($techniques) > 0)
-                $techniquesArray += $techniques;
+                $techniquesArray = array_merge($techniquesArray, $techniques);
     
             foreach ($adversary->Attachments as $attachmentId)
             {
                 $attachment = $game->theah->getAttachmentById($attachmentId);
                 $techniques = $attachment instanceof IHasTechniques ? $attachment->getTechniquesAvailableToPlayer($game, $playerId) : [];
                 if (count($techniques) > 0)
-                    $techniquesArray += $techniques;
+                    $techniquesArray = array_merge($techniquesArray, $techniques);
             }
     
             $args['techniques'] = array_values($techniquesArray);
@@ -108,7 +104,7 @@ class Maneuver_01165 extends Maneuver
             $game->globals->set(GAME::TRANSITION_INTERNAL_ID, $technique->Id);
 
             $actor = $game->theah->getDuelRoundActor();
-            $adversaryId = $game->theah->getDuelOpponentId($actor);
+            $adversaryId = $game->theah->getDuelOpponentId($actor->Id);
             $owner = $this->getOwningCard($game->theah);
 
             $activateEvent = EventFactory::createTechniqueActivatedEvent($actor->ControllerId, $owner->Id, $technique->Id, $copied = true);
