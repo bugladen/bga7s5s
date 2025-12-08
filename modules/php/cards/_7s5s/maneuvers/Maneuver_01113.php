@@ -59,7 +59,7 @@ class Maneuver_01113 extends Maneuver
             }
         }
 
-        $availableAttachments = $theah->attachmentsAvailableFromOpponentDiscardPile($adversary->ControllerId, $actor);
+        $availableAttachments = array_merge($availableAttachments, $theah->attachmentsAvailableFromOpponentDiscardPile($adversary->ControllerId, $actor));
         return count($availableAttachments) > 0;
     }
 
