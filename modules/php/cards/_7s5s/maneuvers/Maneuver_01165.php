@@ -8,11 +8,15 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Maneuver_01165 extends Maneuver
 {
+    public Array $copiedTechniques = [];
+
     public function __construct()
     {
         parent::__construct();
@@ -48,6 +52,17 @@ class Maneuver_01165 extends Maneuver
         return false;
     }
 
+    private function removeCopiedTechniques(Theah $theah): void
+    {
+        foreach ($this->copiedTechniques as $technique)
+        {
+            $techniqueOwner = $technique->getOwningCard($theah);
+            if ($techniqueOwner instanceof IHasTechniques) $techniqueOwner->removeTechnique($technique, $theah->game);
+            $techniqueOwner->IsUpdated = true;
+        }
+        $this->copiedTechniques = [];
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -60,6 +75,21 @@ class Maneuver_01165 extends Maneuver
             //We want to make sure that all the other events are run before this one.
             $transition->priority = Event::LOWEST_PRIORITY;
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventDuelNewRound)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner->ControllerId == $event->playerId)
+            {
+                $this->removeCopiedTechniques($event->theah);
+                $owner->IsUpdated = true;
+            }
+        }
+
+        if ($event instanceof EventDuelEnd)
+        {
+            $this->removeCopiedTechniques($event->theah);
         }
     }
 
@@ -98,24 +128,34 @@ class Maneuver_01165 extends Maneuver
         if ($state == States::DUEL_RESOLVE_MANEUVER_01165)
         {
             $id = $ids[0];
+            $owner = $this->getOwningCard($game->theah);
+            $actor = $game->theah->getDuelRoundActor();
             $technique = $game->theah->getTechniqueById($id);
-            $game->globals->set(Game::CHOSEN_TECHNIQUE, $technique->Id);
+            $copy = clone $technique;
+            $copy->setOwnerId($actor->Id);
+
+            if ($actor instanceof IHasTechniques) $actor->addTechnique($copy, $game);
+
+            $this->copiedTechniques[] = $copy;
+            $owner->IsUpdated = true;
+
+            $game->globals->set(Game::CHOSEN_TECHNIQUE, $copy->Id);
             $game->globals->set(Game::CHOSEN_TECHNIQUE_IS_MAIN, false);
-            $game->globals->set(GAME::TRANSITION_INTERNAL_ID, $technique->Id);
+            $game->globals->set(GAME::TRANSITION_INTERNAL_ID, $copy->Id);
 
             $actor = $game->theah->getDuelRoundActor();
             $adversaryId = $game->theah->getDuelOpponentId($actor->Id);
             $owner = $this->getOwningCard($game->theah);
 
-            $activateEvent = EventFactory::createTechniqueActivatedEvent($actor->ControllerId, $owner->Id, $technique->Id, $copied = true);
+            $activateEvent = EventFactory::createTechniqueActivatedEvent($actor->ControllerId, $owner->Id, $copy->Id, $copied = true);
             $game->theah->eventCheck($activateEvent);
             $game->theah->queueEvent($activateEvent);
 
-            $resolveEvent = EventFactory::createResolveTechniqueEvent($actor->ControllerId, $actor->Id, $adversaryId, $technique->Id);
+            $resolveEvent = EventFactory::createResolveTechniqueEvent($actor->ControllerId, $actor->Id, $adversaryId, $copy->Id);
             $game->theah->eventCheck($resolveEvent);
             $game->theah->queueEvent($resolveEvent);
 
-            $threatEvent = EventFactory::createDuelCalculateTechniqueValuesEvent($actor->Id, $adversaryId, $technique->Id);
+            $threatEvent = EventFactory::createDuelCalculateTechniqueValuesEvent($actor->Id, $adversaryId, $copy->Id);
             $game->theah->eventCheck($threatEvent);
             $game->theah->queueEvent($threatEvent);
 
@@ -123,5 +163,6 @@ class Maneuver_01165 extends Maneuver
             //This will call the next state, which is the one we want.
             $game->stApplyCombatCardStats();
         }
-     }
+    }
+
 }
