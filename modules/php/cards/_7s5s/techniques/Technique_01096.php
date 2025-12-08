@@ -67,8 +67,18 @@ class Technique_01096 extends Technique
                 if (! $this->AdversaryWoundedThisRound)
                 {
                     $owner = $this->getOwningCard($event->theah);
-                    $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01096", $this->Id);
-                    $event->theah->queueEvent($transition);
+                    $adversary = $event->theah->getDuelRoundActor();
+                    if ($adversary->Attachments > 0)
+                    {
+                        $game = $event->theah->game;
+                        $game->notify->all("message", clienttranslate('${owner_inject_code}: Technique has activated. ${player_name} will steal an attachment from ${opponent_name}.'), [
+                            "owner_inject_code" => $owner->getInjectCode(),
+                            "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                            "opponent_name" => $game->getPlayerNameById($adversary->ControllerId),
+                        ]);
+                        $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01096", $this->Id);
+                        $event->theah->queueEvent($transition);
+                    }
                 }
 
                 $this->IsActive = false;
