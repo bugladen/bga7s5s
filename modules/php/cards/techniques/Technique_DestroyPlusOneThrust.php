@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_DestroyPlusOneThrust extends Technique
 {
@@ -13,6 +14,22 @@ class Technique_DestroyPlusOneThrust extends Technique
     {
         parent::__construct();
         $this->Name = clienttranslate("Destroy and +1 Thrust");
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if (! parent::isAvailableToPlayer($playerId, $theah))
+        {
+            return false;
+        }
+
+        $owner = $this->getOwningCharacter($theah);
+        if ($playerId != $owner->ControllerId)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function handleEvent(Event $event)
