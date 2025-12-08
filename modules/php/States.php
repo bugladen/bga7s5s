@@ -176,6 +176,7 @@ class States
         const HIGH_DRAMA_PLAYER_TURN_01092 = 401092;
         const HIGH_DRAMA_PLAYER_TURN_01093 = 401093;
         const HIGH_DRAMA_PLAYER_TURN_01095 = 401095;
+        const HIGH_DRAMA_PLAYER_TURN_01096 = 401096;
         const HIGH_DRAMA_PLAYER_TURN_01097 = 401097;
         const HIGH_DRAMA_PLAYER_TURN_01102 = 401102;
         const HIGH_DRAMA_PLAYER_TURN_01104 = 401104;
@@ -373,6 +374,7 @@ class States
         const DUEL_END_OF_ROUND = 528;
             const DUEL_END_OF_ROUND_EVENTS = 5280;
                 const DUEL_END_OF_ROUND_01031 = 52801031;
+                const DUEL_END_OF_ROUND_01096 = 52801096;
             const DUEL_END_OF_ROUND_REACTIONS = 5281;
             const DUEL_END_OF_ROUND_PAY_FOR_REACTION = 5282;
     const DUEL_NEXT_PLAYER = 53;
