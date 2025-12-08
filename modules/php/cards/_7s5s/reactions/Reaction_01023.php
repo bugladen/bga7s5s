@@ -69,7 +69,7 @@ class Reaction_01023 extends RiskReaction
         if ($event instanceof EventChallengeIssued && $this->isAvailable())
         {
             $risk = $this->getOwningCard($event->theah);
-            if ($risk->Location == Game::LOCATION_HAND)
+            if ($risk->Location == Game::LOCATION_HAND && $risk->ControllerId == $event->playerId)
             {
                 $transition = EventFactory::createReactionTransitionEvent($risk->ControllerId, $risk->Id, $this->Id);
                 $event->theah->queueEvent($transition);

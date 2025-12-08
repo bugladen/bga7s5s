@@ -1718,7 +1718,7 @@ trait EventHub
                 {
                     $payDiscountEvent = EventFactory::createCalculatePayDiscountEvent($event->playerId, $event->cardId, $event->payStateType, $event->internalId);
                     $payDiscountEvent->priority = $event->priority;
-                    if ($event->wasStacked)
+                    if ($event->wasStacked ?? false)
                     {
                         $theah->stackEvent($payDiscountEvent);
                     }

@@ -16,26 +16,29 @@
  var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
  var debug = isDebug ? console.info.bind(window.console) : function () {};
  
- define([
-    "dojo",
-    "dojo/_base/declare", 
-    "dojo/dom-class",
-    "ebg/core/gamegui",
-    "ebg/counter",
-    "ebg/stock",
-    g_gamethemeurl + 'modules/js/OnEnteringState.js',
-    g_gamethemeurl + 'modules/js/OnEnteringState.7s5s.js',
-    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.js',
-    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.7s5s.js',
-    g_gamethemeurl + 'modules/js/OnLeavingState.js',
-    g_gamethemeurl + 'modules/js/OnLeavingState.7s5s.js',
-    g_gamethemeurl + 'modules/js/Setup.js',
-    g_gamethemeurl + 'modules/js/Utilities.js',
-    g_gamethemeurl + 'modules/js/Notifications.js',
-    g_gamethemeurl + 'modules/js/EventHandlers.js',
-    g_gamethemeurl + 'modules/js/PlayerActions.js',
+define([
+   "dojo",
+   "dojo/_base/declare", 
+   "dojo/dom-class",
+   "ebg/core/gamegui",
+   "ebg/counter",
+   "ebg/stock",
+   getLibUrl('bga-animations', '1.x'),
+   g_gamethemeurl + 'modules/js/OnEnteringState.js',
+   g_gamethemeurl + 'modules/js/OnEnteringState.7s5s.js',
+   g_gamethemeurl + 'modules/js/OnUpdateActionButtons.js',
+   g_gamethemeurl + 'modules/js/OnUpdateActionButtons.7s5s.js',
+   g_gamethemeurl + 'modules/js/OnLeavingState.js',
+   g_gamethemeurl + 'modules/js/OnLeavingState.7s5s.js',
+   g_gamethemeurl + 'modules/js/Setup.js',
+   g_gamethemeurl + 'modules/js/Utilities.js',
+   g_gamethemeurl + 'modules/js/Notifications.js',
+   g_gamethemeurl + 'modules/js/EventHandlers.js',
+   g_gamethemeurl + 'modules/js/PlayerActions.js',
 ],
-function (dojo, declare) {
+function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations) {
+    // Store BgaAnimations globally to avoid ReferenceError when used in mixed-in classes
+    window.BgaAnimations = BgaAnimations;
     return declare(
     "bgagame.seventhseacityoffivesails", 
     [

@@ -16,6 +16,11 @@ return declare('seventhseacityoffivesails.setup', null, {
         debug( "Starting game setup" );
         debug( "gamedatas", gamedatas );
 
+        // Create the animation manager for card animations
+        this.animationManager = new BgaAnimations.Manager({
+            animationsActive: () => this.bgaAnimationsActive(),
+        });
+
         // Remove city sections that are not used
         const playerCount = Object.keys(gamedatas.players).length;
         if (playerCount < 4) {
