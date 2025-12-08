@@ -1741,7 +1741,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithIds", 
         ],
         "transitions" => [
-            "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
         ]
     ],
 
