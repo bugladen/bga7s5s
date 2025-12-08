@@ -311,14 +311,27 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
-    notif_approachSchemePlayed: function( notif )
+    notif_approachSchemePlayed: async function( notif )
     {
         debug( 'notif_approachSchemePlayed' );
         debug( notif );
 
         const args = notif.args;
 
-        this.createCard(`${args.player_id}-${args.scheme.id}`, args.scheme, `${args.player_id}-scheme-anchor`);
+        const cardId = `${args.player_id}-${args.scheme.id}`;
+        this.createCard(cardId, args.scheme, `${args.player_id}-scheme-anchor`);
+
+        // Animate the card growing from nothing to full size
+        const cardElement = $(cardId);
+        if (cardElement && this.animationManager) {
+            await cardElement.animate([
+                { transform: 'scale(0)', opacity: 0 },
+                { transform: 'scale(1)', opacity: 1 }
+            ], {
+                duration: 400,
+                easing: 'ease-out'
+            }).finished;
+        }
 
         var translated = dojo.string.substitute(
             _("${player_name} has selected <strong>${scheme_name}</strong> as their Scheme today"),
@@ -330,14 +343,27 @@ return declare('seventhseacityoffivesails.notifications', null, {
         $('pagemaintitletext').innerHTML = translated;
     },
 
-    notif_approachCharacterPlayed: function (notif) 
+    notif_approachCharacterPlayed: async function (notif) 
     {
         debug( 'notif_approachCharacterPlayed' );
         debug( notif );
 
         const args = notif.args;
 
-        this.createCard(`${args.player_id}-${args.character.id}`, args.character, `${args.player_id}-home-anchor`);
+        const cardId = `${args.player_id}-${args.character.id}`;
+        this.createCard(cardId, args.character, `${args.player_id}-home-anchor`);
+
+        // Animate the card growing from nothing to full size
+        const cardElement = $(cardId);
+        if (cardElement && this.animationManager) {
+            await cardElement.animate([
+                { transform: 'scale(0)', opacity: 0 },
+                { transform: 'scale(1)', opacity: 1 }
+            ], {
+                duration: 400,
+                easing: 'ease-out'
+            }).finished;
+        }
 
         var translated = dojo.string.substitute(
             _("${player_name} has selected <strong>${character_name}</strong> as their Approach Character today"),
@@ -953,14 +979,28 @@ return declare('seventhseacityoffivesails.notifications', null, {
         player.locker = player.locker.filter((c) => c.id !== args.cardId);
     },
 
-    notif_newDay: function( notif )
+    notif_newDay: async function( notif )
     {
         debug( 'notif_newDay' );
         debug( notif );
 
         const args = notif.args;
 
-        $('day-indicator').innerHTML = args.day;
+        const dayElement = $('day-indicator');
+        
+        // Pulse the element before changing the value
+        if (dayElement && this.animationManager) {
+            await dayElement.animate([
+                { transform: 'scale(1)' },
+                { transform: 'scale(1.4)' },
+                { transform: 'scale(1)' }
+            ], {
+                duration: 300,
+                easing: 'ease-in-out'
+            }).finished;
+        }
+
+        dayElement.innerHTML = args.day;
         dojo.style('day-indicator', 'display', 'block');
     },
 
@@ -998,7 +1038,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         $(`${args.player_id}-score-reknown`).innerHTML = args.total;
     },
 
-    notif_reknownUpdatedOnCard: function( notif )
+    notif_reknownUpdatedOnCard: async function( notif )
     {
         debug( 'notif_reknownUpdatedOnCard' );
         debug( notif );
@@ -1007,8 +1047,22 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const card = this.cardProperties[args.cardId];
         const divId = `${card.divId}-reknown`;
-        ////Delete the old element if exists
-        if ($(divId)) {                
+        
+        // Pulse the existing element before destroying it
+        const existingElement = $(divId);
+        if (existingElement && this.animationManager) {
+            await existingElement.animate([
+                { transform: 'scale(1)' },
+                { transform: 'scale(1.4)' },
+                { transform: 'scale(1)' }
+            ], {
+                duration: 300,
+                easing: 'ease-in-out'
+            }).finished;
+        }
+        
+        //Delete the old element if exists
+        if (existingElement) {                
             dojo.destroy(divId);
         } 
 
@@ -1018,10 +1072,23 @@ return declare('seventhseacityoffivesails.notifications', null, {
                 id: divId,
                 amount: args.total,
             }),  `${card.divId}_image`, 'last');
+            
+            // Pulse the new element
+            const newElement = $(divId);
+            if (newElement && this.animationManager) {
+                await newElement.animate([
+                    { transform: 'scale(1)' },
+                    { transform: 'scale(1.4)' },
+                    { transform: 'scale(1)' }
+                ], {
+                    duration: 300,
+                    easing: 'ease-in-out'
+                }).finished;
+            }
         }
     },
 
-    notif_reknownAddedToLocation: function( notif )
+    notif_reknownAddedToLocation: async function( notif )
     {
         debug( 'notif_reknownAddedToLocation' );
         debug( notif );
@@ -1031,11 +1098,24 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const imageElement = dojo.query(`[data-location="${args.location}"]`)[0];
         //Find the element with the class _7sfs-city-reknown-chip that is a child of the element's parent
         const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
+        
+        // Pulse the element before changing the value
+        if (reknownElement && this.animationManager) {
+            await reknownElement.animate([
+                { transform: 'scale(1)' },
+                { transform: 'scale(1.4)' },
+                { transform: 'scale(1)' }
+            ], {
+                duration: 300,
+                easing: 'ease-in-out'
+            }).finished;
+        }
+        
         const reknown = parseInt(reknownElement.innerHTML) + args.amount;
         reknownElement.innerHTML = reknown;
     },
 
-    notif_reknownRemovedFromLocation: function( notif )
+    notif_reknownRemovedFromLocation: async function( notif )
     {
         debug( 'notif_reknownRemovedFromLocation' );
         debug( notif );
@@ -1045,6 +1125,19 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const imageElement = dojo.query(`[data-location="${args.location}"]`)[0];
         //Find the element with the class _7sfs-city-reknown-chip that is a child of the element's parent
         const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
+        
+        // Pulse the element before changing the value
+        if (reknownElement && this.animationManager) {
+            await reknownElement.animate([
+                { transform: 'scale(1)' },
+                { transform: 'scale(1.4)' },
+                { transform: 'scale(1)' }
+            ], {
+                duration: 300,
+                easing: 'ease-in-out'
+            }).finished;
+        }
+        
         const reknown = parseInt(reknownElement.innerHTML) - args.amount;
         reknownElement.innerHTML = reknown;
     },
