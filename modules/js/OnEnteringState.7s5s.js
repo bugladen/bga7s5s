@@ -2438,6 +2438,26 @@
                 }
             },
         
+            'duelResolveManeuver_01200_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    const translated = dojo.string.substitute(
+                        _("${playerName}'s Approach Deck"),
+                        {
+                            playerName: args.args._private.args.playerName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+    
+                    // For card in the approach deck, create a stock item
+                    args.args._private.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
             'duelApplyCombatCardStats_01085': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
@@ -2457,6 +2477,26 @@
                 }
             },
     
+            'duelEndOfRound_01200_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    const translated = dojo.string.substitute(
+                        _("${playerName}'s Approach Deck"),
+                        {
+                            playerName: args.args._private.args.playerName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+    
+                    // For card in the approach deck, create a stock item
+                    args.args._private.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
             'duskPhaseBegin01177' : () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

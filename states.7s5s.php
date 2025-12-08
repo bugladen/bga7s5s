@@ -1745,6 +1745,35 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
+    States::DUEL_RESOLVE_MANEUVER_01200 => [
+        "name" => "duelResolveManeuver_01200",
+        "description" => clienttranslate('${actplayer} is choosing an opponent for Crystal Eye\'s Forced Ability.'),
+        "descriptionmyturn" => clienttranslate('Crystal Eye') . clienttranslate(': ${you} must choose an opponent:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "" => States::DUEL_RESOLVE_MANEUVER_01200_2
+        ]
+    ],
+    
+    States::DUEL_RESOLVE_MANEUVER_01200_2 => [
+        "name" => "duelResolveManeuver_01200_2",
+        "description" => clienttranslate('${actplayer} is choosing a card for Crystal Eye\'s Forced Ability.'),
+        "descriptionmyturn" => clienttranslate('Crystal Eye') . clienttranslate(': ${you} must choose a card:'),
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            
+        ]
+    ],
+    
     States::DUEL_APPLY_COMBAT_CARD_STATS_01085 => [
         "name" => "duelApplyCombatCardStats_01085",
         "description" => clienttranslate('Porté Travel\'s Forced Ability: ${actplayer} is choosing their Sorcerer.'),
@@ -1770,6 +1799,35 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ],
         "transitions" => [
             "" => States::DUEL_END_OF_ROUND_EVENTS,
+        ]
+    ],
+
+    States::DUEL_END_OF_ROUND_01200 => [
+        "name" => "duelEndOfRound_01200",
+        "description" => clienttranslate('${actplayer} is choosing an opponent for Crystal Eye\'s Forced Ability.'),
+        "descriptionmyturn" => clienttranslate('Crystal Eye') . clienttranslate(': ${you} must choose an opponent:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "" => States::DUEL_END_OF_ROUND_01200_2
+        ]
+    ],
+    
+    States::DUEL_END_OF_ROUND_01200_2 => [
+        "name" => "duelEndOfRound_01200_2",
+        "description" => clienttranslate('${actplayer} is choosing a card for Crystal Eye\'s Forced Ability.'),
+        "descriptionmyturn" => clienttranslate('Crystal Eye') . clienttranslate(': ${you} must choose a card:'),
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "" => States::DUEL_END_OF_ROUND_EVENTS,
+            
         ]
     ],
 
