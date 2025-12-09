@@ -324,14 +324,31 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         // Animate the card growing from nothing to full size
         const cardElement = $(cardId);
-        if (cardElement && this.animationManager) {
-            await cardElement.animate([
-                { transform: 'scale(0)', opacity: 0 },
-                { transform: 'scale(1)', opacity: 1 }
-            ], {
-                duration: 400,
-                easing: 'ease-out'
-            }).finished;
+        const cardImage = $(`${cardId}_image`);
+        if (cardImage && cardElement && this.animationManager) {
+            // Disable CSS transition on the image element
+            cardImage.style.transition = 'none';
+            
+            // Get the final dimensions
+            const finalWidth = cardElement.offsetWidth;
+            
+            // Animate both the image growing and the container expanding
+            await Promise.all([
+                cardImage.animate([
+                    { transform: 'scale(0)', opacity: 0 },
+                    { transform: 'scale(1)', opacity: 1 }
+                ], {
+                    duration: 400,
+                    easing: 'ease-out'
+                }).finished,
+                cardElement.animate([
+                    { width: '0px', marginLeft: '0px', marginRight: '0px' },
+                    { width: finalWidth + 'px', marginLeft: '25px', marginRight: '5px' }
+                ], {
+                    duration: 400,
+                    easing: 'ease-out'
+                }).finished
+            ]);
         }
 
         var translated = dojo.string.substitute(
@@ -789,7 +806,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         // CSS transition on ._7sfs-card handles the smooth rotation animation
     },
 
-    notif_characterMustered: function (notif) 
+    notif_characterMustered: async function (notif) 
     {
         debug( 'notif_characterMustered' );
         debug( notif );
@@ -799,6 +816,18 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const cardId = this.createCardId(args.character, args.location);
         const target = this.getTargetElementForLocation(args.location, args.player_id);
         this.createCard(cardId, args.character, target);
+
+        // Animate the card growing from nothing to full size
+        const cardElement = $(cardId);
+        if (cardElement && this.animationManager) {
+            await cardElement.animate([
+                { transform: 'scale(0)', opacity: 0 },
+                { transform: 'scale(1)', opacity: 1 }
+            ], {
+                duration: 400,
+                easing: 'ease-out'
+            }).finished;
+        }
     },
 
 
@@ -945,16 +974,32 @@ return declare('seventhseacityoffivesails.notifications', null, {
             card.location = this.LOCATION_PLAYER_LOCKER;
 
             const cardElement = $(card.divId);
+            const cardImage = $(`${card.divId}_image`);
             
             // Animate the card shrinking to nothing
-            if (cardElement && this.animationManager) {
-                await cardElement.animate([
-                    { transform: 'scale(1)', opacity: 1 },
-                    { transform: 'scale(0)', opacity: 0 }
-                ], {
-                    duration: 400,
-                    easing: 'ease-in'
-                }).finished;
+            if (cardImage && cardElement && this.animationManager) {
+                // Disable CSS transition on the image element
+                cardImage.style.transition = 'none';
+                
+                // Animate both the image shrinking and the container collapsing
+                await Promise.all([
+                    cardImage.animate([
+                        { transform: 'scale(1)', opacity: 1 },
+                        { transform: 'scale(0)', opacity: 0 }
+                    ], {
+                        duration: 400,
+                        easing: 'ease-in',
+                        fill: 'forwards'
+                    }).finished,
+                    cardElement.animate([
+                        { width: cardElement.offsetWidth + 'px', marginLeft: '25px', marginRight: '5px' },
+                        { width: '0px', marginLeft: '0px', marginRight: '0px' }
+                    ], {
+                        duration: 400,
+                        easing: 'ease-in',
+                        fill: 'forwards'
+                    }).finished
+                ]);
             }
 
             dojo.destroy(card.divId);
