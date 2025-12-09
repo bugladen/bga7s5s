@@ -50,6 +50,12 @@ class _01069 extends Character implements IHasActions
         if ($event instanceof EventCharacterWounded)
         {
             $ignoreWounds = false;
+            if ($event->sourceId == 0)
+            {
+                parent::handleEvent($event);
+                return;
+            }
+
             $source = $event->theah->getCardById($event->sourceId);
             if ($source->Id == $this->Id || $source->ControllerId == $this->ControllerId)
             {
