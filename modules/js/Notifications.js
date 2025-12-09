@@ -318,37 +318,64 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
-
         const cardId = `${args.player_id}-${args.scheme.id}`;
-        this.createCard(cardId, args.scheme, `${args.player_id}-scheme-anchor`);
-
-        // Animate the card growing from nothing to full size
-        const cardElement = $(cardId);
-        const cardImage = $(`${cardId}_image`);
-        if (cardImage && cardElement && this.animationManager) {
-            // Disable CSS transition on the image element
-            cardImage.style.transition = 'none';
+        const anchorId = `${args.player_id}-scheme-anchor`;
+        const anchor = $(anchorId);
+        
+        if (anchor && this.animationManager) {
+            // FLIP Animation: First - record positions of all existing siblings
+            const siblings = Array.from(anchor.parentElement.children);
+            const firstRects = new Map();
+            siblings.forEach(sibling => {
+                firstRects.set(sibling, sibling.getBoundingClientRect());
+            });
             
-            // Get the final dimensions
-            const finalWidth = cardElement.offsetWidth;
+            // Create the new card
+            this.createCard(cardId, args.scheme, anchorId);
+            const cardElement = $(cardId);
+            const cardImage = $(`${cardId}_image`);
             
-            // Animate both the image growing and the container expanding
-            await Promise.all([
-                cardImage.animate([
-                    { transform: 'scale(0)', opacity: 0 },
-                    { transform: 'scale(1)', opacity: 1 }
-                ], {
-                    duration: 400,
-                    easing: 'ease-out'
-                }).finished,
-                cardElement.animate([
-                    { width: '0px', marginLeft: '0px', marginRight: '0px' },
-                    { width: finalWidth + 'px', marginLeft: '25px', marginRight: '5px' }
-                ], {
-                    duration: 400,
-                    easing: 'ease-out'
-                }).finished
-            ]);
+            // FLIP: Last - get new positions after DOM change
+            // FLIP: Invert & Play - animate from old positions to new
+            const animations = [];
+            
+            siblings.forEach(sibling => {
+                const firstRect = firstRects.get(sibling);
+                const lastRect = sibling.getBoundingClientRect();
+                const deltaX = firstRect.left - lastRect.left;
+                
+                if (deltaX !== 0) {
+                    sibling.style.transition = 'none';
+                    animations.push(
+                        sibling.animate([
+                            { transform: `translateX(${deltaX}px)` },
+                            { transform: 'translateX(0)' }
+                        ], {
+                            duration: 400,
+                            easing: 'ease-out'
+                        }).finished
+                    );
+                }
+            });
+            
+            // Animate the new card growing
+            if (cardImage) {
+                cardImage.style.transition = 'none';
+                animations.push(
+                    cardImage.animate([
+                        { transform: 'scale(0)', opacity: 0 },
+                        { transform: 'scale(1)', opacity: 1 }
+                    ], {
+                        duration: 400,
+                        easing: 'ease-out'
+                    }).finished
+                );
+            }
+            
+            await Promise.all(animations);
+        } else {
+            // Fallback if no animation manager
+            this.createCard(cardId, args.scheme, anchorId);
         }
 
         var translated = dojo.string.substitute(
@@ -908,7 +935,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             dojo.removeClass(element, '_7sfs-modified-stat-value');
     },
 
-    notif_characterDestroyed: function( notif )
+    notif_characterDestroyed: async function( notif )
     {
         debug( 'notif_characterDestroyed' );
         debug( notif );
@@ -919,6 +946,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
         {
             card.location = this.LOCATION_PLAYER_LOCKER;
             card.engaged = false;
+
+            const cardElement = $(card.divId);
+            const cardImage = $(`${card.divId}_image`);
+            
+            // Animate the card shrinking to nothing
+            if (cardImage && cardElement && this.animationManager) {
+                // Disable CSS transition on the image element
+                cardImage.style.transition = 'none';
+                
+                // Animate both the image shrinking and the container collapsing
+                await Promise.all([
+                    cardImage.animate([
+                        { transform: 'scale(1)', opacity: 1 },
+                        { transform: 'scale(0)', opacity: 0 }
+                    ], {
+                        duration: 400,
+                        easing: 'ease-in',
+                        fill: 'forwards'
+                    }).finished,
+                    cardElement.animate([
+                        { width: cardElement.offsetWidth + 'px', marginLeft: '25px', marginRight: '5px' },
+                        { width: '0px', marginLeft: '0px', marginRight: '0px' }
+                    ], {
+                        duration: 400,
+                        easing: 'ease-in',
+                        fill: 'forwards'
+                    }).finished
+                ]);
+            }
 
             dojo.destroy(card.divId);
             card.divId = null;
