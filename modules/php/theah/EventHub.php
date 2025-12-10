@@ -662,17 +662,16 @@ trait EventHub
                     $handler = function (Theah $theah, EventCharacterInfluenceModified $event)
                     {
                         $character = $theah->getCharacterById($event->CharacterId);
-                    if ($character->DashedInfluence)
-                    {
-                        return;
-                    }
+                        if ($character->DashedInfluence)
+                        {
+                            return;
+                        }
                     
                         $character->ModifiedInfluence = max(0, $event->NewInfluence);
                         $character->IsUpdated = true;
 
-                    $theah->game->notify->all("characterInfluenceModified", clienttranslate('The influence of ${character_name} went from ${oldInfluence} to ${newInfluence} due to: ${reason}.'), [
-                            'i18n' => ['character_name'],
-                            "character_name" => $character->Name,
+                        $theah->game->notify->all("characterInfluenceModified", clienttranslate('The influence of ${character_inject_code} went from ${oldInfluence} to ${newInfluence} due to: ${reason}.'), [
+                            "character_inject_code" => $character->getInjectCode(),
                             "characterId" => $character->Id,
                             "oldInfluence" => $event->OldInfluence, 
                             "newInfluence" => $event->NewInfluence,
