@@ -45,12 +45,17 @@ class _01069 extends Character implements IHasActions
     }
 
     public function handleEvent(Event $event)
-    {        
+    {
+        if (! ($event instanceof EventCharacterWounded))
+        {
+            parent::handleEvent($event);
+        }
+
         //Maxime ignores wounds from Sorceries and Sorcerer abilities he performs.
         if ($event instanceof EventCharacterWounded)
         {
             $ignoreWounds = false;
-            if ($event->sourceId == 0)
+            if ($event->characterId != $this->Id || $event->sourceId == 0)
             {
                 parent::handleEvent($event);
                 return;
@@ -92,9 +97,6 @@ class _01069 extends Character implements IHasActions
                 parent::handleEvent($event);
             }
         }
-        else
-            parent::handleEvent($event);
-                
     }
 
 }
