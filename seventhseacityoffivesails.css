@@ -1018,12 +1018,12 @@ body {
     box-shadow: 0 0 2px 2px yellow;
 }
 
-._7sfs-selected {
-    box-shadow: 0 0 2px 2px lime;
-}
-
 ._7sfs-chosen {
     box-shadow: 0 0 2px 2px white;
+}
+
+._7sfs-selected {
+    box-shadow: 0 0 2px 2px lime;
 }
 
 ._7sfs-unselectable {
