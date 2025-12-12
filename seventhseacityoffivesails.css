@@ -969,6 +969,7 @@ body {
 ._7sfs-attachment-container {
     position:relative;
     margin-left: calc(var(--attachment-count) * 15px);
+    transition: margin-left 0.3s ease;
 }
 
 ._7sfs-attachment-container-splayed {
@@ -980,6 +981,7 @@ body {
     top: 0px;
     left: calc(var(--attachment-index) * -15px);
     z-index: calc(10 - var(--attachment-index));
+    transition: left 0.3s ease;
 }
 
 ._7sfs-attached-card-no-modifiers {
