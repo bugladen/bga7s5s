@@ -20,24 +20,6 @@ class Action_01152b extends SchemeCityAction
         $this->RequiresPerformerSelected = true;
     }
 
-    private function getOpposingCharacters(int $playerId, Theah $theah): array
-    {
-        $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $performers = [];
-        foreach ($characters as $character)
-        {
-            $opposingCharacters = $theah->getCharactersAtLocation($character->Location);
-            $opposingCharacters = array_values(array_filter($opposingCharacters, fn($character) => $character->isNotControlledByPlayer($playerId) && ! $character->Engaged));
-            if (count($opposingCharacters) > 0)
-            {
-                $performers[] = $character;
-                break;
-            }
-        }
-
-        return $performers;
-    }
-
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
         if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
@@ -45,14 +27,13 @@ class Action_01152b extends SchemeCityAction
             return false;
         }
 
-        $characters = $this->getOpposingCharacters($playerId, $theah);
-
+        $characters = $theah->getCharactersInCityByPlayerId($playerId);
         return count($characters) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        return $this->getOpposingCharacters($playerId, $theah);
+        return $theah->getCharactersInCityByPlayerId($playerId);
     }
 
     public function handleEvent(Event $event)
@@ -77,8 +58,10 @@ class Action_01152b extends SchemeCityAction
             $args['performerId'] = $performerId;
     
             $performer = $game->theah->getCharacterById($performerId);
-            $opponents = $game->theah->getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId);
-            $args['characterIds'] = array_map(fn($character) => $character->Id, $opponents);
+            $characters = $game->theah->getCharactersAtLocation($performer->Location);
+            $characters = array_filter($characters, fn($character) => ! $character->Engaged);
+
+            $args['characterIds'] = array_map(fn($character) => $character->Id, array_values($characters));
         }
 
         return $args;
