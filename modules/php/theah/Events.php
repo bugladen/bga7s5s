@@ -105,6 +105,7 @@ class Events
     const ManeuverCanceled = 'EventManeuverCanceled';
     const TechniqueCanceled = 'EventTechniqueCanceled';
     const SorcererAbilityPlayed = 'EventSorcererAbilityPlayed';
+    const SorcererAbilityStart = 'EventSorcererAbilityStart';
     const RiskPlayed = 'EventRiskPlayed';
 
     //Character events

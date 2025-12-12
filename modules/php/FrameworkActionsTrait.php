@@ -1629,7 +1629,16 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        if ($sourceId === null) {
+            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+        }
+
         $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+        }
+
         $card->actFromCardPass($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId);
     }
 
@@ -1639,7 +1648,16 @@ trait FrameworkActionsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        if ($sourceId === null) {
+            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+        }
+
         $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+        }
+
         $card->actFromCardWithId($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $id);
     }
 
@@ -1650,7 +1668,16 @@ trait FrameworkActionsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        if ($sourceId === null) {
+            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+        }
+
         $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+        }
+
         $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $ids);
     }
 
@@ -1661,7 +1688,16 @@ trait FrameworkActionsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        if ($sourceId === null) {
+            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+        }
+
         $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+        }
+
         $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $locations);
     }
 
@@ -1670,7 +1706,16 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        if ($sourceId === null) {
+            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+        }
+
         $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+        }
+
         $card->actFromCardWithActionId($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $internalId, $actionSourceId, $actionId);
     }
 
@@ -1682,6 +1727,11 @@ trait FrameworkActionsTrait
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $state = $this->gamestate->state_id();
 
+        if ($sourceId === null)
+        {
+            throw new \BgaUserException(self::_("Unable to process reaction. Please try again or refresh the page."));
+        }
+
         if ($sourceId == Game::THEAH_ID)
         {
             $reaction = $this->theah->getTheahReactionById($internalId);
@@ -1690,6 +1740,10 @@ trait FrameworkActionsTrait
         else
         {
             $card = $this->theah->getCardById($sourceId);
+            if ($card === null)
+            {
+                throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+            }
             $card->reactionFromCard($this, $state, $internalId, $reactionId);
         }
 
@@ -1702,7 +1756,14 @@ trait FrameworkActionsTrait
         $playerId = $this->getActivePlayerId();
         
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        if ($sourceId === null) {
+            throw new \BgaUserException(self::_("Unable to process reaction. Please try again or refresh the page."));
+        }
+
         $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+        }
 
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $reaction = $card->getReactionById($internalId);

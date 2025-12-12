@@ -76,6 +76,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityStart;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTableSetup;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
@@ -917,6 +918,22 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         {
             $event->playerId = $playerId;
             $event->riskId = $riskId;
+        }
+
+        return $event;
+    }
+
+    public static function createSorcererAbilityStartEvent(int $playerId, int $sourceId, string $abilityId, int $performerId = 0, int $targetId = 0, string $targetLocation = ""): EventSorcererAbilityStart
+    {
+        $event = self::createEvent(Events::SorcererAbilityStart);
+        if ($event instanceof EventSorcererAbilityStart)
+        {
+            $event->playerId = $playerId;
+            $event->sourceId = $sourceId;
+            $event->abilityId = $abilityId;
+            $event->performerId = $performerId;
+            $event->targetId = $targetId;
+            $event->targetLocation = $targetLocation;
         }
 
         return $event;

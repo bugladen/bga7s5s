@@ -539,20 +539,26 @@ abstract class Card
         return $this->isControlled() && $this->ControllerId != $playerId;
     }
 
-    public function addTrait(Game $game, string $trait): void
+    public function addTrait(Game $game, string $trait, bool $quietly = false): void
     {
         //Hack to prevent older games from breaking
         if (empty($this->ModifiedTraits))
             $this->ModifiedTraits = $this->Traits;
 
-        $this->ModifiedTraits[] = $trait;
-        $this->IsUpdated = true;
+        if (! in_array($trait, $this->ModifiedTraits))
+        {
+            $this->ModifiedTraits[] = $trait;
+            $this->IsUpdated = true;
+        }
 
-        $game->notify->all("traitAdded", clienttranslate('${character_inject_code} gains [${trait}].'), [
-            "character_inject_code" => $this->getInjectCode(),
-            "characterId" => $this->Id,
-            'trait' => $trait,
-        ]);
+        if (! $quietly)
+        {
+            $game->notify->all("traitAdded", clienttranslate('${character_inject_code} gains [${trait}].'), [
+                "character_inject_code" => $this->getInjectCode(),
+                    "characterId" => $this->Id,
+                    'trait' => $trait
+                ]);
+        }
     }
 
     public function removeTrait(Game $game, string $trait): void

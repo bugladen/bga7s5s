@@ -1221,6 +1221,11 @@ class Theah
         $this->db->deleteTransitionEvents($reactionId);
     }
 
+    public function deleteTransitionEventsBySourceId(int $sourceId)
+    {
+        $this->db->deleteTransitionEventsBySourceId($sourceId);
+    }
+
     public function deleteEventsTargetingCard(int $cardId)
     {
         $this->db->deleteEventsTargetingCard($cardId);

@@ -96,6 +96,13 @@ class DB
         $this->executeSql($sql);
     }
 
+    public function deleteTransitionEventsBySourceId(int $sourceId)
+    {
+        $sql = "DELETE FROM events 
+                WHERE (event_serialized LIKE '%EventTransition%' AND event_serialized LIKE '%\"sourceId\";i:{$sourceId}%')";
+        $this->executeSql($sql);
+    }
+
     public function deleteEventsTargetingCard(int $cardId)
     {
         $sql = "DELETE FROM events 
@@ -169,9 +176,17 @@ class DB
         return $cards;
     }
 
-    public function getCardObject($cardId) : Card {
+    public function getCardObject($cardId) : ?Card {
+        if ($cardId === null || $cardId === '') {
+            return null;
+        }
+
         /** @disregard P1013 */
         $data = $this->game->getObjectFromDB("SELECT card_serialized FROM card WHERE card_id = $cardId");
+        if ($data === null) {
+            return null;
+        }
+
         $card = unserialize($data['card_serialized']);
         return $card;
     }

@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -12,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01069 extends CharacterAction implements ISorcererAbility
+class Action_01069 extends CharacterAction implements ISorcererAbility, IAbilityThatTargetsCards
 {
     public function __construct()
     {
@@ -149,6 +150,8 @@ class Action_01069 extends CharacterAction implements ISorcererAbility
             }
 
             $this->announceAction($game);
+            $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
 
             // Get the card discarded from the previous step
             $discardedCardId = $game->globals->get(Game::CHOSEN_CARD);
@@ -160,17 +163,17 @@ class Action_01069 extends CharacterAction implements ISorcererAbility
             $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($maxime->ControllerId, $id);
             $game->theah->queueEvent($removeEvent);
 
+            $sorcererEvent = EventFactory::createSorcererAbilityStartEvent($maxime->ControllerId, $maxime->Id, $this->Id, $maxime->Id);
+            $game->theah->queueEvent($sorcererEvent);
+
             $addEvent = EventFactory::createCardAddedToHandEvent($maxime->ControllerId, $id);
             $game->theah->queueEvent($addEvent);
 
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
+            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($maxime->ControllerId, $maxime->Id, $this->Id, $maxime->Id);
+            $game->theah->queueEvent($sorcererEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($maxime->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
-
-            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($maxime->ControllerId, $maxime->Id, $this->Id, $maxime->Id, $maxime->Id, $maxime->Location);
-            $game->theah->queueEvent($sorcererEvent);
 
             $game->gamestate->nextState("attachmentChosen");
         }

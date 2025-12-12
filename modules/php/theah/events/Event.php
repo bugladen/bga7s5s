@@ -18,6 +18,7 @@ abstract class Event
     public int $priority;
     public bool $runEventHubAfterCards;
     public bool $canceled;
+    /** @var bool */
     public bool $wasStacked;
 
     public function __construct()

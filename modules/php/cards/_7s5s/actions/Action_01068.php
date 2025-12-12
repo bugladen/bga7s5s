@@ -3,7 +3,9 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -11,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01068 extends CharacterAction implements ISorcererAbility
+class Action_01068 extends CharacterAction implements ISorcererAbility, IAbilityThatTargetsCharacters, IAbilityThatTargetsCards
 {
     public function __construct()
     {
@@ -152,6 +154,13 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
             $characterId = $game->globals->get(Game::CHOSEN_CARD);
             $character = $game->theah->getCharacterById($characterId);
 
+            $this->announceAction($game);
+            $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
+
+            $sorcererEvent = EventFactory::createSorcererAbilityStartEvent($leontine->ControllerId, $leontine->Id, $this->Id, $leontine->Id, $character->Id, $leontine->Location);
+            $game->theah->queueEvent($sorcererEvent);
+
             $woundEvent = EventFactory::createCharacterWoundedEvent($leontine->Id, $leontine->Id, 1, $leontine->getInjectCode(), $this->Id);
             $game->theah->eventCheck($woundEvent);
             $game->theah->queueEvent($woundEvent);
@@ -160,15 +169,11 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
+            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($leontine->ControllerId, $leontine->Id, $this->Id, $leontine->Id, $character->Id, $leontine->Location);
+            $game->theah->queueEvent($sorcererEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($leontine->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
-
-            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($leontine->ControllerId, $leontine->Id, $this->Id, $leontine->Id, $character->Id, $leontine->Location);
-            $game->theah->queueEvent($sorcererEvent);
 
             $game->gamestate->nextState("locationChosen");
         }

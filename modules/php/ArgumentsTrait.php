@@ -721,6 +721,11 @@ trait ArgumentsTrait
         $state = $this->gamestate->state_id();
         $stateName = $this->gamestate->state()['name'];
 
+        if ($sourceId === null)
+        {
+            return ["args" => []];
+        }
+
         if ($sourceId == Game::THEAH_ID)
         {
             $args = $this->theah->argsFromReaction($state, $stateName, $internalId);
@@ -728,6 +733,10 @@ trait ArgumentsTrait
         else
         {
             $card = $this->theah->getCardById($sourceId);
+            if ($card === null)
+            {
+                return ["args" => []];
+            }
             $args = $card->argsFromCard($this, $state, $stateName, $internalId);
         }        
 
@@ -746,6 +755,11 @@ trait ArgumentsTrait
         $state = $this->gamestate->state_id();
         $stateName = $this->gamestate->state()['name'];
 
+        if ($sourceId === null)
+        {
+            return ["_private" => ["active" => ["args" => []]]];
+        }
+
         if ($sourceId == Game::THEAH_ID)
         {
             $args = $this->theah->argsFromReaction($state, $stateName, $internalId);
@@ -753,6 +767,10 @@ trait ArgumentsTrait
         else
         {
             $card = $this->theah->getCardById($sourceId);
+            if ($card === null)
+            {
+                return ["_private" => ["active" => ["args" => []]]];
+            }
             $args = $card->argsFromCard($this, $state, $stateName, $internalId);
         }        
 

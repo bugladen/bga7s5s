@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -12,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01085 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters
+class Action_01085 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters, IAbilityThatTargetsCards
 {
     public int $LastTargetId = 0;
     public string $LastTargetLocation = "";
@@ -141,6 +142,9 @@ class Action_01085 extends RiskAction implements ISorcererAbility, IAbilityThatT
 
             $event = EventFactory::createCharacterWoundedEvent($performer->Id, $porteTravel->Id, 1, $porteTravel->getInjectCode(), $this->Id);
             $game->theah->eventCheck($event);
+            $game->theah->queueEvent($event);
+
+            $event = EventFactory::createSorcererAbilityStartEvent($porteTravel->ControllerId, $porteTravel->Id, $this->Id, $performer->Id, $this->LastTargetId, $this->LastTargetLocation);
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createCardMovedEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, $engage = false, $porteTravel->Id);

@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -12,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01161 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters
+class Action_01161 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters, IAbilityThatTargetsCards
 {
     public function __construct()
     {
@@ -83,6 +84,8 @@ class Action_01161 extends RiskAction implements ISorcererAbility, IAbilityThatT
                 throw new \BgaUserException($game->translate("Character not found"));
             }
 
+            $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
+
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
@@ -95,6 +98,30 @@ class Action_01161 extends RiskAction implements ISorcererAbility, IAbilityThatT
 
             $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id);
             $game->theah->queueEvent($engageEvent);
+
+            $event = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
+            $game->theah->queueEvent($event);
+
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01161_2", $this->Id);
+            $game->theah->queueEvent($transition);
+
+            $game->gamestate->nextState();
+        }
+    }
+
+    public function stateFromAction(Game $game, int $state, string $stateName): void
+    {
+        parent::stateFromAction($game, $state, $stateName);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01161_2)
+        {
+            $owner = $this->getOwningCard($game->theah);
+
+            $characterId = $game->globals->get(Game::CHOSEN_TARGET);
+            $character = $game->theah->getCharacterById($characterId);
+
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
 
             $game->createRiskAttachment($game, "01161_Boon", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id);
 
