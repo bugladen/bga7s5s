@@ -160,22 +160,39 @@ class Action_01069 extends CharacterAction implements ISorcererAbility, IAbility
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardedCard->OwnerId, $discardedCard->Id, $maxime->Id);
             $game->theah->queueEvent($discardEvent);
 
+            $game->globals->set(Game::CHOSEN_CARD, $card->Id);
+
+            $sorcererEvent = EventFactory::createSorcererAbilityStartEvent($maxime->ControllerId, $maxime->Id, $this->Id, $maxime->Id, $maxime->Id, $maxime->Location);
+            $game->theah->queueEvent($sorcererEvent);
+
+            $transition = EventFactory::createTransitionEvent($maxime->ControllerId, $maxime->Id, "01069_3", $this->Id);
+            $game->theah->queueEvent($transition);
+
+            $game->gamestate->nextState("attachmentChosen");
+        }
+    }
+
+    public function stateFromAction(Game $game, int $state, string $stateName): void
+    {
+        parent::stateFromAction($game, $state, $stateName);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01069_3)
+        {
+            $maxime = $this->getOwningCharacter($game->theah);
+            $id = $game->globals->get(Game::CHOSEN_CARD);
             $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($maxime->ControllerId, $id);
             $game->theah->queueEvent($removeEvent);
-
-            $sorcererEvent = EventFactory::createSorcererAbilityStartEvent($maxime->ControllerId, $maxime->Id, $this->Id, $maxime->Id);
-            $game->theah->queueEvent($sorcererEvent);
 
             $addEvent = EventFactory::createCardAddedToHandEvent($maxime->ControllerId, $id);
             $game->theah->queueEvent($addEvent);
 
-            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($maxime->ControllerId, $maxime->Id, $this->Id, $maxime->Id);
+            $sorcererEvent = EventFactory::createSorcererAbilityPlayedEvent($maxime->ControllerId, $maxime->Id, $this->Id, $maxime->Id, $maxime->Id, $maxime->Location);
             $game->theah->queueEvent($sorcererEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($maxime->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $game->gamestate->nextState("attachmentChosen");
+            $game->gamestate->nextState();
         }
     }
 }

@@ -996,6 +996,7 @@
             'duelEndOfRound_01096': () => {
                 args.args.attachments.forEach((attachment) => {
                     this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
             },
 
             'duelEndOfRound_01200': () => {
