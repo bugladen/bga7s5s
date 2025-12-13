@@ -876,7 +876,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.createCard(cardId, card, target);
     },
 
-    notif_characterWounded: function( notif )
+    notif_characterWounded: async function( notif )
     {
         debug( 'notif_characterWounded' );
         debug( notif );
@@ -902,15 +902,43 @@ return declare('seventhseacityoffivesails.notifications', null, {
         card.modifiedResolve = args.resolve;
 
         const woundChip = $(`${card.divId}_wounds`);
+
+        // Pulse the element before changing the value
+        if (woundChip && this.animationManager) {
+            await woundChip.animate([
+                { transform: 'scale(1)' },
+                { transform: 'scale(1.4)' },
+                { transform: 'scale(1)' }
+            ], {
+                duration: 300,
+                easing: 'ease-in-out'
+            }).finished;
+        }
+
         woundChip.innerHTML = card.wounds;
 
         const element = $(`${card.divId}_resolve_value`);
         element.innerHTML = card.modifiedResolve;
         if (card.modifiedResolve != card.resolve || card.wounds > 0)
+        {
+
+            // Pulse the element before changing the value
+            if (element && this.animationManager) {
+                await element.animate([
+                    { transform: 'scale(1)' },
+                    { transform: 'scale(1.4)' },
+                    { transform: 'scale(1)' }
+                ], {
+                    duration: 300,
+                    easing: 'ease-in-out'
+                }).finished;
+            }
+
             dojo.addClass(element, '_7sfs-modified-stat-value');
+        }
     },
 
-    notif_characterHealed: function( notif )
+    notif_characterHealed: async function( notif )
     {
         debug( 'notif_characterHealed' );
         debug( notif );
@@ -923,6 +951,19 @@ return declare('seventhseacityoffivesails.notifications', null, {
             card.wounds = 0;
         
         const woundChip = $(`${card.divId}_wounds`);
+
+        // Pulse the element before changing the value
+        if (woundChip && this.animationManager) {
+            await woundChip.animate([
+                { transform: 'scale(1)' },
+                { transform: 'scale(1.4)' },
+                { transform: 'scale(1)' }
+            ], {
+                duration: 300,
+                easing: 'ease-in-out'
+            }).finished;
+        }
+
         woundChip.innerHTML = card.wounds;
         if (card.wounds == 0)
             dojo.destroy(woundChip);
@@ -932,7 +973,21 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const element = $(`${card.divId}_resolve_value`);
         element.innerHTML = card.modifiedResolve;
         if (card.modifiedResolve == card.resolve && card.wounds == 0)
+        {
+            // Pulse the element before changing the value
+            if (element && this.animationManager) {
+                await element.animate([
+                    { transform: 'scale(1)' },
+                    { transform: 'scale(1.4)' },
+                    { transform: 'scale(1)' }
+                ], {
+                    duration: 300,
+                    easing: 'ease-in-out'
+                }).finished;
+            }
+
             dojo.removeClass(element, '_7sfs-modified-stat-value');
+        }
     },
 
     notif_characterDestroyed: async function( notif )
