@@ -1186,13 +1186,26 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
-    notif_playerReknownUpdated: function( notif )
+    notif_playerReknownUpdated: async function( notif )
     {
         debug( 'notif_playerReknownUpdated' );
         debug( notif );
 
         const args = notif.args;
-        $(`${args.player_id}-score-reknown`).innerHTML = args.total;
+        const element = $(`${args.player_id}-score-reknown`);
+        // Pulse the element before changing the value
+        if (element && this.animationManager) {
+            await element.animate([
+                { transform: 'scale(1)' },
+                { transform: 'scale(1.4)' },
+                { transform: 'scale(1)' }
+            ], {
+                duration: 300,
+                easing: 'ease-in-out'
+            }).finished;
+        }
+
+        element.innerHTML = args.total;
     },
 
     notif_reknownUpdatedOnCard: async function( notif )
@@ -1299,7 +1312,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         reknownElement.innerHTML = reknown;
     },
 
-    notif_firstPlayer: function( notif )
+    notif_firstPlayer: async function( notif )
     {
         debug( 'notif_firstPlayer' );
         debug( notif );
@@ -1313,6 +1326,40 @@ return declare('seventhseacityoffivesails.notifications', null, {
         dojo.addClass(`${args.playerId}-first-player`, '_7sfs-first-player-home');
         dojo.removeClass(`${args.playerId}-score-seal-first-player`, '_7sfs-first-player-hidden');
         dojo.addClass(`${args.playerId}-score-seal-first-player`, '_7sfs-first-player-score');
+
+        // Pulse the first player elements
+        const homeElement = $(`${args.playerId}-first-player`);
+        const scoreElement = $(`${args.playerId}-score-seal-first-player`);
+        
+        const animations = [];
+        if (homeElement && this.animationManager) {
+            animations.push(
+                homeElement.animate([
+                    { transform: 'scale(1)' },
+                    { transform: 'scale(1.3)' },
+                    { transform: 'scale(1)' }
+                ], {
+                    duration: 400,
+                    easing: 'ease-in-out'
+                }).finished
+            );
+        }
+        if (scoreElement && this.animationManager) {
+            animations.push(
+                scoreElement.animate([
+                    { transform: 'scale(1)' },
+                    { transform: 'scale(1.3)' },
+                    { transform: 'scale(1)' }
+                ], {
+                    duration: 400,
+                    easing: 'ease-in-out'
+                }).finished
+            );
+        }
+        
+        if (animations.length > 0) {
+            await Promise.all(animations);
+        }
 
         var translated = dojo.string.substitute(
             _("${player_name} is now the First Player"),

@@ -118,9 +118,16 @@ trait DebugTrait
         $this->setGameStateValue(Game::DAY, $day);
     }
 
-    public function debug_SetPlayerReknown(int $playerId, int $score)
+    public function debug_SetPlayerReknown(int $score, int $playerId)
     {
         $this->DBQuery("UPDATE player SET player_score = $score WHERE player_id = $playerId");
+
+        // Notify players that the player has lost reknown
+        $this->notify->all("playerReknownUpdated", clienttranslate('DEBUG: ${player_name} Renown set to ${total}.'), [
+            "player_id" => $playerId,
+            "player_name" => $this->getPlayerNameById($playerId),
+            "total" => $score,
+        ]);
     }
 
     public function debug_AddReknownToLocation(string $location, int $amount)
