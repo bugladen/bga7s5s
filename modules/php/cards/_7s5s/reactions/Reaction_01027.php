@@ -88,9 +88,13 @@ class Reaction_01027 extends CancelReaction
 
         if ($reactionId == "failPressure")
         {
-            $game->gamestate->nextState('pay');
-            return;
-        }
+            $owner = $this->getOwningCard($game->theah);
+            $event = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+            $game->theah->stackEvent($event);
+
+            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
+            $game->theah->stackEvent($event);
+       }
 
         $game->gamestate->nextState("done");
     }

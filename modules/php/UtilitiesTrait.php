@@ -252,7 +252,7 @@ trait UtilitiesTrait
         $lowestCount = 999;
         $lowestPlayerId = null;
         foreach ($players as $playerId => $player) {
-            $count = $this->theah->getCharacterCountByPlayerId($playerId);
+            $count = $this->theah->getCharacterCountByPlayerId($playerId, $includeBrutes = true);
             if ($count == $lowestCount) {
                 $lowestPlayerId = null;
             }

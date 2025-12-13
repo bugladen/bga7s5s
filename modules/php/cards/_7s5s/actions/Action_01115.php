@@ -26,7 +26,7 @@ class Action_01115 extends RiskCityAction
         $charactersWithOpposingCharactersAtAdjacentLocations = [];
         foreach ($characters as $character)
         {
-            $adjacentLocations = $theah->getAdjacentCityLocations($character->Location, $includeHome = false);
+            $adjacentLocations = $theah->getAdjacentCityLocations($character->Location, $includeHome = true);
             foreach ($adjacentLocations as $adjacentLocation)
             {
                 $opposingCharacters = $theah->getCharactersAtLocation($adjacentLocation);
@@ -76,7 +76,7 @@ class Action_01115 extends RiskCityAction
             $args['performerId'] = $performerId;
 
             $performer = $game->theah->getCharacterById($performerId);
-            $adjacentLocations = $game->theah->getAdjacentCityLocations($performer->Location, $includeHome = false);
+            $adjacentLocations = $game->theah->getAdjacentCityLocations($performer->Location, $includeHome = true);
             $adjacentCharacters = [];
             foreach ($adjacentLocations as $adjacentLocation)
             {

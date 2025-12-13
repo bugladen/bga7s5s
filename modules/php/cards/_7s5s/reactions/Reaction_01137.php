@@ -60,7 +60,10 @@ class Reaction_01137 extends RiskReaction
                 $card = $event->theah->getCardById($event->cardId);
 
                 $charactersAtLocation = $event->theah->getCharactersAtLocationByPlayerId($event->fromLocation, $owner->ControllerId);
-                if ($card->ControllerId != $owner->ControllerId && $event->toLocation != Game::LOCATION_PLAYER_HOME && count($charactersAtLocation) > 0)
+                if ($card->ControllerId != $owner->ControllerId 
+                && $event->fromLocation != Game::LOCATION_PLAYER_HOME 
+                && $event->toLocation != Game::LOCATION_PLAYER_HOME 
+                && count($charactersAtLocation) > 0)
                 {
                     $this->FromLocation = $event->fromLocation;
                     $this->ToLocation = $event->toLocation;
