@@ -833,6 +833,12 @@
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
+
+            'highDramaChallengeActionResolveTechnique_01067': () => {
+                this.addActionButton(`actThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actRiposte`, _('+1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
+
         
             'duelChooseTechnique_01013': () => {
                 this.addActionButton(`btnParry`, _('+1 Parry'), () => this.bgaPerformAction('actFromCardWithId', { id: 0}));

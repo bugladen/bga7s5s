@@ -219,6 +219,7 @@ trait ZombieTrait
 
                 // Challenge Action States
                 case "highDramaChallengeActionResolveTechnique_01063": // Bastien's Technique
+                case "highDramaChallengeActionResolveTechnique_01067": // Jean Urbain's Technique
                     $this->gamestate->nextState("");
                     break;
 
