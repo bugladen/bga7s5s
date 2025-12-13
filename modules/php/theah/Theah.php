@@ -534,11 +534,11 @@ class Theah
         return $controllers;
     }
 
-    function getCharacterCountByPlayerId($playerId): int
+    function getCharacterCountByPlayerId(int $playerId, bool $includeBrutes = false): int
     {
         $count = 0;
         foreach ($this->cards as $card) {
-            if ($card instanceof Character && $card->ControllerId == $playerId && ! $card->hasTrait("Brute")) {
+            if ($card instanceof Character && $card->ControllerId == $playerId && (! $card->hasTrait("Brute") || $includeBrutes)) {
                 $count++;
             }
         }
