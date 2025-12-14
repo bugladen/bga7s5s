@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -11,7 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_01140 extends RiskReaction
+class Reaction_01140 extends CancelReaction
 {
     private ?EventCardMoved $eventCardMoved = null;
 
@@ -33,7 +33,7 @@ class Reaction_01140 extends RiskReaction
         $array = parent::getReactionButtonProperties($theah);
 
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Cancel Movement'), 'cancel');
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Decline'), 'decline');
 
         return $array;
     }
@@ -42,7 +42,7 @@ class Reaction_01140 extends RiskReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCardMoved && $this->isAvailable())
+        if ($event instanceof EventCardMoved && ! $event->canceled && $this->isAvailable())
         {
             $owner = $this->getOwningCard($event->theah);
             if ($owner->Location == Game::LOCATION_HAND)
@@ -68,7 +68,7 @@ class Reaction_01140 extends RiskReaction
                     $event->canceled = true;
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                    $event->theah->queueEvent($reactionTransitionEvent);
+                    $event->theah->stackEvent($reactionTransitionEvent);
                 }
             }
         }
@@ -92,15 +92,15 @@ class Reaction_01140 extends RiskReaction
         {
             $owner = $this->getOwningCard($game->theah);
             $event = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-            $game->theah->queueEvent($event);
+            $game->theah->stackEvent($event);
 
             $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
-            $game->theah->queueEvent($event);
+            $game->theah->stackEvent($event);
 
             $this->setUsed($game->theah, true);
         }
 
-        if ($reactionId == 'pass')
+        if ($reactionId == 'decline')
         {
             $game->theah->queueEvent($this->eventCardMoved);
         }
