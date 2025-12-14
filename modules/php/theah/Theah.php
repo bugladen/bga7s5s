@@ -1390,6 +1390,16 @@ class Theah
         return 0;
     }
 
+    public function getCurrentRoundThrust(): int
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT COALESCE(technique_thrust, 0) + COALESCE(maneuver_thrust, 0) + COALESCE(combat_thrust, 0) as total_thrust 
+                FROM duel_round 
+                WHERE duel_id = $duelId AND round = $round";
+        return (int) $this->db->getUniqueValue($sql);
+    }
+
     public function duelParticipantWoundsTaken(int $participantId) : int
     {
         $duelId = $this->game->globals->get(Game::DUEL_ID);

@@ -214,7 +214,7 @@ abstract class Character extends Card implements IHasTechniques
 
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason}'), [
+            $event->theah->game->notify->all("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason}'), [
                 'i18n' => ['reason'],
                 "target_inject_code" => $this->getInjectCode(),
                 "characterId" => $this->Id,
@@ -249,6 +249,20 @@ abstract class Character extends Card implements IHasTechniques
 
             $theah->queueEvent($discardEvent);
         }
+    }
+
+    public function hasWeaponEquipped(Theah $theah): bool
+    {
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getCardById($attachmentId);
+            if ($attachment instanceof Attachment && $attachment->hasTrait("Weapon") && ! $attachment->Engaged)
+            {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     public function getPropertyArray(Game $game): array
