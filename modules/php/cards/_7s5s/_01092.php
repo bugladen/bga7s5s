@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01092 extends Character implements IHasActions
@@ -47,7 +48,7 @@ class _01092 extends Character implements IHasActions
     {
         $discount = parent::getEquipDiscount($theah, $performer, $attachment, $explanations);
 
-        if ($performer->isNotControlledByPlayer($this->ControllerId) && $performer->Location == $this->Location)
+        if ($performer->isNotControlledByPlayer($this->ControllerId) && $performer->Location == $this->Location && $theah->cardInCity($performer))
         {
             $discount -= 1;
             $explanations[] = sprintf($theah->game->translate("%s: +1 because performer is opposing Makepeace Botwighte."), $this->getInjectCode());
