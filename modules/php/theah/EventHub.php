@@ -1285,35 +1285,36 @@ trait EventHub
                         $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
 
-                    if ($event->riposte < 0)
-                    {
-                        $event->riposte = 0;
-                    }
-                    if ($event->parry < 0)
-                    {
-                        $event->parry = 0;
-                    }
-                    if ($event->thrust < 0)
-                    {
-                        $event->thrust = 0;
-                    }
-
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "technique", $event->riposte, $event->parry, $event->thrust);
                     $effects = "";
+
+                    $riposteText = $theah->game->translate("Riposte");
+                    $parryText = $theah->game->translate("Parry");
+                    $thrustText = $theah->game->translate("Thrust");
                     if ($results["riposte"] > 0) 
                     {
-                        $riposteText = $theah->game->translate("Riposte");
                         $effects .= "<p>{$riposteText} +{$results["riposte"]}";
                     }
                     if ($results["parry"] > 0) 
                     {
-                        $parryText = $theah->game->translate("Parry");
                         $effects .= "<p>{$parryText} +{$results["parry"]}";
                     }
                     if ($results["thrust"] > 0) 
                     {
-                        $thrustText = $theah->game->translate("Thrust");
                         $effects .= "<p>{$thrustText} +{$results["thrust"]}";
+                    }
+
+                    if ($results["riposte"] < 0) 
+                    {
+                        $effects .= "<p>{$riposteText} {$results["riposte"]}";
+                    }
+                    if ($results["parry"] < 0) 
+                    {
+                        $effects .= "<p>{$parryText} {$results["parry"]}";
+                    }
+                    if ($results["thrust"] < 0) 
+                    {
+                        $effects .= "<p>{$thrustText} {$results["thrust"]}";
                     }
 
                     $challengerThreatIsLethal = $results['challengerThreatIsLethal'];
@@ -1398,35 +1399,35 @@ trait EventHub
                         $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
 
-                    if ($event->riposte < 0)
-                    {
-                        $event->riposte = 0;
-                    }
-                    if ($event->parry < 0)
-                    {
-                        $event->parry = 0;
-                    }
-                    if ($event->thrust < 0)
-                    {
-                        $event->thrust = 0;
-                    }
-
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "maneuver", $event->riposte, $event->parry, $event->thrust);
                     $effects = "";
-                    $riposteText = $theah->game->translate("Riposte");  
+                    $riposteText = $theah->game->translate("Riposte");
+                    $parryText = $theah->game->translate("Parry");
+                    $thrustText = $theah->game->translate("Thrust");
                     if ($results["riposte"] > 0) 
                     {
                         $effects .= "<p>{$riposteText} +{$results["riposte"]}";
                     }
-                    $parryText = $theah->game->translate("Parry");
                     if ($results["parry"] > 0) 
                     {
                         $effects .= "<p>{$parryText} +{$results["parry"]}";
                     }
-                    $thrustText = $theah->game->translate("Thrust");
                     if ($results["thrust"] > 0) 
                     {
                         $effects .= "<p>{$thrustText} +{$results["thrust"]}";
+                    }
+
+                    if ($results["riposte"] < 0) 
+                    {
+                        $effects .= "<p>{$riposteText} {$results["riposte"]}";
+                    }
+                    if ($results["parry"] < 0) 
+                    {
+                        $effects .= "<p>{$parryText} {$results["parry"]}";
+                    }
+                    if ($results["thrust"] < 0) 
+                    {
+                        $effects .= "<p>{$thrustText} {$results["thrust"]}";
                     }
 
                     $challengerThreatIsLethal = $results['challengerThreatIsLethal'];
@@ -1486,35 +1487,35 @@ trait EventHub
                         $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
 
-                    if ($event->riposte < 0)
-                    {
-                        $event->riposte = 0;
-                    }
-                    if ($event->parry < 0)
-                    {
-                        $event->parry = 0;
-                    }
-                    if ($event->thrust < 0)
-                    {
-                        $event->thrust = 0;
-                    }
-
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "combat", $event->riposte, $event->parry, $event->thrust);
                     $effects = "";  
                     $riposteText = $theah->game->translate("Riposte");
+                    $parryText = $theah->game->translate("Parry");
+                    $thrustText = $theah->game->translate("Thrust");
                     if ($results["riposte"] > 0) 
                     {
                         $effects .= "<p>{$riposteText} +{$results["riposte"]}";
                     }
-                    $parryText = $theah->game->translate("Parry");
                     if ($results["parry"] > 0) 
                     {
                         $effects .= "<p>{$parryText} +{$results["parry"]}";
                     }
-                    $thrustText = $theah->game->translate("Thrust");
                     if ($results["thrust"] > 0) 
                     {
                         $effects .= "<p>{$thrustText} +{$results["thrust"]}";
+                    }
+
+                    if ($results["riposte"] < 0) 
+                    {
+                        $effects .= "<p>{$riposteText} {$results["riposte"]}";
+                    }
+                    if ($results["parry"] < 0) 
+                    {
+                        $effects .= "<p>{$parryText} {$results["parry"]}";
+                    }
+                    if ($results["thrust"] < 0) 
+                    {
+                        $effects .= "<p>{$thrustText} {$results["thrust"]}";
                     }
 
                     $challengerThreatIsLethal = $results['challengerThreatIsLethal'];
