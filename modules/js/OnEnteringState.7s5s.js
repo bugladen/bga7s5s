@@ -752,35 +752,46 @@
             },
             'highDramaPhase01038_3' : () => {
                 if (this.isCurrentPlayerActive()) 
-                    {
-                        dojo.removeClass('choose_container', 'hidden');
-                        dojo.removeClass('chooseList', 'hidden');
-                        
-                        let count = 0;
-                        args.args.args.cards.forEach((card) => {
-                            this.addCardToDeck(this.chooseList, card);
-                            if (card.type === 'Attachment') 
-                                count++;
-                            else
-                            {
-                                let div = this.chooseList.getItemDivId(card.id);
-                                dojo.addClass(div, '_7sfs-unselectable');        
-                            }
-        
-                            this.cardProperties[card.id] = card;                
-                        });
-                        var translated = dojo.string.substitute(
-                            _("Otto Streit's Revealed Cards: ( ${count} Attachment(s) Found )"),
-                            {
-                                count: count
-                            }
-                        );
-                        $('choose_container_name').innerHTML = translated;
-                        this.chooseList.setSelectionMode(0);
-                        if (count > 0)
-                            this.chooseList.setSelectionMode(1);
-                    }
-                },
+                {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    let count = 0;
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                        if (card.type === 'Attachment') 
+                            count++;
+                        else
+                        {
+                            let div = this.chooseList.getItemDivId(card.id);
+                            dojo.addClass(div, '_7sfs-unselectable');        
+                        }
+    
+                        this.cardProperties[card.id] = card;                
+                    });
+                    var translated = dojo.string.substitute(
+                        _("Otto Streit's Revealed Cards: ( ${count} Attachment(s) Found )"),
+                        {
+                            count: count
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(0);
+                    if (count > 0)
+                        this.chooseList.setSelectionMode(1);
+                }
+            },
+
+            'highDramaPhase01041': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
     
             'highDramaPhase01044' : () => {
                 if (this.isCurrentPlayerActive()) {
