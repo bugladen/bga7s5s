@@ -71,6 +71,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterCombatModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
@@ -583,7 +584,7 @@ trait EventHub
                 {
                     $card = $theah->getCardById($event->cardId);
 
-                    $theah->game->notifyAllPlayers("cardRemovedFromCityDiscardPile", clienttranslate('${card_name} removed from City Discard pile.'), [
+                    $theah->game->notify->all("cardRemovedFromCityDiscardPile", clienttranslate('${card_name} removed from City Discard pile.'), [
                         'i18n' => ['card_name'],
                         "card_name" => $card->Name,
                         "card" => $card->getPropertyArray($theah->game),
@@ -638,6 +639,25 @@ trait EventHub
                 };
                 $handler($this, $event);
                 break;
+
+                case $event instanceof EventCharacterCombatModified:
+                    $handler = function (Theah $theah, EventCharacterCombatModified $event)
+                    {
+                        $character = $theah->getCharacterById($event->CharacterId);
+                        $character->ModifiedCombat = max(0, $event->NewCombat);
+                        $character->IsUpdated = true;
+
+                        $theah->game->notify->all("characterCombatModified", clienttranslate('The combat of ${character_name} went from ${oldCombat} to ${newCombat} due to: ${reason}.'), [
+                            'i18n' => ['character_name'],
+                            "character_name" => $character->Name,
+                            "characterId" => $character->Id,
+                            "oldCombat" => $event->OldCombat, 
+                            "newCombat" => $event->NewCombat,
+                            "reason" => $event->Reason,
+                        ]);
+                    };
+                    $handler($this, $event);
+                    break;
 
                 case $event instanceof EventCharacterFinesseModifed:
                     $handler = function (Theah $theah, EventCharacterFinesseModifed $event)

@@ -109,6 +109,7 @@ class Events
     const RiskPlayed = 'EventRiskPlayed';
 
     //Character events
+    const CharacterCombatModified = 'EventCharacterCombatModified';
     const CharacterInfluenceModified = 'EventCharacterInfluenceModified';
     const CharacterFinesseModifed = 'EventCharacterFinesseModifed';
     const CharacterMustered = 'EventCharacterMustered';

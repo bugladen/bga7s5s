@@ -43,6 +43,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeAccepted;
 use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterCombatModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
@@ -478,6 +479,21 @@ class EventFactory
             $event->playerId = $playerId;
             $event->characterId = $characterId;
             $event->reason = $reason;
+        }
+
+        return $event;
+    }
+
+    public static function createCharacterCombatModifiedEvent(int $playerId, int $characterId, int $oldCombat, int $newCombat, string $reason = ''): EventCharacterCombatModified
+    {
+        $event = self::createEvent(Events::CharacterCombatModified);
+        if ($event instanceof EventCharacterCombatModified)
+        {
+            $event->PlayerId = $playerId;
+            $event->CharacterId = $characterId;
+            $event->OldCombat = $oldCombat;
+            $event->NewCombat = $newCombat;
+            $event->Reason = $reason;
         }
 
         return $event;
