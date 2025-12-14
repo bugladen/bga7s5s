@@ -30,9 +30,7 @@ class Technique_01093 extends Technique
             return false;
         }
 
-        $duelId = $theah->game->globals->get(Game::DUEL_ID, 0);
-        $round = $theah->game->globals->get(Game::DUEL_ROUND, 0);
-        $riposte = $theah->game->getCombatCardRiposteForRound($duelId, $round);
+        $riposte = $theah->getCurrentRoundRiposte();
         return $riposte > 0;
     }
 
