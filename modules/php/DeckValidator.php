@@ -86,6 +86,15 @@ class DeckValidator
             return false;
         }
 
+        if (count($deck->approach_deck) != 10)
+        {
+            $errors[] = clienttranslate('The approach deck must contain 10 cards.');
+            return false;
+        }
+
+        $schemeCount = 0;
+        $characterCount = 0;
+
         foreach ($deck->approach_deck as $approachCard)
         {
             $className = $game->getCardClassName($approachCard);
@@ -99,6 +108,15 @@ class DeckValidator
             if (! $card instanceof Scheme && ! $card instanceof Character)
             {
                 $errors[] = sprintf(clienttranslate('The approach card %s is not of type Scheme or Character.'), $approachCard);
+            }
+
+            if ($card instanceof Scheme)
+            {
+                $schemeCount++;
+            }
+            else if ($card instanceof Character)
+            {
+                $characterCount++;
             }
 
             if ($card->hasTrait("Brute"))
@@ -118,6 +136,17 @@ class DeckValidator
 
             $uniquelyNamedCards[] = $card->Name;
         }
+        if ($schemeCount != 5)
+        {
+            $errors[] = clienttranslate('The approach deck must contain 5 Scheme cards.');
+            return false;
+        }
+
+        if ($characterCount != 5)
+        {
+            $errors[] = clienttranslate('The approach deck must contain 5 Character cards.');
+            return false;
+        }
 
         return count($errors) == 0;
     }
@@ -131,11 +160,13 @@ class DeckValidator
         }
 
         $uniqueCardIds = [];
+        $totalCount = 0;
 
         foreach ($deck->faction_deck as $factionCard)
         {
             $cardId = $factionCard->id;
             $cardCount = $factionCard->count;
+            $totalCount += $cardCount;
 
             $className = $game->getCardClassName($factionCard->id);
             if (! class_exists($className))
@@ -176,6 +207,12 @@ class DeckValidator
             }
 
             $uniqueCardIds[] = $cardId;
+        }
+
+        if ($totalCount != 40)
+        {
+            $errors[] = clienttranslate('The Faction Deck must contain 40 cards.');
+            return false;
         }
 
         return count($errors) == 0;
