@@ -213,23 +213,6 @@ trait UtilitiesTrait
         return $rounds;
     }
 
-    public function getCombatCardRiposteForRound(int $duelId, int $round)
-    {
-        $sql = "SELECT combat_card_id FROM duel_round_combat_card where duel_id = $duelId AND round = {$round}";
-        $combatCardIds = $this->getCollectionFromDB($sql);
-        $riposte = 0;
-        foreach ($combatCardIds as $combatCardId)
-        {
-            $card = $this->getCardObjectFromDb($combatCardId['combat_card_id']);
-            if ($card instanceof IFactionCard)
-            {
-                $riposte += $card->getRiposte();
-            }
-        }
-
-        return $riposte;
-    }
-
     public function getPlayerChosenScheme($playerId)
     {
         $sql = "SELECT selected_scheme_id FROM player WHERE player_id = $playerId";
