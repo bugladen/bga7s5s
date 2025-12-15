@@ -128,6 +128,11 @@ class _01120 extends Character implements IHasReactions, IHasTechniques
                     $this->addInfluence($event->theah);
                 }
             }
+
+            if ($event->toLocation == Game::LOCATION_PLAYER_HOME && $this->HasAddedInfluence)
+            {
+                $this->removeInfluence($event->theah);
+            }
         }
 
         if ($event instanceof EventLocationClaimed && $event->playerId == $this->ControllerId && $event->location == $this->Location)
@@ -140,7 +145,7 @@ class _01120 extends Character implements IHasReactions, IHasTechniques
             $this->removeInfluence($event->theah);
         }
 
-        if ($event instanceof EventLocationBecomesUncontrolled && $event->location == $this->Location)
+        if ($event instanceof EventLocationBecomesUncontrolled && $event->location == $this->Location && $this->HasAddedInfluence)
         {
             $this->removeInfluence($event->theah);
         }
