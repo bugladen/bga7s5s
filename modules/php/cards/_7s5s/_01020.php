@@ -32,7 +32,9 @@ class _01020 extends Brute implements IHasActions
 
         $this->Riposte = 4;
         $this->Parry = 0;
+        $this->DashedParry = true;
         $this->Thrust = 0;
+        $this->DashedThrust = true;
 
         $this->WealthCost = 2;
 

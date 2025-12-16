@@ -63,8 +63,8 @@ class Maneuver_01135 extends Maneuver
             $actor = $event->theah->getDuelRoundActor();
             if ($owner->ControllerId != $actor->ControllerId)
             {
-                $event->thrust -= 2;
                 $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the Adversary's Thrust by 2."), $owner->getInjectCode());
+                $event->removeThrust(2);
             }
         }
 

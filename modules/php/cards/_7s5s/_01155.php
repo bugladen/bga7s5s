@@ -35,6 +35,7 @@ class _01155 extends FactionAttachment implements IHasManeuvers, IHasTechniques,
 
         $this->WealthCost = 0;
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 1;
         $this->Thrust = 1;
 

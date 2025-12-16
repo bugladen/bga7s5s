@@ -84,8 +84,8 @@ class Maneuver_01084 extends Maneuver
 
             if ($adversary->ControllerId == $owner->ControllerId)
             {
-                $event->thrust += 1;
                 $event->explanations[] = sprintf($event->theah->game->translate("%s increases the Adversary's Thrust by %d"), $owner->getInjectCode(), 1);
+                $event->addThrust(1);
                 $this->IncreaseAdversaryThrust = false;
                 $owner->IsUpdated = true;
             }

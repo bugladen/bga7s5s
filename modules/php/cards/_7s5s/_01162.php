@@ -23,6 +23,7 @@ class _01162 extends Risk implements IHasActions, IAmARiskThatTargetsCharacters
         
         $this->WealthCost = 2;
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 2;
         $this->Thrust = 3;
 

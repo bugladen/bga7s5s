@@ -23,6 +23,7 @@ class _01140 extends Risk implements IHasReactions
 
         $this->WealthCost = 0;
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 2;
         $this->Thrust = 3;
 

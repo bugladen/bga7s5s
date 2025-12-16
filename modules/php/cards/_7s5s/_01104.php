@@ -24,8 +24,10 @@ class _01104 extends Risk implements IHasActions, IAmARiskThatTargetsCharacters
         
         $this->WealthCost = 1;
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 2;
         $this->Thrust = 0;
+        $this->DashedThrust = true;
 
         $this->Traits = [
             'Camaraderie',

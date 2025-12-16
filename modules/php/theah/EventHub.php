@@ -1499,19 +1499,6 @@ trait EventHub
                         $effects .= "<p>{$thrustText} +{$results["thrust"]}";
                     }
 
-                    if ($results["riposte"] < 0) 
-                    {
-                        $effects .= "<p>{$riposteText} {$results["riposte"]}";
-                    }
-                    if ($results["parry"] < 0) 
-                    {
-                        $effects .= "<p>{$parryText} {$results["parry"]}";
-                    }
-                    if ($results["thrust"] < 0) 
-                    {
-                        $effects .= "<p>{$thrustText} {$results["thrust"]}";
-                    }
-
                     $challengerThreatIsLethal = $results['challengerThreatIsLethal'];
                     $defenderThreatIsLethal = $results['defenderThreatIsLethal'];
 

@@ -1094,8 +1094,11 @@ trait StatesTrait
             $event->adversaryId = $adversaryId;
             $event->combatCardId = $cardId;
             $event->riposte = $card->Riposte;
+            $event->dashedRiposte = $card->DashedRiposte;
             $event->parry = $card->Parry;
+            $event->dashedParry = $card->DashedParry;
             $event->thrust = $card->Thrust;
+            $event->dashedThrust = $card->DashedThrust;
             $event->gambled = $gambled == 1;
         }
         $this->theah->queueEvent($event);

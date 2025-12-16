@@ -24,6 +24,7 @@ class _01031 extends Risk implements IHasManeuvers
         $this->Faction = 'Vodacce';
 
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 0;
         $this->Thrust = 3;
 

@@ -28,6 +28,7 @@ class _01153 extends FactionAttachment
 
         $this->WealthCost = 1;
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 3;
         $this->Thrust = 1;
 

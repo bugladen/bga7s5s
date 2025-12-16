@@ -24,6 +24,7 @@ class _01171 extends Risk implements IHasActions, IAmARiskThatTargetsCharacters
         $this->WealthCost = 2;
         $this->Riposte = 1;
         $this->Parry = 0;
+        $this->DashedParry = true;
         $this->Thrust = 2;
 
         $this->Traits = [

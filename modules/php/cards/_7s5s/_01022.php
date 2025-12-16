@@ -30,6 +30,7 @@ class _01022 extends FactionAttachment implements IHasReactions
 
         $this->Riposte = 2;
         $this->Parry = 0;
+        $this->DashedParry = true;
         $this->Thrust = 2;
 
         $this->WealthCost = 1;

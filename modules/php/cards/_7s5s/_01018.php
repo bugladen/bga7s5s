@@ -15,7 +15,7 @@ class _01018 extends Brute implements IHasActions
     {
         parent::__construct();
 
-        $this->Name = 'Angelo';
+        $this->Name = clienttranslate('Angelo');
         $this->Image = 'img/cards/7s5s/018.jpg';
         $this->ExpansionName = '_7s5s';
         $this->ExpansionNumber = 1;
@@ -31,8 +31,10 @@ class _01018 extends Brute implements IHasActions
         $this->DashedInfluence = true;
 
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 2;
         $this->Thrust = 0;
+        $this->DashedThrust = true;
 
         $this->WealthCost = 0;
 

@@ -32,6 +32,7 @@ class _01127 extends FactionAttachment implements IHasReactions, IHasTechniques
 
         $this->WealthCost = 2;
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 1;
         $this->Thrust = 5;
 

@@ -28,6 +28,7 @@ class _01061 extends Risk implements IHasActions, IHasManeuvers
         $this->WealthCost = 1;
         $this->Riposte = 2;
         $this->Parry = 0;
+        $this->DashedParry = true;
         $this->Thrust = 1;
 
         $this->Traits = [

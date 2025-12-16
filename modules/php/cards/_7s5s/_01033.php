@@ -29,8 +29,10 @@ class _01033 extends Risk implements IHasActions, IHasManeuvers, IAmARiskThatTar
         $this->Faction = 'Vodacce';
 
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 1;
         $this->Thrust = 0;
+        $this->DashedThrust = true;
 
         $this->WealthCost = 1;
 

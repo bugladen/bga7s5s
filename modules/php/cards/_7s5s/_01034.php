@@ -25,6 +25,7 @@ class _01034 extends Risk implements IHasActions, IAmARiskThatTargetsCharacters
         $this->Faction = 'Vodacce';
 
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 2;
         $this->Thrust = 3;
 
