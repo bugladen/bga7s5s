@@ -13,9 +13,6 @@
  * 
  */
 
- var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
- var debug = isDebug ? console.info.bind(window.console) : function () {};
- 
 define([
    "dojo",
    "dojo/_base/declare", 
@@ -36,7 +33,12 @@ define([
    g_gamethemeurl + 'modules/js/EventHandlers.js',
    g_gamethemeurl + 'modules/js/PlayerActions.js',
 ],
-function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations) {
+function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations)
+{
+    // Define isDebug and debug globally so all modules can access them
+    window.isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
+    window.debug = window.isDebug ? console.info.bind(window.console) : function () {};
+
     // Store BgaAnimations globally to avoid ReferenceError when used in mixed-in classes
     window.BgaAnimations = BgaAnimations;
     return declare(
