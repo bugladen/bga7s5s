@@ -94,7 +94,7 @@ class Action_01093 extends CharacterAction
                 throw new \BgaUserException($game->translate("You cannot move to the same location as Maya."));
             }
 
-            $moveEvent = EventFactory::createCardMovedEvent($owner->ControllerId, $owner->Id, $owner->Location, $location->Name, $engage = false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, $location->Name, $engage = false, $owner->Id);
             $game->theah->queueEvent($moveEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

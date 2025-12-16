@@ -116,7 +116,7 @@ class Action_01149 extends SchemeCityAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCardById($performerId);
 
-            $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $performer->Id, $performer->Location, $location->Name, $engage = false);
+            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $location->Name, $engage = false);
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 

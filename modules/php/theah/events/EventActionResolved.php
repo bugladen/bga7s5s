@@ -11,5 +11,6 @@ class EventActionResolved extends Event
         parent::__construct();
         
         $this->playerId = 0;
+        $this->priority = Event::LOWEST_PRIORITY;
     }
 }

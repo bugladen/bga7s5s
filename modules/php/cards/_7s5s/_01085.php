@@ -111,7 +111,7 @@ class _01085 extends Risk implements IHasActions, ISorcererAbility
             $event = EventFactory::createCharacterWoundedEvent($sorcerer->Id, $this->Id, 1, $this->getInjectCode());
             $game->theah->queueEvent($event);
 
-            $event = EventFactory::createCardMovedEvent($this->ControllerId, $actor->Id, $actor->Location, $sorcerer->Location, $engage = false, $this->Id);
+            $event = EventFactory::createCardMovingEvent($this->ControllerId, $actor->Id, $actor->Location, $sorcerer->Location, $engage = false, $this->Id);
             $game->theah->queueEvent($event);
 
             // Set the threat to 0;

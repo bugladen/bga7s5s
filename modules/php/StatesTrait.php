@@ -1102,6 +1102,7 @@ trait StatesTrait
             $event->gambled = $gambled == 1;
         }
         $this->theah->queueEvent($event);
+        
         $this->gamestate->nextState();
     }
 
@@ -1858,7 +1859,7 @@ trait StatesTrait
         {
             if ($character->Location != Game::LOCATION_PLAYER_HOME)
             {
-                $movedHome = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $sourceId=0);
+                $movedHome = EventFactory::createCardMovingEvent($character->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $sourceId=0);
                 $this->theah->queueEvent($movedHome);
             }
 

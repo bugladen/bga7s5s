@@ -156,7 +156,7 @@ class Action_01068 extends CharacterAction implements ISorcererAbility
             $game->theah->eventCheck($woundEvent);
             $game->theah->queueEvent($woundEvent);
 
-            $moveEvent = EventFactory::createCardMovedEvent($character->ControllerId, $character->Id, $character->Location, $location->Name, $engage = false);
+            $moveEvent = EventFactory::createCardMovingEvent($character->ControllerId, $character->Id, $character->Location, $location->Name, $engage = false);
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 

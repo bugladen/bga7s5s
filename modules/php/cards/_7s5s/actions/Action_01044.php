@@ -220,7 +220,7 @@ class Action_01044 extends SchemeCityAction
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 
-                $movedHome = EventFactory::createCardMovedEvent($game->getActivePlayerId(), $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false);
+                $movedHome = EventFactory::createCardMovingEvent($game->getActivePlayerId(), $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false);
                 $game->theah->eventCheck($movedHome);
                 $game->theah->queueEvent($movedHome);
 

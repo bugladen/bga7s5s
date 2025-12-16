@@ -43,7 +43,7 @@ class Maneuver_01164 extends Maneuver
             if (! $game->characterIsInDiscardOrLocker($character))
             {
                 $owner = $this->getOwningCard($event->theah);
-                $moveEvent = EventFactory::createCardMovedEvent($owner->ControllerId, $character->Id, $character->Location, $this->MoveLocation, $engage = false, $owner->Id);
+                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $this->MoveLocation, $engage = false, $owner->Id);
                 $event->theah->queueEvent($moveEvent);
             }
 

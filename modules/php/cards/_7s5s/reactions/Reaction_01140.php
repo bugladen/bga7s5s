@@ -7,20 +7,20 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01140 extends CancelReaction
 {
-    private ?EventCardMoved $eventCardMoved = null;
+    private ?EventCardMoving $eventCardMoving = null;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->Name = clienttranslate("Cancel Your Character Movement");
-        $this->eventCardMoved = null;
+        $this->eventCardMoving = null;
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -42,28 +42,28 @@ class Reaction_01140 extends CancelReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCardMoved && ! $event->canceled && $this->isAvailable())
+        if ($event instanceof EventCardMoving && ! $event->canceled && $this->isAvailable())
         {
             $owner = $this->getOwningCard($event->theah);
             if ($owner->Location == Game::LOCATION_HAND)
             {
                 // Skip if this is the event we already processed and stored
-                if ($this->eventCardMoved !== null && 
-                    $this->eventCardMoved->cardId == $event->cardId &&
-                    $this->eventCardMoved->fromLocation == $event->fromLocation &&
-                    $this->eventCardMoved->toLocation == $event->toLocation &&
-                    $this->eventCardMoved->initiatingPlayerId == $event->initiatingPlayerId)
+                if ($this->eventCardMoving !== null && 
+                    $this->eventCardMoving->cardId == $event->cardId &&
+                    $this->eventCardMoving->fromLocation == $event->fromLocation &&
+                    $this->eventCardMoving->toLocation == $event->toLocation &&
+                    $this->eventCardMoving->initiatingPlayerId == $event->initiatingPlayerId)
                 {
                     return; // This is the event we're about to release, don't catch it again
                 }
-                
+
                 $owner = $this->getOwningCard($event->theah);
                 $card = $event->theah->getCardById($event->cardId);
                 if ($card instanceof Character && $card->ControllerId == $owner->ControllerId)
                 {
                     $owner->IsUpdated = true;
-                    $this->eventCardMoved = clone $event;
-                    unset($this->eventCardMoved->theah);
+                    $this->eventCardMoving = clone $event;
+                    unset($this->eventCardMoving->theah);
 
                     $event->canceled = true;
 
@@ -102,7 +102,7 @@ class Reaction_01140 extends CancelReaction
 
         if ($reactionId == 'decline')
         {
-            $game->theah->queueEvent($this->eventCardMoved);
+            $game->theah->queueEvent($this->eventCardMoving);
         }
 
         $game->gamestate->nextState("done");

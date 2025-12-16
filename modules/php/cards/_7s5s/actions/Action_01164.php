@@ -97,7 +97,7 @@ class Action_01164 extends RiskCityAction
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $performer->Id, $performer->Location, $location, $engage = false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $location, $engage = false, $owner->Id);
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 

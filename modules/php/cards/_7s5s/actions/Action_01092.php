@@ -99,7 +99,7 @@ class Action_01092 extends CharacterAction
             $this->resetPlayerPassCount($game);
             $this->setUsed($game->theah, true);
 
-            $moveEvent = EventFactory::createCardMovedEvent($makepeace->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $makepeace->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($makepeace->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $makepeace->Id);
             $game->theah->queueEvent($moveEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($makepeace->ControllerId);

@@ -84,7 +84,7 @@ class Reaction_01137 extends RiskReaction
             $character = $game->theah->getCardById($this->FollowCharacterId);
             $target = $game->theah->getCardById($this->TargetCharacterId);
 
-            $moveEvent = EventFactory::createCardMovedEvent($owner->ControllerId, $this->FollowCharacterId, $character->Location, $this->ToLocation, false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $this->FollowCharacterId, $character->Location, $this->ToLocation, false, $owner->Id);
             $game->theah->queueEvent($moveEvent);
 
             $woundEvent = EventFactory::createCharacterWoundedEvent($this->TargetCharacterId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);

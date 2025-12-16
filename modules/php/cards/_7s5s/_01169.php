@@ -66,7 +66,7 @@ class _01169 extends Risk
                 $woundEvent = EventFactory::createCharacterWoundedEvent($actor->Id, $this->Id, 1, $this->getInjectCode());
                 $event->theah->queueEvent($woundEvent);
     
-                $moveEvent = EventFactory::createCardMovedEvent($actor->ControllerId, $actor->Id, $actor->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $this->Id);
+                $moveEvent = EventFactory::createCardMovingEvent($actor->ControllerId, $actor->Id, $actor->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $this->Id);
                 $event->theah->queueEvent($moveEvent);
     
                 if (! $this->Engaged)

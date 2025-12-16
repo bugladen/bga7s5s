@@ -112,7 +112,7 @@ class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatT
                 $game->theah->queueEvent($woundEvent);
             }
 
-            $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, false, $owner->Id);
             $game->theah->queueEvent($moveEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
