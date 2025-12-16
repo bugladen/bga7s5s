@@ -1468,6 +1468,19 @@ trait EventHub
                         $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
 
+                    if ($event->riposte < 0)
+                    {
+                        $event->riposte = 0;
+                    }
+                    if ($event->parry < 0)
+                    {
+                        $event->parry = 0;
+                    }
+                    if ($event->thrust < 0)
+                    {
+                        $event->thrust = 0;
+                    }
+                    
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "combat", $event->riposte, $event->parry, $event->thrust);
                     $effects = "";  
                     $riposteText = $theah->game->translate("Riposte");
