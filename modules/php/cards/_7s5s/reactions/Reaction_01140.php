@@ -14,6 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 class Reaction_01140 extends CancelReaction
 {
     private ?EventCardMoving $eventCardMoving = null;
+    private string $cardName = '';
 
     public function __construct()
     {
@@ -25,7 +26,7 @@ class Reaction_01140 extends CancelReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to cancel your character movement: ');
+        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} may choose to cancel the movement of %s: '), $theah->game->translate($this->cardName));
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -47,14 +48,10 @@ class Reaction_01140 extends CancelReaction
             $owner = $this->getOwningCard($event->theah);
             if ($owner->Location == Game::LOCATION_HAND)
             {
-                // Skip if this is the event we already processed and stored
-                if ($this->eventCardMoving !== null && 
-                    $this->eventCardMoving->cardId == $event->cardId &&
-                    $this->eventCardMoving->fromLocation == $event->fromLocation &&
-                    $this->eventCardMoving->toLocation == $event->toLocation &&
-                    $this->eventCardMoving->initiatingPlayerId == $event->initiatingPlayerId)
+                // Skip if this card already declined to cancel this event
+                if (in_array($owner->Id, $event->cancelDeclinedByCardIds))
                 {
-                    return; // This is the event we're about to release, don't catch it again
+                    return;
                 }
 
                 $owner = $this->getOwningCard($event->theah);
@@ -64,7 +61,7 @@ class Reaction_01140 extends CancelReaction
                     $owner->IsUpdated = true;
                     $this->eventCardMoving = clone $event;
                     unset($this->eventCardMoving->theah);
-
+                    $this->cardName = $card->Name;
                     $event->canceled = true;
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
@@ -102,7 +99,15 @@ class Reaction_01140 extends CancelReaction
 
         if ($reactionId == 'decline')
         {
+            $owner = $this->getOwningCard($game->theah);
+            
+            // Mark the event as declined by this card so other copies won't catch it
+            $this->eventCardMoving->cancelDeclinedByCardIds[] = $owner->Id;
+            
             $game->theah->queueEvent($this->eventCardMoving);
+
+            $this->eventCardMoving = null;
+            $owner->IsUpdated = true;
         }
 
         $game->gamestate->nextState("done");
