@@ -29,6 +29,7 @@ class _01100 extends FactionAttachment implements IHasReactions
         $this->WealthCost = 2;
         $this->Riposte = 2;
         $this->Parry = 0;
+        $this->DashedParry = true;
         $this->Thrust = 2;
 
         $this->Traits = [

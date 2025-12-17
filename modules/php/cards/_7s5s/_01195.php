@@ -55,8 +55,8 @@ class _01195 extends CityAttachment
         // If Eager Blade is in play, add 1 to the riposte.
         if ($event instanceof EventDuelCalculateCombatCardStats && $this->isAttached() && $this->AttachedToId == $event->actorId)
         {
-            $event->riposte += 1;
             $event->explanations[] = sprintf($event->theah->game->translate("%s: +1 Riposte"), $this->getInjectCode());
+            $event->addRiposte(1);
 
             $event->theah->game->notify->all("message", clienttranslate('${card_inject_code} was used with a combat card.  Its ability will trigger and it will be destroyed.'), [
                 "card_inject_code" => $this->getInjectCode(),

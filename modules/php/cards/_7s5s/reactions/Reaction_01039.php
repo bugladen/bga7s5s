@@ -64,7 +64,7 @@ class Reaction_01039 extends CardReaction
 
             $philip = $this->getOwningCharacter($game->theah);
 
-            $event = EventFactory::createCardMovedEvent($philip->ControllerId, $philip->Id, $philip->Location, $locationName, $engage=false, $philip->Id);
+            $event = EventFactory::createCardMovingEvent($philip->ControllerId, $philip->Id, $philip->Location, $locationName, $engage=false, $philip->Id);
             $game->theah->queueEvent($event);
 
             $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and moved to ${location_name}.'), [

@@ -291,7 +291,7 @@ trait FrameworkActionsTrait
         "player_name" => $playerName,
         ]);
 
-        $movedEvent = EventFactory::createCardMovedEvent($card->ControllerId, $card->Id, $card->Location, $location, $card->Location != Game::LOCATION_PLAYER_HOME);
+        $movedEvent = EventFactory::createCardMovingEvent($card->ControllerId, $card->Id, $card->Location, $location, $card->Location != Game::LOCATION_PLAYER_HOME);
         $this->theah->eventCheck($movedEvent);
         $this->theah->queueEvent($movedEvent);
 

@@ -138,7 +138,7 @@ class Action_01138 extends RiskAction
                 $owner = $this->getOwningCard($game->theah);
 
                 //Move Performer to Target's Location
-                $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id);
+                $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id);
                 $game->theah->queueEvent($moveEvent);
 
                 //Wound Target
@@ -171,7 +171,7 @@ class Action_01138 extends RiskAction
             $owner = $this->getOwningCard($game->theah);
 
             //Move Performer to Target's Location
-            $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id);
             $game->theah->queueEvent($moveEvent);
 
             //Choose to Engage
@@ -182,7 +182,7 @@ class Action_01138 extends RiskAction
                 $game->theah->queueEvent($event);
 
                 //Move Target HOME
-                $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $owner->Id);
+                $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $owner->Id);
                 $game->theah->queueEvent($moveEvent);
             }
             //Choose to Do Not Engage

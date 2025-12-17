@@ -130,7 +130,7 @@ class Action_01058 extends RiskAction
                 $game->theah->queueEvent($engageEvent);
             }
 
-            $moveEvent = EventFactory::createCardMovedEvent($performer->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = true, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = true, $owner->Id);
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 

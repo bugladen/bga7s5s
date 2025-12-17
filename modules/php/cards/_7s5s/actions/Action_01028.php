@@ -105,7 +105,7 @@ class Action_01028 extends RiskAction
                     throw new \BgaUserException($game->translate("Thug is not adjacent to the chosen location"));
                 }
                 
-                $moveEvent = EventFactory::createCardMovedEvent($owner->ControllerId, $thug->Id, $thug->Location, $location, $engage = false, $owner->Id);
+                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $thug->Id, $thug->Location, $location, $engage = false, $owner->Id);
                 $game->theah->queueEvent($moveEvent);
                 $pressureBonus++;
             }

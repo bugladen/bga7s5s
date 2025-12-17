@@ -49,8 +49,8 @@ class _01122 extends Character implements IHasReactions
 
         if ($event instanceof EventDuelCalculateCombatCardStats && $event->actorId == $this->Id && $this->Wounds >= 2)
         {
-            $event->thrust += 1;
             $event->explanations[] = sprintf($event->theah->game->translate("%s increases his own Thrust values by +1 by having 2 or more Wounds."), $this->getInjectCode());
+            $event->addThrust(1);
         }
     }
 

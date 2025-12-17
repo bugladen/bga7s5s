@@ -24,6 +24,7 @@ class _01025 extends Risk implements IHasActions
         $this->initializeFaction('Vodacce');
 
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 2;
         $this->Thrust = 2;
 

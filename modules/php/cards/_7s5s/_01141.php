@@ -23,6 +23,7 @@ class _01141 extends Risk implements IHasActions
 
         $this->WealthCost = 1;
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 2;
         $this->Thrust = 4;
 

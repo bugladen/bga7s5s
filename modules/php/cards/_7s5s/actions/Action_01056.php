@@ -146,7 +146,7 @@ class Action_01056 extends RiskCityAction
                     'target_inject_code' => $target->getInjectCode(),
                 ]);
 
-                $moveEvent = EventFactory::createCardMovedEvent($target->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = true, $owner->Id);
+                $moveEvent = EventFactory::createCardMovingEvent($target->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = true, $owner->Id);
                 $game->theah->queueEvent($moveEvent);
 
             }

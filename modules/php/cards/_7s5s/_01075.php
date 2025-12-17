@@ -33,6 +33,7 @@ class _01075 extends FactionAttachment implements IHasActions
         $this->Riposte = 0;
         $this->Parry = 3;
         $this->Thrust = 0;
+        $this->DashedThrust = true;
 
         $this->Traits = [
             'Attire',

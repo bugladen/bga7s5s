@@ -58,7 +58,7 @@ class Technique_01036 extends Technique
             ]);
 
             $daniella = $this->getOwningCharacter($event->theah);
-            $moveEvent = EventFactory::createCardMovedEvent($daniella->ControllerId, $daniella->Id, $daniella->Location, $this->MoveLocation, $engage = false, $daniella->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($daniella->ControllerId, $daniella->Id, $daniella->Location, $this->MoveLocation, $engage = false, $daniella->Id);
             $event->theah->queueEvent($moveEvent);
 
             $this->MoveDaniela = false;

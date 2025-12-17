@@ -53,8 +53,8 @@ class Technique_01193 extends Technique
                 $character = $this->getOwningCharacter($event->theah);
                 if ($character->Id == $event->adversaryId)
                 {
-                    $event->thrust = $event->thrust > 0 ? $event->thrust - 1 : 0;
-                    $event->explanations[] = $event->theah->game->translate($this->Name);
+                    $event->explanations[] = $event->theah->game->translate($attachment->getInjectCode());
+                    $event->removeThrust(1);
                     $this->ReduceAdversaryThrust = false;
                     $attachment->IsUpdated = true;
                 }

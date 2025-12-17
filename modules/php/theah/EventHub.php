@@ -25,6 +25,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
@@ -523,6 +524,18 @@ trait EventHub
                     $card = $theah->getCardById($event->cardId);
                     $card->Location = Game::LOCATION_PERMANENTLY_HIDDEN;
                     $card->IsUpdated = true;
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCardMoving:
+                $handler = function (Theah $theah, EventCardMoving $event)
+                {
+                    if (! $event->canceled)
+                    {
+                        $movedEvent = EventFactory::createCardMovedEvent($event->initiatingPlayerId, $event->cardId, $event->fromLocation, $event->toLocation, $event->engage, $event->sourceId);
+                        $theah->queueEvent($movedEvent);
+                    }
                 };
                 $handler($this, $event);
                 break;

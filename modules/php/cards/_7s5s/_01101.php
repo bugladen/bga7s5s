@@ -30,6 +30,7 @@ class _01101 extends FactionAttachment implements IHasTechniques
 
         $this->WealthCost = 0;
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 1;
         $this->Thrust = 4;
 

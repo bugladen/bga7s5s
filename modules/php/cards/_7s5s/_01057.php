@@ -23,6 +23,7 @@ class _01057 extends Risk implements IHasManeuvers
         
         $this->WealthCost = 1;
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 1;
         $this->Thrust = 4;
 

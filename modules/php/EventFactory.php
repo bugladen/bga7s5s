@@ -33,6 +33,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlay;
@@ -328,6 +329,22 @@ class EventFactory
         {
             $event->playerId = $playerId;
             $event->cardId = $cardId;
+        }
+
+        return $event;
+    }
+
+    public static function createCardMovingEvent(int $initiatingPlayerId, int $cardId, string $fromLocation, string $toLocation, bool $engage = true, int $sourceId = 0): EventCardMoving
+    {
+        $event = self::createEvent(Events::CardMoving);
+        if ($event instanceof EventCardMoving)
+        {
+            $event->initiatingPlayerId = $initiatingPlayerId;
+            $event->cardId = $cardId;
+            $event->fromLocation = $fromLocation;
+            $event->toLocation = $toLocation;
+            $event->engage = $engage;
+            $event->sourceId = $sourceId;
         }
 
         return $event;

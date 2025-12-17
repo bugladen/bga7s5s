@@ -61,12 +61,8 @@ class Technique_01204 extends Technique
 
                 if ($character->Id == $event->adversaryId)
                 {
-                    $event->parry -= 2;
-                    if ($event->parry < 0)
-                    {
-                        $event->parry = 0;
-                    }
                     $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the Adversary's Parry by %d"), $attachment->getInjectCode(), 2);
+                    $event->removeParry(2);
                     $this->ReduceAdversaryParry = false;
                     $attachment->IsUpdated = true;
                 }

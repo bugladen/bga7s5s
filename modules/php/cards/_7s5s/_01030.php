@@ -26,6 +26,7 @@ class _01030 extends Risk implements IHasActions
         $this->Riposte = 1;
         $this->Parry = 2;
         $this->Thrust = 0;
+        $this->DashedThrust = true;
 
         $this->WealthCost = 0;
 

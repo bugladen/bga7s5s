@@ -24,6 +24,7 @@ class _01023 extends Risk implements IHasReactions
         $this->initializeFaction('Vodacce');
 
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 2;
         $this->Thrust = 3;
 

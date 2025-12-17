@@ -55,8 +55,8 @@ class _01116 extends Leader implements IHasReactions
 
         if ($event instanceof EventDuelCalculateCombatCardStats && $event->actorId == $this->Id)
         {
-            $event->thrust += 1;
             $event->explanations[] = sprintf($event->theah->game->translate("%s increases his own Thrust values by +1"), $this->getInjectCode());
+            $event->addThrust(1);
         }
     }
 

@@ -23,6 +23,7 @@ class _01174 extends Risk implements IHasActions, IAmARiskThatTargetsCharacters
         $this->CardNumber = 174;
 
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 1;
         $this->Thrust = 3;
 

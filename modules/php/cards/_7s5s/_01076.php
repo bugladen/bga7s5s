@@ -23,8 +23,10 @@ class _01076 extends Risk implements IHasActions
         
         $this->WealthCost = 0;
         $this->Riposte = 0;
+        $this->DashedRiposte = true;
         $this->Parry = 2;
         $this->Thrust = 0;
+        $this->DashedThrust = true;
 
         $this->Traits = [
             'Sorcery',

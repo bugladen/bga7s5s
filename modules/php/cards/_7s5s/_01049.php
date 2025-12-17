@@ -34,6 +34,7 @@ class _01049 extends FactionAttachment implements IHasActions, IHasTechniques
         $this->Riposte = 1;
         $this->Parry = 2;
         $this->Thrust = 0;
+        $this->DashedThrust = true;
 
         $this->Traits = [
             'Weapon',

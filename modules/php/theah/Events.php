@@ -89,6 +89,7 @@ class Events
     const AttachmentEquipped = 'EventAttachmentEquipped';
     const AttachmentUnequipped = 'EventAttachmentUnequipped';
     const AttachmentMoved = 'EventAttachmentMoved';
+    const CardMoving = 'EventCardMoving';
     const CardMoved = 'EventCardMoved';
     const CardDiscardedFromPlay = 'EventCardDiscardedFromPlay';
     const CardDrawn = 'EventCardDrawn';

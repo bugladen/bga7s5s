@@ -118,7 +118,7 @@ class _01126 extends Scheme
                 {
                     $deck->moveCard($card->Id, Game::LOCATION_PLAYER_HOME, $card->ControllerId);;
 
-                    $movedHome = EventFactory::createCardMovedEvent($this->ControllerId, $card->Id, $this->ChosenLocation, Game::LOCATION_PLAYER_HOME, false);
+                    $movedHome = EventFactory::createCardMovingEvent($this->ControllerId, $card->Id, $this->ChosenLocation, Game::LOCATION_PLAYER_HOME, false);
                     $event->theah->queueEvent($movedHome);
                 }
             }

@@ -30,6 +30,7 @@ class _01046 extends FactionAttachment implements IHasActions
         $this->WealthCost = 1;
         $this->Riposte = 3;
         $this->Parry = 0;
+        $this->DashedParry = true;
         $this->Thrust = 0;
 
         $this->Traits = [
