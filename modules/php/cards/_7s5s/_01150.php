@@ -6,13 +6,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class _01150 extends Scheme
 {
@@ -51,13 +49,7 @@ class _01150 extends Scheme
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
-            $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($reknown instanceof EventReknownAddedToLocation) {
-                $reknown->playerId = $this->ControllerId;
-                $reknown->location = Game::LOCATION_CITY_FORUM;
-                $reknown->amount = 1;
-                $reknown->description = $this->getInjectCode();
-            }
+            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
 
             $players = $game->loadPlayersBasicInfos();
@@ -137,7 +129,7 @@ class _01150 extends Scheme
             $removeEvent = EventFactory::createReknownRemovedFromLocationEvent($playerId, $location, 1, $playerName);
             $game->theah->eventCheck($removeEvent);
     
-            $addEvent = EventFactory::createReknownAddedToLocationEvent($playerId, Game::LOCATION_CITY_FORUM, 1, $playerName);
+            $addEvent = EventFactory::createReknownAddedToLocationEvent($playerId, Game::LOCATION_CITY_FORUM, 1, $playerName, $isMove = true);
             $game->theah->eventCheck($addEvent);
     
             $game->theah->queueEvent($removeEvent);

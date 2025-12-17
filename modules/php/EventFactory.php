@@ -890,7 +890,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createReknownAddedToLocationEvent(int $playerId, string $location, int $amount, string $description)
+    public static function createReknownAddedToLocationEvent(int $playerId, string $location, int $amount, string $description, bool $isMove = false)
     {
         $event = self::createEvent(Events::ReknownAddedToLocation);
         if ($event instanceof EventReknownAddedToLocation) 
@@ -899,6 +899,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->location = $location;
             $event->amount = $amount;
             $event->description = $description;
+            $event->isMove = $isMove;
         }
         return $event;
     }
