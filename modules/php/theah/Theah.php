@@ -1410,16 +1410,6 @@ class Theah
         return (int) $this->db->getUniqueValue($sql);
     }
 
-    public function getCurrentRoundRiposte(): int
-    {
-        $duelId = $this->game->globals->get(Game::DUEL_ID);
-        $round = $this->game->globals->get(Game::DUEL_ROUND);
-        $sql = "SELECT COALESCE(technique_riposte, 0) + COALESCE(maneuver_riposte, 0) + COALESCE(combat_riposte, 0) as total_riposte 
-                FROM duel_round 
-                WHERE duel_id = $duelId AND round = $round";
-        return (int) $this->db->getUniqueValue($sql);
-    }
-
     public function duelParticipantWoundsTaken(int $participantId) : int
     {
         $duelId = $this->game->globals->get(Game::DUEL_ID);

@@ -340,6 +340,15 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 this.payForCard(item_id);
             },
 
+
+            'highDramaPhase01064': () => {
+                if (this.factionHand.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
             'highDramaPhase01069': () => {
                 if (this.factionHand.getSelectedItems().length > 0) {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');
@@ -347,7 +356,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     dojo.addClass('actChooseDiscardCards', 'disabled');
                 }
             },
-
+            
             'highDramaPhase01091_2': () => {
                 if (this.factionHand.getSelectedItems().length > 0) {
                     dojo.removeClass('actFactionCardSelected', 'disabled');
