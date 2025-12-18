@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
@@ -244,10 +245,28 @@ class Theah
                 $this->game->gamestate->changeActivePlayer($event->playerId);
             }
 
-            if (! $debug && $event instanceof EventTransition) {                
-                if($event->getPlayerId()) {
+            if (! $debug && $event instanceof EventTransition) {              
+                
+                //If a reaction transition, make sure it is available.  
+                //This prevents multiple transition triggers of the same reaction from running.
+                if ($event->transition == "reaction") 
+                {
+                    $card = $this->getCardById($event->sourceId);
+                    if ($card && $card instanceof IHasReactions)
+                    {
+                        $reaction = $card->getReactionById($event->internalId);
+                        if ($reaction && ! $reaction->isAvailable())
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                if ($event->getPlayerId()) 
+                {
                     $this->game->gamestate->changeActivePlayer($event->getPlayerId());
                 }
+
                 $this->game->globals->set(Game::TRANSITION_SOURCE_ID, $event->sourceId);
                 $this->game->globals->set(Game::TRANSITION_INTERNAL_ID, $event->internalId);
 
