@@ -722,6 +722,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         $(`${args.playerId}-score-hand-count`).innerHTML = args.handCount;
 
+        if (args.playerId == this.player_id)
+        {
+            this.factionHand.removeFromStockById(card.id);
+        }
+
         card.location = this.LOCATION_PLAYER_DISCARD;
         const player = this.gamedatas.players[args.playerId];
         player.discard.push(card);
