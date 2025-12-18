@@ -58,37 +58,35 @@ class _01144 extends Scheme
             $game = $event->theah->game;
             list($playerIdWithLeastCharacters, $lowestCount) = $game->getPlayerControllingFewestCharacters();
 
-            if ($playerIdWithLeastCharacters != $this->ControllerId) 
+            if ($playerIdWithLeastCharacters == $this->ControllerId) 
             {
-                return;
+                $characters = $game->theah->getAllCards();
+                $characters = array_filter($characters, fn($card) => $card instanceof Character && ! $card->isControlled() && $game->theah->cardInCity($card));
+                if (count($characters) == 0)
+                {
+                    return;
+                }
+    
+                $players = $game->loadPlayersBasicInfos();
+    
+                // Get the higest stat for the player's leader
+                $leader = $event->theah->getLeaderByPlayerId($this->ControllerId);
+                $discount = max($leader->ModifiedCombat, $leader->ModifiedFinesse, $leader->ModifiedInfluence);
+    
+                //Set the discount for recruiting a mercenary.
+                $game->globals->set(Game::DISCOUNT, $discount);
+    
+                $game->notify->all("message", clienttranslate('${scheme_inject_code} Leader Reaction: ${player_name} has the least (non-tied) amount of characters in play (${amount}).
+                They may now Recruit a mercenary at a discount of their Leader\'s highest stat.'), [
+                    "scheme_inject_code" => $this->getInjectCode(),
+                    "amount" => $lowestCount,
+                    "player_name" => $players[$this->ControllerId]['player_name'],
+                ]);
+    
+                //Transition to the state where player can choose a mercenary to recruit.
+                $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, '01144');
+                $event->theah->queueEvent($transition);
             }
-
-            $characters = $game->theah->getAllCards();
-            $characters = array_filter($characters, fn($card) => $card instanceof Character && ! $card->isControlled() && $game->theah->cardInCity($card));
-            if (count($characters) == 0)
-            {
-                return;
-            }
-
-            $players = $game->loadPlayersBasicInfos();
-
-            // Get the higest stat for the player's leader
-            $leader = $event->theah->getLeaderByPlayerId($this->ControllerId);
-            $discount = max($leader->ModifiedCombat, $leader->ModifiedFinesse, $leader->ModifiedInfluence);
-
-            //Set the discount for recruiting a mercenary.
-            $game->globals->set(Game::DISCOUNT, $discount);
-
-            $game->notify->all("message", clienttranslate('${scheme_inject_code} Leader Reaction: ${player_name} has the least (non-tied) amount of characters in play (${amount}).
-            They may now Recruit a mercenary at a discount of their Leader\'s highest stat.'), [
-                "scheme_inject_code" => $this->getInjectCode(),
-                "amount" => $lowestCount,
-                "player_name" => $players[$this->ControllerId]['player_name'],
-            ]);
-
-            //Transition to the state where player can choose a mercenary to recruit.
-            $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, '01144');
-            $event->theah->queueEvent($transition);
         }
     }
 
