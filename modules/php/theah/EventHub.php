@@ -78,6 +78,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontrolled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventThreatModified;
@@ -843,6 +844,34 @@ trait EventHub
                         "playerId" => $event->playerId,
                         "location" => $event->location,
                     ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventPressureOccuring:
+                $handler = function (Theah $theah, EventPressureOccuring $event)
+                {
+                    $pressureTypes = implode(", ", $event->pressureTypes);
+                    if ($event->performerId != 0)
+                    {
+                        $performer = $theah->getCharacterById($event->performerId);
+                        $theah->game->notify->all("message", clienttranslate('${player_name} is Pressuring ${location} with ${performer_inject_code} using ${pressureTypes}.'), [
+                            'i18n' => ['location'],
+                            "player_name" => $this->game->getPlayerNameById($event->playerId),
+                            "performer_inject_code" => $performer->getInjectCode(),
+                            "location" => $event->location,
+                            "pressureTypes" => $pressureTypes,
+                        ]);
+                    }
+                    else
+                    {
+                        $theah->game->notify->all("message", clienttranslate('${player_name} is Pressuring ${location} using ${pressureTypes}.'), [
+                            'i18n' => ['location'],
+                            "player_name" => $this->game->getPlayerNameById($event->playerId),
+                            "location" => $event->location,
+                            "pressureTypes" => $pressureTypes,
+                        ]);
+                    }
                 };
                 $handler($this, $event);
                 break;

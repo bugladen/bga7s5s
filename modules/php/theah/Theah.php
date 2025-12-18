@@ -538,7 +538,7 @@ class Theah
     {
         $count = 0;
         foreach ($this->cards as $card) {
-            if ($card instanceof Character && $card->ControllerId == $playerId && (! $card->hasTrait("Brute") || $includeBrutes)) {
+            if ($card instanceof Character && $this->cardInPlay($card) && $card->ControllerId == $playerId && (! $card->hasTrait("Brute") || $includeBrutes)) {
                 $count++;
             }
         }
@@ -1037,6 +1037,11 @@ class Theah
         }
 
         return false;
+    }
+
+    function cardInPlay(Card $card): bool
+    {
+        return $this->cardInCity($card) || $card->Location == Game::LOCATION_PLAYER_HOME;
     }
 
     function cardInCity(Card $card): bool

@@ -48,6 +48,11 @@ class Action_01011 extends CharacterAction
             return false;
         }
 
+        if (! $theah->cardInCity($servo))
+        {
+            return false;
+        }
+
         $adjacentLocations = $theah->getAdjacentCityLocations($servo->Location, $includeHome = false);
         $thugs = $theah->getCharactersInCityWithOpposingCharacters($playerId);
         $thugs = array_values(array_filter($thugs, fn($character) => $character->hasTrait("Red Hand") && in_array($character->Location, $adjacentLocations)));
