@@ -223,7 +223,7 @@ class Action_01106 extends RiskAction
     
             if ($action->RequiresPerformerSelected)
             {
-                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01106_performer", $this->Id);
+                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "inHandActionChoosePerformer", $this->Id);
                 $game->theah->queueEvent($transition);
             }
             else
@@ -231,7 +231,7 @@ class Action_01106 extends RiskAction
                 $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $riskCard->Id, Game::PAY_STATE_IN_HAND_ACTION, $newActionId);
                 $game->theah->queueEvent($event);
 
-                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01106_pay", $this->Id);        
+                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "inHandActionPay", $this->Id);        
                 $game->theah->queueEvent($transition);
 
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

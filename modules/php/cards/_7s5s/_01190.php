@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01190 extends CityCharacter
 {
@@ -45,9 +46,9 @@ class _01190 extends CityCharacter
         return false;
     }
 
-    public function addAttachment(Attachment $attachment)
+    public function addAttachment(Theah $theah, Attachment $attachment)
     {
-        parent::addAttachment($attachment);
+        parent::addAttachment($theah, $attachment);
 
         //Reset combat stat back to original if greater than original
         if ($this->ModifiedCombat > $this->Combat) 

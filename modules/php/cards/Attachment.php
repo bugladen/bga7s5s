@@ -14,6 +14,16 @@ abstract class Attachment extends Card implements IWealthCost
     public int $FinesseModifier;
     public int $InfluenceModifier;
 
+    public bool $ResolveLocked = false;
+    public bool $CombatLocked = false;
+    public bool $FinesseLocked = false;
+    public bool $InfluenceLocked = false;
+
+    public int $ResolveLockedValue = 0;
+    public int $CombatLockedValue = 0;
+    public int $FinesseLockedValue = 0;
+    public int $InfluenceLockedValue = 0;
+
     public int $AttachedToId;
 
     public bool $ShowStatModifiers = true;

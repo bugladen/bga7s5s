@@ -137,7 +137,7 @@ trait EventHub
                     //Attachments might not be in the world (came from the City Deck, or created by an action), add it to the world
                     $theah->addCardToWorld($attachment);
 
-                    $performer->addAttachment($attachment);
+                    $performer->addAttachment($theah, $attachment);
                     $modifiedResolve = $performer->ModifiedResolve;
                     $modifiedCombat = $performer->ModifiedCombat;
                     $modifiedFinesse = $performer->ModifiedFinesse;
@@ -190,7 +190,7 @@ trait EventHub
                     $attachment->IsUpdated = true;
 
                     $character = $theah->getCharacterById($event->fromCharacterId);
-                    $character->removeAttachment($attachment);
+                    $character->removeAttachment($theah, $attachment);
                     $modifiedResolve = $character->ModifiedResolve;
                     $modifiedCombat = $character->ModifiedCombat;
                     $modifiedFinesse = $character->ModifiedFinesse;
@@ -219,7 +219,7 @@ trait EventHub
                     }
 
                     $performer = $theah->getCharacterById($event->toCharacterId);
-                    $performer->addAttachment($attachment);
+                    $performer->addAttachment($theah, $attachment);
                     $modifiedResolve = $performer->ModifiedResolve;
                     $modifiedCombat = $performer->ModifiedCombat;
                     $modifiedFinesse = $performer->ModifiedFinesse;
@@ -232,7 +232,7 @@ trait EventHub
                 
                     // Notify players of attachment equipped
                     $message = clienttranslate('${player_name} moved ${attachment_inject_code} from ${from_character_code} to ${to_character_code}.');
-                    $theah->game->notifyAllPlayers("attachmentEquipped", $message, [
+                    $theah->game->notify->all("attachmentEquipped", $message, [
                         "player_id" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "attachment_inject_code" => $attachment->getInjectCode(),
@@ -257,7 +257,7 @@ trait EventHub
                     $attachment->IsUpdated = true;
 
                     $character = $theah->getCharacterById($event->characterId);
-                    $character->removeAttachment($attachment);
+                    $character->removeAttachment($theah, $attachment);
                     $modifiedResolve = $character->ModifiedResolve;
                     $modifiedCombat = $character->ModifiedCombat;
                     $modifiedFinesse = $character->ModifiedFinesse;

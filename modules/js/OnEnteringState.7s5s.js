@@ -1758,6 +1758,26 @@
                 }
             },
 
+            'highDramaPhase01154': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Risks in ${opponentName}'s Discard Pile"),
+                        {
+                            opponentName: args.args.args.opponentName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
             'highDramaPhase01156': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

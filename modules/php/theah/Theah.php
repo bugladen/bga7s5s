@@ -1470,13 +1470,13 @@ class Theah
         return $availableAttachments;
     }
 
-    public function sorceryRisksAvailableFromDiscardPile(Character $performer): array
+    public function risksAvailableFromDiscardPile(Character $performer): array
     {
         $handWealth = $this->game->handWealthCount($performer->ControllerId);
 
         $discardPileName = $this->game->getPlayerDiscardDeckName($performer->ControllerId);
         $cards = $this->getCardObjectsAtLocation($discardPileName);
-        $cards = array_filter($cards, fn($card) => $card instanceof Risk && $card->hasTrait("Sorcery"));
+        $cards = array_filter($cards, fn($card) => $card instanceof Risk);
 
         $availableRisks = [];
         foreach ($cards as $card)

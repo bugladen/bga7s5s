@@ -127,18 +127,48 @@ abstract class Character extends Card implements IHasTechniques
         return $this->ModifiedResolve;
     }
 
-    public function addAttachment(Attachment $attachment)
+    public function setLockedValues(Theah $theah)
+    {
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getAttachmentById($attachmentId);
+            if (! $attachment)
+                continue;
+
+            if ($attachment->ResolveLocked)
+            {
+                $this->ModifiedResolve = $attachment->ResolveLockedValue;
+            }
+            if ($attachment->CombatLocked)
+            {
+                $this->ModifiedCombat = $attachment->CombatLockedValue;
+            }
+            if ($attachment->FinesseLocked)
+            {
+                $this->ModifiedFinesse = $attachment->FinesseLockedValue;
+            }
+            if ($attachment->InfluenceLocked)
+            {
+                $this->ModifiedInfluence = $attachment->InfluenceLockedValue;
+            }
+        }
+
+    }
+
+    public function addAttachment(Theah $theah, Attachment $attachment)
     {
         $this->ModifiedResolve += $attachment->ResolveModifier;
         $this->ModifiedCombat += $attachment->CombatModifier;
         $this->ModifiedFinesse += $attachment->FinesseModifier;
         $this->ModifiedInfluence += $attachment->InfluenceModifier;
 
+        $this->setLockedValues($theah);
+
         $this->Attachments[] = $attachment->Id;
         $this->IsUpdated = true;
     }
 
-    public function removeAttachment(Attachment $attachment)
+    public function removeAttachment(Theah $theah, Attachment $attachment)
     {
         $index = array_search($attachment->Id, $this->Attachments);
         if ($index !== false) {
@@ -146,6 +176,8 @@ abstract class Character extends Card implements IHasTechniques
             $this->ModifiedCombat -= $attachment->CombatModifier;
             $this->ModifiedFinesse -= $attachment->FinesseModifier;
             $this->ModifiedInfluence -= $attachment->InfluenceModifier;
+
+            $this->setLockedValues($theah);
 
             unset($this->Attachments[$index]);
             $this->Attachments = array_values($this->Attachments);
