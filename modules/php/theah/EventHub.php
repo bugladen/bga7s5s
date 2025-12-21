@@ -73,6 +73,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontrolled;
@@ -1682,6 +1683,27 @@ trait EventHub
                         "challengerId" => $event->challengerId,
                         "defenderId" => $event->targetId,
                     ]);                       
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCharacterWounded:
+                $handler = function ($theah, EventCharacterWounded $event)
+                {
+                    $inDuel = $theah->game->globals->get(Game::IN_DUEL);
+                    if ($inDuel)
+                    {
+                        $character = $theah->getCardById($event->characterId);
+                        $actor = $theah->getDuelRoundActor();
+                        if ($character->Id == $actor->Id)
+                        {
+                            $serialized = addslashes(serialize($character));
+                            $duelId = $theah->game->globals->get(Game::DUEL_ID);
+                            $round = $theah->game->globals->get(Game::DUEL_ROUND);
+                            $sql = "UPDATE duel_round set actor_serialized = '$serialized' where duel_id = $duelId and round = $round";
+                            $theah->game->DbQuery($sql);
+                        }
+                    }
                 };
                 $handler($this, $event);
                 break;
