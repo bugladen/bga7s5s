@@ -3,10 +3,9 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
-use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 
 class Technique_01123 extends Technique
 {
@@ -16,20 +15,15 @@ class Technique_01123 extends Technique
         $this->Name = clienttranslate("+1 Thrust or +1 Riposte");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
-    {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
-        {
-            return false;
-        }
-        
-        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
-        return $inDuel;
-    }
-
     public function handleEvent(Event $event)
     { 
         parent::handleEvent($event);
+
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
+        {
+            $event->adversaryThreat += 1;
+            $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds 1 Threat."), $this->Name);
+        }
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
