@@ -1487,4 +1487,55 @@ class Theah
         return array_values($availableRisks);
     }
 
+    public function calculateInHandPayDiscount(int $playerId, int $payStateType, int $cardId, string $internalId)
+    {
+        $discount = 0;
+        $explanations = '';
+
+        if ($payStateType == Game::PAY_STATE_IN_HAND_ACTION)
+        {
+            $actionId = $this->game->globals->get(GAME::CHOSEN_ACTION);
+            $action = $this->getInHandActionById($actionId);
+            $performer = null;
+            if ($action->RequiresPerformerSelected)
+            {
+                $performerId = $this->game->globals->get(Game::CHOSEN_PERFORMER);
+                $performer = $this->getCharacterById($performerId);
+            }
+
+            [$discount, $explanations] = $this->getActionFromHandDiscount($performer, $action);           
+        }
+
+        if ($payStateType == Game::PAY_STATE_IN_HAND_REACTION)
+        {
+            $card = $this->getCardById($cardId);
+            $reaction = $card->getReactionById($internalId);
+            [$discount, $explanations] = $this->getReactionFromHandDiscount($reaction);
+        }
+
+        if ($payStateType == Game::PAY_STATE_EQUIP_ATTACHMENT)
+        {
+            $performerId = $this->game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $this->getCharacterById($performerId);
+            $attachment = $this->getAttachmentById($cardId);
+
+            [$discount, $explanations] = $this->getEquipDiscount($performer, $attachment);
+        }
+
+        if ($payStateType == Game::PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD)
+        {
+            $combatCard = $this->getCardById($cardId);
+            [$discount, $explanations] = $this->getManeuverFromCombatCardDiscount($combatCard);
+        }
+
+        if ($discount != 0)
+        $this->game->notify->player($playerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
+            "explanations" => $explanations,
+        ]);
+
+        $this->game->globals->set(Game::DISCOUNT, $discount);
+        $this->game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+
+        return [$discount, $explanations];
+    }
 }

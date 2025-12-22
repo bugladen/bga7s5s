@@ -19,18 +19,16 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01116b extends CardReaction
 {
-    private bool $IsActive;
-    private int $PayStateType;
+    private bool $IsActive = false;
+    private int $PayStateType = 0;
     private int $CardId = 0;
+    private string $InternalId = '';
 
     public function __construct()
     {
         parent::__construct();
 
         $this->Name = "Receive a Discount of -1 when paying for non-Character cards";
-        $this->IsActive = false;
-        $this->PayStateType = 0;
-        $this->CardId = 0;
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -62,6 +60,7 @@ class Reaction_01116b extends CardReaction
                 {
                     $this->PayStateType = $event->payStateType;
                     $this->CardId = $event->cardId;
+                    $this->InternalId = $event->internalId;
                     $owner = $this->getOwningCard($event->theah);
                     $owner->IsUpdated = true;
 
@@ -93,6 +92,8 @@ class Reaction_01116b extends CardReaction
 
             $this->setUsed($game->theah, true);
             $game->theah->addCardToWorld($owner);
+
+            [$discount, $explanations] = $game->theah->calculateInHandPayDiscount($owner->ControllerId, $this->PayStateType, $this->CardId, $this->InternalId);
         }
 
         $game->gamestate->nextState("done");
