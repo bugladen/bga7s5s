@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -70,22 +71,12 @@ class Reaction_01116b extends CardReaction
             }
         }
 
-        if ($event instanceof EventPlayerTurnEnd && $this->IsActive)
+        if (($event instanceof EventPlayerTurnEnd || $event instanceof EventActionResolved || $event instanceof EventDuelEndOfRound) && $this->IsActive)
         {
-            $yevgeni = $this->getOwningCharacter($event->theah);
             $this->IsActive = false;
             $this->CardId = 0;
             $this->PayStateType = 0;
-            $yevgeni->IsUpdated = true;        
-        }
-
-        if ($event instanceof EventActionResolved && $this->IsActive)
-        {
-            $yevgeni = $this->getOwningCharacter($event->theah);
-            $this->IsActive = false;
-            $this->CardId = 0;
-            $this->PayStateType = 0;
-            $yevgeni->IsUpdated = true;
+            $owner->IsUpdated = true;        
         }
     }
 
