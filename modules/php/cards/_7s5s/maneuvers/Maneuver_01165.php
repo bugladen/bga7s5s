@@ -132,7 +132,8 @@ class Maneuver_01165 extends Maneuver
             $actor = $game->theah->getDuelRoundActor();
             $technique = $game->theah->getTechniqueById($id);
             $copy = clone $technique;
-            $copy->setOwnerId($actor->Id);
+            $techniqueOwner = $technique->getOwningCard($game->theah);
+            $copy->setOwnerId($techniqueOwner->Id);
 
             if ($actor instanceof IHasTechniques) $actor->addTechnique($copy, $game);
 
@@ -159,9 +160,7 @@ class Maneuver_01165 extends Maneuver
             $game->theah->eventCheck($threatEvent);
             $game->theah->queueEvent($threatEvent);
 
-            //Going to call this manually as we are not going to use the normal flow.
-            //This will call the next state, which is the one we want.
-            $game->stApplyCombatCardStats();
+            $game->gamestate->nextState();
         }
     }
 
