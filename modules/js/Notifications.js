@@ -104,7 +104,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.notifqueue.setIgnoreNotificationCheck( 'crystalEyeTargetMessage', (notif) => (this.player_id == notif.args.targetplayerId || this.player_id == notif.args.choosingPlayerId) );
     },  
 
-    notif_playLeader: function( notif )
+    notif_playLeader: async function( notif )
     {
         debug( 'notif_playLeader' );
         debug( notif );
@@ -121,6 +121,20 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const target = this.getTargetElementForLocation(this.LOCATION_PLAYER_HOME, args.player_id);
         const cardId = this.createCardId(args.leader, this.LOCATION_PLAYER_HOME);
         this.createCard(cardId, args.leader, target);
+
+        // Animate the card growing from nothing to full size with a pulse
+        const cardImage = $(`${cardId}_image`);
+        if (cardImage && this.animationManager) {
+            cardImage.style.transition = 'none';
+            await cardImage.animate([
+                { transform: 'scale(0)', opacity: 0 },
+                { transform: 'scale(1.1)', opacity: 1 },
+                { transform: 'scale(1)', opacity: 1 }
+            ], {
+                duration: 500,
+                easing: 'ease-out'
+            }).finished;
+        }
 
         // Update the player panel
         dojo.addClass( `overall_player_board_${args.player_id}`, `_7sfs-home-${args.leader.faction.toLowerCase()}` );
