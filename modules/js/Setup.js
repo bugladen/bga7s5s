@@ -233,11 +233,13 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.displayLocationControlChip(this.LOCATION_CITY_GOVERNORS_GARDEN);
         }
 
-        // Create Approach deck
+        // Create Approach deck (1.5x scaled)
+        const approachDeckCardWidth = Math.round(this.wholeCardWidth * 1.5);
+        const approachDeckCardHeight = Math.round(this.wholeCardHeight * 1.5);
         this.approachDeck = new ebg.stock();
-        this.approachDeck.create( this, $('approachDeck'), this.wholeCardWidth, this.wholeCardHeight ); 
+        this.approachDeck.create( this, $('approachDeck'), approachDeckCardWidth, approachDeckCardHeight ); 
         this.approachDeck.image_items_per_row = 0;
-        this.approachDeck.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
+        this.approachDeck.resizeItems(approachDeckCardWidth, approachDeckCardHeight, approachDeckCardWidth, approachDeckCardHeight);
         this.approachDeck.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
         this.approachDeck.setSelectionAppearance( 'class' )
         dojo.connect( this.approachDeck, 'onChangeSelection', this, 'onApproachCardClicked' );
