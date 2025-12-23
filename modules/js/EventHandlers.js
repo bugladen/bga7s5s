@@ -220,15 +220,26 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
     onFactionCardClicked: function( control_name, item_id )
     {
+        // Global check: prevent selecting cards with _7sfs-unselectable class
+        if (item_id !== undefined) {
+            const card = this.factionHand.getCards().find(c => c.id === item_id);
+            if (card) {
+                const cardElement = this.factionHand.getCardElement(card);
+                if (cardElement && dojo.hasClass(cardElement, '_7sfs-unselectable')) {
+                    this.factionHand.unselectCard(card);
+                    return;
+                }
+            }
+        }
+
         const methods = {
 
             'highDramaBeginning_01144_2': () => {
-                var items = this.factionHand.getSelectedItems();
+                var items = this.factionHand.getSelection();
                 let wealth = 0;
                 items.forEach((item) => {
-                    const card = this.cardProperties[item.type];
-                    wealth += card.traits.includes('Wealth') ? 2 : 1;
-                    
+                    // With bga-cards, getSelection() returns card objects directly
+                    wealth += item.traits.includes('Wealth') ? 2 : 1;
                 });
 
                 var translated = dojo.string.substitute(
@@ -241,12 +252,11 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaPhase01180_5': () => {
-                var items = this.factionHand.getSelectedItems();
+                var items = this.factionHand.getSelection();
                 let wealth = 0;
                 items.forEach((item) => {
-                    const card = this.cardProperties[item.type];
-                    wealth += card.traits.includes('Wealth') ? 2 : 1;
-                    
+                    // With bga-cards, getSelection() returns card objects directly
+                    wealth += item.traits.includes('Wealth') ? 2 : 1;
                 });
 
                 var translated = dojo.string.substitute(
@@ -259,12 +269,11 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaRecruitActionPayForMercenary': () => {
-                var items = this.factionHand.getSelectedItems();
+                var items = this.factionHand.getSelection();
                 let wealth = 0;
                 items.forEach((item) => {
-                    const card = this.cardProperties[item.type];
-                    wealth += card.traits.includes('Wealth') ? 2 : 1;
-                    
+                    // With bga-cards, getSelection() returns card objects directly
+                    wealth += item.traits.includes('Wealth') ? 2 : 1;
                 });
                 var translated = dojo.string.substitute(
                     _("(${wealth} Wealth worth of cards selected)"),
@@ -276,16 +285,18 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaEquipActionChooseAttachmentFromHand': () => {
-                var items = this.factionHand.getSelectedItems();
+                var items = this.factionHand.getSelection();
                 items.forEach((item) => {
-                    this.factionHand.unselectItem(item.id);
+                    this.factionHand.unselectCard(item);
                 });                
-                const type = this.cardProperties[item_id]?.type;
-                if (type == 'Attachment')
-                    this.factionHand.selectItem(item_id);
+                const cardProps = this.cardProperties[item_id];
+                if (cardProps?.type == 'Attachment') {
+                    const card = this.factionHand.getCards().find(c => c.id === item_id);
+                    if (card) this.factionHand.selectCard(card);
+                }
 
                 // Enable the confirm button if we have a card selected
-                items = this.factionHand.getSelectedItems();
+                items = this.factionHand.getSelection();
                 if (items.length === 1) {
                     dojo.removeClass('actFactionCardsSelected', 'disabled');
                 } else {
@@ -298,12 +309,11 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaEquipActionPayForAttachmentFromPlay': () => {
-                var items = this.factionHand.getSelectedItems();
+                var items = this.factionHand.getSelection();
                 let wealth = 0;
                 items.forEach((item) => {
-                    const card = this.cardProperties[item.type];
-                    wealth += card.traits.includes('Wealth') ? 2 : 1;
-                    
+                    // With bga-cards, getSelection() returns card objects directly
+                    wealth += item.traits.includes('Wealth') ? 2 : 1;
                 });
                 var translated = dojo.string.substitute(
                     _("(${wealth} Wealth worth of cards selected)"),
@@ -319,16 +329,18 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaBruteActionChooseBrute': () => {
-                var items = this.factionHand.getSelectedItems();
+                var items = this.factionHand.getSelection();
                 items.forEach((item) => {
-                    this.factionHand.unselectItem(item.id);
+                    this.factionHand.unselectCard(item);
                 });                
-                const type = this.cardProperties[item_id]?.type;
-                if (type == 'Character' && this.cardProperties[item_id].traits.includes('Brute'))
-                    this.factionHand.selectItem(item_id);
+                const cardProps = this.cardProperties[item_id];
+                if (cardProps?.type == 'Character' && cardProps.traits.includes('Brute')) {
+                    const card = this.factionHand.getCards().find(c => c.id === item_id);
+                    if (card) this.factionHand.selectCard(card);
+                }
 
                 // Enable the confirm button if we have a card selected
-                items = this.factionHand.getSelectedItems();
+                items = this.factionHand.getSelection();
                 if (items.length === 1) {
                     dojo.removeClass('actFactionCardsSelected', 'disabled');
                 } else {
@@ -341,7 +353,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaPhase01069': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCards', 'disabled');
@@ -349,7 +361,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaPhase01091_2': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actFactionCardSelected', 'disabled');
                 } else {
                     dojo.addClass('actFactionCardSelected', 'disabled');
@@ -357,7 +369,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaPhase01102': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCard', 'disabled');
@@ -369,7 +381,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaPhase01148_3': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actFactionCardSelected', 'disabled');
                 } else {
                     dojo.addClass('actFactionCardSelected', 'disabled');
@@ -377,7 +389,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaPhase01156': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCards', 'disabled');
@@ -385,7 +397,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaPhase01158': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCard', 'disabled');
@@ -393,7 +405,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaPhase01185': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCards', 'disabled');
@@ -404,7 +416,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 if (!$('btnCombatCard'))
                     return;
                 
-                const items = this.factionHand.getSelectedItems();
+                const items = this.factionHand.getSelection();
                 if (items.length === 1) {
                     dojo.removeClass('btnCombatCard', 'disabled');
                 } else {
@@ -417,7 +429,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duelResolveManeuver_01108': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCard', 'disabled');
@@ -429,7 +441,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duelResolveManeuver_01115': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCard', 'disabled');
@@ -437,7 +449,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duelChooseTechnique_01093': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCard', 'disabled');
@@ -445,7 +457,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duskPhaseDiscard': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCards', 'disabled');
@@ -614,17 +626,11 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
     payForCard: function(item_id)
     {
-        var items = this.factionHand.getSelectedItems();
+        var items = this.factionHand.getSelection();
         let wealth = 0;
-        const div = this.factionHand.getItemDivId(item_id);                
-        if (item_id !== undefined && dojo.hasClass(div, '_7sfs-unselectable')) {
-            this.factionHand.unselectItem(item_id);
-            return;
-        }
         items.forEach((item) => {
-            const card = this.cardProperties[item.type];
-            wealth += card.traits.includes('Wealth') ? 2 : 1;
-            
+            // With bga-cards, getSelection() returns card objects directly
+            wealth += item.traits.includes('Wealth') ? 2 : 1;
         });
         var translated = dojo.string.substitute(
             _("(${wealth} Wealth worth of cards selected)"),

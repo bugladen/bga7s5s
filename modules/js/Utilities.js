@@ -49,14 +49,71 @@ return declare('seventhseacityoffivesails.utilities', null, {
         if (!this.cardProperties[card.id])
             this.cardProperties[card.id] = card;
 
-        //Different weight depending on the type. Scheme and attachment cards go first
-        const weight = card.type === "Scheme" || card.type === 'Attachment' ? 1 : 2;
+        // Check if using bga-cards (HandStock/CardStock) or legacy ebg.stock
+        if (typeof deck.addCard === 'function') {
+            // bga-cards HandStock/CardStock
+            deck.addCard(card);
+            
+            // Apply styling if this is the factionHand
+            if (deck === this.factionHand) {
+                this.applyFactionHandCardStyle(card);
+            }
+        } else {
+            // Legacy ebg.stock
+            const weight = card.type === "Scheme" || card.type === 'Attachment' ? 1 : 2;
+            deck.addItemType(card.id, weight, g_gamethemeurl + card.image, 0);
+            deck.addToStockWithId(card.id, card.id);
+        }
+    },
 
-        //Each card is a different image, so would be considered a different type for the stock object
-        deck.addItemType(card.id, weight, g_gamethemeurl + card.image, 0);
+    // Helper to remove card (for compatibility)
+    removeCardFromDeck: function( deck, cardOrId )
+    {
+        const cardId = typeof cardOrId === 'object' ? cardOrId.id : cardOrId;
+        
+        if (typeof deck.removeCard === 'function') {
+            // bga-cards
+            const card = this.cardProperties[cardId];
+            if (card) deck.removeCard(card);
+        } else {
+            // Legacy ebg.stock
+            deck.removeFromStockById(cardId);
+        }
+    },
 
-        // Type and id are the same for the approach deck stock object
-        deck.addToStockWithId(card.id, card.id);
+    // Apply styling to a faction hand card (since bga-cards setupDiv callback doesn't work)
+    applyFactionHandCardStyle: function(card)
+    {
+        const cardElement = this.factionHand.getCardElement(card);
+        if (!cardElement) {
+            console.warn('Could not find card element for', card.id);
+            return;
+        }
+        
+        // Store reference
+        this.cardProperties[card.id].divId = cardElement.id;
+        
+        // Apply dimensions (1.5x scale for floating hand)
+        const scaledWidth = Math.round(this.wholeCardWidth * 1.5);
+        const scaledHeight = Math.round(this.wholeCardHeight * 1.5);
+        
+        cardElement.style.width = `${scaledWidth}px`;
+        cardElement.style.height = `${scaledHeight}px`;
+        
+        // Set CSS variables
+        cardElement.style.setProperty('--bga-cards_card-width', `${scaledWidth}px`);
+        cardElement.style.setProperty('--bga-cards_card-height', `${scaledHeight}px`);
+        
+        // Find and style the front face
+        const frontDiv = cardElement.querySelector('.bga-cards_card-side.front');
+        if (frontDiv) {
+            frontDiv.style.backgroundImage = `url('${g_gamethemeurl}${card.image}')`;
+            frontDiv.style.backgroundSize = 'cover';
+            frontDiv.style.borderRadius = '4px';
+            
+            // Add tooltip
+            this.addTooltipHtml(frontDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+        }
     },
 
     createHome: function( playerId, playerColor, leader )
@@ -802,7 +859,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     showApproachDeckAtTop: () => {
-        dojo.place('approachDeck-container', 'factionHand-container', 'before');
+        dojo.place('approachDeck-container', 'city', 'before');
     },
 
     showApproachDeckAtBottom: () => {

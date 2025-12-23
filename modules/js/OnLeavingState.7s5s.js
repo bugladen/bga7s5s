@@ -176,7 +176,7 @@
             'highDramaBeginning_01144_2': () => {
                 this.unhighlightCharacterChosen(this.clientStateArgs.mercenaryId);
                 
-                this.factionHand.setSelectionMode(0);
+                this.factionHand.setSelectionMode('none');
                 this.clientStateArgs = {};
                 $('faction_hand_info').innerHTML = '';
             },
@@ -591,7 +591,7 @@
             'highDramaPhase01069': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                     $('faction_hand_info').innerHTML = '';
 
                     card = this.cardProperties[this.clientStateArgs.performerId];
@@ -739,7 +739,7 @@
                     this.unhighlightCards(this.clientStateArgs.ids);
                     this.clientStateArgs = {};
 
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                 }
             },
 
@@ -773,7 +773,7 @@
             'highDramaPhase01102': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                 }
             },
 
@@ -829,14 +829,14 @@
                     dojo.addClass('chooseList', 'hidden');
                     this.chooseList.removeAll();
     
-                    this.factionHand.getAllItems().forEach((card, index) => {
-                        let div = this.factionHand.getItemDivId(card.id);
-                        if (dojo.hasClass(div, '_7sfs-unselectable')) {
-                            dojo.removeClass(div, '_7sfs-unselectable');
-                            dojo.destroy(`${div}_wealth_cost`);
+                    this.factionHand.getCards().forEach((card, index) => {
+                        const cardElement = this.factionHand.getCardElement(card);
+                        if (cardElement && dojo.hasClass(cardElement, '_7sfs-unselectable')) {
+                            dojo.removeClass(cardElement, '_7sfs-unselectable');
+                            dojo.destroy(`${cardElement.id}_wealth_cost`);
                         }
                     });
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                     $('faction_hand_info').innerHTML = '';
                 }
             },
@@ -988,7 +988,7 @@
                         dojo.removeClass(targetImage, '_7sfs-chosen');
                     }
 
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                 }
             },
             'highDramaPhase01148_4': () => {
@@ -1009,7 +1009,7 @@
                         dojo.removeClass(targetImage, '_7sfs-chosen');
                     }
 
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                 }
             },
     
@@ -1059,7 +1059,7 @@
             'highDramaPhase01156': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                     $('faction_hand_info').innerHTML = '';
 
                     card = this.cardProperties[this.clientStateArgs.performerId];
@@ -1095,7 +1095,7 @@
             'highDramaPhase01158': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                 }
             },
 
@@ -1145,7 +1145,7 @@
                     this.chooseList.removeAll();
                     this.chooseList.setSelectionMode(0);
 
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
 
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
                 }
@@ -1214,7 +1214,7 @@
                     this.chooseList.removeAll();
                     this.chooseList.setSelectionMode(0);
     
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                     for( const cardId in this.cardProperties ) {
                         card = this.cardProperties[cardId];
                         if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
@@ -1228,7 +1228,7 @@
             'highDramaPhase01185': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                     $('faction_hand_info').innerHTML = '';
 
                     card = this.cardProperties[this.clientStateArgs.id];
@@ -1413,7 +1413,7 @@
             'duelChooseTechnique_01093': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                 }
             },
 
@@ -1454,7 +1454,7 @@
             'duelResolveManeuver_01108': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                 }
             },
 
@@ -1465,14 +1465,14 @@
                     dojo.addClass('chooseList', 'hidden');
                     this.chooseList.removeAll();
     
-                    this.factionHand.getAllItems().forEach((card, index) => {
-                        let div = this.factionHand.getItemDivId(card.id);
-                        if (dojo.hasClass(div, '_7sfs-unselectable')) {
-                            dojo.removeClass(div, '_7sfs-unselectable');
-                            dojo.destroy(`${div}_wealth_cost`);
+                    this.factionHand.getCards().forEach((card, index) => {
+                        const cardElement = this.factionHand.getCardElement(card);
+                        if (cardElement && dojo.hasClass(cardElement, '_7sfs-unselectable')) {
+                            dojo.removeClass(cardElement, '_7sfs-unselectable');
+                            dojo.destroy(`${cardElement.id}_wealth_cost`);
                         }
                     });
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                     $('faction_hand_info').innerHTML = '';
                 }
             },
@@ -1480,7 +1480,7 @@
             'duelResolveManeuver_01115': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                 }
             },
 

@@ -21,6 +21,7 @@ define([
    "ebg/counter",
    "ebg/stock",
    getLibUrl('bga-animations', '1.x'),
+   getLibUrl('bga-cards', '1.x'),
    g_gamethemeurl + 'modules/js/OnEnteringState.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.7s5s.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.js',
@@ -33,10 +34,16 @@ define([
    g_gamethemeurl + 'modules/js/EventHandlers.js',
    g_gamethemeurl + 'modules/js/PlayerActions.js',
 ],
-function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations)
+function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCards)
 {
     // Define isDebug and debug globally so all modules can access them
     window.isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
+    
+    // Store bga-cards classes globally
+    // The library exports CardManager as 'Manager' and HandStock directly
+    window.CardManager = bgaCards.Manager;
+    window.HandStock = bgaCards.HandStock;
+
     window.debug = window.isDebug ? console.info.bind(window.console) : function () {};
 
     // Store BgaAnimations globally to avoid ReferenceError when used in mixed-in classes

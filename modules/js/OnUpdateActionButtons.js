@@ -32,7 +32,8 @@ onUpdateActionButtons: function( stateName, args )
             {
                 dojo.addClass('city', 'hidden');
                 dojo.addClass('approachDeck-container', 'hidden');
-                dojo.addClass('factionHand-container', 'hidden');
+                dojo.addClass('factionHand-wrapper', 'hidden');
+                dojo.addClass('factionHand-placeholder', 'hidden');
                 dojo.place( this.format_block( 'jstpl_deck_picker', {
                     banner_description: _('Select a Starter Deck to play with using the buttons above.  Or explore the available Factions using the buttons below, and click <strong>Select</strong> to choose that Faction.'),
                     castille_description: _('<strong>Castille</strong>: Soline el Gato grew up on the streets and canals of the Castillian District of Five Sails and knows intimately what it takes to survive in a city such as Five Sails. The leader of a den of thieves and scoundrels, Soline uses her cunning and adaptability to always keep her opponents on their toes, not knowing what to expect. Soline’s style is one of disruption, making it increasingly difficult for an opponent to gain ground.'),
@@ -49,7 +50,8 @@ onUpdateActionButtons: function( stateName, args )
             dojo.destroy('deck-picker');
             dojo.removeClass('city', 'hidden');
             dojo.removeClass('approachDeck-container', 'hidden');
-            dojo.removeClass('factionHand-container', 'hidden');
+            dojo.removeClass('factionHand-wrapper', 'hidden');
+            dojo.removeClass('factionHand-placeholder', 'hidden');
         }
     }
                 
@@ -353,7 +355,7 @@ onUpdateActionButtons: function( stateName, args )
             const player = this.gamedatas.players[this.player_id];
             const leader = player.leader;
             const panache = leader.panache;
-            const count = this.factionHand.count();
+            const count = this.factionHand.getCards().length;
 
             const amount = count - panache;
             var translated = dojo.string.substitute(
@@ -363,7 +365,7 @@ onUpdateActionButtons: function( stateName, args )
                 }
             );
             $('faction_hand_info').innerHTML = translated;
-            this.factionHand.setSelectionMode(2);
+            this.factionHand.setSelectionMode('multiple');
 
         }
     };

@@ -464,9 +464,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const performer = this.cardProperties[args.performerId];
 
         //See if the card came from the hand
-        if (this.factionHand.getItemById(attachment.id) != undefined)
+        const cardExists = this.factionHand.getCards().some(c => c.id === attachment.id);
+        if (cardExists)
         {
-            this.factionHand.removeFromStockById(attachment.id);
+            const card = this.cardProperties[attachment.id];
+            this.factionHand.removeCard(card);
         }
         else if (this.cardProperties[attachment.id] != undefined)
         {
@@ -571,7 +573,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             this.addCardToDeck(this.factionHand, card);
         });
 
-        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
+        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.getCards().length;
     },
 
     notif_factionResolveCardDrawPublic: function( notif )
@@ -612,7 +614,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const card = args.card;
         this.cardProperties[card.id] = card;
         this.addCardToDeck(this.factionHand, card);
-        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
+        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.getCards().length;
 
     },
 
@@ -738,7 +740,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         if (args.playerId == this.player_id)
         {
-            this.factionHand.removeFromStockById(card.id);
+            this.factionHand.removeCard(card);
         }
 
         card.location = this.LOCATION_PLAYER_DISCARD;
@@ -755,7 +757,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         if (notif.args.playerId == this.player_id)
         {
-            this.factionHand.removeFromStockById(args.cardId);
+            const card = this.cardProperties[args.cardId];
+            if (card) this.factionHand.removeCard(card);
         }
 
         $(`${notif.args.playerId}-score-hand-count`).innerHTML = args.handCount;
@@ -1559,14 +1562,16 @@ return declare('seventhseacityoffivesails.notifications', null, {
         {
             card.conditions.push(this.CATS_EMBARGO_TARGET);
 
-            const div = this.factionHand.getItemDivId(args.cardId);
-            const id = `${args.cardId}_cats_embargo_target`;
-            dojo.place( this.format_block( 'jstpl_generic_chip', {
-                id: id,
-                class: '_7sfs-cats-embargo-target-chip',
-            }),  div, 'last');
-    
-            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>` );
+            const cardElement = this.factionHand.getCardElement(card);
+            if (cardElement) {
+                const id = `${args.cardId}_cats_embargo_target`;
+                dojo.place( this.format_block( 'jstpl_generic_chip', {
+                    id: id,
+                    class: '_7sfs-cats-embargo-target-chip',
+                }),  cardElement, 'last');
+        
+                this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>` );
+            }
         }
     },
 
@@ -1739,7 +1744,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         
         if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)
         {
-            dojo.place('factionHand-container', 'duel', 'before');
+            dojo.place('factionHand-wrapper', 'duel', 'before');
         }
     },
 
@@ -1808,7 +1813,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }
             else if (this.player_id == combatCard.controllerId)
             {
-                this.factionHand.removeFromStockById(combatCard.id);
+                this.factionHand.removeCard(combatCard);
             }
             $(`${combatCard.controllerId}-score-hand-count`).innerHTML = args.handCount;
         }

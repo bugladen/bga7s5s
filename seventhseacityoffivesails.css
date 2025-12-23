@@ -776,7 +776,10 @@ body {
     left: 65px;
 }
 ._7sfs-hand-wealth-cost {
+    position: absolute;
+    top: 0;
     left: -15px;
+    z-index: 10;
 }
 ._7sfs-discounted-wealth-cost {
     color: yellow;
@@ -1014,20 +1017,164 @@ body {
     margin-bottom: 5px;
 }
 
+/* ============================================
+   FLOATING HAND STYLES
+   ============================================ */
+
+/* Placeholder - shown when hand is floating */
+._7sfs-hand-placeholder {
+    min-height: 40px;
+    background: rgba(0, 0, 0, 0.1);
+    border: 2px dashed rgba(0, 0, 0, 0.3);
+}
+
+._7sfs-floating-indicator {
+    font-style: italic;
+    color: #666;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+/* Floating hand wrapper - fixed at bottom of viewport */
+._7sfs-floating-hand-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+}
+
+/* Floating hand container - minimal styling */
+._7sfs-floating-hand-container {
+    pointer-events: auto;
+    padding: 5px 10px 10px 10px;
+    max-width: 90vw;
+}
+
+/* Hide the floating hand header */
+._7sfs-floating-hand-header {
+    display: none;
+}
+
+
+/* Cards container */
+._7sfs-floating-hand-cards,
+#factionHand {
+    min-height: 110px;
+    overflow: visible;
+    padding: 5px 0;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 5px;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+/* bga-cards HandStock container styling */
+._7sfs-floating-hand-cards .bga-cards_hand-stock,
+#factionHand.bga-cards_hand-stock {
+    display: flex !important;
+    flex-wrap: nowrap;
+    gap: 5px;
+    justify-content: center;
+    align-items: flex-end;
+    min-height: 100px;
+}
+
+/* Card styling in floating hand - force visibility with explicit dimensions */
+#factionHand .bga-cards_card,
+._7sfs-floating-hand-cards .bga-cards_card {
+    width: 108px !important;
+    height: 147px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    display: block !important;
+    position: relative;
+    overflow: visible !important;
+}
+
+#factionHand .bga-cards_card-sides,
+._7sfs-floating-hand-cards .bga-cards_card-sides {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: visible;
+}
+
+#factionHand .bga-cards_card-side,
+._7sfs-floating-hand-cards .bga-cards_card-side {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Card front styling */
+#factionHand .bga-cards_card-side.front {
+    border-radius: 4px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+._7sfs-floating-hand-cards .bga-cards_card:hover {
+    transform: translateY(-15px) scale(1.05);
+    z-index: 10;
+}
+
+._7sfs-floating-hand-cards .bga-cards_selectable-card {
+    box-shadow: 0 0 8px 2px rgba(255, 255, 0, 0.6);
+}
+
+._7sfs-floating-hand-cards .bga-cards_selected-card {
+    transform: translateY(-20px);
+    box-shadow: 0 0 12px 3px rgba(0, 255, 0, 0.8);
+}
+
+/* Hide floating hand for spectators */
+.spectatorMode ._7sfs-floating-hand-wrapper,
+.spectatorMode ._7sfs-hand-placeholder {
+    display: none;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    ._7sfs-floating-hand-container {
+        max-width: 100vw;
+        border-radius: 0;
+        padding: 5px 10px 10px 10px;
+    }
+    
+    ._7sfs-floating-hand-cards {
+        min-height: 80px;
+    }
+}
+
 ._7sfs-selectable {
-    box-shadow: 0 0 2px 2px yellow;
+    box-shadow: 0 0 3px 3px yellow;
 }
 
 ._7sfs-chosen {
-    box-shadow: 0 0 2px 2px white;
+    box-shadow: 0 0 3px 3px white;
 }
 
 ._7sfs-selected {
-    box-shadow: 0 0 2px 2px lime;
+    box-shadow: 0 0 3px 3px lime;
 }
 
 ._7sfs-unselectable {
-    box-shadow: 0 0 2px 2px red;
+    box-shadow: 0 0 3px 3px red;
+}
+
+/* For bga-cards HandStock with fan effect, use filter drop-shadow 
+   which respects transforms, instead of box-shadow */
+#factionHand .bga-cards_card._7sfs-unselectable {
+    box-shadow: none;
+    filter: drop-shadow(0 0 3px red) drop-shadow(0 0 1px red);
 }
 
 ._7sfs-engaged {
@@ -1041,7 +1188,8 @@ body {
     transform: translateX(-3px) translateY(-2px);
 }
 
-.spectatorMode #approachDeck #approachDeck-container #factionHand #factionHand-container {
+.spectatorMode #factionHand-wrapper,
+.spectatorMode #factionHand-placeholder {
     display: none;
 }
 

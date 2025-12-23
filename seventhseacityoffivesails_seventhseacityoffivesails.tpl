@@ -292,9 +292,11 @@ var jstpl_row_combat_card = `
     </div>
 </div>
 
-<div id="factionHand-container" class="whiteblock _7sfs-hand">
-    <div class="_7sfs-hand-label"><span><b>Your Faction Hand</b></span> <span id="faction_hand_info"></span></div>
-    <div id="factionHand">
+<!-- The actual floating hand container -->
+<div id="factionHand-wrapper" class="_7sfs-floating-hand-wrapper hidden">
+    <div id="factionHand-container" class="_7sfs-floating-hand-container">
+        <div id="factionHand" class="_7sfs-floating-hand-cards">
+        </div>
     </div>
 </div>
 
@@ -376,6 +378,15 @@ var jstpl_row_combat_card = `
 <div id="approachDeck-container" class="whiteblock _7sfs-hand">
     <div class="_7sfs-hand-label"><b>Your Approach Deck</b></div>
     <div id="approachDeck">
+    </div>
+</div>
+
+<!-- Placeholder shown when hand is floating (appears in normal document flow) -->
+<div id="factionHand-placeholder" class="whiteblock _7sfs-hand _7sfs-hand-placeholder hidden">
+    <div class="_7sfs-hand-label">
+        <span><b>Your Faction Hand</b></span>
+        <span id="faction_hand_info"></span>
+        <span class="_7sfs-floating-indicator">(floating below)</span>
     </div>
 </div>
 

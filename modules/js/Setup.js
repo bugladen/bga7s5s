@@ -259,30 +259,62 @@ return declare('seventhseacityoffivesails.setup', null, {
         });
         this.approachDeck.setSelectionMode(0);
 
-        // Create the faction hand
-        this.factionHand = new ebg.stock();
-        this.factionHand.create( this, $('factionHand'), this.wholeCardWidth, this.wholeCardHeight ); 
-        this.factionHand.image_items_per_row = 0;
-        this.factionHand.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
-        this.factionHand.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
-        this.factionHand.setSelectionAppearance( 'class' )
-        dojo.connect( this.factionHand, 'onChangeSelection', this, 'onFactionCardClicked' );
-        // For each card in the approach deck, create a stock item
-        gamedatas.factionHand.forEach((card) => {
-            this.addCardToDeck(this.factionHand, card);
+        // Create CardManager for faction hand cards
+        const cardWidth = this.wholeCardWidth;
+        const cardHeight = this.wholeCardHeight;
+        const game = this;
+        
+        this.factionHandManager = new CardManager(this, {
+            getId: (card) => `factionhand-card-${card.id}`,
+        });
 
-            //Check for any special conditions where a token has to be displayed
+        // Create floating HandStock
+        this.factionHand = new HandStock(this.factionHandManager, $('factionHand'), {
+            cardOverlap: '40px',
+            sort: (a, b) => {
+                // Schemes and Attachments first, then by id
+                const weightA = (a.type === "Scheme" || a.type === 'Attachment') ? 1 : 2;
+                const weightB = (b.type === "Scheme" || b.type === 'Attachment') ? 1 : 2;
+                if (weightA !== weightB) return weightA - weightB;
+                return a.id - b.id;
+            },
+        });
+
+        // Selection change handler
+        this.factionHand.onSelectionChange = (selection, lastChange) => {
+            // Pass null for control_name and lastChange.id for item_id to match expected signature
+            this.onFactionCardClicked(null, lastChange ? lastChange.id : undefined);
+        };
+
+        // Add initial cards
+        gamedatas.factionHand.forEach((card) => {
+            this.cardProperties[card.id] = card;
+            this.factionHand.addCard(card);
+            
+            // Apply styling directly since setupDiv callback doesn't work
+            this.applyFactionHandCardStyle(card);
+            
+            // Check for special conditions
             if (card.conditions.includes(this.CATS_EMBARGO_TARGET)) {
-                const div = this.factionHand.getItemDivId(card.id);
-                const id = `${card.id}_cats_embargo_target`;
-                dojo.place( this.format_block( 'jstpl_generic_chip', {
-                    id: id,
-                    class: '_7sfs-cats-embargo-target-chip',
-                }),  div, 'last');
-                this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>` );
+                const cardElement = this.factionHand.getCardElement(card);
+                if (cardElement) {
+                    const id = `${card.id}_cats_embargo_target`;
+                    dojo.place(this.format_block('jstpl_generic_chip', {
+                        id: id,
+                        class: '_7sfs-cats-embargo-target-chip',
+                    }), cardElement, 'last');
+                    this.addTooltipHtml(id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>`);
+                }
             }
         });
-        this.factionHand.setSelectionMode(0);
+
+        this.factionHand.setSelectionMode('none');
+
+        // Show faction hand elements if game is past pickDecks (has faction hand cards)
+        if (gamedatas.factionHand && gamedatas.factionHand.length > 0) {
+            dojo.removeClass('factionHand-wrapper', 'hidden');
+            dojo.removeClass('factionHand-placeholder', 'hidden');
+        }
 
         this.chooseList = new ebg.stock();
         this.chooseList.create( this, $('chooseList'), this.wholeCardWidth, this.wholeCardHeight ); 
@@ -300,7 +332,7 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.displayDuelTable();
 
             if (this.player_id == gamedatas.challengingPlayerId || this.player_id == gamedatas.defendingPlayerId)
-                dojo.place('factionHand-container', 'duel', 'before');
+                dojo.place('factionHand-wrapper', 'duel', 'before');
 
             gamedatas.duelRounds.forEach((round) => {
                 this.displayDuelRow(round);
@@ -310,7 +342,8 @@ return declare('seventhseacityoffivesails.setup', null, {
         if (this.isSpectator)
         {
             dojo.addClass('approachDeck-container', 'hidden');
-            dojo.addClass('factionHand-container', 'hidden');
+            dojo.addClass('factionHand-wrapper', 'hidden');
+            dojo.addClass('factionHand-placeholder', 'hidden');
         }
 
         // Setup game notifications to handle (see "setupNotifications" method below)
