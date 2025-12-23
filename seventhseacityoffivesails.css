@@ -1118,10 +1118,16 @@ body {
     width: 108px !important;
     height: 147px !important;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    cursor: pointer;
+    cursor: default;
     display: block !important;
     position: relative;
     overflow: visible !important;
+}
+
+/* Only show pointer cursor when cards are selectable */
+#factionHand.bga-cards_selectable-cards-stock .bga-cards_card:not(._7sfs-unselectable),
+#factionHand .bga-cards_card._7sfs-selectable:not(._7sfs-unselectable) {
+    cursor: pointer;
 }
 
 #factionHand .bga-cards_card-sides,
@@ -1217,6 +1223,7 @@ body {
 #factionHand .bga-cards_card._7sfs-unselectable {
     box-shadow: none;
     filter: drop-shadow(0 0 3px red) drop-shadow(0 0 1px red);
+    cursor: default;
 }
 
 ._7sfs-engaged {

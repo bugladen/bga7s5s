@@ -115,7 +115,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.IRON_AND_VELVET_CHALLENGE_TYPE = 11;
 
             this.CARD_TOOLTIP_DELAY = 1000;
-            this.STOCK_CARD_TOOLTIP_DELAY = 100;
+            this.STOCK_CARD_TOOLTIP_DELAY = 500;
 
             //Card conditions
             this.ADVERSARY_OF_YEVGENI = 'Adversary of Yevgeni';
