@@ -62,7 +62,7 @@ class _01186 extends CityCharacter
         )
         {
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source instanceof Risk && $source instanceof IAmARiskThatTargetsCharacters)
+            if ($source && $source instanceof Risk && $source instanceof IAmARiskThatTargetsCharacters)
             {
                 $this->addMaryamCondition($event->theah->game);
 
@@ -74,7 +74,7 @@ class _01186 extends CityCharacter
         if ( ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED) && $event instanceof EventChallengeIssued && $event->defenderId == $this->Id && $event->sourceId != 0)
         {
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source instanceof Risk && $source instanceof IAmARiskThatTargetsCharacters)
+            if ($source && $source instanceof Risk && $source instanceof IAmARiskThatTargetsCharacters)
             {
                 $this->addMaryamCondition($event->theah->game);
 
