@@ -123,34 +123,81 @@ return declare('seventhseacityoffivesails.utilities', null, {
         
         if (!wrapper || !placeholder) return;
         
-        // Scroll handler for floating behavior
-        const checkFloating = () => {
+        // Track current floating state to avoid unnecessary DOM updates
+        let isCurrentlyFloating = null;
+        let rafPending = false;
+        let cooldownUntil = 0;
+        
+        // Hysteresis threshold to prevent jitter at boundary (pixels)
+        const HYSTERESIS = 50;
+        // Cooldown period after state change (ms)
+        const COOLDOWN_MS = 300;
+        
+        // Core check function
+        const doCheck = (forcedCheck) => {
+            rafPending = false;
+            
+            // Skip checks during cooldown period (unless forced)
+            if (!forcedCheck && Date.now() < cooldownUntil) {
+                return;
+            }
+            
             const placeholderRect = placeholder.getBoundingClientRect();
             
             // Float when placeholder IS visible on the page
             // Park in placeholder when placeholder is NOT visible (scrolled off top)
-            const placeholderVisible = placeholderRect.bottom > 0;
+            let shouldFloat;
             
-            if (placeholderVisible) {
-                // Placeholder visible -> float at bottom
-                dojo.removeClass(wrapper, '_7sfs-hand-not-floating');
-                dojo.addClass(placeholder, '_7sfs-hand-floating');
+            if (isCurrentlyFloating === null) {
+                // Initial state - no hysteresis
+                shouldFloat = placeholderRect.bottom > 0;
+            } else if (isCurrentlyFloating) {
+                // Currently floating - need to scroll further up to park (add hysteresis)
+                shouldFloat = placeholderRect.bottom > -HYSTERESIS;
             } else {
-                // Placeholder not visible -> park in placeholder
-                dojo.addClass(wrapper, '_7sfs-hand-not-floating');
-                dojo.removeClass(placeholder, '_7sfs-hand-floating');
+                // Currently parked - need to scroll further down to float (add hysteresis)
+                shouldFloat = placeholderRect.bottom > HYSTERESIS;
+            }
+            
+            // Only update DOM if state actually changed
+            if (shouldFloat !== isCurrentlyFloating) {
+                isCurrentlyFloating = shouldFloat;
+                cooldownUntil = Date.now() + COOLDOWN_MS;
+                
+                if (shouldFloat) {
+                    // Placeholder visible -> float at bottom
+                    dojo.removeClass(wrapper, '_7sfs-hand-not-floating');
+                    dojo.addClass(placeholder, '_7sfs-hand-floating');
+                } else {
+                    // Placeholder not visible -> park in placeholder
+                    dojo.addClass(wrapper, '_7sfs-hand-not-floating');
+                    dojo.removeClass(placeholder, '_7sfs-hand-floating');
+                }
+            }
+        };
+        
+        // Throttled scroll handler using requestAnimationFrame
+        const checkFloating = () => {
+            if (!rafPending) {
+                rafPending = true;
+                requestAnimationFrame(() => doCheck(false));
             }
         };
         
         // Store the check function so it can be called externally
-        this.checkFloatingHand = checkFloating;
+        // External calls bypass throttling and cooldown for immediate response
+        this.checkFloatingHand = () => {
+            isCurrentlyFloating = null; // Reset state for immediate recalculation
+            cooldownUntil = 0; // Clear cooldown
+            doCheck(true);
+        };
         
         // Check on scroll and resize
         window.addEventListener('scroll', checkFloating, { passive: true });
         window.addEventListener('resize', checkFloating, { passive: true });
         
         // Initial check
-        checkFloating();
+        doCheck(true);
     },
 
     createHome: function( playerId, playerColor, leader )
