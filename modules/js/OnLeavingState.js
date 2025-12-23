@@ -24,7 +24,6 @@ onLeavingState: function( stateName )
                 dojo.destroy('deck-picker');
                 dojo.removeClass('city', 'hidden');
                 dojo.removeClass('approachDeck-container', 'hidden');
-                dojo.removeClass('factionHand-wrapper', 'hidden');
                 dojo.removeClass('factionHand-placeholder', 'hidden');
             }
         },

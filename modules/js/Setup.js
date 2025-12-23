@@ -312,9 +312,11 @@ return declare('seventhseacityoffivesails.setup', null, {
 
         // Show faction hand elements if game is past pickDecks (has faction hand cards)
         if (gamedatas.factionHand && gamedatas.factionHand.length > 0) {
-            dojo.removeClass('factionHand-wrapper', 'hidden');
             dojo.removeClass('factionHand-placeholder', 'hidden');
         }
+
+        // Setup floating hand behavior
+        this.setupFloatingHand();
 
         this.chooseList = new ebg.stock();
         this.chooseList.create( this, $('chooseList'), this.wholeCardWidth, this.wholeCardHeight ); 
@@ -331,8 +333,12 @@ return declare('seventhseacityoffivesails.setup', null, {
 
             this.displayDuelTable();
 
-            if (this.player_id == gamedatas.challengingPlayerId || this.player_id == gamedatas.defendingPlayerId)
-                dojo.place('factionHand-wrapper', 'duel', 'before');
+            // Move faction hand placeholder to bottom of duel rows
+            if (this.player_id == gamedatas.challengingPlayerId || this.player_id == gamedatas.defendingPlayerId) {
+                dojo.place('factionHand-placeholder', 'duel', 'after');
+                // Re-check floating state after moving placeholder
+                if (this.checkFloatingHand) this.checkFloatingHand();
+            }
 
             gamedatas.duelRounds.forEach((round) => {
                 this.displayDuelRow(round);
@@ -342,7 +348,6 @@ return declare('seventhseacityoffivesails.setup', null, {
         if (this.isSpectator)
         {
             dojo.addClass('approachDeck-container', 'hidden');
-            dojo.addClass('factionHand-wrapper', 'hidden');
             dojo.addClass('factionHand-placeholder', 'hidden');
         }
 

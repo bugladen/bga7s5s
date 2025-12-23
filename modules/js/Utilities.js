@@ -116,6 +116,43 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
+    // Setup floating hand behavior based on placeholder visibility
+    setupFloatingHand: function() {
+        const wrapper = $('factionHand-wrapper');
+        const placeholder = $('factionHand-placeholder');
+        
+        if (!wrapper || !placeholder) return;
+        
+        // Scroll handler for floating behavior
+        const checkFloating = () => {
+            const placeholderRect = placeholder.getBoundingClientRect();
+            
+            // Float when placeholder IS visible on the page
+            // Park in placeholder when placeholder is NOT visible (scrolled off top)
+            const placeholderVisible = placeholderRect.bottom > 0;
+            
+            if (placeholderVisible) {
+                // Placeholder visible -> float at bottom
+                dojo.removeClass(wrapper, '_7sfs-hand-not-floating');
+                dojo.addClass(placeholder, '_7sfs-hand-floating');
+            } else {
+                // Placeholder not visible -> park in placeholder
+                dojo.addClass(wrapper, '_7sfs-hand-not-floating');
+                dojo.removeClass(placeholder, '_7sfs-hand-floating');
+            }
+        };
+        
+        // Store the check function so it can be called externally
+        this.checkFloatingHand = checkFloating;
+        
+        // Check on scroll and resize
+        window.addEventListener('scroll', checkFloating, { passive: true });
+        window.addEventListener('resize', checkFloating, { passive: true });
+        
+        // Initial check
+        checkFloating();
+    },
+
     createHome: function( playerId, playerColor, leader )
     {
         // Place the viewing player's home board closest to the city

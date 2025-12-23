@@ -1744,7 +1744,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
         
         if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)
         {
-            dojo.place('factionHand-wrapper', 'duel', 'before');
+            // Move faction hand placeholder to bottom of duel rows
+            dojo.place('factionHand-placeholder', 'duel', 'after');
+            // Re-check floating state after moving placeholder
+            if (this.checkFloatingHand) this.checkFloatingHand();
         }
     },
 
@@ -1957,6 +1960,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
             defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
             const defenderChipId = `${defender.divId}_defender`;
             dojo.destroy(defenderChipId);
+        }
+
+        // Move faction hand placeholder back to top of page (after choose_container)
+        if (!this.isSpectator)
+        {
+            dojo.place('factionHand-placeholder', 'choose_container', 'after');
+            // Re-check floating state after moving placeholder
+            if (this.checkFloatingHand) this.checkFloatingHand();
         }
     },
 

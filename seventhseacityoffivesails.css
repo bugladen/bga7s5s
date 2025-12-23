@@ -1021,11 +1021,23 @@ body {
    FLOATING HAND STYLES
    ============================================ */
 
-/* Placeholder - shown when hand is floating */
+/* Placeholder container */
 ._7sfs-hand-placeholder {
     min-height: 40px;
-    background: rgba(0, 0, 0, 0.1);
-    border: 2px dashed rgba(0, 0, 0, 0.3);
+}
+
+/* Hide placeholder styling when hand is floating */
+._7sfs-hand-placeholder._7sfs-hand-floating {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 0;
+}
+
+._7sfs-hand-placeholder._7sfs-hand-floating ._7sfs-hand-label {
+    display: none;
 }
 
 ._7sfs-floating-indicator {
@@ -1035,7 +1047,7 @@ body {
     margin-left: 10px;
 }
 
-/* Floating hand wrapper - fixed at bottom of viewport */
+/* Floating hand wrapper - fixed at bottom of viewport when floating */
 ._7sfs-floating-hand-wrapper {
     position: fixed;
     bottom: 0;
@@ -1045,6 +1057,15 @@ body {
     pointer-events: none;
     display: flex;
     justify-content: center;
+}
+
+/* When not floating, position relative in normal document flow inside placeholder */
+._7sfs-floating-hand-wrapper._7sfs-hand-not-floating {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    z-index: auto;
 }
 
 /* Floating hand container - minimal styling */
@@ -1136,7 +1157,6 @@ body {
 }
 
 /* Hide floating hand for spectators */
-.spectatorMode ._7sfs-floating-hand-wrapper,
 .spectatorMode ._7sfs-hand-placeholder {
     display: none;
 }
@@ -1203,7 +1223,6 @@ body {
     transform: translateX(-3px) translateY(-2px);
 }
 
-.spectatorMode #factionHand-wrapper,
 .spectatorMode #factionHand-placeholder {
     display: none;
 }

@@ -32,7 +32,6 @@ onUpdateActionButtons: function( stateName, args )
             {
                 dojo.addClass('city', 'hidden');
                 dojo.addClass('approachDeck-container', 'hidden');
-                dojo.addClass('factionHand-wrapper', 'hidden');
                 dojo.addClass('factionHand-placeholder', 'hidden');
                 dojo.place( this.format_block( 'jstpl_deck_picker', {
                     banner_description: _('Select a Starter Deck to play with using the buttons above.  Or explore the available Factions using the buttons below, and click <strong>Select</strong> to choose that Faction.'),
@@ -50,7 +49,6 @@ onUpdateActionButtons: function( stateName, args )
             dojo.destroy('deck-picker');
             dojo.removeClass('city', 'hidden');
             dojo.removeClass('approachDeck-container', 'hidden');
-            dojo.removeClass('factionHand-wrapper', 'hidden');
             dojo.removeClass('factionHand-placeholder', 'hidden');
         }
     }
