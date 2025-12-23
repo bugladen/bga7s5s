@@ -220,19 +220,24 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
     onFactionCardClicked: function( control_name, item_id )
     {
-        // Global check: prevent selecting cards with _7sfs-unselectable class
-        if (item_id !== undefined) {
-            const card = this.factionHand.getCards().find(c => c.id === item_id);
-            if (card) {
-                const cardElement = this.factionHand.getCardElement(card);
-                if (cardElement && dojo.hasClass(cardElement, '_7sfs-unselectable')) {
-                    this.factionHand.unselectCard(card);
-                    return;
+        // Prevent re-entry during selection changes
+        if (this._processingFactionCardClick) return;
+        this._processingFactionCardClick = true;
+        
+        try {
+            // Global check: prevent selecting cards with _7sfs-unselectable class
+            if (item_id !== undefined) {
+                const card = this.factionHand.getCards().find(c => c.id === item_id);
+                if (card) {
+                    const cardElement = this.factionHand.getCardElement(card);
+                    if (cardElement && dojo.hasClass(cardElement, '_7sfs-unselectable')) {
+                        this.factionHand.unselectCard(card);
+                        return;
+                    }
                 }
             }
-        }
 
-        const methods = {
+            const methods = {
 
             'highDramaBeginning_01144_2': () => {
                 var items = this.factionHand.getSelection();
@@ -286,13 +291,24 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
             'highDramaEquipActionChooseAttachmentFromHand': () => {
                 var items = this.factionHand.getSelection();
-                items.forEach((item) => {
-                    this.factionHand.unselectCard(item);
-                });                
                 const cardProps = this.cardProperties[item_id];
-                if (cardProps?.type == 'Attachment') {
-                    const card = this.factionHand.getCards().find(c => c.id === item_id);
-                    if (card) this.factionHand.selectCard(card);
+                const clickedCard = this.factionHand.getCards().find(c => c.id === item_id);
+                
+                // bga-cards already toggled the selection. Check if clicked card is now selected.
+                const isNowSelected = items.some(item => item.id === item_id);
+                
+                // Unselect all OTHER cards (single selection mode)
+                items.forEach((item) => {
+                    if (item.id !== item_id) {
+                        this.factionHand.unselectCard(item);
+                    }
+                });
+                
+                // If the card is now selected but it's not an Attachment, unselect it
+                if (isNowSelected && clickedCard) {
+                    if (cardProps?.type !== 'Attachment') {
+                        this.factionHand.unselectCard(clickedCard);
+                    }
                 }
 
                 // Enable the confirm button if we have a card selected
@@ -330,13 +346,24 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
             'highDramaBruteActionChooseBrute': () => {
                 var items = this.factionHand.getSelection();
-                items.forEach((item) => {
-                    this.factionHand.unselectCard(item);
-                });                
                 const cardProps = this.cardProperties[item_id];
-                if (cardProps?.type == 'Character' && cardProps.traits.includes('Brute')) {
-                    const card = this.factionHand.getCards().find(c => c.id === item_id);
-                    if (card) this.factionHand.selectCard(card);
+                const clickedCard = this.factionHand.getCards().find(c => c.id === item_id);
+                
+                // bga-cards already toggled the selection. Check if clicked card is now selected.
+                const isNowSelected = items.some(item => item.id === item_id);
+                
+                // Unselect all OTHER cards (single selection mode)
+                items.forEach((item) => {
+                    if (item.id !== item_id) {
+                        this.factionHand.unselectCard(item);
+                    }
+                });
+                
+                // If the card is now selected but it's not a Brute Character, unselect it
+                if (isNowSelected && clickedCard) {
+                    if (cardProps?.type !== 'Character' || !cardProps.traits.includes('Brute')) {
+                        this.factionHand.unselectCard(clickedCard);
+                    }
                 }
 
                 // Enable the confirm button if we have a card selected
@@ -469,10 +496,13 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
 
-        };
+            };
 
-        if (methods[this.gamedatas.gamestate.name]) {
-            methods[this.gamedatas.gamestate.name]();
+            if (methods[this.gamedatas.gamestate.name]) {
+                methods[this.gamedatas.gamestate.name]();
+            }
+        } finally {
+            this._processingFactionCardClick = false;
         }
     },
 

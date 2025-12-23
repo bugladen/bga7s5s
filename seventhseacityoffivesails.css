@@ -375,8 +375,8 @@ body {
     height: 35px;
     border-radius: 50%;
     display: inline-block;
-    left: 33px;
-    top: 60px;
+    right: 5px;
+    bottom: 5px;
     border: 2px solid orangered
 }
 
@@ -1172,6 +1172,21 @@ body {
 
 /* For bga-cards HandStock with fan effect, use filter drop-shadow 
    which respects transforms, instead of box-shadow */
+#factionHand .bga-cards_card._7sfs-selectable {
+    box-shadow: none;
+    filter: drop-shadow(0 0 3px yellow) drop-shadow(0 0 1px yellow);
+}
+
+#factionHand .bga-cards_card._7sfs-chosen {
+    box-shadow: none;
+    filter: drop-shadow(0 0 3px white) drop-shadow(0 0 1px white);
+}
+
+#factionHand .bga-cards_card._7sfs-selected {
+    box-shadow: none;
+    filter: drop-shadow(0 0 3px lime) drop-shadow(0 0 1px lime);
+}
+
 #factionHand .bga-cards_card._7sfs-unselectable {
     box-shadow: none;
     filter: drop-shadow(0 0 3px red) drop-shadow(0 0 1px red);
