@@ -491,6 +491,10 @@ class Theah
 
     public function getCardById($cardId) : ?Card
     {
+        if ($cardId == 0) {
+            return null;
+        }
+
         if (array_key_exists($cardId, $this->cards)) {
             return $this->cards[$cardId];
         }
