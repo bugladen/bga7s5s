@@ -1026,19 +1026,16 @@ body {
     min-height: 40px;
 }
 
-/* Reserve space in placeholder to prevent layout shifts */
-._7sfs-hand-placeholder {
-    min-height: 170px; /* Approximately card height + padding */
-}
-
-/* Hide placeholder styling when hand is floating, but keep the space reserved */
+/* Hide placeholder completely when hand is floating */
 ._7sfs-hand-placeholder._7sfs-hand-floating {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
     margin: 0 !important;
-    /* Keep min-height to reserve space and prevent layout shifts */
+    min-height: 0 !important;
+    height: 0 !important;
+    overflow: hidden;
 }
 
 ._7sfs-hand-placeholder._7sfs-hand-floating ._7sfs-hand-label {
