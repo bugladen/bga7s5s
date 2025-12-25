@@ -573,6 +573,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
             this.addCardToDeck(this.factionHand, card);
         });
 
+        // Show faction hand when cards are drawn
+        dojo.removeClass('factionHand-placeholder', 'hidden');
+
         $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.getCards().length;
     },
 

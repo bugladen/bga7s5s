@@ -323,8 +323,13 @@ return declare('seventhseacityoffivesails.setup', null, {
 
         this.factionHand.setSelectionMode('none');
 
-        // Show faction hand elements if game is past pickDecks (has faction hand cards)
-        if (gamedatas.factionHand && gamedatas.factionHand.length > 0) {
+        // Show faction hand elements if game is past planningPhaseDraw
+        // The hand should remain hidden until after cards have been drawn
+        const hiddenHandStates = ['pickDecks', 'buildTable', 'setupTable', 'planningPhaseDraw'];
+        const currentState = gamedatas.gamestate?.name || '';
+        const isEarlyState = hiddenHandStates.some(state => currentState.startsWith(state));
+        
+        if (gamedatas.homeCards && gamedatas.homeCards.length > 0 && !isEarlyState) {
             dojo.removeClass('factionHand-placeholder', 'hidden');
         }
 
