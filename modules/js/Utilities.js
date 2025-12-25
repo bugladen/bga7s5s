@@ -111,8 +111,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
             frontDiv.style.backgroundSize = 'cover';
             frontDiv.style.borderRadius = '4px';
             
-            // Add tooltip
-            this.addTooltipHtml(frontDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+            // Add tooltip (with class for mobile scaling)
+            this.addTooltipHtml(frontDiv.id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
         }
     },
 

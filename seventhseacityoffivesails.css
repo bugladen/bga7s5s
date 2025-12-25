@@ -1254,6 +1254,12 @@ body {
     ._7sfs-floating-hand-cards .bga-cards_card:hover {
         transform: none !important;
     }
+    
+    /* Reduce tooltip image size on mobile (50% of 495px natural width) */
+    ._7sfs-card-tooltip-img {
+        max-width: 248px;
+        height: auto;
+    }
 }
 
 ._7sfs-selectable {
