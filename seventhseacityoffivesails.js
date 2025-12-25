@@ -43,6 +43,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
     // The library exports CardManager as 'Manager' and HandStock directly
     window.CardManager = bgaCards.Manager;
     window.HandStock = bgaCards.HandStock;
+    window.LineStock = bgaCards.LineStock;
 
     window.debug = window.isDebug ? console.info.bind(window.console) : function () {};
 

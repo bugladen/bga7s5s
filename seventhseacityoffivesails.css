@@ -1171,69 +1171,88 @@ body {
     display: none;
 }
 
-/* Mobile adjustments */
+/* Mobile adjustments - simple parked cards, no floating */
 @media (max-width: 768px) {
+    /* Disable floating on mobile - always parked in placeholder */
     ._7sfs-floating-hand-wrapper {
-        justify-content: center;
-        bottom: 60px;
+        position: relative !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        z-index: auto !important;
+    }
+    
+    /* Keep placeholder fully visible on mobile - match whiteblock/approach deck styling */
+    ._7sfs-hand-placeholder,
+    ._7sfs-hand-placeholder._7sfs-hand-floating {
+        padding: 10px !important;
+        margin: 10px 5px !important;
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+    }
+    
+    ._7sfs-hand-placeholder ._7sfs-hand-label,
+    ._7sfs-hand-placeholder._7sfs-hand-floating ._7sfs-hand-label {
+        display: block !important;
+        margin-bottom: 10px !important;
+    }
+    
+    /* Scrollable container for cards only */
+    ._7sfs-floating-hand-wrapper {
+        overflow: auto !important;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 !important;
+        padding: 10px 0 !important;
     }
     
     ._7sfs-floating-hand-container {
-        max-width: 100vw;
-        width: 100vw;
-        border-radius: 0;
-        padding: 5px 0 10px 0;
-        overflow: visible;
+        width: max-content;
+        min-width: 100%;
+        padding: 5px !important;
+        margin: 0 !important;
+        max-width: none !important;
     }
     
+    /* Simple horizontal card layout - no fanning */
     ._7sfs-floating-hand-cards,
-    #factionHand {
-        min-height: 100px;
-        justify-content: center;
-        padding: 5px 10px;
-        width: 100%;
-        flex-wrap: nowrap;
+    #factionHand,
+    #factionHand.bga-cards_hand-stock,
+    ._7sfs-floating-hand-cards .bga-cards_hand-stock {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 5px 10px !important;
+        margin: 0 !important;
+        width: max-content !important;
+        min-width: 100%;
     }
     
-    #factionHand.bga-cards_hand-stock {
-        justify-content: center;
-        width: 100%;
-        flex-wrap: nowrap;
-    }
-    
-    /* Larger cards on mobile portrait - use more of the viewport */
+    /* Simple card styling (1.5x size) */
     #factionHand .bga-cards_card,
     ._7sfs-floating-hand-cards .bga-cards_card {
-        width: 90px !important;
-        height: 123px !important;
-        flex-shrink: 0;
+        position: static !important;
+        width: 108px !important;
+        height: 147px !important;
+        flex-shrink: 0 !important;
+        margin-right: 2px !important;
+        margin-left: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
     }
     
-    /* Increase card overlap on mobile to fit more cards */
-    #factionHand.bga-cards_hand-stock {
-        --bga-cards_overlap: 60px;
-    }
-}
-
-/* Mobile landscape - smaller cards with more overlap */
-@media (max-width: 768px) and (orientation: landscape) {
-    ._7sfs-floating-hand-wrapper {
-        bottom: 50px;
+    #factionHand .bga-cards_card:last-child,
+    ._7sfs-floating-hand-cards .bga-cards_card:last-child {
+        margin-right: 0 !important;
     }
     
-    #factionHand .bga-cards_card,
-    ._7sfs-floating-hand-cards .bga-cards_card {
-        width: 70px !important;
-        height: 95px !important;
-    }
-    
-    #factionHand.bga-cards_hand-stock {
-        --bga-cards_overlap: 50px;
-    }
-    
-    ._7sfs-floating-hand-cards,
-    #factionHand {
-        min-height: 70px;
+    /* Disable hover effects on mobile */
+    #factionHand .bga-cards_card:hover,
+    ._7sfs-floating-hand-cards .bga-cards_card:hover {
+        transform: none !important;
     }
 }
 

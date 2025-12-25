@@ -123,6 +123,15 @@ return declare('seventhseacityoffivesails.utilities', null, {
         
         if (!wrapper || !placeholder) return;
         
+        // Check if mobile - skip floating logic entirely on mobile
+        const isMobile = () => window.innerWidth <= 768;
+        
+        // On mobile, don't set up floating behavior at all
+        if (isMobile()) {
+            this.checkFloatingHand = () => {}; // No-op
+            return;
+        }
+        
         // Track current floating state to avoid unnecessary DOM updates
         let isCurrentlyFloating = null;
         let rafPending = false;

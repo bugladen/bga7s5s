@@ -262,25 +262,36 @@ return declare('seventhseacityoffivesails.setup', null, {
         this.approachDeck.setSelectionMode(0);
 
         // Create CardManager for faction hand cards
-        const cardWidth = this.wholeCardWidth;
-        const cardHeight = this.wholeCardHeight;
-        const game = this;
+        const isMobile = window.innerWidth <= 768;
         
         this.factionHandManager = new CardManager(this, {
             getId: (card) => `factionhand-card-${card.id}`,
+            animationManager: isMobile ? undefined : this.animationManager, // No animations on mobile
         });
 
-        // Create floating HandStock
-        this.factionHand = new HandStock(this.factionHandManager, $('factionHand'), {
-            cardOverlap: '40px',
-            sort: (a, b) => {
-                // Schemes and Attachments first, then by id
-                const weightA = (a.type === "Scheme" || a.type === 'Attachment') ? 1 : 2;
-                const weightB = (b.type === "Scheme" || b.type === 'Attachment') ? 1 : 2;
-                if (weightA !== weightB) return weightA - weightB;
-                return a.id - b.id;
-            },
-        });
+        // Create HandStock - use LineStock on mobile to avoid fanning calculations
+        if (isMobile) {
+            this.factionHand = new LineStock(this.factionHandManager, $('factionHand'), {
+                center: false,
+                sort: (a, b) => {
+                    const weightA = (a.type === "Scheme" || a.type === 'Attachment') ? 1 : 2;
+                    const weightB = (b.type === "Scheme" || b.type === 'Attachment') ? 1 : 2;
+                    if (weightA !== weightB) return weightA - weightB;
+                    return a.id - b.id;
+                },
+            });
+        } else {
+            this.factionHand = new HandStock(this.factionHandManager, $('factionHand'), {
+                cardOverlap: '40px',
+                sort: (a, b) => {
+                    // Schemes and Attachments first, then by id
+                    const weightA = (a.type === "Scheme" || a.type === 'Attachment') ? 1 : 2;
+                    const weightB = (b.type === "Scheme" || b.type === 'Attachment') ? 1 : 2;
+                    if (weightA !== weightB) return weightA - weightB;
+                    return a.id - b.id;
+                },
+            });
+        }
 
         // Selection change handler
         this.factionHand.onSelectionChange = (selection, lastChange) => {
