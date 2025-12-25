@@ -601,7 +601,9 @@
             },
 
             'highDramaPhase01134_4': () => {
-                this.addActionButton(`btnEngage`, _('Engage'), () => this.bgaPerformAction('actFromCardWithId', { id: 1}));
+                if (!args.args.engaged)
+                    this.addActionButton(`btnEngage`, _('Engage'), () => this.bgaPerformAction('actFromCardWithId', { id: 1}));
+                
                 this.addActionButton(`btnPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
             },
 
