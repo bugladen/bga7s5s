@@ -96,7 +96,10 @@ class Action_01134 extends RiskAction implements ISorcererAbility
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01134_4)
         {
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
             $args['performerId'] = $performerId;
+
+            $args['engaged'] = $performer->Engaged;
         }
 
         return $args;
@@ -149,6 +152,11 @@ class Action_01134 extends RiskAction implements ISorcererAbility
             if ($id == 1)
             {
                 $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+                $performer = $game->theah->getCharacterById($performerId);
+                if ($performer->Engaged)
+                {
+                    throw new \BgaUserException($game->translate("Character is already engaged"));
+                }
 
                 $owner = $this->getOwningCard($game->theah);
 
