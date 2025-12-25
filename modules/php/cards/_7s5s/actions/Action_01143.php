@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
  class Action_01143 extends SchemeCityAction
  {
@@ -25,6 +26,27 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult
 
         $this->Name = clienttranslate("Claim Location, You Win Ties");
         $this->RequiresPerformerSelected = true;
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
+    {
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
+        {
+            return false;
+        }
+
+        $characters = $theah->getCharactersInCityByPlayerId($playerId);
+        $characters = array_filter($characters, fn($character) => ! $character->Engaged);
+
+        return count($characters) > 0;
+    }
+
+    public function getPerformersForAction(int $playerId, Theah $theah): array
+    {
+        $performers = parent::getPerformersForAction($playerId, $theah);
+        $performers = array_values(array_filter($performers, fn($character) => ! $character->Engaged));
+        
+        return array_values($performers);
     }
 
     public function handleEvent(Event $event)
