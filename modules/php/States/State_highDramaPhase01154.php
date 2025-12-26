@@ -21,10 +21,9 @@ class State_highDramaPhase01154 extends GameState
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Corpse Speak') . clienttranslate(': ${you} must choose a Risk card from your discard pile to play:'),
+            descriptionMyTurn: clienttranslate('Corpse Speak') . clienttranslate(': ${you} must choose an available action from a Risk card from your discard pile to play:'),
             transitions: [
-                "back" => States::HIGH_DRAMA_PLAYER_TURN_01106,
-                "actionChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,
@@ -37,20 +36,20 @@ class State_highDramaPhase01154 extends GameState
     } 
 
     #[PossibleAction]
-    public function actBack(): void
-    {
-        $this->game->actBack();
-    }
-
-    #[PossibleAction]
     public function actFromCardWithActionId(int $actionSourceId, string $actionId): void
     {
         $this->game->actFromCardWithActionId($actionSourceId, $actionId);
     }
 
+    #[PossibleAction]
+    public function actFromCardWithId(int $id): void
+    {
+        $this->game->actFromCardWithId($id);
+    }
+
     public function zombie(int $playerId): void
     {
-        $this->game->actBack();
+        $this->game->actFromCardWithId(0);
     }
 
 }

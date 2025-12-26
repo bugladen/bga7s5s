@@ -1767,13 +1767,7 @@
                         this.addCardToDeck(this.chooseList, card);
                     });
         
-                    var translated = dojo.string.substitute(
-                        _("Risks in ${opponentName}'s Discard Pile"),
-                        {
-                            opponentName: args.args.args.opponentName
-                        }
-                    );
-                    $('choose_container_name').innerHTML = translated;
+                    $('choose_container_name').innerHTML = _("Risks in Your Discard Pile");
                     this.chooseList.setSelectionMode(0);
                 }
             },

@@ -2,11 +2,11 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01154_RiskClone;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\RiskClone;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -20,7 +20,7 @@ class Action_01154 extends AttachmentAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Corpse Speak");
+        $this->Name = clienttranslate("Play Risk from Discard Pile");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -42,7 +42,11 @@ class Action_01154 extends AttachmentAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $owner = $this->getOwningCharacter($event->theah);
+            $character = $this->getOwningCharacter($event->theah);
+            $owner = $this->getOwningAttachment($event->theah);
+            $engagedEvent = EventFactory::createCardEngagedEvent($character->ControllerId, $character->Id, $owner->Id);
+            $event->theah->queueEvent($engagedEvent);
+
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01154", $this->Id);
             $event->theah->queueEvent($transition);
         }
@@ -65,7 +69,9 @@ class Action_01154 extends AttachmentAction
                 $actions = $card->getActions();
                 foreach ($actions as $action)
                 {
-                    if ($action->isAvailableToPlayer($owner->ControllerId, $game->theah, $overrideInHandCheck = true))
+                    $performers = $action->getPerformersForAction($owner->ControllerId, $game->theah);
+                    $performers = array_values(array_filter($performers, fn($performer) => $performer->Id == $owner->Id));
+                    if (count($performers) > 0)
                     {
                         $availableActions[] = $action->getPropertyArray($game);
                     }
@@ -114,7 +120,8 @@ class Action_01154 extends AttachmentAction
                     throw new \BgaUserException($game->translate("Action is not available to you."));
                 }
 
-                [$discount, $explanations] = $game->theah->getActionFromHandDiscount($owner, $action);
+                $performer = $this->getOwningCharacter($game->theah);
+                [$discount, $explanations] = $game->theah->getActionFromHandDiscount($performer, $action);
                 $cost = $riskCard->WealthCost - $discount;
                 if ($handWealth < $cost)
                 {
@@ -125,9 +132,6 @@ class Action_01154 extends AttachmentAction
             $game->globals->set(Game::CHOSEN_ACTION, $actionId);
             $game->globals->set(Game::CHOSEN_CARD, $riskCard->Id);
 
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id);
-            $game->theah->queueEvent($engageEvent);
-        
             $this->announceAction($game);
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
@@ -138,7 +142,7 @@ class Action_01154 extends AttachmentAction
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01154_2", $this->Id);
             $game->theah->queueEvent($transition);
 
-            $game->gamestate->nextState("actionChosen");        
+            $game->gamestate->nextState();        
         }
     }
 
@@ -159,7 +163,7 @@ class Action_01154 extends AttachmentAction
             $game->theah->queueEvent($moveEvent);
 
             //Create a clone of the risk card
-            $card = $game->createCardInLocation('RiskClone', Game::LOCATION_HAND, $owner->ControllerId, $owner->ControllerId);
+            $card = $game->createCardInLocation('01154_RiskClone', Game::LOCATION_HAND, $owner->ControllerId, $owner->ControllerId);
             $card->Name = $riskCard->Name;
             $card->Image = $riskCard->Image;
 
@@ -186,9 +190,10 @@ class Action_01154 extends AttachmentAction
                 $card->addAction($newAction, $game, $notify = false);
             }
 
-            if ($card instanceof RiskClone)
+            if ($card instanceof _01154_RiskClone)
             {
                 $card->ClonedCardId = $riskCard->Id;
+                $card->AttachmentId = $owner->Id;
             }
 
             foreach ($riskCard->Traits as $trait)
@@ -230,6 +235,31 @@ class Action_01154 extends AttachmentAction
             $sorceryEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
             $game->theah->queueEvent($sorceryEvent);
     
+            $game->gamestate->nextState();
+        }
+    }
+
+    public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
+    {
+        parent::actFromActionWithId($game, $state, $stateName, $id);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01154)
+        {
+            $owner = $this->getOwningAttachment($game->theah);
+            $game->notify->all("message", clienttranslate('${player_name} has canceled out of ${attachment_inject_code}: [${action_name}] due to no available actions. 
+            Since the performer had to engage to set up this action, the performer has been en garded and the player gains an extra action.'), [
+                "i18n" => ["action_name"],
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                "action_name" => $this->Name,
+                "attachment_inject_code" => $owner->getInjectCode(),
+            ]);
+            $game->globals->set(Game::EXTRA_ACTIONS, 1);
+
+            $character = $this->getOwningCharacter($game->theah);
+            $owner = $this->getOwningAttachment($game->theah);
+            $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id, $owner->Id);
+            $game->theah->queueEvent($engardeEvent);
+
             $game->gamestate->nextState();
         }
     }

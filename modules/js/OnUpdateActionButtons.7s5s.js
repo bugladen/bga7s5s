@@ -685,10 +685,11 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             'highDramaPhase01154': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 args.args.actions.forEach((action) => {
                     this.addActionButton(`actChooseAction-${action.id}`, action.name, () => this.bgaPerformAction('actFromCardWithActionId', {actionSourceId: action.sourceId, actionId: action.id}));
                 });
+                if (args.args.actions.length == 0)
+                    this.addActionButton(`actCancel`, _('No Available Actions. Cancel'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
             },
 
             'highDramaPhase01156': () => {

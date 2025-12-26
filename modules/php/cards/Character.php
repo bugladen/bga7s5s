@@ -162,9 +162,9 @@ abstract class Character extends Card implements IHasTechniques
         $this->ModifiedFinesse += $attachment->FinesseModifier;
         $this->ModifiedInfluence += $attachment->InfluenceModifier;
 
+        $this->Attachments[] = $attachment->Id;
         $this->setLockedValues($theah);
 
-        $this->Attachments[] = $attachment->Id;
         $this->IsUpdated = true;
     }
 
@@ -172,14 +172,23 @@ abstract class Character extends Card implements IHasTechniques
     {
         $index = array_search($attachment->Id, $this->Attachments);
         if ($index !== false) {
-            $this->ModifiedResolve -= $attachment->ResolveModifier;
-            $this->ModifiedCombat -= $attachment->CombatModifier;
-            $this->ModifiedFinesse -= $attachment->FinesseModifier;
-            $this->ModifiedInfluence -= $attachment->InfluenceModifier;
+            unset($this->Attachments[$index]);
+
+            $this->ModifiedResolve = $this->Resolve;
+            $this->ModifiedCombat = $this->Combat;
+            $this->ModifiedFinesse = $this->Finesse;
+            $this->ModifiedInfluence = $this->Influence;
+            foreach ($this->Attachments as $attachmentId)
+            {
+                $existingAttachment = $theah->getAttachmentById($attachmentId);
+                $this->ModifiedResolve += $existingAttachment->ResolveModifier;
+                $this->ModifiedCombat += $existingAttachment->CombatModifier;
+                $this->ModifiedFinesse += $existingAttachment->FinesseModifier;
+                $this->ModifiedInfluence += $existingAttachment->InfluenceModifier;
+            }
 
             $this->setLockedValues($theah);
 
-            unset($this->Attachments[$index]);
             $this->Attachments = array_values($this->Attachments);
             $this->IsUpdated = true;
         }
