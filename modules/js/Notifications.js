@@ -1810,7 +1810,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }),  divId, 'last');
 
             const cardDivId = `duel_round_${args.round}_combat_card_${combatCard.id}`;
-            this.addTooltipHtml(cardDivId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTooltipHtml(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
     
             if (args.gambled)
             {

@@ -185,7 +185,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
                 if (ele.classList.contains('_7sfs-card_tt')) 
                 {
                     const cardImage = ele.getAttribute('image');
-                    this.addTooltipHtml( ele_id, `<img src="${g_gamethemeurl + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
+                    this.addTooltipHtml( ele_id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
                 }
             });
         },

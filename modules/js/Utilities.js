@@ -282,14 +282,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
     createTooltipForCard: function(card)
     {
         if (!card.controllerId) {
-            this.addTooltipHtml(`${card.divId}_image`, `<img src="${g_gamethemeurl + card.image}" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTooltipHtml(`${card.divId}_image`, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />`, this.CARD_TOOLTIP_DELAY);
             return;
         }
 
         const traits = card.traits?.join(', ') ?? '';
         const html = `
         <div style="position:relative;">
-            <img src="${g_gamethemeurl + card.image}" />
+            <img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />
             <div class="_7sfs-card-info">
                 <div style="background-color:white; color:black">Traits: ${traits}</div>
                 ${card.actions?.map((action) => `<div style="background-color:${action.available ? 'green' : 'red'};">${_('Action:')} ${_(action.shortName)}</div>`).join('') ?? ''}
@@ -448,7 +448,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             image: event.image,
         }), targetDiv, "before" );
 
-        this.addTooltipHtml( divId, `<img src="${g_gamethemeurl + event.image}" />`, this.CARD_TOOLTIP_DELAY);
+        this.addTooltipHtml( divId, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + event.image}" />`, this.CARD_TOOLTIP_DELAY);
 
         if (event.reknown > 0) {
             divId = `${divId}-reknown`;
@@ -642,7 +642,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
     {
         const card = this.cardProperties[cardTypeId];
         //Add tooltip to card
-        this.addTooltipHtml( cardDiv.id, `<img src="${g_gamethemeurl + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+        this.addTooltipHtml( cardDiv.id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
     },
 
     isCardInCity: function( cardId )
@@ -897,7 +897,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 }),  divId, 'last');
 
                 const cardDivId = `duel_round_${row.round}_combat_card_${combatCard.id}`;
-                this.addTooltipHtml(cardDivId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+                this.addTooltipHtml(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
                 if (row.gambled)
                 {
                     dojo.addClass(divId, '_7sfs-engaged');
