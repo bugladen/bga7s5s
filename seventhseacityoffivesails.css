@@ -1260,6 +1260,13 @@ body {
         max-width: 248px;
         height: auto;
     }
+    
+    /* Card info position (50% of original 350px) */
+    ._7sfs-card-info {
+        left: 0px !important;
+        top: 175px !important;
+        width: 248px !important;
+    }
 }
 
 ._7sfs-selectable {
