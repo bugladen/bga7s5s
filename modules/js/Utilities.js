@@ -111,6 +111,11 @@ return declare('seventhseacityoffivesails.utilities', null, {
             frontDiv.style.backgroundSize = 'cover';
             frontDiv.style.borderRadius = '4px';
             
+            // Assign an ID to the front div if it doesn't have one (bga-cards doesn't set this)
+            if (!frontDiv.id) {
+                frontDiv.id = `${cardElement.id}_front`;
+            }
+            
             // Add tooltip (with class for mobile scaling)
             this.addTooltipHtml(frontDiv.id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
         }

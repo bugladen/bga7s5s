@@ -1007,6 +1007,16 @@ body {
     font-size: 14pt;
 }
 
+/* Tooltip card image styling - prevents layout shifts and ensures proper display */
+._7sfs-card-tooltip-img {
+    max-width: 495px;
+    height: auto;
+    display: block;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
 /* To make sure that the hands are below the city */
 ._7sfs-hand {
     clear:left;
