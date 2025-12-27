@@ -433,7 +433,7 @@
                 cost.innerHTML = parseInt(discountedCost);
                 dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
     
-                this.factionHand.setSelectionMode(2);
+                this.factionHand.setSelectionMode('multiple');
             },
 
             'highDramaPhase01008': () => {
@@ -1020,7 +1020,7 @@
                         }
                     );
                     $('faction_hand_info').innerHTML = translated;
-                    this.factionHand.setSelectionMode(1);
+                    this.factionHand.setSelectionMode('single');
     
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
@@ -1210,7 +1210,7 @@
                     this.clientStateArgs.ids = args.args.args.ids;
                     this.highlightCardsAsChosen(args.args.args.ids);
 
-                    this.factionHand.setSelectionMode(1);
+                    this.factionHand.setSelectionMode('single');
                 }            
             },
 
@@ -1254,7 +1254,7 @@
             'highDramaPhase01102': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(2);
+                    this.factionHand.setSelectionMode('multiple');
                 }
             },
 
@@ -1362,26 +1362,29 @@
                 if (this.isCurrentPlayerActive()) 
                     {
                         const cardId = args.args.args.cardId;
-                        const div = this.factionHand.getItemDivId(cardId);
-                        dojo.addClass(div, '_7sfs-unselectable');
+                        const card = this.factionHand.getCards().find(c => c.id === cardId);
+                        const cardElement = card ? this.factionHand.getCardElement(card) : null;
+                        if (cardElement) {
+                            dojo.addClass(cardElement, '_7sfs-unselectable');
+                
+                            dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                                id: cardElement.id,
+                                cost: args.args.args.cost,
+                            }), cardElement, "first" );    
             
-                        dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
-                            id: div,
-                            cost: args.args.args.cost,
-                        }), div, "first" );    
-        
-                        const costDiv = $(`${div}_wealth_cost`);
-                        const cost = parseInt(costDiv.innerHTML);
-                        let discountedCost = cost - args.args.args.discount;
-                        discountedCost = discountedCost < 0 ? 0 : discountedCost;
-                        if (discountedCost !== cost)
-                        {
-                            costDiv.innerHTML = parseInt(discountedCost);
-                            dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                            const costDiv = $(`${cardElement.id}_wealth_cost`);
+                            const cost = parseInt(costDiv.innerHTML);
+                            let discountedCost = cost - args.args.args.discount;
+                            discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                            if (discountedCost !== cost)
+                            {
+                                costDiv.innerHTML = parseInt(discountedCost);
+                                dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                            }
                         }
         
                         $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
-                        this.factionHand.setSelectionMode(2);
+                        this.factionHand.setSelectionMode('multiple');
                     }
             },
 
@@ -1617,7 +1620,7 @@
                         this.clientStateArgs.targetId = args.args.args.targetId;
                     }
     
-                    this.factionHand.setSelectionMode(1);
+                    this.factionHand.setSelectionMode('single');
                 }
             },
             'highDramaPhase01148_4': () => {
@@ -1642,7 +1645,7 @@
                         this.clientStateArgs.targetId = args.args.args.targetId;
                     }
     
-                    this.factionHand.setSelectionMode(1);
+                    this.factionHand.setSelectionMode('single');
                 }
             },                
     
@@ -1713,7 +1716,7 @@
                         }
                     );
                     $('faction_hand_info').innerHTML = translated;
-                    this.factionHand.setSelectionMode(1);
+                    this.factionHand.setSelectionMode('single');
     
                     card = this.cardProperties[args.args.args.performerId];
                     const image = $(`${card.divId}_image`);
@@ -1754,7 +1757,7 @@
             'highDramaPhase01158': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(1);
+                    this.factionHand.setSelectionMode('single');
                 }
             },
 
@@ -1854,7 +1857,7 @@
                     this.chooseList.setSelectionMode(0);
         
                     $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
-                    this.factionHand.setSelectionMode(2);
+                    this.factionHand.setSelectionMode('multiple');
                 }            
             },
     
@@ -1968,7 +1971,7 @@
                     this.chooseList.setSelectionMode(0);
         
                     $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
-                    this.factionHand.setSelectionMode(2);
+                    this.factionHand.setSelectionMode('multiple');
                 }
             },
     
@@ -1982,7 +1985,7 @@
                         }
                     );
                     $('faction_hand_info').innerHTML = translated;
-                    this.factionHand.setSelectionMode(2);
+                    this.factionHand.setSelectionMode('multiple');
     
                     card = this.cardProperties[args.args.args.id];
                     const image = $(`${card.divId}_image`);
@@ -2244,7 +2247,7 @@
             'duelChooseTechnique_01093': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(1);
+                    this.factionHand.setSelectionMode('single');
                 }
             },
 
@@ -2321,7 +2324,7 @@
             'duelResolveManeuver_01108': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(1);
+                    this.factionHand.setSelectionMode('single');
                 }
             },
 
@@ -2329,33 +2332,36 @@
                 if (this.isCurrentPlayerActive()) 
                 {
                     const cardId = args.args.args.attachmentId;
-                    const div = this.factionHand.getItemDivId(cardId);
-                    dojo.addClass(div, '_7sfs-unselectable');
+                    const card = this.factionHand.getCards().find(c => c.id === cardId);
+                    const cardElement = card ? this.factionHand.getCardElement(card) : null;
+                    if (cardElement) {
+                        dojo.addClass(cardElement, '_7sfs-unselectable');
+            
+                        dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                            id: cardElement.id,
+                            cost: args.args.args.cost,
+                        }), cardElement, "first" );    
         
-                    dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
-                        id: div,
-                        cost: args.args.args.cost,
-                    }), div, "first" );    
-    
-                    const costDiv = $(`${div}_wealth_cost`);
-                    const cost = parseInt(costDiv.innerHTML);
-                    let discountedCost = cost - args.args.args.discount;
-                    discountedCost = discountedCost < 0 ? 0 : discountedCost;
-                    if (discountedCost !== cost)
-                    {
-                        costDiv.innerHTML = parseInt(discountedCost);
-                        dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                        const costDiv = $(`${cardElement.id}_wealth_cost`);
+                        const cost = parseInt(costDiv.innerHTML);
+                        let discountedCost = cost - args.args.args.discount;
+                        discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                        if (discountedCost !== cost)
+                        {
+                            costDiv.innerHTML = parseInt(discountedCost);
+                            dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                        }
                     }
     
                     $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
-                    this.factionHand.setSelectionMode(2);
+                    this.factionHand.setSelectionMode('multiple');
                 }
             },
 
             'duelResolveManeuver_01115': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(1);
+                    this.factionHand.setSelectionMode('single');
                 }
             },
 

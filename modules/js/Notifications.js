@@ -464,9 +464,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const performer = this.cardProperties[args.performerId];
 
         //See if the card came from the hand
-        if (this.factionHand.getItemById(attachment.id) != undefined)
+        const cardExists = this.factionHand.getCards().some(c => c.id === attachment.id);
+        if (cardExists)
         {
-            this.factionHand.removeFromStockById(attachment.id);
+            const card = this.cardProperties[attachment.id];
+            this.factionHand.removeCard(card);
         }
         else if (this.cardProperties[attachment.id] != undefined)
         {
@@ -571,7 +573,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
             this.addCardToDeck(this.factionHand, card);
         });
 
-        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
+        // Show faction hand when cards are drawn
+        dojo.removeClass('factionHand-placeholder', 'hidden');
+
+        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.getCards().length;
     },
 
     notif_factionResolveCardDrawPublic: function( notif )
@@ -612,7 +617,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const card = args.card;
         this.cardProperties[card.id] = card;
         this.addCardToDeck(this.factionHand, card);
-        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.count();
+        $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.getCards().length;
 
     },
 
@@ -738,7 +743,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         if (args.playerId == this.player_id)
         {
-            this.factionHand.removeFromStockById(card.id);
+            this.factionHand.removeCard(card);
         }
 
         card.location = this.LOCATION_PLAYER_DISCARD;
@@ -755,7 +760,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         if (notif.args.playerId == this.player_id)
         {
-            this.factionHand.removeFromStockById(args.cardId);
+            const card = this.cardProperties[args.cardId];
+            if (card) this.factionHand.removeCard(card);
         }
 
         $(`${notif.args.playerId}-score-hand-count`).innerHTML = args.handCount;
@@ -914,7 +920,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
                 id: woundChip,
                 class: '_7sfs-wound-chip',
             }),  characterImage, 'last');
-            this.addTooltipHtml( woundChip, `<div class='_7sfs-basic-tooltip'>${_("Wounds")}</div>` );
+            this.addTippyTooltip( woundChip, `<div class='_7sfs-basic-tooltip'>${_("Wounds")}</div>` );
         }
         
         card.wounds += args.wounds;
@@ -1424,7 +1430,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-yevgeni-adversary-chip',
         }),  imageElement, 'last');
 
-        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
+        this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
     },
 
     notif_yevgeniAdversaryRemoved: function( notif )
@@ -1459,7 +1465,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-maryam-benu-pleroma-ability-used-chip',
         }),  imageElement, 'last');
 
-        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
+        this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
     },
 
     notif_maryamBenuPleromaAbilityRemoved: function( notif )
@@ -1494,7 +1500,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-indomitable-will-condition-chip',
         }),  imageElement, 'last');
 
-        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("This character has Indomitable Will")}</div>` );
+        this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("This character has Indomitable Will")}</div>` );
     },
 
     notif_indomitableWillConditionEnded: function( notif )
@@ -1529,7 +1535,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-crystal-eye-target-chip',
         }),  div, 'last');
 
-        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
+        this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
     },
 
     notif_crystalEyeTargetRemoved: function( notif )
@@ -1559,14 +1565,16 @@ return declare('seventhseacityoffivesails.notifications', null, {
         {
             card.conditions.push(this.CATS_EMBARGO_TARGET);
 
-            const div = this.factionHand.getItemDivId(args.cardId);
-            const id = `${args.cardId}_cats_embargo_target`;
-            dojo.place( this.format_block( 'jstpl_generic_chip', {
-                id: id,
-                class: '_7sfs-cats-embargo-target-chip',
-            }),  div, 'last');
-    
-            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>` );
+            const cardElement = this.factionHand.getCardElement(card);
+            if (cardElement) {
+                const id = `${args.cardId}_cats_embargo_target`;
+                dojo.place( this.format_block( 'jstpl_generic_chip', {
+                    id: id,
+                    class: '_7sfs-cats-embargo-target-chip',
+                }),  cardElement, 'last');
+        
+                this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>` );
+            }
         }
     },
 
@@ -1644,7 +1652,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             id: challengerChipId,
             class: '_7sfs-challenger-chip',
         }),  challengerImage, 'last');
-        this.addTooltipHtml( challengerChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
+        this.addTippyTooltip( challengerChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
 
         const defender = this.cardProperties[args.defenderId];
         defender.conditions.push(this.DEFENDER);
@@ -1654,7 +1662,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             id: defenderChipId,
             class: '_7sfs-defender-chip',
         }),  defenderImage, 'last');
-        this.addTooltipHtml( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
+        this.addTippyTooltip( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
     },
 
     notif_challengerSwapped: function( notif )
@@ -1677,7 +1685,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             id: challengerChipId,
             class: '_7sfs-challenger-chip',
         }),  challengerImage, 'last');
-        this.addTooltipHtml( challengerChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
+        this.addTippyTooltip( challengerChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
     },
 
     notif_defenderSwapped: function( notif )
@@ -1700,7 +1708,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             id: defenderChipId,
             class: '_7sfs-defender-chip',
         }),  defenderImage, 'last');
-        this.addTooltipHtml( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
+        this.addTippyTooltip( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
     },
 
     notif_characterIntervened: function( notif )
@@ -1723,7 +1731,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             id: defenderChipId,
             class: '_7sfs-defender-chip',
         }),  defenderImage, 'last');
-        this.addTooltipHtml( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
+        this.addTippyTooltip( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
     },
 
     notif_duelStarted: function( notif )
@@ -1739,7 +1747,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
         
         if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)
         {
-            dojo.place('factionHand-container', 'duel', 'before');
+            // Move faction hand placeholder to bottom of duel rows
+            dojo.place('factionHand-placeholder', 'duel', 'after');
+            // Re-check floating state after moving placeholder
+            if (this.checkFloatingHand) this.checkFloatingHand();
         }
     },
 
@@ -1799,7 +1810,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }),  divId, 'last');
 
             const cardDivId = `duel_round_${args.round}_combat_card_${combatCard.id}`;
-            this.addTooltipHtml(cardDivId, `<img src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
     
             if (args.gambled)
             {
@@ -1808,7 +1819,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }
             else if (this.player_id == combatCard.controllerId)
             {
-                this.factionHand.removeFromStockById(combatCard.id);
+                this.factionHand.removeCard(combatCard);
             }
             $(`${combatCard.controllerId}-score-hand-count`).innerHTML = args.handCount;
         }
@@ -1952,6 +1963,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
             defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
             const defenderChipId = `${defender.divId}_defender`;
             dojo.destroy(defenderChipId);
+        }
+
+        // Move faction hand placeholder back to top of page (after choose_container)
+        if (!this.isSpectator)
+        {
+            dojo.place('factionHand-placeholder', 'choose_container', 'after');
+            // Re-check floating state after moving placeholder
+            if (this.checkFloatingHand) this.checkFloatingHand();
         }
     },
 

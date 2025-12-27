@@ -35,16 +35,16 @@ return declare('seventhseacityoffivesails.setup', null, {
         dojo.connect($('city-discard'), 'onclick', this, 'onCityDiscardClicked');
 
         // Set up the city tooltips
-        this.addTooltipHtml( 'oles-inn-image', `<div class='_7sfs-basic-tooltip'>${_("Ole's Inn.  If you control this, you can draw a card as an action.")}</div>` );
-        this.addTooltipHtml( 'dock-image', `<div class='_7sfs-basic-tooltip'>${_('The City Docks')}</div>` );
-        this.addTooltipHtml( 'forum-image', `<div class='_7sfs-basic-tooltip'>${_('The City Forum')}</div>` );
-        this.addTooltipHtml( 'bazaar-image', `<div class='_7sfs-basic-tooltip'>${_('The Grand Bazaar')}</div>` );
-        this.addTooltipHtml( 'garden-image', `<div class='_7sfs-basic-tooltip'>${_("Governor's Garden.  If you control this, you can draw a card as an action.")}</div>` );
+        this.addTippyTooltip( 'oles-inn-image', `<div class='_7sfs-basic-tooltip'>${_("Ole's Inn.  If you control this, you can draw a card as an action.")}</div>` );
+        this.addTippyTooltip( 'dock-image', `<div class='_7sfs-basic-tooltip'>${_('The City Docks')}</div>` );
+        this.addTippyTooltip( 'forum-image', `<div class='_7sfs-basic-tooltip'>${_('The City Forum')}</div>` );
+        this.addTippyTooltip( 'bazaar-image', `<div class='_7sfs-basic-tooltip'>${_('The Grand Bazaar')}</div>` );
+        this.addTippyTooltip( 'garden-image', `<div class='_7sfs-basic-tooltip'>${_("Governor's Garden.  If you control this, you can draw a card as an action.")}</div>` );
 
-        this.addTooltipHtml( 'city-discard', `<div class='_7sfs-basic-tooltip'>${_('City Discard Pile')}</div>` );
-        this.addTooltipHtml( 'day-indicator', `<div class='_7sfs-basic-tooltip'>${_('The Current Day')}</div>` );
-        this.addTooltipHtml( 'city-day-phase', `<div class='_7sfs-basic-tooltip'>${_('The Current Phase of the Day')}</div>` );
-        this.addTooltipHtmlToClass('_7sfs-city-reknown-chip', `<div class='_7sfs-basic-tooltip'>${_('Current Renown on this City Location')}</div>` );
+        this.addTippyTooltip( 'city-discard', `<div class='_7sfs-basic-tooltip'>${_('City Discard Pile')}</div>` );
+        this.addTippyTooltip( 'day-indicator', `<div class='_7sfs-basic-tooltip'>${_('The Current Day')}</div>` );
+        this.addTippyTooltip( 'city-day-phase', `<div class='_7sfs-basic-tooltip'>${_('The Current Phase of the Day')}</div>` );
+        this.addTippyTooltipToClass('_7sfs-city-reknown-chip', `<div class='_7sfs-basic-tooltip'>${_('Current Renown on this City Location')}</div>` );
 
         //Update the day
         if (gamedatas.day > 0) {
@@ -81,10 +81,10 @@ return declare('seventhseacityoffivesails.setup', null, {
                 handCount: player.handCount,
                 faction: player.leader?.faction.toLowerCase() ?? '',
             });
-            this.addTooltipHtml( `${playerId}-score-reknown`, `<div class='_7sfs-basic-tooltip'>${_('Current Renown')}</div>` );
-            this.addTooltipHtml( `${playerId}-score-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Cap')}</div>` );
-            this.addTooltipHtml( `${playerId}-score-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
-            this.addTooltipHtml( `${playerId}-score-hand-count`, `<div class='_7sfs-basic-tooltip'>${_('Number of cards in Faction Hand')}</div>` );
+            this.addTippyTooltip( `${playerId}-score-reknown`, `<div class='_7sfs-basic-tooltip'>${_('Current Renown')}</div>` );
+            this.addTippyTooltip( `${playerId}-score-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Cap')}</div>` );
+            this.addTippyTooltip( `${playerId}-score-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
+            this.addTippyTooltip( `${playerId}-score-hand-count`, `<div class='_7sfs-basic-tooltip'>${_('Number of cards in Faction Hand')}</div>` );
 
             //Display only if we are out of the faction choosing phase
             if (gamedatas.homeCards.length > 0) {
@@ -146,10 +146,10 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.getPlayerPanelElement(this.player_id).innerHTML += this.format_block( 'jstpl_help_cards', {
                 path: g_gamethemeurl
             });
-            this.addTooltipHtml("help_card_1", `<img src="${g_gamethemeurl}/img/cards/help.card.1.jpg" />`, this.CARD_TOOLTIP_DELAY);
-            this.addTooltipHtml("help_card_2", `<img src="${g_gamethemeurl}/img/cards/help.card.2.jpg" />`, this.CARD_TOOLTIP_DELAY);
-            this.addTooltipHtml("help_card_3", `<img src="${g_gamethemeurl}/img/cards/help.card.3.jpg" />`, this.CARD_TOOLTIP_DELAY);
-            this.addTooltipHtml("help_card_4", `<img src="${g_gamethemeurl}/img/cards/help.card.4.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip("help_card_1", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.1.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip("help_card_2", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.2.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip("help_card_3", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.3.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip("help_card_4", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.4.jpg" />`, this.CARD_TOOLTIP_DELAY);
     
         }
         
@@ -160,8 +160,8 @@ return declare('seventhseacityoffivesails.setup', null, {
             dojo.removeClass(`${gamedatas.firstPlayer}-score-seal-first-player`, '_7sfs-first-player-hidden');
             dojo.addClass(`${gamedatas.firstPlayer}-score-seal-first-player`, '_7sfs-first-player-score');
 
-            this.addTooltipHtmlToClass('_7sfs-first-player-home', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
-            this.addTooltipHtmlToClass('_7sfs-first-player-score', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
+            this.addTippyTooltipToClass('_7sfs-first-player-home', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
+            this.addTippyTooltipToClass('_7sfs-first-player-score', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
         }
 
         // Set up Ole's inn
@@ -233,11 +233,13 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.displayLocationControlChip(this.LOCATION_CITY_GOVERNORS_GARDEN);
         }
 
-        // Create Approach deck
+        // Create Approach deck (1.5x scaled)
+        const approachDeckCardWidth = Math.round(this.wholeCardWidth * 1.5);
+        const approachDeckCardHeight = Math.round(this.wholeCardHeight * 1.5);
         this.approachDeck = new ebg.stock();
-        this.approachDeck.create( this, $('approachDeck'), this.wholeCardWidth, this.wholeCardHeight ); 
+        this.approachDeck.create( this, $('approachDeck'), approachDeckCardWidth, approachDeckCardHeight ); 
         this.approachDeck.image_items_per_row = 0;
-        this.approachDeck.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
+        this.approachDeck.resizeItems(approachDeckCardWidth, approachDeckCardHeight, approachDeckCardWidth, approachDeckCardHeight);
         this.approachDeck.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
         this.approachDeck.setSelectionAppearance( 'class' )
         dojo.connect( this.approachDeck, 'onChangeSelection', this, 'onApproachCardClicked' );
@@ -253,36 +255,87 @@ return declare('seventhseacityoffivesails.setup', null, {
                     id: id,
                     class: '_7sfs-crystal-eye-target-chip',
                 }),  div, 'last');
-                this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
+                this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
             }
 
         });
         this.approachDeck.setSelectionMode(0);
 
-        // Create the faction hand
-        this.factionHand = new ebg.stock();
-        this.factionHand.create( this, $('factionHand'), this.wholeCardWidth, this.wholeCardHeight ); 
-        this.factionHand.image_items_per_row = 0;
-        this.factionHand.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
-        this.factionHand.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
-        this.factionHand.setSelectionAppearance( 'class' )
-        dojo.connect( this.factionHand, 'onChangeSelection', this, 'onFactionCardClicked' );
-        // For each card in the approach deck, create a stock item
-        gamedatas.factionHand.forEach((card) => {
-            this.addCardToDeck(this.factionHand, card);
+        // Create CardManager for faction hand cards
+        // Mobile includes portrait (width <= 768) and landscape (height <= 500 with landscape orientation)
+        const isMobile = window.innerWidth <= 768 || (window.innerHeight <= 500 && window.innerWidth > window.innerHeight);
+        
+        this.factionHandManager = new CardManager(this, {
+            getId: (card) => `factionhand-card-${card.id}`,
+            animationManager: isMobile ? undefined : this.animationManager, // No animations on mobile
+        });
 
-            //Check for any special conditions where a token has to be displayed
+        // Create HandStock - use LineStock on mobile to avoid fanning calculations
+        if (isMobile) {
+            this.factionHand = new LineStock(this.factionHandManager, $('factionHand'), {
+                center: false,
+                sort: (a, b) => {
+                    const weightA = (a.type === "Scheme" || a.type === 'Attachment') ? 1 : 2;
+                    const weightB = (b.type === "Scheme" || b.type === 'Attachment') ? 1 : 2;
+                    if (weightA !== weightB) return weightA - weightB;
+                    return a.id - b.id;
+                },
+            });
+        } else {
+            this.factionHand = new HandStock(this.factionHandManager, $('factionHand'), {
+                cardOverlap: '40px',
+                sort: (a, b) => {
+                    // Schemes and Attachments first, then by id
+                    const weightA = (a.type === "Scheme" || a.type === 'Attachment') ? 1 : 2;
+                    const weightB = (b.type === "Scheme" || b.type === 'Attachment') ? 1 : 2;
+                    if (weightA !== weightB) return weightA - weightB;
+                    return a.id - b.id;
+                },
+            });
+        }
+
+        // Selection change handler
+        this.factionHand.onSelectionChange = (selection, lastChange) => {
+            // Pass null for control_name and lastChange.id for item_id to match expected signature
+            this.onFactionCardClicked(null, lastChange ? lastChange.id : undefined);
+        };
+
+        // Add initial cards
+        gamedatas.factionHand.forEach((card) => {
+            this.cardProperties[card.id] = card;
+            this.factionHand.addCard(card);
+            
+            // Apply styling directly since setupDiv callback doesn't work
+            this.applyFactionHandCardStyle(card);
+            
+            // Check for special conditions
             if (card.conditions.includes(this.CATS_EMBARGO_TARGET)) {
-                const div = this.factionHand.getItemDivId(card.id);
-                const id = `${card.id}_cats_embargo_target`;
-                dojo.place( this.format_block( 'jstpl_generic_chip', {
-                    id: id,
-                    class: '_7sfs-cats-embargo-target-chip',
-                }),  div, 'last');
-                this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>` );
+                const cardElement = this.factionHand.getCardElement(card);
+                if (cardElement) {
+                    const id = `${card.id}_cats_embargo_target`;
+                    dojo.place(this.format_block('jstpl_generic_chip', {
+                        id: id,
+                        class: '_7sfs-cats-embargo-target-chip',
+                    }), cardElement, 'last');
+                    this.addTippyTooltip(id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>`);
+                }
             }
         });
-        this.factionHand.setSelectionMode(0);
+
+        this.factionHand.setSelectionMode('none');
+
+        // Show faction hand elements if game is past planningPhaseDraw
+        // The hand should remain hidden until after cards have been drawn
+        const hiddenHandStates = ['pickDecks', 'buildTable', 'setupTable', 'planningPhaseDraw'];
+        const currentState = gamedatas.gamestate?.name || '';
+        const isEarlyState = hiddenHandStates.some(state => currentState.startsWith(state));
+        
+        if (gamedatas.homeCards && gamedatas.homeCards.length > 0 && !isEarlyState) {
+            dojo.removeClass('factionHand-placeholder', 'hidden');
+        }
+
+        // Setup floating hand behavior
+        this.setupFloatingHand();
 
         this.chooseList = new ebg.stock();
         this.chooseList.create( this, $('chooseList'), this.wholeCardWidth, this.wholeCardHeight ); 
@@ -299,8 +352,12 @@ return declare('seventhseacityoffivesails.setup', null, {
 
             this.displayDuelTable();
 
-            if (this.player_id == gamedatas.challengingPlayerId || this.player_id == gamedatas.defendingPlayerId)
-                dojo.place('factionHand-container', 'duel', 'before');
+            // Move faction hand placeholder to bottom of duel rows
+            if (this.player_id == gamedatas.challengingPlayerId || this.player_id == gamedatas.defendingPlayerId) {
+                dojo.place('factionHand-placeholder', 'duel', 'after');
+                // Re-check floating state after moving placeholder
+                if (this.checkFloatingHand) this.checkFloatingHand();
+            }
 
             gamedatas.duelRounds.forEach((round) => {
                 this.displayDuelRow(round);
@@ -310,7 +367,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         if (this.isSpectator)
         {
             dojo.addClass('approachDeck-container', 'hidden');
-            dojo.addClass('factionHand-container', 'hidden');
+            dojo.addClass('factionHand-placeholder', 'hidden');
         }
 
         // Setup game notifications to handle (see "setupNotifications" method below)

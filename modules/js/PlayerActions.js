@@ -184,7 +184,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onChooseHandCardConfirmed: function()
     {
-        var items = this.factionHand.getSelectedItems();
+        var items = this.factionHand.getSelection();
         let id = Object.values(items)[0].id;
 
         const actionArray = {
@@ -209,7 +209,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onDuelChooseCombatCardConfirmed: function()
     {
-        var items = this.factionHand.getSelectedItems();
+        var items = this.factionHand.getSelection();
         const card = Object.values(items)[0];
         this.bgaPerformAction('actDuelActionChooseCombatCard', { 
             'cardId' : card.id
@@ -261,7 +261,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onRecruitCharacterConfirmed: function()
     {
-        var items = this.factionHand.getSelectedItems();
+        var items = this.factionHand.getSelection();
         items = items.map((item) => item.id);
 
         const actionArray = {
@@ -279,7 +279,7 @@ return declare('seventhseacityoffivesails.actions', null, {
                 }).then(() =>  {
                     if (!errors)
                     {
-                        items.forEach((item) => this.factionHand.removeFromStockById(item));
+                        items.forEach((item) => this.factionHand.removeCard(item));
                     }
                 });
                 break;
@@ -288,7 +288,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onActionCardFromHandPaymentConfirmed: function()
     {
-        var items = this.factionHand.getSelectedItems();
+        var items = this.factionHand.getSelection();
         items = items.map((item) => item.id);
 
         let errors = false;
@@ -299,10 +299,12 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).then(() =>  {
             if (!errors)
             {
-                if (this.clientStateArgs.chosenActionCardId)
-                    this.factionHand.removeFromStockById(this.clientStateArgs.chosenActionCardId);
+                if (this.clientStateArgs.chosenActionCardId) {
+                    const actionCard = this.cardProperties[this.clientStateArgs.chosenActionCardId];
+                    if (actionCard) this.factionHand.removeCard(actionCard);
+                }
                 
-                items.forEach((item) => this.factionHand.removeFromStockById(item));
+                items.forEach((item) => this.factionHand.removeCard(item));
             }
 
         });
@@ -310,7 +312,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onPaymentConfirmed: function()
     {
-        var items = this.factionHand.getSelectedItems();
+        var items = this.factionHand.getSelection();
         items = items.map((item) => item.id);
 
         const actionArray = {
@@ -328,17 +330,19 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).then(() =>  {
             if (!errors) 
             {
-                if (this.clientStateArgs.chosenCardId)
-                    this.factionHand.removeFromStockById(this.clientStateArgs.chosenCardId);
+                if (this.clientStateArgs.chosenCardId) {
+                    const chosenCard = this.cardProperties[this.clientStateArgs.chosenCardId];
+                    if (chosenCard) this.factionHand.removeCard(chosenCard);
+                }
 
-                items.forEach((item) => this.factionHand.removeFromStockById(item));
+                items.forEach((item) => this.factionHand.removeCard(item));
             }
         });            
     },
 
     onPaymentConfirmedFromCard: function()
     {
-        var items = this.factionHand.getSelectedItems();
+        var items = this.factionHand.getSelection();
         items = items.map((item) => item.id);
 
         const actionArray = {
@@ -358,14 +362,14 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).then(() =>  {
             if (!errors)
             {
-                items.forEach((item) => this.factionHand.removeFromStockById(item));
+                items.forEach((item) => this.factionHand.removeCard(item));
             }
         });        
     },
 
     onCombatCardPaymentConfirmed: function()
     {
-        var items = this.factionHand.getSelectedItems();
+        var items = this.factionHand.getSelection();
         items = items.map((item) => item.id);
 
         let errors = false;
@@ -376,15 +380,16 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).then(() =>  {
             if (!errors)
             {
-                items.forEach((item) => this.factionHand.removeFromStockById(item));
-                this.factionHand.removeFromStockById(this.clientStateArgs.combatCardId);
+                items.forEach((item) => this.factionHand.removeCard(item));
+                const combatCard = this.cardProperties[this.clientStateArgs.combatCardId];
+                if (combatCard) this.factionHand.removeCard(combatCard);
             }
         });        
     },
 
     onReactionPaymentConfirmed: function()
     {
-        var items = this.factionHand.getSelectedItems();
+        var items = this.factionHand.getSelection();
         items = items.map((item) => item.id);
 
         let errors = false;
@@ -395,15 +400,16 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).then(() =>  {
             if (!errors)
             {
-                this.factionHand.removeFromStockById(this.clientStateArgs.reactionCardId);
-                items.forEach((item) => this.factionHand.removeFromStockById(item));
+                const reactionCard = this.cardProperties[this.clientStateArgs.reactionCardId];
+                if (reactionCard) this.factionHand.removeCard(reactionCard);
+                items.forEach((item) => this.factionHand.removeCard(item));
             }
         });        
     },
 
     onCardsChosenForDiscard: function()
     {
-        let items = this.factionHand.getSelectedItems();
+        let items = this.factionHand.getSelection();
         items = items.map((item) => item.id);
     
         let errors = false;
@@ -412,28 +418,28 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
-            if (!errors) items.forEach((item) => this.factionHand.removeFromStockById(item));
+            if (!errors) items.forEach((item) => this.factionHand.removeCard(item));
         });        
     },
 
     onCardDiscarded: function()
     {
-        let items = this.factionHand.getSelectedItems();
-        let item = items[0].id;
+        let items = this.factionHand.getSelection();
+        let card = items[0];
         let errors = false;
     
         this.bgaPerformAction('actFromCardWithId', { 
-            'id': item,
+            'id': card.id,
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
-            if (!errors) this.factionHand.removeFromStockById(item);
+            if (!errors) this.factionHand.removeCard(card);
         });        
     },
 
     onCardsDiscarded: function()
     {
-        let items = this.factionHand.getSelectedItems();
+        let items = this.factionHand.getSelection();
         items = items.map((item) => item.id);
         let errors = false;
     
@@ -442,7 +448,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
-            if (!errors) items.forEach((item) => this.factionHand.removeFromStockById(item));
+            if (!errors) items.forEach((item) => this.factionHand.removeCard(item));
         });        
     },
 
