@@ -21,6 +21,9 @@ define([
    "ebg/counter",
    "ebg/stock",
    getLibUrl('bga-animations', '1.x'),
+   getLibUrl('bga-cards', '1.x'),
+   g_gamethemeurl + 'modules/js/vendor/popper.js',
+   g_gamethemeurl + 'modules/js/vendor/tippy.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.7s5s.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.js',
@@ -33,11 +36,21 @@ define([
    g_gamethemeurl + 'modules/js/EventHandlers.js',
    g_gamethemeurl + 'modules/js/PlayerActions.js',
 ],
-function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations)
+function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCards)
 {
     // Define isDebug and debug globally so all modules can access them
     window.isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
+    
+    // Store bga-cards classes globally
+    // The library exports CardManager as 'Manager' and HandStock directly
+    window.CardManager = bgaCards.Manager;
+    window.HandStock = bgaCards.HandStock;
+    window.LineStock = bgaCards.LineStock;
+
     window.debug = window.isDebug ? console.info.bind(window.console) : function () {};
+    
+    // Note: Tippy.js and Popper.js are loaded via AMD dependencies but set window.tippy globally
+    // The wrapper functions in Utilities.js use window.tippy directly
 
     // Store BgaAnimations globally to avoid ReferenceError when used in mixed-in classes
     window.BgaAnimations = BgaAnimations;
@@ -108,7 +121,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations)
             this.IRON_AND_VELVET_CHALLENGE_TYPE = 11;
 
             this.CARD_TOOLTIP_DELAY = 1000;
-            this.STOCK_CARD_TOOLTIP_DELAY = 100;
+            this.STOCK_CARD_TOOLTIP_DELAY = 500;
 
             //Card conditions
             this.ADVERSARY_OF_YEVGENI = 'Adversary of Yevgeni';
@@ -177,7 +190,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations)
                 if (ele.classList.contains('_7sfs-card_tt')) 
                 {
                     const cardImage = ele.getAttribute('image');
-                    this.addTooltipHtml( ele_id, `<img src="${g_gamethemeurl + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
+                    this.addTippyTooltip( ele_id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
                 }
             });
         },

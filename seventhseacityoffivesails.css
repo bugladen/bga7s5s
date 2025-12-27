@@ -22,6 +22,9 @@
     --png-board-resource-height: 257px;
 }
 
+/* Tippy.js Base CSS (v6.3.7) */
+.tippy-box[data-animation=fade][data-state=hidden]{opacity:0}[data-tippy-root]{max-width:calc(100vw - 10px)}.tippy-box{position:relative;background-color:#333;color:#fff;border-radius:4px;font-size:14px;line-height:1.4;white-space:normal;outline:0;transition-property:transform,visibility,opacity}.tippy-box[data-placement^=top]>.tippy-arrow{bottom:0}.tippy-box[data-placement^=top]>.tippy-arrow:before{bottom:-7px;left:0;border-width:8px 8px 0;border-top-color:initial;transform-origin:center top}.tippy-box[data-placement^=bottom]>.tippy-arrow{top:0}.tippy-box[data-placement^=bottom]>.tippy-arrow:before{top:-7px;left:0;border-width:0 8px 8px;border-bottom-color:initial;transform-origin:center bottom}.tippy-box[data-placement^=left]>.tippy-arrow{right:0}.tippy-box[data-placement^=left]>.tippy-arrow:before{border-width:8px 0 8px 8px;border-left-color:initial;right:-7px;transform-origin:center left}.tippy-box[data-placement^=right]>.tippy-arrow{left:0}.tippy-box[data-placement^=right]>.tippy-arrow:before{left:-7px;border-width:8px 8px 8px 0;border-right-color:initial;transform-origin:center right}.tippy-box[data-inertia][data-state=visible]{transition-timing-function:cubic-bezier(.54,1.5,.38,1.11)}.tippy-arrow{width:16px;height:16px;color:#333}.tippy-arrow:before{content:"";position:absolute;border-color:transparent;border-style:solid}.tippy-content{position:relative;padding:5px 9px;z-index:1}
+
 body {
     background-color: #3987c9;
     /* background-image: url(https://www.manytextures.com/download/30/texture/jpg/1024/rough-sea-1024x1024.jpg); */
@@ -406,8 +409,8 @@ body {
     height: 35px;
     border-radius: 50%;
     display: inline-block;
-    left: 33px;
-    top: 60px;
+    right: 5px;
+    bottom: 5px;
     border: 2px solid orangered
 }
 
@@ -807,7 +810,10 @@ body {
     left: 65px;
 }
 ._7sfs-hand-wealth-cost {
+    position: absolute;
+    top: 0;
     left: -15px;
+    z-index: 10;
 }
 ._7sfs-discounted-wealth-cost {
     color: yellow;
@@ -1035,6 +1041,16 @@ body {
     font-size: 14pt;
 }
 
+/* Tooltip card image styling - prevents layout shifts and ensures proper display */
+._7sfs-card-tooltip-img {
+    max-width: 495px;
+    height: auto;
+    display: block;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
 /* To make sure that the hands are below the city */
 ._7sfs-hand {
     clear:left;
@@ -1045,20 +1061,296 @@ body {
     margin-bottom: 5px;
 }
 
+/* ============================================
+   FLOATING HAND STYLES
+   ============================================ */
+
+/* Placeholder container */
+._7sfs-hand-placeholder {
+    min-height: 40px;
+}
+
+/* Hide placeholder completely when hand is floating */
+._7sfs-hand-placeholder._7sfs-hand-floating {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    height: 0 !important;
+    overflow: hidden;
+}
+
+._7sfs-hand-placeholder._7sfs-hand-floating ._7sfs-hand-label {
+    display: none;
+}
+
+._7sfs-floating-indicator {
+    font-style: italic;
+    color: #666;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+/* Floating hand wrapper - fixed at bottom of viewport when floating */
+._7sfs-floating-hand-wrapper {
+    position: fixed;
+    bottom: 50px;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    will-change: position, transform;
+}
+
+/* When not floating, position relative in normal document flow inside placeholder */
+._7sfs-floating-hand-wrapper._7sfs-hand-not-floating {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    z-index: auto;
+    will-change: auto;
+}
+
+/* Floating hand container - minimal styling */
+._7sfs-floating-hand-container {
+    pointer-events: auto;
+    padding: 5px 10px 10px 10px;
+    max-width: 90vw;
+}
+
+/* Hide the floating hand header */
+._7sfs-floating-hand-header {
+    display: none;
+}
+
+
+/* Cards container */
+._7sfs-floating-hand-cards,
+#factionHand {
+    min-height: 110px;
+    overflow: visible;
+    padding: 5px 0;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 5px;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+/* bga-cards HandStock container styling */
+._7sfs-floating-hand-cards .bga-cards_hand-stock,
+#factionHand.bga-cards_hand-stock {
+    display: flex !important;
+    flex-wrap: nowrap;
+    gap: 5px;
+    justify-content: center;
+    align-items: flex-end;
+    min-height: 100px;
+}
+
+/* Card styling in floating hand - force visibility with explicit dimensions */
+#factionHand .bga-cards_card,
+._7sfs-floating-hand-cards .bga-cards_card {
+    width: 108px !important;
+    height: 147px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: default;
+    display: block !important;
+    position: relative;
+    overflow: visible !important;
+}
+
+/* Only show pointer cursor when cards are selectable */
+#factionHand.bga-cards_selectable-cards-stock .bga-cards_card:not(._7sfs-unselectable),
+#factionHand .bga-cards_card._7sfs-selectable:not(._7sfs-unselectable) {
+    cursor: pointer;
+}
+
+#factionHand .bga-cards_card-sides,
+._7sfs-floating-hand-cards .bga-cards_card-sides {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: visible;
+}
+
+#factionHand .bga-cards_card-side,
+._7sfs-floating-hand-cards .bga-cards_card-side {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Card front styling */
+#factionHand .bga-cards_card-side.front {
+    border-radius: 4px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+._7sfs-floating-hand-cards .bga-cards_card:hover {
+    transform: translateY(-15px) scale(1.05);
+    z-index: 10;
+}
+
+._7sfs-floating-hand-cards .bga-cards_selectable-card {
+    box-shadow: 0 0 8px 2px rgba(255, 255, 0, 0.6);
+}
+
+._7sfs-floating-hand-cards .bga-cards_selected-card {
+    transform: translateY(-20px);
+    box-shadow: 0 0 12px 3px rgba(0, 255, 0, 0.8);
+}
+
+/* Hide floating hand for spectators */
+.spectatorMode ._7sfs-hand-placeholder {
+    display: none;
+}
+
+/* Mobile adjustments - simple parked cards, no floating */
+/* Apply to portrait (max-width) and landscape (max-height) mobile devices */
+@media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
+    /* Disable floating on mobile - always parked in placeholder */
+    ._7sfs-floating-hand-wrapper {
+        position: relative !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        z-index: auto !important;
+    }
+    
+    /* Keep placeholder fully visible on mobile - match whiteblock/approach deck styling */
+    ._7sfs-hand-placeholder,
+    ._7sfs-hand-placeholder._7sfs-hand-floating {
+        padding: 10px !important;
+        margin: 10px 5px !important;
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+    }
+    
+    ._7sfs-hand-placeholder ._7sfs-hand-label,
+    ._7sfs-hand-placeholder._7sfs-hand-floating ._7sfs-hand-label {
+        display: block !important;
+        margin-bottom: 10px !important;
+    }
+    
+    /* Scrollable container for cards only */
+    ._7sfs-floating-hand-wrapper {
+        overflow: auto !important;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 !important;
+        padding: 10px 0 !important;
+    }
+    
+    ._7sfs-floating-hand-container {
+        width: max-content;
+        min-width: 100%;
+        padding: 5px !important;
+        margin: 0 !important;
+        max-width: none !important;
+    }
+    
+    /* Simple horizontal card layout - no fanning */
+    ._7sfs-floating-hand-cards,
+    #factionHand,
+    #factionHand.bga-cards_hand-stock,
+    ._7sfs-floating-hand-cards .bga-cards_hand-stock {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 5px 10px !important;
+        margin: 0 !important;
+        width: max-content !important;
+        min-width: 100%;
+    }
+    
+    /* Simple card styling (1.5x size) */
+    #factionHand .bga-cards_card,
+    ._7sfs-floating-hand-cards .bga-cards_card {
+        position: static !important;
+        width: 108px !important;
+        height: 147px !important;
+        flex-shrink: 0 !important;
+        margin-right: 2px !important;
+        margin-left: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    
+    #factionHand .bga-cards_card:last-child,
+    ._7sfs-floating-hand-cards .bga-cards_card:last-child {
+        margin-right: 0 !important;
+    }
+    
+    /* Disable hover effects on mobile */
+    #factionHand .bga-cards_card:hover,
+    ._7sfs-floating-hand-cards .bga-cards_card:hover {
+        transform: none !important;
+    }
+    
+    /* Reduce tooltip image size on mobile (50% of 495px natural width) */
+    ._7sfs-card-tooltip-img {
+        max-width: 248px;
+        height: auto;
+    }
+    
+    /* Card info position (50% of original 350px) */
+    ._7sfs-card-info {
+        left: 0px !important;
+        top: 175px !important;
+        width: 248px !important;
+    }
+}
+
 ._7sfs-selectable {
-    box-shadow: 0 0 2px 2px yellow;
+    box-shadow: 0 0 3px 3px yellow;
 }
 
 ._7sfs-chosen {
-    box-shadow: 0 0 2px 2px white;
+    box-shadow: 0 0 3px 3px white;
 }
 
 ._7sfs-selected {
-    box-shadow: 0 0 2px 2px lime;
+    box-shadow: 0 0 3px 3px lime;
 }
 
 ._7sfs-unselectable {
-    box-shadow: 0 0 2px 2px red;
+    box-shadow: 0 0 3px 3px red;
+}
+
+/* For bga-cards HandStock with fan effect, use filter drop-shadow 
+   which respects transforms, instead of box-shadow */
+#factionHand .bga-cards_card._7sfs-selectable {
+    box-shadow: none;
+    filter: drop-shadow(0 0 3px yellow) drop-shadow(0 0 1px yellow);
+}
+
+#factionHand .bga-cards_card._7sfs-chosen {
+    box-shadow: none;
+    filter: drop-shadow(0 0 3px white) drop-shadow(0 0 1px white);
+}
+
+#factionHand .bga-cards_card._7sfs-selected {
+    box-shadow: none;
+    filter: drop-shadow(0 0 3px lime) drop-shadow(0 0 1px lime);
+}
+
+#factionHand .bga-cards_card._7sfs-unselectable {
+    box-shadow: none;
+    filter: drop-shadow(0 0 3px red) drop-shadow(0 0 1px red);
+    cursor: default;
 }
 
 ._7sfs-engaged {
@@ -1072,7 +1364,7 @@ body {
     transform: translateX(-3px) translateY(-2px);
 }
 
-.spectatorMode #approachDeck #approachDeck-container #factionHand #factionHand-container {
+.spectatorMode #factionHand-placeholder {
     display: none;
 }
 
@@ -1264,4 +1556,65 @@ body {
     margin-right: 1px;
     margin-top: 2px;
     cursor: zoom-in;
+}
+
+/* Tippy.js theme for 7th Sea */
+.tippy-box[data-theme~='7sfs'] {
+    background-color: #1a1a2e;
+    border: 2px solid #c9a227;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.tippy-box[data-theme~='7sfs'][data-placement^='top'] > .tippy-arrow::before {
+    border-top-color: #c9a227;
+}
+
+.tippy-box[data-theme~='7sfs'][data-placement^='bottom'] > .tippy-arrow::before {
+    border-bottom-color: #c9a227;
+}
+
+.tippy-box[data-theme~='7sfs'][data-placement^='left'] > .tippy-arrow::before {
+    border-left-color: #c9a227;
+}
+
+.tippy-box[data-theme~='7sfs'][data-placement^='right'] > .tippy-arrow::before {
+    border-right-color: #c9a227;
+}
+
+.tippy-box[data-theme~='7sfs'] .tippy-content {
+    padding: 8px 12px;
+    color: #f0e6d3;
+}
+
+.tippy-box[data-theme~='7sfs'] ._7sfs-basic-tooltip {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-img {
+    width: auto;
+    max-width: 495px;
+    height: auto;
+    border-radius: 6px;
+    display: block;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tippy-box[data-theme~='7sfs'] ._7sfs-card-info {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    margin-top: 8px;
+    font-size: 12pt;
+    width: auto !important;
+}
+
+/* Mobile Tippy tooltip adjustments */
+@media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
+    .tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-img {
+        max-width: 248px;
+    }
 }

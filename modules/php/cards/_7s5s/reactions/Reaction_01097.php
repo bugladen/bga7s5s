@@ -39,7 +39,7 @@ class Reaction_01097 extends CardReaction
         {
             $owner = $this->getOwningCard($event->theah);
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source->ControllerId == $owner->ControllerId)
+            if ($source?->ControllerId == $owner->ControllerId)
             {
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);

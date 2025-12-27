@@ -74,6 +74,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterCombatModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontrolled;
@@ -1705,6 +1706,27 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventCharacterWounded:
+                $handler = function ($theah, EventCharacterWounded $event)
+                {
+                    $inDuel = $theah->game->globals->get(Game::IN_DUEL);
+                    if ($inDuel)
+                    {
+                        $character = $theah->getCardById($event->characterId);
+                        $actor = $theah->getDuelRoundActor();
+                        if ($character->Id == $actor->Id)
+                        {
+                            $serialized = addslashes(serialize($character));
+                            $duelId = $theah->game->globals->get(Game::DUEL_ID);
+                            $round = $theah->game->globals->get(Game::DUEL_ROUND);
+                            $sql = "UPDATE duel_round set actor_serialized = '$serialized' where duel_id = $duelId and round = $round";
+                            $theah->game->DbQuery($sql);
+                        }
+                    }
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventCharacterDestroyed:
                 $handler = function ($theah, EventCharacterDestroyed $event)
                 {
@@ -1795,53 +1817,7 @@ trait EventHub
             case $event instanceof EventCalculatePayDiscount:
                 $handler = function ($theah, EventCalculatePayDiscount $event)
                 {
-
-                    $discount = 0;
-                    $explanations = '';
-
-                    if ($event->payStateType == Game::PAY_STATE_IN_HAND_ACTION)
-                    {
-                        $actionId = $theah->game->globals->get(GAME::CHOSEN_ACTION);
-                        $action = $theah->getInHandActionById($actionId);
-                        $performer = null;
-                        if ($action->RequiresPerformerSelected)
-                        {
-                            $performerId = $theah->game->globals->get(Game::CHOSEN_PERFORMER);
-                            $performer = $theah->getCharacterById($performerId);
-                        }
-
-                        [$discount, $explanations] = $theah->getActionFromHandDiscount($performer, $action);           
-                    }
-
-                    if ($event->payStateType == Game::PAY_STATE_IN_HAND_REACTION)
-                    {
-                        $card = $theah->getCardById($event->cardId);
-                        $reaction = $card->getReactionById($event->internalId);
-                        [$discount, $explanations] = $theah->getReactionFromHandDiscount($reaction);
-                    }
-
-                    if ($event->payStateType == Game::PAY_STATE_EQUIP_ATTACHMENT)
-                    {
-                        $performerId = $theah->game->globals->get(Game::CHOSEN_PERFORMER);
-                        $performer = $theah->getCharacterById($performerId);
-                        $attachment = $theah->getAttachmentById($event->cardId);
-
-                        [$discount, $explanations] = $theah->getEquipDiscount($performer, $attachment);
-                    }
-
-                    if ($event->payStateType == Game::PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD)
-                    {
-                        $combatCard = $theah->getCardById($event->cardId);
-                        [$discount, $explanations] = $theah->getManeuverFromCombatCardDiscount($combatCard);
-                    }
-
-                    if ($discount != 0)
-                    $theah->game->notify->player($event->playerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
-                        "explanations" => $explanations,
-                    ]);
-
-                    $theah->game->globals->set(Game::DISCOUNT, $discount);
-                    $theah->game->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+                    [$discount, $explanations] = $theah->calculateInHandPayDiscount($event->playerId, $event->payStateType, $event->cardId, $event->internalId);
                 };
                 $handler($this, $event);
                 break;

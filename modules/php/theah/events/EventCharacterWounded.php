@@ -20,5 +20,6 @@ class EventCharacterWounded extends Event
         $this->wounds = 0;
         $this->reason = '';
 
+        $this->runEventHubAfterCards = true;
     }
 }

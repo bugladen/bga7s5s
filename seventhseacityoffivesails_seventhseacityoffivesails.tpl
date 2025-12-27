@@ -298,9 +298,18 @@ var jstpl_row_combat_card = `
     </div>
 </div>
 
-<div id="factionHand-container" class="whiteblock _7sfs-hand">
-    <div class="_7sfs-hand-label"><span><b>Your Faction Hand</b></span> <span id="faction_hand_info"></span></div>
-    <div id="factionHand">
+<!-- Faction hand placeholder - contains the hand when not floating -->
+<div id="factionHand-placeholder" class="whiteblock _7sfs-hand _7sfs-hand-placeholder hidden">
+    <div class="_7sfs-hand-label">
+        <span><b>Your Faction Hand</b></span>
+        <span id="faction_hand_info"></span>
+    </div>
+    <!-- The hand wrapper - floats when scrolled -->
+    <div id="factionHand-wrapper" class="_7sfs-floating-hand-wrapper">
+        <div id="factionHand-container" class="_7sfs-floating-hand-container">
+            <div id="factionHand" class="_7sfs-floating-hand-cards">
+            </div>
+        </div>
     </div>
 </div>
 

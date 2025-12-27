@@ -42,7 +42,7 @@ class Reaction_01124 extends CardReaction
             if ($event->playerId == $owner->ControllerId && $event->cardId == $owner->Id)
             {
                 $card = $event->theah->getCardById($event->sourceId);
-                if ($card instanceof Risk && $card->HasTrait("Sorcery"))
+                if ($card && $card instanceof Risk && $card->HasTrait("Sorcery"))
                 {
                     $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($transition);
