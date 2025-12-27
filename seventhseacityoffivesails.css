@@ -22,6 +22,9 @@
     --png-board-resource-height: 257px;
 }
 
+/* Tippy.js Base CSS (v6.3.7) */
+.tippy-box[data-animation=fade][data-state=hidden]{opacity:0}[data-tippy-root]{max-width:calc(100vw - 10px)}.tippy-box{position:relative;background-color:#333;color:#fff;border-radius:4px;font-size:14px;line-height:1.4;white-space:normal;outline:0;transition-property:transform,visibility,opacity}.tippy-box[data-placement^=top]>.tippy-arrow{bottom:0}.tippy-box[data-placement^=top]>.tippy-arrow:before{bottom:-7px;left:0;border-width:8px 8px 0;border-top-color:initial;transform-origin:center top}.tippy-box[data-placement^=bottom]>.tippy-arrow{top:0}.tippy-box[data-placement^=bottom]>.tippy-arrow:before{top:-7px;left:0;border-width:0 8px 8px;border-bottom-color:initial;transform-origin:center bottom}.tippy-box[data-placement^=left]>.tippy-arrow{right:0}.tippy-box[data-placement^=left]>.tippy-arrow:before{border-width:8px 0 8px 8px;border-left-color:initial;right:-7px;transform-origin:center left}.tippy-box[data-placement^=right]>.tippy-arrow{left:0}.tippy-box[data-placement^=right]>.tippy-arrow:before{left:-7px;border-width:8px 8px 8px 0;border-right-color:initial;transform-origin:center right}.tippy-box[data-inertia][data-state=visible]{transition-timing-function:cubic-bezier(.54,1.5,.38,1.11)}.tippy-arrow{width:16px;height:16px;color:#333}.tippy-arrow:before{content:"";position:absolute;border-color:transparent;border-style:solid}.tippy-content{position:relative;padding:5px 9px;z-index:1}
+
 body {
     background-color: #3987c9;
     /* background-image: url(https://www.manytextures.com/download/30/texture/jpg/1024/rough-sea-1024x1024.jpg); */
@@ -1521,4 +1524,65 @@ body {
     margin-right: 1px;
     margin-top: 2px;
     cursor: zoom-in;
+}
+
+/* Tippy.js theme for 7th Sea */
+.tippy-box[data-theme~='7sfs'] {
+    background-color: #1a1a2e;
+    border: 2px solid #c9a227;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.tippy-box[data-theme~='7sfs'][data-placement^='top'] > .tippy-arrow::before {
+    border-top-color: #c9a227;
+}
+
+.tippy-box[data-theme~='7sfs'][data-placement^='bottom'] > .tippy-arrow::before {
+    border-bottom-color: #c9a227;
+}
+
+.tippy-box[data-theme~='7sfs'][data-placement^='left'] > .tippy-arrow::before {
+    border-left-color: #c9a227;
+}
+
+.tippy-box[data-theme~='7sfs'][data-placement^='right'] > .tippy-arrow::before {
+    border-right-color: #c9a227;
+}
+
+.tippy-box[data-theme~='7sfs'] .tippy-content {
+    padding: 8px 12px;
+    color: #f0e6d3;
+}
+
+.tippy-box[data-theme~='7sfs'] ._7sfs-basic-tooltip {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-img {
+    width: auto;
+    max-width: 495px;
+    height: auto;
+    border-radius: 6px;
+    display: block;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tippy-box[data-theme~='7sfs'] ._7sfs-card-info {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    margin-top: 8px;
+    font-size: 12pt;
+    width: auto !important;
+}
+
+/* Mobile Tippy tooltip adjustments */
+@media (max-width: 768px) {
+    .tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-img {
+        max-width: 248px;
+    }
 }

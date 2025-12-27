@@ -22,6 +22,8 @@ define([
    "ebg/stock",
    getLibUrl('bga-animations', '1.x'),
    getLibUrl('bga-cards', '1.x'),
+   g_gamethemeurl + 'modules/js/vendor/popper.js',
+   g_gamethemeurl + 'modules/js/vendor/tippy.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.7s5s.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.js',
@@ -34,7 +36,7 @@ define([
    g_gamethemeurl + 'modules/js/EventHandlers.js',
    g_gamethemeurl + 'modules/js/PlayerActions.js',
 ],
-function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCards)
+function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCards, Popper, tippyLib)
 {
     // Define isDebug and debug globally so all modules can access them
     window.isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
@@ -185,7 +187,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
                 if (ele.classList.contains('_7sfs-card_tt')) 
                 {
                     const cardImage = ele.getAttribute('image');
-                    this.addTooltipHtml( ele_id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
+                    this.addTippyTooltip( ele_id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
                 }
             });
         },

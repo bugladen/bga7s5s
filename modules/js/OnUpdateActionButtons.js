@@ -79,12 +79,12 @@ onUpdateActionButtons: function( stateName, args )
             if (args._private.hasInPlayActions)
             {
                 this.addActionButton(`btnInPlayAction`, _('In-Play Action'), () => this.bgaPerformAction('actHighDramaChooseInPlayActionStart', {})) 
-                this.addTooltipHtml( 'btnInPlayAction', `<div class='_7sfs-basic-tooltip'>${_("Use an In-Play Action")}</div>` );
+                this.addTippyTooltip( 'btnInPlayAction', `<div class='_7sfs-basic-tooltip'>${_("Use an In-Play Action")}</div>` );
             }
             if (args._private.hasInHandActions)
             {
                 this.addActionButton(`btnInHandAction`, _('In-Hand Action'), () => this.bgaPerformAction('actHighDramaChooseInHandActionStart', {})) 
-                this.addTooltipHtml( 'btnInHandAction', `<div class='_7sfs-basic-tooltip'>${_("Use an In-Hand Action")}</div>` );
+                this.addTippyTooltip( 'btnInHandAction', `<div class='_7sfs-basic-tooltip'>${_("Use an In-Hand Action")}</div>` );
             }
             if (args._private.hasBrutes)
                 this.addActionButton(`btnBrute`, _('Play Brute'), () => this.bgaPerformAction('actHighDramaChooseBruteStart', {})) 
@@ -298,13 +298,13 @@ onUpdateActionButtons: function( stateName, args )
             if (args._private.techniquesAvailable)
             {
                 this.addActionButton(`btnTechnique`, _('Technique'), () => this.bgaPerformAction('actDuelActionChooseTechnique', {})) 
-                this.addTooltipHtml( 'btnTechnique', `<div class='_7sfs-basic-tooltip'>${_("Add Technique from Character or Attachment")}</div>` );
+                this.addTippyTooltip( 'btnTechnique', `<div class='_7sfs-basic-tooltip'>${_("Add Technique from Character or Attachment")}</div>` );
             }
             if (args._private.combatCardAvailable)
             {
                 this.addActionButton(`btnCombatCard`, _('Combat Card'), () => this.onDuelChooseCombatCardConfirmed());
                 dojo.addClass('btnCombatCard', 'disabled');
-                this.addTooltipHtml( 'btnCombatCard', `<div class='_7sfs-basic-tooltip'>${_("Play Combat card. Choose Maneuvers on card.")}</div>` );
+                this.addTippyTooltip( 'btnCombatCard', `<div class='_7sfs-basic-tooltip'>${_("Play Combat card. Choose Maneuvers on card.")}</div>` );
             }
             if ( ! args._private.endDuelAvailable)
                 this.addActionButton(`btnDone`, _('End Round'), () => this.bgaPerformAction('actDuelDoneRound', {})) 

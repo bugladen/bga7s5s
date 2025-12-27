@@ -11,6 +11,86 @@
  define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 return declare('seventhseacityoffivesails.utilities', null, {
 
+    // Tippy.js wrapper to replace BGA's addTooltipHtml
+    // Stores all tippy instances for cleanup
+    _tippyInstances: [],
+
+    /**
+     * Add a tooltip using Tippy.js (replaces this.addTooltipHtml)
+     * @param {string} elementId - The ID of the element to attach the tooltip to
+     * @param {string} html - The HTML content for the tooltip
+     * @param {number} delay - Optional delay in ms before showing (default: 200)
+     */
+    addTippyTooltip: function(elementId, html, delay = 200) {
+        const element = document.getElementById(elementId);
+        if (!element) {
+            console.warn('Tippy tooltip: Element not found:', elementId);
+            return null;
+        }
+
+        // Destroy existing tippy on this element if any
+        if (element._tippy) {
+            element._tippy.destroy();
+        }
+
+        const instance = tippy(element, {
+            content: html,
+            allowHTML: true,
+            delay: [delay, 0],
+            interactive: true,
+            appendTo: document.body,
+            maxWidth: 'none',
+            theme: '7sfs',
+            placement: 'auto',
+            zIndex: 10000,
+        });
+
+        this._tippyInstances.push(instance);
+        return instance;
+    },
+
+    /**
+     * Add a tooltip to all elements with a given class using Tippy.js (replaces this.addTooltipHtmlToClass)
+     * @param {string} cssClass - The CSS class to target
+     * @param {string} html - The HTML content for the tooltip
+     * @param {number} delay - Optional delay in ms before showing (default: 200)
+     */
+    addTippyTooltipToClass: function(cssClass, html, delay = 200) {
+        const elements = document.querySelectorAll('.' + cssClass);
+        elements.forEach((element) => {
+            // Destroy existing tippy on this element if any
+            if (element._tippy) {
+                element._tippy.destroy();
+            }
+
+            const instance = tippy(element, {
+                content: html,
+                allowHTML: true,
+                delay: [delay, 0],
+                interactive: true,
+                appendTo: document.body,
+                maxWidth: 'none',
+                theme: '7sfs',
+                placement: 'auto',
+                zIndex: 10000,
+            });
+
+            this._tippyInstances.push(instance);
+        });
+    },
+
+    /**
+     * Destroy all tippy instances (useful for cleanup)
+     */
+    destroyAllTippyTooltips: function() {
+        this._tippyInstances.forEach((instance) => {
+            if (instance && !instance.state.isDestroyed) {
+                instance.destroy();
+            }
+        });
+        this._tippyInstances = [];
+    },
+
     deckPickerShowTab: function(tabIndex) {
         const tabs = document.querySelectorAll('._7sfs-deck-picker-tab-content');
         tabs.forEach((tab, i) => {
@@ -117,7 +197,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }
             
             // Add tooltip (with class for mobile scaling)
-            this.addTooltipHtml(frontDiv.id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip(frontDiv.id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
         }
     },
 
@@ -227,10 +307,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         playerId == this.player_id ? 'city' : 'home_anchor', 
         playerId == this.player_id ? 'after' : 'before' );
 
-        this.addTooltipHtml( `${playerId}-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Capacity')}</div>` );
-        this.addTooltipHtml( `${playerId}-discard`, `<div class='_7sfs-basic-tooltip'>${_('Faction Deck Discard Pile')}</div>` );
-        this.addTooltipHtml( `${playerId}-locker`, `<div class='_7sfs-basic-tooltip'>${_('Player Locker')}</div>` );
-        this.addTooltipHtml( `${playerId}-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
+        this.addTippyTooltip( `${playerId}-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Capacity')}</div>` );
+        this.addTippyTooltip( `${playerId}-discard`, `<div class='_7sfs-basic-tooltip'>${_('Faction Deck Discard Pile')}</div>` );
+        this.addTippyTooltip( `${playerId}-locker`, `<div class='_7sfs-basic-tooltip'>${_('Player Locker')}</div>` );
+        this.addTippyTooltip( `${playerId}-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
     },
 
     getCardPropertiesByDivId: function( divId )
@@ -287,24 +367,25 @@ return declare('seventhseacityoffivesails.utilities', null, {
     createTooltipForCard: function(card)
     {
         if (!card.controllerId) {
-            this.addTooltipHtml(`${card.divId}_image`, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip(`${card.divId}_image`, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />`, this.CARD_TOOLTIP_DELAY);
             return;
         }
 
         const traits = card.traits?.join(', ') ?? '';
+        const abilityStyle = (available) => `background-color: gold; color: black;${available ? '' : ' text-decoration: line-through;'}`;
         const html = `
         <div style="position:relative;">
             <img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />
             <div class="_7sfs-card-info">
                 <div style="background-color:white; color:black">Traits: ${traits}</div>
-                ${card.actions?.map((action) => `<div style="background-color:${action.available ? 'green' : 'red'};">${_('Action:')} ${_(action.shortName)}</div>`).join('') ?? ''}
-                ${card.reactions?.map((reaction) => `<div style="background-color:${reaction.available ? 'green' : 'red'};">${_('Reaction:')} ${_(reaction.shortName)}</div>`).join('') ?? ''}
-                ${card.maneuvers?.map((maneuver) => `<div style="background-color:${maneuver.available ? 'green' : 'red'};">${_('Maneuver:')} ${_(maneuver.shortName)}</div>`).join('') ?? ''}
-                ${card.techniques?.map((technique) => `<div style="background-color:${technique.available ? 'green' : 'red'};">${_('Technique:')} ${_(technique.shortName)}</div>`).join('') ?? ''}
+                ${card.actions?.map((action) => `<div style="${abilityStyle(action.available)}">${_('Action:')} ${_(action.shortName)}</div>`).join('') ?? ''}
+                ${card.reactions?.map((reaction) => `<div style="${abilityStyle(reaction.available)}">${_('Reaction:')} ${_(reaction.shortName)}</div>`).join('') ?? ''}
+                ${card.maneuvers?.map((maneuver) => `<div style="${abilityStyle(maneuver.available)}">${_('Maneuver:')} ${_(maneuver.shortName)}</div>`).join('') ?? ''}
+                ${card.techniques?.map((technique) => `<div style="${abilityStyle(technique.available)}">${_('Technique:')} ${_(technique.shortName)}</div>`).join('') ?? ''}
             </div>
         </div>
         `;
-        this.addTooltipHtml(`${card.divId}_image`, html, this.CARD_TOOLTIP_DELAY);
+        this.addTippyTooltip(`${card.divId}_image`, html, this.CARD_TOOLTIP_DELAY);
     },
 
     createCharacterCard: function( divId, color, character, targetDiv, inDuel = false )
@@ -362,7 +443,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 id: id,
                 class: '_7sfs-yevgeni-adversary-chip',
             }),  `${divId}_image`, 'last');
-            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
+            this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
         }
         if (character.conditions.includes(this.MARYAM_BENU_PLEROMA_ABILITY_USED)) {
             //Get the first child of element divId
@@ -371,7 +452,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 id: id,
                 class: '_7sfs-maryam-benu-pleroma-ability-used-chip',
             }),  `${divId}_image`, 'last');
-            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
+            this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
         }
         if (character.conditions.includes(this.INDOMITABLE_WILL_CONDITION)) {
             //Get the first child of element divId
@@ -380,7 +461,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 id: id,
                 class: '_7sfs-indomitable-will-condition-chip',
             }),  `${divId}_image`, 'last');
-            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("This character has Indomitable Will")}</div>` );
+            this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("This character has Indomitable Will")}</div>` );
         }
         if (character.conditions.includes(this.CHALLENGER)) {
             id = `${divId}_challenger`;
@@ -388,7 +469,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 id: id,
                 class: '_7sfs-challenger-chip',
             }),  `${divId}_image`, 'last');
-            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
+            this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
         }
         if (character.conditions.includes(this.DEFENDER)) {
             id = `${divId}_defender`;
@@ -396,7 +477,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 id: id,
                 class: '_7sfs-defender-chip',
             }),  `${divId}_image`, 'last');
-            this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
+            this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
         }
         if (character.wounds > 0)
         {
@@ -406,7 +487,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 class: '_7sfs-wound-chip',
             }),  `${divId}_image`, 'last');
             $(woundChip).innerHTML = character.wounds;
-            this.addTooltipHtml( woundChip, `<div class='_7sfs-basic-tooltip'>${_("Wounds")}</div>` );
+            this.addTippyTooltip( woundChip, `<div class='_7sfs-basic-tooltip'>${_("Wounds")}</div>` );
         }
 
         if (character.engaged) 
@@ -453,7 +534,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             image: event.image,
         }), targetDiv, "before" );
 
-        this.addTooltipHtml( divId, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + event.image}" />`, this.CARD_TOOLTIP_DELAY);
+        this.addTippyTooltip( divId, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + event.image}" />`, this.CARD_TOOLTIP_DELAY);
 
         if (event.reknown > 0) {
             divId = `${divId}-reknown`;
@@ -647,7 +728,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
     {
         const card = this.cardProperties[cardTypeId];
         //Add tooltip to card
-        this.addTooltipHtml( cardDiv.id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+        this.addTippyTooltip( cardDiv.id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
     },
 
     isCardInCity: function( cardId )
@@ -902,7 +983,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 }),  divId, 'last');
 
                 const cardDivId = `duel_round_${row.round}_combat_card_${combatCard.id}`;
-                this.addTooltipHtml(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+                this.addTippyTooltip(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
                 if (row.gambled)
                 {
                     dojo.addClass(divId, '_7sfs-engaged');
@@ -953,7 +1034,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.addClass(`duel_round_${row.round}_ending_defender_threat_row`, '_7sfs-duel-acting-character');
         }
 
-        this.addTooltipHtml(`duel_round_${row.round}_wounds`, `<div class='_7sfs-basic-tooltip'>${_("The amount of wounds the Actor took, or will take, for this round")}</div>` );        
+        this.addTippyTooltip(`duel_round_${row.round}_wounds`, `<div class='_7sfs-basic-tooltip'>${_("The amount of wounds the Actor took, or will take, for this round")}</div>` );        
     },
 
     showApproachDeckAtTop: () => {

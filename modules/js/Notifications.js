@@ -920,7 +920,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
                 id: woundChip,
                 class: '_7sfs-wound-chip',
             }),  characterImage, 'last');
-            this.addTooltipHtml( woundChip, `<div class='_7sfs-basic-tooltip'>${_("Wounds")}</div>` );
+            this.addTippyTooltip( woundChip, `<div class='_7sfs-basic-tooltip'>${_("Wounds")}</div>` );
         }
         
         card.wounds += args.wounds;
@@ -1430,7 +1430,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-yevgeni-adversary-chip',
         }),  imageElement, 'last');
 
-        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
+        this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Adversary of Yevgeni")}</div>` );
     },
 
     notif_yevgeniAdversaryRemoved: function( notif )
@@ -1465,7 +1465,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-maryam-benu-pleroma-ability-used-chip',
         }),  imageElement, 'last');
 
-        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
+        this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
     },
 
     notif_maryamBenuPleromaAbilityRemoved: function( notif )
@@ -1500,7 +1500,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-indomitable-will-condition-chip',
         }),  imageElement, 'last');
 
-        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("This character has Indomitable Will")}</div>` );
+        this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("This character has Indomitable Will")}</div>` );
     },
 
     notif_indomitableWillConditionEnded: function( notif )
@@ -1535,7 +1535,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-crystal-eye-target-chip',
         }),  div, 'last');
 
-        this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
+        this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
     },
 
     notif_crystalEyeTargetRemoved: function( notif )
@@ -1573,7 +1573,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
                     class: '_7sfs-cats-embargo-target-chip',
                 }),  cardElement, 'last');
         
-                this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>` );
+                this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>` );
             }
         }
     },
@@ -1652,7 +1652,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             id: challengerChipId,
             class: '_7sfs-challenger-chip',
         }),  challengerImage, 'last');
-        this.addTooltipHtml( challengerChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
+        this.addTippyTooltip( challengerChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
 
         const defender = this.cardProperties[args.defenderId];
         defender.conditions.push(this.DEFENDER);
@@ -1662,7 +1662,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             id: defenderChipId,
             class: '_7sfs-defender-chip',
         }),  defenderImage, 'last');
-        this.addTooltipHtml( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
+        this.addTippyTooltip( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
     },
 
     notif_challengerSwapped: function( notif )
@@ -1685,7 +1685,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             id: challengerChipId,
             class: '_7sfs-challenger-chip',
         }),  challengerImage, 'last');
-        this.addTooltipHtml( challengerChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
+        this.addTippyTooltip( challengerChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
     },
 
     notif_defenderSwapped: function( notif )
@@ -1708,7 +1708,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             id: defenderChipId,
             class: '_7sfs-defender-chip',
         }),  defenderImage, 'last');
-        this.addTooltipHtml( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
+        this.addTippyTooltip( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
     },
 
     notif_characterIntervened: function( notif )
@@ -1731,7 +1731,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             id: defenderChipId,
             class: '_7sfs-defender-chip',
         }),  defenderImage, 'last');
-        this.addTooltipHtml( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
+        this.addTippyTooltip( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
     },
 
     notif_duelStarted: function( notif )
@@ -1810,7 +1810,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }),  divId, 'last');
 
             const cardDivId = `duel_round_${args.round}_combat_card_${combatCard.id}`;
-            this.addTooltipHtml(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
     
             if (args.gambled)
             {

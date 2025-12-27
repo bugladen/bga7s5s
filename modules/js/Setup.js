@@ -35,16 +35,16 @@ return declare('seventhseacityoffivesails.setup', null, {
         dojo.connect($('city-discard'), 'onclick', this, 'onCityDiscardClicked');
 
         // Set up the city tooltips
-        this.addTooltipHtml( 'oles-inn-image', `<div class='_7sfs-basic-tooltip'>${_("Ole's Inn.  If you control this, you can draw a card as an action.")}</div>` );
-        this.addTooltipHtml( 'dock-image', `<div class='_7sfs-basic-tooltip'>${_('The City Docks')}</div>` );
-        this.addTooltipHtml( 'forum-image', `<div class='_7sfs-basic-tooltip'>${_('The City Forum')}</div>` );
-        this.addTooltipHtml( 'bazaar-image', `<div class='_7sfs-basic-tooltip'>${_('The Grand Bazaar')}</div>` );
-        this.addTooltipHtml( 'garden-image', `<div class='_7sfs-basic-tooltip'>${_("Governor's Garden.  If you control this, you can draw a card as an action.")}</div>` );
+        this.addTippyTooltip( 'oles-inn-image', `<div class='_7sfs-basic-tooltip'>${_("Ole's Inn.  If you control this, you can draw a card as an action.")}</div>` );
+        this.addTippyTooltip( 'dock-image', `<div class='_7sfs-basic-tooltip'>${_('The City Docks')}</div>` );
+        this.addTippyTooltip( 'forum-image', `<div class='_7sfs-basic-tooltip'>${_('The City Forum')}</div>` );
+        this.addTippyTooltip( 'bazaar-image', `<div class='_7sfs-basic-tooltip'>${_('The Grand Bazaar')}</div>` );
+        this.addTippyTooltip( 'garden-image', `<div class='_7sfs-basic-tooltip'>${_("Governor's Garden.  If you control this, you can draw a card as an action.")}</div>` );
 
-        this.addTooltipHtml( 'city-discard', `<div class='_7sfs-basic-tooltip'>${_('City Discard Pile')}</div>` );
-        this.addTooltipHtml( 'day-indicator', `<div class='_7sfs-basic-tooltip'>${_('The Current Day')}</div>` );
-        this.addTooltipHtml( 'city-day-phase', `<div class='_7sfs-basic-tooltip'>${_('The Current Phase of the Day')}</div>` );
-        this.addTooltipHtmlToClass('_7sfs-city-reknown-chip', `<div class='_7sfs-basic-tooltip'>${_('Current Renown on this City Location')}</div>` );
+        this.addTippyTooltip( 'city-discard', `<div class='_7sfs-basic-tooltip'>${_('City Discard Pile')}</div>` );
+        this.addTippyTooltip( 'day-indicator', `<div class='_7sfs-basic-tooltip'>${_('The Current Day')}</div>` );
+        this.addTippyTooltip( 'city-day-phase', `<div class='_7sfs-basic-tooltip'>${_('The Current Phase of the Day')}</div>` );
+        this.addTippyTooltipToClass('_7sfs-city-reknown-chip', `<div class='_7sfs-basic-tooltip'>${_('Current Renown on this City Location')}</div>` );
 
         //Update the day
         if (gamedatas.day > 0) {
@@ -81,10 +81,10 @@ return declare('seventhseacityoffivesails.setup', null, {
                 handCount: player.handCount,
                 faction: player.leader?.faction.toLowerCase() ?? '',
             });
-            this.addTooltipHtml( `${playerId}-score-reknown`, `<div class='_7sfs-basic-tooltip'>${_('Current Renown')}</div>` );
-            this.addTooltipHtml( `${playerId}-score-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Cap')}</div>` );
-            this.addTooltipHtml( `${playerId}-score-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
-            this.addTooltipHtml( `${playerId}-score-hand-count`, `<div class='_7sfs-basic-tooltip'>${_('Number of cards in Faction Hand')}</div>` );
+            this.addTippyTooltip( `${playerId}-score-reknown`, `<div class='_7sfs-basic-tooltip'>${_('Current Renown')}</div>` );
+            this.addTippyTooltip( `${playerId}-score-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Cap')}</div>` );
+            this.addTippyTooltip( `${playerId}-score-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
+            this.addTippyTooltip( `${playerId}-score-hand-count`, `<div class='_7sfs-basic-tooltip'>${_('Number of cards in Faction Hand')}</div>` );
 
             //Display only if we are out of the faction choosing phase
             if (gamedatas.homeCards.length > 0) {
@@ -146,10 +146,10 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.getPlayerPanelElement(this.player_id).innerHTML += this.format_block( 'jstpl_help_cards', {
                 path: g_gamethemeurl
             });
-            this.addTooltipHtml("help_card_1", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.1.jpg" />`, this.CARD_TOOLTIP_DELAY);
-            this.addTooltipHtml("help_card_2", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.2.jpg" />`, this.CARD_TOOLTIP_DELAY);
-            this.addTooltipHtml("help_card_3", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.3.jpg" />`, this.CARD_TOOLTIP_DELAY);
-            this.addTooltipHtml("help_card_4", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.4.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip("help_card_1", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.1.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip("help_card_2", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.2.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip("help_card_3", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.3.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip("help_card_4", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.4.jpg" />`, this.CARD_TOOLTIP_DELAY);
     
         }
         
@@ -160,8 +160,8 @@ return declare('seventhseacityoffivesails.setup', null, {
             dojo.removeClass(`${gamedatas.firstPlayer}-score-seal-first-player`, '_7sfs-first-player-hidden');
             dojo.addClass(`${gamedatas.firstPlayer}-score-seal-first-player`, '_7sfs-first-player-score');
 
-            this.addTooltipHtmlToClass('_7sfs-first-player-home', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
-            this.addTooltipHtmlToClass('_7sfs-first-player-score', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
+            this.addTippyTooltipToClass('_7sfs-first-player-home', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
+            this.addTippyTooltipToClass('_7sfs-first-player-score', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
         }
 
         // Set up Ole's inn
@@ -255,7 +255,7 @@ return declare('seventhseacityoffivesails.setup', null, {
                     id: id,
                     class: '_7sfs-crystal-eye-target-chip',
                 }),  div, 'last');
-                this.addTooltipHtml( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
+                this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Chosen Target for Crystal Eye")}</div>` );
             }
 
         });
@@ -316,7 +316,7 @@ return declare('seventhseacityoffivesails.setup', null, {
                         id: id,
                         class: '_7sfs-cats-embargo-target-chip',
                     }), cardElement, 'last');
-                    this.addTooltipHtml(id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>`);
+                    this.addTippyTooltip(id, `<div class='_7sfs-basic-tooltip'>${_("Target for Cat's Embargo")}</div>`);
                 }
             }
         });
