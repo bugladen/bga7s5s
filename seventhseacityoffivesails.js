@@ -36,7 +36,7 @@ define([
    g_gamethemeurl + 'modules/js/EventHandlers.js',
    g_gamethemeurl + 'modules/js/PlayerActions.js',
 ],
-function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCards, Popper, tippyLib)
+function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCards)
 {
     // Define isDebug and debug globally so all modules can access them
     window.isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
@@ -48,6 +48,9 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
     window.LineStock = bgaCards.LineStock;
 
     window.debug = window.isDebug ? console.info.bind(window.console) : function () {};
+    
+    // Note: Tippy.js and Popper.js are loaded via AMD dependencies but set window.tippy globally
+    // The wrapper functions in Utilities.js use window.tippy directly
 
     // Store BgaAnimations globally to avoid ReferenceError when used in mixed-in classes
     window.BgaAnimations = BgaAnimations;

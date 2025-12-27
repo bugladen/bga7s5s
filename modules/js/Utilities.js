@@ -22,6 +22,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
      * @param {number} delay - Optional delay in ms before showing (default: 200)
      */
     addTippyTooltip: function(elementId, html, delay = 200) {
+        // Ensure tippy is available
+        if (typeof window.tippy === 'undefined') {
+            console.warn('Tippy tooltip: tippy.js not loaded yet, skipping tooltip for:', elementId);
+            return null;
+        }
+
         const element = document.getElementById(elementId);
         if (!element) {
             console.warn('Tippy tooltip: Element not found:', elementId);
@@ -33,7 +39,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             element._tippy.destroy();
         }
 
-        const instance = tippy(element, {
+        const instance = window.tippy(element, {
             content: html,
             allowHTML: true,
             delay: [delay, 0],
@@ -56,6 +62,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
      * @param {number} delay - Optional delay in ms before showing (default: 200)
      */
     addTippyTooltipToClass: function(cssClass, html, delay = 200) {
+        // Ensure tippy is available
+        if (typeof window.tippy === 'undefined') {
+            console.warn('Tippy tooltip: tippy.js not loaded yet, skipping tooltips for class:', cssClass);
+            return;
+        }
+
         const elements = document.querySelectorAll('.' + cssClass);
         elements.forEach((element) => {
             // Destroy existing tippy on this element if any
@@ -63,7 +75,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 element._tippy.destroy();
             }
 
-            const instance = tippy(element, {
+            const instance = window.tippy(element, {
                 content: html,
                 allowHTML: true,
                 delay: [delay, 0],
