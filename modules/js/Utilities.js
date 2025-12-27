@@ -221,7 +221,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         if (!wrapper || !placeholder) return;
         
         // Check if mobile - skip floating logic entirely on mobile
-        const isMobile = () => window.innerWidth <= 768;
+        // Mobile includes portrait (width <= 768) and landscape (height <= 500 with landscape orientation)
+        const isMobile = () => window.innerWidth <= 768 || (window.innerHeight <= 500 && window.innerWidth > window.innerHeight);
         
         // On mobile, don't set up floating behavior at all
         if (isMobile()) {

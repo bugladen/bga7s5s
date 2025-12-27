@@ -1185,7 +1185,8 @@ body {
 }
 
 /* Mobile adjustments - simple parked cards, no floating */
-@media (max-width: 768px) {
+/* Apply to portrait (max-width) and landscape (max-height) mobile devices */
+@media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
     /* Disable floating on mobile - always parked in placeholder */
     ._7sfs-floating-hand-wrapper {
         position: relative !important;
@@ -1581,7 +1582,7 @@ body {
 }
 
 /* Mobile Tippy tooltip adjustments */
-@media (max-width: 768px) {
+@media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
     .tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-img {
         max-width: 248px;
     }

@@ -262,7 +262,8 @@ return declare('seventhseacityoffivesails.setup', null, {
         this.approachDeck.setSelectionMode(0);
 
         // Create CardManager for faction hand cards
-        const isMobile = window.innerWidth <= 768;
+        // Mobile includes portrait (width <= 768) and landscape (height <= 500 with landscape orientation)
+        const isMobile = window.innerWidth <= 768 || (window.innerHeight <= 500 && window.innerWidth > window.innerHeight);
         
         this.factionHandManager = new CardManager(this, {
             getId: (card) => `factionhand-card-${card.id}`,
