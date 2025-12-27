@@ -1001,7 +1001,7 @@
             'highDramaPhase01064': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(1);
+                    this.factionHand.setSelectionMode('single');
                 }
             },
 
@@ -1310,7 +1310,7 @@
             },
 
             'highDramaPhase01095': () => {
-                this.factionHand.setSelectionMode(1);
+                this.factionHand.setSelectionMode('single');
             },
 
             'highDramaPhase01104': () => {
@@ -2320,7 +2320,7 @@
                     $('choose_container_name').innerHTML = translated;
                     this.chooseList.setSelectionMode(0);
 
-                    this.factionHand.setSelectionMode(1);
+                    this.factionHand.setSelectionMode('single');
                 }
             },
 

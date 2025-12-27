@@ -584,7 +584,7 @@
             'highDramaPhase01064': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                 }
             },
 
@@ -812,7 +812,7 @@
             },
 
             'highDramaPhase01095': () => {
-                this.factionHand.setSelectionMode(0);
+                this.factionHand.setSelectionMode('none');
             },
 
             'highDramaPhase01104': () => {
@@ -1446,7 +1446,7 @@
                     this.chooseList.removeAll();
                     this.chooseList.setSelectionMode(0);
 
-                    this.factionHand.setSelectionMode(0);
+                    this.factionHand.setSelectionMode('none');
                 }
             },
 

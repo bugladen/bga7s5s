@@ -381,7 +381,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
 
             'highDramaPhase01064': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCard', 'disabled');
@@ -405,7 +405,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaPhase01095': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCard', 'disabled');
@@ -493,7 +493,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duelNewRound_01090': () => {
-                if (this.factionHand.getSelectedItems().length > 0) {
+                if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCard', 'disabled');
