@@ -75,6 +75,8 @@ class Reaction_01116b extends CardReaction
             $this->IsActive = false;
             $this->CardId = 0;
             $this->PayStateType = 0;
+
+            $owner = $this->getOwningCard($event->theah);
             $owner->IsUpdated = true;        
         }
     }
