@@ -575,6 +575,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         // Show faction hand when cards are drawn
         dojo.removeClass('factionHand-placeholder', 'hidden');
+        
+        // Trigger floating check after revealing the placeholder
+        if (this.checkFloatingHand) {
+            this.checkFloatingHand();
+        }
 
         $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.getCards().length;
     },
@@ -617,6 +622,13 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const card = args.card;
         this.cardProperties[card.id] = card;
         this.addCardToDeck(this.factionHand, card);
+        
+        // Ensure faction hand is visible and floating check is triggered
+        dojo.removeClass('factionHand-placeholder', 'hidden');
+        if (this.checkFloatingHand) {
+            this.checkFloatingHand();
+        }
+        
         $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.getCards().length;
 
     },
