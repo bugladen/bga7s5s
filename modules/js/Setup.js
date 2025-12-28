@@ -35,12 +35,18 @@ return declare('seventhseacityoffivesails.setup', null, {
         dojo.connect($('city-discard'), 'onclick', this, 'onCityDiscardClicked');
 
         // Set up the city tooltips
-        this.addTippyTooltip( 'oles-inn-image', `<div class='_7sfs-basic-tooltip'>${_("Ole's Inn.  If you control this, you can draw a card as an action.")}</div>` );
+        if (playerCount >= 3)
+        {
+            this.addTippyTooltip( 'oles-inn-image', `<div class='_7sfs-basic-tooltip'>${_("Ole's Inn.  If you control this, you can draw a card as an action.")}</div>` );
+        }
         this.addTippyTooltip( 'dock-image', `<div class='_7sfs-basic-tooltip'>${_('The City Docks')}</div>` );
         this.addTippyTooltip( 'forum-image', `<div class='_7sfs-basic-tooltip'>${_('The City Forum')}</div>` );
         this.addTippyTooltip( 'bazaar-image', `<div class='_7sfs-basic-tooltip'>${_('The Grand Bazaar')}</div>` );
-        this.addTippyTooltip( 'garden-image', `<div class='_7sfs-basic-tooltip'>${_("Governor's Garden.  If you control this, you can draw a card as an action.")}</div>` );
-
+        if (playerCount >= 4)
+        {
+            this.addTippyTooltip( 'garden-image', `<div class='_7sfs-basic-tooltip'>${_("Governor's Garden.  If you control this, you can draw a card as an action.")}</div>` );
+        }
+    
         this.addTippyTooltip( 'city-discard', `<div class='_7sfs-basic-tooltip'>${_('City Discard Pile')}</div>` );
         this.addTippyTooltip( 'day-indicator', `<div class='_7sfs-basic-tooltip'>${_('The Current Day')}</div>` );
         this.addTippyTooltip( 'city-day-phase', `<div class='_7sfs-basic-tooltip'>${_('The Current Phase of the Day')}</div>` );
