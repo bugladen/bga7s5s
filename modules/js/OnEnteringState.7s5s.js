@@ -1099,6 +1099,13 @@
                     this.highlightCardsAsSelectable(args.args.args.ids);
                 }            
             },
+
+            'highDramaPhase01175': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode('multiple');
+                }
+            },
     
             'highDramaPhase01072' : () => {
                 if (this.isCurrentPlayerActive()) {

@@ -1246,6 +1246,13 @@
                     }
             },
 
+            'highDramaPhase01175': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode('none');
+                }
+            },
+
             'highDramaPhase01180' : () => {
                 //Exposed to all players
                 dojo.addClass('choose_container', 'hidden');

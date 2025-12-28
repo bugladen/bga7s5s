@@ -854,6 +854,7 @@ $machinestates = [
                 "01171" => States::HIGH_DRAMA_PLAYER_TURN_01171,
                 "01172" => States::HIGH_DRAMA_PLAYER_TURN_01172,
                 "01174" => States::HIGH_DRAMA_PLAYER_TURN_01174,
+                "01175" => States::HIGH_DRAMA_PLAYER_TURN_01175,
                 "01180" => States::HIGH_DRAMA_PLAYER_TURN_01180,
                 "01180_4" => States::HIGH_DRAMA_PLAYER_TURN_01180_5,
                 "01187" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_LOCATION,
