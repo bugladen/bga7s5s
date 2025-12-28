@@ -1043,7 +1043,7 @@ body {
  
 ._7sfs-basic-tooltip {
     font-family: "Pirata One", system-ui;
-    font-size: 14pt;
+    font-size: 18pt;
 }
 
 /* Tooltip card image styling - prevents layout shifts and ensures proper display */
@@ -1593,7 +1593,7 @@ body {
 }
 
 .tippy-box[data-theme~='7sfs'] ._7sfs-basic-tooltip {
-    font-size: 14px;
+    font-size: 18px;
     line-height: 1.4;
 }
 
