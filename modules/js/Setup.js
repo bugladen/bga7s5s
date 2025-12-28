@@ -338,9 +338,9 @@ return declare('seventhseacityoffivesails.setup', null, {
         this.setupFloatingHand();
 
         this.chooseList = new ebg.stock();
-        this.chooseList.create( this, $('chooseList'), this.wholeCardWidth, this.wholeCardHeight ); 
+        this.chooseList.create( this, $('chooseList'), Math.round(this.wholeCardWidth * 1.5), Math.round(this.wholeCardHeight * 1.5) ); 
         this.chooseList.image_items_per_row = 0;
-        this.chooseList.resizeItems(this.wholeCardWidth, this.wholeCardHeight, this.wholeCardWidth, this.wholeCardHeight);
+        this.chooseList.resizeItems(Math.round(this.wholeCardWidth * 1.5), Math.round(this.wholeCardHeight * 1.5), Math.round(this.wholeCardWidth * 1.5), Math.round(this.wholeCardHeight * 1.5));
         this.chooseList.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
         this.chooseList.setSelectionAppearance( 'class' )
         dojo.connect( this.chooseList, 'onChangeSelection', this, 'onChooseCardClicked' );
