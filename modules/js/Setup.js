@@ -326,7 +326,7 @@ return declare('seventhseacityoffivesails.setup', null, {
 
         // Show faction hand elements if game is past planningPhaseDraw
         // The hand should remain hidden until after cards have been drawn
-        const hiddenHandStates = ['pickDecks', 'buildTable', 'setupTable', 'planningPhaseDraw'];
+        const hiddenHandStates = ['pickDecks', 'buildTable', 'setupTable', 'planningPhase', 'planningPhaseDraw'];
         const currentState = gamedatas.gamestate?.name || '';
         const isEarlyState = hiddenHandStates.some(state => currentState.startsWith(state));
         

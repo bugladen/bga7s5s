@@ -50,7 +50,7 @@ onUpdateActionButtons: function( stateName, args )
             dojo.destroy('deck-picker');
             dojo.removeClass('city', 'hidden');
             dojo.removeClass('approachDeck-container', 'hidden');
-            dojo.removeClass('factionHand-placeholder', 'hidden');
+            // factionHand-placeholder will be shown by notification when cards are drawn
         }
     }
                 
