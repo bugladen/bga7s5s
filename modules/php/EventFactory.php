@@ -34,6 +34,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlay;
@@ -244,13 +245,14 @@ class EventFactory
         return $event;
     }
     
-    public static function createCardAddedToHandEvent(int $playerId, int $cardId): EventCardAddedToHand
+    public static function createCardAddedToHandEvent(int $playerId, int $cardId, bool $hidden = false): EventCardAddedToHand
     {
         $event = self::createEvent(Events::CardAddedToHand);
         if ($event instanceof EventCardAddedToHand)
         {
             $event->playerId = $playerId;
             $event->cardId = $cardId;
+            $event->hidden = $hidden;
         }
         return $event;
     }
@@ -390,7 +392,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardRemovedFromPlayEvent(int $playerId, int $cardId, string $toLocation): EventCardRemovedFromPlay
+    public static function createCardRemovedFromPlayEvent(int $playerId, int $cardId, string $toLocation, bool $hidden = false): EventCardRemovedFromPlay
     {
         $event = self::createEvent(Events::CardRemovedFromPlay);
         if ($event instanceof EventCardRemovedFromPlay)
@@ -398,6 +400,7 @@ class EventFactory
             $event->playerId = $playerId;
             $event->cardId = $cardId;
             $event->toLocation = $toLocation;
+            $event->hidden = $hidden;
         }
 
         return $event;
@@ -542,6 +545,19 @@ class EventFactory
             $event->NewInfluence = $newInfluence;
             $event->Reason = $reason;
         }
+        return $event;
+    }
+
+    public static function createCardMusteredEvent(int $playerId, int $cardId, string $location): EventCardMustered
+    {
+        $event = self::createEvent(Events::CardMustered);
+        if ($event instanceof EventCardMustered)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+            $event->location = $location;
+        }
+
         return $event;
     }
 

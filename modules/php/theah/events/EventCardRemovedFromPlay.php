@@ -7,6 +7,7 @@ class EventCardRemovedFromPlay extends Event
     public int $playerId;
     public int $cardId;
     public string $toLocation;
+    public bool $hidden;
 
     public function __construct()
     {
@@ -15,5 +16,6 @@ class EventCardRemovedFromPlay extends Event
         $this->playerId = 0;
         $this->cardId = 0;
         $this->toLocation = "";
+        $this->hidden = false;
     }
 }

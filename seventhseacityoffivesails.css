@@ -740,6 +740,11 @@ body {
     z-index: 10;
 }
 
+._7sfs-card-back {
+    background-size: 190px 259px;
+    background-position: -40px -73px;
+}
+
 ._7sfs-card-resolve {
     background-image: url('img/boardResources.png');
     position: absolute;

@@ -2,11 +2,11 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventCardAddedToHand extends Event
+class EventCardMustered extends Event
 {
-    public int  $playerId;
+    public int $playerId;
     public int $cardId;
-    public bool $hidden;
+    public string $location;
 
     public function __construct()
     {
@@ -14,7 +14,6 @@ class EventCardAddedToHand extends Event
 
         $this->playerId = 0;
         $this->cardId = 0;
-        $this->hidden = false;
-    }
-
+        $this->location = '';
+    }    
 }

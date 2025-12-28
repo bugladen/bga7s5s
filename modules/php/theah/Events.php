@@ -113,6 +113,7 @@ class Events
     const CharacterCombatModified = 'EventCharacterCombatModified';
     const CharacterInfluenceModified = 'EventCharacterInfluenceModified';
     const CharacterFinesseModifed = 'EventCharacterFinesseModifed';
+    const CardMustered = 'EventCardMustered';
     const CharacterMustered = 'EventCharacterMustered';
     const CharacterLostBrute = 'EventCharacterLostBrute';
     

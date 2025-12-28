@@ -53,6 +53,8 @@ abstract class Character extends Card implements IHasTechniques
         $this->DashedInfluence = false;
 
         $this->IsDying = false;
+
+        $this->CardBackImage = "img/cards/backs/approach.jpg";
     }
 
     public function resetCard()

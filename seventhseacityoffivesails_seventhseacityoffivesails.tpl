@@ -170,6 +170,14 @@ var jstpl_hand_wealth_cost_chip=`
 <div id="\${id}_wealth_cost" class="_7sfs-card-wealth-cost _7sfs-hand-wealth-cost">\${cost}</div>
 `;
 
+var jstpl_card_hidden=`
+<div id="\${id}">
+    <div id="\${id}_image" class="_7sfs-card _7sfs-card-back" style="--card_image:url('\${image}')">
+        <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="_7sfs-character-player-color"></div>
+    </div>
+</div>
+`;
+
 var jstpl_card_event=`
 <div id="\${id}">
     <div id="\${id}_image" class="_7sfs-card" style="--card_image:url('\${image}')">

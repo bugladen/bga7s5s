@@ -15,6 +15,7 @@ abstract class Card
     public int $ControllerId;
     public string $Name;
     public string $Image;
+    public string $CardBackImage = "";
     public string $ExpansionName;
     public int $ExpansionNumber;
     public int $CardNumber;
@@ -28,6 +29,7 @@ abstract class Card
     public string $Location;
     public bool $IsUpdated;
     public int $Reknown;
+    public bool $FaceDown = false;
 
     public function __construct()
     {
@@ -441,6 +443,8 @@ abstract class Card
             'location' => $this->Location,
             'engaged' => $this->Engaged,
             'reknown' => $this->Reknown,
+            'faceDown' => $this->FaceDown,
+            'cardBackImage' => $this->CardBackImage,
         ];
 
         $properties['type'] = 'Card';

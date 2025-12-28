@@ -26,6 +26,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
@@ -377,15 +378,34 @@ trait EventHub
 
                     $card->IsUpdated = true;
                     $theah->addCardToWorld($card);
-    
-                    // Notify players that card has been added to hand
-                    $this->game->notifyAllPlayers("cardAddedToHand", clienttranslate('${player_name} added ${card_inject_code} to their Faction Hand.'), [
-                        "player_id" => $event->playerId,
-                        "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "card_inject_code" => $card->getInjectCode(),
-                        "card" => $card->getPropertyArray($this->game),
-                        "handCount" => count($deck->getPlayerHand($event->playerId)),
-                    ]);
+
+                    if ($event->hidden)
+                    {
+                        $theah->game->notify->player($event->playerId, "drawCard", clienttranslate('Private: You added ${card_inject_code} into your hand.'), [
+                            "card_inject_code" => $card->getInjectCode(),
+                            "card" => $card->getPropertyArray($theah->game),
+                        ]);
+        
+                        // Notify players that card has been added to hand
+                        $theah->game->notify->all("drawCardMessage", clienttranslate('${player_name} added a card into their Faction Hand.'), [
+                            'i18n' => ['reason'],
+                            "playerId" => $event->playerId,
+                            "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                            "card_inject_code" => $card->getInjectCode(),
+                            "count" => count($deck->getPlayerHand($event->playerId)),
+                        ]);
+                    }
+                    else
+                    {
+                        // Notify players that card has been added to hand
+                        $this->game->notify->all("cardAddedToHand", clienttranslate('${player_name} added ${card_inject_code} to their Faction Hand.'), [
+                            "player_id" => $event->playerId,
+                            "player_name" => $this->game->getPlayerNameById($event->playerId),
+                            "card_inject_code" => $card->getInjectCode(),
+                            "card" => $card->getPropertyArray($this->game),
+                            "handCount" => count($deck->getPlayerHand($event->playerId)),
+                        ]);
+                    }
                 };
                 $handler($this, $event);
                 break;
@@ -479,6 +499,7 @@ trait EventHub
                         "playerId" => $event->ownerId,
                         "card_inject_code" => $card->getInjectCode(),
                         "cardId" => $event->cardId,
+                        "card" => $card->getPropertyArray($theah->game),
                         "location" => $event->fromLocation,
                     ]);
                 };
@@ -632,7 +653,11 @@ trait EventHub
                     $deck = $theah->game->getGameDeckObject();
                     $deck->moveCard($card->Id, $event->toLocation, $card->ControllerId);
 
-                    $this->game->notifyAllPlayers("cardRemovedFromPlay", clienttranslate('${card_inject_code} removed from play.'), [
+                    $message = clienttranslate('${card_inject_code} removed from play.');
+                    if ($event->hidden)
+                        $message = clienttranslate('[Hidden Card] removed from play.');
+
+                    $this->game->notify->all("cardRemovedFromPlay", $message, [
                         "card_inject_code" => $card->getInjectCode(),
                         "cardId" => $card->Id,
                         "toLocation" => $event->toLocation,
@@ -716,6 +741,33 @@ trait EventHub
                     $handler($this, $event);
                     break;
 
+                case $event instanceof EventCardMustered:
+                    $handler = function (Theah $theah, EventCardMustered $event)
+                    {
+                        //Update the character's location in the DB
+                        $deck = $theah->game->getGameDeckObject();
+                        $deck->moveCard($event->cardId, $event->location, $event->playerId);
+
+                        $card = $theah->getCardById($event->cardId);
+                        $card->Location = $event->location;
+                        $card->ControllerId = $event->playerId;
+                        $card->IsUpdated = true;
+                        $theah->addCardToWorld($card);
+
+                        // Notify players of mustered character
+                        $theah->game->notify->all("cardMustered", clienttranslate('${player_name} plays ${card_inject_code} at ${location}.'), [
+                            'i18n' => ['location'],
+                            "player_id" => $event->playerId,
+                            "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                            "card_inject_code" => $card->FaceDown ? clienttranslate('[Hidden]') : $card->getInjectCode(),
+                            "location" => $event->location,
+                            "card" => $card->getPropertyArray($theah->game),
+                        ]);
+
+                    };
+                    $handler($this, $event);
+                    break;
+
                 case $event instanceof EventCharacterMustered:
                     $handler = function (Theah $theah, EventCharacterMustered $event)
                     {
@@ -734,13 +786,13 @@ trait EventHub
                             $message = clienttranslate('${player_name} plays ${character_inject_code} at ${location}.');
         
                         // Notify players of mustered character
-                        $theah->game->notify->all("characterMustered", $message, [
+                        $theah->game->notify->all("cardMustered", $message, [
                             'i18n' => ['location'],
                             "player_id" => $event->playerId,
                             "player_name" => $theah->game->getPlayerNameById($event->playerId),
                             "character_inject_code" => $character->getInjectCode(),
                             "location" => $event->location,
-                            "character" => $character->getPropertyArray($theah->game),
+                            "card" => $character->getPropertyArray($theah->game),
                         ]);
 
                         if ($character instanceof Brute)

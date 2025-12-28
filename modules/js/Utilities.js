@@ -347,7 +347,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
     
     createCard: function( divId, card, targetDiv, inDuel = false )
     {
-        if (card.type === 'Character')
+        if (card.faceDown)
+        {
+            const playerInfo = this.gamedatas.players[card.controllerId];
+            this.createHiddenCard(divId, card, targetDiv, playerInfo.color);
+        }
+        else if (card.type === 'Character')
         {
             if (card.controllerId !== 0) {
                 const playerInfo = this.gamedatas.players[card.controllerId];
@@ -527,6 +532,24 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 dojo.toggleClass(card, '_7sfs-attached-card-splayed');
             });
         }
+    },
+
+    createHiddenCard: function( divId, card, targetDiv, playerColor )
+    {
+        //Set the divId of the card
+        card.divId = divId;
+
+        //Add to the card properties cache
+        this.cardProperties[card.id] = card;
+
+        dojo.place( this.format_block( 'jstpl_card_hidden', {
+            id: divId,
+            image: card.cardBackImage,
+            player_color: playerColor,
+        }), targetDiv, "before" );
+
+        if (card.controllerId === this.player_id)
+            this.addTippyTooltip( divId, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + card.image}" />`, this.CARD_TOOLTIP_DELAY);
     },
 
     createEventCard: function( divId, event, targetDiv )
