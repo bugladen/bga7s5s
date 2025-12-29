@@ -203,7 +203,7 @@ trait StatesTrait
                 $event = $this->theah->createEvent(Events::SchemeCardRevealed);
                 if ($event instanceof EventSchemeCardRevealed) {
                     $event->playerId = $playerId;
-                    $event->scheme = $scheme;
+                    $event->schemeId = $scheme->Id;
                     $event->location = Game::LOCATION_PLAYER_HOME;
                     $event->playerName = $player['player_name'];
                 }

@@ -1136,17 +1136,18 @@ trait EventHub
                 break;
 
             case $event instanceof EventSchemeCardRevealed:
-                $this->cards[$event->scheme->Id] = $event->scheme;
+                $scheme = $this->getSchemeById($event->schemeId);
+                $this->cards[$event->schemeId] = $scheme;
 
-                $event->scheme->Location = $event->location;
-                $event->scheme->IsUpdated = true;
+                $scheme->Location = $event->location;
+                $scheme->IsUpdated = true;
 
                 // Notify players of selected scheme
                 $this->game->notifyAllPlayers("approachSchemePlayed", clienttranslate('${player_name} plays ${scheme_inject_code} as their Approach Scheme.'), [
                     "player_name" => $event->playerName,
-                    "scheme_inject_code" => $event->scheme->getInjectCode(),
+                    "scheme_inject_code" => $scheme->getInjectCode(),
                     "player_id" => $event->playerId,
-                    "scheme" => $event->scheme->getPropertyArray($this->game),
+                    "scheme" => $scheme->getPropertyArray($this->game),
                 ]);
 
                 break;

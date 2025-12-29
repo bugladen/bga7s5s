@@ -48,7 +48,7 @@ class Reaction_01200 extends AttachmentReaction
             $attachment = $this->getOwningAttachment($event->theah);
             if ($attachment->isAttached() && $attachment instanceof _01200 && $event->characterId == $attachment->ChosenCard)
             {
-                $event->theah->game->notifyAllPlayers("message", clienttranslate('Crystal Eye has triggered because its targeted card was played.'), []);
+                $event->theah->game->notify->all("message", clienttranslate('Crystal Eye has triggered because its targeted card was played.'), []);
                 $transition = EventFactory::createReactionTransitionEvent($attachment->ControllerId, $attachment->Id, $this->Id);
                 $event->theah->queueEvent($transition);
             }
@@ -57,9 +57,10 @@ class Reaction_01200 extends AttachmentReaction
         if ($event instanceof EventSchemeCardRevealed && $this->ownerIsAttached($event->theah) && $this->isAvailable())
         {
             $attachment = $this->getOwningAttachment($event->theah);
-            if ($attachment->isAttached() && $attachment instanceof _01200 && $event->scheme->Id == $attachment->ChosenCard)
+            $scheme = $event->theah->getSchemeById($event->schemeId);
+            if ($attachment->isAttached() && $attachment instanceof _01200 && $scheme && $scheme->Id == $attachment->ChosenCard)
             {
-                $event->theah->game->notifyAllPlayers("message", clienttranslate('Crystal Eye has triggered because its targeted card was played.'), []);
+                $event->theah->game->notify->all("message", clienttranslate('Crystal Eye has triggered because its targeted card was played.'), []);
                 $transition = EventFactory::createReactionTransitionEvent($attachment->ControllerId, $attachment->Id, $this->Id);
                 $event->theah->queueEvent($transition);
             }
@@ -73,7 +74,7 @@ class Reaction_01200 extends AttachmentReaction
         if ($reactionId == "gainReknown")
         {
             $owner = $this->getOwningCard($game->theah);
-            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to gain a Renown.'), [
+            $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to gain a Renown.'), [
                 "owner_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getActivePlayerName(), 
             ]);

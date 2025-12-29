@@ -2,11 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
-
 class EventSchemeCardRevealed extends Event
 {
-    public Scheme $scheme;
+    public int $schemeId;
     public string $playerId;
     public string $location;
     public string $playerName;
@@ -15,6 +13,7 @@ class EventSchemeCardRevealed extends Event
     {
         parent::__construct();
 
+        $this->schemeId = 0;
         $this->playerId = 0;
         $this->location = "";
         $this->playerName = "";

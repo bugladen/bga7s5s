@@ -136,6 +136,18 @@
             'planningPhaseResolveSchemes_01150': () => {
                 this.resetCityLocations();
             },
+
+            'planningPhaseResolveSchemes_01151': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
+            'planningPhaseResolveSchemes_01151_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
     
             'planningPhaseResolveSchemes_01152': () => {
                 this.resetCityLocations();

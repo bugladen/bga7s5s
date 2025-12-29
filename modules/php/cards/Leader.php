@@ -39,15 +39,18 @@ abstract class Leader extends Character
     {
         parent::handleEvent($event);
         
-        if ($event instanceof EventSchemeCardRevealed) {
-            if ($event->scheme->PanacheModifier != 0 && $event->playerId == $this->ControllerId) {
-                $this->ModifiedPanache += $event->scheme->PanacheModifier;
+        if ($event instanceof EventSchemeCardRevealed) 
+        {
+            $scheme = $event->theah->getSchemeById($event->schemeId);
+            if ($scheme && $scheme->PanacheModifier != 0 && $event->playerId == $this->ControllerId) 
+            {
+                $this->ModifiedPanache += $scheme->PanacheModifier;
                 $this->IsUpdated = true;
 
-                $event->theah->game->notifyAllPlayers("panacheModified", clienttranslate('${leader_inject_code}: Panache modified to ${panache} by ${scheme_inject_code}'), [
+                $event->theah->game->notify->all("panacheModified", clienttranslate('${leader_inject_code}: Panache modified to ${panache} by ${scheme_inject_code}'), [
                     "leader_inject_code" => $this->getInjectCode(),
                     "panache" => $this->ModifiedPanache,
-                    "scheme_inject_code" => $event->scheme->getInjectCode(),
+                    "scheme_inject_code" => $scheme->getInjectCode(),
                     "playerId" => $this->ControllerId,
                     "leader" => $this->getPropertyArray($event->theah->game),
                 ]);

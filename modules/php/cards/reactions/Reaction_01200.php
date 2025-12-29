@@ -57,7 +57,8 @@ class Reaction_01200 extends AttachmentReaction
         if ($event instanceof EventSchemeCardRevealed && $this->ownerIsAttached($event->theah) && $this->isAvailable())
         {
             $attachment = $this->getOwningAttachment($event->theah);
-            if ($attachment->isAttached() && $attachment instanceof _01200 && $event->scheme->Id == $attachment->ChosenCard)
+            $scheme = $event->theah->getSchemeById($event->schemeId);
+            if ($attachment->isAttached() && $attachment instanceof _01200 && $scheme && $scheme->Id == $attachment->ChosenCard)
             {
                 $event->theah->game->notifyAllPlayers("message", clienttranslate('Crystal Eye has triggered because its targeted card was played.'), []);
                 $transition = EventFactory::createReactionTransitionEvent($attachment->ControllerId, $attachment->Id, $this->Id);

@@ -19,6 +19,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions\Reaction_CrewCapLimit;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -593,6 +594,16 @@ class Theah
         $risk = $this->getCardById($id);
         if ($risk instanceof Risk) {
             return $risk;
+        }
+
+        return null;
+    }
+
+    function getSchemeById($id): ?Scheme
+    {
+        $scheme = $this->getCardById($id);
+        if ($scheme instanceof Scheme) {
+            return $scheme;
         }
 
         return null;
