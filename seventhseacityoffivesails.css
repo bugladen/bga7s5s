@@ -1248,7 +1248,7 @@ body {
     /* Simple card styling (1.5x size) */
     #factionHand .bga-cards_card,
     ._7sfs-floating-hand-cards .bga-cards_card {
-        position: static !important;
+        position: relative !important;
         width: 108px !important;
         height: 147px !important;
         flex-shrink: 0 !important;
