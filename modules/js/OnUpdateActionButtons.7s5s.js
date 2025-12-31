@@ -201,6 +201,12 @@
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onPaymentConfirmedFromCard());
             },
 
+            'highDramaPhase01007': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'highDramaPhase01008': () => {
                 this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
             },
