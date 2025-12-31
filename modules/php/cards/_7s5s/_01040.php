@@ -26,7 +26,7 @@ class _01040 extends Character implements IHasReactions
         $this->CardNumber = 40;
 
         $this->initializeFaction("Eisen");
-        $this->Title = "Mastet-at-arms";
+        $this->Title = "Master-at-arms";
         $this->Resolve = 5;
         $this->Combat = 2;
         $this->Finesse = 3;

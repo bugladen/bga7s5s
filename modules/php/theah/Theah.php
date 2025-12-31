@@ -532,6 +532,11 @@ class Theah
 
     public function getCityLocation(string $name): CityLocation
     {
+        if ( ! array_key_exists($name, $this->cityLocations))
+        {
+            throw new \Exception("City location $name not found");
+        }
+        
         return $this->cityLocations[$name];
     }
 
