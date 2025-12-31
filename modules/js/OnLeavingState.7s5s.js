@@ -1525,6 +1525,15 @@
                 }
             },
 
+            'duelChooseTechnique_01010': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
             'duelChooseTechnique_01036': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();

@@ -2448,6 +2448,20 @@
                 }
             },
 
+            'duelChooseTechnique_01010': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    $('choose_container_name').innerHTML = `Card(s) Available to Sink`;
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+
             'duelChooseTechnique_01036': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;

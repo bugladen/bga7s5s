@@ -938,6 +938,12 @@
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
 
+            'duelChooseTechnique_01010': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onMultipleChooseListCardsConfirmed());
+                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'duelChooseTechnique_01013': () => {
                 this.addActionButton(`btnParry`, _('+1 Parry'), () => this.bgaPerformAction('actFromCardWithId', { id: 0}));
                 this.addActionButton(`btnThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', { id: 1}));

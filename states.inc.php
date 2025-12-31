@@ -1950,6 +1950,7 @@ $machinestates = [
                     "transitions" => [
                         "reaction" => States::DUEL_CHOOSE_TECHNIQUE_REACTIONS,
                         "pay" => States::DUEL_CHOOSE_TECHNIQUE_PAY_FOR_REACTION,
+                        "01010" => States::DUEL_CHOOSE_TECHNIQUE_01010,
                         "01013" => States::DUEL_CHOOSE_TECHNIQUE_01013,
                         "01036" => States::DUEL_CHOOSE_TECHNIQUE_01036,
                         "01063" => States::DUEL_CHOOSE_TECHNIQUE_01063,
