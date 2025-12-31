@@ -80,7 +80,10 @@ class EventDuelCalculateCombatCardStats extends Event
     {
         if (! $this->dashedRiposte)
         {
-            $this->riposte -= $value;
+            if ($this->riposte > 0)
+            {
+                $this->riposte -= $value;
+            }
         }
         else
         {
@@ -92,7 +95,10 @@ class EventDuelCalculateCombatCardStats extends Event
     {
         if (! $this->dashedParry)
         {
-            $this->parry -= $value;
+            if ($this->parry > 0)
+            {
+                $this->parry -= $value;
+            }
         }
         else
         {
@@ -104,7 +110,10 @@ class EventDuelCalculateCombatCardStats extends Event
     {
         if (! $this->dashedThrust)
         {
-            $this->thrust -= $value;
+            if ($this->thrust > 0)
+            {
+                $this->thrust -= $value;
+            }
         }
         else
         {
