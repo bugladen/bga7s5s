@@ -16,6 +16,9 @@ return declare('seventhseacityoffivesails.setup', null, {
         debug( "Starting game setup" );
         debug( "gamedatas", gamedatas );
 
+        // Initialize Tippy.js (processes any queued tooltips once tippy is loaded)
+        this.initTippy();
+
         // Create the animation manager for card animations
         this.animationManager = new BgaAnimations.Manager({
             animationsActive: () => this.bgaAnimationsActive(),
@@ -331,10 +334,19 @@ return declare('seventhseacityoffivesails.setup', null, {
         this.factionHand.setSelectionMode('none');
 
         // Show faction hand elements if game is past planningPhaseDraw
-        // The hand should remain hidden until after cards have been drawn
-        const hiddenHandStates = ['pickDecks', 'buildTable', 'setupTable', 'planningPhase', 'planningPhaseDraw'];
+        // The hand should remain hidden until after cards have been drawn on day 1
+        // On day 2+, the hand should be visible during planningPhase
         const currentState = gamedatas.gamestate?.name || '';
-        const isEarlyState = hiddenHandStates.some(state => currentState.startsWith(state));
+        const currentDay = gamedatas.day || 0;
+        
+        // States where hand is always hidden
+        const alwaysHiddenStates = ['pickDecks', 'buildTable', 'setupTable'];
+        // States where hand is hidden only on day 1
+        const hiddenOnDay1States = ['planningPhase', 'planningPhaseDraw'];
+        
+        const isAlwaysHidden = alwaysHiddenStates.some(state => currentState.startsWith(state));
+        const isHiddenOnDay1 = hiddenOnDay1States.some(state => currentState.startsWith(state)) && currentDay <= 1;
+        const isEarlyState = isAlwaysHidden || isHiddenOnDay1;
         
         if (gamedatas.homeCards && gamedatas.homeCards.length > 0 && !isEarlyState) {
             dojo.removeClass('factionHand-placeholder', 'hidden');

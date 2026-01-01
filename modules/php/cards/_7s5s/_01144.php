@@ -49,6 +49,7 @@ class _01144 extends Scheme
 
             //Transition to the state where player can choose two locations.
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, '01144');
+            $transition->priority = Event::MEDIUM_PRIORITY;
             $event->theah->queueEvent($transition);
         }
 

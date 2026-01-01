@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeAccepted;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
     class Reaction_01062 extends CardReaction
@@ -53,6 +54,22 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
                 if ($odette->Location != Game::LOCATION_PLAYER_HOME)
                 {
                     $challenger = $event->theah->getCharacterById($event->challengerId);
+
+                    if ($challenger->Location == $odette->Location)
+                    {
+                        $reactionEvent = EventFactory::createReactionTransitionEvent($odette->ControllerId, $odette->Id, $this->Id);
+                        $event->theah->queueEvent($reactionEvent);
+                    }    
+                }
+            }
+
+            if ($event instanceof EventCharacterIntervened && $this->isAvailable())
+            {
+                $odette = $this->getOwningCharacter($event->theah);
+
+                if ($odette->Location != Game::LOCATION_PLAYER_HOME)
+                {
+                    $challenger = $event->theah->getCharacterById($event->newTargetId);
 
                     if ($challenger->Location == $odette->Location)
                     {

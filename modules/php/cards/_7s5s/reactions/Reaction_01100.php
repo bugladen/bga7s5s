@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeAccepted;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -42,18 +43,8 @@ class Reaction_01100 extends AttachmentReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventChallengeAccepted)
+        if ($event instanceof EventChallengeAccepted && $this->ownerIsAttached($event->theah) && $this->isAvailable())
         {
-            if (! $this->ownerIsAttached($event->theah))
-            {
-                return;
-            }
-
-            if (! $this->isAvailable())
-            {
-                return;
-            }
-
             $challenger = $event->theah->getCardById($event->challengerId);
             $target = $event->theah->getCardById($event->targetId);
             $owner = $this->getOwningAttachment($event->theah);
@@ -75,6 +66,32 @@ class Reaction_01100 extends AttachmentReaction
                 $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($reactionEvent);
             }
+        }
+
+        if ($event instanceof EventCharacterIntervened && $this->ownerIsAttached($event->theah) && $this->isAvailable())
+        {
+            $challengerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
+            $challenger = $event->theah->getCharacterById($challengerId);
+            $target = $event->theah->getCharacterById($event->newTargetId);
+            $owner = $this->getOwningAttachment($event->theah);
+            if ($challenger->ControllerId == $owner->ControllerId && $challenger->Location == $owner->Location)
+            {
+                $this->AdversaryId = $event->newTargetId;
+                $this->IsActivated = true;
+                $owner->IsUpdated = true;
+
+                $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $event->theah->queueEvent($reactionEvent);
+            }
+            else if ($target->ControllerId == $owner->ControllerId && $target->Location == $owner->Location)
+            {
+                $this->AdversaryId = $challengerId;
+                $this->IsActivated = true;
+                $owner->IsUpdated = true;
+
+                $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $event->theah->queueEvent($reactionEvent);
+            }            
         }
 
         if ($event instanceof EventDuelEnd)

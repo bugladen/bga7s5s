@@ -74,6 +74,7 @@ class _01045 extends Scheme implements IHasReactions
 
             //Transition to the state where player can choose a mercenary out of the City Deck discard pile
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, '01045');
+            $transition->priority = Event::MEDIUM_PRIORITY;
             $event->theah->queueEvent($transition);
         }
     }

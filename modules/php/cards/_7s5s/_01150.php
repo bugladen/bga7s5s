@@ -59,6 +59,7 @@ class _01150 extends Scheme
                 if ($player['player_id'] == $this->OwnerId) continue;
 
                 $transition = EventFactory::createTransitionEvent($playerId, $this->Id, '01150');
+                $transition->priority = Event::MEDIUM_PRIORITY;
                 $event->theah->queueEvent($transition);
             }
         }
