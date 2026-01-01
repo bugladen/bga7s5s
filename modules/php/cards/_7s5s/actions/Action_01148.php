@@ -164,7 +164,7 @@ class Action_01148 extends SchemeCityAction
             // Engage
             if ($id === 1)
             {
-                $event = EventFactory::createCardEngagedEvent($scheme->ControllerId, $targetId, $scheme->Id);
+                $event = EventFactory::createCardEngagedEvent($scheme->ControllerId, $targetId, $scheme->Id, $this->Id);
                 $game->theah->queueEvent($event);
             }
 

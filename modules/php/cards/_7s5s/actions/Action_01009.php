@@ -47,7 +47,7 @@ class Action_01009 extends CharacterAction
             $game->globals->set(Game::CHOSEN_PERFORMER, $owner->Id);
             $game->globals->set(Game::RECRUIT_TYPE, Game::CIRILO_RECRUIT_TYPE);
 
-            $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $owner->Id, $owner->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $owner->Id, $owner->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01009", $this->Id);

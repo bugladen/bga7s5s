@@ -115,7 +115,7 @@ class Action_01171 extends RiskAction
             $owner = $this->getOwningCard($game->theah);
             if (! $character->Engaged)
             {
-                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
             }
             else

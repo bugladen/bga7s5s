@@ -123,7 +123,7 @@ class Action_01030 extends RiskAction implements ISorcererAbility, IAbilityThatT
                 'card_inject_code' => $owner->getInjectCode(),
             ]);
 
-            $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id);
+            $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
 
             $startEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);

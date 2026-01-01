@@ -154,7 +154,8 @@ class Action_01105 extends RiskCityAction
                 throw new \BgaUserException($game->translate("Character is not at the same location as the performer."));
             }
 
-            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $character->Id);
+            $owner = $this->getOwningCard($game->theah);
+            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $character->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);

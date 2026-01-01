@@ -36,7 +36,7 @@ class Technique_01049 extends Technique
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
-            $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $owner->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $owner->Id, $owner->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
         }
 

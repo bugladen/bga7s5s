@@ -48,6 +48,7 @@ class Action_01075 extends AttachmentAction
         {
             $game = $event->theah->game;
             $owner = $this->getOwningCharacter($event->theah);
+            $attachment = $this->getOwningAttachment($event->theah);
 
             $game->globals->set(Game::PRESSURING_PLAYER, $owner->ControllerId);
             $game->globals->set(Game::CHOSEN_PERFORMER, $owner->Id);
@@ -56,7 +57,7 @@ class Action_01075 extends AttachmentAction
 
             $this->announceAction($game);
 
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $attachment->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
 
             $pressureStats = $event->theah->getPressureStats($owner, $owner->Location, Game::STAT_INFLUENCE);

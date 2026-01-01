@@ -113,7 +113,7 @@ class Reaction_01100 extends AttachmentReaction
             $this->IsActivated = true;
             $owner->IsUpdated = true;
 
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
         }
 

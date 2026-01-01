@@ -92,7 +92,8 @@ class Action_01179 extends EventCityAction
                 "player_name" => $event->theah->game->getPlayerNameById($playerId),
             ]);    
     
-            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performerId);
+            $owner = $this->getOwningCard($event->theah);
+            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performerId, $owner->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
     
             $reknownEvent = EventFactory::createReknownRemovedFromCardEvent($playerId, $this->OwnerId, 1);

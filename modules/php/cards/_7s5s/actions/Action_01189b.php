@@ -115,7 +115,7 @@ class Action_01189b extends EventCityAction
                 throw new \BgaUserException(sprintf($game->translate("%s does not have any Renown to move."), $poo->Location));
             }
 
-            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $poo->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $poo->Id, $this->Id);
             $game->theah->eventCheck($engageEvent);
     
             $fromEvent = EventFactory::createReknownRemovedFromLocationEvent($performer->ControllerId, $poo->Location, 1, "{$poo->getInjectCode()}: Moving Renown to adjacent location");

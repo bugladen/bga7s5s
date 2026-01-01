@@ -178,7 +178,7 @@ class Action_01138 extends RiskAction
             if ($id == 1)
             {
                 //Engage Performer
-                $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $performer->Id);
+                $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $performer->Id, $this->Id);
                 $game->theah->queueEvent($event);
 
                 //Move Target HOME

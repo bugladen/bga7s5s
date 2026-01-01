@@ -96,7 +96,7 @@ class Action_01161 extends RiskAction implements ISorcererAbility, IAbilityThatT
 
             $owner = $this->getOwningCard($game->theah);
 
-            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
 
             $event = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);

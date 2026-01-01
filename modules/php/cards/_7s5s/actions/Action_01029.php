@@ -117,7 +117,7 @@ class Action_01029 extends RiskAction
             $owner = $this->getOwningCard($game->theah);
     
             $target = $game->theah->getCardById($id);
-            $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $target->Id, $owner->Id);
+            $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $target->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

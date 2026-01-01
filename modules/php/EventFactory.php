@@ -299,7 +299,7 @@ class EventFactory
     }
     
 
-    public static function createCardEngagedEvent(int $playerId, int $cardId, int $sourceId = 0): EventCardEngaged
+    public static function createCardEngagedEvent(int $playerId, int $cardId, int $sourceId = 0, string $abilityId = ""): EventCardEngaged
     {
         $event = self::createEvent(Events::CardEngaged);
         if ($event instanceof EventCardEngaged)
@@ -307,6 +307,7 @@ class EventFactory
             $event->playerId = $playerId;
             $event->cardId = $cardId;
             $event->sourceId = $sourceId;
+            $event->abilityId = $abilityId;
         }
 
         return $event;

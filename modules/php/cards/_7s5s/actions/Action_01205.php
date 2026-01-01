@@ -138,12 +138,12 @@ class Action_01205 extends CharacterAction
                 throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to Location %s."), $location->Name, $giacinto->Location));
             }
 
-            $giacintoEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $giacinto->Id);
+            $giacintoEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Id, $this->Id);
             $game->theah->eventCheck($giacintoEngageEvent);
 
             if ( ! $victim->Engaged)
             {
-                $victimEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $victim->Id);
+                $victimEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $victim->Id, $giacinto->Id, $this->Id);
                 $game->theah->eventCheck($victimEngageEvent);
             }
 

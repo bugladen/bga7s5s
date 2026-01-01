@@ -66,7 +66,7 @@ class Reaction_01040 extends CardReaction
             $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $owner->Id, $owner->Id);
             $game->theah->queueEvent($engardeEvent);
 
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $attachmentId, $owner->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $attachmentId, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
 
             //This reaction always available, do not set it as used

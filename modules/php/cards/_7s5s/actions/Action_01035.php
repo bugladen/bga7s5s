@@ -51,7 +51,7 @@ class Action_01035 extends CharacterAction
             $playerId = $event->playerId;
             
             $kaspar = $this->getOwningCharacter($event->theah);
-            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $kaspar->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $kaspar->Id, $kaspar->Id, $this->Id);
             $event->theah->eventCheck($engageEvent);
             $event->queueEvent($engageEvent);
 

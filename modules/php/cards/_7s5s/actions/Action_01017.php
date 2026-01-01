@@ -94,7 +94,7 @@ class Action_01017 extends CharacterAction
             $event = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());
             $game->theah->queueEvent($event);
 
-            $event = EventFactory::createCardEngagedEvent($owner->ControllerId, $target->Id, $owner->Id, $owner->getInjectCode());
+            $event = EventFactory::createCardEngagedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

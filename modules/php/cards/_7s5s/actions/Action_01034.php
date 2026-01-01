@@ -145,7 +145,7 @@ class Action_01034 extends RiskAction
                     'character_inject_code' => $target->getInjectCode(),
                 ]);
 
-                $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $targetId, $owner->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $targetId, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
 
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

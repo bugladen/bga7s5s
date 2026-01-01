@@ -133,7 +133,7 @@ class Action_01124 extends CharacterAction implements ISorcererAbility, IAbility
             $game->globals->set(Game::CHOSEN_ACTION, $actionId);
             $game->globals->set(Game::CHOSEN_CARD, $riskCard->Id);
 
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
         
             $this->announceAction($game);

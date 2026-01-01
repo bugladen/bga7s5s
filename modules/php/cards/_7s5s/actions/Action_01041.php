@@ -105,7 +105,7 @@ class Action_01041 extends CharacterAction
                 throw new \BgaUserException($game->translate("Character has more influence than the performer"));
             }
 
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
 
             if ($character->hasTrait("Sorcerer"))

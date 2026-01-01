@@ -103,7 +103,7 @@ class Action_01026 extends RiskAction
 
             if (! $character->Engaged)
             {
-                $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $character->Id, $owner->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $character->Id, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
             }
             else

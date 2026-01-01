@@ -47,7 +47,7 @@ class Maneuver_01086 extends Maneuver
             $owner = $this->getOwningCard($event->theah);
             if (! $adversary->Engaged)
             {
-                $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $event->adversaryId, $owner->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $event->adversaryId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($engageEvent);
             }
             else

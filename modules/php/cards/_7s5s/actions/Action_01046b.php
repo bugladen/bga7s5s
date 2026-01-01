@@ -44,7 +44,7 @@ class Action_01046b extends AttachmentAction
             $darkGift = $this->getOwningCard($event->theah);
             $attachedTo = $this->getOwningCharacter($event->theah);
 
-            $engageEvent = EventFactory::createCardEngagedEvent($darkGift->ControllerId, $darkGift->Id, $darkGift->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($darkGift->ControllerId, $darkGift->Id, $darkGift->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
 
             $healEvent = EventFactory::createCharacterHealedEvent($attachedTo->Id, $darkGift->Id, 1, sprintf($event->theah->game->translate("%s Action"), $darkGift->getInjectCode()), $this->Id);

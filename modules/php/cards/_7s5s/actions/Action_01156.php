@@ -203,7 +203,7 @@ class Action_01156 extends AttachmentAction
             //Engage
             if ($id == 1)
             {
-                $engageEvent = EventFactory::createCardEngagedEvent($target->ControllerId, $target->Id, $musket->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($target->ControllerId, $target->Id, $musket->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
             }
 

@@ -107,7 +107,7 @@ class Reaction_01181 extends AttachmentReaction
         //Delete any remaining transition events for this reaction
         $game->theah->deleteTransitionEvents($this->Id);
 
-        $engageEvent = EventFactory::createCardEngagedEvent($attachment->ControllerId, $attachment->Id);
+        $engageEvent = EventFactory::createCardEngagedEvent($attachment->ControllerId, $attachment->Id, $attachment->Id, $this->Id);
         $game->theah->queueEvent($engageEvent);
 
         $healedEvent = EventFactory::createCharacterHealedEvent($id, $attachment->Id, $wounds, $attachment->getInjectCode());

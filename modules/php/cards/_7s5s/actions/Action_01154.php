@@ -44,7 +44,7 @@ class Action_01154 extends AttachmentAction
         {
             $character = $this->getOwningCharacter($event->theah);
             $owner = $this->getOwningAttachment($event->theah);
-            $engagedEvent = EventFactory::createCardEngagedEvent($character->ControllerId, $character->Id, $owner->Id);
+            $engagedEvent = EventFactory::createCardEngagedEvent($character->ControllerId, $character->Id, $owner->Id, $this->Id);
             $event->theah->queueEvent($engagedEvent);
 
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01154", $this->Id);

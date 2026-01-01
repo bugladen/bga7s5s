@@ -192,10 +192,10 @@ class Action_01044 extends SchemeCityAction
                 ]);
 
                 $aam = $this->getOwningCard($game->theah);
-                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id);
+                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id, $this->Id);
                 $game->theah->queueEvent($event);
 
-                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $character->Id, $aam->Id);
+                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $character->Id, $aam->Id, $this->Id);
                 $game->theah->queueEvent($event);
 
                 $this->setUsed($game->theah, true);
@@ -216,7 +216,7 @@ class Action_01044 extends SchemeCityAction
                 ]);
 
                 $aam = $this->getOwningCard($game->theah);
-                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id);
+                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id, $this->Id);
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 
