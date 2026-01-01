@@ -69,7 +69,7 @@ class Action_01176 extends RiskAction
             $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
 
             $owner = $this->getOwningCard($event->theah);
-            $healEvent = EventFactory::createCharacterHealedEvent($performerId, $owner->Id, 1, $owner->getInjectCode());
+            $healEvent = EventFactory::createCharacterHealedEvent($performerId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $event->theah->queueEvent($healEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

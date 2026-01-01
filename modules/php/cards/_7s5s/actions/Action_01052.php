@@ -69,7 +69,7 @@ class Action_01052 extends RiskAction
                 throw new BgaUserException($game->translate("You cannot heal a wound on a character that is not wounded."));
             }
 
-            $healEvent = EventFactory::createCharacterHealedEvent($performerId, $owner->Id, 1, $owner->getInjectCode());
+            $healEvent = EventFactory::createCharacterHealedEvent($performerId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $event->theah->queueEvent($healEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);

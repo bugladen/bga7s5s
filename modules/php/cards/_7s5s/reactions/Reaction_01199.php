@@ -90,7 +90,7 @@ class Reaction_01199 extends CardReaction
             $this->setUsed($game->theah, true);
 
             $takama = $this->getOwningCharacter($game->theah);
-            $event = EventFactory::createCharacterHealedEvent($this->TargetCharacterId, $takama->Id, 1, $takama->getInjectCode());
+            $event = EventFactory::createCharacterHealedEvent($this->TargetCharacterId, $takama->Id, 1, $takama->getInjectCode(), $this->Id);
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
