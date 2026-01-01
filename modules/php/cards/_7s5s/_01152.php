@@ -60,6 +60,7 @@ class _01152 extends Scheme implements IHasActions
 
             //Transition to the state where player can choose a location.
             $transition  = EventFactory::createTransitionEvent($event->playerId, $this->Id, "01152", $this->Id);
+            $transition->priority = Event::MEDIUM_PRIORITY;
             $event->theah->queueEvent($transition);
         }
     }

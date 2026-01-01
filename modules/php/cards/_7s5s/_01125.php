@@ -52,6 +52,7 @@ class _01125 extends Scheme
 
             //Transition to the state where player can choose a location.
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, "01125");
+            $transition->priority = Event::MEDIUM_PRIORITY;
             $event->theah->queueEvent($transition);            
         }
 

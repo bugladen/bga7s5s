@@ -57,6 +57,7 @@ class _01016 extends Scheme implements IHasReactions
 
             //Transition to the state where player can choose two locations.
             $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "01016");
+            $transition->priority = Event::MEDIUM_PRIORITY;
             $event->theah->queueEvent($transition);
         }
     }

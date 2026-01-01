@@ -61,11 +61,8 @@ class _01098 extends Scheme implements IHasReactions
             ]);
 
             //Transition to the state where player can choose two locations.
-            $transition = $event->theah->createEvent(Events::Transition);
-            if ($transition instanceof EventTransition) {
-                $transition->playerId = $event->playerId;
-                $transition->transition = '01098';
-            }
+            $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, "01098");
+            $transition->priority = Event::MEDIUM_PRIORITY;
             $event->theah->queueEvent($transition);
         }
 
