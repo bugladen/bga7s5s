@@ -80,10 +80,10 @@ class Maneuver_01133 extends Maneuver implements ISorcererAbility
             $adversaryId = $game->theah->getDuelOpponentId($actor->Id);
             $adversary = $game->theah->getCharacterById($adversaryId);
 
-            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $actor->Id, $actor->Location, $location, $engage = false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $actor->Id, $actor->Location, $location, $engage = false, $owner->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 
-            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $adversary->Id, $adversary->Location, $location, $engage = false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $adversary->Id, $adversary->Location, $location, $engage = false, $owner->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 
             $game->gamestate->nextState();

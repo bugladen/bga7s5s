@@ -96,7 +96,7 @@ class Action_01093 extends CharacterAction implements IAbilityThatDependsOnNotBe
                 throw new \BgaUserException($game->translate("You cannot move to the same location as Maya."));
             }
 
-            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, $location->Name, $engage = false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, $location->Name, $engage = false, $owner->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

@@ -70,7 +70,7 @@ class Reaction_01173 extends RiskReaction
                 $game = $event->theah->game;
                 $owner = $this->getOwningCard($game->theah);
                 $character = $game->theah->getCharacterById($this->CharacterId);
-                $event = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $location, false, $owner->Id);
+                $event = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $location, false, $owner->Id, $this->Id);
                 $game->theah->queueEvent($event);
 
                 $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and moved ${character_inject_code} to ${location_name}.'), [

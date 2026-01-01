@@ -145,7 +145,7 @@ class Action_01060 extends RiskAction
             foreach ($performerIds as $performerId)
             {
                 $performer = $game->theah->getCharacterById($performerId);
-                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $performer->Id, $performer->Location, $location, $engage = false, $owner->Id);
+                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $performer->Id, $performer->Location, $location, $engage = false, $owner->Id, $this->Id);
                 $game->theah->queueEvent($moveEvent);
             }
 

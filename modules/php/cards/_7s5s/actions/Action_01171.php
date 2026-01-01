@@ -120,7 +120,7 @@ class Action_01171 extends RiskAction
             }
             else
             {
-                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id);
+                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
                 $game->theah->queueEvent($moveEvent);
             }
 

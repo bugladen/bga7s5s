@@ -158,7 +158,7 @@ class Action_01133 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $characterId = $game->globals->get(Game::CHOSEN_TARGET);
             $character = $game->theah->getCharacterById($characterId);
 
-            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $location, $engage = false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $location, $engage = false, $owner->Id, $this->Id);
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 

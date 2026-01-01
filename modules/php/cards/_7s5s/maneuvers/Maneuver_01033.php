@@ -48,7 +48,7 @@ class Maneuver_01033 extends Maneuver
             $adversary = $event->theah->getCharacterById($adversaryId);
 
             $owner = $this->getOwningCard($event->theah);
-            $moveEvent = EventFactory::createCardMovingEvent($adversary->ControllerId, $adversary->Id, $adversary->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($adversary->ControllerId, $adversary->Id, $adversary->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
             $event->theah->queueEvent($moveEvent);
         }
     }

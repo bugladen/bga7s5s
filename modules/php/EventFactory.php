@@ -339,7 +339,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardMovingEvent(int $initiatingPlayerId, int $cardId, string $fromLocation, string $toLocation, bool $engage = true, int $sourceId = 0): EventCardMoving
+    public static function createCardMovingEvent(int $initiatingPlayerId, int $cardId, string $fromLocation, string $toLocation, bool $engage = true, int $sourceId = 0, string $abilityId = ""): EventCardMoving
     {
         $event = self::createEvent(Events::CardMoving);
         if ($event instanceof EventCardMoving)
@@ -350,6 +350,7 @@ class EventFactory
             $event->toLocation = $toLocation;
             $event->engage = $engage;
             $event->sourceId = $sourceId;
+            $event->abilityId = $abilityId;
         }
 
         return $event;
