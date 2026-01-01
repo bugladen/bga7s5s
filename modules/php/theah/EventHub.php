@@ -556,7 +556,7 @@ trait EventHub
                 {
                     if (! $event->canceled)
                     {
-                        $movedEvent = EventFactory::createCardMovedEvent($event->initiatingPlayerId, $event->cardId, $event->fromLocation, $event->toLocation, $event->engage, $event->sourceId);
+                        $movedEvent = EventFactory::createCardMovedEvent($event->initiatingPlayerId, $event->cardId, $event->fromLocation, $event->toLocation, $event->engage, $event->sourceId, $event->abilityId);
                         $theah->queueEvent($movedEvent);
                     }
                 };

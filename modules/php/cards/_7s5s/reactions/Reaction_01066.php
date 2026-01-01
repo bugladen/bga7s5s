@@ -80,7 +80,7 @@ class Reaction_01066 extends CardReaction
                 "location_name" => $game->translate($this->FollowedCharacterLocation),
             ]);
 
-            $event = EventFactory::createCardMovedEvent($owner->ControllerId, $owner->Id, $owner->Location, $this->FollowedCharacterLocation, $engage = false, $owner->Id);
+            $event = EventFactory::createCardMovedEvent($owner->ControllerId, $owner->Id, $owner->Location, $this->FollowedCharacterLocation, $engage = false, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
 
             $this->setUsed($game->theah, true);
