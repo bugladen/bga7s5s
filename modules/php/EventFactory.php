@@ -313,13 +313,15 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardEngardedEvent(int $playerId, int $cardId, int $sourceId = 0): EventCardEngarded
+    public static function createCardEngardedEvent(int $playerId, int $cardId, int $sourceId = 0, string $abilityId = ""): EventCardEngarded
     {
         $event = self::createEvent(Events::CardEngarded);
         if ($event instanceof EventCardEngarded)
         {
             $event->playerId = $playerId;
             $event->cardId = $cardId;
+            $event->sourceId = $sourceId;
+            $event->abilityId = $abilityId;
         }
 
         return $event;

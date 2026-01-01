@@ -63,7 +63,7 @@ class Reaction_01040 extends CardReaction
             $owner = $this->getOwningCharacter($game->theah);
             $attachmentId = str_replace("engageWeapon-", "", $reactionId);
 
-            $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $owner->Id, $owner->Id);
+            $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engardeEvent);
 
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $attachmentId, $owner->Id, $this->Id);

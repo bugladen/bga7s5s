@@ -37,7 +37,7 @@ class Maneuver_01087 extends Maneuver
             $actor = $event->theah->getDuelRoundActor();
             
             $owner = $this->getOwningCard($event->theah);
-            $engageEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $actor->Id, $owner->Id);
+            $engageEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $actor->Id, $owner->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
         }
     }

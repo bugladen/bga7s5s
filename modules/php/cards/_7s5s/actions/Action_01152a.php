@@ -97,7 +97,7 @@ class Action_01152a extends SchemeCityAction
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
-            $event = EventFactory::createCardEngardedEvent($performer->ControllerId, $target->Id, $scheme->Id);
+            $event = EventFactory::createCardEngardedEvent($performer->ControllerId, $target->Id, $scheme->Id, $this->Id);
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 

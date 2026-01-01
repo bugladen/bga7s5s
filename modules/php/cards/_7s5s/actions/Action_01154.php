@@ -257,7 +257,7 @@ class Action_01154 extends AttachmentAction
 
             $character = $this->getOwningCharacter($game->theah);
             $owner = $this->getOwningAttachment($game->theah);
-            $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id, $owner->Id);
+            $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engardeEvent);
 
             $game->gamestate->nextState();

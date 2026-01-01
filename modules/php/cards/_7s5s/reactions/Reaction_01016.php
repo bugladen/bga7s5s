@@ -79,10 +79,10 @@ class Reaction_01016 extends CardReaction
             $scheme = $this->getOwningCard($game->theah);
             $id = str_replace("enGarde-", "", $reactionId);
             $character = $game->theah->getCardById($id);
-            $event = EventFactory::createCardEngardedEvent($scheme->ControllerId, $id, $scheme->Id);
+            $event = EventFactory::createCardEngardedEvent($scheme->ControllerId, $id, $scheme->Id, $this->Id);
             $game->theah->queueEvent($event);
 
-            $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to En Garde ${character_inject_code}.'), [
+            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to En Garde ${character_inject_code}.'), [
                 "reaction_inject_code" => $scheme->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($scheme->ControllerId),
                 "character_inject_code" => $character->getInjectCode(),

@@ -50,7 +50,7 @@ class Reaction_01116a extends CardReaction
         if ($reactionId == 'enGarde')
         {
             $yevgeni = $this->getOwningCharacter($game->theah);
-            $event = EventFactory::createCardEngardedEvent($yevgeni->ControllerId, $yevgeni->Id, $yevgeni->Id);
+            $event = EventFactory::createCardEngardedEvent($yevgeni->ControllerId, $yevgeni->Id, $yevgeni->Id, $this->Id);
             $game->theah->queueEvent($event);
 
             $this->setUsed($game->theah, true);

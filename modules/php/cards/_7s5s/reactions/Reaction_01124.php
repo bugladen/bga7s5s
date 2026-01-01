@@ -64,7 +64,7 @@ class Reaction_01124 extends CardReaction
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
             ]);
 
-            $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $owner->Id, $owner->Id);
+            $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engardeEvent);
 
             $this->setUsed($game->theah, true);

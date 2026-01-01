@@ -99,10 +99,10 @@ class Action_01081 extends RiskCityAction
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $event = EventFactory::createCardEngardedEvent($performer->ControllerId, $performer->Id, $owner->Id);
+            $event = EventFactory::createCardEngardedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
 
-            $event = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id, $owner->Id);
+            $event = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
