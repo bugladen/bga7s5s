@@ -14,23 +14,47 @@ return declare('seventhseacityoffivesails.utilities', null, {
     // Tippy.js wrapper to replace BGA's addTooltipHtml
     // Stores all tippy instances for cleanup
     _tippyInstances: [],
+    
+    // Queue for tooltips requested before tippy.js is loaded
+    _pendingTooltips: [],
+    _pendingTooltipClasses: [],
+    _tippyReady: false,
 
     /**
-     * Add a tooltip using Tippy.js (replaces this.addTooltipHtml)
-     * @param {string} elementId - The ID of the element to attach the tooltip to
-     * @param {string} html - The HTML content for the tooltip
-     * @param {number} delay - Optional delay in ms before showing (default: 200)
+     * Initialize Tippy.js - call this once tippy is confirmed loaded
+     * Processes any queued tooltip requests
      */
-    addTippyTooltip: function(elementId, html, delay = 200) {
-        // Ensure tippy is available
+    initTippy: function() {
+        if (this._tippyReady) return;
+        
         if (typeof window.tippy === 'undefined') {
-            console.warn('Tippy tooltip: tippy.js not loaded yet, skipping tooltip for:', elementId);
-            return null;
+            // Tippy not ready yet, retry after a short delay
+            setTimeout(() => this.initTippy(), 50);
+            return;
         }
+        
+        this._tippyReady = true;
+        
+        // Process pending individual tooltips
+        this._pendingTooltips.forEach(({elementId, html, delay}) => {
+            this._createTippyTooltip(elementId, html, delay);
+        });
+        this._pendingTooltips = [];
+        
+        // Process pending class tooltips
+        this._pendingTooltipClasses.forEach(({cssClass, html, delay}) => {
+            this._createTippyTooltipForClass(cssClass, html, delay);
+        });
+        this._pendingTooltipClasses = [];
+    },
 
+    /**
+     * Internal method to actually create a tippy tooltip
+     */
+    _createTippyTooltip: function(elementId, html, delay) {
         const element = document.getElementById(elementId);
         if (!element) {
-            console.warn('Tippy tooltip: Element not found:', elementId);
+            // Element may have been removed from DOM, silently skip
             return null;
         }
 
@@ -56,18 +80,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     /**
-     * Add a tooltip to all elements with a given class using Tippy.js (replaces this.addTooltipHtmlToClass)
-     * @param {string} cssClass - The CSS class to target
-     * @param {string} html - The HTML content for the tooltip
-     * @param {number} delay - Optional delay in ms before showing (default: 200)
+     * Internal method to actually create tippy tooltips for a class
      */
-    addTippyTooltipToClass: function(cssClass, html, delay = 200) {
-        // Ensure tippy is available
-        if (typeof window.tippy === 'undefined') {
-            console.warn('Tippy tooltip: tippy.js not loaded yet, skipping tooltips for class:', cssClass);
-            return;
-        }
-
+    _createTippyTooltipForClass: function(cssClass, html, delay) {
         const elements = document.querySelectorAll('.' + cssClass);
         elements.forEach((element) => {
             // Destroy existing tippy on this element if any
@@ -89,6 +104,38 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
             this._tippyInstances.push(instance);
         });
+    },
+
+    /**
+     * Add a tooltip using Tippy.js (replaces this.addTooltipHtml)
+     * @param {string} elementId - The ID of the element to attach the tooltip to
+     * @param {string} html - The HTML content for the tooltip
+     * @param {number} delay - Optional delay in ms before showing (default: 200)
+     */
+    addTippyTooltip: function(elementId, html, delay = 200) {
+        // If tippy not ready, queue it
+        if (!this._tippyReady) {
+            this._pendingTooltips.push({elementId, html, delay});
+            return null;
+        }
+
+        return this._createTippyTooltip(elementId, html, delay);
+    },
+
+    /**
+     * Add a tooltip to all elements with a given class using Tippy.js (replaces this.addTooltipHtmlToClass)
+     * @param {string} cssClass - The CSS class to target
+     * @param {string} html - The HTML content for the tooltip
+     * @param {number} delay - Optional delay in ms before showing (default: 200)
+     */
+    addTippyTooltipToClass: function(cssClass, html, delay = 200) {
+        // If tippy not ready, queue it
+        if (!this._tippyReady) {
+            this._pendingTooltipClasses.push({cssClass, html, delay});
+            return;
+        }
+
+        this._createTippyTooltipForClass(cssClass, html, delay);
     },
 
     /**

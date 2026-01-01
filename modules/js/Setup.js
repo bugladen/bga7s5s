@@ -16,6 +16,9 @@ return declare('seventhseacityoffivesails.setup', null, {
         debug( "Starting game setup" );
         debug( "gamedatas", gamedatas );
 
+        // Initialize Tippy.js (processes any queued tooltips once tippy is loaded)
+        this.initTippy();
+
         // Create the animation manager for card animations
         this.animationManager = new BgaAnimations.Manager({
             animationsActive: () => this.bgaAnimationsActive(),
