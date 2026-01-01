@@ -10,7 +10,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechnique
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01067 extends Technique
 {
