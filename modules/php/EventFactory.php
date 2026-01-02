@@ -356,23 +356,6 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardMovedEvent(int $initiatingPlayerId, int $cardId, string $fromLocation, string $toLocation, bool $engage = true, int $sourceId = 0, string $abilityId = ""): EventCardMoved
-    {
-        $event = self::createEvent(Events::CardMoved);
-        if ($event instanceof EventCardMoved)
-        {
-            $event->initiatingPlayerId = $initiatingPlayerId;
-            $event->cardId = $cardId;
-            $event->fromLocation = $fromLocation;
-            $event->toLocation = $toLocation;
-            $event->engage = $engage;
-            $event->sourceId = $sourceId;
-            $event->abilityId = $abilityId;
-        }
-
-        return $event;
-    }
-
     public static function createCardRemovedFromCityDiscardPileEvent(int $playerId, int $cardId): EventCardRemovedFromCityDiscardPile
     {
         $event = self::createEvent(Events::CardRemovedFromCityDiscardPile);

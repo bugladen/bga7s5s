@@ -76,14 +76,8 @@ class _01053 extends Risk implements IHasReactions
                     "character_name" => $actor->Name,
                 ]);
     
-                $moveEvent = EventFactory::createCardMovedEvent($actor->ControllerId, $actor->Id, $actor->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $this->Id);
+                $moveEvent = EventFactory::createCardMovingEvent($actor->ControllerId, $actor->Id, $actor->Location, Game::LOCATION_PLAYER_HOME, $engage = true, $this->Id);
                 $event->theah->queueEvent($moveEvent);
-    
-                if (! $this->Engaged)
-                {
-                    $engageEvent = EventFactory::createCardEngagedEvent($actor->ControllerId, $actor->Id, $this->Id);
-                    $event->theah->queueEvent($engageEvent);
-                }
             }
         }
     }

@@ -108,7 +108,7 @@ class Action_01096 extends CharacterAction
                 throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to %s"), $character->Location, $owner->Location));
             }
 
-            $event = EventFactory::createCardMovedEvent($owner->ControllerId, $owner->Id, $owner->Location, $character->Location, $engage = false, $owner->Id, $this->Id);
+            $event = EventFactory::createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, $character->Location, $engage = false, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

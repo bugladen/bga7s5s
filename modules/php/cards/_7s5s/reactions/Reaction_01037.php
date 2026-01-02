@@ -90,7 +90,7 @@ class Reaction_01037 extends CardReaction
             $characterId = str_replace("move-", "", $reactionId);
             $character = $game->theah->getCharacterById($characterId);
             $owner = $this->getOwningCharacter($game->theah);
-            $event = EventFactory::createCardMovedEvent($owner->ControllerId, $character->Id, $character->Location, $owner->Location, $engage=false, $owner->Id, $this->Id);
+            $event = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $owner->Location, $engage=false, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
 
             $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and moved ${character_inject_code} to ${location_name}.'), [

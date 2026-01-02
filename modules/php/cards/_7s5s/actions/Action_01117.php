@@ -136,7 +136,7 @@ class Action_01117 extends CharacterAction
             $game->theah->eventCheck($reknownAddedEvent);
             $game->theah->queueEvent($reknownAddedEvent);
 
-            $ekaterinaMovedEvent = EventFactory::createCardMovedEvent($ekaterina->ControllerId, $ekaterina->Id, $ekaterina->Location, $location->Name, $engage = false, $ekaterina->Id, $this->Id);
+            $ekaterinaMovedEvent = EventFactory::createCardMovingEvent($ekaterina->ControllerId, $ekaterina->Id, $ekaterina->Location, $location->Name, $engage = false, $ekaterina->Id, $this->Id);
             $game->theah->eventCheck($ekaterinaMovedEvent);
             $game->theah->queueEvent($ekaterinaMovedEvent);
 

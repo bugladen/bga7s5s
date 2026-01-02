@@ -555,7 +555,17 @@ trait EventHub
             case $event instanceof EventCardMoving:
                 $handler = function (Theah $theah, EventCardMoving $event)
                 {
-                    $movedEvent = EventFactory::createCardMovedEvent($event->initiatingPlayerId, $event->cardId, $event->fromLocation, $event->toLocation, $event->engage, $event->sourceId, $event->abilityId);
+                    $movedEvent = self::createEvent(Events::CardMoved);
+                    if ($movedEvent instanceof EventCardMoved)
+                    {
+                        $movedEvent->initiatingPlayerId = $event->initiatingPlayerId;
+                        $movedEvent->cardId = $event->cardId;
+                        $movedEvent->fromLocation = $event->fromLocation;
+                        $movedEvent->toLocation = $event->toLocation;
+                        $movedEvent->engage = $event->engage;
+                        $movedEvent->sourceId = $event->sourceId;
+                        $movedEvent->abilityId = $event->abilityId;
+                    }
                     $theah->queueEvent($movedEvent);
                 };
                 $handler($this, $event);
