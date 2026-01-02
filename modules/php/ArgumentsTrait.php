@@ -178,7 +178,16 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
-        $charactersInCity = $this->theah->getCharactersInCityByPlayerId($playerId);
+        $canEquipToOpponents = $this->theah->playerCanEquipToOpponents($playerId);
+        if ($canEquipToOpponents)
+        {
+            $charactersInCity = $this->theah->getCharactersInPlay();
+            $charactersInCity = array_filter($charactersInCity, fn($character) => $this->theah->cardInCity($character));
+        }
+        else
+        {
+            $charactersInCity = $this->theah->getCharactersInCityByPlayerId($playerId);
+        }
 
         $handHasAttachments = $this->handHasAttachments($playerId);
         $charactersThatCanEquip = [];
@@ -189,7 +198,14 @@ trait ArgumentsTrait
             }
         }
 
-        $charactersAtHome = $this->theah->getCharactersAtHome($playerId);
+        if ($canEquipToOpponents)
+        {
+            $charactersAtHome = $this->theah->getCharactersAtHome();
+        }
+        else
+        {
+            $charactersAtHome = $this->theah->getCharactersAtHomeByPlayerId($playerId);
+        }
         foreach($charactersAtHome as $character) {
             if ($handHasAttachments) {
                 $charactersThatCanEquip[] = $character;

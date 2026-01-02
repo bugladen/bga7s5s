@@ -200,7 +200,7 @@ onLeavingState: function( stateName )
             {
                 for ( const cardId in this.cardProperties ) {
                     card = this.cardProperties[cardId];
-                    if (card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId() && this.isCardInPlay(card.id)) {
+                    if (card.type === 'Character' && card.controllerId && this.isCardInPlay(card.id)) {
                         const image = $(`${card.divId}_image`);
                         this.clearCardAsSelectable(image);
                     }

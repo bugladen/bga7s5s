@@ -458,7 +458,17 @@ trait FrameworkActionsTrait
         $performer = $this->theah->getCharacterById($id);
         $handHasAttachments = $this->handHasAttachments($playerId);
 
-        $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
+        $canEquipToOpponents = $this->theah->playerCanEquipToOpponents($playerId);
+        if ($canEquipToOpponents)
+        {
+            $characters = $this->theah->getCharactersInPlay();
+            $characters = array_filter($characters, fn($character) => $this->theah->cardInCity($character));
+        }
+        else
+        {
+            $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
+        }
+
         $charactersThatCanEquip = [];
         foreach ($characters as $character) {
             $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($character->Location);
@@ -466,7 +476,16 @@ trait FrameworkActionsTrait
                 $charactersThatCanEquip[] = $character;
             }
         }
-        $charactersAtHome = $this->theah->getCharactersAtHome($playerId);
+
+        if ($canEquipToOpponents)
+        {
+            $charactersAtHome = $this->theah->getCharactersAtHome();
+        }
+        else
+        {
+            $charactersAtHome = $this->theah->getCharactersAtHomeByPlayerId($playerId);
+        }
+
         foreach ($charactersAtHome as $character) {
             if ($handHasAttachments) {
                 $charactersThatCanEquip[] = $character;
@@ -505,6 +524,11 @@ trait FrameworkActionsTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
+        if ($performer->ControllerId != $playerId && ! $attachment->CanEquipToOpponents)
+        {
+            throw new \BgaUserException(self::_("Attachment cannot be equipped to an opponent."));
+        }
+
         $event = EventFactory::createEnteringPayStateEvent($playerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
         $this->theah->queueEvent($event);
 
@@ -513,6 +537,7 @@ trait FrameworkActionsTrait
 
     public function actHighDramaEquipActionAttachmentFromPlaySelected(int $id)
     {
+        $playerId = $this->getActivePlayerId();
         $this->theah->buildCity();
         $attachmentId = $id;
 
@@ -526,6 +551,11 @@ trait FrameworkActionsTrait
 
         if ($attachment->Location != $performer->Location) {
             throw new \BgaUserException(self::_("Attachment is not at Performer's Location."));
+        }
+
+        if ($performer->ControllerId != $playerId && ! $attachment->CanEquipToOpponents)
+        {
+            throw new \BgaUserException(self::_("Attachment cannot be equipped to an opponent."));
         }
 
         $this->globals->set(GAME::CHOSEN_CARD, $attachmentId);

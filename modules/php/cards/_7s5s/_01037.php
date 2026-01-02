@@ -53,7 +53,7 @@ class _01037 extends Character implements IHasReactions
     {
         if ($location == Game::LOCATION_PLAYER_HOME)
         {
-            $characters = $theah->getCharactersAtHome($this->ControllerId);
+            $characters = $theah->getCharactersAtHomeByPlayerId($this->ControllerId);
         }
         else
         {

@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
@@ -648,7 +649,18 @@ class Theah
         return $characters;
     }
 
-    function getCharactersAtHome(int $playerId): array
+    function getCharactersAtHome(): array
+    {
+        $characters = [];
+        foreach ($this->cards as $card) {
+            if ($card instanceof Character && $card->Location == Game::LOCATION_PLAYER_HOME) {
+                $characters[] = $card;
+            }
+        }
+        return $characters;
+    }
+
+    function getCharactersAtHomeByPlayerId(int $playerId): array
     {
         $characters = [];
         foreach ($this->cards as $card) {
@@ -1135,6 +1147,14 @@ class Theah
         }
 
         return count($charactersThatCanEquipInCity) > 0 || $this->game->handHasAttachments($playerId);        
+    }
+
+    public function playerCanEquipToOpponents($playerId): bool
+    {
+        $handAttachments = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
+        $handAttachments = array_filter($handAttachments, fn($attachment) => $attachment instanceof FactionAttachment && $attachment->CanEquipToOpponents);
+
+        return count($handAttachments) > 0;
     }
 
     public function playerCanBasicChallenge($playerId): bool
