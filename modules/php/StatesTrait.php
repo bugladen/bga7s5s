@@ -595,8 +595,14 @@ trait StatesTrait
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
         $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE, "");
 
+        $this->notifyAllPlayers("message", clienttranslate('${performer_inject_code} is issuing a challenge to ${target_inject_code}.'), [
+            "performer_inject_code" => $performer->getInjectCode(),
+            "target_inject_code" => $target->getInjectCode()
+        ]);
+
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID, 0);
+        $abilityId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, "");
 
         $this->globals->set(Game::CHALLENGE_CANCELLED, false);
 
@@ -608,6 +614,7 @@ trait StatesTrait
             $challengeEvent->defenderId = $target->Id;
             $challengeEvent->activatedTechniqueId = $techniqueId;
             $challengeEvent->sourceId = $sourceId;
+            $challengeEvent->abilityId = $abilityId;
         }
         $this->theah->eventCheck($challengeEvent);
         $this->theah->queueEvent($challengeEvent);

@@ -19,5 +19,7 @@ class EventCharacterBeingHealed extends Event
         $this->wounds = 0;
         $this->reason = '';
         $this->abilityId = '';
+
+        $this->runEventHubAfterCards = true;
     }
 }

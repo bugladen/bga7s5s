@@ -7,8 +7,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 
-class Action_01009 extends CharacterAction
+class Action_01009 extends CharacterAction implements IAbilityThatTargetsCards
 {
     public function __construct()
     {
