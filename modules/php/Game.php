@@ -68,6 +68,7 @@ class Game extends \Bga\GameFramework\Table
     final const MULTI_STATE_INITIATING_PLAYER = "multiStateInitiatingPlayer";
     final const EXTRA_ACTIONS = "extraActions";
     final const OVERRIDE_AS_NOT_FIRST_PLAYER = "overrideAsNotFirstPlayer";
+    final const INVALID_PAY_CARD_IDS = "invalidPayCardIds";
 
     //Conditions
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";

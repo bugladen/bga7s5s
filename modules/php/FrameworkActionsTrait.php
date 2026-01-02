@@ -1777,9 +1777,18 @@ trait FrameworkActionsTrait
 
         $cardIds = json_decode($payWithCards, true);
         
+        $invalidPayCardIds = $this->globals->get(Game::INVALID_PAY_CARD_IDS, []);
+
         //Total up the wealth of the cards to see if player paid correctly
         $totalWealth = 0;
-        foreach ($cardIds as $cardId) {
+        foreach ($cardIds as $cardId) 
+        {
+            if (in_array($cardId, $invalidPayCardIds))
+            {
+                $card = $this->getCardObjectFromDb($cardId);
+                throw new \BgaUserException(sprintf(self::_("%s is not valid to pay for the reaction."), $card->Name));
+            }
+
             $payCard = $this->getCardObjectFromDb($cardId);
 
             if ($payCard == null)
@@ -1788,9 +1797,10 @@ trait FrameworkActionsTrait
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += $payCard->hasTrait("Wealth") ? 2 : 1;
         }
+
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
-        }
+        }        
 
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
@@ -1798,6 +1808,8 @@ trait FrameworkActionsTrait
             $event = EventFactory::createCardDiscardedFromHandEvent($payCard->OwnerId, $payCard->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
+
+        $this->globals->delete(Game::INVALID_PAY_CARD_IDS);
 
         $announcement = $reaction->getReactionAnnouncement($this, $this->gamestate->state_id(), $internalId, $reactionId);
         if ($announcement != "")

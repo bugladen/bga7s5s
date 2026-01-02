@@ -3,19 +3,20 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_01014 extends CardReaction
+class Reaction_01032 extends RiskReaction
 {
     private ?EventCardEngaged $engagedEvent = null;
     private ?EventCardEngarded $engardedEvent = null;
@@ -23,18 +24,16 @@ class Reaction_01014 extends CardReaction
     private ?EventCharacterBeingWounded $characterWoundedEvent = null;
     private ?EventCharacterBeingHealed $characterHealedEvent = null;
     private ?EventChallengeIssued $challengeIssuedEvent = null;
-    private bool $isChallenger = false;
 
+    private bool $inPlayRedHand = false;
     private bool $inHandThug = false;
-    private bool $inPlayThug = false;
-    private bool $moveHome = false;
     private bool $skipNextEvent = false;
-     
+
     public function __construct()
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Target one of your Thugs instead of Vittoria");
+        $this->Name = clienttranslate("Cancel Targeted Ability on one of your Characters");
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -42,16 +41,11 @@ class Reaction_01014 extends CardReaction
         $message = '';
         if ($this->inHandThug)
         {
-            $message = $theah->game->translate('${you} may choose a Thug in your Hand to put into play: ');
+            $message = $theah->game->translate('${you} may choose a Thug in your Hand to discard: ');
         }
-        if ($this->inPlayThug)
+        if ($this->inPlayRedHand)
         {
-            $message = $theah->game->translate('${you} may choose an In-Play Thug at Vittoria\'s Location to play as the new target: ');
-        }
-
-        if ($this->moveHome)
-        {
-            $message = $theah->game->translate('${you} may choose to move Vittoria Home: ');
+            $message = $theah->game->translate('${you} may choose an In-Play Red Hand to destroy: ');
         }
 
         return parent::getReactionDescription($theah) . $message;
@@ -61,31 +55,30 @@ class Reaction_01014 extends CardReaction
     {
         $array = parent::getReactionButtonProperties($theah);
 
-        $owner = $this->getOwningCharacter($theah);
+        $owner = $this->getOwningCard($theah);
+
+        if ($this->inPlayRedHand)
+        {
+            $cards = $theah->getCharactersInPlayByPlayerId($owner->ControllerId);
+            $cards = array_filter($cards, fn($card) => $card->hasTrait("Red Hand"));
+            foreach ($cards as $card)
+            {
+                $array[] = $this->createButtonProperty($theah->game, $card->Name, "destroy-$card->Id");
+            }
+        }
+
         if ($this->inHandThug)
         {
             $cards = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
             $cards = array_filter($cards, fn($card) => $card->hasTrait("Thug"));
             foreach ($cards as $card)
             {
-                $array[] = $this->createButtonProperty($theah->game, $card->Name, "putIntoPlay-$card->Id");
+                $array[] = $this->createButtonProperty($theah->game, $card->Name, "discard-$card->Id");
             }
-        }
-        if ($this->inPlayThug)
-        {
-            $characters = $theah->getCharactersAtLocation($owner->Location);
-            $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId && $character->hasTrait("Thug"));
-            foreach ($characters as $character)
-            {
-                $array[] = $this->createButtonProperty($theah->game, $character->Name, "putIntoPlay-$character->Id");
-            }
-        }
-        if ($this->moveHome)
-        {
-            $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Move Home'), 'moveHome');
         }
 
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Decline'), 'decline');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
+
         return $array;
     }
 
@@ -101,22 +94,22 @@ class Reaction_01014 extends CardReaction
         }
         return false;
     }
-
+    
     private function thugsInHand(Theah $theah): bool
     {
-        $owner = $this->getOwningCharacter($theah);
+        $owner = $this->getOwningCard($theah);
         $hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
         $hand = array_filter($hand, fn($card) => $card->hasTrait("Thug"));
         return count($hand) > 0;
     }
 
-    private function thugsInPlay(Theah $theah): bool
+    private function redHandsInPlay(Theah $theah): bool
     {
-        $owner = $this->getOwningCharacter($theah);
-        $characters = $theah->getCharactersAtLocation($owner->Location);
-        $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId && $character->hasTrait("Thug"));
+        $owner = $this->getOwningCard($theah);
+        $characters = $theah->getCharactersInPlayByPlayerId($owner->ControllerId);
+        $characters = array_filter($characters, fn($character) => $character->hasTrait("Red Hand"));
         return count($characters) > 0;
-    }
+    }    
 
     public function handleEvent(Event $event)
     {
@@ -124,8 +117,9 @@ class Reaction_01014 extends CardReaction
 
         if ($event instanceof EventCardEngaged && $this->isAvailable() && !$event->canceled)
         {
-            $owner = $this->getOwningCharacter($event->theah);
-            if ($owner->Id == $event->cardId && $owner->ControllerId != $event->playerId && 
+            $owner = $this->getOwningCard($event->theah);
+            $card = $event->theah->getCardById($event->cardId);
+            if ($owner->ControllerId == $card->ControllerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
                 if ($this->skipNextEvent)
@@ -135,11 +129,11 @@ class Reaction_01014 extends CardReaction
                     return;
                 }
 
-                if ($this->thugsInHand($event->theah))
+                if ($this->redHandsInPlay($event->theah))
                 {
                     $this->engagedEvent = clone $event;
                     unset($this->engagedEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->inPlayRedHand = true;                    
                     $owner->IsUpdated = true;
 
                     $event->canceled = true;
@@ -147,11 +141,11 @@ class Reaction_01014 extends CardReaction
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
                 }
-                else if ($this->thugsInPlay($event->theah))
+                else if ($this->thugsInHand($event->theah))
                 {
                     $this->engagedEvent = clone $event;
                     unset($this->engagedEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->inHandThug = true;
                     $owner->IsUpdated = true;                        
 
                     $event->canceled = true;
@@ -164,8 +158,9 @@ class Reaction_01014 extends CardReaction
 
         if ($event instanceof EventCardEngarded && $this->isAvailable() && !$event->canceled)
         {
-            $owner = $this->getOwningCharacter($event->theah);
-            if ($owner->Id == $event->cardId && $owner->ControllerId != $event->playerId && 
+            $owner = $this->getOwningCard($event->theah);
+            $character = $event->theah->getCharacterById($event->cardId);
+            if ($owner->ControllerId == $character->ControllerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
                 if ($this->skipNextEvent)
@@ -175,11 +170,11 @@ class Reaction_01014 extends CardReaction
                     return;
                 }
 
-                if ($this->thugsInHand($event->theah))
+                if ($this->redHandsInPlay($event->theah))
                 {
                     $this->engardedEvent = clone $event;
                     unset($this->engardedEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->inPlayRedHand = true;                    
                     $owner->IsUpdated = true;
 
                     $event->canceled = true;
@@ -187,11 +182,11 @@ class Reaction_01014 extends CardReaction
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
                 }
-                else if ($this->thugsInPlay($event->theah))
+                else if ($this->thugsInHand($event->theah))
                 {
                     $this->engardedEvent = clone $event;
                     unset($this->engardedEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->inHandThug = true;
                     $owner->IsUpdated = true;                        
 
                     $event->canceled = true;
@@ -203,9 +198,10 @@ class Reaction_01014 extends CardReaction
         }
 
         if ($event instanceof EventCardMoving && $this->isAvailable() && !$event->canceled)
-        {
-            $owner = $this->getOwningCharacter($event->theah);
-            if ($owner->Id == $event->cardId && $owner->ControllerId != $event->initiatingPlayerId && 
+        {   
+            $owner = $this->getOwningCard($event->theah);
+            $card = $event->theah->getCardById($event->cardId);
+            if ($owner->ControllerId == $card->ControllerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
                 if ($this->skipNextEvent)
@@ -215,11 +211,11 @@ class Reaction_01014 extends CardReaction
                     return;
                 }
 
-                if ($this->thugsInHand($event->theah))
+                if ($this->redHandsInPlay($event->theah))
                 {
                     $this->cardMovingEvent = clone $event;
                     unset($this->cardMovingEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->inPlayRedHand = true;                    
                     $owner->IsUpdated = true;
 
                     $event->canceled = true;
@@ -227,11 +223,11 @@ class Reaction_01014 extends CardReaction
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
                 }
-                else if ($this->thugsInPlay($event->theah))
+                else if ($this->thugsInHand($event->theah))
                 {
                     $this->cardMovingEvent = clone $event;
                     unset($this->cardMovingEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->inHandThug = true;
                     $owner->IsUpdated = true;                        
 
                     $event->canceled = true;
@@ -244,9 +240,9 @@ class Reaction_01014 extends CardReaction
 
         if ($event instanceof EventCharacterBeingWounded && $this->isAvailable() && !$event->canceled)
         {
-            $owner = $this->getOwningCharacter($event->theah);
-            $source = $event->theah->getCardById($event->sourceId);
-            if ($owner->Id == $event->characterId && $owner->ControllerId != $source->ControllerId && 
+            $owner = $this->getOwningCard($event->theah);
+            $character = $event->theah->getCharacterById($event->characterId);
+            if ($owner->ControllerId == $character->ControllerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
                 if ($this->skipNextEvent)
@@ -256,11 +252,11 @@ class Reaction_01014 extends CardReaction
                     return;
                 }
 
-                if ($this->thugsInHand($event->theah))
+                if ($this->redHandsInPlay($event->theah))
                 {
                     $this->characterWoundedEvent = clone $event;
                     unset($this->characterWoundedEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->inPlayRedHand = true;                    
                     $owner->IsUpdated = true;
 
                     $event->canceled = true;
@@ -268,11 +264,11 @@ class Reaction_01014 extends CardReaction
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
                 }
-                else if ($this->thugsInPlay($event->theah))
+                else if ($this->thugsInHand($event->theah))
                 {
                     $this->characterWoundedEvent = clone $event;
                     unset($this->characterWoundedEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->inHandThug = true;
                     $owner->IsUpdated = true;                        
 
                     $event->canceled = true;
@@ -285,9 +281,9 @@ class Reaction_01014 extends CardReaction
 
         if ($event instanceof EventCharacterBeingHealed && $this->isAvailable() && !$event->canceled)
         {
-            $owner = $this->getOwningCharacter($event->theah);
-            $source = $event->theah->getCardById($event->sourceId);
-            if ($owner->Id == $event->characterId && $owner->ControllerId != $source->ControllerId && 
+            $owner = $this->getOwningCard($event->theah);
+            $character = $event->theah->getCharacterById($event->characterId);
+            if ($owner->ControllerId == $character->ControllerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
                 if ($this->skipNextEvent)
@@ -297,11 +293,11 @@ class Reaction_01014 extends CardReaction
                     return;
                 }
 
-                if ($this->thugsInHand($event->theah))
+                if ($this->redHandsInPlay($event->theah))
                 {
                     $this->characterHealedEvent = clone $event;
                     unset($this->characterHealedEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->inPlayRedHand = true;                    
                     $owner->IsUpdated = true;
 
                     $event->canceled = true;
@@ -309,11 +305,11 @@ class Reaction_01014 extends CardReaction
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
                 }
-                else if ($this->thugsInPlay($event->theah))
+                else if ($this->thugsInHand($event->theah))
                 {
                     $this->characterHealedEvent = clone $event;
                     unset($this->characterHealedEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->inHandThug = true;
                     $owner->IsUpdated = true;                        
 
                     $event->canceled = true;
@@ -326,9 +322,10 @@ class Reaction_01014 extends CardReaction
 
         if ($event instanceof EventChallengeIssued && $this->isAvailable() && !$event->canceled)
         {
-            $owner = $this->getOwningCharacter($event->theah);
-            $source = $event->theah->getCardById($event->sourceId);
-            if (($owner->Id == $event->challengerId ||$owner->Id == $event->defenderId) && $owner->ControllerId != $source->ControllerId && 
+            $owner = $this->getOwningCard($event->theah);
+            $defender = $event->theah->getCharacterById($event->defenderId);
+            $challenger = $event->theah->getCharacterById($event->challengerId);
+            if (($owner->ControllerId == $defender->ControllerId || $owner->ControllerId == $challenger->ControllerId) && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
                 if ($this->skipNextEvent)
@@ -338,194 +335,188 @@ class Reaction_01014 extends CardReaction
                     return;
                 }
 
-                if ($this->thugsInHand($event->theah))
+                if ($this->redHandsInPlay($event->theah))
                 {
                     $this->challengeIssuedEvent = clone $event;
                     unset($this->challengeIssuedEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->inPlayRedHand = true;                    
                     $owner->IsUpdated = true;
 
                     $event->canceled = true;
-                    if ($owner->Id == $event->challengerId)
-                    {
-                        $this->isChallenger = true;
-                    }
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
                 }
-                else if ($this->thugsInPlay($event->theah))
+                else if ($this->thugsInHand($event->theah))
                 {
                     $this->challengeIssuedEvent = clone $event;
                     unset($this->challengeIssuedEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->inHandThug = true;
                     $owner->IsUpdated = true;                        
 
                     $event->canceled = true;
-                    if ($owner->Id == $event->challengerId)
-                    {
-                        $this->isChallenger = true;
-                    }
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
                 }
             }
         }
+
+        if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
+        {
+            if ($this->inHandThug)
+            {
+                $owner = $this->getOwningCard($event->theah);
+
+                if ($event->reactionId != 'pass')
+                {                    
+                    $characterId = str_replace("discard-", "", $event->reactionId);
+                    $character = $event->theah->getCardById($characterId);
+                    $discardEvent = EventFactory::createCardDiscardedFromHandEvent($owner->ControllerId, $characterId, $owner->Id);
+                    $event->theah->queueEvent($discardEvent);
+
+                    $game = $event->theah->game;
+                    $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to discard ${character_inject_code}.'), [
+                        "reaction_inject_code" => $owner->getInjectCode(),
+                        "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                        "character_inject_code" => $character->getInjectCode(),
+                    ]);
+
+                    $this->clearEvents($game);
+                    $this->inHandThug = false;
+                    $owner->IsUpdated = true;
+                }
+            }
+
+            if ($this->inPlayRedHand)
+            {
+                if ($event->reactionId != 'pass')
+                {
+                    $owner = $this->getOwningCard($event->theah);
+                    $characterId = str_replace("destroy-", "", $event->reactionId);
+                    $character = $event->theah->getCardById($characterId);
+                    $destroyEvent = EventFactory::createCharacterDestroyedEvent($character->ControllerId, $characterId, $character->Location);
+                    $event->theah->queueEvent($destroyEvent);
+
+                    $game = $event->theah->game;
+                    $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to destroy ${character_inject_code}.'), [
+                        "reaction_inject_code" => $owner->getInjectCode(),
+                        "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                        "character_inject_code" => $character->getInjectCode(),
+                    ]);
+
+                    $this->clearEvents($game);
+                    $this->inPlayRedHand = false;
+                    $owner->IsUpdated = true;
+                }
+            }
+        }
     }
 
-    private function releaseEvent(Game $game, int $characterId)
+    private function clearEvents(Game $game)
+    {
+        $this->engagedEvent = null;
+        $this->engardedEvent = null;
+        $this->cardMovingEvent = null;
+        $this->characterWoundedEvent = null;
+        $this->characterHealedEvent = null;
+
+        if ($this->challengeIssuedEvent != null)
+        {
+            $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+        }
+        $this->challengeIssuedEvent = null;
+    }
+
+    private function releaseEvent(Game $game)
     {
         if ($this->engagedEvent)
         {
-            $this->engagedEvent->cardId = $characterId;
             $game->theah->queueEvent($this->engagedEvent);
             $this->engagedEvent = null;
         }
 
         if ($this->engardedEvent)
         {
-            $this->engardedEvent->cardId = $characterId;
             $game->theah->queueEvent($this->engardedEvent);
             $this->engardedEvent = null;
         }
 
         if ($this->cardMovingEvent)
         {
-            $this->cardMovingEvent->cardId = $characterId;
             $game->theah->queueEvent($this->cardMovingEvent);
             $this->cardMovingEvent = null;
         }
         
         if ($this->characterWoundedEvent)
         {
-            $this->characterWoundedEvent->characterId = $characterId;
             $game->theah->queueEvent($this->characterWoundedEvent);
             $this->characterWoundedEvent = null;
         }
         
         if ($this->characterHealedEvent)
         {
-            $this->characterHealedEvent->characterId = $characterId;
             $game->theah->queueEvent($this->characterHealedEvent);
             $this->characterHealedEvent = null;
         }
 
         if ($this->challengeIssuedEvent)
         {
-            if ($this->isChallenger)
-            {
-                $game->globals->set(GAME::CHOSEN_PERFORMER, $characterId);
-                $this->challengeIssuedEvent->challengerId = $characterId;
-            }
-            else
-            {
-                $game->globals->set(GAME::CHOSEN_TARGET, $characterId);
-                $this->challengeIssuedEvent->defenderId = $characterId;
-            }
             $game->theah->queueEvent($this->challengeIssuedEvent);
-            $this->isChallenger = false;
             $this->challengeIssuedEvent = null;
         }
     }
-
-
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
     {
         parent::performReaction($game, $state, $internalId, $reactionId);
 
-        if ($this->moveHome)
+        if ($reactionId != 'pass')
         {
-            if ($reactionId != 'decline')
+            if ($this->inHandThug)
             {
-                $owner = $this->getOwningCharacter($game->theah);
-                $event = EventFactory::createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $owner->Id);
-                $game->theah->queueEvent($event);
-
-                $this->setUsed($game->theah, true);
-                $this->moveHome = false;
-                $owner->IsUpdated = true;
+                $characterId = str_replace("discard-", "", $reactionId);
+                $game->globals->set(Game::INVALID_PAY_CARD_IDS, [$characterId]);
             }
+
+            $owner = $this->getOwningCard($game->theah);
+            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
+            $game->theah->queueEvent($event);
+
+            $event = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+            $game->theah->queueEvent($event);
         }
 
-        if ($this->inPlayThug)
+        if ($reactionId == 'pass')
         {
-            if ($reactionId != 'decline')
+            $owner = $this->getOwningCard($game->theah);
+
+            if ($this->inHandThug)
             {
-                $owner = $this->getOwningCharacter($game->theah);
-                $characterId = str_replace("putIntoPlay-", "", $reactionId);
-                $character = $game->theah->getCharacterById($characterId);
-                
-                $this->releaseEvent($game, $characterId);
-
-                $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to use ${character_inject_code} (same location) as the new target.'), [
-                    "reaction_inject_code" => $owner->getInjectCode(),
-                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                    "character_inject_code" => $character->getInjectCode(),
-                ]);
-
-                $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $game->theah->queueEvent($transitionEvent);
-
-                $this->inPlayThug = false;
-                $this->moveHome = true;
-                $owner->IsUpdated = true;
-            }
-
-            if ($reactionId == 'decline')
-            {
-                $owner = $this->getOwningCharacter($game->theah);
-                $this->releaseEvent($game, $owner->Id);
-                $this->inPlayThug = false;
+                $this->releaseEvent($game);                    
+                $this->inHandThug = false;
                 $this->skipNextEvent = true;
                 $owner->IsUpdated = true;
             }
-        }
 
-        if ($this->inHandThug)
-        {
-            if ($reactionId != 'decline')
+            if ($this->inPlayRedHand)
             {
-                $owner = $this->getOwningCharacter($game->theah);
-                $characterId = str_replace("putIntoPlay-", "", $reactionId);
-                $character = $game->theah->getCharacterById($characterId);
-                $musterEvent = EventFactory::createCharacterMusteredEvent($owner->ControllerId, $characterId, $owner->Location);
-                $game->theah->queueEvent($musterEvent);
-
-                $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to put ${character_inject_code} into play.'), [
-                    "reaction_inject_code" => $owner->getInjectCode(),
-                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                    "character_inject_code" => $character->getInjectCode(),
-                ]);
-
-                $this->inHandThug = false;
-                $this->inPlayThug = true;
+                $this->inPlayRedHand = false;
+                $this->inHandThug = true;
                 $owner->IsUpdated = true;
 
-                $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $game->theah->queueEvent($transitionEvent);
-
-            }
-
-            if ($reactionId == 'decline')
-            {
-                $owner = $this->getOwningCharacter($game->theah);
-                $this->inHandThug = false;
-                $this->inPlayThug = true;
-                $owner->IsUpdated = true;
-
-                $characters = $game->theah->getCharactersAtLocation($owner->Location);
-                $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId && $character->hasTrait("Thug"));
-                if (count($characters) > 0)
+                if ($this->thugsInHand($game->theah))
                 {
-                    $this->inPlayThug = true;
                     $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                    $game->theah->queueEvent($transitionEvent);                    
+                    $game->theah->queueEvent($transitionEvent);
                 }
-            }
+                else
+                {
+                    $this->skipNextEvent = true;
+                }
+            }    
         }
 
-        $game->gamestate->nextState("done");
+        $game->gamestate->nextState('done');
     }
 }
