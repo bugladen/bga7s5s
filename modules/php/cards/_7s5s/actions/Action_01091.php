@@ -103,7 +103,7 @@ class Action_01091 extends CharacterAction
 
             if (count($ids) == 1)
             {
-                $healEvent = EventFactory::createCharacterHealedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $healEvent = EventFactory::createCharacterBeingHealedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($healEvent);
 
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
@@ -149,7 +149,7 @@ class Action_01091 extends CharacterAction
             foreach ($ids as $id)
             {
                 $character = $game->theah->getCharacterById($id);
-                $event = EventFactory::createCharacterHealedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $event = EventFactory::createCharacterBeingHealedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($event);
             }
 

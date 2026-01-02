@@ -98,7 +98,7 @@ class Action_01175 extends CardAction
                 $game->theah->queueEvent($discardEvent);
             }
 
-            $healEvent = EventFactory::createCharacterHealedEvent($performerId, $owner->Id, $wounds, $owner->getInjectCode(), $this->Id);
+            $healEvent = EventFactory::createCharacterBeingHealedEvent($performerId, $owner->Id, $wounds, $owner->getInjectCode(), $this->Id);
             $game->theah->queueEvent($healEvent);
 
             $this->resetPlayerPassCount($game);

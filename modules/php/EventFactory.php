@@ -32,7 +32,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
@@ -45,11 +44,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeAccepted;
 use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterCombatModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterLostBrute;
@@ -589,10 +588,10 @@ class EventFactory
         return $event;
     }
 
-    public static function createCharacterHealedEvent(int $characterId, int $sourceId, int $wounds, string $reason, string $abilityId = ''): EventCharacterHealed
+    public static function createCharacterBeingHealedEvent(int $characterId, int $sourceId, int $wounds, string $reason, string $abilityId = ''): EventCharacterBeingHealed
     {
-        $event = self::createEvent(Events::CharacterHealed);
-        if ($event instanceof EventCharacterHealed)
+        $event = self::createEvent(Events::CharacterBeingHealed);
+        if ($event instanceof EventCharacterBeingHealed)
         {
             $event->characterId = $characterId;
             $event->sourceId = $sourceId;

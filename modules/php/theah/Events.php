@@ -100,6 +100,7 @@ class Events
     const CardRemovedFromLocker = 'EventCardRemovedFromLocker';
     const CardRemovedFromPlay = 'EventCardRemovedFromPlay';
     const CharacterDestroyed = 'EventCharacterDestroyed';
+    const CharacterBeingHealed = 'EventCharacterBeingHealed';
     const CharacterHealed = 'EventCharacterHealed';
     const CharacterPutIntoApproachDeck = 'EventCharacterPutIntoApproachDeck';
     const CharacterBeingWounded = 'EventCharacterBeingWounded';

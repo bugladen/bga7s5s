@@ -73,9 +73,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterCombatModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
@@ -1758,7 +1760,7 @@ trait EventHub
                     $defender->removeCondition(GAME::DUEL_DEFENDER);
                     $theah->game->updateCardObjectInDb($defender);
 
-                    $theah->game->notifyAllPlayers("challengeRejected", clienttranslate('${player_name} REFUSES The Challenge.'), [
+                    $theah->game->notify->all("challengeRejected", clienttranslate('${player_name} REFUSES The Challenge.'), [
                         "player_name" => $theah->game->getPlayerNameById($defender->ControllerId),
                         "challengerId" => $event->challengerId,
                         "defenderId" => $event->targetId,
@@ -1766,6 +1768,23 @@ trait EventHub
                 };
                 $handler($this, $event);
                 break;
+
+                case $event instanceof EventCharacterBeingHealed:
+                    $handler = function ($theah, EventCharacterBeingHealed $event)
+                    {
+                        $healedEvent = self::createEvent(Events::CharacterHealed);
+                        if ($healedEvent instanceof EventCharacterHealed)
+                        {
+                            $healedEvent->characterId = $event->characterId;
+                            $healedEvent->sourceId = $event->sourceId;
+                            $healedEvent->wounds = $event->wounds;
+                            $healedEvent->reason = $event->reason;
+                            $healedEvent->abilityId = $event->abilityId;
+                        }
+                        $event->theah->queueEvent($healedEvent);
+                    };
+                    $handler($this, $event);
+                    break;
 
             case $event instanceof EventCharacterBeingWounded:
                 $handler = function ($theah, EventCharacterBeingWounded $event)

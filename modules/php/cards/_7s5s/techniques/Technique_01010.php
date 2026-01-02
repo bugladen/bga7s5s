@@ -90,7 +90,6 @@ class Technique_01010 extends Technique
                 }
 
                 $deck->insertCardOnExtremePosition($id, $deckName, false);
-                var_dump($id);
             }
 
             $game->notify->all("message", clienttranslate('${player_name} has chosen to sink ${count} card(s) from the top of the Adversary\'s Faction Deck.'), [
