@@ -53,7 +53,7 @@ class Action_01191 extends AttachmentAction
 
             foreach ($characters as $character)
             {
-                $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $duckfootPistol->Id, 1, $duckfootPistol->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $duckfootPistol->Id, 1, $duckfootPistol->getInjectCode(), $this->Id);
                 $event->theah->queueEvent($woundEvent);
             }
 

@@ -179,7 +179,7 @@ class Maneuver_01079 extends Maneuver
             if ($id == 2)
             {
                 $owner = $this->getOwningCard($game->theah);
-                $woundEvent = EventFactory::createCharacterWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->eventCheck($woundEvent);
                 $game->theah->queueEvent($woundEvent);
 

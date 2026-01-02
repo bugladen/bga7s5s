@@ -120,7 +120,7 @@ class Action_01034 extends RiskAction
             $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
             
             $owner = $this->getOwningCard($game->theah);
-            $woundEvent = EventFactory::createCharacterWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $game->theah->queueEvent($woundEvent);
 
             $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "01034_2", $this->Id);

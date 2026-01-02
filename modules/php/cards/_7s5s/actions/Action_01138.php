@@ -142,7 +142,7 @@ class Action_01138 extends RiskAction
                 $game->theah->queueEvent($moveEvent);
 
                 //Wound Target
-                $woundEvent = EventFactory::createCharacterWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
                 $this->setUsed($game->theah, true);
@@ -189,7 +189,7 @@ class Action_01138 extends RiskAction
             else if ($id == 0)
             {
                 //Wound Target
-                $woundEvent = EventFactory::createCharacterWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
             }

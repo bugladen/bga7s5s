@@ -89,7 +89,7 @@ class Reaction_01053 extends CancelReaction
                 $game->theah->deleteEventsTargetingCard($target->Id);
                 $game->theah->deleteTransitionEventsBySourceId($this->SourceId);
     
-                $event = EventFactory::createCharacterWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($event);
     
                 $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to cancel the Sorcerer Ability Targeting ${card_inject_code}.'), [

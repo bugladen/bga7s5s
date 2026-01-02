@@ -94,7 +94,7 @@ class Action_01152b extends SchemeCityAction
 
             $scheme = $this->getOwningCard($game->theah);
 
-            $event = EventFactory::createCharacterWoundedEvent($performer->Id, $scheme->Id, 1, $scheme->getInjectCode(), $this->Id);
+            $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $scheme->Id, 1, $scheme->getInjectCode(), $this->Id);
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 

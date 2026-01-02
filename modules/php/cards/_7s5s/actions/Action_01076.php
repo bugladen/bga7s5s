@@ -112,7 +112,7 @@ class Action_01076 extends RiskAction implements ISorcererAbility
                     throw new \BgaUserException($game->translate("Character not found"));
                 }
 
-                $event = EventFactory::createCharacterWoundedEvent($performer->Id, $bloodMark->Id, 1, $bloodMark->getInjectCode(), $this->Id);
+                $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $bloodMark->Id, 1, $bloodMark->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($event);
             }
 

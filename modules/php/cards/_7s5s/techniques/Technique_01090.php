@@ -108,7 +108,7 @@ class Technique_01090 extends Technique
             {
                 $owner = $this->getOwningCharacter($game->theah);
                 $actor = $game->theah->getDuelRoundActor();
-                $woundEvent = EventFactory::createCharacterWoundedEvent($actor->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($actor->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
             }
             else

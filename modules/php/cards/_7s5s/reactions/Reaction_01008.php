@@ -149,7 +149,7 @@ class Reaction_01008 extends CardReaction
             $cesca = $this->getOwningCharacter($game->theah);
 
             //Wound Cesca as cost of copying the ability
-            $woundEvent = EventFactory::createCharacterWoundedEvent($cesca->Id, $cesca->Id, 1, $cesca->getInjectCode(), $this->Id);
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($cesca->Id, $cesca->Id, 1, $cesca->getInjectCode(), $this->Id);
             $game->theah->queueEvent($woundEvent);
 
             $copyAction = false;

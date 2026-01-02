@@ -46,7 +46,7 @@ class Maneuver_01110 extends Maneuver
             $owner = $this->getOwningCard($event->theah);
             $adversaryId = $event->theah->getDuelOpponentId($owner->ControllerId);
 
-            $woundEvent = EventFactory::createCharacterWoundedEvent($adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $event->theah->queueEvent($woundEvent);
 
             $actor = $event->theah->getDuelRoundActor();
@@ -69,7 +69,7 @@ class Maneuver_01110 extends Maneuver
             {
                 $owner = $this->getOwningCard($game->theah);
                 $adversaryId = $game->theah->getDuelOpponentId($owner->ControllerId);
-                $woundEvent = EventFactory::createCharacterWoundedEvent($adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
                 $game->notify->all("message", clienttranslate('${player_name} has chosen to take another wound.'), [

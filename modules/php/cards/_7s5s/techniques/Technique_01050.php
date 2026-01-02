@@ -49,7 +49,7 @@ class Technique_01050 extends Technique
             $event->thrust -= 1;
             $event->explanations[] = sprintf($event->theah->game->translate("%s: Technique [%s] subtracts 1 Thrust."), $this->getOwningCard($event->theah)->getInjectCode(), $this->Name);
 
-            $woundEvent = EventFactory::createCharacterWoundedEvent($event->theah->getDuelRoundOpponent()->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($event->theah->getDuelRoundOpponent()->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $event->theah->queueEvent($woundEvent);
         }
     }

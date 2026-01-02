@@ -109,7 +109,7 @@ class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $owner = $this->getOwningCard($game->theah);
             if (! $performer->hasTrait('Strega'))
             {
-                $woundEvent = EventFactory::createCharacterWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
             }
 

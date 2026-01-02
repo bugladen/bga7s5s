@@ -64,7 +64,7 @@ class Reaction_01022 extends AttachmentReaction
             $event = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
 
-            $event = EventFactory::createCharacterWoundedEvent($challenger->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $event = EventFactory::createCharacterBeingWoundedEvent($challenger->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $game->theah->queueEvent($event);
 
             $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to wound ${challenger_inject_code}'), [
@@ -85,7 +85,7 @@ class Reaction_01022 extends AttachmentReaction
             $event = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
 
-            $event = EventFactory::createCharacterWoundedEvent($defender->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $event = EventFactory::createCharacterBeingWoundedEvent($defender->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $game->theah->queueEvent($event);
 
             $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to wound ${defender_inject_code}'), [

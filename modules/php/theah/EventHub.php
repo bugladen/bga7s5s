@@ -73,6 +73,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterCombatModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
@@ -554,11 +555,8 @@ trait EventHub
             case $event instanceof EventCardMoving:
                 $handler = function (Theah $theah, EventCardMoving $event)
                 {
-                    if (! $event->canceled)
-                    {
-                        $movedEvent = EventFactory::createCardMovedEvent($event->initiatingPlayerId, $event->cardId, $event->fromLocation, $event->toLocation, $event->engage, $event->sourceId, $event->abilityId);
-                        $theah->queueEvent($movedEvent);
-                    }
+                    $movedEvent = EventFactory::createCardMovedEvent($event->initiatingPlayerId, $event->cardId, $event->fromLocation, $event->toLocation, $event->engage, $event->sourceId, $event->abilityId);
+                    $theah->queueEvent($movedEvent);
                 };
                 $handler($this, $event);
                 break;
@@ -1755,6 +1753,23 @@ trait EventHub
                         "challengerId" => $event->challengerId,
                         "defenderId" => $event->targetId,
                     ]);                       
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCharacterBeingWounded:
+                $handler = function ($theah, EventCharacterBeingWounded $event)
+                {
+                    $woundedEvent = self::createEvent(Events::CharacterWounded);
+                    if ($woundedEvent instanceof EventCharacterWounded)
+                    {
+                        $woundedEvent->characterId = $event->characterId;
+                        $woundedEvent->sourceId = $event->sourceId;
+                        $woundedEvent->wounds = $event->wounds;
+                        $woundedEvent->reason = $event->reason;
+                        $woundedEvent->abilityId = $event->abilityId;
+                    }
+                    $event->theah->queueEvent($woundedEvent);
                 };
                 $handler($this, $event);
                 break;

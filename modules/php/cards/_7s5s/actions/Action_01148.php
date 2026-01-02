@@ -171,7 +171,7 @@ class Action_01148 extends SchemeCityAction
             // Wound
             if ($id === 2)
             {
-                $event = EventFactory::createCharacterWoundedEvent($target->Id, $scheme->Id, 1, $scheme->getInjectCode(), $this->Id);
+                $event = EventFactory::createCharacterBeingWoundedEvent($target->Id, $scheme->Id, 1, $scheme->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($event);
             }
 

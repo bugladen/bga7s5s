@@ -102,6 +102,7 @@ class Events
     const CharacterDestroyed = 'EventCharacterDestroyed';
     const CharacterHealed = 'EventCharacterHealed';
     const CharacterPutIntoApproachDeck = 'EventCharacterPutIntoApproachDeck';
+    const CharacterBeingWounded = 'EventCharacterBeingWounded';
     const CharacterWounded = 'EventCharacterWounded';
     const ManeuverCanceled = 'EventManeuverCanceled';
     const TechniqueCanceled = 'EventTechniqueCanceled';

@@ -61,7 +61,7 @@ class Maneuver_01107 extends Maneuver
             $this->AdversaryLocation = $adversary->Location;
             $owner->IsUpdated = true;
 
-            $woundEvent = EventFactory::createCharacterWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $event->theah->queueEvent($woundEvent);
         }
 

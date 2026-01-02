@@ -820,7 +820,7 @@ trait StatesTrait
 
                 if ($wounds > 0)
                 {
-                    $event = EventFactory::createCharacterWoundedEvent($performer->Id, $target->Id, $wounds, $reason);
+                    $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $target->Id, $wounds, $reason);
                     $this->theah->queueEvent($event);
                 }
             }
@@ -856,7 +856,7 @@ trait StatesTrait
 
                 if ($wounds > 0)
                 {
-                    $event = EventFactory::createCharacterWoundedEvent($target->Id, $performer->Id, $wounds, $reason);
+                    $event = EventFactory::createCharacterBeingWoundedEvent($target->Id, $performer->Id, $wounds, $reason);
                     $this->theah->queueEvent($event);
                 }
             }
@@ -1224,7 +1224,7 @@ trait StatesTrait
                 $reason .= "<p>" . $this->translate("Wounds were reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
             }
 
-            $event = EventFactory::createCharacterWoundedEvent($actor->Id, $adversary->Id, $wounds, $reason);
+            $event = EventFactory::createCharacterBeingWoundedEvent($actor->Id, $adversary->Id, $wounds, $reason);
             $this->theah->queueEvent($event);
         }
 

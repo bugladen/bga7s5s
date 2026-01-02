@@ -141,22 +141,13 @@ class Action_01205 extends CharacterAction
             $giacintoEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Id, $this->Id);
             $game->theah->eventCheck($giacintoEngageEvent);
 
-            if ( ! $victim->Engaged)
-            {
-                $victimEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $victim->Id, $giacinto->Id, $this->Id);
-                $game->theah->eventCheck($victimEngageEvent);
-            }
-
             $giacintoMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Location, $location->Name, false, $giacinto->Id, $this->Id);
             $game->theah->eventCheck($giacintoMoveEvent);
 
-            $victimMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $victim->Id, $victim->Location, $location->Name, false, $giacinto->Id, $this->Id);
+            $victimMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $victim->Id, $victim->Location, $location->Name, true, $giacinto->Id, $this->Id);
             $game->theah->eventCheck($victimMoveEvent);
 
             $game->theah->queueEvent($giacintoEngageEvent);
-
-            if ( ! $victim->Engaged)            
-                $game->theah->queueEvent($victimEngageEvent);
 
             $game->theah->queueEvent($giacintoMoveEvent);
             $game->theah->queueEvent($victimMoveEvent);

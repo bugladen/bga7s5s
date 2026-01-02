@@ -163,7 +163,7 @@ class Action_01156 extends AttachmentAction
                 $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardCard->OwnerId, $discardCard->Id, $musket->Id);
                 $game->theah->queueEvent($discardEvent);
 
-                $woundEvent = EventFactory::createCharacterWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
@@ -210,7 +210,7 @@ class Action_01156 extends AttachmentAction
             //Wound
             if ($id == 2)
             {
-                $woundEvent = EventFactory::createCharacterWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
             }
 
