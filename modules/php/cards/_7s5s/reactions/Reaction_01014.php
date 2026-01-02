@@ -28,6 +28,7 @@ class Reaction_01014 extends CardReaction
     private bool $inHandThug = false;
     private bool $inPlayThug = false;
     private bool $moveHome = false;
+    private bool $skipNextEvent = false;
      
     public function __construct()
     {
@@ -127,6 +128,13 @@ class Reaction_01014 extends CardReaction
             if ($owner->Id == $event->cardId && $owner->ControllerId != $event->playerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
+                if ($this->skipNextEvent)
+                {
+                    $this->skipNextEvent = false;
+                    $owner->IsUpdated = true;
+                    return;
+                }
+
                 if ($this->thugsInHand($event->theah))
                 {
                     $this->engagedEvent = clone $event;
@@ -160,6 +168,13 @@ class Reaction_01014 extends CardReaction
             if ($owner->Id == $event->cardId && $owner->ControllerId != $event->playerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
+                if ($this->skipNextEvent)
+                {
+                    $this->skipNextEvent = false;
+                    $owner->IsUpdated = true;
+                    return;
+                }
+
                 if ($this->thugsInHand($event->theah))
                 {
                     $this->engardedEvent = clone $event;
@@ -193,6 +208,13 @@ class Reaction_01014 extends CardReaction
             if ($owner->Id == $event->cardId && $owner->ControllerId != $event->initiatingPlayerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
+                if ($this->skipNextEvent)
+                {
+                    $this->skipNextEvent = false;
+                    $owner->IsUpdated = true;
+                    return;
+                }
+
                 if ($this->thugsInHand($event->theah))
                 {
                     $this->cardMovingEvent = clone $event;
@@ -227,6 +249,13 @@ class Reaction_01014 extends CardReaction
             if ($owner->Id == $event->characterId && $owner->ControllerId != $source->ControllerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
+                if ($this->skipNextEvent)
+                {
+                    $this->skipNextEvent = false;
+                    $owner->IsUpdated = true;
+                    return;
+                }
+
                 if ($this->thugsInHand($event->theah))
                 {
                     $this->characterWoundedEvent = clone $event;
@@ -261,6 +290,13 @@ class Reaction_01014 extends CardReaction
             if ($owner->Id == $event->characterId && $owner->ControllerId != $source->ControllerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
+                if ($this->skipNextEvent)
+                {
+                    $this->skipNextEvent = false;
+                    $owner->IsUpdated = true;
+                    return;
+                }
+
                 if ($this->thugsInHand($event->theah))
                 {
                     $this->characterHealedEvent = clone $event;
@@ -295,6 +331,13 @@ class Reaction_01014 extends CardReaction
             if (($owner->Id == $event->challengerId ||$owner->Id == $event->defenderId) && $owner->ControllerId != $source->ControllerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
+                if ($this->skipNextEvent)
+                {
+                    $this->skipNextEvent = false;
+                    $owner->IsUpdated = true;
+                    return;
+                }
+
                 if ($this->thugsInHand($event->theah))
                 {
                     $this->challengeIssuedEvent = clone $event;
@@ -428,7 +471,16 @@ class Reaction_01014 extends CardReaction
                 $this->inPlayThug = false;
                 $this->moveHome = true;
                 $owner->IsUpdated = true;
-           }
+            }
+
+            if ($reactionId == 'decline')
+            {
+                $owner = $this->getOwningCharacter($game->theah);
+                $this->releaseEvent($game, $owner->Id);
+                $this->inPlayThug = false;
+                $this->skipNextEvent = true;
+                $owner->IsUpdated = true;
+            }
         }
 
         if ($this->inHandThug)
