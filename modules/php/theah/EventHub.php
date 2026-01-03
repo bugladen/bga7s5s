@@ -1387,6 +1387,40 @@ trait EventHub
                     $technique = $theah->getTechniqueById($event->techniqueId);
                     $owningCard = $technique->getOwningCard($theah);
 
+                    //Get the combat cards played in this round to determine if any are dashed
+                    $dashedRiposte = true;
+                    $dashedParry = true;
+                    $dashedThrust = true;
+                    $sql = "SELECT combat_card_id FROM duel_round_combat_card where duel_id = $duelId AND round = {$round}";
+                    $db = $theah->getDBObject();
+                    $combatCardIds = $db->getCollection($sql);
+                    foreach ($combatCardIds as $combatCardId)
+                    {
+                        $combatCard = $theah->getCardById($combatCardId['combat_card_id']);
+                        if (!$combatCard->DashedRiposte)
+                            $dashedRiposte = false;
+                        if (!$combatCard->DashedParry)
+                            $dashedParry = false;
+                        if (!$combatCard->DashedThrust)
+                            $dashedThrust = false;
+                    }
+
+                    if ($dashedRiposte && $event->riposte > 0)
+                    {
+                        $event->riposte = 0;
+                        $event->explanations[] = $theah->game->translate("Combat Card(s) Riposte is dashed so Technique Riposte will not be applied.");
+                    }
+                    if ($dashedParry && $event->parry > 0)
+                    {
+                        $event->parry = 0;
+                        $event->explanations[] = $theah->game->translate("Combat Card(s) Parry is dashed so Technique Parry will not be applied.");
+                    }
+                    if ($dashedThrust && $event->thrust > 0)
+                    {
+                        $event->thrust = 0;
+                        $event->explanations[] = $theah->game->translate("Combat Card(s) Thrust is dashed so Technique Thrust will not be applied.");
+                    }
+
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
