@@ -133,6 +133,7 @@ class _01177 extends CityEventCard
             if ($card instanceof Character && $card->hasCondition(Game::HELPED_BY_PENYA))
             {
                 $card->removeCondition(Game::HELPED_BY_PENYA);
+                $card->IsUpdated = true;
                 throw new \BgaUserException($event->theah->game->translate("{$this->getInjectCode()} has helped {$card->getInjectCode()} so they don't go home."));
             }
         }

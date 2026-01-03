@@ -14,7 +14,7 @@
         "values": {
             "0": {
                 "name": "Player Chosen",
-                "description": "Each player will choose a Starter Deck manually. Mirror matches are possible."
+                "description": "Each player will choose a Starter Deck manually or provide a deck code. Mirror matches are possible."
             },
             "1": {
                 "name": "Assigned Random Unique Starter Deck",
