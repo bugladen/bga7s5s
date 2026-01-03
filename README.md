@@ -9,7 +9,7 @@ PHP is used for backend development.
 JavaScript is used for the front end. jQuery is rolled into the BGA Framework, so is available for you to use.
 
 ## Environment Setup
-- VS Code
+- Cursor or VS Code
 - SFTP Plugin
 - Elephense Plugin (recommended)
 
@@ -23,15 +23,15 @@ SFTP Upload the entire project directory up into the BGA server.
 
 ## State of the Project 
 
-- The core game mechanics are implemented.
-- All Core Set starter decks are implemented
+- The complete game is implemented.
+- Core Set is implemented
 
 ## Sets Implemented 
-- Core (In Progress)
+- Core
+- Tooth and Claw (In Progress)
 
 ## Going Forward 
-As mentioned above, the core framework for the game is complete.  Only cards will need to be implemented now. 
+Cards from the expansions will need to be implemented. 
 The wiki in this project will have more details on how to implement specific cards.
 
 The BGA Framework is completely state-based. Therefore every single step of every card needs to be programmed in order to be integrated into the game. The upside to this is that the game is completely automated. The downside to this is that development will progress very slowly unless more developers contribute. That is where you come in!
-
