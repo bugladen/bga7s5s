@@ -182,7 +182,7 @@ class Action_01044 extends SchemeCityAction
                 $attachment = $game->theah->getAttachmentById($attachmentId);
 
                 $owner = $this->getOwningCard($game->theah);
-                $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${player_name} uses Action to Engage ${attachment_inject_code} and ${character_inject_code}'), [
+                $game->notify->all("message", clienttranslate('${action_inject_code}: ${player_name} uses Action to Engage ${attachment_inject_code} and ${character_inject_code}'), [
                     "player_name" => $game->getPlayerNameById($owner->ControllerId),
                     "action_inject_code" => $owner->getInjectCode(),
                     "attachment_inject_code" => $attachment->getInjectCode(),
@@ -190,7 +190,7 @@ class Action_01044 extends SchemeCityAction
                 ]);
 
                 $aam = $this->getOwningCard($game->theah);
-                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id);
+                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id, $this->Id);
                 $game->theah->queueEvent($event);
 
                 $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $character->Id, $aam->Id);
@@ -206,7 +206,7 @@ class Action_01044 extends SchemeCityAction
                 $attachment = $game->theah->getAttachmentById($attachmentId);
 
                 $owner = $this->getOwningCard($game->theah);
-                $game->notifyAllPlayers("message", clienttranslate('${action_inject_code}: ${player_name} uses Action to Engage ${attachment_inject_code} and send ${character_inject_code} Home'), [
+                $game->notify->all("message", clienttranslate('${action_inject_code}: ${player_name} uses Action to Engage ${attachment_inject_code} and send ${character_inject_code} Home'), [
                     "action_inject_code" => $owner->getInjectCode(),
                     "player_name" => $game->getPlayerNameById($owner->ControllerId),
                     "attachment_inject_code" => $attachment->getInjectCode(),

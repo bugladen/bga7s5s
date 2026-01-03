@@ -21,7 +21,6 @@ class _01145 extends Scheme
         $this->ExpansionNumber = 1;
         $this->CardNumber = 145;
 
-        $this->Faction = "";
         $this->Initiative = 15;
         $this->PanacheModifier = 0;
 
@@ -115,7 +114,7 @@ class _01145 extends Scheme
             $game->theah->eventCheck($playerRemoved);
             $game->theah->queueEvent($playerRemoved);
     
-            $playerAdded = EventFactory::createReknownAddedToLocationEvent($playerId, $toLocation, 1, $this->getInjectCode());
+            $playerAdded = EventFactory::createReknownAddedToLocationEvent($playerId, $toLocation, 1, $this->getInjectCode(), $isMove = true);
             $game->theah->eventCheck($playerAdded);
             $game->theah->queueEvent($playerAdded);
 

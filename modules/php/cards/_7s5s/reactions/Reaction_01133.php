@@ -75,7 +75,7 @@ class Reaction_01133 extends RiskReaction
 
                 $game->globals->set(Game::ABNORMAL_FLOW, true);
 
-                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $performerId, $owner->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $performerId, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
             }
         }

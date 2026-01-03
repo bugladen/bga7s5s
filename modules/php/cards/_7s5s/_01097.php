@@ -25,7 +25,7 @@ class _01097 extends Character implements IHasActions, IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 97;
 
-        $this->Faction = "Castille";
+        $this->initializeFaction("Castille");
         $this->Title = "Loyal Merrymaker";
         $this->Resolve = 4;
         $this->Combat = 1;

@@ -6,4 +6,14 @@ abstract class FactionAttachment extends Attachment implements IFactionCard, IWe
 {
     use FactionCardTrait;
     use WealthCostTrait;
+
+    public bool $CanEquipToOpponents = false;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->CardBackImage = "img/cards/backs/faction.jpg";
+    }
+
 }

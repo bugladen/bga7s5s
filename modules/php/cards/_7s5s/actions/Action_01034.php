@@ -3,6 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -10,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01034 extends RiskAction
+class Action_01034 extends RiskAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -120,7 +122,7 @@ class Action_01034 extends RiskAction
             $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
             
             $owner = $this->getOwningCard($game->theah);
-            $woundEvent = EventFactory::createCharacterWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $game->theah->queueEvent($woundEvent);
 
             $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "01034_2", $this->Id);
@@ -145,7 +147,7 @@ class Action_01034 extends RiskAction
                     'character_inject_code' => $target->getInjectCode(),
                 ]);
 
-                $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $targetId, $owner->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $targetId, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
 
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
@@ -178,7 +180,7 @@ class Action_01034 extends RiskAction
             ]);
 
             $owner = $this->getOwningCard($game->theah);
-            $engardeEvent = EventFactory::createCardEngardedEvent($performer->ControllerId, $performer->Id, $owner->Id);
+            $engardeEvent = EventFactory::createCardEngardedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engardeEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

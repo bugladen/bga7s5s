@@ -49,7 +49,7 @@ class Action_01206 extends AttachmentAction
             $game->globals->set(Game::PRESSURING_PLAYER, $performer->ControllerId);
             $game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
 
-            $engageEvent = EventFactory::createCardEngagedEvent($coat->ControllerId, $coat->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($coat->ControllerId, $coat->Id, $coat->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
 
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);

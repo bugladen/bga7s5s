@@ -47,12 +47,12 @@ class Maneuver_01086 extends Maneuver
             $owner = $this->getOwningCard($event->theah);
             if (! $adversary->Engaged)
             {
-                $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $event->adversaryId, $owner->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $event->adversaryId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($engageEvent);
             }
             else
             {
-                $woundEvent = EventFactory::createCharacterWoundedEvent($event->adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($event->adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $event->theah->queueEvent($woundEvent);
             }
         }

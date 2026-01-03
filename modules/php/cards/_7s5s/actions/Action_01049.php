@@ -3,6 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -10,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01049 extends AttachmentAction
+class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -102,10 +104,10 @@ class Action_01049 extends AttachmentAction
                     "card_inject_code" => $owner->getInjectCode(),
                 ]);
 
-                $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
-                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
             }
             else
@@ -143,7 +145,7 @@ class Action_01049 extends AttachmentAction
                     'character_inject_code' => $targetCharacter->getInjectCode(),
                 ]);
 
-                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $targetCharacter->Id, $owner->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $targetCharacter->Id, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
             }
 
@@ -155,10 +157,10 @@ class Action_01049 extends AttachmentAction
                     'character_inject_code' => $targetCharacter->getInjectCode(),
                 ]);
 
-                $woundEvent = EventFactory::createCharacterWoundedEvent($targetCharacter->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($targetCharacter->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
-                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
             }
 

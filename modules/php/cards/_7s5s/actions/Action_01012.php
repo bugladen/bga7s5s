@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -12,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01012 extends CharacterAction implements ISorcererAbility, IAbilityThatTargetsCharacters
+class Action_01012 extends CharacterAction implements ISorcererAbility, IAbilityThatTargetsCharacters, IAbilityThatTargetsCards
 {
     public function __construct()
     {
@@ -84,23 +85,29 @@ class Action_01012 extends CharacterAction implements ISorcererAbility, IAbility
             }
 
             $this->announceAction($game);
-
-            $owner = $this->getOwningCharacter($game->theah);
-
-            $event = EventFactory::createCharacterWoundedEvent($performer->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($event);
-
-            $event = EventFactory::createCharacterWoundedEvent($target->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($event);
-
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
             
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $owner = $this->getOwningCharacter($game->theah);
+            $game->notify->all("message", clienttranslate('${owner_inject_code}: ${target_inject_code} is the target.'), [
+                "owner_inject_code" => $owner->getInjectCode(),
+                "target_inject_code" => $target->getInjectCode(),
+            ]);
+
+            $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
+            $game->theah->queueEvent($event);
+
+            $event = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
+            $game->theah->queueEvent($event);
+
+            $event = EventFactory::createCharacterBeingWoundedEvent($target->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
+            $game->theah->queueEvent($event);
 
             $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
             $game->theah->queueEvent($event);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("opposingCharacterChosen");
         }

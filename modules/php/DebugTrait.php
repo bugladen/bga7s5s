@@ -12,6 +12,7 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\GameFramework\Actions\Debug;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
@@ -49,12 +50,14 @@ trait DebugTrait
         }
     }
 
+    #[Debug(reload: true)] 
     public function debug_SetCardInPlayerDiscardPile(string $className, int $playerId)
     {
         $location = $this->getPlayerDiscardDeckName($playerId);
         $this->createCardInLocation($className, $location, $playerId, $playerId);
     }
 
+    #[Debug(reload: true)] 
     public function debug_SetCardInCityDiscardPile(string $className)
     {
         $this->createCardInLocation($className, Game::LOCATION_CITY_DISCARD, 0, 0);
@@ -102,6 +105,7 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
+    #[Debug(reload: true)] 
     public function debug_SetReknownOnCard(int $cardId, int $reknown)
     {
         $this->theah->buildCity();
@@ -120,14 +124,16 @@ trait DebugTrait
 
     public function debug_SetPlayerReknown(int $score, int $playerId)
     {
-        $this->DBQuery("UPDATE player SET player_score = $score WHERE player_id = $playerId");
+        $db = $this->theah->getDBObject();
+        $db->setPlayerReknown($playerId, $score);
 
         // Notify players that the player has lost reknown
-        $this->notify->all("playerReknownUpdated", clienttranslate('DEBUG: ${player_name} Renown set to ${total}.'), [
+        $this->notify->all("playerReknownUpdated", clienttranslate('DEBUG: ${player_name} Renown now at ${total}.'), [
             "player_id" => $playerId,
             "player_name" => $this->getPlayerNameById($playerId),
             "total" => $score,
         ]);
+
     }
 
     public function debug_AddReknownToLocation(string $location, int $amount)

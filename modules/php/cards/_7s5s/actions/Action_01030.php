@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -13,7 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01030 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters
+class Action_01030 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters, IAbilityThatTargetsCards
 {
     public function __construct()
     {
@@ -122,12 +123,36 @@ class Action_01030 extends RiskAction implements ISorcererAbility, IAbilityThatT
                 'card_inject_code' => $owner->getInjectCode(),
             ]);
 
-            $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id);
+            $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
+
+            $startEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
+            $game->theah->queueEvent($startEvent);
+
+            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01030_2", $this->Id);
+            $game->theah->queueEvent($transitionEvent);
+
+            $game->gamestate->nextState();
+        }
+    }
+
+    public function stateFromAction(Game $game, int $state, string $stateName): void
+    {
+        parent::stateFromAction($game, $state, $stateName);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01030_2)
+        {
+            $owner = $this->getOwningCard($game->theah);
 
             $game->globals->set(Game::PRESSURING_PLAYER, $owner->ControllerId);
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::PULL_THE_STRAND_PRESSURE_TYPE);
+
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);   
+            
+            $characterId = $game->globals->get(Game::CHOSEN_TARGET);
+            $character = $game->theah->getCharacterById($characterId);
 
             $pressureStats = $game->theah->getPressureStats($performer, $performer->Location, Game::STAT_INFLUENCE);
             $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, $owner->Id, $performer->Location, $pressureStats);

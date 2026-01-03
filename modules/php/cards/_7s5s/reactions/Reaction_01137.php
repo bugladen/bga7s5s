@@ -84,10 +84,10 @@ class Reaction_01137 extends RiskReaction
             $character = $game->theah->getCardById($this->FollowCharacterId);
             $target = $game->theah->getCardById($this->TargetCharacterId);
 
-            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $this->FollowCharacterId, $character->Location, $this->ToLocation, false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $this->FollowCharacterId, $character->Location, $this->ToLocation, false, $owner->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 
-            $woundEvent = EventFactory::createCharacterWoundedEvent($this->TargetCharacterId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($this->TargetCharacterId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $game->theah->queueEvent($woundEvent);
 
             $game->notify->all("message", clienttranslate('${card_inject_code}: ${character_name} follows ${target_name} to ${location} and wounds them'), [

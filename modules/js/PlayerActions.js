@@ -13,13 +13,24 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onStarterDeckSelected: function(deckId)
     {
-        this.bgaPerformAction("actPickDeck", { 
-            'deck_type': 'starter',
-            'deck_id': deckId,
-            'deck_json': ''
-        }).then(() =>  {                
-            // What to do after the server call if it succeeded
-        });        
+        let deckJson = '';
+        let deckType = 'starter';
+        if (deckId === 'Custom') 
+        {
+            deckJson = document.getElementById('customJson').value;
+            deckType = 'custom';
+            deckId = 'Custom';
+        }
+
+        let errors = false;
+        this.bgaPerformAction("actPickDeck", {
+            'deck_type': deckType,
+                'deck_id': deckId,
+                'deck_json': deckJson
+            }).catch(() =>  {
+                errors = true;
+            }).then(() =>  {
+            });
     },    
 
     onCityLocationsSelected: function() 
@@ -202,7 +213,6 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {                
-            //if (!errors) this.factionHand.removeFromStockById(id);
         });        
 
     },

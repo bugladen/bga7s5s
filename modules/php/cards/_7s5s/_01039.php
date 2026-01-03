@@ -25,7 +25,7 @@ class _01039 extends Character implements IHasReactions, IHasTechniques
         $this->ExpansionNumber = 1;
         $this->CardNumber = 39;
 
-        $this->Faction = "Eisen";
+        $this->initializeFaction("Eisen");
         $this->Title = "Grim Trapper";
         $this->Resolve = 5;
         $this->Combat = 3;

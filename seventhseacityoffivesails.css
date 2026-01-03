@@ -98,6 +98,20 @@ body {
     font-size: 16px;
 }
 
+._7sfs-deck-picker-custom-textarea {
+    width: 100%;
+    height: 100%;
+    resize: none;
+    box-sizing: border-box;
+    border: none;
+    padding: 10px;
+    color: black;
+}
+
+._7sfs-deck-picker-custom-textarea::placeholder {
+    color: WhiteSmoke;
+}
+
 ._7sfs-deck-picker-tab-buttons {
     display: flex;
     justify-content: center;
@@ -153,7 +167,24 @@ body {
 }    
 ._7sfs-deck-picker-faction-image._7sfs-ussura {
     background-image: url('img/cards/deckpicker/116.jpg');
-}    
+}
+
+._7sfs-deck-picker-custom-textarea {
+    font-family: sans-serif;
+    width: 100%;
+    height: 100%;
+    resize: none;
+    box-sizing: border-box;
+    border: none;
+    padding: 10px;
+    color: black;
+}
+
+._7sfs-deck-picker-custom-textarea::placeholder {
+    color: silver;
+}
+
+
 
 #city {
     position: relative;
@@ -707,6 +738,11 @@ body {
     border-radius: 10px;
     position:relative;
     z-index: 10;
+}
+
+._7sfs-card-back {
+    background-size: 190px 259px;
+    background-position: -40px -73px;
 }
 
 ._7sfs-card-resolve {

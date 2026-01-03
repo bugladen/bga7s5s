@@ -106,7 +106,7 @@ class Maneuver_01135 extends Maneuver
                     "character_name" => $game->theah->getDuelRoundOpponent()->Name,
                 ]);
                 $adversary = $game->theah->getDuelRoundOpponent();
-                $woundEvent = EventFactory::createCharacterWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
                 
                 $this->ReduceThrustNextRound = true;

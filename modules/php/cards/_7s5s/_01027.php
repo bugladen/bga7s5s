@@ -21,7 +21,7 @@ class _01027 extends Risk implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 27;
 
-        $this->Faction = 'Vodacce';
+        $this->initializeFaction('Vodacce');
 
         $this->Riposte = 2;
         $this->Parry = 0;

@@ -19,7 +19,7 @@ class _01106 extends Risk implements IHasActions
         $this->Image = "img/cards/7s5s/106.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
-        $this->Faction = "Castille";
+        $this->initializeFaction("Castille");
         
         $this->WealthCost = 0;
         $this->Riposte = 2;

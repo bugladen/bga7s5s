@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01106_RiskClone;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
@@ -15,7 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01106 extends RiskAction
+class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
 {
     public function __construct()
     {
@@ -223,7 +224,7 @@ class Action_01106 extends RiskAction
     
             if ($action->RequiresPerformerSelected)
             {
-                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01106_performer", $this->Id);
+                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "inHandActionChoosePerformer", $this->Id);
                 $game->theah->queueEvent($transition);
             }
             else
@@ -231,7 +232,7 @@ class Action_01106 extends RiskAction
                 $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $riskCard->Id, Game::PAY_STATE_IN_HAND_ACTION, $newActionId);
                 $game->theah->queueEvent($event);
 
-                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01106_pay", $this->Id);        
+                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "inHandActionPay", $this->Id);        
                 $game->theah->queueEvent($transition);
 
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

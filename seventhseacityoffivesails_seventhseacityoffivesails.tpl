@@ -66,12 +66,18 @@ var jstpl_deck_picker = `
       <div class="_7sfs-deck-picker-tab-text">\${vodacce_description}</div>
     </div>
 
+    <div class="_7sfs-deck-picker-tab-content" id="Custom">
+      <div style="flex: 1 1 auto; min-height: 0; display: flex;"><textarea id="customJson" placeholder="Paste your deck JSON here." class="_7sfs-deck-picker-custom-textarea"></textarea></div>
+      <div class="_7sfs-deck-picker-tab-text">\${custom_description}</div>
+    </div>
+
     <div class="_7sfs-deck-picker-tab-buttons">
       <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(1)">Castille</button>
       <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(2)">Eisen</button>
       <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(3)">Montaigne</button>
       <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(4)">Ussura</button>
       <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(5)">Vodacce</button>
+      <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(6)">Custom</button>
       <button id="btnDeckSelect" class="deck-picker-button" disabled onclick="gameui.deckPickerDeckSelected()">\${select_description}</button>
     </div>
   </div>
@@ -162,6 +168,14 @@ var jstpl_card_attachment=`
 
 var jstpl_hand_wealth_cost_chip=`
 <div id="\${id}_wealth_cost" class="_7sfs-card-wealth-cost _7sfs-hand-wealth-cost">\${cost}</div>
+`;
+
+var jstpl_card_hidden=`
+<div id="\${id}">
+    <div id="\${id}_image" class="_7sfs-card _7sfs-card-back" style="--card_image:url('\${image}')">
+        <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="_7sfs-character-player-color"></div>
+    </div>
+</div>
 `;
 
 var jstpl_card_event=`

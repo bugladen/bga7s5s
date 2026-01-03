@@ -45,7 +45,7 @@ class Reaction_01203 extends CardReaction
 
         if ($defenderThreat > 0)
         {
-            $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('-1 Threat from %s (Current Threat: %d)'), $defender->Name, $defenderThreat), 'removeThreatDefender');
+            $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('-1 Threat to %s (Current Threat: %d)'), $defender->Name, $defenderThreat), 'removeThreatDefender');
         }
 
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');

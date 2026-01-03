@@ -4,6 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -11,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01044 extends SchemeCityAction
+class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -192,10 +194,10 @@ class Action_01044 extends SchemeCityAction
                 ]);
 
                 $aam = $this->getOwningCard($game->theah);
-                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id);
+                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id, $this->Id);
                 $game->theah->queueEvent($event);
 
-                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $character->Id, $aam->Id);
+                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $character->Id, $aam->Id, $this->Id);
                 $game->theah->queueEvent($event);
 
                 $this->setUsed($game->theah, true);
@@ -216,11 +218,11 @@ class Action_01044 extends SchemeCityAction
                 ]);
 
                 $aam = $this->getOwningCard($game->theah);
-                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id);
+                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id, $this->Id);
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 
-                $movedHome = EventFactory::createCardMovingEvent($game->getActivePlayerId(), $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false);
+                $movedHome = EventFactory::createCardMovingEvent($game->getActivePlayerId(), $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $aam->Id, $this->Id);
                 $game->theah->eventCheck($movedHome);
                 $game->theah->queueEvent($movedHome);
 

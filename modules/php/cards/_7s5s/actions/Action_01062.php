@@ -79,7 +79,7 @@ class Action_01062 extends CharacterAction
                 "location_name" => $odette->Location,
             ]);
 
-            $moveEvent = EventFactory::createCardMovingEvent($event->playerId, $performer->Id, $performer->Location, $odette->Location, $engage = false, $sourceId = $odette->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($event->playerId, $performer->Id, $performer->Location, $odette->Location, $engage = false, $sourceId = $odette->Id, $this->Id);
             $event->theah->eventCheck($moveEvent);
             $event->theah->queueEvent($moveEvent);
 

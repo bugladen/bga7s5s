@@ -15,10 +15,12 @@ abstract class Card
     public int $ControllerId;
     public string $Name;
     public string $Image;
+    public string $CardBackImage = "";
     public string $ExpansionName;
     public int $ExpansionNumber;
     public int $CardNumber;
     public string $Faction;
+    public Array $Factions = [];
     public bool $Engaged;
     public Array $Traits = [];
     public Array $ModifiedTraits = [];
@@ -27,6 +29,7 @@ abstract class Card
     public string $Location;
     public bool $IsUpdated;
     public int $Reknown;
+    public bool $FaceDown = false;
 
     public function __construct()
     {
@@ -38,7 +41,7 @@ abstract class Card
         $this->ExpansionName = "";
         $this->ExpansionNumber = 0;
         $this->CardNumber = 0;
-        $this->Faction = "";
+        $this->initializeFaction("Neutral");
         $this->Engaged = false;
 
         $this->Location = "";
@@ -436,10 +439,12 @@ abstract class Card
             'controllerId' => $this->ControllerId,
             'name' => $this->Name,
             'image' => $this->Image,
-            'faction' => $this->Faction,
+            'faction' => $this->getFactionForPropertyDisplay(),
             'location' => $this->Location,
             'engaged' => $this->Engaged,
             'reknown' => $this->Reknown,
+            'faceDown' => $this->FaceDown,
+            'cardBackImage' => $this->CardBackImage,
         ];
 
         $properties['type'] = 'Card';
@@ -538,20 +543,26 @@ abstract class Card
         return $this->isControlled() && $this->ControllerId != $playerId;
     }
 
-    public function addTrait(Game $game, string $trait): void
+    public function addTrait(Game $game, string $trait, bool $quietly = false): void
     {
         //Hack to prevent older games from breaking
         if (empty($this->ModifiedTraits))
             $this->ModifiedTraits = $this->Traits;
 
-        $this->ModifiedTraits[] = $trait;
-        $this->IsUpdated = true;
+        if (! in_array($trait, $this->ModifiedTraits))
+        {
+            $this->ModifiedTraits[] = $trait;
+            $this->IsUpdated = true;
+        }
 
-        $game->notify->all("traitAdded", clienttranslate('${character_inject_code} gains [${trait}].'), [
-            "character_inject_code" => $this->getInjectCode(),
-            "characterId" => $this->Id,
-            'trait' => $trait,
-        ]);
+        if (! $quietly)
+        {
+            $game->notify->all("traitAdded", clienttranslate('${character_inject_code} gains [${trait}].'), [
+                "character_inject_code" => $this->getInjectCode(),
+                    "characterId" => $this->Id,
+                    'trait' => $trait
+                ]);
+        }
     }
 
     public function removeTrait(Game $game, string $trait): void
@@ -600,5 +611,40 @@ abstract class Card
     public function resetCard()
     {
         $this->ModifiedTraits = $this->Traits;
+    }
+
+    public function addFaction(string $faction): void
+    {
+        if (!in_array($faction, $this->Factions))
+        {
+            $this->Factions[] = $faction;
+            $this->IsUpdated = true;
+        }
+    }
+
+    public function hasFaction(string $faction): bool
+    {
+        //Hack to prevent older games from breaking
+        if (empty($this->Factions))
+            $this->Factions = [ $this->Faction ];
+
+        return in_array($faction, $this->Factions);
+    }
+
+    public function initializeFaction(string $faction): void
+    {
+        $this->Factions = [];
+        $this->Factions[] = $faction;
+    }
+
+    public function getFactionForPropertyDisplay(): string
+    {
+        //Hack to prevent older games from breaking
+        if (empty($this->Factions))
+        {
+            return $this->Faction;
+        }
+
+        return $this->Factions[0];
     }
 }

@@ -622,6 +622,14 @@ $machinestates += [
             "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
         ]
     ],
+    States::HIGH_DRAMA_PLAYER_TURN_01030_2 => [
+        "name" => "highDramaPhase01030_2",
+        "type" => "game",
+        "action" => "stFromCard",
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
+        ]
+    ],
 
     States::HIGH_DRAMA_PLAYER_TURN_01034 => [
         "name" => "highDramaPhase01034",
@@ -1026,6 +1034,14 @@ $machinestates += [
             "attachmentChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
+    States::HIGH_DRAMA_PLAYER_TURN_01069_3 => [
+        "name" => "highDramaPhase01069_3",
+        "type" => "game",
+        "action" => "stFromCard",
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
 
     States::HIGH_DRAMA_PLAYER_TURN_01072 => [
         "name" => "highDramaPhase01072",
@@ -1314,6 +1330,14 @@ $machinestates += [
         ],
         "transitions" => [
             "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01161_2 => [
+        "name" => "highDramaPhase01161_2",
+        "type" => "game",
+        "action" => "stFromCard",
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
         ]
     ],
 

@@ -9,8 +9,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 
-class Maneuver_01142 extends Maneuver
+class Maneuver_01142 extends Maneuver implements IAbilityThatTargetsCards
 {
     public function __construct()
     {

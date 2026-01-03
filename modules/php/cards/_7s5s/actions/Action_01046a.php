@@ -78,13 +78,13 @@ class Action_01046a extends AttachmentAction
 
             $attachedTo = $this->getOwningCharacter($game->theah);
 
-            $engageEvent = EventFactory::createCardEngagedEvent($darkGift->ControllerId, $darkGift->Id, $darkGift->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($darkGift->ControllerId, $darkGift->Id, $darkGift->Id, $this->Id);
             $game->theah->eventCheck($engageEvent);
 
-            $woundEvent = EventFactory::createCharacterWoundedEvent($attachedTo->Id, $darkGift->Id, 1, sprintf($game->translate("%s Action"), $darkGift->getInjectCode()), $this->Id);
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($attachedTo->Id, $darkGift->Id, 1, sprintf($game->translate("%s Action"), $darkGift->getInjectCode()), $this->Id);
             $game->theah->eventCheck($woundEvent);
 
-            $moveEvent = EventFactory::createCardMovingEvent($attachedTo->ControllerId, $attachedTo->Id, $attachedTo->Location, $location, $engage = false, $darkGift->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($attachedTo->ControllerId, $attachedTo->Id, $attachedTo->Location, $location, $engage = false, $darkGift->Id, $this->Id);
             $game->theah->eventCheck($moveEvent);
 
             $game->theah->queueEvent($engageEvent);

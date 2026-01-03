@@ -3,6 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -10,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01156 extends AttachmentAction
+class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -163,7 +165,7 @@ class Action_01156 extends AttachmentAction
                 $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardCard->OwnerId, $discardCard->Id, $musket->Id);
                 $game->theah->queueEvent($discardEvent);
 
-                $woundEvent = EventFactory::createCharacterWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
@@ -203,14 +205,14 @@ class Action_01156 extends AttachmentAction
             //Engage
             if ($id == 1)
             {
-                $engageEvent = EventFactory::createCardEngagedEvent($target->ControllerId, $target->Id, $musket->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($target->ControllerId, $target->Id, $musket->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
             }
 
             //Wound
             if ($id == 2)
             {
-                $woundEvent = EventFactory::createCharacterWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
             }
 

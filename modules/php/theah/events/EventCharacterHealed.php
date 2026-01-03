@@ -8,6 +8,7 @@ class EventCharacterHealed extends Event
     public int $sourceId;
     public int $wounds;
     public string $reason;
+    public string $abilityId;
 
     public function __construct()
     {
@@ -17,5 +18,6 @@ class EventCharacterHealed extends Event
         $this->sourceId = 0;
         $this->wounds = 0;
         $this->reason = '';
+        $this->abilityId = '';
     }
 }

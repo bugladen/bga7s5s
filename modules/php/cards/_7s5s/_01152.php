@@ -2,8 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\GameFramework\GameStateBuilder;
-use Bga\GameFramework\StateType;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01152a;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01152b;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
@@ -28,7 +26,6 @@ class _01152 extends Scheme implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 152;
 
-        $this->Faction = "";
         $this->Initiative = 30;
         $this->PanacheModifier = -2;
 
@@ -113,7 +110,7 @@ class _01152 extends Scheme implements IHasActions
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);    
 
-            $event = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
+            $event = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode(), $isMove = true);
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
     

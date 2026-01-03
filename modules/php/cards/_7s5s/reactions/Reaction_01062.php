@@ -96,11 +96,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 
-                $event = EventFactory::createReknownAddedToLocationEvent($odette->ControllerId, $odette->Location, 1, $odette->getInjectCode());
+                $event = EventFactory::createReknownAddedToLocationEvent($odette->ControllerId, $odette->Location, 1, $odette->getInjectCode(), $isMove = true);
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 
-                $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and moved 1 Renown from ${location_name} to ${odette_location}.'), [
+                $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and moved 1 Renown from ${location_name} to ${odette_location}.'), [
                     "i18n" => ["location_name", "odette_location"],
                     "reaction_inject_code" => $odette->getInjectCode(),
                     "player_name" => $game->getPlayerNameById($odette->ControllerId),

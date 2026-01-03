@@ -29,7 +29,7 @@ class _01045 extends Scheme implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 45;
 
-        $this->Faction = "Eisen";
+        $this->initializeFaction("Eisen");
         $this->Initiative = 67;
         $this->PanacheModifier = 0;
 

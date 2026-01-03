@@ -26,6 +26,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
@@ -72,7 +73,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterCombatModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
@@ -137,7 +142,7 @@ trait EventHub
                     //Attachments might not be in the world (came from the City Deck, or created by an action), add it to the world
                     $theah->addCardToWorld($attachment);
 
-                    $performer->addAttachment($attachment);
+                    $performer->addAttachment($theah, $attachment);
                     $modifiedResolve = $performer->ModifiedResolve;
                     $modifiedCombat = $performer->ModifiedCombat;
                     $modifiedFinesse = $performer->ModifiedFinesse;
@@ -190,7 +195,7 @@ trait EventHub
                     $attachment->IsUpdated = true;
 
                     $character = $theah->getCharacterById($event->fromCharacterId);
-                    $character->removeAttachment($attachment);
+                    $character->removeAttachment($theah, $attachment);
                     $modifiedResolve = $character->ModifiedResolve;
                     $modifiedCombat = $character->ModifiedCombat;
                     $modifiedFinesse = $character->ModifiedFinesse;
@@ -219,7 +224,7 @@ trait EventHub
                     }
 
                     $performer = $theah->getCharacterById($event->toCharacterId);
-                    $performer->addAttachment($attachment);
+                    $performer->addAttachment($theah, $attachment);
                     $modifiedResolve = $performer->ModifiedResolve;
                     $modifiedCombat = $performer->ModifiedCombat;
                     $modifiedFinesse = $performer->ModifiedFinesse;
@@ -232,7 +237,7 @@ trait EventHub
                 
                     // Notify players of attachment equipped
                     $message = clienttranslate('${player_name} moved ${attachment_inject_code} from ${from_character_code} to ${to_character_code}.');
-                    $theah->game->notifyAllPlayers("attachmentEquipped", $message, [
+                    $theah->game->notify->all("attachmentEquipped", $message, [
                         "player_id" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "attachment_inject_code" => $attachment->getInjectCode(),
@@ -257,7 +262,7 @@ trait EventHub
                     $attachment->IsUpdated = true;
 
                     $character = $theah->getCharacterById($event->characterId);
-                    $character->removeAttachment($attachment);
+                    $character->removeAttachment($theah, $attachment);
                     $modifiedResolve = $character->ModifiedResolve;
                     $modifiedCombat = $character->ModifiedCombat;
                     $modifiedFinesse = $character->ModifiedFinesse;
@@ -376,15 +381,34 @@ trait EventHub
 
                     $card->IsUpdated = true;
                     $theah->addCardToWorld($card);
-    
-                    // Notify players that card has been added to hand
-                    $this->game->notifyAllPlayers("cardAddedToHand", clienttranslate('${player_name} added ${card_inject_code} to their Faction Hand.'), [
-                        "player_id" => $event->playerId,
-                        "player_name" => $this->game->getPlayerNameById($event->playerId),
-                        "card_inject_code" => $card->getInjectCode(),
-                        "card" => $card->getPropertyArray($this->game),
-                        "handCount" => count($deck->getPlayerHand($event->playerId)),
-                    ]);
+
+                    if ($event->hidden)
+                    {
+                        $theah->game->notify->player($event->playerId, "drawCard", clienttranslate('Private: You added ${card_inject_code} into your hand.'), [
+                            "card_inject_code" => $card->getInjectCode(),
+                            "card" => $card->getPropertyArray($theah->game),
+                        ]);
+        
+                        // Notify players that card has been added to hand
+                        $theah->game->notify->all("drawCardMessage", clienttranslate('${player_name} added a card into their Faction Hand.'), [
+                            'i18n' => ['reason'],
+                            "playerId" => $event->playerId,
+                            "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                            "card_inject_code" => $card->getInjectCode(),
+                            "count" => count($deck->getPlayerHand($event->playerId)),
+                        ]);
+                    }
+                    else
+                    {
+                        // Notify players that card has been added to hand
+                        $this->game->notify->all("cardAddedToHand", clienttranslate('${player_name} added ${card_inject_code} to their Faction Hand.'), [
+                            "player_id" => $event->playerId,
+                            "player_name" => $this->game->getPlayerNameById($event->playerId),
+                            "card_inject_code" => $card->getInjectCode(),
+                            "card" => $card->getPropertyArray($this->game),
+                            "handCount" => count($deck->getPlayerHand($event->playerId)),
+                        ]);
+                    }
                 };
                 $handler($this, $event);
                 break;
@@ -478,6 +502,7 @@ trait EventHub
                         "playerId" => $event->ownerId,
                         "card_inject_code" => $card->getInjectCode(),
                         "cardId" => $event->cardId,
+                        "card" => $card->getPropertyArray($theah->game),
                         "location" => $event->fromLocation,
                     ]);
                 };
@@ -532,11 +557,18 @@ trait EventHub
             case $event instanceof EventCardMoving:
                 $handler = function (Theah $theah, EventCardMoving $event)
                 {
-                    if (! $event->canceled)
+                    $movedEvent = self::createEvent(Events::CardMoved);
+                    if ($movedEvent instanceof EventCardMoved)
                     {
-                        $movedEvent = EventFactory::createCardMovedEvent($event->initiatingPlayerId, $event->cardId, $event->fromLocation, $event->toLocation, $event->engage, $event->sourceId);
-                        $theah->queueEvent($movedEvent);
+                        $movedEvent->initiatingPlayerId = $event->initiatingPlayerId;
+                        $movedEvent->cardId = $event->cardId;
+                        $movedEvent->fromLocation = $event->fromLocation;
+                        $movedEvent->toLocation = $event->toLocation;
+                        $movedEvent->engage = $event->engage;
+                        $movedEvent->sourceId = $event->sourceId;
+                        $movedEvent->abilityId = $event->abilityId;
                     }
+                    $theah->queueEvent($movedEvent);
                 };
                 $handler($this, $event);
                 break;
@@ -598,7 +630,7 @@ trait EventHub
                 {
                     $card = $theah->getCardById($event->cardId);
 
-                    $theah->game->notifyAllPlayers("cardRemovedFromCityDiscardPile", clienttranslate('${card_name} removed from City Discard pile.'), [
+                    $theah->game->notify->all("cardRemovedFromCityDiscardPile", clienttranslate('${card_name} removed from City Discard pile.'), [
                         'i18n' => ['card_name'],
                         "card_name" => $card->Name,
                         "card" => $card->getPropertyArray($theah->game),
@@ -631,7 +663,11 @@ trait EventHub
                     $deck = $theah->game->getGameDeckObject();
                     $deck->moveCard($card->Id, $event->toLocation, $card->ControllerId);
 
-                    $this->game->notifyAllPlayers("cardRemovedFromPlay", clienttranslate('${card_inject_code} removed from play.'), [
+                    $message = clienttranslate('${card_inject_code} removed from play.');
+                    if ($event->hidden)
+                        $message = clienttranslate('[Hidden Card] removed from play.');
+
+                    $this->game->notify->all("cardRemovedFromPlay", $message, [
                         "card_inject_code" => $card->getInjectCode(),
                         "cardId" => $card->Id,
                         "toLocation" => $event->toLocation,
@@ -653,6 +689,25 @@ trait EventHub
                 };
                 $handler($this, $event);
                 break;
+
+                case $event instanceof EventCharacterCombatModified:
+                    $handler = function (Theah $theah, EventCharacterCombatModified $event)
+                    {
+                        $character = $theah->getCharacterById($event->CharacterId);
+                        $character->ModifiedCombat = max(0, $event->NewCombat);
+                        $character->IsUpdated = true;
+
+                        $theah->game->notify->all("characterCombatModified", clienttranslate('The combat of ${character_name} went from ${oldCombat} to ${newCombat} due to: ${reason}.'), [
+                            'i18n' => ['character_name'],
+                            "character_name" => $character->Name,
+                            "characterId" => $character->Id,
+                            "oldCombat" => $event->OldCombat, 
+                            "newCombat" => $event->NewCombat,
+                            "reason" => $event->Reason,
+                        ]);
+                    };
+                    $handler($this, $event);
+                    break;
 
                 case $event instanceof EventCharacterFinesseModifed:
                     $handler = function (Theah $theah, EventCharacterFinesseModifed $event)
@@ -677,22 +732,48 @@ trait EventHub
                     $handler = function (Theah $theah, EventCharacterInfluenceModified $event)
                     {
                         $character = $theah->getCharacterById($event->CharacterId);
-                    if ($character->DashedInfluence)
-                    {
-                        return;
-                    }
+                        if ($character->DashedInfluence)
+                        {
+                            return;
+                        }
                     
                         $character->ModifiedInfluence = max(0, $event->NewInfluence);
                         $character->IsUpdated = true;
 
-                    $theah->game->notify->all("characterInfluenceModified", clienttranslate('The influence of ${character_name} went from ${oldInfluence} to ${newInfluence} due to: ${reason}.'), [
-                            'i18n' => ['character_name'],
-                            "character_name" => $character->Name,
+                        $theah->game->notify->all("characterInfluenceModified", clienttranslate('The influence of ${character_inject_code} went from ${oldInfluence} to ${newInfluence} due to: ${reason}.'), [
+                            "character_inject_code" => $character->getInjectCode(),
                             "characterId" => $character->Id,
                             "oldInfluence" => $event->OldInfluence, 
                             "newInfluence" => $event->NewInfluence,
                             "reason" => $event->Reason,
                         ]);
+                    };
+                    $handler($this, $event);
+                    break;
+
+                case $event instanceof EventCardMustered:
+                    $handler = function (Theah $theah, EventCardMustered $event)
+                    {
+                        //Update the character's location in the DB
+                        $deck = $theah->game->getGameDeckObject();
+                        $deck->moveCard($event->cardId, $event->location, $event->playerId);
+
+                        $card = $theah->getCardById($event->cardId);
+                        $card->Location = $event->location;
+                        $card->ControllerId = $event->playerId;
+                        $card->IsUpdated = true;
+                        $theah->addCardToWorld($card);
+
+                        // Notify players of mustered character
+                        $theah->game->notify->all("cardMustered", clienttranslate('${player_name} plays ${card_inject_code} at ${location}.'), [
+                            'i18n' => ['location'],
+                            "player_id" => $event->playerId,
+                            "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                            "card_inject_code" => $card->FaceDown ? clienttranslate('[Hidden]') : $card->getInjectCode(),
+                            "location" => $event->location,
+                            "card" => $card->getPropertyArray($theah->game),
+                        ]);
+
                     };
                     $handler($this, $event);
                     break;
@@ -715,13 +796,13 @@ trait EventHub
                             $message = clienttranslate('${player_name} plays ${character_inject_code} at ${location}.');
         
                         // Notify players of mustered character
-                        $theah->game->notify->all("characterMustered", $message, [
+                        $theah->game->notify->all("cardMustered", $message, [
                             'i18n' => ['location'],
                             "player_id" => $event->playerId,
                             "player_name" => $theah->game->getPlayerNameById($event->playerId),
                             "character_inject_code" => $character->getInjectCode(),
                             "location" => $event->location,
-                            "character" => $character->getPropertyArray($theah->game),
+                            "card" => $character->getPropertyArray($theah->game),
                         ]);
 
                         if ($character instanceof Brute)
@@ -1065,17 +1146,18 @@ trait EventHub
                 break;
 
             case $event instanceof EventSchemeCardRevealed:
-                $this->cards[$event->scheme->Id] = $event->scheme;
+                $scheme = $this->getSchemeById($event->schemeId);
+                $this->cards[$event->schemeId] = $scheme;
 
-                $event->scheme->Location = $event->location;
-                $event->scheme->IsUpdated = true;
+                $scheme->Location = $event->location;
+                $scheme->IsUpdated = true;
 
                 // Notify players of selected scheme
                 $this->game->notifyAllPlayers("approachSchemePlayed", clienttranslate('${player_name} plays ${scheme_inject_code} as their Approach Scheme.'), [
                     "player_name" => $event->playerName,
-                    "scheme_inject_code" => $event->scheme->getInjectCode(),
+                    "scheme_inject_code" => $scheme->getInjectCode(),
                     "player_id" => $event->playerId,
-                    "scheme" => $event->scheme->getPropertyArray($this->game),
+                    "scheme" => $scheme->getPropertyArray($this->game),
                 ]);
 
                 break;
@@ -1305,6 +1387,40 @@ trait EventHub
                     $technique = $theah->getTechniqueById($event->techniqueId);
                     $owningCard = $technique->getOwningCard($theah);
 
+                    //Get the combat cards played in this round to determine if any are dashed
+                    $dashedRiposte = true;
+                    $dashedParry = true;
+                    $dashedThrust = true;
+                    $sql = "SELECT combat_card_id FROM duel_round_combat_card where duel_id = $duelId AND round = {$round}";
+                    $db = $theah->getDBObject();
+                    $combatCardIds = $db->getCollection($sql);
+                    foreach ($combatCardIds as $combatCardId)
+                    {
+                        $combatCard = $theah->getCardById($combatCardId['combat_card_id']);
+                        if (!$combatCard->DashedRiposte)
+                            $dashedRiposte = false;
+                        if (!$combatCard->DashedParry)
+                            $dashedParry = false;
+                        if (!$combatCard->DashedThrust)
+                            $dashedThrust = false;
+                    }
+
+                    if ($dashedRiposte && $event->riposte > 0)
+                    {
+                        $event->riposte = 0;
+                        $event->explanations[] = $theah->game->translate("Combat Card(s) Riposte is dashed so Technique Riposte will not be applied.");
+                    }
+                    if ($dashedParry && $event->parry > 0)
+                    {
+                        $event->parry = 0;
+                        $event->explanations[] = $theah->game->translate("Combat Card(s) Parry is dashed so Technique Parry will not be applied.");
+                    }
+                    if ($dashedThrust && $event->thrust > 0)
+                    {
+                        $event->thrust = 0;
+                        $event->explanations[] = $theah->game->translate("Combat Card(s) Thrust is dashed so Technique Thrust will not be applied.");
+                    }
+
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
@@ -1511,19 +1627,6 @@ trait EventHub
                         $theah->game->notifyAllPlayers("message", $theah->game->translate($explanation));
                     }
 
-                    if ($event->riposte < 0)
-                    {
-                        $event->riposte = 0;
-                    }
-                    if ($event->parry < 0)
-                    {
-                        $event->parry = 0;
-                    }
-                    if ($event->thrust < 0)
-                    {
-                        $event->thrust = 0;
-                    }
-                    
                     $results = $theah->getDBObject()->updateRoundWithCombatStats($duelId, $round, "combat", $event->riposte, $event->parry, $event->thrust);
                     $effects = "";  
                     $riposteText = $theah->game->translate("Riposte");
@@ -1540,6 +1643,19 @@ trait EventHub
                     if ($results["thrust"] > 0) 
                     {
                         $effects .= "<p>{$thrustText} +{$results["thrust"]}";
+                    }
+
+                    if ($results["riposte"] < 0) 
+                    {
+                        $effects .= "<p>{$riposteText} {$results["riposte"]}";
+                    }
+                    if ($results["parry"] < 0) 
+                    {
+                        $effects .= "<p>{$parryText} {$results["parry"]}";
+                    }
+                    if ($results["thrust"] < 0) 
+                    {
+                        $effects .= "<p>{$thrustText} {$results["thrust"]}";
                     }
 
                     $challengerThreatIsLethal = $results['challengerThreatIsLethal'];
@@ -1678,11 +1794,45 @@ trait EventHub
                     $defender->removeCondition(GAME::DUEL_DEFENDER);
                     $theah->game->updateCardObjectInDb($defender);
 
-                    $theah->game->notifyAllPlayers("challengeRejected", clienttranslate('${player_name} REFUSES The Challenge.'), [
+                    $theah->game->notify->all("challengeRejected", clienttranslate('${player_name} REFUSES The Challenge.'), [
                         "player_name" => $theah->game->getPlayerNameById($defender->ControllerId),
                         "challengerId" => $event->challengerId,
                         "defenderId" => $event->targetId,
                     ]);                       
+                };
+                $handler($this, $event);
+                break;
+
+                case $event instanceof EventCharacterBeingHealed:
+                    $handler = function ($theah, EventCharacterBeingHealed $event)
+                    {
+                        $healedEvent = self::createEvent(Events::CharacterHealed);
+                        if ($healedEvent instanceof EventCharacterHealed)
+                        {
+                            $healedEvent->characterId = $event->characterId;
+                            $healedEvent->sourceId = $event->sourceId;
+                            $healedEvent->wounds = $event->wounds;
+                            $healedEvent->reason = $event->reason;
+                            $healedEvent->abilityId = $event->abilityId;
+                        }
+                        $event->theah->queueEvent($healedEvent);
+                    };
+                    $handler($this, $event);
+                    break;
+
+            case $event instanceof EventCharacterBeingWounded:
+                $handler = function ($theah, EventCharacterBeingWounded $event)
+                {
+                    $woundedEvent = self::createEvent(Events::CharacterWounded);
+                    if ($woundedEvent instanceof EventCharacterWounded)
+                    {
+                        $woundedEvent->characterId = $event->characterId;
+                        $woundedEvent->sourceId = $event->sourceId;
+                        $woundedEvent->wounds = $event->wounds;
+                        $woundedEvent->reason = $event->reason;
+                        $woundedEvent->abilityId = $event->abilityId;
+                    }
+                    $event->theah->queueEvent($woundedEvent);
                 };
                 $handler($this, $event);
                 break;

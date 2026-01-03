@@ -22,7 +22,7 @@ class _01067 extends Character
         $this->ExpansionNumber = 1;
         $this->CardNumber = 67;
 
-        $this->Faction = "Montaigne";
+        $this->initializeFaction("Montaigne");
         $this->Title = "Commander and Confidant";
         $this->Resolve = 4;
         $this->Combat = 3;

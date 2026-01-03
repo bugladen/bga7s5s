@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -15,7 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01133 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters
+class Action_01133 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters, IAbilityThatTargetsCards
 {
     public function __construct()
     {
@@ -149,13 +150,15 @@ class Action_01133 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $owner = $this->getOwningCard($game->theah);
             $location = $ids[0];
 
+            $game->globals->set(Game::CHOSEN_LOCATION, $location);
+
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
             $characterId = $game->globals->get(Game::CHOSEN_TARGET);
             $character = $game->theah->getCharacterById($characterId);
 
-            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $location, $engage = false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $location, $engage = false, $owner->Id, $this->Id);
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 
@@ -165,13 +168,48 @@ class Action_01133 extends RiskAction implements ISorcererAbility, IAbilityThatT
                 "performer_inject_code" => $performer->getInjectCode(),
             ]);
 
+            $game->notify->all("message", clienttranslate('${owner_inject_code}: ${target_inject_code} was chosen as the target.'), [
+                "owner_inject_code" => $owner->getInjectCode(),
+                "target_inject_code" => $character->getInjectCode(),
+            ]);
+
+            $sorcererAbilityStartedEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId, $character->Id, $character->Location);
+            $game->theah->queueEvent($sorcererAbilityStartedEvent);
+
+            $transition = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "01133_3", $this->Id);
+            $game->theah->queueEvent($transition);
+
+            $game->gamestate->nextState("locationChosen");
+        }
+    }
+
+    public function stateFromAction(Game $game, int $state, string $stateName): void
+    {
+        parent::stateFromAction($game, $state, $stateName);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01133_3)
+        {
+            $owner = $this->getOwningCard($game->theah);
+
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+
+            $characterId = $game->globals->get(Game::CHOSEN_TARGET);
+            $character = $game->theah->getCharacterById($characterId);
+
+            $location = $game->globals->get(Game::CHOSEN_LOCATION);
+
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $location, $engage = false, $owner->Id, $this->Id);
+            $game->theah->eventCheck($moveEvent);
+            $game->theah->queueEvent($moveEvent);
+
+            $this->resetPlayerPassCount($game);
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
             $sorcererAbilityPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId, $character->Id, $character->Location);
             $game->theah->queueEvent($sorcererAbilityPlayedEvent);
 
-            $game->gamestate->nextState("locationChosen");
+            $game->gamestate->nextState();
         }
     }
 }

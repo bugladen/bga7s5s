@@ -112,19 +112,19 @@ class Action_01076 extends RiskAction implements ISorcererAbility
                     throw new \BgaUserException($game->translate("Character not found"));
                 }
 
-                $event = EventFactory::createCharacterWoundedEvent($performer->Id, $bloodMark->Id, 1, $bloodMark->getInjectCode(), $this->Id);
+                $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $bloodMark->Id, 1, $bloodMark->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($event);
             }
 
             $locationName = $game->globals->get(Game::CHOSEN_LOCATION);
 
             //Move Performer to chosen location
-            $event = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $locationName, false, $bloodMark->Id);
+            $event = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $locationName, false, $bloodMark->Id, $this->Id);
             $game->theah->queueEvent($event);
 
             if ($id > 0)
             {
-                $event = EventFactory::createCardMovingEvent($character->ControllerId, $character->Id, $character->Location, $locationName, false, $bloodMark->Id);
+                $event = EventFactory::createCardMovingEvent($character->ControllerId, $character->Id, $character->Location, $locationName, false, $bloodMark->Id, $this->Id);
                 $game->theah->queueEvent($event);
             }
 

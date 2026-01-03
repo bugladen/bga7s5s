@@ -34,7 +34,7 @@ class _01120 extends Character implements IHasReactions, IHasTechniques
         $this->ExpansionNumber = 1;
         $this->CardNumber = 120;
 
-        $this->Faction = "Ussura";
+        $this->initializeFaction("Ussura");
         $this->Title = "Resolute Scribe";
         $this->Resolve = 3;
         $this->Combat = 0;

@@ -58,7 +58,7 @@ class Action_01112a extends RiskCityAction
             $performer = $event->theah->getCharacterById($performerId);
             $owner = $this->getOwningCard($event->theah);
 
-            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
 
             $uncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent($performer->ControllerId, $performer->Location);

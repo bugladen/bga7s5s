@@ -40,8 +40,14 @@ trait DeckTrait
             
             //Now that we have a deck, add the cards in the deck to the db
 
+            $faction = $deck->faction;
+
             // Leader
             $card = $this->createCardInLocation($deck->leader, Game::LOCATION_PLAYER_HOME, $playerId, $playerId);
+
+            //The Leader's faction is the same as the deck's faction.  This will override any original factions of the leader card.
+            $card->initializeFaction($faction);
+            $this->updateCardObjectInDb($card);
 
             //Set the id of the leader card in the player record
             $sql = "UPDATE player SET leader_card_id = $card->Id WHERE player_id = $playerId";
@@ -50,7 +56,7 @@ trait DeckTrait
             //Notify players about the leaders
             $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} is playing <strong>${player_faction} Faction</strong> and ${leader_inject_code} as their leader.'), [
                 "player_name" => $player['player_name'],
-                "player_faction" => $card->Faction,
+                "player_faction" => $faction,
                 "leader_inject_code" => $card->getInjectCode(),
                 "player_id" => $playerId,
                 "player_color" => $player['player_color'],

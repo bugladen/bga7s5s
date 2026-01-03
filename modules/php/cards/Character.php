@@ -53,6 +53,8 @@ abstract class Character extends Card implements IHasTechniques
         $this->DashedInfluence = false;
 
         $this->IsDying = false;
+
+        $this->CardBackImage = "img/cards/backs/approach.jpg";
     }
 
     public function resetCard()
@@ -127,7 +129,35 @@ abstract class Character extends Card implements IHasTechniques
         return $this->ModifiedResolve;
     }
 
-    public function addAttachment(Attachment $attachment)
+    public function setLockedValues(Theah $theah)
+    {
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getAttachmentById($attachmentId);
+            if (! $attachment)
+                continue;
+
+            if ($attachment->ResolveLocked)
+            {
+                $this->ModifiedResolve = $attachment->ResolveLockedValue;
+            }
+            if ($attachment->CombatLocked)
+            {
+                $this->ModifiedCombat = $attachment->CombatLockedValue;
+            }
+            if ($attachment->FinesseLocked)
+            {
+                $this->ModifiedFinesse = $attachment->FinesseLockedValue;
+            }
+            if ($attachment->InfluenceLocked)
+            {
+                $this->ModifiedInfluence = $attachment->InfluenceLockedValue;
+            }
+        }
+
+    }
+
+    public function addAttachment(Theah $theah, Attachment $attachment)
     {
         $this->ModifiedResolve += $attachment->ResolveModifier;
         $this->ModifiedCombat += $attachment->CombatModifier;
@@ -135,19 +165,32 @@ abstract class Character extends Card implements IHasTechniques
         $this->ModifiedInfluence += $attachment->InfluenceModifier;
 
         $this->Attachments[] = $attachment->Id;
+        $this->setLockedValues($theah);
+
         $this->IsUpdated = true;
     }
 
-    public function removeAttachment(Attachment $attachment)
+    public function removeAttachment(Theah $theah, Attachment $attachment)
     {
         $index = array_search($attachment->Id, $this->Attachments);
         if ($index !== false) {
-            $this->ModifiedResolve -= $attachment->ResolveModifier;
-            $this->ModifiedCombat -= $attachment->CombatModifier;
-            $this->ModifiedFinesse -= $attachment->FinesseModifier;
-            $this->ModifiedInfluence -= $attachment->InfluenceModifier;
-
             unset($this->Attachments[$index]);
+
+            $this->ModifiedResolve = $this->Resolve;
+            $this->ModifiedCombat = $this->Combat;
+            $this->ModifiedFinesse = $this->Finesse;
+            $this->ModifiedInfluence = $this->Influence;
+            foreach ($this->Attachments as $attachmentId)
+            {
+                $existingAttachment = $theah->getAttachmentById($attachmentId);
+                $this->ModifiedResolve += $existingAttachment->ResolveModifier;
+                $this->ModifiedCombat += $existingAttachment->CombatModifier;
+                $this->ModifiedFinesse += $existingAttachment->FinesseModifier;
+                $this->ModifiedInfluence += $existingAttachment->InfluenceModifier;
+            }
+
+            $this->setLockedValues($theah);
+
             $this->Attachments = array_values($this->Attachments);
             $this->IsUpdated = true;
         }
@@ -214,7 +257,7 @@ abstract class Character extends Card implements IHasTechniques
 
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason}'), [
+            $event->theah->game->notify->all("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason}'), [
                 'i18n' => ['reason'],
                 "target_inject_code" => $this->getInjectCode(),
                 "characterId" => $this->Id,
@@ -249,6 +292,20 @@ abstract class Character extends Card implements IHasTechniques
 
             $theah->queueEvent($discardEvent);
         }
+    }
+
+    public function hasWeaponEquipped(Theah $theah): bool
+    {
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getCardById($attachmentId);
+            if ($attachment instanceof Attachment && $attachment->hasTrait("Weapon") && ! $attachment->Engaged)
+            {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     public function getPropertyArray(Game $game): array

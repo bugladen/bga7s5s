@@ -32,8 +32,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlay;
@@ -44,14 +44,15 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeAccepted;
 use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterCombatModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterLostBrute;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
@@ -77,6 +78,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityStart;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTableSetup;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
@@ -104,13 +106,14 @@ class EventFactory
         return $event;
     }
 
-    public static function createActionTriggeredEvent(int $playerId, int $performerId, string $actionId): EventActionTriggered
+    public static function createActionTriggeredEvent(int $playerId, int $performerId, int $sourceId,string $actionId): EventActionTriggered
     {
         $event = self::createEvent(Events::ActionTriggered);
         if ($event instanceof EventActionTriggered)
         {
             $event->playerId = $playerId;
             $event->performerId = $performerId;
+            $event->sourceId = $sourceId;
             $event->actionId = $actionId;
         }
 
@@ -241,13 +244,14 @@ class EventFactory
         return $event;
     }
     
-    public static function createCardAddedToHandEvent(int $playerId, int $cardId): EventCardAddedToHand
+    public static function createCardAddedToHandEvent(int $playerId, int $cardId, bool $hidden = false): EventCardAddedToHand
     {
         $event = self::createEvent(Events::CardAddedToHand);
         if ($event instanceof EventCardAddedToHand)
         {
             $event->playerId = $playerId;
             $event->cardId = $cardId;
+            $event->hidden = $hidden;
         }
         return $event;
     }
@@ -294,7 +298,7 @@ class EventFactory
     }
     
 
-    public static function createCardEngagedEvent(int $playerId, int $cardId, int $sourceId = 0): EventCardEngaged
+    public static function createCardEngagedEvent(int $playerId, int $cardId, int $sourceId = 0, string $abilityId = ""): EventCardEngaged
     {
         $event = self::createEvent(Events::CardEngaged);
         if ($event instanceof EventCardEngaged)
@@ -302,18 +306,21 @@ class EventFactory
             $event->playerId = $playerId;
             $event->cardId = $cardId;
             $event->sourceId = $sourceId;
+            $event->abilityId = $abilityId;
         }
 
         return $event;
     }
 
-    public static function createCardEngardedEvent(int $playerId, int $cardId, int $sourceId = 0): EventCardEngarded
+    public static function createCardEngardedEvent(int $playerId, int $cardId, int $sourceId = 0, string $abilityId = ""): EventCardEngarded
     {
         $event = self::createEvent(Events::CardEngarded);
         if ($event instanceof EventCardEngarded)
         {
             $event->playerId = $playerId;
             $event->cardId = $cardId;
+            $event->sourceId = $sourceId;
+            $event->abilityId = $abilityId;
         }
 
         return $event;
@@ -331,7 +338,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardMovingEvent(int $initiatingPlayerId, int $cardId, string $fromLocation, string $toLocation, bool $engage = true, int $sourceId = 0): EventCardMoving
+    public static function createCardMovingEvent(int $initiatingPlayerId, int $cardId, string $fromLocation, string $toLocation, bool $engage = true, int $sourceId = 0, string $abilityId = ""): EventCardMoving
     {
         $event = self::createEvent(Events::CardMoving);
         if ($event instanceof EventCardMoving)
@@ -342,22 +349,7 @@ class EventFactory
             $event->toLocation = $toLocation;
             $event->engage = $engage;
             $event->sourceId = $sourceId;
-        }
-
-        return $event;
-    }
-
-    public static function createCardMovedEvent(int $initiatingPlayerId, int $cardId, string $fromLocation, string $toLocation, bool $engage = true, int $sourceId = 0): EventCardMoved
-    {
-        $event = self::createEvent(Events::CardMoved);
-        if ($event instanceof EventCardMoved)
-        {
-            $event->initiatingPlayerId = $initiatingPlayerId;
-            $event->cardId = $cardId;
-            $event->fromLocation = $fromLocation;
-            $event->toLocation = $toLocation;
-            $event->engage = $engage;
-            $event->sourceId = $sourceId;
+            $event->abilityId = $abilityId;
         }
 
         return $event;
@@ -387,7 +379,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardRemovedFromPlayEvent(int $playerId, int $cardId, string $toLocation): EventCardRemovedFromPlay
+    public static function createCardRemovedFromPlayEvent(int $playerId, int $cardId, string $toLocation, bool $hidden = false): EventCardRemovedFromPlay
     {
         $event = self::createEvent(Events::CardRemovedFromPlay);
         if ($event instanceof EventCardRemovedFromPlay)
@@ -395,6 +387,7 @@ class EventFactory
             $event->playerId = $playerId;
             $event->cardId = $cardId;
             $event->toLocation = $toLocation;
+            $event->hidden = $hidden;
         }
 
         return $event;
@@ -498,6 +491,21 @@ class EventFactory
         return $event;
     }
 
+    public static function createCharacterCombatModifiedEvent(int $playerId, int $characterId, int $oldCombat, int $newCombat, string $reason = ''): EventCharacterCombatModified
+    {
+        $event = self::createEvent(Events::CharacterCombatModified);
+        if ($event instanceof EventCharacterCombatModified)
+        {
+            $event->PlayerId = $playerId;
+            $event->CharacterId = $characterId;
+            $event->OldCombat = $oldCombat;
+            $event->NewCombat = $newCombat;
+            $event->Reason = $reason;
+        }
+
+        return $event;
+    }
+
     public static function createCharacterFinesseModifedEvent(int $playerId, int $characterId, int $oldFinesse, int $newFinesse, string $reason = ''): EventCharacterFinesseModifed
     {
         $event = self::createEvent(Events::CharacterFinesseModifed);
@@ -527,6 +535,19 @@ class EventFactory
         return $event;
     }
 
+    public static function createCardMusteredEvent(int $playerId, int $cardId, string $location): EventCardMustered
+    {
+        $event = self::createEvent(Events::CardMustered);
+        if ($event instanceof EventCardMustered)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+            $event->location = $location;
+        }
+
+        return $event;
+    }
+
     public static function createCharacterMusteredEvent(int $playerId, int $characterId, string $location): EventCharacterMustered
     {
         $event = self::createEvent(Events::CharacterMustered);
@@ -552,10 +573,10 @@ class EventFactory
         return $event;
     }
 
-    public static function createCharacterWoundedEvent(int $characterId, int $sourceId, int $wounds, string $reason, string $abilityId = ''): EventCharacterWounded
+    public static function createCharacterBeingWoundedEvent(int $characterId, int $sourceId, int $wounds, string $reason, string $abilityId = ''): EventCharacterBeingWounded
     {
-        $event = self::createEvent(Events::CharacterWounded);
-        if ($event instanceof EventCharacterWounded)
+        $event = self::createEvent(Events::CharacterBeingWounded);
+        if ($event instanceof EventCharacterBeingWounded)
         {
             $event->characterId = $characterId;
             $event->sourceId = $sourceId;
@@ -567,15 +588,16 @@ class EventFactory
         return $event;
     }
 
-    public static function createCharacterHealedEvent(int $characterId, int $sourceId, int $wounds, string $reason): EventCharacterHealed
+    public static function createCharacterBeingHealedEvent(int $characterId, int $sourceId, int $wounds, string $reason, string $abilityId = ''): EventCharacterBeingHealed
     {
-        $event = self::createEvent(Events::CharacterHealed);
-        if ($event instanceof EventCharacterHealed)
+        $event = self::createEvent(Events::CharacterBeingHealed);
+        if ($event instanceof EventCharacterBeingHealed)
         {
             $event->characterId = $characterId;
             $event->sourceId = $sourceId;
             $event->wounds = $wounds;
             $event->reason = $reason;
+            $event->abilityId = $abilityId;
         }
 
         return $event;
@@ -872,7 +894,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createReknownAddedToLocationEvent(int $playerId, string $location, int $amount, string $description)
+    public static function createReknownAddedToLocationEvent(int $playerId, string $location, int $amount, string $description, bool $isMove = false)
     {
         $event = self::createEvent(Events::ReknownAddedToLocation);
         if ($event instanceof EventReknownAddedToLocation) 
@@ -881,6 +903,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->location = $location;
             $event->amount = $amount;
             $event->description = $description;
+            $event->isMove = $isMove;
         }
         return $event;
     }
@@ -933,6 +956,22 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         {
             $event->playerId = $playerId;
             $event->riskId = $riskId;
+        }
+
+        return $event;
+    }
+
+    public static function createSorcererAbilityStartEvent(int $playerId, int $sourceId, string $abilityId, int $performerId = 0, int $targetId = 0, string $targetLocation = ""): EventSorcererAbilityStart
+    {
+        $event = self::createEvent(Events::SorcererAbilityStart);
+        if ($event instanceof EventSorcererAbilityStart)
+        {
+            $event->playerId = $playerId;
+            $event->sourceId = $sourceId;
+            $event->abilityId = $abilityId;
+            $event->performerId = $performerId;
+            $event->targetId = $targetId;
+            $event->targetLocation = $targetLocation;
         }
 
         return $event;

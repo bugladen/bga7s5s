@@ -32,7 +32,7 @@ class Maneuver_01058 extends Maneuver
                 $event->thrust += 1;
 
                 $owner = $this->getOwningCard($event->theah);
-                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $adversary->Id, $owner->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $adversary->Id, $owner->Id, $this->Id);
                 $event->theah->queueEvent($engageEvent);
             }
 

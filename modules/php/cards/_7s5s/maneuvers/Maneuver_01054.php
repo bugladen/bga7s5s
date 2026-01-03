@@ -80,7 +80,7 @@ class Maneuver_01054 extends Maneuver
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
-            $woundEvent = EventFactory::createCharacterWoundedEvent($event->adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($event->adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $event->theah->queueEvent($woundEvent);
         }
     }

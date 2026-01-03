@@ -3,6 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -10,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01205 extends CharacterAction
+class Action_01205 extends CharacterAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -138,25 +140,16 @@ class Action_01205 extends CharacterAction
                 throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to Location %s."), $location->Name, $giacinto->Location));
             }
 
-            $giacintoEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $giacinto->Id);
+            $giacintoEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Id, $this->Id);
             $game->theah->eventCheck($giacintoEngageEvent);
 
-            if ( ! $victim->Engaged)
-            {
-                $victimEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $victim->Id);
-                $game->theah->eventCheck($victimEngageEvent);
-            }
-
-            $giacintoMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Location, $location->Name);
+            $giacintoMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Location, $location->Name, false, $giacinto->Id, $this->Id);
             $game->theah->eventCheck($giacintoMoveEvent);
 
-            $victimMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $victim->Id, $victim->Location, $location->Name, true, $giacinto->Id);
+            $victimMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $victim->Id, $victim->Location, $location->Name, true, $giacinto->Id, $this->Id);
             $game->theah->eventCheck($victimMoveEvent);
 
             $game->theah->queueEvent($giacintoEngageEvent);
-
-            if ( ! $victim->Engaged)            
-                $game->theah->queueEvent($victimEngageEvent);
 
             $game->theah->queueEvent($giacintoMoveEvent);
             $game->theah->queueEvent($victimMoveEvent);

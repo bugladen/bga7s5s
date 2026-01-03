@@ -136,6 +136,18 @@
             'planningPhaseResolveSchemes_01150': () => {
                 this.resetCityLocations();
             },
+
+            'planningPhaseResolveSchemes_01151': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
+            'planningPhaseResolveSchemes_01151_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
     
             'planningPhaseResolveSchemes_01152': () => {
                 this.resetCityLocations();
@@ -179,6 +191,15 @@
                 this.factionHand.setSelectionMode('none');
                 this.clientStateArgs = {};
                 $('faction_hand_info').innerHTML = '';
+            },
+
+            'highDramaPhase01007': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+                }
             },
 
             'highDramaPhase01008': () => {
@@ -413,6 +434,15 @@
                         this.chooseList.setSelectionMode(0);
                     }
             },
+
+            'highDramaPhase01041': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
     
             'highDramaPhase01044' : () => 
             {
@@ -569,6 +599,22 @@
                         const image = $(`${card.divId}_image`);
                         this.clearCardAsSelectable(image);
                     });
+                }
+            },
+
+            'highDramaPhase01064': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode('none');
+                }
+            },
+
+            'highDramaPhase01064_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
                 }
             },
 
@@ -761,6 +807,15 @@
                 }
             },
 
+            'highDramaPhase01096': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase01097': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
@@ -775,6 +830,10 @@
                 {
                     this.factionHand.setSelectionMode('none');
                 }
+            },
+
+            'highDramaPhase01095': () => {
+                this.factionHand.setSelectionMode('none');
             },
 
             'highDramaPhase01104': () => {
@@ -847,6 +906,24 @@
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
                     this.unhighlightCards(this.clientStateArgs.ids);
                     this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase01117': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+                }
+            },
+
+            'highDramaPhase01117_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
                 }
             },
 
@@ -1056,6 +1133,15 @@
                 }
             },
 
+            'highDramaPhase01154': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
             'highDramaPhase01156': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
@@ -1120,6 +1206,35 @@
                 }
             },
 
+            'highDramaPhase01163': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
+            'highDramaPhase01163_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
+            'highDramaPhase01163_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+
+                    this.resetCityLocations();
+                }
+            },
+
             'highDramaPhase01164': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
@@ -1168,6 +1283,13 @@
                         this.unhighlightCards(this.clientStateArgs.ids);
                         this.clientStateArgs = {};
                     }
+            },
+
+            'highDramaPhase01175': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode('none');
+                }
             },
 
             'highDramaPhase01180' : () => {
@@ -1391,6 +1513,27 @@
                 }
             },
 
+            'duelNewRound_01090': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+
+                    this.factionHand.setSelectionMode('none');
+                }
+            },
+
+            'duelChooseTechnique_01010': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
             'duelChooseTechnique_01036': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
@@ -1408,6 +1551,13 @@
                     const performerImage = $(`${card.divId}_image`);
                     dojo.removeClass(performerImage, '_7sfs-chosen');
                 }
+            },
+
+            'duelChooseTechnique_01090': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
             },
 
             'duelChooseTechnique_01093': () => {

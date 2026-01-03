@@ -25,7 +25,7 @@ class _01093 extends Character implements IHasActions, IHasTechniques
         $this->ExpansionNumber = 1;
         $this->CardNumber = 93;
 
-        $this->Faction = "Castille";
+        $this->initializeFaction("Castille");
         $this->Title = "Amoral Compass";
         $this->Resolve = 5;
         $this->Combat = 3;

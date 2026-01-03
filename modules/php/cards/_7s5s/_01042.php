@@ -20,7 +20,7 @@ class _01042 extends Character implements IHasTechniques
         $this->ExpansionNumber = 1;
         $this->CardNumber = 42;
 
-        $this->Faction = "Eisen";
+        $this->initializeFaction("Eisen");
         $this->Title = "Instrument of Iron";
         $this->Resolve = 5;
         $this->Combat = 3;

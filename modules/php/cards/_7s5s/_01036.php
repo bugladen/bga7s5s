@@ -25,7 +25,7 @@ class _01036 extends Character implements IHasActions, IHasTechniques
         $this->ExpansionNumber = 1;
         $this->CardNumber = 36;
 
-        $this->Faction = "Eisen";
+        $this->initializeFaction("Eisen");
         $this->Title = "Rueful Confidante";
         $this->Resolve = 4;
         $this->Combat = 2;

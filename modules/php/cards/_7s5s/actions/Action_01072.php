@@ -59,7 +59,7 @@ class Action_01072 extends CardAction
                 "player_name" => $game->getPlayerNameById($leader->ControllerId)
             ]);
 
-            $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $leader->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $leader->Id, $scheme->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
 
             $game->globals->set(Game::CHOSEN_PERFORMER, $leader->Id);

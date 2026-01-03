@@ -59,7 +59,7 @@ class Action_01061 extends RiskAction
             }
 
             $owner = $this->getOwningCard($event->theah);
-            $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $performer->Id, $owner->Id);
+            $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $performer->Id, $owner->Id, $this->Id);
             $event->theah->queueEvent($engardeEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

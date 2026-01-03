@@ -25,7 +25,7 @@ class _01123 extends Character implements IHasActions, IHasTechniques
         $this->ExpansionNumber = 1;
         $this->CardNumber = 123;
 
-        $this->Faction = "Ussura";
+        $this->initializeFaction("Ussura");
         $this->Title = "Champion Narcissist";
         $this->Resolve = 4;
         $this->Combat = 2;

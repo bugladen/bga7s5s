@@ -45,10 +45,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['challengerSwapped', 500],
             ['characterDestroyed', 1000],
             ['characterHealed', 1000],
+            ['characterCombatModified', 1],
             ['characterFinesseModifed', 1],
             ['characterInfluenceModified', 1],
             ['characterIntervened', 500],
-            ['characterMustered', 1000],
+            ['cardMustered', 1000],
             ['characterRecruited', 1000],
             ['characterWounded', 1000],
             ['cityCardAddedToLocation', 1000],
@@ -870,16 +871,16 @@ return declare('seventhseacityoffivesails.notifications', null, {
         // CSS transition on ._7sfs-card handles the smooth rotation animation
     },
 
-    notif_characterMustered: async function (notif) 
+    notif_cardMustered: async function (notif) 
     {
-        debug( 'notif_characterMustered' );
+        debug( 'notif_cardMustered' );
         debug( notif );
 
         const args = notif.args;
 
-        const cardId = this.createCardId(args.character, args.location);
+        const cardId = this.createCardId(args.card, args.location);
         const target = this.getTargetElementForLocation(args.location, args.player_id);
-        this.createCard(cardId, args.character, target);
+        this.createCard(cardId, args.card, target);
 
         // Animate the card growing from nothing to full size
         const cardElement = $(cardId);
@@ -893,7 +894,6 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }).finished;
         }
     },
-
 
     notif_characterRecruited: function( notif )
     {
@@ -1074,6 +1074,23 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const player = this.gamedatas.players[args.playerId];
         player.locker.push(card);
+    },
+
+    notif_characterCombatModified: function( notif )
+    {
+        debug( 'notif_characterCombatModified' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        card.modifiedCombat = args.newCombat;
+
+        const element = $(`${card.divId}_combat_value`);
+        element.innerHTML = card.modifiedCombat;
+        if (card.modifiedCombat != card.combat)
+            dojo.addClass(element, '_7sfs-modified-stat-value');
+        else
+            dojo.removeClass(element, '_7sfs-modified-stat-value');
     },
 
     notif_characterFinesseModifed: function( notif )

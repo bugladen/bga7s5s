@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
@@ -19,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions\Reaction_CrewCapLimit;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -531,6 +533,11 @@ class Theah
 
     public function getCityLocation(string $name): CityLocation
     {
+        if ( ! array_key_exists($name, $this->cityLocations))
+        {
+            throw new \Exception("City location $name not found");
+        }
+        
         return $this->cityLocations[$name];
     }
 
@@ -598,6 +605,16 @@ class Theah
         return null;
     }
 
+    function getSchemeById($id): ?Scheme
+    {
+        $scheme = $this->getCardById($id);
+        if ($scheme instanceof Scheme) {
+            return $scheme;
+        }
+
+        return null;
+    }
+
     function getCharactersInPlay(): array
     {
         $characters = [];
@@ -632,7 +649,18 @@ class Theah
         return $characters;
     }
 
-    function getCharactersAtHome(int $playerId): array
+    function getCharactersAtHome(): array
+    {
+        $characters = [];
+        foreach ($this->cards as $card) {
+            if ($card instanceof Character && $card->Location == Game::LOCATION_PLAYER_HOME) {
+                $characters[] = $card;
+            }
+        }
+        return $characters;
+    }
+
+    function getCharactersAtHomeByPlayerId(int $playerId): array
     {
         $characters = [];
         foreach ($this->cards as $card) {
@@ -1121,6 +1149,14 @@ class Theah
         return count($charactersThatCanEquipInCity) > 0 || $this->game->handHasAttachments($playerId);        
     }
 
+    public function playerCanEquipToOpponents($playerId): bool
+    {
+        $handAttachments = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
+        $handAttachments = array_filter($handAttachments, fn($attachment) => $attachment instanceof FactionAttachment && $attachment->CanEquipToOpponents);
+
+        return count($handAttachments) > 0;
+    }
+
     public function playerCanBasicChallenge($playerId): bool
     {
         $characters = $this->getCharactersInCityByPlayerId($playerId);
@@ -1247,6 +1283,11 @@ class Theah
     public function deleteTransitionEvents(string $reactionId)
     {
         $this->db->deleteTransitionEvents($reactionId);
+    }
+
+    public function deleteTransitionEventsBySourceId(int $sourceId)
+    {
+        $this->db->deleteTransitionEventsBySourceId($sourceId);
     }
 
     public function deleteEventsTargetingCard(int $cardId)
@@ -1413,6 +1454,16 @@ class Theah
         return 0;
     }
 
+    public function getCurrentRoundThrust(): int
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT COALESCE(technique_thrust, 0) + COALESCE(maneuver_thrust, 0) + COALESCE(combat_thrust, 0) as total_thrust 
+                FROM duel_round 
+                WHERE duel_id = $duelId AND round = $round";
+        return (int) $this->db->getUniqueValue($sql);
+    }
+
     public function getCurrentRoundRiposte(): int
     {
         $duelId = $this->game->globals->get(Game::DUEL_ID);
@@ -1459,13 +1510,13 @@ class Theah
         return $availableAttachments;
     }
 
-    public function sorceryRisksAvailableFromDiscardPile(Character $performer): array
+    public function risksAvailableFromDiscardPile(Character $performer): array
     {
         $handWealth = $this->game->handWealthCount($performer->ControllerId);
 
         $discardPileName = $this->game->getPlayerDiscardDeckName($performer->ControllerId);
         $cards = $this->getCardObjectsAtLocation($discardPileName);
-        $cards = array_filter($cards, fn($card) => $card instanceof Risk && $card->hasTrait("Sorcery"));
+        $cards = array_filter($cards, fn($card) => $card instanceof Risk);
 
         $availableRisks = [];
         foreach ($cards as $card)

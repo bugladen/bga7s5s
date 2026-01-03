@@ -8,9 +8,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
 class _01099 extends Scheme implements IHasReactions
@@ -27,7 +26,7 @@ class _01099 extends Scheme implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 99;
 
-        $this->Faction = "Castille";
+        $this->initializeFaction("Castille");
         $this->Initiative = 10;
         $this->PanacheModifier = 0;
 
@@ -54,13 +53,7 @@ class _01099 extends Scheme implements IHasReactions
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
-            $reknown = $event->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($reknown instanceof EventReknownAddedToLocation) {
-                $reknown->playerId = $this->ControllerId;
-                $reknown->location = Game::LOCATION_CITY_DOCKS;
-                $reknown->amount = 1;
-                $reknown->description = $this->getInjectCode();
-            }
+            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_DOCKS, 1, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
         }
     }

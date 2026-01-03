@@ -114,7 +114,7 @@ class Action_01011 extends CharacterAction
             $servo = $this->getOwningCharacter($game->theah);
             $this->announceAction($game);
 
-            $moveEvent = EventFactory::createCardMovingEvent($servo->ControllerId, $servo->Id, $servo->Location, $target->Location, $engage = false);
+            $moveEvent = EventFactory::createCardMovingEvent($servo->ControllerId, $servo->Id, $servo->Location, $target->Location, $engage = false, $servo->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 
             $transition = EventFactory::createTransitionEvent($servo->ControllerId, $servo->Id, "01011_2", $this->Id);

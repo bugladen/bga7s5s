@@ -90,7 +90,7 @@ class Reaction_01196 extends CardReaction
         $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $angeline->Id);
         $game->theah->eventCheck($discardEvent);
         
-        $engardeEvent = EventFactory::createCardEngardedEvent($angeline->ControllerId, $angeline->Id, $angeline->Id);
+        $engardeEvent = EventFactory::createCardEngardedEvent($angeline->ControllerId, $angeline->Id, $angeline->Id, $this->Id);
         $game->theah->eventCheck($engardeEvent);
 
         $game->theah->queueEvent($discardEvent);

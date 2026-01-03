@@ -123,7 +123,7 @@ class Action_01097 extends CharacterAction
                 throw new \BgaUserException($game->translate("Target character's owner has more or equal number of cards in their hand than yours"));
             }
 
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $target->Id, $owner->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

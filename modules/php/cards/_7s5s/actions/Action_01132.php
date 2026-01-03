@@ -54,14 +54,14 @@ class Action_01132 extends RiskCityAction implements ISorcererAbility
             $engagedCharacters = array_values(array_filter($characters, fn($character) => $character->Engaged));
             foreach ($engagedCharacters as $character)
             {
-                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id);
+                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
                 $event->theah->queueEvent($moveEvent);
             }
 
             $remainingCharacters = array_values(array_filter($characters, fn($character) => ! $character->Engaged));
             foreach ($remainingCharacters as $character)
             {
-                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
                 $event->theah->queueEvent($engageEvent);
             }
 

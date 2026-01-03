@@ -203,7 +203,7 @@ trait StatesTrait
                 $event = $this->theah->createEvent(Events::SchemeCardRevealed);
                 if ($event instanceof EventSchemeCardRevealed) {
                     $event->playerId = $playerId;
-                    $event->scheme = $scheme;
+                    $event->schemeId = $scheme->Id;
                     $event->location = Game::LOCATION_PLAYER_HOME;
                     $event->playerName = $player['player_name'];
                 }
@@ -595,8 +595,14 @@ trait StatesTrait
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
         $techniqueId = $this->globals->get(GAME::CHOSEN_TECHNIQUE, "");
 
+        $this->notifyAllPlayers("message", clienttranslate('${performer_inject_code} is issuing a challenge to ${target_inject_code}.'), [
+            "performer_inject_code" => $performer->getInjectCode(),
+            "target_inject_code" => $target->getInjectCode()
+        ]);
+
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID, 0);
+        $abilityId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, "");
 
         $this->globals->set(Game::CHALLENGE_CANCELLED, false);
 
@@ -608,6 +614,7 @@ trait StatesTrait
             $challengeEvent->defenderId = $target->Id;
             $challengeEvent->activatedTechniqueId = $techniqueId;
             $challengeEvent->sourceId = $sourceId;
+            $challengeEvent->abilityId = $abilityId;
         }
         $this->theah->eventCheck($challengeEvent);
         $this->theah->queueEvent($challengeEvent);
@@ -820,7 +827,7 @@ trait StatesTrait
 
                 if ($wounds > 0)
                 {
-                    $event = EventFactory::createCharacterWoundedEvent($performer->Id, $target->Id, $wounds, $reason);
+                    $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $target->Id, $wounds, $reason);
                     $this->theah->queueEvent($event);
                 }
             }
@@ -856,7 +863,7 @@ trait StatesTrait
 
                 if ($wounds > 0)
                 {
-                    $event = EventFactory::createCharacterWoundedEvent($target->Id, $performer->Id, $wounds, $reason);
+                    $event = EventFactory::createCharacterBeingWoundedEvent($target->Id, $performer->Id, $wounds, $reason);
                     $this->theah->queueEvent($event);
                 }
             }
@@ -1224,7 +1231,7 @@ trait StatesTrait
                 $reason .= "<p>" . $this->translate("Wounds were reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
             }
 
-            $event = EventFactory::createCharacterWoundedEvent($actor->Id, $adversary->Id, $wounds, $reason);
+            $event = EventFactory::createCharacterBeingWoundedEvent($actor->Id, $adversary->Id, $wounds, $reason);
             $this->theah->queueEvent($event);
         }
 

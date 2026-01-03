@@ -9,8 +9,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 
-class Action_01015 extends SchemeCityAction
+class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -124,7 +126,7 @@ class Action_01015 extends SchemeCityAction
             $destroyEvent = EventFactory::createCharacterDestroyedEvent($performer->ControllerId, $performer->Id, $scheme->getInjectCode());
             $game->theah->queueEvent($destroyEvent);
 
-            $woundEvent = EventFactory::createCharacterWoundedEvent($character->Id, $scheme->Id, 1, $scheme->getInjectCode(), $this->Id);
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $scheme->Id, 1, $scheme->getInjectCode(), $this->Id);
             $game->theah->queueEvent($woundEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);

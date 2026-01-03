@@ -90,6 +90,7 @@ trait FrameworkActionsTrait
     public function actPickDeck(string $deck_type, string $deck_id, string $deck_json): void
     {
         $playerId = $this->getCurrentPlayerId();
+        $valid = false;
 
         if ($deck_type === 'starter') 
         {
@@ -105,12 +106,48 @@ trait FrameworkActionsTrait
             ]);
 
             $deck_json = addslashes(json_encode($deck));
+            $valid = true;
+        }
+        else if ($deck_type === 'custom')
+        {
+            //Validate the deck JSON
+            if (! json_validate($deck_json))
+            {
+                throw new \BgaUserException(self::_("Invalid deck JSON."));
+            }
+
+            $deck = json_decode($deck_json);
+            $errors = [];
+            if (DeckValidator::validate($this, $deck, $errors))
+            {
+                $deck_json = addslashes(json_encode($deck));
+                $valid = true;
+
+                $this->notify->player($playerId, 'message', clienttranslate('Private: Your custom deck `${deck_name}` has been validated and accepted.'), [
+                    'deck_name' => $deck->name,
+                ]);
+            }
+            else
+            {
+                $this->notify->player($playerId, 'message', clienttranslate('Private: The following errors were encountered with your custom deck:'), []);
+                foreach ($errors as $error)
+                {
+                    $this->notify->player($playerId, 'message', $error, ['error' => $error]);
+                }
+            }
+        }
+        else
+        {
+            throw new \BgaUserException(sprintf(self::_("%s is not a valid deck type."), $deck_type));
         }
 
-        $sql = "UPDATE player SET deck_source = '$deck_json' WHERE player_id='$playerId'";
-        $this->DbQuery($sql);
-
-        $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked'); // deactivate player; if none left, transition to 'deckPicked' state
+        if ($valid)
+        {
+            $sql = "UPDATE player SET deck_source = '$deck_json' WHERE player_id='$playerId'";
+            $this->DbQuery($sql);
+    
+            $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked'); // deactivate player; if none left, transition to 'deckPicked' state
+        }
     }
 
     public function actDayPlanned(int $scheme, int $character): void
@@ -421,7 +458,17 @@ trait FrameworkActionsTrait
         $performer = $this->theah->getCharacterById($id);
         $handHasAttachments = $this->handHasAttachments($playerId);
 
-        $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
+        $canEquipToOpponents = $this->theah->playerCanEquipToOpponents($playerId);
+        if ($canEquipToOpponents)
+        {
+            $characters = $this->theah->getCharactersInPlay();
+            $characters = array_filter($characters, fn($character) => $this->theah->cardInCity($character));
+        }
+        else
+        {
+            $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
+        }
+
         $charactersThatCanEquip = [];
         foreach ($characters as $character) {
             $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($character->Location);
@@ -429,7 +476,16 @@ trait FrameworkActionsTrait
                 $charactersThatCanEquip[] = $character;
             }
         }
-        $charactersAtHome = $this->theah->getCharactersAtHome($playerId);
+
+        if ($canEquipToOpponents)
+        {
+            $charactersAtHome = $this->theah->getCharactersAtHome();
+        }
+        else
+        {
+            $charactersAtHome = $this->theah->getCharactersAtHomeByPlayerId($playerId);
+        }
+
         foreach ($charactersAtHome as $character) {
             if ($handHasAttachments) {
                 $charactersThatCanEquip[] = $character;
@@ -468,6 +524,11 @@ trait FrameworkActionsTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
+        if ($performer->ControllerId != $playerId && ! $attachment->CanEquipToOpponents)
+        {
+            throw new \BgaUserException(self::_("Attachment cannot be equipped to an opponent."));
+        }
+
         $event = EventFactory::createEnteringPayStateEvent($playerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
         $this->theah->queueEvent($event);
 
@@ -476,6 +537,7 @@ trait FrameworkActionsTrait
 
     public function actHighDramaEquipActionAttachmentFromPlaySelected(int $id)
     {
+        $playerId = $this->getActivePlayerId();
         $this->theah->buildCity();
         $attachmentId = $id;
 
@@ -489,6 +551,11 @@ trait FrameworkActionsTrait
 
         if ($attachment->Location != $performer->Location) {
             throw new \BgaUserException(self::_("Attachment is not at Performer's Location."));
+        }
+
+        if ($performer->ControllerId != $playerId && ! $attachment->CanEquipToOpponents)
+        {
+            throw new \BgaUserException(self::_("Attachment cannot be equipped to an opponent."));
         }
 
         $this->globals->set(GAME::CHOSEN_CARD, $attachmentId);
@@ -720,7 +787,7 @@ trait FrameworkActionsTrait
             if ($action instanceof CardAction)
                 $id = $action->OwnerId;
 
-            $event = EventFactory::createActionTriggeredEvent($player_id, $id, $actionId);
+            $event = EventFactory::createActionTriggeredEvent($player_id, $id, $id, $actionId);
             $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
     
@@ -734,10 +801,12 @@ trait FrameworkActionsTrait
         $performer = $this->getCardObjectFromDb($id);
 
         $actionId = $this->globals->get(GAME::CHOSEN_ACTION, '');
+        $action = $this->theah->getInPlayActionById($actionId);
+        $sourceId = $action->OwnerId;
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
 
-        $event = EventFactory::createActionTriggeredEvent($playerId, $performer->Id, $actionId);
+        $event = EventFactory::createActionTriggeredEvent($playerId, $performer->Id, $sourceId, $actionId);
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
@@ -889,7 +958,7 @@ trait FrameworkActionsTrait
         $event = EventFactory::createRiskPlayedEvent($playerId, $risk->Id);
         $this->theah->queueEvent($event);
 
-        $event = EventFactory::createActionTriggeredEvent($playerId, $performerId, $actionId);
+        $event = EventFactory::createActionTriggeredEvent($playerId, $performerId, $risk->Id, $actionId);
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
@@ -1590,7 +1659,16 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        if ($sourceId === null) {
+            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+        }
+
         $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+        }
+
         $card->actFromCardPass($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId);
     }
 
@@ -1600,7 +1678,16 @@ trait FrameworkActionsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        if ($sourceId === null) {
+            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+        }
+
         $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+        }
+
         $card->actFromCardWithId($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $id);
     }
 
@@ -1611,7 +1698,16 @@ trait FrameworkActionsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        if ($sourceId === null) {
+            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+        }
+
         $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+        }
+
         $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $ids);
     }
 
@@ -1622,7 +1718,16 @@ trait FrameworkActionsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        if ($sourceId === null) {
+            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+        }
+
         $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+        }
+
         $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $locations);
     }
 
@@ -1631,7 +1736,16 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        if ($sourceId === null) {
+            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+        }
+
         $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+        }
+
         $card->actFromCardWithActionId($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $internalId, $actionSourceId, $actionId);
     }
 
@@ -1643,6 +1757,11 @@ trait FrameworkActionsTrait
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $state = $this->gamestate->state_id();
 
+        if ($sourceId === null)
+        {
+            throw new \BgaUserException(self::_("Unable to process reaction. Please try again or refresh the page."));
+        }
+
         if ($sourceId == Game::THEAH_ID)
         {
             $reaction = $this->theah->getTheahReactionById($internalId);
@@ -1651,6 +1770,10 @@ trait FrameworkActionsTrait
         else
         {
             $card = $this->theah->getCardById($sourceId);
+            if ($card === null)
+            {
+                throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+            }
             $card->reactionFromCard($this, $state, $internalId, $reactionId);
         }
 
@@ -1663,7 +1786,14 @@ trait FrameworkActionsTrait
         $playerId = $this->getActivePlayerId();
         
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        if ($sourceId === null) {
+            throw new \BgaUserException(self::_("Unable to process reaction. Please try again or refresh the page."));
+        }
+
         $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+        }
 
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $reaction = $card->getReactionById($internalId);
@@ -1677,9 +1807,18 @@ trait FrameworkActionsTrait
 
         $cardIds = json_decode($payWithCards, true);
         
+        $invalidPayCardIds = $this->globals->get(Game::INVALID_PAY_CARD_IDS, []);
+
         //Total up the wealth of the cards to see if player paid correctly
         $totalWealth = 0;
-        foreach ($cardIds as $cardId) {
+        foreach ($cardIds as $cardId) 
+        {
+            if (in_array($cardId, $invalidPayCardIds))
+            {
+                $card = $this->getCardObjectFromDb($cardId);
+                throw new \BgaUserException(sprintf(self::_("%s is not valid to pay for the reaction."), $card->Name));
+            }
+
             $payCard = $this->getCardObjectFromDb($cardId);
 
             if ($payCard == null)
@@ -1688,9 +1827,10 @@ trait FrameworkActionsTrait
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += $payCard->hasTrait("Wealth") ? 2 : 1;
         }
+
         if ($totalWealth != $cost) {
             throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
-        }
+        }        
 
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {
@@ -1698,6 +1838,8 @@ trait FrameworkActionsTrait
             $event = EventFactory::createCardDiscardedFromHandEvent($payCard->OwnerId, $payCard->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
+
+        $this->globals->delete(Game::INVALID_PAY_CARD_IDS);
 
         $announcement = $reaction->getReactionAnnouncement($this, $this->gamestate->state_id(), $internalId, $reactionId);
         if ($announcement != "")

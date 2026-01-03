@@ -40,14 +40,14 @@ class Maneuver_01131 extends Maneuver
             $actor = $event->theah->getDuelRoundActor();
             if (count($actor->Attachments) > 0)
             {
-                $woundEvent = EventFactory::createCharacterWoundedEvent($actor->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($actor->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $event->theah->queueEvent($woundEvent);
             }
 
             $opponent = $event->theah->getDuelRoundOpponent();
             if (count($opponent->Attachments) > 0)
             {
-                $woundEvent = EventFactory::createCharacterWoundedEvent($opponent->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($opponent->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $event->theah->queueEvent($woundEvent);
             }
         }

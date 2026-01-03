@@ -66,7 +66,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
-            $engageEvent = EventFactory::createCardEngagedEvent($scheme->ControllerId, $performerId);
+            $engageEvent = EventFactory::createCardEngagedEvent($scheme->ControllerId, $performerId, $scheme->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
 
             $pressureStats = $event->theah->getPressureStats($performer, $performer->Location, Game::STAT_INFLUENCE);

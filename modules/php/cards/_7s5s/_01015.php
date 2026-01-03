@@ -29,7 +29,7 @@ class _01015 extends Scheme implements IHasActions, IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 15;
 
-        $this->Faction = "Vodacce";
+        $this->initializeFaction("Vodacce");
         $this->Initiative = 60;
         $this->PanacheModifier = 0;
 
@@ -56,7 +56,7 @@ class _01015 extends Scheme implements IHasActions, IHasReactions
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-            $event->theah->game->notifyAllPlayers("message", clienttranslate('${scheme_inject_code} now resolves.  Renown will be added to The Docks and The Grand Bazaar.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  Renown will be added to The Docks and The Grand Bazaar.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 

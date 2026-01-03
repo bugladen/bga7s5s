@@ -31,7 +31,7 @@ class _01089 extends Leader implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 89;
 
-        $this->Faction = "Castille";
+        $this->initializeFaction("Castille");
         $this->Title = "Prince of Thieves";
         $this->Resolve = 7;
         $this->Combat = 3;

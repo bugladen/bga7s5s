@@ -3,6 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -10,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01148 extends SchemeCityAction
+class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -164,14 +166,14 @@ class Action_01148 extends SchemeCityAction
             // Engage
             if ($id === 1)
             {
-                $event = EventFactory::createCardEngagedEvent($scheme->ControllerId, $targetId, $scheme->Id);
+                $event = EventFactory::createCardEngagedEvent($scheme->ControllerId, $targetId, $scheme->Id, $this->Id);
                 $game->theah->queueEvent($event);
             }
 
             // Wound
             if ($id === 2)
             {
-                $event = EventFactory::createCharacterWoundedEvent($target->Id, $scheme->Id, 1, $scheme->getInjectCode(), $this->Id);
+                $event = EventFactory::createCharacterBeingWoundedEvent($target->Id, $scheme->Id, 1, $scheme->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($event);
             }
 

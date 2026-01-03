@@ -26,7 +26,7 @@ class _01033 extends Risk implements IHasActions, IHasManeuvers, IAmARiskThatTar
         $this->ExpansionNumber = 1;
         $this->CardNumber = 33;
 
-        $this->Faction = 'Vodacce';
+        $this->initializeFaction('Vodacce');
 
         $this->Riposte = 0;
         $this->DashedRiposte = true;

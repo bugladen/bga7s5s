@@ -80,7 +80,7 @@ class Action_01118 extends CharacterAction
                 throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to Location %s."), $location->Name, $elina->Location));
             }
 
-            $moveEvent = EventFactory::createCardMovingEvent($elina->ControllerId, $elina->Id, $elina->Location, $location, $engage = false, $elina->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($elina->ControllerId, $elina->Id, $elina->Location, $location, $engage = false, $elina->Id, $this->Id);
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 
@@ -88,7 +88,7 @@ class Action_01118 extends CharacterAction
             $characters = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($elina->ControllerId));
             if (count($characters) > 0 && $elina->Engaged)
             {
-                $engardeEvent = EventFactory::createCardEngardedEvent($elina->ControllerId, $elina->Id, $elina->Id);
+                $engardeEvent = EventFactory::createCardEngardedEvent($elina->ControllerId, $elina->Id, $elina->Id, $this->Id);
                 $game->theah->queueEvent($engardeEvent);
             }
 

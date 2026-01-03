@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatDependsOnNotBeingFirstPlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -10,7 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01093 extends CharacterAction
+class Action_01093 extends CharacterAction implements IAbilityThatDependsOnNotBeingFirstPlayer
 {
     public function __construct()
     {
@@ -49,8 +50,9 @@ class Action_01093 extends CharacterAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
             $args["performerId"] = $performerId;
-
-            $isFirstPlayer = $game->globals->get(Game::FIRST_PLAYER) == $performer->ControllerId;
+            
+            $forcedNotFirstPlayer = $game->globals->get(Game::OVERRIDE_AS_NOT_FIRST_PLAYER, false);
+            $isFirstPlayer = $game->globals->get(Game::FIRST_PLAYER) == $performer->ControllerId && ! $forcedNotFirstPlayer;
             if ($isFirstPlayer)
             {
                 $args["locationIds"] = $game->theah->getAdjacentCityLocations($performer->Location, $includeHome = true);
@@ -94,7 +96,7 @@ class Action_01093 extends CharacterAction
                 throw new \BgaUserException($game->translate("You cannot move to the same location as Maya."));
             }
 
-            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, $location->Name, $engage = false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, $location->Name, $engage = false, $owner->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

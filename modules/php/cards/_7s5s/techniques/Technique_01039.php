@@ -63,7 +63,7 @@ class Technique_01039 extends Technique
 
             if ($adversary->Engaged && count($mercenaries) > 0)
             {
-                $woundEvent = EventFactory::createCharacterWoundedEvent($adversary->Id, $philip->Id, 1, $philip->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversary->Id, $philip->Id, 1, $philip->getInjectCode(), $this->Id);
                 $event->theah->queueEvent($woundEvent);
             }
         }

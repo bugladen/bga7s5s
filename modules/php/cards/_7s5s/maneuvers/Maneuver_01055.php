@@ -56,7 +56,7 @@ class Maneuver_01055 extends Maneuver
             $adversary = $event->theah->getCharacterById($adversaryId);
 
             $owner = $this->getOwningCard($event->theah);
-            $woundEvent = EventFactory::createCharacterWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $event->theah->eventCheck($woundEvent);
             $event->theah->queueEvent($woundEvent);
         }

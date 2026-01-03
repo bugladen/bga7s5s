@@ -8,6 +8,7 @@ class EventReknownAddedToLocation extends Event
     public string $location;
     public int $amount;
     public string $description;
+    public bool $isMove;
 
     public function __construct()
     {
@@ -17,6 +18,7 @@ class EventReknownAddedToLocation extends Event
         $this->location = "";
         $this->amount = 0;
         $this->description = "";
+        $this->isMove = false;
 
     }
 }

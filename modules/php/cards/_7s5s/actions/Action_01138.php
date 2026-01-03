@@ -3,6 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -10,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01138 extends RiskAction
+class Action_01138 extends RiskAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -138,11 +140,11 @@ class Action_01138 extends RiskAction
                 $owner = $this->getOwningCard($game->theah);
 
                 //Move Performer to Target's Location
-                $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id);
+                $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id, $this->Id);
                 $game->theah->queueEvent($moveEvent);
 
                 //Wound Target
-                $woundEvent = EventFactory::createCharacterWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
                 $this->setUsed($game->theah, true);
@@ -171,25 +173,25 @@ class Action_01138 extends RiskAction
             $owner = $this->getOwningCard($game->theah);
 
             //Move Performer to Target's Location
-            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 
             //Choose to Engage
             if ($id == 1)
             {
                 //Engage Performer
-                $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $performer->Id);
+                $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $performer->Id, $this->Id);
                 $game->theah->queueEvent($event);
 
                 //Move Target HOME
-                $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $owner->Id);
+                $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $owner->Id, $this->Id);
                 $game->theah->queueEvent($moveEvent);
             }
             //Choose to Do Not Engage
             else if ($id == 0)
             {
                 //Wound Target
-                $woundEvent = EventFactory::createCharacterWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
             }

@@ -100,17 +100,22 @@ class Events
     const CardRemovedFromLocker = 'EventCardRemovedFromLocker';
     const CardRemovedFromPlay = 'EventCardRemovedFromPlay';
     const CharacterDestroyed = 'EventCharacterDestroyed';
+    const CharacterBeingHealed = 'EventCharacterBeingHealed';
     const CharacterHealed = 'EventCharacterHealed';
     const CharacterPutIntoApproachDeck = 'EventCharacterPutIntoApproachDeck';
+    const CharacterBeingWounded = 'EventCharacterBeingWounded';
     const CharacterWounded = 'EventCharacterWounded';
     const ManeuverCanceled = 'EventManeuverCanceled';
     const TechniqueCanceled = 'EventTechniqueCanceled';
     const SorcererAbilityPlayed = 'EventSorcererAbilityPlayed';
+    const SorcererAbilityStart = 'EventSorcererAbilityStart';
     const RiskPlayed = 'EventRiskPlayed';
 
     //Character events
+    const CharacterCombatModified = 'EventCharacterCombatModified';
     const CharacterInfluenceModified = 'EventCharacterInfluenceModified';
     const CharacterFinesseModifed = 'EventCharacterFinesseModifed';
+    const CardMustered = 'EventCardMustered';
     const CharacterMustered = 'EventCharacterMustered';
     const CharacterLostBrute = 'EventCharacterLostBrute';
     

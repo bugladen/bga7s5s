@@ -21,7 +21,7 @@ class _01022 extends FactionAttachment implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 22;
 
-        $this->Faction = 'Vodacce';
+        $this->initializeFaction('Vodacce');
 
         $this->ResolveModifier = 0;
         $this->CombatModifier = 0;

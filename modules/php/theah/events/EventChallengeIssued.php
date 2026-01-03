@@ -9,6 +9,7 @@ class EventChallengeIssued extends Event
     public int $defenderId;
     public string $activatedTechniqueId;
     public int $sourceId;
+    public string $abilityId;
 
     public function __construct()
     {
@@ -19,6 +20,9 @@ class EventChallengeIssued extends Event
         $this->defenderId = 0;
         $this->activatedTechniqueId = 0;
         $this->sourceId = 0;
+        $this->abilityId = '';
+
+        $this->runEventHubAfterCards = true;
     }
  
 }

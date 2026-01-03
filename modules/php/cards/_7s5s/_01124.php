@@ -25,7 +25,7 @@ class _01124 extends Character implements IHasActions, IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 124;
 
-        $this->Faction = "Ussura";
+        $this->initializeFaction("Ussura");
         $this->Title = "Ancient Witch";
         $this->Resolve = 3;
         $this->Combat = 1;

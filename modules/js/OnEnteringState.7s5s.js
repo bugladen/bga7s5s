@@ -349,6 +349,26 @@
                     });
                 }
             },
+
+            'planningPhaseResolveSchemes_01151': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
+            'planningPhaseResolveSchemes_01151_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
     
             'planningPhaseResolveSchemes_01152': () => {
                 if (this.isCurrentPlayerActive()) {
@@ -434,6 +454,21 @@
                 dojo.addClass(cost, '_7sfs-discounted-wealth-cost');
     
                 this.factionHand.setSelectionMode('multiple');
+            },
+
+            'highDramaPhase01007': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
             },
 
             'highDramaPhase01008': () => {
@@ -752,35 +787,46 @@
             },
             'highDramaPhase01038_3' : () => {
                 if (this.isCurrentPlayerActive()) 
-                    {
-                        dojo.removeClass('choose_container', 'hidden');
-                        dojo.removeClass('chooseList', 'hidden');
-                        
-                        let count = 0;
-                        args.args.args.cards.forEach((card) => {
-                            this.addCardToDeck(this.chooseList, card);
-                            if (card.type === 'Attachment') 
-                                count++;
-                            else
-                            {
-                                let div = this.chooseList.getItemDivId(card.id);
-                                dojo.addClass(div, '_7sfs-unselectable');        
-                            }
-        
-                            this.cardProperties[card.id] = card;                
-                        });
-                        var translated = dojo.string.substitute(
-                            _("Otto Streit's Revealed Cards: ( ${count} Attachment(s) Found )"),
-                            {
-                                count: count
-                            }
-                        );
-                        $('choose_container_name').innerHTML = translated;
-                        this.chooseList.setSelectionMode(0);
-                        if (count > 0)
-                            this.chooseList.setSelectionMode(1);
-                    }
-                },
+                {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    let count = 0;
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                        if (card.type === 'Attachment') 
+                            count++;
+                        else
+                        {
+                            let div = this.chooseList.getItemDivId(card.id);
+                            dojo.addClass(div, '_7sfs-unselectable');        
+                        }
+    
+                        this.cardProperties[card.id] = card;                
+                    });
+                    var translated = dojo.string.substitute(
+                        _("Otto Streit's Revealed Cards: ( ${count} Attachment(s) Found )"),
+                        {
+                            count: count
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(0);
+                    if (count > 0)
+                        this.chooseList.setSelectionMode(1);
+                }
+            },
+
+            'highDramaPhase01041': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
     
             'highDramaPhase01044' : () => {
                 if (this.isCurrentPlayerActive()) {
@@ -987,6 +1033,28 @@
                 }
             },
 
+            'highDramaPhase01064': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
+            'highDramaPhase01064_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
             'highDramaPhase01068': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
@@ -1065,6 +1133,13 @@
                     this.clientStateArgs.ids = args.args.args.ids;
                     this.highlightCardsAsSelectable(args.args.args.ids);
                 }            
+            },
+
+            'highDramaPhase01175': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode('multiple');
+                }
             },
     
             'highDramaPhase01072' : () => {
@@ -1229,8 +1304,15 @@
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;
                     args.args.args.locationIds.forEach((locationId) => {
-                        const imageElement = this.getCityLocationElement(locationId);
-                        this.makeCityLocationSelectable(imageElement);
+                        if (locationId == this.LOCATION_PLAYER_HOME)
+                        {
+                            this.makeHomeEndcapMarkerSelectable();
+                        }
+                        else
+                        {
+                            const imageElement = this.getCityLocationElement(locationId);
+                            this.makeCityLocationSelectable(imageElement);
+                        }
                     });
 
                     card = this.cardProperties[args.args.args.performerId];
@@ -1238,6 +1320,17 @@
                     dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
+            },
+
+            'highDramaPhase01096': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
             },
 
             'highDramaPhase01097': () => {
@@ -1256,6 +1349,10 @@
                 {
                     this.factionHand.setSelectionMode('multiple');
                 }
+            },
+
+            'highDramaPhase01095': () => {
+                this.factionHand.setSelectionMode('single');
             },
 
             'highDramaPhase01104': () => {
@@ -1397,6 +1494,40 @@
                     this.clientStateArgs.ids = args.args.args.ids;
                     this.highlightCardsAsSelectable(args.args.args.ids);
                 }            
+            },
+
+            'highDramaPhase01117': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
+            'highDramaPhase01117_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+
+                    let image = this.getCityLocationElement(args.args.args.chosenLocation);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.chosenLocation = args.args.args.chosenLocation;
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    image = $(`${card.divId}_image`);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
             },
 
             'highDramaPhase01118': () => {
@@ -1706,6 +1837,20 @@
                 }
             },
 
+            'highDramaPhase01154': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    $('choose_container_name').innerHTML = _("Risks in Your Discard Pile");
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
             'highDramaPhase01156': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
@@ -1787,6 +1932,54 @@
                     const image = $(`${card.divId}_image`);
                     dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
+            'highDramaPhase01163': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    $('choose_container_name').innerHTML = _("Choose a card to sink");
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
+            'highDramaPhase01163_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    $('choose_container_name').innerHTML = _("Choose a card to put into your hand");
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
+            'highDramaPhase01163_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    $('choose_container_name').innerHTML = _("Remaining Card");
+                    this.chooseList.setSelectionMode(0);
+
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
                 }
             },
 
@@ -2234,6 +2427,41 @@
                 }
             },
 
+            'duelNewRound_01090': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    this.addCardToDeck(this.chooseList, args.args.args.card);
+        
+                    var translated = dojo.string.substitute(
+                        _("Top Card in ${opponentName}'s Faction Deck"),
+                        {
+                            opponentName: args.args.args.opponentName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(0);
+
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
+            'duelChooseTechnique_01010': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    $('choose_container_name').innerHTML = `Card(s) Available to Sink`;
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+
             'duelChooseTechnique_01036': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;
@@ -2278,6 +2506,22 @@
                     dojo.addClass(image, '_7sfs-chosen');
                     this.clientStateArgs.performerId = args.args.args.performerId;
                 }
+            },
+
+            'duelChooseTechnique_01090': () => {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                
+                this.addCardToDeck(this.chooseList, args.args.args.card);
+    
+                var translated = dojo.string.substitute(
+                    _("Top Card in ${opponentName}'s Faction Deck"),
+                    {
+                        opponentName: args.args.args.opponentName
+                    }
+                );
+                $('choose_container_name').innerHTML = translated;
+                this.chooseList.setSelectionMode(0);
             },
 
             'duelResolveManeuver_01059': () => {

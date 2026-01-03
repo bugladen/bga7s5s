@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -15,7 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01124 extends CharacterAction implements ISorcererAbility
+class Action_01124 extends CharacterAction implements ISorcererAbility, IAbilityThatTargetsCards
 {
     public function __construct()
     {
@@ -37,7 +38,8 @@ class Action_01124 extends CharacterAction implements ISorcererAbility
             return false;
         }
 
-        $cards = $theah->sorceryRisksAvailableFromDiscardPile($owner);
+        $cards = $theah->risksAvailableFromDiscardPile($owner);
+        $cards = array_filter($cards, fn($card) => $card->hasTrait("Sorcery"));
         return count($cards) > 0;
     }
 
@@ -63,7 +65,8 @@ class Action_01124 extends CharacterAction implements ISorcererAbility
 
             $args['performerId'] = $owner->Id;
             
-            $cards = $game->theah->sorceryRisksAvailableFromDiscardPile($owner);
+            $cards = $game->theah->risksAvailableFromDiscardPile($owner);
+            $cards = array_filter($cards, fn($card) => $card->hasTrait("Sorcery"));
             $availableActions = [];
             foreach ($cards as $card)
             {
@@ -126,7 +129,36 @@ class Action_01124 extends CharacterAction implements ISorcererAbility
                     throw new \BgaUserException(sprintf($game->translate("You do not have enough Wealth (%d) to pay for the Sorcery Risk."), $handWealth));
                 }
             }
+
+            $game->globals->set(Game::CHOSEN_ACTION, $actionId);
+            $game->globals->set(Game::CHOSEN_CARD, $riskCard->Id);
+
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
+            $game->theah->queueEvent($engageEvent);
         
+            $this->announceAction($game);
+            $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
+
+            $sorceryEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
+            $game->theah->queueEvent($sorceryEvent);
+
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01124_2", $this->Id);
+            $game->theah->queueEvent($transition);
+
+            $game->gamestate->nextState("actionChosen");        
+        }
+    }
+
+    public function stateFromAction(Game $game, int $state, string $stateName): void
+    {
+        parent::stateFromAction($game, $state, $stateName);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01124_2)
+        {
+            $owner = $this->getOwningCard($game->theah);
+            $riskCard = $game->theah->getRiskById($game->globals->get(Game::CHOSEN_CARD));
+
             //Place original card in special hiding location
             $deck = $game->getGameDeckObject();
             $deck->moveCard($riskCard->Id, Game::LOCATION_PERMANENTLY_HIDDEN);
@@ -135,7 +167,6 @@ class Action_01124 extends CharacterAction implements ISorcererAbility
             $game->theah->queueEvent($moveEvent);
 
             //Create a clone of the risk card
-            $owner = $this->getOwningCard($game->theah);
             $card = $game->createCardInLocation('01124_RiskClone', Game::LOCATION_HAND, $owner->ControllerId, $owner->ControllerId);
             $card->Name = $riskCard->Name;
             $card->Image = $riskCard->Image;
@@ -144,6 +175,12 @@ class Action_01124 extends CharacterAction implements ISorcererAbility
             {
                 $cost = $riskCard->WealthCost;
                 $card->setWealthCost($cost);
+            }
+
+            $actionId = $game->globals->get(Game::CHOSEN_ACTION);
+            if ($riskCard instanceof IHasActions)
+            {
+                $action = $riskCard->getActionById($actionId);
             }
 
             $newAction = clone $action;
@@ -164,7 +201,7 @@ class Action_01124 extends CharacterAction implements ISorcererAbility
 
             foreach ($riskCard->Traits as $trait)
             {
-                $card->addTrait($game, $trait);
+                $card->addTrait($game, $trait, $quietly = true);
             }
 
             $game->updateCardObjectInDb($card);
@@ -182,7 +219,7 @@ class Action_01124 extends CharacterAction implements ISorcererAbility
 
             if ($action->RequiresPerformerSelected)
             {
-                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01124_performer", $this->Id);
+                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "inHandActionChoosePerformer", $this->Id);
                 $game->theah->queueEvent($transition);
             }
             else
@@ -190,13 +227,9 @@ class Action_01124 extends CharacterAction implements ISorcererAbility
                 $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $riskCard->Id, Game::PAY_STATE_IN_HAND_ACTION, $newActionId);
                 $game->theah->queueEvent($event);
 
-                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01124_pay", $this->Id);        
+                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "inHandActionPay", $this->Id);        
                 $game->theah->queueEvent($transition);
             }
-
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $actionResolvedEvent->priority = Event::CHANGE_ACTIVE_PLAYER_PRIORITY;
@@ -205,7 +238,7 @@ class Action_01124 extends CharacterAction implements ISorcererAbility
             $sorceryEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
             $game->theah->queueEvent($sorceryEvent);
     
-            $game->gamestate->nextState("actionChosen");        
+            $game->gamestate->nextState();
         }
     }
 }

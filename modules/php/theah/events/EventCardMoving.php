@@ -10,6 +10,7 @@ class EventCardMoving extends Event
     public string $toLocation;
     public bool $engage;
     public int $sourceId;
+    public string $abilityId;
 
     /** @var array<int> Card IDs that have declined to cancel this movement */
     public array $cancelDeclinedByCardIds = [];
@@ -19,6 +20,7 @@ class EventCardMoving extends Event
         parent::__construct();
         $this->engage = true;
         $this->sourceId = 0;
+        $this->abilityId = "";
         $this->cancelDeclinedByCardIds = [];
         
         $this->runEventHubAfterCards = true;
