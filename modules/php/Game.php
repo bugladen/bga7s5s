@@ -70,7 +70,8 @@ class Game extends \Bga\GameFramework\Table
     final const OVERRIDE_AS_NOT_FIRST_PLAYER = "overrideAsNotFirstPlayer";
     final const INVALID_PAY_CARD_IDS = "invalidPayCardIds";
 
-    //Conditions
+    //Conditions\
+    final const HELPED_BY_PENYA = "Helped By Penya";
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";
     final const CRYSTAL_EYE_TARGET = "Crystal Eye Target";
     final const CATS_EMBARGO_TARGET = "Cats Embargo Target";

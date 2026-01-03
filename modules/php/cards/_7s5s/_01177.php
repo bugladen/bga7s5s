@@ -45,7 +45,8 @@ class _01177 extends CityEventCard
             $characters = $game->theah->getCharactersAtLocation($this->Location);
             
             //Filter the characters that are not controlled by the current player
-            $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId == $game->getActivePlayerId()));
+            $location = $game->theah->getCityLocation($this->Location);
+            $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId == $location->Controller));
 
             $args['sourceId'] = $this->Id;
             $args['ids'] = array_map(fn($character) => $character->Id, $characters);
@@ -77,13 +78,13 @@ class _01177 extends CityEventCard
         if ($state == States::DUSK_PHASE_BEGIN_01177)
         {
             $selectedCharacter = $game->theah->getCharacterById($id);
-            $selectedCharacter->Conditions[] = "Helped By Penya";
+            $selectedCharacter->Conditions[] = Game::HELPED_BY_PENYA;
             $game->updateCardObjectInDb($selectedCharacter);
     
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen ${character_inject_code} to follow Penya. 
+            $game->notify->all("message", clienttranslate('${player_name} has chosen ${character_inject_code} to follow Penya. 
             ${player_name} will now choose the order of the top 3 cards in the City Deck.'), [
                 "character_inject_code" => $selectedCharacter->getInjectCode(),
-                "player_name" => $game->getActivePlayerName()
+                "player_name" => $game->getPlayerNameById($selectedCharacter->ControllerId)
             ]);
     
             $game->gamestate->nextState("pickCards");
@@ -112,7 +113,7 @@ class _01177 extends CityEventCard
                 $deck->insertCardOnExtremePosition((int)$id, Game::LOCATION_CITY_DECK, true);                
             }
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen the order of the top 3 cards in the City Deck.'), [
+            $game->notify->all("message", clienttranslate('${player_name} has chosen the order of the top 3 cards in the City Deck.'), [
                 "player_name" => $game->getActivePlayerName(),
             ]);
 
@@ -126,12 +127,12 @@ class _01177 extends CityEventCard
         parent::eventCheck($event);
 
         //Stop characters from going home if they have been helped by Penya
-        if ($event instanceof EventCardMoved && $event->theah->game->gamestate->state_id() == States::DUSK_PHASE_CLEANUP)
+        if ($event instanceof EventCardMoved)
         {
             $card = $event->theah->getCardById($event->cardId);
-            if ($card instanceof Character && $card->hasCondition("Helped By Penya"))
+            if ($card instanceof Character && $card->hasCondition(Game::HELPED_BY_PENYA))
             {
-                $card->removeCondition("Helped By Penya");
+                $card->removeCondition(Game::HELPED_BY_PENYA);
                 throw new \BgaUserException($event->theah->game->translate("Penya has helped {$card->Name} so they don't go home."));
             }
         }
@@ -156,9 +157,9 @@ class _01177 extends CityEventCard
 
                 if (count($characters) > 0)
                 {
-                    $event->theah->game->notifyAllPlayers("message", clienttranslate('${card_inject_code} triggers.  ${player_name} may choose to have one of their characters follow Penya.'), [
+                    $event->theah->game->notify->all("message", clienttranslate('${card_inject_code} triggers.  ${player_name} may choose to have one of their characters follow Penya.'), [
                         "card_inject_code" => $this->getInjectCode(),
-                        "player_name" => $event->theah->game->getActivePlayerName(),
+                        "player_name" => $event->theah->game->getPlayerNameById($location->Controller),
                     ]);
                     
                     $transition = $event->theah->createEvent(Events::Transition);
