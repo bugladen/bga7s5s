@@ -27,8 +27,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
     initTippy: function() {
         if (this._tippyReady) return;
         
-        if (typeof window.tippy === 'undefined') {
-            // Tippy not ready yet, retry after a short delay
+        // Check that Tippy is loaded (Popper is guaranteed by tippy-loader.js)
+        if (typeof window.tippy !== 'function') {
+            // Library not ready yet, retry after a short delay
             setTimeout(() => this.initTippy(), 50);
             return;
         }

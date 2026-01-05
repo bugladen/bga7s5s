@@ -22,8 +22,7 @@ define([
    "ebg/stock",
    getLibUrl('bga-animations', '1.x'),
    getLibUrl('bga-cards', '1.x'),
-   g_gamethemeurl + 'modules/js/vendor/popper.js',
-   g_gamethemeurl + 'modules/js/vendor/tippy.js',
+   g_gamethemeurl + 'modules/js/vendor/tippy-loader.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.7s5s.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.js',
@@ -36,7 +35,7 @@ define([
    g_gamethemeurl + 'modules/js/EventHandlers.js',
    g_gamethemeurl + 'modules/js/PlayerActions.js',
 ],
-function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCards)
+function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCards, tippyLoaderPromise)
 {
     // Define isDebug and debug globally so all modules can access them
     window.isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
@@ -49,8 +48,9 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
 
     window.debug = window.isDebug ? console.info.bind(window.console) : function () {};
     
-    // Note: Tippy.js and Popper.js are loaded via AMD dependencies but set window.tippy globally
-    // The wrapper functions in Utilities.js use window.tippy directly
+    // Tippy.js loader returns a Promise that loads Popper.js then Tippy.js sequentially
+    // This ensures no race conditions between the two libraries
+    // The Promise resolves once both are loaded; initTippy() in Utilities.js handles the timing
 
     // Store BgaAnimations globally to avoid ReferenceError when used in mixed-in classes
     window.BgaAnimations = BgaAnimations;
