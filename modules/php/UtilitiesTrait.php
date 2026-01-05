@@ -349,15 +349,32 @@ trait UtilitiesTrait
         return false;
     }
 
-    public function characterHasAttachmentOfType(Character $character, $type)
+    public function characterHasAttachmentOfType(Character $character, $type, bool $newAttachmentIsOffHand = false)
     {
-        foreach ($character->Attachments as $attachment) {
-            $attachment = $this->getCardObjectFromDb($attachment);
-            if ($attachment instanceof Attachment && $attachment->hasTrait($type) && $attachment->hasEquipRestriction($type)) {
-                return true;
+        $count = 0;
+        $offHandCount = 0;
+        foreach ($character->Attachments as $attachment) 
+        {
+            $attachment = $this->theah->getAttachmentById($attachment);
+            if ($attachment && $attachment->hasTrait($type))
+            {
+                $count++;
             }
+
+            if ($attachment && $attachment->OffHand)
+                $offHandCount++;
         }
-        return false;
+        
+        // Offhand keywords allows for multiple attachments of the same type
+        // But only one offhand attachment can be equipped at a time.
+        if ($newAttachmentIsOffHand) 
+        {
+            return $offHandCount > 0;
+        }
+        else
+        {
+            return $count > 0;
+        }
     }
 
     function setNewPlayerOrder($firstPlayerId)
@@ -675,14 +692,38 @@ trait UtilitiesTrait
 
     public function hasEquipRestrictions(Character $character, Attachment $attachment) : array
     {
-        if ($attachment->hasTrait("Armor") && $this->characterHasAttachmentOfType($character, "Armor") && $attachment->hasEquipRestriction("Armor")) {
-            return [true, $this->translate("Character cannot have more than one Armor attachment.")];
+        if ($attachment->hasTrait("Armor") && $this->characterHasAttachmentOfType($character, "Armor", $attachment->OffHand)) 
+        {
+            if ($attachment->OffHand)
+            {
+                return [true, $this->translate("Character cannot have more than one Offhand attachment.")];
+            }
+            else
+            {
+                return [true, $this->translate("Character cannot have more than one Armor attachment.")];
+            }
         }
-        if ($attachment->hasTrait("Attire") && $this->characterHasAttachmentOfType($character, "Attire") && $attachment->hasEquipRestriction("Attire")) {
-            return [true, $this->translate("Character cannot have more than one Attire attachment.")];
+        if ($attachment->hasTrait("Attire") && $this->characterHasAttachmentOfType($character, "Attire", $attachment->OffHand)) 
+        {
+            if ($attachment->OffHand)
+            {
+                return [true, $this->translate("Character cannot have more than one Offhand attachment.")];
+            }
+            else
+            {
+                return [true, $this->translate("Character cannot have more than one Attire attachment.")];
+            }
         }
-        if ($attachment->hasTrait("Weapon") && $this->characterHasAttachmentOfType($character, "Weapon") && $attachment->hasEquipRestriction("Weapon")) {
-            return [true, $this->translate("Character cannot have more than one Weapon attachment.")];
+        if ($attachment->hasTrait("Weapon") && $this->characterHasAttachmentOfType($character, "Weapon", $attachment->OffHand)) 
+        {
+            if ($attachment->OffHand)
+            {
+                return [true, $this->translate("Character cannot have more than one Offhand attachment.")];
+            }
+            else
+            {
+                return [true, $this->translate("Character cannot have more than one Weapon attachment.")];
+            }
         }
         return [false, ""];
     }

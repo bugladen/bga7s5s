@@ -63,14 +63,4 @@ class _01047 extends FactionAttachment implements IHasReactions, IHasTechniques
             throw new \BgaUserException(sprintf($event->theah->game->translate('%s cannot be moved.'), $this->Name));
         }
     }
-
-    public function hasEquipRestriction(string $type): bool
-    {
-        if ($type == 'Armor')
-        {
-            return false;
-        }
-        
-        return true;
-    }
 }

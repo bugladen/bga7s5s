@@ -606,14 +606,10 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(self::_("Attachment is not at Performer's Location."));
             }
         }
-        if ($attachment->hasTrait("Armor") && $this->characterHasAttachmentOfType($performer, "Armor") && $attachment->hasEquipRestriction("Armor")) {
-            throw new \BgaUserException(self::_("Character cannot have more than one Armor attachment."));
-        }
-        if ($attachment->hasTrait("Attire") && $this->characterHasAttachmentOfType($performer, "Attire") && $attachment->hasEquipRestriction("Attire")) {
-            throw new \BgaUserException(self::_("Character cannot have more than one Attire attachment."));
-        }
-        if ($attachment->hasTrait("Weapon") && $this->characterHasAttachmentOfType($performer, "Weapon") && $attachment->hasEquipRestriction("Weapon")) {
-            throw new \BgaUserException(self::_("Character cannot have more than one Weapon attachment."));
+
+        [$hasRestrictions, $restrictionExplanation] = $this->hasEquipRestrictions($performer, $attachment);
+        if ($hasRestrictions) {
+            throw new \BgaUserException($restrictionExplanation);
         }
 
         $discount = $this->globals->get(Game::DISCOUNT);

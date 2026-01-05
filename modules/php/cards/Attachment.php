@@ -14,6 +14,8 @@ abstract class Attachment extends Card implements IWealthCost
     public int $FinesseModifier;
     public int $InfluenceModifier;
 
+    public bool $OffHand = false;
+
     public bool $ResolveLocked = false;
     public bool $CombatLocked = false;
     public bool $FinesseLocked = false;
@@ -48,6 +50,7 @@ abstract class Attachment extends Card implements IWealthCost
         $properties['combatModifier'] = $this->CombatModifier;
         $properties['finesseModifier'] = $this->FinesseModifier;
         $properties['influenceModifier'] = $this->InfluenceModifier;
+        $properties['offHand'] = $this->OffHand;
 
         $properties['type'] = 'Attachment';
         $properties['attachedToId'] = $this->AttachedToId;
@@ -72,11 +75,6 @@ abstract class Attachment extends Card implements IWealthCost
     public function getRequiredAttachTargetId(Theah $theah, int $originalTargetId): int
     {
         return $originalTargetId;
-    }
-
-    public function hasEquipRestriction(string $type): bool
-    {
-        return true;
     }
 
     public function canAttachTo(Character $character): bool
