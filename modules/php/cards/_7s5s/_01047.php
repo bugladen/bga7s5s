@@ -22,7 +22,7 @@ class _01047 extends FactionAttachment implements IHasReactions, IHasTechniques
         parent::__construct();
 
         $this->Name = clienttranslate("Kaspar's Panzerhand");
-        $this->Image = "img/cards/7s5s/047.jpg";
+        $this->Image = "img/cards/7s5s/047v2.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction('Eisen');
@@ -36,6 +36,8 @@ class _01047 extends FactionAttachment implements IHasReactions, IHasTechniques
         $this->Riposte = 0;
         $this->Parry = 4;
         $this->Thrust = 1;
+
+        $this->OffHand = true;
 
         $this->Traits = [
             'Armor',
