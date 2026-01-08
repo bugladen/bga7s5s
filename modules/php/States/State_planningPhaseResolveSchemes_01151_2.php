@@ -20,11 +20,13 @@ class State_planningPhaseResolveSchemes_01151_2 extends GameState
             name: "planningPhaseResolveSchemes_01151_2",
 
             // optional
-            description: clienttranslate('${actplayer} is choosing options to Resolve their Scheme.'),
-            descriptionMyTurn: clienttranslate('Shifting Tides') . clienttranslate(': ${you} must choose an opponent to place a Renown: '),
+            description: clienttranslate('Shifting Tides') . clienttranslate(': ${actplayer} is choosing options to Resolve Scheme.'),
+            descriptionMyTurn: clienttranslate('Shifting Tides') . clienttranslate(': ${you} must choose a location to add a Renown to: '),
             transitions: [
                 "" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
             ],
+            updateGameProgression: false,
+            initialPrivate: null,
         );
     }
     
@@ -34,9 +36,9 @@ class State_planningPhaseResolveSchemes_01151_2 extends GameState
     } 
 
     #[PossibleAction]
-    public function actFromCardWithId(string $id): void
+    public function actFromCardWithLocations(string $locations): void
     {
-        $this->game->actFromCardWithId($id);
+        $this->game->actFromCardWithLocations($locations);
     }
 
     public function zombie(int $playerId): void

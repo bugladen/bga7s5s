@@ -143,7 +143,7 @@
                 }
             },
 
-            'planningPhaseResolveSchemes_01151_3': () => {
+            'planningPhaseResolveSchemes_01151_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
                 }

@@ -154,12 +154,6 @@
             },
 
             'planningPhaseResolveSchemes_01151_2': () => {
-                args.args.opponents.forEach((opponent) => {
-                    this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
-                });
-            },
-
-            'planningPhaseResolveSchemes_01151_3': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },

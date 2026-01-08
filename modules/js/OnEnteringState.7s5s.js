@@ -360,7 +360,7 @@
                 }
             },
 
-            'planningPhaseResolveSchemes_01151_3': () => {
+            'planningPhaseResolveSchemes_01151_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;
                     args.args.args.locationIds.forEach((locationId) => {

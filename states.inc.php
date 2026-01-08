@@ -572,7 +572,6 @@ $machinestates = [
                 "01150" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01150,
                 "01151" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01151,
                 "01151_2" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_2,
-                "01151_3" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_3,
                 "01152" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_SCHEMES_REACTIONS,
                 "pay" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PAY_FOR_REACTION,

@@ -2,25 +2,27 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPhasePlanningEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 
 class _01151 extends Scheme
 {
+    public Array $locations = [];
+
     public function __construct()
     {
         parent::__construct();
 
         $this->Name = clienttranslate("Shifting Tides");
 
-        $this->Image = "img/cards/7s5s/151.jpg";
+        $this->Image = "img/cards/7s5s/151v2.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 151;
@@ -59,8 +61,8 @@ class _01151 extends Scheme
         {
             $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. 
             A City Card will be added to each City Location. Then Renown will be discarded from each City Location.
-            Next, ${player_name} may choose a city location to place Renown onto. 
-            Last, ${player_name} will choose a player to add another Renown to a location of their choice.'), [
+            Next, ${player_name} must choose a city location to place Renown onto. 
+            Last, all opponents must choose to add another Renown to a different location.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);
@@ -86,7 +88,14 @@ class _01151 extends Scheme
             }
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, "01151");
+            $transition->priority = Event::MEDIUM_PRIORITY;
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventPhasePlanningEnd)
+        {
+            $this->locations = [];
+            $this->IsUpdated = true;
         }
     }
 
@@ -94,20 +103,9 @@ class _01151 extends Scheme
     {
         $args = parent::argsFromCard($game, $state, $stateName, $internalId);
 
-        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151 || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_3)
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151 || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_2)
         {
             $args["locationIds"] = array_map(fn($location) => $location->Name, array_values($game->theah->getCityLocations()));
-        }
-
-        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_2)
-        {
-            $playerInfo = $game->loadPlayersBasicInfos();
-            $opponents = array_filter($playerInfo, fn($player) => (int)$player["player_id"] != $this->ControllerId);
-            $opponents = array_map(fn($player) => [
-                "id" => $player["player_id"],
-                "name" => $player["player_name"],
-            ], $opponents);
-            $args["opponents"] = array_values($opponents);
         }
 
         return $args;
@@ -117,7 +115,7 @@ class _01151 extends Scheme
     {
         parent::actFromCardWithIds($game, $state, $stateName, $internalId, $ids);
 
-        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151 || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_3)
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151 || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_2)
         {
             $location = $ids[0];
             $locations = $game->theah->getCityLocations();
@@ -127,55 +125,45 @@ class _01151 extends Scheme
                 throw new \BgaUserException($game->translate("Location is not a city location."));
             }
 
+            if (in_array($location, $this->locations))
+            {
+                throw new \BgaUserException($game->translate("Location has already been chosen."));
+            }
+
             $game->notify->all("message", clienttranslate('${player_name} has chosen to add a Renown to ${location}.'), [
                 "i18n" => ["location"],
                 "player_name" => $game->getActivePlayerName(),
                 "location" => $location,
             ]);
 
+            $this->locations[] = $location;
+            $this->IsUpdated = true;
+
             $renownEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
+            $renownEvent->priority = Event::HIGHEST_PRIORITY;
             $game->theah->eventCheck($renownEvent);
             $game->theah->queueEvent($renownEvent);
         }
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151)
         {
-            $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "01151_2");
-            $game->theah->queueEvent($transition);
+            $sql = "SELECT player_id, selected_scheme_id as schemeId FROM player ORDER by turn_order";
+            $list = $game->getCollectionFromDB($sql);
+            foreach ( $list as $playerId => $player ) 
+            {
+                if ($player['player_id'] == $this->ControllerId)
+                {
+                    continue;
+                }
+
+                $transition = EventFactory::createTransitionEvent($playerId, $this->Id, "01151_2");
+                $transition->priority = Event::HIGH_PRIORITY;
+                $game->theah->queueEvent($transition);
+            }    
         }
         
-        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151 || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_3)
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151 || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_2)
         {
-            $game->gamestate->nextState();
-        }
-    }
-
-    public function actFromCardWithId(Game $game, int $state, string $stateName, string $internalId, int $id): void
-    {
-        parent::actFromCardWithId($game, $state, $stateName, $internalId, $id);
-
-        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_2)
-        {
-            $opponentId = (int)$id;
-            $playerInfo = $game->loadPlayersBasicInfos();
-            if (!isset($playerInfo[$opponentId]))
-            {
-                throw new \BgaUserException($game->translate("Invalid opponent."));
-            }
-
-            if ($this->ControllerId == $opponentId)
-            {
-                throw new \BgaUserException($game->translate("You cannot place a Renown onto a city location for yourself."));
-            }
-
-            $game->notify->all("message", clienttranslate('${player_name} has chosen ${opponent_name} to place a Renown onto a city location.'), [
-                "player_name" => $game->getActivePlayerName(),
-                "opponent_name" => $playerInfo[$opponentId]["player_name"],
-            ]);
-
-            $transition = EventFactory::createTransitionEvent($opponentId, $this->Id, "01151_3");
-            $game->theah->queueEvent($transition);
-
             $game->gamestate->nextState();
         }
     }
