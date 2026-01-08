@@ -16,7 +16,7 @@ class _01025 extends Risk implements IHasActions
         parent::__construct();
 
         $this->Name = "Fate's Burden";
-        $this->Image = 'img/cards/7s5s/025.jpg';
+        $this->Image = 'img/cards/7s5s/025v2.jpg';
         $this->ExpansionName = '_7s5s';
         $this->ExpansionNumber = 1;
         $this->CardNumber = 25;

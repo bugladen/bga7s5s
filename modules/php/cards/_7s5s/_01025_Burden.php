@@ -7,7 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\RiskAttachmentTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhaseEnd;
 
 class _01025_Burden extends Attachment implements IRiskAttachment
 {
@@ -18,7 +18,7 @@ class _01025_Burden extends Attachment implements IRiskAttachment
         parent::__construct();
 
         $this->Name = clienttranslate("Fate's Burden");
-        $this->Image = "img/cards/7s5s/025.jpg";
+        $this->Image = "img/cards/7s5s/025v2.jpg";
 
         $this->Traits = [
             'Sorcery',
@@ -40,7 +40,7 @@ class _01025_Burden extends Attachment implements IRiskAttachment
 
                 $game = $event->theah->game;
                 $attachedTo = $event->theah->getCardById($this->AttachedToId);
-                $game->notifyAllPlayers("message", clienttranslate('${burden_inject_code} prevents ${card_inject_code} from En Garding'), [
+                $game->notify->all("message", clienttranslate('${burden_inject_code} prevents ${card_inject_code} from En Garding'), [
                     "burden_inject_code" => $this->getInjectCode(),
                     "card_inject_code" => $attachedTo->getInjectCode(),
                 ]);
@@ -49,7 +49,7 @@ class _01025_Burden extends Attachment implements IRiskAttachment
             }
         }
 
-        if ($event instanceof EventDuskEndOfDay && $this->isAttached())
+        if ($event instanceof EventHighDramaPhaseEnd && $this->isAttached())
         {
             $this->removeRiskAttachment($event->theah);
         }
