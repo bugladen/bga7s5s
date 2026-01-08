@@ -148,7 +148,7 @@ class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCards,
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
+            $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $owner->Id);
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createTransitionEvent($scheme->ControllerId, $scheme->Id, "01148_3", $this->Id);
