@@ -38,11 +38,14 @@ class Reaction_01097 extends CardReaction
         if ($event instanceof EventCardDiscardedFromHand && $this->isAvailable() && $event->asEffect)
         {
             $owner = $this->getOwningCard($event->theah);
-            $source = $event->theah->getCardById($event->sourceId);
-            if ($source?->ControllerId == $owner->ControllerId)
+            if ($event->ownerId != $owner->ControllerId)
             {
-                $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->queueEvent($transition);
+                $source = $event->theah->getCardById($event->sourceId);
+                if ($source?->ControllerId == $owner->ControllerId)
+                {
+                    $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->queueEvent($transition);
+                }
             }
         }
     }
