@@ -63,10 +63,10 @@ class _01071 extends Scheme implements IHasActions
             $event->theah->queueEvent($transition);
         }
 
-        if ($event instanceof EventCardMoved && $this->Location == Game::LOCATION_PLAYER_HOME && $event->initiatingPlayerId == $this->ControllerId)
+        if ($event instanceof EventCardMoved && $this->Location == Game::LOCATION_PLAYER_HOME)
         {
             $character = $event->theah->getCharacterById($event->cardId);
-            if ($character->hasTrait("Musketeer"))
+            if ($character->ControllerId == $this->ControllerId && $character->hasTrait("Musketeer"))
             {
                 $addInfluence = false;
                 $removeInfluence = false;
@@ -128,7 +128,7 @@ class _01071 extends Scheme implements IHasActions
         {
             // Do we have any Musketeers in that location?
             $characters = $event->theah->getCharactersAtLocation($event->location);
-            $musketeers = array_filter($characters, fn($character) => $character->hasTrait("Musketeer"));
+            $musketeers = array_filter($characters, fn($character) => $character->hasTrait("Musketeer") && $character->ControllerId == $this->ControllerId);
             if (count($musketeers) > 0)
             {
                 $location = $event->theah->getCityLocation($event->location);
@@ -147,7 +147,7 @@ class _01071 extends Scheme implements IHasActions
         if ($event instanceof EventReknownRemovedFromLocation && $this->Location == Game::LOCATION_PLAYER_HOME)
         {
             $characters = $event->theah->getCharactersAtLocation($event->location);
-            $musketeers = array_filter($characters, fn($character) => $character->hasTrait("Musketeer"));
+            $musketeers = array_filter($characters, fn($character) => $character->hasTrait("Musketeer") && $character->ControllerId == $this->ControllerId);
             if (count($musketeers) > 0)
             {
                 $location = $event->theah->getCityLocation($event->location);
