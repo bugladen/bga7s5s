@@ -19,7 +19,7 @@ class Maneuver_01084 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("+1 Parry, Draw Card, Adversary Bonus");
+        $this->Name = clienttranslate("+1 Riposte, Draw Card, Adversary Bonus");
         $this->IncreaseAdversaryThrust = false;
     }
 
