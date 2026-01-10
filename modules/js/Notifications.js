@@ -1862,12 +1862,76 @@ return declare('seventhseacityoffivesails.notifications', null, {
             element.innerHTML += `<p>${args.cardName}: ${args.effectName}</p>`;
         }
 
-        let riposte = parseInt($(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML) + parseInt(args.riposte);
-        let parry = parseInt($(`duel_round_${args.round}_${args.mode}_parry`).innerHTML) + parseInt(args.parry);
-        let thrust = parseInt($(`duel_round_${args.round}_${args.mode}_thrust`).innerHTML) + parseInt(args.thrust);
-        $(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML = riposte;
-        $(`duel_round_${args.round}_${args.mode}_parry`).innerHTML = parry;
-        $(`duel_round_${args.round}_${args.mode}_thrust`).innerHTML = thrust;
+        let riposte = 0;
+        let parry = 0;
+        let thrust = 0;
+
+        if (args.mode == 'combat')
+        {
+            const combatCard = args.combatCard;
+            let currentRiposte = $(`duel_round_${args.round}_combat_riposte`).innerHTML;
+            let currentParry = $(`duel_round_${args.round}_combat_parry`).innerHTML;
+            let currentThrust = $(`duel_round_${args.round}_combat_thrust`).innerHTML;
+
+            if (currentRiposte == '&mdash;')
+            {
+                riposte = combatCard.dashedRiposte ? '&mdash;' : args.riposte;
+            }
+            else if (combatCard.dashedRiposte && currentRiposte == '0')
+            {
+                riposte = '&mdash;';
+            }
+            else
+            {
+                riposte = parseInt(currentRiposte) + parseInt(args.riposte);
+            }
+
+            if (currentParry == '&mdash;')
+            {
+                parry = combatCard.dashedParry ? '&mdash;' : args.parry;
+            }
+            else if (combatCard.dashedParry && currentParry == '0')
+            {
+                parry = '&mdash;';
+            }
+            else
+            {
+                parry = parseInt(currentParry) + parseInt(args.parry);
+            }
+
+            if (currentThrust == '&mdash;')
+            {
+                thrust = combatCard.dashedThrust ? '&mdash;' : args.thrust;
+            }
+            else if (combatCard.dashedThrust && currentThrust == '0')
+            {
+                thrust = '&mdash;';
+            }
+            else
+            {
+                thrust = parseInt(currentThrust) + parseInt(args.thrust);
+            }
+
+            $(`duel_round_${args.round}_combat_riposte`).innerHTML = riposte;
+            $(`duel_round_${args.round}_combat_riposte`).style.color = riposte == '&mdash;' ? 'red' : 'black';
+
+            $(`duel_round_${args.round}_combat_parry`).innerHTML = parry;
+            $(`duel_round_${args.round}_combat_parry`).style.color = parry == '&mdash;' ? 'red' : 'black';
+
+            $(`duel_round_${args.round}_combat_thrust`).innerHTML = thrust;
+            $(`duel_round_${args.round}_combat_thrust`).style.color = thrust == '&mdash;' ? 'red' : 'black';
+        }
+        else
+        {
+            riposte = parseInt($(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML) + parseInt(args.riposte);
+            parry = parseInt($(`duel_round_${args.round}_${args.mode}_parry`).innerHTML) + parseInt(args.parry);
+            thrust = parseInt($(`duel_round_${args.round}_${args.mode}_thrust`).innerHTML) + parseInt(args.thrust);
+    
+            $(`duel_round_${args.round}_${args.mode}_riposte`).innerHTML = riposte;
+            $(`duel_round_${args.round}_${args.mode}_parry`).innerHTML = parry;
+            $(`duel_round_${args.round}_${args.mode}_thrust`).innerHTML = thrust;
+        }
+
         $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML = args.endingChallengerThreatAfter;
         $(`duel_round_${args.round}_ending_defender_threat`).innerHTML = args.endingDefenderThreatAfter;
         $(`duel_round_${args.round}_wounds`).innerHTML = args.wounds;

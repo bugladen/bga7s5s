@@ -1052,9 +1052,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const combatCards = row.combatCards;
         if (combatCards)
         {
+            var dashedRiposte = true;
+            var dashedParry = true;
+            var dashedThrust = true;
+
             const divId = `duel_round_${row.round}_combat`;
             $(divId).innerHTML = '';
-            combatCards.forEach((combatCard) => {                
+            combatCards.forEach((combatCard) => 
+            {                
                 dojo.place( this.format_block('jstpl_row_combat_card', { 
                     round: row.round,
                     id: combatCard.id,
@@ -1068,7 +1073,33 @@ return declare('seventhseacityoffivesails.utilities', null, {
                     dojo.addClass(divId, '_7sfs-engaged');
                     dojo.addClass(divId, '_7sfs-duel-row-combat-card-gambled');
                 }
+
+                if (! combatCard.dashedRiposte)
+                    dashedRiposte = false;
+                if (! combatCard.dashedParry)
+                    dashedParry = false;
+                if (! combatCard.dashedThrust)
+                    dashedThrust = false;
             });
+
+            if (dashedRiposte)
+            {
+                const riposteSpan = $(`duel_round_${row.round}_combat_riposte`);
+                riposteSpan.innerHTML = '&mdash;';
+                riposteSpan.style.color = 'red';
+            }
+            if (dashedParry)
+            {
+                const parrySpan = $(`duel_round_${row.round}_combat_parry`);
+                parrySpan.innerHTML = '&mdash;';
+                parrySpan.style.color = 'red';
+            }
+            if (dashedThrust)
+            {
+                const thrustSpan = $(`duel_round_${row.round}_combat_thrust`);
+                thrustSpan.innerHTML = '&mdash;';
+                thrustSpan.style.color = 'red';
+            }
         }
 
         if (!row.combatCards)
