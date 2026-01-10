@@ -229,8 +229,8 @@ var jstpl_duel_table = `
     <th>Actor</th>
     <th>Starting Threat Pool</th>
     <th colspan="2">Combat Card</th>
-    <th colspan="2">Technique</th>
     <th colspan="2">Maneuver</th>
+    <th colspan="2">Technique</th>
     <th>Ending Threat Pool</th>
     <th>Wounds</th>
 </tr>
@@ -261,20 +261,20 @@ var jstpl_duel_round = `
             <tr><td><div class="_7sfs-combat-chip _7sfs-thrust-chip"><span id="duel_round_\${round}_combat_thrust" class="_7sfs-chip-value">\${combatThrust}</span></div></td></tr>
         </table>
     </td>
-    <td id="duel_round_\${round}_technique">\${technique}</td>
-    <td id="duel_round_\${round}_technique_stats">
-        <table class="_7sfs-ability-table">
-            <tr><td><div class="_7sfs-combat-chip _7sfs-riposte-chip"><span id="duel_round_\${round}_technique_riposte" class="_7sfs-chip-value">\${techniqueRiposte}</span></div></td></tr>
-            <tr><td><div class="_7sfs-combat-chip _7sfs-parry-chip"><span id="duel_round_\${round}_technique_parry" class="_7sfs-chip-value">\${techniqueParry}</span></div></td></tr>
-            <tr><td><div class="_7sfs-combat-chip _7sfs-thrust-chip"><span id="duel_round_\${round}_technique_thrust" class="_7sfs-chip-value">\${techniqueThrust}</span></div></td></tr>
-        </table>
-    </td>
     <td id="duel_round_\${round}_maneuver">\${maneuver}</td>
     <td id="duel_round_\${round}_maneuver_stats">
         <table class="_7sfs-ability-table">
             <tr><td><div class="_7sfs-combat-chip _7sfs-riposte-chip"><span id="duel_round_\${round}_maneuver_riposte" class="_7sfs-chip-value">\${maneuverRiposte}</span></div></td></tr>
             <tr><td><div class="_7sfs-combat-chip _7sfs-parry-chip"><span id="duel_round_\${round}_maneuver_parry" class="_7sfs-chip-value">\${maneuverParry}</span></div></td></tr>
             <tr><td><div class="_7sfs-combat-chip _7sfs-thrust-chip"><span id="duel_round_\${round}_maneuver_thrust" class="_7sfs-chip-value">\${maneuverThrust}</span></div></td></tr>
+        </table>
+    </td>
+    <td id="duel_round_\${round}_technique">\${technique}</td>
+    <td id="duel_round_\${round}_technique_stats">
+        <table class="_7sfs-ability-table">
+            <tr><td><div class="_7sfs-combat-chip _7sfs-riposte-chip"><span id="duel_round_\${round}_technique_riposte" class="_7sfs-chip-value">\${techniqueRiposte}</span></div></td></tr>
+            <tr><td><div class="_7sfs-combat-chip _7sfs-parry-chip"><span id="duel_round_\${round}_technique_parry" class="_7sfs-chip-value">\${techniqueParry}</span></div></td></tr>
+            <tr><td><div class="_7sfs-combat-chip _7sfs-thrust-chip"><span id="duel_round_\${round}_technique_thrust" class="_7sfs-chip-value">\${techniqueThrust}</span></div></td></tr>
         </table>
     </td>
     <td>
