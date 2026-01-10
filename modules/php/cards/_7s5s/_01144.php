@@ -202,6 +202,11 @@ class _01144 extends Scheme
             $recruitId = $game->globals->get(Game::CHOSEN_CARD);
             $game->actRecruitMercenary($recruitId, json_encode($ids));
 
+            $recruit = $game->theah->getCharacterById($recruitId);
+            $moveEvent = EventFactory::createCardMovingEvent($this->ControllerId, $recruitId, $recruit->Location, Game::LOCATION_PLAYER_HOME, false, $this->Id);
+            $game->theah->eventCheck($moveEvent);
+            $game->theah->queueEvent($moveEvent);
+
             $game->gamestate->nextState();
         }
     }
