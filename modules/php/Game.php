@@ -16,8 +16,6 @@ use Bga\GameFramework\Components\Deck;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
-
 class Game extends \Bga\GameFramework\Table
 {
     // Phases of the day
