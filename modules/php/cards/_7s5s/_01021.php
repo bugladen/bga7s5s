@@ -15,7 +15,7 @@ class _01021 extends FactionAttachment
         parent::__construct();
 
         $this->Name = clienttranslate("Legion's Caress");
-        $this->Image = "img/cards/7s5s/021.jpg";
+        $this->Image = "01021.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 21;

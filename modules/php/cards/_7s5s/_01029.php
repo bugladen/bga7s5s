@@ -17,7 +17,7 @@ class _01029 extends Risk implements IHasActions, IAmARiskThatTargetsCharacters
         parent::__construct();
 
         $this->Name = clienttranslate('The Pressure is On');
-        $this->Image = 'img/cards/7s5s/029.jpg';
+        $this->Image = '01029.jpg';
         $this->ExpansionName = '_7s5s';
         $this->ExpansionNumber = 1;
         $this->CardNumber = 29;

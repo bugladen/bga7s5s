@@ -16,7 +16,7 @@ class _01027 extends Risk implements IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate('Objection!');
-        $this->Image = 'img/cards/7s5s/027.jpg';
+        $this->Image = '01027.jpg';
         $this->ExpansionName = '_7s5s';
         $this->ExpansionNumber = 1;
         $this->CardNumber = 27;

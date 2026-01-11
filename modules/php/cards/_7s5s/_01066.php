@@ -20,7 +20,7 @@ class _01066 extends Character implements IHasReactions, IHasTechniques
         parent::__construct();
 
         $this->Name = clienttranslate("Horatio Lockwood");
-        $this->Image = "img/cards/7s5s/066.jpg";
+        $this->Image = "01066.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 66;

@@ -29,7 +29,7 @@ class _01120 extends Character implements IHasReactions, IHasTechniques
         parent::__construct();
 
         $this->Name = clienttranslate("Pavel Ivanov");
-        $this->Image = "img/cards/7s5s/120.jpg";
+        $this->Image = "01120.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 120;

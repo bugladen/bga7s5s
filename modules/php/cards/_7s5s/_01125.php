@@ -19,7 +19,7 @@ class _01125 extends Scheme
         parent::__construct();
 
         $this->Name = clienttranslate("The Boar's Guile");
-        $this->Image = "img/cards/7s5s/125.jpg";
+        $this->Image = "01125.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 125;

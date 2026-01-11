@@ -20,7 +20,7 @@ class _01062 extends Leader implements IHasActions, IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate("Odette Dubois D'Arrent");
-        $this->Image = "img/cards/7s5s/062.jpg";
+        $this->Image = "01062.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 62;

@@ -16,7 +16,7 @@ class _01130 extends Risk implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Indomitable Will");
-        $this->Image = "img/cards/7s5s/130.jpg";
+        $this->Image = "01130.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction("Ussura");

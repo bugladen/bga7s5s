@@ -22,7 +22,7 @@ class _01151 extends Scheme
 
         $this->Name = clienttranslate("Shifting Tides");
 
-        $this->Image = "img/cards/7s5s/151v2.jpg";
+        $this->Image = "01151v2.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 151;

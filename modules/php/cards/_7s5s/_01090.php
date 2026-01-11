@@ -24,7 +24,7 @@ class _01090 extends Character implements IHasActions, IHasReactions, IHasTechni
         parent::__construct();
 
         $this->Name = clienttranslate("Lorenzo de Zepeda");
-        $this->Image = "img/cards/7s5s/090.jpg";
+        $this->Image = "01090.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 90;

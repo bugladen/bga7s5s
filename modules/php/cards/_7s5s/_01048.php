@@ -16,7 +16,7 @@ class _01048 extends FactionAttachment implements IHasTechniques
         parent::__construct();
 
         $this->Name = clienttranslate("Langschwert");
-        $this->Image = "img/cards/7s5s/048.jpg";
+        $this->Image = "01048.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction('Eisen');

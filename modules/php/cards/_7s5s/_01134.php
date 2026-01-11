@@ -16,7 +16,7 @@ class _01134 extends Risk implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Matushka's Sight");
-        $this->Image = "img/cards/7s5s/134.jpg";
+        $this->Image = "01134.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction("Ussura");

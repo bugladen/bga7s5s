@@ -24,7 +24,7 @@ class _01155 extends FactionAttachment implements IHasManeuvers, IHasTechniques,
         parent::__construct();
 
         $this->Name = clienttranslate("Improvised Weapon");
-        $this->Image = "img/cards/7s5s/155.jpg";
+        $this->Image = "01155.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         

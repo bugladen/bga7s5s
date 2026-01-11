@@ -16,7 +16,7 @@ class _01199 extends CityCharacter implements IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate("Takama Siad");
-        $this->Image = "img/cards/7s5s/199.jpg";
+        $this->Image = "01199.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 199;

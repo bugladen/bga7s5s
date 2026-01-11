@@ -16,7 +16,7 @@ class _01022 extends FactionAttachment implements IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate('Stiletto');
-        $this->Image = 'img/cards/7s5s/022.jpg';
+        $this->Image = '01022.jpg';
         $this->ExpansionName = '_7s5s';
         $this->ExpansionNumber = 1;
         $this->CardNumber = 22;

@@ -20,7 +20,7 @@ class _01124 extends Character implements IHasActions, IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate("Ved'ma");
-        $this->Image = "img/cards/7s5s/124.jpg";
+        $this->Image = "01124.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 124;

@@ -22,7 +22,7 @@ class _01044 extends Scheme implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Armed and Marshaled");
-        $this->Image = "img/cards/7s5s/044.jpg";
+        $this->Image = "01044.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 44;

@@ -23,7 +23,7 @@ class _01179 extends CityEventCard implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Siren's Scream");
-        $this->Image = "img/cards/7s5s/179.jpg";
+        $this->Image = "01179.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 179;

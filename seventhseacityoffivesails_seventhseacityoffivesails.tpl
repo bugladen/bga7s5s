@@ -97,10 +97,10 @@ var jstpl_player_board = `
 
 var jstpl_help_cards = `
 <div>
-<img id="help_card_1" src="\${path}/img/cards/help.card.1.jpg" class="_7sfs-help-card" />
-<img id="help_card_2" src="\${path}/img/cards/help.card.2.jpg" class="_7sfs-help-card" />
-<img id="help_card_3" src="\${path}/img/cards/help.card.3.jpg" class="_7sfs-help-card" />
-<img id="help_card_4" src="\${path}/img/cards/help.card.4.jpg" class="_7sfs-help-card" />
+<img id="help_card_1" src="https://dtdb.co/images/7s5s/en/help.card.1.jpg" class="_7sfs-help-card" />
+<img id="help_card_2" src="https://dtdb.co/images/7s5s/en/help.card.2.jpg" class="_7sfs-help-card" />
+<img id="help_card_3" src="https://dtdb.co/images/7s5s/en/help.card.3.jpg" class="_7sfs-help-card" />
+<img id="help_card_4" src="https://dtdb.co/images/7s5s/en/help.card.4.jpg" class="_7sfs-help-card" />
 </div>
 `;
 
@@ -341,7 +341,7 @@ var jstpl_row_combat_card = `
         <div id="oles-inn-frontcap" class="_7sfs-city-endcap"></div>
         <div class="_7sfs-city-location-contents">
             <div id="oles-inn-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-            <div id="oles-inn-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/004.jpg)"></div>
+            <div id="oles-inn-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01004.jpg)"></div>
             <div id="oles-inn-endcap" class="_7sfs-city-endcap"></div>
         </div>
     </div>
@@ -350,7 +350,7 @@ var jstpl_row_combat_card = `
         <div id="dock-frontcap" class="_7sfs-city-endcap"></div>
         <div class="_7sfs-city-location-contents">
             <div id="dock-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-            <div id="dock-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/003.jpg)"></div>
+            <div id="dock-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01003.jpg)"></div>
             <div id="dock-endcap" class="_7sfs-city-endcap"></div>
         </div>
     </div>
@@ -359,7 +359,7 @@ var jstpl_row_combat_card = `
         <div id="forum-frontcap" class="_7sfs-city-endcap"></div>
         <div class="_7sfs-city-location-contents">
             <div id="forum-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-            <div id="forum-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/001.jpg)"></div>
+            <div id="forum-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01001.jpg)"></div>
             <div id="forum-endcap" class="_7sfs-city-endcap"></div>
         </div>
     </div>
@@ -368,7 +368,7 @@ var jstpl_row_combat_card = `
         <div id="bazaar-frontcap" class="_7sfs-city-endcap"></div>
         <div class="_7sfs-city-location-contents">
             <div id="bazaar-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-            <div id="bazaar-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/002.jpg)"></div>
+            <div id="bazaar-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01002.jpg)"></div>
             <div id="bazaar-endcap" class="_7sfs-city-endcap"></div>
         </div>
     </div>
@@ -377,7 +377,7 @@ var jstpl_row_combat_card = `
         <div id="garden-frontcap" class="_7sfs-city-endcap"></div>
         <div class="_7sfs-city-location-contents">
             <div id="garden-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-            <div id="garden-image" class="_7sfs-city-image" style="--city-image:url(img/cards/7s5s/005.jpg)"></div>
+            <div id="garden-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01005.jpg)"></div>
             <div id="garden-endcap" class="_7sfs-city-endcap"></div>
         </div>
     </div>

@@ -26,7 +26,7 @@ class _01089 extends Leader implements IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate("Soline el Gato");
-        $this->Image = "img/cards/7s5s/089.jpg";
+        $this->Image = "01089.jpg";
         $this->ExpansionName = "_7";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 89;

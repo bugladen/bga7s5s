@@ -20,7 +20,7 @@ class _01036 extends Character implements IHasActions, IHasTechniques
         parent::__construct();
 
         $this->Name = clienttranslate("Daniella Dietrich");
-        $this->Image = "img/cards/7s5s/036.jpg";
+        $this->Image = "01036.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 36;

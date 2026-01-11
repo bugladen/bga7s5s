@@ -19,7 +19,7 @@ class _01111 extends Risk implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Research");
-        $this->Image = "img/cards/7s5s/111.jpg";
+        $this->Image = "01111.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction("Castille");

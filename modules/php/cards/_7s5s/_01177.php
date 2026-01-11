@@ -19,7 +19,7 @@ class _01177 extends CityEventCard
         parent::__construct();
 
         $this->Name = clienttranslate("Penya Shows The Way");
-        $this->Image = "img/cards/7s5s/177.jpg";
+        $this->Image = "01177.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 177;

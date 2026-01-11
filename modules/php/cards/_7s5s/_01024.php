@@ -16,7 +16,7 @@ class _01024 extends Risk implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate('Bravos');
-        $this->Image = 'img/cards/7s5s/024.jpg';
+        $this->Image = '01024.jpg';
         $this->ExpansionName = '_7s5s';
         $this->ExpansionNumber = 1;
         $this->CardNumber = 24;

@@ -17,7 +17,7 @@ class _01159 extends Risk implements IHasActions
 
         $this->Name = clienttranslate("Appealing to the People");
         //There are two versions of this card with different pictures.  The overriding classes will set the correct picture.
-        $this->Image = "img/cards/7s5s/159a.jpg";
+        $this->Image = "01159a.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         

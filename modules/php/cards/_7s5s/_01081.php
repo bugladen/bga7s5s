@@ -16,7 +16,7 @@ class _01081 extends Risk implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Gallant Deeds");
-        $this->Image = "img/cards/7s5s/081.jpg";
+        $this->Image = "01081.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction("Montaigne");

@@ -24,7 +24,7 @@ class _01007 extends Character implements IHasActions
         
         
         $this->Name = clienttranslate("Aldo Bussotti");
-        $this->Image = "img/cards/7s5s/007.jpg";
+        $this->Image = "01007.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 7;

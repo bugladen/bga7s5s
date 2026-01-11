@@ -16,7 +16,7 @@ class _01060 extends Risk implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Stratege");
-        $this->Image = "img/cards/7s5s/060.jpg";
+        $this->Image = "01060.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction('Eisen');

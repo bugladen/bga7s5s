@@ -20,7 +20,7 @@ class _01074 extends FactionAttachment implements IHasTechniques
         parent::__construct();
 
         $this->Name = clienttranslate("Mastercrafted Rapier");
-        $this->Image = "img/cards/7s5s/074.jpg";
+        $this->Image = "01074.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction('Montaigne');

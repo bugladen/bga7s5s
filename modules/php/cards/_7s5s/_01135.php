@@ -20,7 +20,7 @@ class _01135 extends Risk implements IHasReactions, IHasManeuvers
         parent::__construct();
 
         $this->Name = clienttranslate("Mireli's Revision");
-        $this->Image = "img/cards/7s5s/135.jpg";
+        $this->Image = "01135.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction("Ussura");

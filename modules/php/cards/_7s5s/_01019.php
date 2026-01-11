@@ -16,7 +16,7 @@ class _01019 extends Brute implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate('Buratino');
-        $this->Image = 'img/cards/7s5s/019.jpg';
+        $this->Image = '01019.jpg';
         $this->ExpansionName = '_7s5s';
         $this->ExpansionNumber = 1;
         $this->CardNumber = 19;

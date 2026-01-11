@@ -10,6 +10,6 @@ class _01159b extends _01159
     {
         parent::__construct();
     
-        $this->Image = "img/cards/7s5s/159b.jpg";
+        $this->Image = "01159b.jpg";
     }
 }

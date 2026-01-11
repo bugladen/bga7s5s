@@ -17,7 +17,7 @@ class _01202 extends CityAttachment implements IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate('Object of Wonder');
-        $this->Image = "img/cards/7s5s/202.jpg";
+        $this->Image = "01202.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 202;

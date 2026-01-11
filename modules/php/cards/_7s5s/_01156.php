@@ -15,7 +15,7 @@ class _01156 extends FactionAttachment implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Matchlock Musket");
-        $this->Image = "img/cards/7s5s/156.jpg";
+        $this->Image = "01156.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         

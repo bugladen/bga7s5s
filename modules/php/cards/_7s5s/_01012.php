@@ -16,7 +16,7 @@ class _01012 extends Character implements IHasActions
         parent::__construct();
 
         $this->Name = "Sibella Scarpa";
-        $this->Image = "img/cards/7s5s/012.jpg";
+        $this->Image = "01012.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 12;

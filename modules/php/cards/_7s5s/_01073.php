@@ -19,7 +19,7 @@ class _01073 extends FactionAttachment implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Cavalier Hat");
-        $this->Image = "img/cards/7s5s/073.jpg";
+        $this->Image = "01073.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction('Montaigne');

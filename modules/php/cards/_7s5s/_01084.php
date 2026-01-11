@@ -16,7 +16,7 @@ class _01084 extends Risk implements IHasManeuvers
         parent::__construct();
 
         $this->Name = clienttranslate("Master of the Valroux Style");
-        $this->Image = "img/cards/7s5s/084.jpg";
+        $this->Image = "01084.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction("Montaigne");

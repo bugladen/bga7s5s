@@ -21,7 +21,7 @@ class _01058 extends Risk implements IHasActions, IHasManeuvers, IAmARiskThatTar
         parent::__construct();
 
         $this->Name = clienttranslate("Press the Advantage");
-        $this->Image = "img/cards/7s5s/058.jpg";
+        $this->Image = "01058.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction('Eisen');

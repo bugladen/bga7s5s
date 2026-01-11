@@ -24,7 +24,7 @@ class _01015 extends Scheme implements IHasActions, IHasReactions
         parent::__construct();
 
         $this->Name = "The Great Game";
-        $this->Image = "img/cards/7s5s/015.jpg";
+        $this->Image = "01015.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 15;

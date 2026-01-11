@@ -22,7 +22,7 @@ class _01085 extends Risk implements IHasActions, ISorcererAbility
         parent::__construct();
 
         $this->Name = clienttranslate("Porté Travel");
-        $this->Image = "img/cards/7s5s/085.jpg";
+        $this->Image = "01085.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction("Montaigne");

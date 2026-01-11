@@ -20,7 +20,7 @@ class _01095 extends Character implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Patricia Moustakas");
-        $this->Image = "img/cards/7s5s/095.jpg";
+        $this->Image = "01095.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 95;

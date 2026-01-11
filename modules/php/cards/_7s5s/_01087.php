@@ -20,7 +20,7 @@ class _01087 extends Risk implements IHasActions, IHasManeuvers
         parent::__construct();
 
         $this->Name = clienttranslate("Valiant Spirit");
-        $this->Image = "img/cards/7s5s/087.jpg";
+        $this->Image = "01087.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction("Montaigne");

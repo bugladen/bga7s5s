@@ -22,7 +22,7 @@ class _01009 extends Character implements IHasActions
         parent::__construct();
 
         $this->Name = "Cirilo Naucriparos";
-        $this->Image = "img/cards/7s5s/009.jpg";
+        $this->Image = "01009.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 9;

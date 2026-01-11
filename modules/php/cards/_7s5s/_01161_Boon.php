@@ -17,7 +17,7 @@ class _01161_Boon extends Attachment implements IRiskAttachment
         parent::__construct();
 
         $this->Name = clienttranslate("Boon");
-        $this->Image = "img/cards/7s5s/161.jpg";
+        $this->Image = "01161.jpg";
         $this->CombatModifier = 1;
         $this->FinesseModifier = 1;
         $this->InfluenceModifier = 1;

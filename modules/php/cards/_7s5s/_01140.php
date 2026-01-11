@@ -16,7 +16,7 @@ class _01140 extends Risk implements IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate("Stubborn");
-        $this->Image = "img/cards/7s5s/140.jpg";
+        $this->Image = "01140.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction("Ussura");

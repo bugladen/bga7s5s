@@ -16,7 +16,7 @@ class _01020 extends Brute implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate('Dante');
-        $this->Image = 'img/cards/7s5s/020.jpg';
+        $this->Image = '01020.jpg';
         $this->ExpansionName = '_7s5s';
         $this->ExpansionNumber = 1;
         $this->CardNumber = 20;

@@ -20,7 +20,7 @@ class _01013 extends Character implements IHasTechniques, IHasReactions
         parent::__construct();
 
         $this->Name = "Vissenta Scarpa";
-        $this->Image = "img/cards/7s5s/013.jpg";
+        $this->Image = "01013.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 13;

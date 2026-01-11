@@ -19,7 +19,7 @@ class _01102_Attachment extends Attachment implements IRiskAttachment, IHasActio
         parent::__construct();
 
         $this->Name = clienttranslate("Unfortunate");
-        $this->Image = "img/cards/7s5s/102.jpg";
+        $this->Image = "01102.jpg";
         $this->FinesseModifier = -1;
         
         $this->Traits = [

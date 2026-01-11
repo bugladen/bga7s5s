@@ -20,7 +20,7 @@ class _01119 extends Character
         parent::__construct();
 
         $this->Name = clienttranslate("Nazem ibn Umur");
-        $this->Image = "img/cards/7s5s/119.jpg";
+        $this->Image = "01119.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 119;

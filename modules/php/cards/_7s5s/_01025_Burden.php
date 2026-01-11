@@ -18,7 +18,7 @@ class _01025_Burden extends Attachment implements IRiskAttachment
         parent::__construct();
 
         $this->Name = clienttranslate("Fate's Burden");
-        $this->Image = "img/cards/7s5s/025v2.jpg";
+        $this->Image = "01025v2.jpg";
 
         $this->Traits = [
             'Sorcery',

@@ -152,13 +152,11 @@ return declare('seventhseacityoffivesails.setup', null, {
         // Display the cheat cards
         if (! this.isSpectator)
         {
-            this.getPlayerPanelElement(this.player_id).innerHTML += this.format_block( 'jstpl_help_cards', {
-                path: g_gamethemeurl
-            });
-            this.addTippyTooltip("help_card_1", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.1.jpg" />`, this.CARD_TOOLTIP_DELAY);
-            this.addTippyTooltip("help_card_2", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.2.jpg" />`, this.CARD_TOOLTIP_DELAY);
-            this.addTippyTooltip("help_card_3", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.3.jpg" />`, this.CARD_TOOLTIP_DELAY);
-            this.addTippyTooltip("help_card_4", `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl}/img/cards/help.card.4.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.getPlayerPanelElement(this.player_id).innerHTML += this.format_block( 'jstpl_help_cards', {});
+            this.addTippyTooltip("help_card_1", `<img class="_7sfs-card-tooltip-img" src="https://dtdb.co/images/7s5s/en/help.card.1.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip("help_card_2", `<img class="_7sfs-card-tooltip-img" src="https://dtdb.co/images/7s5s/en/help.card.2.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip("help_card_3", `<img class="_7sfs-card-tooltip-img" src="https://dtdb.co/images/7s5s/en/help.card.3.jpg" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip("help_card_4", `<img class="_7sfs-card-tooltip-img" src="https://dtdb.co/images/7s5s/en/help.card.4.jpg" />`, this.CARD_TOOLTIP_DELAY);
     
         }
         

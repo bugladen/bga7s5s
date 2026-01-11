@@ -24,7 +24,7 @@ class _01143 extends Scheme implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Contempt and Hatred");
-        $this->Image = "img/cards/7s5s/143.jpg";
+        $this->Image = "01143.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 143;

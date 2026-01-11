@@ -17,7 +17,7 @@ class _01056 extends Risk implements IHasActions, IAmARiskThatTargetsCharacters
         parent::__construct();
 
         $this->Name = clienttranslate("Move Along");
-        $this->Image = "img/cards/7s5s/056.jpg";
+        $this->Image = "01056.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction('Eisen');

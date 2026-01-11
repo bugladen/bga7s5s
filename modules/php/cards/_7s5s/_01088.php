@@ -20,7 +20,7 @@ class _01088 extends Risk implements IHasManeuvers, IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate("You're Embarrassing Yourself");
-        $this->Image = "img/cards/7s5s/088.jpg";
+        $this->Image = "01088.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction("Montaigne");

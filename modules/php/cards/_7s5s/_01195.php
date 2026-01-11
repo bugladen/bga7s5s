@@ -15,7 +15,7 @@ class _01195 extends CityAttachment
         parent::__construct();
 
         $this->Name = clienttranslate('Eager Blade');
-        $this->Image = "img/cards/7s5s/195.jpg";
+        $this->Image = "01195.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 195;

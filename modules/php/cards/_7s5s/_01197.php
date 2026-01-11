@@ -19,7 +19,7 @@ class _01197 extends CityCharacter implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate('Kalla Forsberg');
-        $this->Image = "img/cards/7s5s/197.jpg";
+        $this->Image = "01197.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 197;

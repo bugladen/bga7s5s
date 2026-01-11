@@ -158,26 +158,27 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
         },
 
         logInject: function (log_entry) {
-            const card_regex = /\[([^\[\]]+?)\(([^()]+?)\)\]/g;    // this will catch a card name in the log formatted like so: [card_name(image_path)]
+            const card_regex = /\[([^:\[\]]+?):([^\[\]]+?)\(([^()]+?)\)\]/g;    // this will catch a card name in the log formatted like so: [card_id:card_name(image_path)]
             const cards_to_replace = log_entry.matchAll(card_regex);
             for (let card of cards_to_replace) 
             {
-                const cardName = card[1];
-                const cardImage = card[2];
-                const cardSpan = this.getHTMLForLog(cardName, cardImage, 'card');
+                const cardId = card[1];
+                const cardName = card[2];
+                const cardImage = card[3];
+                const cardSpan = this.getHTMLForLog(cardId, cardName, cardImage, 'card');
                 log_entry = log_entry.replace(card[0], cardSpan);
             }
             return log_entry;
         },
 
-        getHTMLForLog: function (cardName, cardImage, type) 
+        getHTMLForLog: function (cardId, cardName, cardImage, type) 
         {
             switch(type) 
             {
                 case 'card':
                     this.log_span_num++; // adds a unique num to the span id so that duplicate card names in the log have unique ids
                     const item_type = '_7sfs-card_tt';
-                    return `<span id="${this.log_span_num}_${item_type}" image="${cardImage}" class="${item_type} _7sfs-log_tooltip"><strong>${_(cardName)}</strong></span>`;
+                    return `<span id="${this.log_span_num}_${item_type}" cardId="${cardId}" image="${cardImage}" class="${item_type} _7sfs-log_tooltip"><strong>${_(cardName)}</strong></span>`;
             }
         },        
 
@@ -190,7 +191,12 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
                 if (ele.classList.contains('_7sfs-card_tt')) 
                 {
                     const cardImage = ele.getAttribute('image');
-                    this.addTippyTooltip( ele_id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
+                    const cardId = ele.getAttribute('cardId');
+                    const card = this.cardProperties[cardId];
+                    if (card)
+                    {
+                        this.addTippyTooltip( ele_id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card) + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
+                    }
                 }
             });
         },

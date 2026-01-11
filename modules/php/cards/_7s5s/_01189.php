@@ -17,7 +17,7 @@ class _01189 extends CityEventCard implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate('Point of Opportunity');
-        $this->Image = "img/cards/7s5s/189.jpg";
+        $this->Image = "01189.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 189;

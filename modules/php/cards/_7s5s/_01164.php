@@ -20,7 +20,7 @@ class _01164 extends Risk implements IHasActions, IHasManeuvers
         parent::__construct();
 
         $this->Name = clienttranslate("Hidden Corridors");
-        $this->Image = "img/cards/7s5s/164.jpg";
+        $this->Image = "01164.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         

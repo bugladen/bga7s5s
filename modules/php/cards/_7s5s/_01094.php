@@ -17,7 +17,7 @@ class _01094 extends Character implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("'Padre' Aníbal");
-        $this->Image = "img/cards/7s5s/094.jpg";
+        $this->Image = "01094.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 94;

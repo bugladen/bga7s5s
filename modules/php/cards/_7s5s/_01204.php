@@ -20,7 +20,7 @@ class _01204 extends CityAttachment implements IHasTechniques
         parent::__construct();
 
         $this->Name = clienttranslate('Syrneth Hand');
-        $this->Image = "img/cards/7s5s/204.jpg";
+        $this->Image = "01204.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 204;

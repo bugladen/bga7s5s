@@ -17,7 +17,7 @@ class _01046 extends FactionAttachment implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Dark Gift");
-        $this->Image = "img/cards/7s5s/046.jpg";
+        $this->Image = "01046.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction('Eisen');

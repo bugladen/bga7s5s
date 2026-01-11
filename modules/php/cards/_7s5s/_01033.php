@@ -21,7 +21,7 @@ class _01033 extends Risk implements IHasActions, IHasManeuvers, IAmARiskThatTar
         parent::__construct();
 
         $this->Name = clienttranslate("Veronica's Guile");
-        $this->Image = 'img/cards/7s5s/033.jpg';
+        $this->Image = '01033.jpg';
         $this->ExpansionName = '_7s5s';
         $this->ExpansionNumber = 1;
         $this->CardNumber = 33;

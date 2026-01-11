@@ -1835,11 +1835,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
             dojo.place( this.format_block('jstpl_row_combat_card', { 
                 round: args.round,
                 id: combatCard.id,
-                image: g_gamethemeurl + combatCard.image 
+                image: this.getCardImageUrlRoot(combatCard) + combatCard.image 
             }),  divId, 'last');
 
             const cardDivId = `duel_round_${args.round}_combat_card_${combatCard.id}`;
-            this.addTippyTooltip(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(combatCard) + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
     
             if (args.gambled)
             {

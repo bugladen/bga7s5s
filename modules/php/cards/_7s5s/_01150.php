@@ -21,7 +21,7 @@ class _01150 extends Scheme
         parent::__construct();
 
         $this->Name = clienttranslate("Parley Gone Wrong");
-        $this->Image = "img/cards/7s5s/150.jpg";
+        $this->Image = "01150.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 150;

@@ -22,7 +22,7 @@ class _01006 extends Leader implements IHasReactions
         parent::__construct();
 
         $this->Name = "Don Constanzo Scarpa";
-        $this->Image = "img/cards/7s5s/006.jpg";
+        $this->Image = "01006.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 6;
@@ -57,7 +57,7 @@ class _01006 extends Leader implements IHasReactions
         if ($event instanceof EventTableSetup)
         {
             $game = $event->theah->game;
-            $game->notifyAllPlayers("message", clienttranslate('${don_inject_code}: ${player_name} is choosing a Red Hand Thug from their Faction Deck to reveal and place in their Hand.'), [
+            $game->notify->all("message", clienttranslate('${don_inject_code}: ${player_name} is choosing a Red Hand Thug from their Faction Deck to reveal and place in their Hand.'), [
                 'don_inject_code' => $this->getInjectCode(),
                 'player_name' => $game->getPlayerNameById($this->ControllerId),
             ]);
@@ -73,7 +73,7 @@ class _01006 extends Leader implements IHasReactions
             $characters = array_filter($characters, fn($character) => $character->ControllerId == $this->ControllerId && $character->hasTrait("Thug"));
             if (count($characters) > 0)
             {
-                $game->notifyAllPlayers("message", clienttranslate('There is a Thug at the pressure location. ${don_inject_code} will add +1 to ${player_name}\'s value for each Pressure Type.'), [
+                $game->notify->all("message", clienttranslate('There is a Thug at the pressure location. ${don_inject_code} will add +1 to ${player_name}\'s value for each Pressure Type.'), [
                     'don_inject_code' => $this->getInjectCode(),
                     'player_name' => $game->getPlayerNameById($this->ControllerId),
                 ]);
@@ -172,7 +172,7 @@ class _01006 extends Leader implements IHasReactions
             $cardEvent = EventFactory::createCardAddedToHandEvent($this->ControllerId, $card->Id);
             $game->theah->queueEvent($cardEvent);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} revealed ${card_inject_code}.'), [
+            $game->notify->all("message", clienttranslate('${player_name} revealed ${card_inject_code}.'), [
                 "player_name" => $game->getPlayerNameById($this->ControllerId),
                 "card_inject_code" => $card->getInjectCode(),
             ]);

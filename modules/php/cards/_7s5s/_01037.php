@@ -25,7 +25,7 @@ class _01037 extends Character implements IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate("Edeline Trinken");
-        $this->Image = "img/cards/7s5s/037.jpg";
+        $this->Image = "01037.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 37;

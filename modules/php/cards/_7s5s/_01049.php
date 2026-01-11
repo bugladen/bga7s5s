@@ -20,7 +20,7 @@ class _01049 extends FactionAttachment implements IHasActions, IHasTechniques
         parent::__construct();
 
         $this->Name = clienttranslate("Polished Flintlock");
-        $this->Image = "img/cards/7s5s/049.jpg";
+        $this->Image = "01049.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction('Eisen');

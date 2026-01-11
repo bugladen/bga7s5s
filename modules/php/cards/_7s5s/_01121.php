@@ -13,7 +13,7 @@ class _01121 extends Character
         parent::__construct();
 
         $this->Name = clienttranslate("Ren");
-        $this->Image = "img/cards/7s5s/121.jpg";
+        $this->Image = "01121.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 121;

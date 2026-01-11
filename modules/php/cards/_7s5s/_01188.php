@@ -18,7 +18,7 @@ class _01188 extends CityCharacter
         parent::__construct();
 
         $this->Name = clienttranslate('Vladislav Novikoff');
-        $this->Image = "img/cards/7s5s/188.jpg";
+        $this->Image = "01188.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 188;

@@ -17,7 +17,7 @@ class _01153 extends FactionAttachment
         parent::__construct();
 
         $this->Name = clienttranslate("Breastplate");
-        $this->Image = "img/cards/7s5s/153.jpg";
+        $this->Image = "01153.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         

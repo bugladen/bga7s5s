@@ -21,7 +21,7 @@ class _01103 extends Risk implements IHasActions, IHasManeuvers
         parent::__construct();
 
         $this->Name = clienttranslate("Adaptable");
-        $this->Image = "img/cards/7s5s/103.jpg";
+        $this->Image = "01103.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction("Castille");

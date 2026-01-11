@@ -18,7 +18,7 @@ class _01169 extends Risk
         parent::__construct();
 
         $this->Name = clienttranslate("Not Today");
-        $this->Image = "img/cards/7s5s/169.jpg";
+        $this->Image = "01169.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         

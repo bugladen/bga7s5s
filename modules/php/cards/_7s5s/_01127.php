@@ -20,7 +20,7 @@ class _01127 extends FactionAttachment implements IHasReactions, IHasTechniques
         parent::__construct();
 
         $this->Name = clienttranslate("Grandfather's Hammer");
-        $this->Image = "img/cards/7s5s/127.jpg";
+        $this->Image = "01127.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->initializeFaction("Ussura");

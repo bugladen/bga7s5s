@@ -16,7 +16,7 @@ class _01170 extends Risk implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Opulence");
-        $this->Image = "img/cards/7s5s/170.jpg";
+        $this->Image = "01170.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         

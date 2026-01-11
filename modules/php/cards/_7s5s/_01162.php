@@ -17,7 +17,7 @@ class _01162 extends Risk implements IHasActions, IAmARiskThatTargetsCharacters
         parent::__construct();
 
         $this->Name = clienttranslate("Come Hither");
-        $this->Image = "img/cards/7s5s/162.jpg";
+        $this->Image = "01162.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         
