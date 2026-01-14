@@ -51,7 +51,7 @@ class Action_01176 extends RiskAction implements IAbilityThatTargetsCards, IAbil
             $performerId = $theah->game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $theah->getCharacterById($performerId);
     
-            if ($performer->hasTrait("Hero") || $performer->hasTrait("Scoundrel"))
+            if ($performer && ($performer->hasTrait("Hero") || $performer->hasTrait("Scoundrel")))
             {
                 $discount += 1;
                 $owner = $this->getOwningCard($theah);
