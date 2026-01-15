@@ -793,6 +793,7 @@ trait FrameworkActionsTrait
 
     public function actHighDramaInPlayActionPerformerChosen(int $id)
     {
+        $this->theah->buildCity();
         $playerId = (int)$this->getActivePlayerId();
         $performer = $this->getCardObjectFromDb($id);
 
