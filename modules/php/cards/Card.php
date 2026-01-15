@@ -30,7 +30,6 @@ abstract class Card
     public bool $IsUpdated;
     public int $Reknown;
     public bool $FaceDown = false;
-    public bool $HostedOnBGA = true;
 
     public function __construct()
     {
@@ -48,8 +47,6 @@ abstract class Card
         $this->Location = "";
         $this->IsUpdated = false;
         $this->Reknown = 0;
-
-        $this->HostedOnBGA = false;
     }
 
     public function setId($id)
@@ -448,7 +445,6 @@ abstract class Card
             'reknown' => $this->Reknown,
             'faceDown' => $this->FaceDown,
             'cardBackImage' => $this->CardBackImage,
-            'hostedOnBGA' => $this->HostedOnBGA,
         ];
 
         $properties['type'] = 'Card';
@@ -609,7 +605,7 @@ abstract class Card
     //This will return a string that can be used to inject the card tooltip into the game log on the client
     public function getInjectCode(): string
     {
-        return sprintf('[%d:%s(%s)]', $this->Id, $this->Name, $this->Image);
+        return sprintf('[%s(%s)]', $this->Name, $this->Image);
     }
 
     public function resetCard()

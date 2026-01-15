@@ -196,7 +196,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         } else {
             // Legacy ebg.stock
             const weight = card.type === "Scheme" || card.type === 'Attachment' ? 1 : 2;
-            deck.addItemType(card.id, weight, this.getCardImageUrlRoot(card) + card.image, 0);
+            deck.addItemType(card.id, weight, this.getCardImageUrlRoot(card.image) + card.image, 0);
             deck.addToStockWithId(card.id, card.id);
         }
     },
@@ -242,7 +242,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         // Find and style the front face
         const frontDiv = cardElement.querySelector('.bga-cards_card-side.front');
         if (frontDiv) {
-            frontDiv.style.backgroundImage = `url('${this.getCardImageUrlRoot(card) + card.image}')`;
+            frontDiv.style.backgroundImage = `url('${this.getCardImageUrlRoot(card.image) + card.image}')`;
             frontDiv.style.backgroundSize = 'cover';
             frontDiv.style.borderRadius = '4px';
             
@@ -252,7 +252,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }
             
             // Add tooltip (with class for mobile scaling)
-            this.addTippyTooltip(frontDiv.id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card) + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip(frontDiv.id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
         }
     },
 
@@ -428,7 +428,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
     createTooltipForCard: function(card)
     {
         if (!card.controllerId) {
-            this.addTippyTooltip(`${card.divId}_image`, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card) + card.image}" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip(`${card.divId}_image`, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.CARD_TOOLTIP_DELAY);
             return;
         }
 
@@ -436,7 +436,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const abilityStyle = (available) => `background-color: gold; color: black;${available ? '' : ' text-decoration: line-through;'}`;
         const html = `
         <div style="position:relative;">
-            <img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card) + card.image}" />
+            <img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />
             <div class="_7sfs-card-info">
                 <div style="background-color:white; color:black">Traits: ${traits}</div>
                 ${card.actions?.map((action) => `<div style="${abilityStyle(action.available)}">${_('Action:')} ${_(action.shortName)}</div>`).join('') ?? ''}
@@ -469,7 +469,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             id: divId,
             attachmentCount: character.attachedCards?.length ?? 0,
             faction: character.faction.toLowerCase(),
-            image: this.getCardImageUrlRoot(character) + character.image,
+            image: this.getCardImageUrlRoot(character.image) + character.image,
             player_color: color,
             resolve: character.modifiedResolve,
             combat: combat,
@@ -597,7 +597,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }), targetDiv, "before" );
 
         if (card.controllerId === this.player_id)
-            this.addTippyTooltip( divId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card) + card.image}" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip( divId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.CARD_TOOLTIP_DELAY);
     },
 
     createEventCard: function( divId, event, targetDiv )
@@ -610,10 +610,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         dojo.place( this.format_block( 'jstpl_card_event', {
             id: divId,
-            image: this.getCardImageUrlRoot(event) + event.image,
+            image: this.getCardImageUrlRoot(event.image) + event.image,
         }), targetDiv, "before" );
 
-        this.addTippyTooltip( divId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(event) + event.image}" />`, this.CARD_TOOLTIP_DELAY);
+        this.addTippyTooltip( divId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(event.image) + event.image}" />`, this.CARD_TOOLTIP_DELAY);
 
         if (event.reknown > 0) {
             divId = `${divId}-reknown`;
@@ -645,7 +645,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         dojo.place( this.format_block( 'jstpl_card_scheme', {
             id: divId,
-            image: this.getCardImageUrlRoot(scheme) + scheme.image,
+            image: this.getCardImageUrlRoot(scheme.image) + scheme.image,
             player_color: playerInfo.color,
             initiative: scheme.initiative,
             panache: this.formatModifer(scheme.panacheModifier),
@@ -688,7 +688,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             id: divId,
             attachmentIndex: attachmentIndex,
             faction: attachment.faction?.toLowerCase(),
-            image: this.getCardImageUrlRoot(attachment) + attachment.image,
+            image: this.getCardImageUrlRoot(attachment.image) + attachment.image,
             resolve: this.attachmentFormatModifer(attachment.resolveModifier),
             combat: this.attachmentFormatModifer(attachment.combatModifier),
             finesse: this.attachmentFormatModifer(attachment.finesseModifier),
@@ -807,7 +807,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
     {
         const card = this.cardProperties[cardTypeId];
         //Add tooltip to card
-        this.addTippyTooltip( cardDiv.id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card) + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+        this.addTippyTooltip( cardDiv.id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
     },
 
     isCardInCity: function( cardId )
@@ -1063,11 +1063,11 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 dojo.place( this.format_block('jstpl_row_combat_card', { 
                     round: row.round,
                     id: combatCard.id,
-                    image: this.getCardImageUrlRoot(combatCard) + combatCard.image 
+                    image: this.getCardImageUrlRoot(combatCard.image) + combatCard.image 
                 }),  divId, 'last');
 
                 const cardDivId = `duel_round_${row.round}_combat_card_${combatCard.id}`;
-                this.addTippyTooltip(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(combatCard) + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+                this.addTippyTooltip(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(combatCard.image) + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
                 if (row.gambled)
                 {
                     dojo.addClass(divId, '_7sfs-engaged');
@@ -1207,8 +1207,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.connects.push(handle);                
     },
 
-    getCardImageUrlRoot: function(card) {
-        return card.hostedOnBGA ? g_gamethemeurl : 'https://dtdb.co/images/7s5s/en/';
+    getCardImageUrlRoot: function(cardImage) {
+        return cardImage.startsWith('img/') ? g_gamethemeurl : 'https://dtdb.co/images/7s5s/en/';
     },
 })
 });
