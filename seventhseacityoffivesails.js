@@ -158,7 +158,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
         },
 
         logInject: function (log_entry) {
-            // New format: [card_id:card_name(image_path)]
+            // Obsolete format: [card_id:card_name(image_path)]
             const new_card_regex = /\[([^:\[\]]+?):([^\[\]]+?)\(([^()]+?)\)\]/g;
             const new_cards_to_replace = log_entry.matchAll(new_card_regex);
             for (let card of new_cards_to_replace) 
@@ -170,7 +170,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
                 log_entry = log_entry.replace(card[0], cardSpan);
             }
 
-            // Old format: [card_name(image_path)]
+            // Current format: [card_name(image_path)]
             const old_card_regex = /\[([^\[\]]+?)\(([^()]+?)\)\]/g;
             const old_cards_to_replace = log_entry.matchAll(old_card_regex);
             for (let card of old_cards_to_replace) 
@@ -190,8 +190,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
                 case 'card':
                     this.log_span_num++; // adds a unique num to the span id so that duplicate card names in the log have unique ids
                     const item_type = '_7sfs-card_tt';
-                    const cardIdAttr = cardId ? ` cardId="${cardId}"` : '';
-                    return `<span id="${this.log_span_num}_${item_type}"${cardIdAttr} image="${cardImage}" class="${item_type} _7sfs-log_tooltip"><strong>${_(cardName)}</strong></span>`;
+                    return `<span id="${this.log_span_num}_${item_type}" image="${cardImage}" class="${item_type} _7sfs-log_tooltip"><strong>${_(cardName)}</strong></span>`;
             }
         },        
 
@@ -204,21 +203,8 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
                 if (ele.classList.contains('_7sfs-card_tt')) 
                 {
                     const cardImage = ele.getAttribute('image');
-                    const cardId = ele.getAttribute('cardId');
-                    if (cardId)
-                    {
-                        // New format with cardId - use cardProperties to get image root
-                        const card = this.cardProperties[cardId];
-                        if (card)
-                        {
-                            this.addTippyTooltip( ele_id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card) + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
-                        }
-                    }
-                    else
-                    {
-                        // Old format without cardId - use g_gamethemeurl directly
-                        this.addTippyTooltip( ele_id, `<img class="_7sfs-card-tooltip-img" src="${g_gamethemeurl + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
-                    }
+
+                    this.addTippyTooltip( ele_id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(cardImage) + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
                 }
             });
         },

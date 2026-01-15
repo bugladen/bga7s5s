@@ -623,7 +623,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         let cards = "";
         this.gamedatas.cityDiscard.forEach(card => {
              cards += this.format_block('jstpl_discard_card', {
-                image : this.getCardImageUrlRoot(card) + card.image,
+                image : this.getCardImageUrlRoot(card.image) + card.image,
              });
         });
 
@@ -651,7 +651,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         let cards = "";
         this.gamedatas.players[playerId].discard.forEach(card => {
              cards += this.format_block('jstpl_discard_card', {
-                image : this.getCardImageUrlRoot(card) + card.image,
+                image : this.getCardImageUrlRoot(card.image) + card.image,
              });
         });
 
@@ -679,7 +679,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         let cards = "";
         this.gamedatas.players[playerId].locker.forEach(card => {
              cards += this.format_block('jstpl_discard_card', {
-                image : this.getCardImageUrlRoot(card) + card.image,
+                image : this.getCardImageUrlRoot(card.image) + card.image,
              });
         });
 
