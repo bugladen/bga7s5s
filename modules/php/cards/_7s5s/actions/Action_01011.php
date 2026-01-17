@@ -120,9 +120,6 @@ class Action_01011 extends CharacterAction
             $transition = EventFactory::createTransitionEvent($servo->ControllerId, $servo->Id, "01011_2", $this->Id);
             $game->theah->queueEvent($transition);
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($servo->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
-
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
 
