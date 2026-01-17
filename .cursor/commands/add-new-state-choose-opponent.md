@@ -21,7 +21,8 @@ Will create a new GameState class and add supporting entries to other files. The
 6. In the `id` parameter of the constructor use the pattern from State_highDramaPhase01097.php but use the correct name from the command parameters.
 
 ## Steps to update the OnUpdateActionButtons file
-1. Update the file `modules\js\OnUpdateActionButtons.7s5s.jss`.
+1. If the name provided in the parameters contains '01' update the file `modules\js\OnUpdateActionButtons.7s5s.js`,
+else if the name provided in the parameters contains '02' update the file `modules\js\OnUpdateActionButtons.tac.js`.
 2. Create a new entry in the file using the name provided in the parameters
 3. Copy the exact pattern used for the entry `highDramaPhase01111_2`.
 4. Place the new entry in the file in alphabetical order in the area where similar named entries are located.
