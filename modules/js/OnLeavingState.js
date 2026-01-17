@@ -438,6 +438,7 @@ onLeavingState: function( stateName )
         methods[stateName]();
     
     this.onLeavingState_7s5s( stateName );
+    this.onLeavingState_tac( stateName );
 
     this.selectedCityLocations = [];
     this.selectedCards = [];

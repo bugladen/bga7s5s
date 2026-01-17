@@ -151,6 +151,7 @@ class Game extends \Bga\GameFramework\Table
     final const VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
     final const VALERI_MIKHAILOV_CHALLENGE_TYPE = 10;
     final const IRON_AND_VELVET_CHALLENGE_TYPE = 11;
+    final const ANDRIANA_DONDOLOS_CHALLENGE_TYPE = 12;
 
     //Duel global variables
     //Duel Names

@@ -25,10 +25,13 @@ define([
    g_gamethemeurl + 'modules/js/vendor/tippy-loader.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.7s5s.js',
+   g_gamethemeurl + 'modules/js/OnEnteringState.tac.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.7s5s.js',
+   g_gamethemeurl + 'modules/js/OnUpdateActionButtons.tac.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.7s5s.js',
+   g_gamethemeurl + 'modules/js/OnLeavingState.tac.js',
    g_gamethemeurl + 'modules/js/Setup.js',
    g_gamethemeurl + 'modules/js/Utilities.js',
    g_gamethemeurl + 'modules/js/Notifications.js',
@@ -60,10 +63,13 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
         ebg.core.gamegui, 
         seventhseacityoffivesails.onenteringstate,
         seventhseacityoffivesails.onenteringstate_7s5s,
+        seventhseacityoffivesails.onenteringstate_tac,
         seventhseacityoffivesails.onleavingstate,
         seventhseacityoffivesails.onleavingstate_7s5s,
+        seventhseacityoffivesails.onleavingstate_tac,
         seventhseacityoffivesails.onupdateactionbuttons,
         seventhseacityoffivesails.onupdateactionbuttons_7s5s,
+        seventhseacityoffivesails.onupdateactionbuttons_tac,
         seventhseacityoffivesails.setup,
         seventhseacityoffivesails.utilities,
         seventhseacityoffivesails.notifications,
@@ -119,6 +125,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
             this.VALERI_MIKHAILOV_CHALLENGE_TYPE = 10;
             this.IRON_AND_VELVET_CHALLENGE_TYPE = 11;
+            this.ANDRIANA_DONDOLOS_CHALLENGE_TYPE = 12;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 500;

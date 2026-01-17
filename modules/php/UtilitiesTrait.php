@@ -290,6 +290,9 @@ trait UtilitiesTrait
             case '01':
                 $set = "_7s5s";
                 break;
+            case '02':
+                $set = "tac";
+                break;
             default:
                 $set = "_7s5s";
         }

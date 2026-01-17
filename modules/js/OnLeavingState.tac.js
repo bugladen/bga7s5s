@@ -1,0 +1,46 @@
+/**
+ *------
+ * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
+ * SeventhSeaCityOfFiveSails implementation : © Edward Mittelstedt bugbucket@comcast.net
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ */
+
+ define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
+    return declare('seventhseacityoffivesails.onleavingstate_tac', null, {
+
+    // 7s5s Core Set methods only
+    onLeavingState_tac: function( stateName )
+    {
+
+        const methods = {
+            'highDramaPhase02001': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode('none');
+                }
+            },
+
+            'highDramaPhase02001_2': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    const discardedCard = this.factionHand.getCards().find((card) => card.id === this.clientStateArgs.discardedCardId);
+                    if (discardedCard) {
+                        const cardElement = this.factionHand.getCardElement(discardedCard);
+                        if (cardElement) dojo.removeClass(cardElement, '_7sfs-chosen');
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+        }
+
+        if ( methods[stateName] )
+            methods[stateName]();
+    }
+});
+});
+ 
