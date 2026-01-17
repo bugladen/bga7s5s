@@ -38,6 +38,7 @@ class Action_01130 extends RiskAction
         foreach ($performers as $performer)
         {
             $characters = $theah->getCharactersAtLocation($performer->Location);
+            $characters = array_filter($characters, fn($character) => $character->ControllerId == $playerId);
             $location = $theah->getCityLocation($performer->Location);
             if (count($characters) == 1 && ! $location->isControlled())
             {
@@ -55,6 +56,7 @@ class Action_01130 extends RiskAction
         foreach ($performers as $performer)
         {
             $characters = $theah->getCharactersAtLocation($performer->Location);
+            $characters = array_filter($characters, fn($character) => $character->ControllerId == $playerId);
             $location = $theah->getCityLocation($performer->Location);
             if (count($characters) == 1 && ! $location->isControlled())
             {

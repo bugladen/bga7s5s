@@ -1328,6 +1328,7 @@ trait FrameworkActionsTrait
 
     public function actDuelActionGamble()
     {
+        $this->theah->buildCity();
         $actor = $this->theah->getDuelRoundActor();
         [$cardCount, $explanations] = $this->theah->getNumberOfGambleCardsToReveal($actor);
         if ($explanations != '')
@@ -1501,6 +1502,7 @@ trait FrameworkActionsTrait
 
     public function actGambleCardChosen(int $id)
     {
+        $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
         $deckName = $this->getPlayerFactionDeckName($playerId);
 
