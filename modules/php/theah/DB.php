@@ -227,18 +227,194 @@ class DB
     function updateRoundWithCombatStats(int $duelId, int $round, string $mode, int $eventRiposte, int $eventParry, int $eventThrust): array
     {
         $sql = "SELECT r.actor_id, d.challenger_id, d.defender_id, 
-        r.ending_challenger_threat, r.ending_defender_threat, r.challenger_threat_is_lethal, r.defender_threat_is_lethal
+        r.starting_challenger_threat, r.starting_defender_threat,
+        r.ending_challenger_threat, r.ending_defender_threat, 
+        r.challenger_threat_is_lethal, r.defender_threat_is_lethal,
+        COALESCE(r.combat_riposte, 0) as combat_riposte, COALESCE(r.combat_parry, 0) as combat_parry, COALESCE(r.combat_thrust, 0) as combat_thrust,
+        COALESCE(r.maneuver_riposte, 0) as maneuver_riposte, COALESCE(r.maneuver_parry, 0) as maneuver_parry, COALESCE(r.maneuver_thrust, 0) as maneuver_thrust
         FROM duel_round r JOIN duel d ON r.duel_id = d.duel_id WHERE r.duel_id = $duelId AND r.round = $round";
 
         $result = $this->getObjectList($sql)[0];
         $actorId = $result['actor_id'];
         $challengerId = $result['challenger_id'];
         $defenderId = $result['defender_id'];
-        $endingChallengerThreat = $result['ending_challenger_threat'];
-        $endingDefenderThreat = $result['ending_defender_threat'];
         $challengerThreatIsLethal = $result['challenger_threat_is_lethal'];
         $defenderThreatIsLethal = $result['defender_threat_is_lethal'];
         $wounds = 0;
+
+        // For maneuvers, start from scratch with starting threats and sum combat + maneuver before applying
+        if ($mode == 'maneuver')
+        {
+            $endingChallengerThreat = $result['starting_challenger_threat'];
+            $endingDefenderThreat = $result['starting_defender_threat'];
+            
+            // Sum combat + maneuver (event params) stats
+            $totalRiposte = (int)$result['combat_riposte'] + $eventRiposte;
+            $totalParry = (int)$result['combat_parry'] + $eventParry;
+            $totalThrust = (int)$result['combat_thrust'] + $eventThrust;
+
+            if ($actorId == $challengerId)
+            {
+                // Apply total Riposte
+                $riposte = $totalRiposte;
+                if ($riposte > $endingChallengerThreat)
+                    $riposte = $endingChallengerThreat;
+                if ($riposte < 0)
+                    $riposte = 0;
+                $endingChallengerThreat -= $riposte;
+                $endingDefenderThreat += $riposte;
+
+                // Apply total Parry
+                $parry = $totalParry;
+                if ($parry > $endingChallengerThreat)
+                    $parry = $endingChallengerThreat;
+                if ($parry < 0)
+                    $parry = 0;
+                $endingChallengerThreat -= $parry;
+
+                // Apply total Thrust
+                $endingDefenderThreat += $totalThrust;
+            }
+            else if ($actorId == $defenderId)
+            {
+                // Apply total Riposte
+                $riposte = $totalRiposte;
+                if ($riposte > $endingDefenderThreat)
+                    $riposte = $endingDefenderThreat;
+                if ($riposte < 0)
+                    $riposte = 0;
+                $endingDefenderThreat -= $riposte;
+                $endingChallengerThreat += $riposte;
+
+                // Apply total Parry
+                $parry = $totalParry;
+                if ($parry > $endingDefenderThreat)
+                    $parry = $endingDefenderThreat;
+                if ($parry < 0)
+                    $parry = 0;
+                $endingDefenderThreat -= $parry;
+
+                // Apply total Thrust
+                $endingChallengerThreat += $totalThrust;
+            }
+
+            // Store the computed values in results (maneuver's contribution is already included in totals)
+            $results = [];
+            $results['endingChallengerThreatBefore'] = $result['starting_challenger_threat'];
+            $results['endingDefenderThreatBefore'] = $result['starting_defender_threat'];
+            $results['challengerThreatIsLethal'] = $challengerThreatIsLethal;
+            $results['defenderThreatIsLethal'] = $defenderThreatIsLethal;
+            $results['riposte'] = $eventRiposte;
+            $results['parry'] = $eventParry;
+            $results['thrust'] = $eventThrust;
+            $results['endingChallengerThreatAfter'] = $endingChallengerThreat;
+            $results['endingDefenderThreatAfter'] = $endingDefenderThreat;
+            
+            $wounds = ($actorId == $challengerId) ? $endingChallengerThreat : $endingDefenderThreat;
+            $results['wounds'] = $wounds;
+
+            $sql = "UPDATE duel_round SET 
+                {$mode}_riposte = {$mode}_riposte + {$eventRiposte}, 
+                {$mode}_parry = {$mode}_parry + {$eventParry}, 
+                {$mode}_thrust = {$mode}_thrust + {$eventThrust},
+                ending_challenger_threat = $endingChallengerThreat,
+                ending_defender_threat = $endingDefenderThreat,
+                wounds_taken = $wounds 
+                WHERE duel_id = $duelId AND round = $round";
+
+            $this->executeSql($sql);
+
+            return $results;
+        }
+        // For techniques, start from scratch with starting threats and sum all R/P/T before applying
+        else if ($mode == 'technique')
+        {
+            $endingChallengerThreat = $result['starting_challenger_threat'];
+            $endingDefenderThreat = $result['starting_defender_threat'];
+            
+            // Sum all stats: combat + maneuver + technique (event params)
+            $totalRiposte = (int)$result['combat_riposte'] + (int)$result['maneuver_riposte'] + $eventRiposte;
+            $totalParry = (int)$result['combat_parry'] + (int)$result['maneuver_parry'] + $eventParry;
+            $totalThrust = (int)$result['combat_thrust'] + (int)$result['maneuver_thrust'] + $eventThrust;
+
+            if ($actorId == $challengerId)
+            {
+                // Apply total Riposte
+                $riposte = $totalRiposte;
+                if ($riposte > $endingChallengerThreat)
+                    $riposte = $endingChallengerThreat;
+                if ($riposte < 0)
+                    $riposte = 0;
+                $endingChallengerThreat -= $riposte;
+                $endingDefenderThreat += $riposte;
+
+                // Apply total Parry
+                $parry = $totalParry;
+                if ($parry > $endingChallengerThreat)
+                    $parry = $endingChallengerThreat;
+                if ($parry < 0)
+                    $parry = 0;
+                $endingChallengerThreat -= $parry;
+
+                // Apply total Thrust
+                $endingDefenderThreat += $totalThrust;
+            }
+            else if ($actorId == $defenderId)
+            {
+                // Apply total Riposte
+                $riposte = $totalRiposte;
+                if ($riposte > $endingDefenderThreat)
+                    $riposte = $endingDefenderThreat;
+                if ($riposte < 0)
+                    $riposte = 0;
+                $endingDefenderThreat -= $riposte;
+                $endingChallengerThreat += $riposte;
+
+                // Apply total Parry
+                $parry = $totalParry;
+                if ($parry > $endingDefenderThreat)
+                    $parry = $endingDefenderThreat;
+                if ($parry < 0)
+                    $parry = 0;
+                $endingDefenderThreat -= $parry;
+
+                // Apply total Thrust
+                $endingChallengerThreat += $totalThrust;
+            }
+
+            // Store the computed values in results (technique's contribution is already included in totals)
+            $results = [];
+            $results['endingChallengerThreatBefore'] = $result['starting_challenger_threat'];
+            $results['endingDefenderThreatBefore'] = $result['starting_defender_threat'];
+            $results['challengerThreatIsLethal'] = $challengerThreatIsLethal;
+            $results['defenderThreatIsLethal'] = $defenderThreatIsLethal;
+            $results['riposte'] = $eventRiposte;
+            $results['parry'] = $eventParry;
+            $results['thrust'] = $eventThrust;
+            $results['endingChallengerThreatAfter'] = $endingChallengerThreat;
+            $results['endingDefenderThreatAfter'] = $endingDefenderThreat;
+            
+            $wounds = ($actorId == $challengerId) ? $endingChallengerThreat : $endingDefenderThreat;
+            $results['wounds'] = $wounds;
+
+            $sql = "UPDATE duel_round SET 
+                {$mode}_riposte = {$mode}_riposte + {$eventRiposte}, 
+                {$mode}_parry = {$mode}_parry + {$eventParry}, 
+                {$mode}_thrust = {$mode}_thrust + {$eventThrust},
+                ending_challenger_threat = $endingChallengerThreat,
+                ending_defender_threat = $endingDefenderThreat,
+                wounds_taken = $wounds 
+                WHERE duel_id = $duelId AND round = $round";
+
+            $this->executeSql($sql);
+
+            return $results;
+        }
+        else
+        {
+            $endingChallengerThreat = $result['ending_challenger_threat'];
+            $endingDefenderThreat = $result['ending_defender_threat'];
+        }
 
         $results = [];
         $results['endingChallengerThreatBefore'] = $endingChallengerThreat;
