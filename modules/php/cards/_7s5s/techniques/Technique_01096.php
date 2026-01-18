@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -87,7 +88,13 @@ class Technique_01096 extends Technique
                 $owner->IsUpdated = true;
             }
         }
-    
+
+        if ($event instanceof EventDuelEnd && $this->IsActive)
+        {
+            $this->IsActive = false;
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
+        }    
     }
 
     public function getArgsFromTechnique(Game $game, int $state, string $stateName): array

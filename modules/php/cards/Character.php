@@ -176,18 +176,10 @@ abstract class Character extends Card implements IHasTechniques
         if ($index !== false) {
             unset($this->Attachments[$index]);
 
-            $this->ModifiedResolve = $this->Resolve;
-            $this->ModifiedCombat = $this->Combat;
-            $this->ModifiedFinesse = $this->Finesse;
-            $this->ModifiedInfluence = $this->Influence;
-            foreach ($this->Attachments as $attachmentId)
-            {
-                $existingAttachment = $theah->getAttachmentById($attachmentId);
-                $this->ModifiedResolve += $existingAttachment->ResolveModifier;
-                $this->ModifiedCombat += $existingAttachment->CombatModifier;
-                $this->ModifiedFinesse += $existingAttachment->FinesseModifier;
-                $this->ModifiedInfluence += $existingAttachment->InfluenceModifier;
-            }
+            $this->ModifiedResolve -= $attachment->ResolveModifier;
+            $this->ModifiedCombat -= $attachment->CombatModifier;
+            $this->ModifiedFinesse -= $attachment->FinesseModifier;
+            $this->ModifiedInfluence -= $attachment->InfluenceModifier;
 
             $this->setLockedValues($theah);
 
