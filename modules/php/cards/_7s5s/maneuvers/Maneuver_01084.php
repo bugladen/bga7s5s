@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -82,6 +83,7 @@ class Maneuver_01084 extends Maneuver
             $adversaryId = $event->theah->getDuelOpponentId($actor->Id);
             $adversary = $event->theah->getCharacterById($adversaryId);
 
+            //Confusing, but if you played this last round, you are the adversary for this round, and your opponent is the actor
             if ($adversary->ControllerId == $owner->ControllerId)
             {
                 $event->explanations[] = sprintf($event->theah->game->translate("%s increases the Adversary's Thrust by %d"), $owner->getInjectCode(), 1);
@@ -89,6 +91,13 @@ class Maneuver_01084 extends Maneuver
                 $this->IncreaseAdversaryThrust = false;
                 $owner->IsUpdated = true;
             }
+        }
+
+        if ($event instanceof EventDuelEnd && $this->IncreaseAdversaryThrust)
+        {
+            $this->IncreaseAdversaryThrust = false;
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
         }
     }
 }
