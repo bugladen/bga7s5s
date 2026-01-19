@@ -453,7 +453,7 @@ abstract class Card
         if (empty($this->ModifiedTraits))
             $this->ModifiedTraits = $this->Traits;
 
-        $properties['traits'] = array_values($this->ModifiedTraits);
+        $properties['traits'] = array_values(array_unique($this->ModifiedTraits));
         $properties['conditions'] = array_values($this->Conditions);
 
         if ($this instanceof IWealthCost) $this->addWealthCostProperties($properties);
@@ -549,11 +549,8 @@ abstract class Card
         if (empty($this->ModifiedTraits))
             $this->ModifiedTraits = $this->Traits;
 
-        if (! in_array($trait, $this->ModifiedTraits))
-        {
-            $this->ModifiedTraits[] = $trait;
-            $this->IsUpdated = true;
-        }
+        $this->ModifiedTraits[] = $trait;
+        $this->IsUpdated = true;
 
         if (! $quietly)
         {
