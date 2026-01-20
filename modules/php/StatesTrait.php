@@ -1511,6 +1511,7 @@ trait StatesTrait
             }
             
             $this->gamestate->nextState("endOfGame");
+            return;
         }
 
         $this->notifyAllPlayers("message", clienttranslate('No player has achieved a DOMINANCE VICTORY by controlling all three core locations.'), []);
