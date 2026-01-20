@@ -443,10 +443,11 @@ class Reaction_01014 extends CardReaction
                 $event = EventFactory::createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $owner->Id);
                 $game->theah->queueEvent($event);
 
-                $this->setUsed($game->theah, true);
                 $this->moveHome = false;
                 $owner->IsUpdated = true;
             }
+
+            $this->setUsed($game->theah, true);
         }
 
         if ($this->inPlayThug)
@@ -480,6 +481,8 @@ class Reaction_01014 extends CardReaction
                 $this->inPlayThug = false;
                 $this->skipNextEvent = true;
                 $owner->IsUpdated = true;
+
+                $this->setUsed($game->theah, true);
             }
         }
 
@@ -522,6 +525,10 @@ class Reaction_01014 extends CardReaction
                     $this->inPlayThug = true;
                     $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $game->theah->queueEvent($transitionEvent);                    
+                }
+                else
+                {
+                    $this->setUsed($game->theah, true);
                 }
             }
         }
