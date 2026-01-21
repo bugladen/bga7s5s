@@ -94,7 +94,7 @@ class Action_01012 extends CharacterAction implements ISorcererAbility, IAbility
                 "target_inject_code" => $target->getInjectCode(),
             ]);
 
-            $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
+            $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $performer->Id, 1, $performer->getInjectCode());
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
