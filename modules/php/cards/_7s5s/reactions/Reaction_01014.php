@@ -528,6 +528,8 @@ class Reaction_01014 extends CardReaction
                 }
                 else
                 {
+                    $this->releaseEvent($game, $owner->Id);  // Add this line!
+                    $this->skipNextEvent = true;              // Add this to prevent re-triggering
                     $this->setUsed($game->theah, true);
                 }
             }
