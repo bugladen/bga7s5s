@@ -512,6 +512,7 @@ class Reaction_01032 extends RiskReaction
                 }
                 else
                 {
+                    $this->releaseEvent($game);
                     $this->skipNextEvent = true;
                 }
             }    
