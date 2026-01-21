@@ -157,6 +157,8 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
 
+            //ActionResolvedEvent not needed because the challenge will issue it
+
             $game->gamestate->nextState("characterChosen");
         }
     }

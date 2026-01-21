@@ -36,6 +36,24 @@
                     this.clientStateArgs = {};
                 }
             },
+
+            'highDramaPhase02002_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
+            'highDramaPhase02002_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
         }
 
         if ( methods[stateName] )

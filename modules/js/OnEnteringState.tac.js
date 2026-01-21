@@ -45,6 +45,46 @@
                 }
             },
 
+            'highDramaPhase02002_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Top 3 Cards in ${opponentName}'s Faction Deck"),
+                        {
+                            opponentName: args.args.args.opponentName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+
+            'highDramaPhase02002_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Cards not discarded from the Top 3 in ${opponentName}'s Faction Deck"),
+                        {
+                            opponentName: args.args.args.opponentName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+
         }
 
         if ( methods[stateName] )
