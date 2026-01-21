@@ -19,12 +19,16 @@ This creates your own sandbox for the game. You can run your own changes without
 
 git checkout the project into your local SFTP directory structure.
 
+Run the following git command while in the 7s5s folder to enable the pre-commit hooks:
+`git config core.hooksPath .githooks`
+
 SFTP Upload the entire project directory up into the BGA server.
+
 
 ## State of the Project 
 
 - The complete game is implemented.
-- Core Set is implemented
+- Tooth and Claw expansion is currently being implemented
 
 ## Sets Implemented 
 - Core
