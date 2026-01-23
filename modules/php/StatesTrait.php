@@ -696,8 +696,13 @@ trait StatesTrait
             }
         }
 
+        $accepted = $this->globals->get(GAME::CHALLENGE_ACCEPTED, false);
         $cancelled = $target->ControllerId == 0 || $this->globals->get(Game::CHALLENGE_CANCELLED, false);
-        if ($cancelled)
+        if ($accepted)
+        {
+            $this->gamestate->nextState("accepted");
+        }
+        else if ($cancelled)
         {
             $challengerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
             $challenger = $this->theah->getCardById($challengerId);

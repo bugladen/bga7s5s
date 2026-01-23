@@ -1434,7 +1434,26 @@ class Theah
         return $opponent;
     }
 
-
+    /**
+     * Get all combat cards played in the current duel round.
+     * @return Card[] Array of Card objects
+     */
+    public function getCombatCardsForCurrentRound(): array
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        
+        $sql = "SELECT combat_card_id FROM duel_round_combat_card WHERE duel_id = $duelId AND round = $round";
+        $combatCardIds = $this->db->getCollection($sql);
+        
+        $combatCards = [];
+        foreach ($combatCardIds as $row)
+        {
+            $combatCards[] = $this->getCardById($row['combat_card_id']);
+        }
+        
+        return $combatCards;
+    }
 
     public function getCurrentDuelThreat($characterId) : int
     {
@@ -1593,4 +1612,38 @@ class Theah
 
         return [$discount, $explanations];
     }
+
+    public function interventionCheck(Character $character): void
+    {
+        $target = $this->getCardById($this->game->globals->get(GAME::CHOSEN_TARGET));
+        if ($target->Location != $character->Location) {
+            throw new \BgaUserException($this->game->translate("Character is not at the same location"));
+        }    
+
+        //Special case for Carmella Vanessa Slavaggi
+        if ($character instanceof _01178)
+        {
+            if (! $character->canIntervene())
+            {
+                throw new \BgaUserException($this->game->translate("Character cannot Intervene."));
+            }
+        }
+        else
+        {
+            if (! $character->canIntervene() || $character->Engaged)
+            {
+                throw new \BgaUserException($this->game->translate("Character cannot Intervene."));
+            }
+        }
+
+        $challengeType = $this->game->globals->get(Game::CHALLENGE_TYPE);
+        if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE && ! $character instanceof Leader) {
+            throw new \BgaUserException($this->game->translate("Legendary Reputation: Only Leaders can Intervene"));
+        }
+        else if ($challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE)
+        {
+            throw new \BgaUserException($this->game->translate("Valeri Mikhailov: No Characters can Intervene."));
+        }
+    }
 }
+

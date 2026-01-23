@@ -51,6 +51,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterLostBrute;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
@@ -598,6 +599,19 @@ class EventFactory
             $event->wounds = $wounds;
             $event->reason = $reason;
             $event->abilityId = $abilityId;
+        }
+
+        return $event;
+    }
+
+    public static function createCharacterIntervenedEvent(int $playerId, int $oldTargetId, int $newTargetId): EventCharacterIntervened
+    {
+        $event = self::createEvent(Events::CharacterIntervened);
+        if ($event instanceof EventCharacterIntervened)
+        {
+            $event->playerId = $playerId;
+            $event->oldTargetId = $oldTargetId;
+            $event->newTargetId = $newTargetId;
         }
 
         return $event;

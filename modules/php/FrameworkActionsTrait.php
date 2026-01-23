@@ -1203,49 +1203,16 @@ trait FrameworkActionsTrait
 
         $this->theah->buildCity();
         $character = $this->theah->getCardById($id);
-
-        $target = $this->theah->getCardById($this->globals->get(GAME::CHOSEN_TARGET));
-        if ($target->Location != $character->Location) {
-            throw new \BgaUserException(self::_("Character is not at the same location"));
-        }    
-
-        //Special case for Carmella Vanessa Slavaggi
-        if ($character instanceof _01178)
-        {
-            if (! $character->canIntervene())
-            {
-                throw new \BgaUserException(self::_("Character cannot Intervene."));
-            }
-        }
-        else
-        {
-            if (! $character->canIntervene() || $character->Engaged)
-            {
-                throw new \BgaUserException(self::_("Character cannot Intervene."));
-            }
-        }
-
-        $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
-        if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE && ! $character instanceof Leader) {
-            throw new \BgaUserException(self::_("Legendary Reputation: Only Leaders can Intervene"));
-        }
-        else if ($challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE)
-        {
-            throw new \BgaUserException(self::_("Valeri Mikhailov: No Characters can Intervene."));
-        }
+        
+        $this->theah->interventionCheck($character);
 
         //Reset the conditions for defender
+        $target = $this->theah->getCardById($this->globals->get(GAME::CHOSEN_TARGET));
         $target->removeCondition(Game::DUEL_DEFENDER);
         $character->addCondition(Game::DUEL_DEFENDER);
         $this->globals->set(Game::CHOSEN_TARGET, $character->Id);
 
-        $interveneEvent = $this->theah->createEvent(Events::CharacterIntervened);
-        if ($interveneEvent instanceof EventCharacterIntervened)
-        {
-            $interveneEvent->playerId = $playerId;
-            $interveneEvent->oldTargetId = $target->Id;
-            $interveneEvent->newTargetId = $character->Id;
-        }    
+        $interveneEvent = EventFactory::createCharacterIntervenedEvent($playerId, $target->Id, $character->Id);
         $this->theah->eventCheck($interveneEvent);
 
         $engageRequired = true;

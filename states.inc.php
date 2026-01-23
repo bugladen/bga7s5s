@@ -1118,6 +1118,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stChallengeActionCheckCancelled",
             "transitions" => [
+                "accepted" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
                 "notCancelled" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE,
                 "cancelled" => States::NEXT_PLAYER,
             ]
