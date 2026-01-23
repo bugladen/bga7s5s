@@ -44,6 +44,13 @@ class Action_01081 extends RiskCityAction implements IAbilityThatTargetsCards, I
         return false;
     }
 
+    public function getPerformersForAction(int $playerId, Theah $theah): array
+    {
+        $performers = parent::getPerformersForAction($playerId, $theah);
+        $performers = array_values(array_filter($performers, fn($performer) => $performer->Engaged));
+        return $performers;
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
