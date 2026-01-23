@@ -112,6 +112,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
 
+        this.gamedatas.players[args.player_id].leader = args.leader;
+
         this.createHome(
             args.player_id, 
             args.player_color, 
