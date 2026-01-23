@@ -6,6 +6,7 @@
 # 1. Classes implementing ISorcererAbility must call createSorcererAbilityStartEvent
 # 2. Classes implementing ISorcererAbility must call createSorcererAbilityPlayedEvent
 # 3. Classes extending CharacterAction must call createActionResolvedEvent
+# 4. Classes extending CardReaction or AttachmentReaction must call $this->setUsed()
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -54,6 +55,17 @@ for file in $staged_files; do
         if ! echo "$content" | grep -q 'createActionResolvedEvent'; then
             echo -e "${RED}ERROR:${NC} $file"
             echo -e "  Class extends CharacterAction but does not call ${YELLOW}createActionResolvedEvent()${NC}"
+            errors_found=1
+        fi
+    fi
+
+    # Check if the class extends CardReaction or AttachmentReaction
+    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+(CardReaction|AttachmentReaction)'; then
+        
+        # Check for $this->setUsed()
+        if ! echo "$content" | grep -q '\$this->setUsed('; then
+            echo -e "${RED}ERROR:${NC} $file"
+            echo -e "  Class extends CardReaction/AttachmentReaction but does not call ${YELLOW}\$this->setUsed()${NC}"
             errors_found=1
         fi
     fi
