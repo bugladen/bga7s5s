@@ -18,7 +18,7 @@ class Action_01081 extends RiskCityAction implements IAbilityThatTargetsCards, I
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Engage Characters");
+        $this->Name = clienttranslate("En Garde Characters");
         $this->RequiresPerformerSelected = true;
     }
 
