@@ -131,6 +131,9 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
             $cardInfo = $deck->getCardOnTop($location);
             $card = $game->getCardObjectFromDb($cardInfo['id']);
 
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
+            $game->theah->queueEvent($sorceryStartEvent);
+
             //Sink card
             $deck->insertCardOnExtremePosition($cardInfo['id'], $location, false);
 
@@ -142,7 +145,7 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
+            $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
             $game->theah->queueEvent($event);
 
             $game->gamestate->nextState();

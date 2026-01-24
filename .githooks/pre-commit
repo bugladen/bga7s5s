@@ -48,13 +48,24 @@ for file in $staged_files; do
         fi
     fi
 
-    # Check if the class extends CharacterAction
-    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+CharacterAction'; then
+    # Check if the class extends Action
+    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+(AttachmentAction|CardAction|CharacterAction|RiskAction|RiskCityAction|SchemeAction|SchemeCityAction)'; then
         
         # Check for createActionResolvedEvent
         if ! echo "$content" | grep -q 'createActionResolvedEvent'; then
             echo -e "${RED}ERROR:${NC} $file"
-            echo -e "  Class extends CharacterAction but does not call ${YELLOW}createActionResolvedEvent()${NC}"
+            echo -e "  Class extends Action but does not call ${YELLOW}createActionResolvedEvent()${NC}"
+            errors_found=1
+        fi
+    fi
+
+    # Check if the class extends CharacterAction or AttachmentAction
+    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+(CharacterAction|AttachmentAction|SchemeAction|SchemeCityAction)'; then
+        
+        # Check for $this->setUsed()
+        if ! echo "$content" | grep -q '\$this->setUsed('; then
+            echo -e "${RED}ERROR:${NC} $file"
+            echo -e "  Class extends CharacterAction/AttachmentReaction but does not call ${YELLOW}\$this->setUsed()${NC}"
             errors_found=1
         fi
     fi

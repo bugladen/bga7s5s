@@ -104,6 +104,9 @@ class Action_01076 extends RiskAction implements ISorcererAbility
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCardById($performerId);
 
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($bloodMark->ControllerId, $bloodMark->Id, $this->Id, $performer->Id);
+            $game->theah->queueEvent($sorceryStartEvent);
+
             if ($id > 0)
             {
                 $character = $game->theah->getCardById($id);

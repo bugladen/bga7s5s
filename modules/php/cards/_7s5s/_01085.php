@@ -5,7 +5,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01085;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -13,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 
-class _01085 extends Risk implements IHasActions, ISorcererAbility
+class _01085 extends Risk implements IHasActions
 {
     use ActionTrait;
 
