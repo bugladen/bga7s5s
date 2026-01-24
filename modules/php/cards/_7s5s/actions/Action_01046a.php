@@ -97,9 +97,6 @@ class Action_01046a extends AttachmentAction
             $this->resetPlayerPassCount($game);
             $this->setUsed($game->theah, true);
 
-            $sorceryEvent = EventFactory::createSorcererAbilityPlayedEvent($darkGift->ControllerId, $darkGift->Id, $this->Id, $attachedTo->Id, $attachedTo->Id, $attachedTo->Location);
-            $game->theah->queueEvent($sorceryEvent);
-
             $game->gamestate->nextState("locationChosen");
         }
     }
