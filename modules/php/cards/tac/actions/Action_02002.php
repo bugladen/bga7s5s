@@ -76,6 +76,13 @@ class Action_02002 extends CharacterAction implements ISorcererAbility, IAbility
             $args['cards'] = $cards;
         }
 
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_02002_2)
+        {
+            $owner = $this->getOwningCard($game->theah);
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
+            $game->theah->queueEvent($sorceryStartEvent);
+        }
+
         return $args;
     }
 
@@ -215,6 +222,9 @@ class Action_02002 extends CharacterAction implements ISorcererAbility, IAbility
                 "player_name" => $game->getActivePlayerName(),
                 "opponent_name" => $opponentName,
             ]);
+
+            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
+            $game->theah->queueEvent($sorceryPlayedEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);

@@ -82,8 +82,15 @@ class Reaction_02001 extends CardReaction implements ISorcererAbility, IAbilityT
         {
             $andriana = $this->getOwningCharacter($game->theah);
             $character = $game->theah->getCharacterById($this->CharacterId);
+
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($andriana->ControllerId, $andriana->Id, $this->Id, $andriana->Id, $character->Id, $character->Location);
+            $game->theah->queueEvent($sorceryStartEvent);
+
             $event = EventFactory::createCharacterBeingWoundedEvent($character->Id, $andriana->Id, 1, $andriana->getInjectCode(), $this->Id);
             $game->theah->queueEvent($event);
+
+            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($andriana->ControllerId, $andriana->Id, $this->Id, $andriana->Id, $character->Id, $character->Location);
+            $game->theah->queueEvent($sorceryPlayedEvent);
 
             $game->notify->all("message", clienttranslate('${andriana_inject_code}: ${player_name} used Reaction to wound ${character_inject_code}'), [
                 "andriana_inject_code" => $andriana->getInjectCode(),

@@ -140,6 +140,9 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
             $game->globals->set(Game::CHALLENGE_TYPE, Game::ANDRIANA_DONDOLOS_CHALLENGE_TYPE);
             $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
 
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($andriana->ControllerId, $andriana->Id, $this->Id, $andriana->Id);
+            $game->theah->queueEvent($sorceryStartEvent);
+
             $discardedCardId = $game->globals->get(Game::CHOSEN_CARD);
             $discardedCardEvent = EventFactory::createCardDiscardedFromHandEvent($andriana->ControllerId, $discardedCardId, $andriana->Id);
             $game->theah->queueEvent($discardedCardEvent);
@@ -150,6 +153,9 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
             $moveEvent = EventFactory::createCardMovingEvent($andriana->ControllerId, $character->Id, $character->Location, $andriana->Location, false, $andriana->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 
+            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($andriana->ControllerId, $andriana->Id, $this->Id, $andriana->Id);
+            $game->theah->queueEvent($sorceryPlayedEvent);
+
             $transitionEvent = EventFactory::createTransitionEvent($andriana->ControllerId, $andriana->Id, "02001_2", $this->Id);
             $game->theah->queueEvent($transitionEvent);
 
@@ -157,7 +163,7 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
 
-            //ActionResolvedEvent not needed because the challenge will issue it
+            //createActionResolvedEvent not needed because the challenge will issue it
 
             $game->gamestate->nextState("characterChosen");
         }
