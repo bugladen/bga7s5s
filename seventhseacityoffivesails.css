@@ -1536,6 +1536,11 @@ body {
     padding:5px;
 }
 
+._7sfs-card-info-text {
+    font-size:14px;
+    font-weight:bold;
+}
+
 ._7sfs-lethal {
     font-size: 14pt;
 }
