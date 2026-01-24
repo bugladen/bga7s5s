@@ -55,9 +55,6 @@ class Action_01046b extends AttachmentAction
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($attachedTo->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);
-
-            $sorceryEvent = EventFactory::createSorcererAbilityPlayedEvent($darkGift->ControllerId, $darkGift->Id, $this->Id, $attachedTo->Id, $attachedTo->Id, $attachedTo->Location);
-            $event->theah->queueEvent($sorceryEvent);
         }
     }
 }

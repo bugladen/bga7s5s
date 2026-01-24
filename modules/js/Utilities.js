@@ -438,11 +438,11 @@ return declare('seventhseacityoffivesails.utilities', null, {
         <div style="position:relative;">
             <img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />
             <div class="_7sfs-card-info">
-                <div style="background-color:white; color:black">Traits: ${traits}</div>
-                ${card.actions?.map((action) => `<div style="${abilityStyle(action.available)}">${_('Action:')} ${_(action.shortName)}</div>`).join('') ?? ''}
-                ${card.reactions?.map((reaction) => `<div style="${abilityStyle(reaction.available)}">${_('Reaction:')} ${_(reaction.shortName)}</div>`).join('') ?? ''}
-                ${card.maneuvers?.map((maneuver) => `<div style="${abilityStyle(maneuver.available)}">${_('Maneuver:')} ${_(maneuver.shortName)}</div>`).join('') ?? ''}
-                ${card.techniques?.map((technique) => `<div style="${abilityStyle(technique.available)}">${_('Technique:')} ${_(technique.shortName)}</div>`).join('') ?? ''}
+                <div class="_7sfs-card-info-text" style="background-color:white; color:black">Traits: ${traits}</div>
+                ${card.actions?.map((action) => `<div class="_7sfs-card-info-text" style="${abilityStyle(action.available)}">${_('Action:')} ${_(action.shortName)}</div>`).join('') ?? ''}
+                ${card.reactions?.map((reaction) => `<div class="_7sfs-card-info-text" style="${abilityStyle(reaction.available)}">${_('Reaction:')} ${_(reaction.shortName)}</div>`).join('') ?? ''}
+                ${card.maneuvers?.map((maneuver) => `<div class="_7sfs-card-info-text" style="${abilityStyle(maneuver.available)}">${_('Maneuver:')} ${_(maneuver.shortName)}</div>`).join('') ?? ''}
+                ${card.techniques?.map((technique) => `<div class="_7sfs-card-info-text" style="${abilityStyle(technique.available)}">${_('Technique:')} ${_(technique.shortName)}</div>`).join('') ?? ''}
             </div>
         </div>
         `;

@@ -50,15 +50,29 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
             if ($event instanceof EventChallengeAccepted && $this->isAvailable())
             {
                 $odette = $this->getOwningCharacter($event->theah);
-
+    
                 if ($odette->Location != Game::LOCATION_PLAYER_HOME)
                 {
                     $challenger = $event->theah->getCharacterById($event->challengerId);
 
                     if ($challenger->Location == $odette->Location)
                     {
-                        $reactionEvent = EventFactory::createReactionTransitionEvent($odette->ControllerId, $odette->Id, $this->Id);
-                        $event->theah->queueEvent($reactionEvent);
+                        $adjacentLocations = $event->theah->getAdjacentCityLocations($odette->Location, $includeHome = false);
+                        $renownAtLocations = false;
+                        foreach ($adjacentLocations as $locationName)
+                        {
+                            $location = $event->theah->getCityLocation($locationName);
+                            if ($location->Reknown > 0)
+                            {
+                                $renownAtLocations = true;
+                            }
+                        }
+                        
+                        if ($renownAtLocations)
+                        {
+                            $reactionEvent = EventFactory::createReactionTransitionEvent($odette->ControllerId, $odette->Id, $this->Id);
+                            $event->theah->queueEvent($reactionEvent);
+                        }
                     }    
                 }
             }
@@ -73,8 +87,22 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
                     if ($challenger->Location == $odette->Location)
                     {
-                        $reactionEvent = EventFactory::createReactionTransitionEvent($odette->ControllerId, $odette->Id, $this->Id);
-                        $event->theah->queueEvent($reactionEvent);
+                        $adjacentLocations = $event->theah->getAdjacentCityLocations($odette->Location, $includeHome = false);
+                        $renownAtLocations = false;
+                        foreach ($adjacentLocations as $locationName)
+                        {
+                            $location = $event->theah->getCityLocation($locationName);
+                            if ($location->Reknown > 0)
+                            {
+                                $renownAtLocations = true;
+                            }
+                        }
+                        
+                        if ($renownAtLocations)
+                        {
+                            $reactionEvent = EventFactory::createReactionTransitionEvent($odette->ControllerId, $odette->Id, $this->Id);
+                            $event->theah->queueEvent($reactionEvent);
+                        }
                     }    
                 }
             }
