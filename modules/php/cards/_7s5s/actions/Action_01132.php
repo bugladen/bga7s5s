@@ -50,6 +50,9 @@ class Action_01132 extends RiskCityAction implements ISorcererAbility
             $performer = $event->theah->getCharacterById($performerId);
             $owner = $this->getOwningCard($event->theah);
 
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
+            $event->theah->queueEvent($sorceryStartEvent);
+
             $characters = $event->theah->getCharactersAtLocation($performer->Location);
             $engagedCharacters = array_values(array_filter($characters, fn($character) => $character->Engaged));
             foreach ($engagedCharacters as $character)
@@ -64,6 +67,9 @@ class Action_01132 extends RiskCityAction implements ISorcererAbility
                 $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
                 $event->theah->queueEvent($engageEvent);
             }
+
+            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
+            $event->theah->queueEvent($sorceryPlayedEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);

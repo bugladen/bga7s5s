@@ -144,14 +144,18 @@ class Action_01134 extends RiskAction implements ISorcererAbility
             }
             $game->globals->set(Game::CHOSEN_CARD, json_encode($cards));
 
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
+            $game->theah->queueEvent($sorceryStartEvent);
+
             $game->gamestate->nextState("opponentChosen");
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01134_4)
         {
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             if ($id == 1)
             {
-                $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
                 $performer = $game->theah->getCharacterById($performerId);
                 if ($performer->Engaged)
                 {
@@ -169,6 +173,9 @@ class Action_01134 extends RiskAction implements ISorcererAbility
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
                 $game->theah->queueEvent($actionResolvedEvent);
             }
+
+            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
+            $game->theah->queueEvent($sorceryPlayedEvent);
 
             $game->gamestate->nextState("engageChosen");
         }
