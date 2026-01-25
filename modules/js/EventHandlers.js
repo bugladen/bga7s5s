@@ -99,6 +99,24 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
     onChooseCardClicked: function(control_name, item_id) 
     {
         const methods = {
+            'planningPhaseResolveSchemes_02005_4': () => {
+                if (this.chooseList.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }                
+            },
+
+            'planningPhaseResolveSchemes_02005_5': () => {
+                this.addSortTagToCard(item_id);
+
+                if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }                
+            },
+
             'highDramaPhase01038_3': () => {
                 if (item_id === undefined) return;
                 var items = this.chooseList.getSelectedItems();

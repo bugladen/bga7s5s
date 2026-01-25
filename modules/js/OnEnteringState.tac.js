@@ -85,6 +85,73 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_02005': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 1;
+                    locations.forEach((location) => {
+                        this.makeCityLocationSelectable(location);
+                    });
+               }
+            },
+
+            'planningPhaseResolveSchemes_02005_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 1;
+                    locations.forEach((location) => {
+                        const imageElement = $(location);
+                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
+                        const reknown = parseInt(reknownElement.innerHTML);
+                        if (reknown > 0) return;
+    
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
+            'planningPhaseResolveSchemes_02005_4': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Top ${count} Cards in ${opponentName}'s Faction Deck"),
+                        {
+                            opponentName: args.args.args.opponentName,
+                            count: args.args.args.cards.length
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+
+            'planningPhaseResolveSchemes_02005_5': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Top ${count} Cards in ${opponentName}'s Faction Deck"),
+                        {
+                            opponentName: args.args.args.opponentName,
+                            count: args.args.args.cards.length
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+
         }
 
         if ( methods[stateName] )

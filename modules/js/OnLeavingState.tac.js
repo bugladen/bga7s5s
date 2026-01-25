@@ -54,6 +54,36 @@
                     this.chooseList.setSelectionMode(0);
                 }
             },
+
+            'planningPhaseResolveSchemes_02005': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
+            'planningPhaseResolveSchemes_02005_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
+            'planningPhaseResolveSchemes_02005_4': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
+            'planningPhaseResolveSchemes_02005_5': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
         }
 
         if ( methods[stateName] )

@@ -76,13 +76,6 @@ class Action_02002 extends CharacterAction implements ISorcererAbility, IAbility
             $args['cards'] = $cards;
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_02002_2)
-        {
-            $owner = $this->getOwningCard($game->theah);
-            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
-            $game->theah->queueEvent($sorceryStartEvent);
-        }
-
         return $args;
     }
 
@@ -116,6 +109,9 @@ class Action_02002 extends CharacterAction implements ISorcererAbility, IAbility
 
             $game->globals->set(Game::CHOSEN_CARD, json_encode($cards));
 
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
+            $game->theah->queueEvent($sorceryStartEvent);
+
             $game->gamestate->nextState("playerChosen");
         }
 
@@ -128,7 +124,7 @@ class Action_02002 extends CharacterAction implements ISorcererAbility, IAbility
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_02002_2)
         {
             $owner = $this->getOwningCard($game->theah);
-            $deck = $game->getGameDeckObject($owner->ControllerId);
+            $deck = $game->getGameDeckObject();
 
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
             $deckName = $game->getPlayerFactionDeckName($playerId);
@@ -209,14 +205,7 @@ class Action_02002 extends CharacterAction implements ISorcererAbility, IAbility
             }
 
             $owner = $this->getOwningCard($game->theah);
-            if ($playerId == 0)
-            {
-                $message = clienttranslate('${card_inject_code}: ${player_name} has chosen the order of the remaining cards in the City Deck.');
-            }
-            else
-            {
-                $message = clienttranslate('${card_inject_code}: ${player_name} has chosen the order of the remaining cards in ${opponent_name}\'s Faction Deck.');
-            }
+            $message = clienttranslate('${card_inject_code}: ${player_name} has chosen the order of the remaining cards in ${opponent_name}\'s Faction Deck.');
             $game->notify->all("message", $message, [
                 "card_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getActivePlayerName(),
