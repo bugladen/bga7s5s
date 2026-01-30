@@ -8,11 +8,13 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01202 extends AttachmentReaction
 {
     private int $SavedCharacterId;
+    private bool $WaitAfterDuel = false;
 
     public function __construct()
     {
@@ -58,6 +60,48 @@ class Reaction_01202 extends AttachmentReaction
                 }
             } 
         }
+
+        if ($event instanceof EventDuelEnd && $this->ownerIsAttached($event->theah) && $this->isAvailable() && $this->WaitAfterDuel)
+        {
+            $this->saveCharacter($event->theah->game);
+        }
+    }
+
+    private function saveCharacter(Game $game): void
+    {
+        $owner = $this->getOwningCard($game->theah);
+
+        $removedFromLockerEvent = EventFactory::createCardRemovedFromLockerEvent($owner->ControllerId, $this->SavedCharacterId);
+        $game->theah->eventCheck($removedFromLockerEvent);
+
+        $approachDeckEvent = EventFactory::createCharacterPutIntoApproachDeckEvent($owner->ControllerId, $this->SavedCharacterId);
+        $game->theah->eventCheck($approachDeckEvent);
+
+        $attachment = $this->getOwningAttachment($game->theah);
+        $owningCharacter = $this->getOwningCharacter($game->theah);
+        $unequipEvent = EventFactory::createAttachmentUnequippedEvent($owner->ControllerId, $owningCharacter->Id, $attachment->Id);
+        $game->theah->eventCheck($unequipEvent);
+
+        $lockerEvent = EventFactory::createCardSentToLockerEvent($attachment->ControllerId, $attachment->Id);
+        $game->theah->eventCheck($lockerEvent);
+
+        $targetCharacter = $game->theah->getCharacterById($this->SavedCharacterId);
+        $game->notify->all('message', clienttranslate('${owner_inject_code}: ${player_name} used Reaction to put ${character_inject_code} into their Approach Deck.'), [
+            'owner_inject_code' => $owner->getInjectCode(),
+            'player_name' => $game->getActivePlayerName(),
+            'character_inject_code' => $targetCharacter->getInjectCode(),
+        ]);
+
+        $this->setUsed($game->theah, true);
+
+        $game->theah->queueEvent($removedFromLockerEvent);
+        $game->theah->queueEvent($approachDeckEvent);
+        $game->theah->queueEvent($unequipEvent);
+        $game->theah->queueEvent($lockerEvent);
+
+        $this->WaitAfterDuel = false;
+        $this->SavedCharacterId = 0;
+        $owner->IsUpdated = true;
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -66,34 +110,25 @@ class Reaction_01202 extends AttachmentReaction
 
         if ($reactionId == 'saveCharacter')
         {
-            $playerId = $game->getActivePlayerId();
 
-            $removedFromLockerEvent = EventFactory::createCardRemovedFromLockerEvent($playerId, $this->SavedCharacterId);
-            $game->theah->eventCheck($removedFromLockerEvent);
+            $inDuel = $game->theah->game->globals->get(Game::IN_DUEL);
+            if ($inDuel)
+            {
+                $owner = $this->getOwningCard($game->theah);
+                $targetCharacter = $game->theah->getCharacterById($this->SavedCharacterId);
+                $game->notify->all('message', clienttranslate('${owner_inject_code}: ${player_name} used Reaction to put ${character_inject_code} into their Approach Deck. THIS WILL HAPPEN AT THE END OF THE DUEL.'), [
+                    'owner_inject_code' => $owner->getInjectCode(),
+                    'player_name' => $game->getActivePlayerName(),
+                    'character_inject_code' => $targetCharacter->getInjectCode(),
+                ]);
 
-            $approachDeckEvent = EventFactory::createCharacterPutIntoApproachDeckEvent($playerId, $this->SavedCharacterId);
-            $game->theah->eventCheck($approachDeckEvent);
-
-            $attachment = $this->getOwningAttachment($game->theah);
-            $owningCharacter = $this->getOwningCharacter($game->theah);
-            $unequipEvent = EventFactory::createAttachmentUnequippedEvent($playerId, $owningCharacter->Id, $attachment->Id);
-            $game->theah->eventCheck($unequipEvent);
-
-            $lockerEvent = EventFactory::createCardSentToLockerEvent($attachment->ControllerId, $attachment->Id);
-            $game->theah->eventCheck($lockerEvent);
-
-            $owner = $this->getOwningCard($game->theah);
-            $targetCharacter = $game->theah->getCharacterById($this->SavedCharacterId);
-            $game->notify->all('message', clienttranslate('${owner_inject_code}: ${player_name} used Reaction to put ${character_inject_code} into their Approach Deck.'), [
-                'owner_inject_code' => $owner->getInjectCode(),
-                'player_name' => $game->getActivePlayerName(),
-                'character_inject_code' => $targetCharacter->getInjectCode(),
-            ]);
-
-            $game->theah->queueEvent($removedFromLockerEvent);
-            $game->theah->queueEvent($approachDeckEvent);
-            $game->theah->queueEvent($unequipEvent);
-            $game->theah->queueEvent($lockerEvent);
+                $this->WaitAfterDuel = true;
+                $owner->IsUpdated = true;
+            }
+            else
+            {
+                $this->saveCharacter($game);
+            }
         }
 
         $game->gamestate->nextState("done");
