@@ -14,6 +14,17 @@
     onEnteringState_tac: function( stateName, args )
     {
         const methods = {
+            'duelChooseTechnique_02006': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+
             'highDramaPhase02001': () => {
                 if (this.isCurrentPlayerActive())
                 {

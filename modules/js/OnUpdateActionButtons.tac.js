@@ -14,6 +14,33 @@
     onUpdateActionButtons_tac: function( stateName, args )
     {
         const methods = {            
+            'planningPhaseResolveSchemes_02005': () => {
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
+            'planningPhaseResolveSchemes_02005_2': () => {
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
+            'planningPhaseResolveSchemes_02005_3': () => {
+                args.args.opponents.forEach((opponent) => {
+                    this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
+                });
+            },
+
+            'planningPhaseResolveSchemes_02005_4': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onMultipleChooseListCardsConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');            
+            },
+
+            'planningPhaseResolveSchemes_02005_5': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onMultipleChooseListCardsConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');            
+            },
+
             'highDramaPhase02001': () => {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onChooseHandCardConfirmed());
@@ -42,33 +69,11 @@
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onCardsSorted());
                 dojo.addClass('actChooseCardSelected', 'disabled');            
             },
-
-            'planningPhaseResolveSchemes_02005': () => {
-                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                dojo.addClass('actCityLocationsSelected', 'disabled');
+            'duelChooseTechnique_02006': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
-            'planningPhaseResolveSchemes_02005_2': () => {
-                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
-                dojo.addClass('actCityLocationsSelected', 'disabled');
-            },
-
-            'planningPhaseResolveSchemes_02005_3': () => {
-                args.args.opponents.forEach((opponent) => {
-                    this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
-                });
-            },
-
-            'planningPhaseResolveSchemes_02005_4': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onMultipleChooseListCardsConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');            
-            },
-
-            'planningPhaseResolveSchemes_02005_5': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onMultipleChooseListCardsConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');            
-            },
         }
 
         if ( methods[stateName] )

@@ -16,6 +16,15 @@
     {
 
         const methods = {
+            'duelChooseTechnique_02006': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase02001': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
