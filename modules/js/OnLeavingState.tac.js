@@ -64,6 +64,15 @@
                 }
             },
 
+            'highDramaPhase02007': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'planningPhaseResolveSchemes_02005': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
