@@ -1861,7 +1861,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
             {
                 element.innerHTML = '';
             }
-            element.innerHTML += `<p>${args.cardName}: ${args.effectName}</p>`;
+            else
+            {
+                //Make sure there is no duplicate
+                const effectName = `${args.cardName}: ${args.effectName}`;
+                if (! element.innerHTML.includes(effectName))
+                {
+                    element.innerHTML += `<p>${effectName}</p>`;
+                }
+            }
         }
 
         let riposte = 0;
