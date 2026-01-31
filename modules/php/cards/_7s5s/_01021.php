@@ -41,6 +41,8 @@ class _01021 extends FactionAttachment
             "Sabotage",
             "Unique"
         ];
+
+        $this->resetCard();
     }
 
     public function eventCheck(Event $event)
