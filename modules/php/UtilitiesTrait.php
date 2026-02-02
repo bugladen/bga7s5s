@@ -57,10 +57,145 @@ trait UtilitiesTrait
         return $maneuvers;
     }
 
+    /**
+     * Safely unserialize data, attempting to fix corrupted protected property null bytes.
+     * 
+     * When serialized PHP data with protected properties is copied from logs/bug reports,
+     * the null bytes (\0) around the asterisk get stripped, causing unserialize to fail.
+     * This function detects and fixes that corruption pattern.
+     */
+    public function safeUnserialize(string $data): mixed
+    {
+        // First, try normal unserialize
+        $result = @unserialize($data);
+        if ($result !== false) {
+            return $result;
+        }
+
+        // Capture the original error
+        $originalError = error_get_last();
+        $originalErrorMsg = $originalError ? $originalError['message'] : 'unknown error';
+
+        // Count fixes applied for debugging
+        $fixCount = 0;
+
+        // Fix 1: Correct string length declarations that don't match actual content
+        $fixed = preg_replace_callback(
+            '/s:(\d+):"([^"]*)";/',
+            function ($matches) use (&$fixCount) {
+                $declaredLength = (int)$matches[1];
+                $actualContent = $matches[2];
+                $actualLength = strlen($actualContent);
+                
+                if ($declaredLength !== $actualLength) {
+                    $fixCount++;
+                    return 's:' . $actualLength . ':"' . $actualContent . '";';
+                }
+                
+                return $matches[0];
+            },
+            $data
+        );
+
+        // Check if preg_replace failed
+        if ($fixed === null) {
+            throw new \Exception("Failed to fix serialized data: regex error. PCRE error code: " . preg_last_error());
+        }
+
+        // Fix 2: Corrupted protected property names (missing \0*\0)
+        // Pattern: s:XX:"*PropertyName"; where XX is 2 more than visible length
+        $fixed = preg_replace_callback(
+            '/s:(\d+):"\*([A-Za-z_][A-Za-z0-9_]*)";/',
+            function ($matches) use (&$fixCount) {
+                $declaredLength = (int)$matches[1];
+                $propertyName = $matches[2];
+                $visibleLength = 1 + strlen($propertyName); // asterisk + property name
+                
+                // If declared length is 2 more than visible, null bytes are missing
+                if ($declaredLength === $visibleLength + 2) {
+                    $fixCount++;
+                    // Reinsert the null bytes: \0*\0PropertyName
+                    return 's:' . $declaredLength . ':"' . "\0*\0" . $propertyName . '";';
+                }
+                
+                // No fix needed, return original
+                return $matches[0];
+            },
+            $fixed
+        );
+
+        // Check if preg_replace failed
+        if ($fixed === null) {
+            throw new \Exception("Failed to fix serialized data (pass 2): regex error. PCRE error code: " . preg_last_error());
+        }
+
+        $result = @unserialize($fixed);
+        if ($result !== false) {
+            return $result;
+        }
+
+        // Still failed - get the specific error for debugging
+        $error = error_get_last();
+        $errorMsg = $error ? $error['message'] : 'unknown error';
+        
+        // Find potential protected properties for debugging
+        preg_match_all('/s:(\d+):"\*([^"]+)"/', $data, $protectedProps);
+        $propsFound = count($protectedProps[0]);
+        
+        // Also search for asterisk patterns that might be malformed
+        preg_match_all('/\*[A-Za-z]/', $data, $asteriskPatterns);
+        $asteriskCount = count($asteriskPatterns[0]);
+        
+        // Check for any length mismatches in string declarations
+        $lengthIssues = [];
+        preg_match_all('/s:(\d+):"([^"]*)"/', $data, $stringMatches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+        foreach ($stringMatches as $match) {
+            $declaredLen = (int)$match[1][0];
+            $actualLen = strlen($match[2][0]);
+            if ($declaredLen !== $actualLen) {
+                $offset = $match[0][1];
+                $preview = substr($match[2][0], 0, 20);
+                $lengthIssues[] = "offset {$offset}: declared {$declaredLen}, actual {$actualLen} ('{$preview}...')";
+                if (count($lengthIssues) >= 3) break; // Limit to first 3
+            }
+        }
+        $lengthInfo = count($lengthIssues) > 0 ? " Length mismatches: " . implode("; ", $lengthIssues) : " No length mismatches found";
+        
+        // Extract offset from error message and show surrounding data
+        $contextInfo = "";
+        if (preg_match('/offset (\d+)/', $originalErrorMsg, $offsetMatch)) {
+            $offset = (int)$offsetMatch[1];
+            $start = max(0, $offset - 30);
+            $snippet = substr($data, $start, 80);
+            // Convert non-printable chars to hex for visibility
+            $hexSnippet = '';
+            for ($i = 0; $i < strlen($snippet); $i++) {
+                $char = $snippet[$i];
+                $ord = ord($char);
+                if ($ord < 32 || $ord > 126) {
+                    $hexSnippet .= '\\x' . sprintf('%02x', $ord);
+                } else {
+                    $hexSnippet .= $char;
+                }
+            }
+            $contextInfo = " Context at offset {$offset}: [{$hexSnippet}]";
+        }
+        
+        throw new \Exception(
+            "Failed to unserialize data. " .
+            "Original error: " . $originalErrorMsg . ". " .
+            "Protected props (regex): " . $propsFound . ". " .
+            "Asterisk patterns: " . $asteriskCount . ". " .
+            "Fixes applied: " . $fixCount . "." .
+            $lengthInfo . "." .
+            $contextInfo
+        );
+    }
+
     public function getCardObjectFromDb($cardId) : Card 
     {
         $data = $this->getObjectFromDB("SELECT card_serialized FROM card WHERE card_id = $cardId");
-        $card = unserialize($data['card_serialized']);
+        $card = $this->safeUnserialize($data['card_serialized']);
         return $card;
     }
 
@@ -112,7 +247,7 @@ trait UtilitiesTrait
             $row['defenderId'] = $round['defenderId'];
             $row['actorId'] = $round['actorId'];
 
-            $actor = unserialize($round['actorSerialized']);
+            $actor = $this->safeUnserialize($round['actorSerialized']);
             $row['actor'] = $actor->getPropertyArray($this);
 
             //Some attachements have been destroyed from play so we need to buffer them
@@ -353,9 +488,9 @@ trait UtilitiesTrait
     {
         $count = 0;
         $offHandCount = 0;
-        foreach ($character->Attachments as $attachment) 
+        foreach ($character->Attachments as $attachmentId) 
         {
-            $attachment = $this->theah->getAttachmentById($attachment);
+            $attachment = $this->theah->getAttachmentById($attachmentId);
             if ($attachment && $attachment->hasTrait($type))
             {
                 $count++;
@@ -686,6 +821,7 @@ trait UtilitiesTrait
         }
         $game->updateCardObjectInDb($card);
 
+        // getRequiredAttachTargetId() not required for Risk Attachments
         $event = EventFactory::createAttachmentEquippedEvent($controllerId, $targetId, $card->Id, 0, 0, $asAction = false);
         $game->theah->queueEvent($event);
     }
