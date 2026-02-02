@@ -24,8 +24,7 @@ class State_highDramaPhase01167_2 extends GameState
             descriptionMyTurn: clienttranslate('Liberating Goods') . clienttranslate(': ${you} must choose a Non-Unique Attachment to Equip from chosen discard pile: '),
             transitions: [
                 "back" => States::HIGH_DRAMA_PLAYER_TURN_01167,
-                "attachmentChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-                "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+                "attachmentChosen" => States::HIGH_DRAMA_PLAYER_TURN_01167_3,
             ],
             updateGameProgression: false,
             initialPrivate: null,
@@ -49,11 +48,6 @@ class State_highDramaPhase01167_2 extends GameState
         $this->game->actFromCardWithId($id);
     }
 
-    #[PossibleAction]
-    public function actFromCardPass(): void
-    {
-        $this->game->actFromCardPass();
-    }
 
     public function zombie(int $playerId): void
     {

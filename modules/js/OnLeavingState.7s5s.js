@@ -1243,7 +1243,6 @@
 
             'highDramaPhase01167_2': () => {
                 if (this.isCurrentPlayerActive()) {
-                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
 
                     dojo.addClass('choose_container', 'hidden');
                     dojo.addClass('chooseList', 'hidden');
@@ -1253,6 +1252,14 @@
             },
 
             'highDramaPhase01167_3': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase01167_4': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
                     dojo.addClass('choose_container', 'hidden');

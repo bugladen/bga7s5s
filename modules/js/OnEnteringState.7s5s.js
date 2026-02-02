@@ -1998,9 +1998,6 @@
                     dojo.removeClass('choose_container', 'hidden');
                     dojo.removeClass('chooseList', 'hidden');
 
-                    this.highlightCharacterChosen(args.args.args.performerId);
-                    this.clientStateArgs.performerId = args.args.args.performerId;
-                    
                     args.args.args.cards.forEach((card) => {
                         this.addCardToDeck(this.chooseList, card);
                     });
@@ -2017,6 +2014,15 @@
             },
 
             'highDramaPhase01167_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+
+            'highDramaPhase01167_4': () => {
                 if (this.isCurrentPlayerActive()) {
                     dojo.removeClass('choose_container', 'hidden');
                     dojo.removeClass('chooseList', 'hidden');
