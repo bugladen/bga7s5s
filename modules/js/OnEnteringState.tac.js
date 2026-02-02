@@ -107,6 +107,39 @@
                 }            
             },
 
+            'highDramaPhase02008': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Risks in your Discard Pile"),
+                        {}
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
+            'highDramaPhase02008_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+
             'planningPhaseResolveSchemes_02005': () => {
                 if (this.isCurrentPlayerActive()) {
                     const locations = this.getListofAvailableCityLocationImages();

@@ -147,7 +147,7 @@ class EventFactory
         return $event;
     }
 
-    public static function createAttachmentEquippedEvent(int $playerId, int $characterId, int $attachmentId, int $discount, int $cost, bool $asAction = true, string $explanations = ''): EventAttachmentEquipped
+    public static function createAttachmentEquippedEvent(int $playerId, int $characterId, int $attachmentId, int $discount, int $cost, bool $asAction = true, string $explanations = '', bool $messageHidden = false): EventAttachmentEquipped
     {
         $event = self::createEvent(Events::AttachmentEquipped);
         if ($event instanceof EventAttachmentEquipped)
@@ -159,6 +159,7 @@ class EventFactory
             $event->cost = $cost;
             $event->asAction = $asAction;
             $event->explanations = $explanations;
+            $event->messageHidden = $messageHidden;
         }
 
         return $event;
@@ -394,13 +395,15 @@ class EventFactory
         return $event;
     }
 
-    public static function createCardRemovedFromPlayerDiscardPileEvent(int $playerId, int $cardId): EventCardRemovedFromPlayerDiscardPile
+    public static function createCardRemovedFromPlayerDiscardPileEvent(int $playerId, int $cardId, bool $messageHidden = false, bool $permanentlyHide = false): EventCardRemovedFromPlayerDiscardPile
     {
         $event = self::createEvent(Events::CardRemovedFromPlayerDiscardPile);
         if ($event instanceof EventCardRemovedFromPlayerDiscardPile)
         {
             $event->playerId = $playerId;
             $event->cardId = $cardId;
+            $event->messageHidden = $messageHidden;
+            $event->permanentlyHide = $permanentlyHide;
         }
 
         return $event;

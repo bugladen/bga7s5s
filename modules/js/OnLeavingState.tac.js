@@ -73,6 +73,27 @@
                 }
             },
 
+            'highDramaPhase02008': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.clientStateArgs = {};
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
+            'highDramaPhase02008_2': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'planningPhaseResolveSchemes_02005': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();

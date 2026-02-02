@@ -11,6 +11,7 @@ class EventAttachmentEquipped extends Event
     public int $cost;
     public bool $asAction;
     public string $explanations;
+    public bool $messageHidden;
 
     public function __construct()
     {
@@ -22,5 +23,6 @@ class EventAttachmentEquipped extends Event
         $this->cost = 0;
         $this->asAction = true;
         $this->explanations = '';
+        $this->messageHidden = false;
     }
 }

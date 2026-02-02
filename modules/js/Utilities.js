@@ -561,7 +561,15 @@ return declare('seventhseacityoffivesails.utilities', null, {
             // so that it doesn't interfere with the actual attachment in play
             if (character.duelPrefix)
                 divId = `${character.duelPrefix}_${attachment.id}`;
-            this.createAttachmentCard(divId, attachment, character.divId, inDuel);
+            if (attachment.faceDown) 
+            {
+                const playerInfo = this.gamedatas.players[attachment.controllerId];
+                this.createHiddenAttachmentCard(divId, attachment, character.divId, playerInfo.color, inDuel);
+            }
+            else
+            {
+                this.createAttachmentCard(divId, attachment, character.divId, inDuel);
+            }
         });
 
         dojo.connect($(divId), 'onclick', this, 'splayAttachments');
@@ -598,6 +606,42 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         if (card.controllerId === this.player_id)
             this.addTippyTooltip( divId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.CARD_TOOLTIP_DELAY);
+    },
+
+    createHiddenAttachmentCard: function( divId, attachment, targetDiv, playerColor, inDuel = false )
+    {
+        //Set the divId of the card
+        attachment.divId = divId;
+
+        //Add to the card properties cache
+        if (!inDuel)
+            this.cardProperties[attachment.id] = attachment;
+
+        //Get the attached character and set up as a container
+        if (attachment.attachedToId) 
+        {
+            const character = this.cardProperties[attachment.attachedToId];
+            if (character)
+                dojo.addClass(character.divId, '_7sfs-attachment-container');
+            else
+                attachment.attachedToId = undefined;
+        }
+
+        let placement = inDuel ? 'last' : attachment.attachedToId ? 'last' : 'before';
+        let attachmentIndex = attachment.attachmentIndex ?? 0;
+
+        dojo.place( this.format_block( 'jstpl_card_hidden_attachment', {
+            id: divId,
+            attachmentIndex: attachmentIndex,
+            image: attachment.cardBackImage,
+            player_color: playerColor,
+        }), targetDiv, placement );
+
+        dojo.addClass(divId, '_7sfs-attached-card');
+
+        //Show tooltip only to the controller
+        if (attachment.controllerId === this.player_id)
+            this.addTippyTooltip( divId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(attachment.image) + attachment.image}" />`, this.CARD_TOOLTIP_DELAY);
     },
 
     createEventCard: function( divId, event, targetDiv )

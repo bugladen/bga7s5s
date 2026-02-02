@@ -75,6 +75,16 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase02008': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');            
+            },
+
+            'highDramaPhase02008_2': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'duelChooseTechnique_02006': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

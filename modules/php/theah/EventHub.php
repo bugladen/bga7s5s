@@ -156,14 +156,21 @@ trait EventHub
                     }
                     
                     // Notify players of attachment equipped
-                    $message = clienttranslate('${player_name} equipped ${attachment_inject_code} to ${performer_inject_code}. ');
-                    if ($event->asAction)
+                    if ($event->messageHidden)
                     {
-                        $message .= clienttranslate('This was done at a cost of ${cost} Wealth (discount of ${discount}).');
-                        if ($event->explanations != '')
+                        $message = '${player_name} equipped a card under ${performer_inject_code}. ';
+                    }
+                    else
+                    {
+                        $message = clienttranslate('${player_name} equipped ${attachment_inject_code} to ${performer_inject_code}. ');
+                        if ($event->asAction)
                         {
-                            $message .= clienttranslate('<br>${explanations}');
-                        }
+                            $message .= clienttranslate('This was done at a cost of ${cost} Wealth (discount of ${discount}).');
+                            if ($event->explanations != '')
+                            {
+                                $message .= clienttranslate('<br>${explanations}');
+                            }
+                        }    
                     }
 
                     $deck = $theah->game->getGameDeckObject();
@@ -268,7 +275,16 @@ trait EventHub
                     $modifiedFinesse = $character->ModifiedFinesse;
                     $modifiedInfluence = $character->ModifiedInfluence;
 
-                    $theah->game->notify->all("attachmentUnequipped", clienttranslate('${attachment_inject_code} has been unequipped from ${character_inject_code}.'), [
+                    if ($attachment->FaceDown)
+                    {
+                        $message = clienttranslate('[Hidden Card] has been unequipped from ${character_inject_code}.');
+                    }
+                    else
+                    {
+                        $message = clienttranslate('${attachment_inject_code} has been unequipped from ${character_inject_code}.');
+                    }
+
+                    $theah->game->notify->all("attachmentUnequipped", clienttranslate($message), [
                         "player_id" => $event->playerId,
                         "attachment_inject_code" => $attachment->getInjectCode(),
                         "character_inject_code" => $character->getInjectCode(),
@@ -497,7 +513,16 @@ trait EventHub
                     $card->Engaged = false;
                     $card->IsUpdated = true;
 
-                    $theah->game->notify->all("cardDiscardedFromPlay", clienttranslate('${card_inject_code} discarded from ${location}.'), [
+                    if ($card->FaceDown)
+                    {
+                        $message = clienttranslate('[Hidden Card] discarded from ${location}.');
+                    }
+                    else
+                    {
+                        $message = clienttranslate('${card_inject_code} discarded from ${location}.');
+                    }
+
+                    $theah->game->notify->all("cardDiscardedFromPlay", clienttranslate($message), [
                         'i18n' => ['location'],
                         "playerId" => $event->ownerId,
                         "card_inject_code" => $card->getInjectCode(),
@@ -679,13 +704,27 @@ trait EventHub
             case $event instanceof EventCardRemovedFromPlayerDiscardPile:
                 $handler = function (Theah $theah, EventCardRemovedFromPlayerDiscardPile $event)
                 {
+                    if ($event->messageHidden)
+                    {
+                        $message = clienttranslate('[Hidden Card] removed from ${player_name}\'s discard pile.');
+                    }
+                    else
+                    {
+                        $message = clienttranslate('${card_inject_code} removed from ${player_name}\'s discard pile.');
+                    }
                     $card = $theah->getCardById($event->cardId);
-                    $theah->game->notify->all("cardRemovedFromPlayerDiscardPile", clienttranslate('${card_inject_code} removed from ${player_name}\'s discard pile.'), [
+                    $theah->game->notify->all("cardRemovedFromPlayerDiscardPile", $message, [
                         "player_id" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "card_inject_code" => $card->getInjectCode(),
                         "card" => $card->getPropertyArray($this->game),
                     ]);
+
+                    if ($event->permanentlyHide)
+                    {
+                        $deck = $theah->game->getGameDeckObject();
+                        $deck->moveCard($event->cardId, Game::LOCATION_PERMANENTLY_HIDDEN);
+                    }
                 };
                 $handler($this, $event);
                 break;
