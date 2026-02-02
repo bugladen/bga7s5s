@@ -210,7 +210,7 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01167_3)
         {
             $attachmentId = $game->globals->get(Game::CHOSEN_CARD);
-            $attachment = $game->getCardObjectFromDb($attachmentId);
+            $attachment = $game->theah->getAttachmentById($attachmentId);
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
@@ -255,8 +255,11 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
             $removeFromDiscardEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($opponentId, $attachmentId);
             $game->theah->queueEvent($removeFromDiscardEvent);
 
+            //Some attachments actually attach to different targets
+            $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $performerId);
+
             //Equip the attachment
-            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $performerId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
+            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $actualTargetId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
             $game->theah->eventCheck($equipAttachmentEvent);
             $game->theah->queueEvent($equipAttachmentEvent);
     
