@@ -531,7 +531,6 @@ return declare('seventhseacityoffivesails.notifications', null, {
         {
             attachment.attachmentIndex = null;
             attachment.attachedToId = null;
-            attachment.controllerId = 0;
         }
 
         if (character)
