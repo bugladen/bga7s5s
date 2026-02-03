@@ -98,7 +98,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         notifs.forEach((notif) => {
             dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
-            this.notifqueue.setSynchronous(notif[0], notif[1]);
+            if (this.animationManager.animationsActive()) 
+                this.notifqueue.setSynchronous(notif[0], notif[1]);
+            else
+                this.notifqueue.setSynchronous(notif[0], 1);
         });
 
         this.notifqueue.setIgnoreNotificationCheck( 'drawCardMessage', (notif) => (notif.args.playerId == this.player_id) );
@@ -127,7 +130,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         // Animate the card growing from nothing to full size with a pulse
         const cardImage = $(`${cardId}_image`);
-        if (cardImage && this.animationManager) {
+        if (cardImage && this.animationManager && this.animationManager.animationsActive()) {
             cardImage.style.transition = 'none';
             await cardImage.animate([
                 { transform: 'scale(0)', opacity: 0 },
@@ -339,7 +342,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const anchorId = `${args.player_id}-scheme-anchor`;
         const anchor = $(anchorId);
         
-        if (anchor && this.animationManager) {
+        if (anchor && this.animationManager && this.animationManager.animationsActive()) {
             // FLIP Animation: First - record positions of all existing siblings
             const siblings = Array.from(anchor.parentElement.children);
             const firstRects = new Map();
@@ -417,7 +420,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         // Animate the card growing from nothing to full size
         const cardElement = $(cardId);
-        if (cardElement && this.animationManager) {
+        if (cardElement && this.animationManager && this.animationManager.animationsActive()) {
             await cardElement.animate([
                 { transform: 'scale(0)', opacity: 0 },
                 { transform: 'scale(1)', opacity: 1 }
@@ -503,7 +506,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         // Add pop scale animation to the newly created element
         const newElement = $(performer.divId);
-        if (newElement && this.animationManager) {
+        if (newElement && this.animationManager && this.animationManager.animationsActive()) {
             await newElement.animate([
                 { transform: 'scale(0.8)' },
                 { transform: 'scale(1.1)' },
@@ -678,7 +681,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             const cardElement = $(card.divId);
             
             // Animate the card shrinking to nothing
-            if (cardElement && this.animationManager) {
+            if (cardElement && this.animationManager && this.animationManager.animationsActive()) {
                 await cardElement.animate([
                     { transform: 'scale(1)', opacity: 1 },
                     { transform: 'scale(0)', opacity: 0 }
@@ -727,7 +730,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const cardElement = $(card.divId);
         
         // Animate the card shrinking to nothing
-        if (cardElement && this.animationManager) {
+        if (cardElement && this.animationManager && this.animationManager.animationsActive()) {
             await cardElement.animate([
                 { transform: 'scale(1)', opacity: 1 },
                 { transform: 'scale(0)', opacity: 0 }
@@ -795,7 +798,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             const cardElement = $(card.divId);
             
             // Animate the card shrinking to nothing
-            if (cardElement && this.animationManager) {
+            if (cardElement && this.animationManager && this.animationManager.animationsActive()) {
                 await cardElement.animate([
                     { transform: 'scale(1)', opacity: 1 },
                     { transform: 'scale(0)', opacity: 0 }
@@ -831,7 +834,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const targetElement = $(targetId);
 
         // Animate the old element to the destination, then replace it with the new element
-        if (oldElement && targetElement && this.animationManager) {
+        if (oldElement && targetElement && this.animationManager && this.animationManager.animationsActive()) {
             await this.animationManager.slideAndAttach(oldElement, targetElement);
         }
 
@@ -885,7 +888,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         // Animate the card growing from nothing to full size
         const cardElement = $(cardId);
-        if (cardElement && this.animationManager) {
+        if (cardElement && this.animationManager && this.animationManager.animationsActive()) {
             await cardElement.animate([
                 { transform: 'scale(0)', opacity: 0 },
                 { transform: 'scale(1)', opacity: 1 }
@@ -942,7 +945,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const woundChip = $(`${card.divId}_wounds`);
 
         // Pulse the element before changing the value
-        if (woundChip && this.animationManager) {
+        if (woundChip && this.animationManager && this.animationManager.animationsActive()) {
             await woundChip.animate([
                 { transform: 'scale(1)' },
                 { transform: 'scale(1.4)' },
@@ -961,7 +964,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         {
 
             // Pulse the element before changing the value
-            if (element && this.animationManager) {
+            if (element && this.animationManager && this.animationManager.animationsActive()) {
                 await element.animate([
                     { transform: 'scale(1)' },
                     { transform: 'scale(1.4)' },
@@ -991,7 +994,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const woundChip = $(`${card.divId}_wounds`);
 
         // Pulse the element before changing the value
-        if (woundChip && this.animationManager) {
+        if (woundChip && this.animationManager && this.animationManager.animationsActive()) {
             await woundChip.animate([
                 { transform: 'scale(1)' },
                 { transform: 'scale(1.4)' },
@@ -1013,7 +1016,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card.modifiedResolve == card.resolve && card.wounds == 0)
         {
             // Pulse the element before changing the value
-            if (element && this.animationManager) {
+            if (element && this.animationManager && this.animationManager.animationsActive()) {
                 await element.animate([
                     { transform: 'scale(1)' },
                     { transform: 'scale(1.4)' },
@@ -1044,7 +1047,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             const cardImage = $(`${card.divId}_image`);
             
             // Animate the card shrinking to nothing
-            if (cardImage && cardElement && this.animationManager) {
+            if (cardImage && cardElement && this.animationManager && this.animationManager.animationsActive()) {
                 // Disable CSS transition on the image element
                 cardImage.style.transition = 'none';
                 
@@ -1143,7 +1146,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             const cardImage = $(`${card.divId}_image`);
             
             // Animate the card shrinking to nothing
-            if (cardImage && cardElement && this.animationManager) {
+            if (cardImage && cardElement && this.animationManager && this.animationManager.animationsActive()) {
                 // Disable CSS transition on the image element
                 cardImage.style.transition = 'none';
                 
@@ -1201,7 +1204,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const dayElement = $('day-indicator');
         
         // Pulse the element before changing the value
-        if (dayElement && this.animationManager) {
+        if (dayElement && this.animationManager && this.animationManager.animationsActive()) {
             await dayElement.animate([
                 { transform: 'scale(1)' },
                 { transform: 'scale(1.4)' },
@@ -1230,7 +1233,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         // Animate the card growing from nothing to full size
         const cardElement = $(cardId);
-        if (cardElement && this.animationManager) {
+        if (cardElement && this.animationManager && this.animationManager.animationsActive()) {
             await cardElement.animate([
                 { transform: 'scale(0)', opacity: 0 },
                 { transform: 'scale(1)', opacity: 1 }
@@ -1249,7 +1252,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
         const element = $(`${args.player_id}-score-reknown`);
         // Pulse the element before changing the value
-        if (element && this.animationManager) {
+        if (element && this.animationManager && this.animationManager.animationsActive()) {
             await element.animate([
                 { transform: 'scale(1)' },
                 { transform: 'scale(1.4)' },
@@ -1275,7 +1278,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         
         // Pulse the existing element before destroying it
         const existingElement = $(divId);
-        if (existingElement && this.animationManager) {
+        if (existingElement && this.animationManager && this.animationManager.animationsActive()) {
             await existingElement.animate([
                 { transform: 'scale(1)' },
                 { transform: 'scale(1.4)' },
@@ -1300,7 +1303,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             
             // Pulse the new element
             const newElement = $(divId);
-            if (newElement && this.animationManager) {
+            if (newElement && this.animationManager && this.animationManager.animationsActive()) {
                 await newElement.animate([
                     { transform: 'scale(1)' },
                     { transform: 'scale(1.4)' },
@@ -1325,7 +1328,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
         
         // Pulse the element before changing the value
-        if (reknownElement && this.animationManager) {
+        if (reknownElement && this.animationManager && this.animationManager.animationsActive()) {
             await reknownElement.animate([
                 { transform: 'scale(1)' },
                 { transform: 'scale(1.4)' },
@@ -1352,7 +1355,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
         
         // Pulse the element before changing the value
-        if (reknownElement && this.animationManager) {
+        if (reknownElement && this.animationManager && this.animationManager.animationsActive()) {
             await reknownElement.animate([
                 { transform: 'scale(1)' },
                 { transform: 'scale(1.4)' },
@@ -1387,7 +1390,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const scoreElement = $(`${args.playerId}-score-seal-first-player`);
         
         const animations = [];
-        if (homeElement && this.animationManager) {
+        if (homeElement && this.animationManager && this.animationManager.animationsActive()) {
             animations.push(
                 homeElement.animate([
                     { transform: 'scale(1)' },
@@ -1399,7 +1402,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
                 }).finished
             );
         }
-        if (scoreElement && this.animationManager) {
+        if (scoreElement && this.animationManager && this.animationManager.animationsActive()) {
             animations.push(
                 scoreElement.animate([
                     { transform: 'scale(1)' },

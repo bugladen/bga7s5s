@@ -21,7 +21,7 @@ return declare('seventhseacityoffivesails.setup', null, {
 
         // Create the animation manager for card animations
         this.animationManager = new BgaAnimations.Manager({
-            animationsActive: () => this.bgaAnimationsActive(),
+            animationsActive: () => this.bga.gameui.bgaAnimationsActive(),
         });
 
         // Remove city sections that are not used
