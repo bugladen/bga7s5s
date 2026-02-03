@@ -1254,6 +1254,7 @@ body {
         -webkit-overflow-scrolling: touch;
         margin: 0 !important;
         padding: 10px 0 !important;
+        pointer-events: auto !important;
     }
     
     ._7sfs-floating-hand-container {

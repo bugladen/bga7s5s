@@ -55,7 +55,7 @@ class Action_01180 extends CharacterAction
 
             $kaj = $this->getOwningCard($event->theah);
             $game = $event->theah->game;
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
+            $game->notify->all("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
                 'i18n' => ['action'],
                 'player_name' => $game->getActivePlayerName(),
                 'action' => $this->Name,
@@ -63,7 +63,7 @@ class Action_01180 extends CharacterAction
             ]);
 
             $this->setUsed($event->theah, true);
-            $event->theah->game->notifyAllPlayers('message', clienttranslate('${action_inject_code}: ${count} Artifacts found in the top 4 cards of the City Deck. (${names})'), [
+            $event->theah->game->notify->all('message', clienttranslate('${action_inject_code}: ${count} Artifacts found in the top 4 cards of the City Deck. (${names})'), [
                 'action_inject_code' => $kaj->getInjectCode(),
                 'count' => $count,
                 'names' => implode(', ', $names)
@@ -133,7 +133,7 @@ class Action_01180 extends CharacterAction
         {
             $deckCards = $game->getCardsOnTopOfCityDeck(4);
 
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} chooses not to Equip any Artifacts.'), [
+            $game->notify->all("message", clienttranslate('${player_name} chooses not to Equip any Artifacts.'), [
                 "player_name" => $game->getActivePlayerName(),
             ]);
 
@@ -144,7 +144,11 @@ class Action_01180 extends CharacterAction
                 //Sink card to City Discard Pile
                 $event = EventFactory::createCardAddedToCityDeckEvent($game->getActivePlayerId(), $card->Id, false);
                 $game->theah->queueEvent($event);
-        }
+            }
+
+            $owner = $this->getOwningCard($game->theah);
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("pass");
         }
@@ -242,7 +246,7 @@ class Action_01180 extends CharacterAction
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_5)
         {
             $attachmentId = $game->globals->get(Game::CHOSEN_CARD);
-            $attachment = $game->getCardObjectFromDb($attachmentId);
+            $attachment = $game->theah->getAttachmentById($attachmentId);
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
@@ -285,8 +289,11 @@ class Action_01180 extends CharacterAction
                 $game->theah->queueEvent($event);
             }
 
+            //Some attachments actually attach to different targets
+            $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $performerId);
+
             //Equip the attachment
-            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $performerId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
+            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $actualTargetId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
             $game->theah->eventCheck($equipAttachmentEvent);
             $game->theah->queueEvent($equipAttachmentEvent);
     
@@ -301,6 +308,9 @@ class Action_01180 extends CharacterAction
             $deck = $game->getGameDeckObject();
             $deck->moveCard($attachment->Id, $performer->Location, $attachment->ControllerId);
     
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $game->gamestate->nextState("artifactEquipped");
         }
      }

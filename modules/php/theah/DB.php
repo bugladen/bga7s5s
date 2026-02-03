@@ -54,7 +54,7 @@ class DB
         /** @disregard P1013 */
         $this->game->DbQuery($sql);
 
-        $event = unserialize($data['json']);
+        $event = $this->game->safeUnserialize($data['json']);
         return $event;
     }
 
@@ -170,7 +170,7 @@ class DB
 
         $cards = [];
         foreach ($data as $result) {
-            $cards[(int)$result['id']] = unserialize($result['json']);
+            $cards[(int)$result['id']] = $this->game->safeUnserialize($result['json']);
         }
 
         return $cards;
@@ -187,7 +187,7 @@ class DB
             return null;
         }
 
-        $card = unserialize($data['card_serialized']);
+        $card = $this->game->safeUnserialize($data['card_serialized']);
         return $card;
     }
 

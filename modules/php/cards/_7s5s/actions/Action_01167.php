@@ -19,7 +19,6 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
         parent::__construct();
 
         $this->Name = clienttranslate("Take Control of Opponent's Attachment from their Discard Pile");
-        $this->RequiresPerformerSelected = true;
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -58,7 +57,30 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = $theah->getCharactersInCityByPlayerId($playerId);
-        return $performers;
+
+        $players = $theah->game->loadPlayersBasicInfos();
+        $availablePerformers = [];
+        foreach ($players as $opponentId => $opponent)
+        {
+            if ($opponentId == $playerId)
+            {
+                continue;
+            }
+
+            foreach ($performers as $performer)
+            {
+                $availableAttachments = $theah->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer);
+                $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
+
+                if (count($availableAttachments) > 0)
+                {
+                    $availablePerformers[$performer->Id] = $performer;
+                }
+            }           
+
+        }
+
+        return array_values($availablePerformers);
     }
 
     public function handleEvent(Event $event)
@@ -80,6 +102,8 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01167)
         {
             $owner = $this->getOwningCard($game->theah);
+            $performers = $game->theah->getCharactersInCityByPlayerId($owner->ControllerId);
+
             $opponents = [];
             $players = $game->loadPlayersBasicInfos();
             foreach ( $players as $playerId => $player ) 
@@ -89,17 +113,16 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
                     continue;
                 }
 
-                $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-                $performer = $game->theah->getCharacterById($performerId);
-                $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($playerId, $performer);                
-                $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
-
-                if (count($availableAttachments) == 0)
+                foreach ($performers as $performer)
                 {
-                    continue;
+                    $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($playerId, $performer);                
+                    $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
+                    if (count($availableAttachments) > 0)
+                    {
+                        $opponents[] = ['id' => $playerId, 'name' => $player['player_name']];
+                        break;
+                    }
                 }
-
-                $opponents[] = ['id' => $playerId, 'name' => $player['player_name']];
             }        
 
             $args['opponents'] = $opponents;
@@ -107,21 +130,48 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01167_2)
         {
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-            $args["performerId"] = $performerId;
-
             $opponentId = $game->globals->get(Game::CHOSEN_OPPONENT);
             $opponentName = $game->getPlayerNameById($opponentId);
             $args["opponentName"] = $opponentName;
 
-            $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer);
-            $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
-
-            $args["cards"] = array_map(fn($attachment) => $attachment->getPropertyArray($game), $availableAttachments);
+            $owner = $this->getOwningCard($game->theah);
+            $performers = $game->theah->getCharactersInCityByPlayerId($owner->ControllerId);
+            $cards = [];
+            foreach ($performers as $performer)
+            {
+                $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer);
+                $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
+                foreach ($availableAttachments as $attachment)
+                {
+                    $cards[$attachment->Id] = $attachment;
+                }
+            }
+            $args["cards"] = array_map(fn($attachment) => $attachment->getPropertyArray($game), array_values($cards));
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01167_3)
+        {
+            $chosenAttachmentId = $game->globals->get(Game::CHOSEN_CARD);
+            $chosenAttachment = $game->getCardObjectFromDb($chosenAttachmentId);
+            $opponentId = $game->globals->get(Game::CHOSEN_OPPONENT);
+            $owner = $this->getOwningCard($game->theah);
+
+            $performers = $game->theah->getCharactersInCityByPlayerId($owner->ControllerId);
+            $availablePerformers = [];
+            foreach ($performers as $performer)
+            {
+                $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer);
+                $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
+                if (count($availableAttachments) > 0)
+                {
+                    $availablePerformers[$performer->Id] = $performer;
+                }
+            }
+
+            $args["ids"] = array_map(fn($performer) => $performer->Id, array_values($availablePerformers));
+        }
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01167_4)
         {
             $chosenAttachmentId = $game->globals->get(Game::CHOSEN_CARD);
             $chosenAttachment = $game->getCardObjectFromDb($chosenAttachmentId);
@@ -149,19 +199,24 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
                 throw new \BgaUserException($game->translate("Invalid opponent"));
             }
 
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-            $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($id, $performer);
-            $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
-            if (count($availableAttachments) == 0)
+            $owner = $this->getOwningCard($game->theah);
+            $performers = $game->theah->getCharactersInCityByPlayerId($owner->ControllerId);
+            $hasAttachments = false;
+            foreach ($performers as $performer)
+            {
+                $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($id, $performer);
+                $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
+                if (count($availableAttachments) > 0)
+                {
+                    $hasAttachments = true;
+                    break;
+                }
+            }
+
+            if ( ! $hasAttachments)
             {
                 throw new \BgaUserException($game->translate("No attachments available from this opponent's discard pile"));
             }
-
-            $game->notify->all("message", clienttranslate('${player_name} has chosen to look at <strong>${opponentName}</strong>\'s Discard Pile.'), [
-                'player_name' => $game->getActivePlayerName(),
-                'opponentName' => $players[$id]['player_name'],
-            ]);
 
             $game->globals->set(Game::CHOSEN_OPPONENT, $id);
             $game->gamestate->nextState("opponentChosen");
@@ -188,18 +243,35 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
                 throw new \BgaUserException($game->translate("You cannot recover a unique attachment"));
             }
 
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->getCardObjectFromDb($performerId);
             $game->globals->set(Game::CHOSEN_CARD, $id);
 
-            $event = EventFactory::createEnteringPayStateEvent($performer->ControllerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
-            $game->theah->queueEvent($event);
+            $game->gamestate->nextState("attachmentChosen");
+        }
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01167_3)
+        {
+            $performer = $game->theah->getCharacterById($id);
+            if ($performer == null)
+            {
+                throw new \BgaUserException($game->translate("Performer not found"));
+            }
 
             $owner = $this->getOwningCard($game->theah);
-            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01167_2", $this->Id);
+            if ($performer->ControllerId != $owner->ControllerId)
+            {
+                throw new \BgaUserException($game->translate("You do not control this performer"));
+            }
+
+            $game->globals->set(Game::CHOSEN_PERFORMER, $id);
+
+            $attachmentId = $game->globals->get(Game::CHOSEN_CARD);
+            $event = EventFactory::createEnteringPayStateEvent($performer->ControllerId, $attachmentId, Game::PAY_STATE_EQUIP_ATTACHMENT);
+            $game->theah->queueEvent($event);
+
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01167_3", $this->Id);
             $game->theah->queueEvent($transition);
-            
-            $game->gamestate->nextState("attachmentChosen");
+
+            $game->gamestate->nextState("performerChosen");
         }
     }
 
@@ -207,10 +279,10 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
     {
         parent::actFromActionWithIds($game, $state, $stateName, $ids);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01167_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01167_4)
         {
             $attachmentId = $game->globals->get(Game::CHOSEN_CARD);
-            $attachment = $game->getCardObjectFromDb($attachmentId);
+            $attachment = $game->theah->getAttachmentById($attachmentId);
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
@@ -255,8 +327,11 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
             $removeFromDiscardEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($opponentId, $attachmentId);
             $game->theah->queueEvent($removeFromDiscardEvent);
 
+            //Some attachments actually attach to different targets
+            $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $performerId);
+
             //Equip the attachment
-            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $performerId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
+            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $actualTargetId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
             $game->theah->eventCheck($equipAttachmentEvent);
             $game->theah->queueEvent($equipAttachmentEvent);
     
@@ -274,30 +349,6 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
             $game->theah->queueEvent($actionResolvedEvent);
     
             $game->gamestate->nextState("attachmentEquipped");
-        }
-    }
-
-    public function actFromActionPass(Game $game, int $state): void
-    {
-        parent::actFromActionPass($game, $state);
-
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01167_2)
-        {
-            $opponentId = $game->globals->get(Game::CHOSEN_OPPONENT);
-            $opponentName = $game->getPlayerNameById($opponentId);
-            $discardName = $game->getPlayerDiscardDeckName($opponentId);
-
-            $cards = $game->theah->getCardObjectsAtLocation($discardName);
-            if (count($cards) > 0)
-            {
-                throw new \BgaUserException(sprintf($game->translate("There are attachments in %s's Discard Pile"), $opponentName));
-            }
-
-            $game->notify->all("message", clienttranslate('There are no non-unique Attachments in <strong>${opponentName}</strong>\'s Discard Pile.'), [
-                'opponentName' => $opponentName,
-            ]);
-
-            $game->gamestate->nextState("pass");
         }
     }
 }

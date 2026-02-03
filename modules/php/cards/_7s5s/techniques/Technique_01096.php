@@ -30,7 +30,11 @@ class Technique_01096 extends Technique
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
     {
-        return parent::isAvailableToPlayer($playerId, $theah);
+        if (!parent::isAvailableToPlayer($playerId, $theah))
+            return false;
+
+        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
+        return $inDuel;
     }
     
     public function handleEvent(Event $event)
@@ -145,7 +149,11 @@ class Technique_01096 extends Technique
             $game->theah->queueEvent($unequipEvent);
 
             $owner = $this->getOwningCard($game->theah);
-            $equipEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $owner->Id, $attachment->Id, 0, 0, $asAction = true, $explanations = '');
+
+            //Some attachments actually attach to different targets
+            $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $owner->Id);
+
+            $equipEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $actualTargetId, $attachment->Id, 0, 0, $asAction = true, $explanations = '');
             $game->theah->queueEvent($equipEvent);
 
             $this->setUsed($game->theah, true);

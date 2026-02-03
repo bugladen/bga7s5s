@@ -8,23 +8,23 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_highDramaPhase01167_3 extends GameState
+class State_highDramaPhase01167_4 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::HIGH_DRAMA_PLAYER_TURN_01167_3,
+            id: States::HIGH_DRAMA_PLAYER_TURN_01167_4,
             type: StateType::ACTIVE_PLAYER,
-            name: "highDramaPhase01167_3",
+            name: "highDramaPhase01167_4",
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Liberating Goods') . clienttranslate(': ${you} must choose a Performer to Equip chosen Attachment: '),
+            descriptionMyTurn: clienttranslate('Liberating Goods') . clienttranslate(': ${you} must choose cards from Your Hand to pay for chosen Attachment:'),
             transitions: [
-                "back" => States::HIGH_DRAMA_PLAYER_TURN_01167_2,
-                "performerChosen" => States::HIGH_DRAMA_PLAYER_TURN_01167_4,
+                "back" => States::HIGH_DRAMA_PLAYER_TURN_01167_3,
+                "attachmentEquipped" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
             ],
             updateGameProgression: false,
             initialPrivate: null,
@@ -43,9 +43,9 @@ class State_highDramaPhase01167_3 extends GameState
     }
 
     #[PossibleAction]
-    public function actFromCardWithId(string $id): void
+    public function actFromCardWithIds(string $ids): void
     {
-        $this->game->actFromCardWithId($id);
+        $this->game->actFromCardWithIds($ids);
     }
 
     public function zombie(int $playerId): void

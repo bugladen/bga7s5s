@@ -267,7 +267,10 @@ class Maneuver_01113 extends Maneuver implements IAbilityThatTargetsCards
                 $game->theah->queueEvent($event);
             }
     
-            $musterEvent = EventFactory::createAttachmentEquippedEvent($actor->ControllerId, $actor->Id, $attachment->Id, $discount, $cost, $asAction = false, $explanations);
+            //Some attachments actually attach to different targets
+            $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $actor->Id);
+
+            $musterEvent = EventFactory::createAttachmentEquippedEvent($actor->ControllerId, $actualTargetId, $attachment->Id, $discount, $cost, $asAction = false, $explanations);
             $game->theah->queueEvent($musterEvent);
     
             $game->gamestate->nextState();
