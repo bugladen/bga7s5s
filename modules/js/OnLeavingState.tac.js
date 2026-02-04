@@ -16,12 +16,34 @@
     {
 
         const methods = {
-            'duelChooseTechnique_02006': () => {
-                if (this.isCurrentPlayerActive()) 
-                {
-                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
-                    this.unhighlightCards(this.clientStateArgs.ids);
-                    this.clientStateArgs = {};
+
+            'planningPhaseResolveSchemes_02005': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
+            'planningPhaseResolveSchemes_02005_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
+            'planningPhaseResolveSchemes_02005_4': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
+            'planningPhaseResolveSchemes_02005_5': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
                 }
             },
 
@@ -94,36 +116,45 @@
                 }
             },
 
-            'planningPhaseResolveSchemes_02005': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.resetCityLocations();
+            'highDramaPhase02010': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
                 }
             },
 
-            'planningPhaseResolveSchemes_02005_2': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.resetCityLocations();
+            'highDramaPhase02010_2': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.fromId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
                 }
             },
 
-            'planningPhaseResolveSchemes_02005_4': () => {
-                if (this.isCurrentPlayerActive()) {
-                    dojo.addClass('choose_container', 'hidden');
-                    dojo.addClass('chooseList', 'hidden');
-                    this.chooseList.removeAll();
-                    this.chooseList.setSelectionMode(0);
+            'highDramaPhase02010_3': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.fromId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.targetId);
+                    this.clientStateArgs = {};
                 }
             },
 
-            'planningPhaseResolveSchemes_02005_5': () => {
-                if (this.isCurrentPlayerActive()) {
-                    dojo.addClass('choose_container', 'hidden');
-                    dojo.addClass('chooseList', 'hidden');
-                    this.chooseList.removeAll();
-                    this.chooseList.setSelectionMode(0);
+            'duelChooseTechnique_02006': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
                 }
             },
-        }
+
+       }
 
         if ( methods[stateName] )
             methods[stateName]();

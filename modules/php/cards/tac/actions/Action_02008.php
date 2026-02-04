@@ -31,7 +31,7 @@ class Action_02008 extends RiskAction implements ISorcererAbility
         }
 
         $performers = $theah->getCharactersInPlayByPlayerId($playerId);
-        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Strega"));
+        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Sorcerer") && $performer->hasTrait("Strega"));
         if (count($performers) == 0)
         {
             return false;
@@ -47,7 +47,7 @@ class Action_02008 extends RiskAction implements ISorcererAbility
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait("Strega")));
+        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait("Sorcerer") && $performer->hasTrait("Strega")));
         return $performers;
     }
 
@@ -155,6 +155,7 @@ class Action_02008 extends RiskAction implements ISorcererAbility
 
             $game->updateCardObjectInDb($card);
 
+            // getRequiredAttachTargetId not needed as this is a Risk, not an Attachment
             $attachEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $character->Id, $card->Id, 0, 0, $asAction = false, '', $isQuiet = true);
             $game->theah->queueEvent($attachEvent);
 

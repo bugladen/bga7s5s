@@ -14,15 +14,71 @@
     onEnteringState_tac: function( stateName, args )
     {
         const methods = {
-            'duelChooseTechnique_02006': () => {
+            'planningPhaseResolveSchemes_02005': () => {
                 if (this.isCurrentPlayerActive()) {
-                    this.numberOfCardsSelectable = 1;
-                    this.highlightCharacterChosen(args.args.args.performerId);
-                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 1;
+                    locations.forEach((location) => {
+                        this.makeCityLocationSelectable(location);
+                    });
+               }
+            },
 
-                    this.clientStateArgs.ids = args.args.args.ids;
-                    this.highlightCardsAsSelectable(args.args.args.ids);
-                }            
+            'planningPhaseResolveSchemes_02005_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 1;
+                    locations.forEach((location) => {
+                        const imageElement = $(location);
+                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
+                        const reknown = parseInt(reknownElement.innerHTML);
+                        if (reknown > 0) return;
+    
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
+            'planningPhaseResolveSchemes_02005_4': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Top ${count} Cards in ${opponentName}'s Faction Deck"),
+                        {
+                            opponentName: args.args.args.opponentName,
+                            count: args.args.args.cards.length
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+
+            'planningPhaseResolveSchemes_02005_5': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Top ${count} Cards in ${opponentName}'s Faction Deck"),
+                        {
+                            opponentName: args.args.args.opponentName,
+                            count: args.args.args.cards.length
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(2);
+                }
             },
 
             'highDramaPhase02001': () => {
@@ -140,74 +196,53 @@
                 }            
             },
 
-            'planningPhaseResolveSchemes_02005': () => {
+            'highDramaPhase02010': () => {
                 if (this.isCurrentPlayerActive()) {
-                    const locations = this.getListofAvailableCityLocationImages();
-                    this.numberOfCityLocationsSelectable = 1;
-                    locations.forEach((location) => {
-                        this.makeCityLocationSelectable(location);
-                    });
-               }
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
             },
 
-            'planningPhaseResolveSchemes_02005_2': () => {
+            'highDramaPhase02010_2': () => {
                 if (this.isCurrentPlayerActive()) {
-                    const locations = this.getListofAvailableCityLocationImages();
-                    this.numberOfCityLocationsSelectable = 1;
-                    locations.forEach((location) => {
-                        const imageElement = $(location);
-                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
-                        const reknown = parseInt(reknownElement.innerHTML);
-                        if (reknown > 0) return;
-    
-                        this.makeCityLocationSelectable(location);
-                    });
-                }
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    this.highlightCharacterChosen(args.args.args.fromId);
+                    this.clientStateArgs.fromId = args.args.args.fromId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
             },
 
-            'planningPhaseResolveSchemes_02005_4': () => {
+            'highDramaPhase02010_3': () => {
                 if (this.isCurrentPlayerActive()) {
-                    dojo.removeClass('choose_container', 'hidden');
-                    dojo.removeClass('chooseList', 'hidden');
-                    
-                    args.args.args.cards.forEach((card) => {
-                        this.addCardToDeck(this.chooseList, card);
-                    });
-        
-                    var translated = dojo.string.substitute(
-                        _("Top ${count} Cards in ${opponentName}'s Faction Deck"),
-                        {
-                            opponentName: args.args.args.opponentName,
-                            count: args.args.args.cards.length
-                        }
-                    );
-                    $('choose_container_name').innerHTML = translated;
-                    this.chooseList.setSelectionMode(2);
-                }
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    this.highlightCharacterChosen(args.args.args.fromId);
+                    this.clientStateArgs.fromId = args.args.args.fromId;
+                    this.highlightCharacterChosen(args.args.args.targetId);
+                    this.clientStateArgs.targetId = args.args.args.targetId;
+                }            
             },
 
-            'planningPhaseResolveSchemes_02005_5': () => {
+            'duelChooseTechnique_02006': () => {
                 if (this.isCurrentPlayerActive()) {
-                    dojo.removeClass('choose_container', 'hidden');
-                    dojo.removeClass('chooseList', 'hidden');
-                    
-                    args.args.args.cards.forEach((card) => {
-                        this.addCardToDeck(this.chooseList, card);
-                    });
-        
-                    var translated = dojo.string.substitute(
-                        _("Top ${count} Cards in ${opponentName}'s Faction Deck"),
-                        {
-                            opponentName: args.args.args.opponentName,
-                            count: args.args.args.cards.length
-                        }
-                    );
-                    $('choose_container_name').innerHTML = translated;
-                    this.chooseList.setSelectionMode(2);
-                }
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
             },
 
-        }
+     }
 
         if ( methods[stateName] )
             methods[stateName]();

@@ -85,6 +85,30 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase02010': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase02010_2': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase02010_3': () => {
+                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.addActionButton(`actChoose1Wounds`, _('Move 1 Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                if (args.args.wounds > 1) {
+                    this.addActionButton(`actChoose2Wounds`, _('Move 2 Wounds'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+                }
+                const statusBarTitle = _('Twist of the Arcana') + _(': ${you} must choose how many wounds to move from ${from_name} to ${target_name}: ');
+                this.bga.statusBar.setTitle(statusBarTitle, {
+                    from_name: _(args.args.fromName),
+                    target_name: _(args.args.targetName),
+                });
+            },
+
             'duelChooseTechnique_02006': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
