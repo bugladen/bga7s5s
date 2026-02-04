@@ -162,14 +162,6 @@ class Reaction_01008 extends CardReaction
             $cardCopied = false;
             $action = null;
 
-            //Boon
-            if ($ability instanceof Action_01161)
-            {
-                $cardCopied = true;
-                $card = $this->copyCard($game, "01161", $cesca->ControllerId);
-                $ability = $card->getAbilityById("{$card->Id}_Action_01161");
-            }
-
             //Cesca's own ability to Reveal Top Card of your Faction Deck
             if ($ability instanceof Action_01008)
             {
@@ -180,6 +172,16 @@ class Reaction_01008 extends CardReaction
                 $this->announceReaction($game, $ability);
             }
 
+            //Sibella Scarpa
+            if ($ability instanceof Action_01012)
+            {
+                $copyAction = true;
+                $action = new Action_01012();
+                $action->setId("Action_01012");
+                $action->setOwnerId($cesca->Id);
+                if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
+            }
+
             //Fates' Burden
             if ($ability instanceof Action_01025)
             {
@@ -188,28 +190,12 @@ class Reaction_01008 extends CardReaction
                 $ability = $card->getAbilityById("{$card->Id}_Action_01025");
             }
 
-            //Matuska's Command
-            if ($ability instanceof Action_01132)
+            //Pull the Strand
+            if ($ability instanceof Action_01030)
             {
                 $cardCopied = true;
-                $card = $this->copyCard($game, "01132", $cesca->ControllerId);
-                $ability = $card->getAbilityById("{$card->Id}_Action_01132");
-            }
-
-            //Matushka's Efficiency
-            if ($ability instanceof Action_01133)
-            {
-                $cardCopied = true;
-                $card = $this->copyCard($game, "01133", $cesca->ControllerId);
-                $ability = $card->getAbilityById("{$card->Id}_Action_01133");
-            }
-
-            //Matushka's Sight
-            if ($ability instanceof Action_01134)
-            {
-                $cardCopied = true;
-                $card = $this->copyCard($game, "01134", $cesca->ControllerId);
-                $ability = $card->getAbilityById("{$card->Id}_Action_01134");
+                $card = $this->copyCard($game, "01030", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01030");
             }
 
             //Léontine Giroux
@@ -238,30 +224,44 @@ class Reaction_01008 extends CardReaction
                 $ability = $card->getAbilityById("{$card->Id}_Action_01085");
             }
 
+            //Matuska's Command
+            if ($ability instanceof Action_01132)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01132", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01132");
+            }
+
+            //Matushka's Efficiency
+            if ($ability instanceof Action_01133)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01133", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01133");
+            }
+
+            //Matushka's Sight
+            if ($ability instanceof Action_01134)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01134", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01134");
+            }
+
+            //Boon
+            if ($ability instanceof Action_01161)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01161", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01161");
+            }
+
             //Pull
             if ($ability instanceof Action_01172)
             {
                 $cardCopied = true;
                 $card = $this->copyCard($game, "01172", $cesca->ControllerId);
                 $ability = $card->getAbilityById("{$card->Id}_Action_01172");
-            }
-
-            //Pull the Strand
-            if ($ability instanceof Action_01030)
-            {
-                $cardCopied = true;
-                $card = $this->copyCard($game, "01030", $cesca->ControllerId);
-                $ability = $card->getAbilityById("{$card->Id}_Action_01030");
-            }
-
-            //Sibella Scarpa
-            if ($ability instanceof Action_01012)
-            {
-                $copyAction = true;
-                $action = new Action_01012();
-                $action->setId("Action_01012");
-                $action->setOwnerId($cesca->Id);
-                if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
             }
 
             //If it was an action, check if it is available to copy
