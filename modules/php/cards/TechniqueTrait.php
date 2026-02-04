@@ -70,7 +70,7 @@ trait TechniqueTrait
         }
     }
 
-    public function addTechnique(Technique $technique, Game $game)
+    public function addTechnique(Technique $technique, Game $game, bool $notify = true)
     {
         //Check if the technique is already in the list.
         if (in_array($technique, $this->Techniques))
@@ -80,26 +80,31 @@ trait TechniqueTrait
 
         $this->Techniques[] = $technique;
 
-        $game->notifyAllPlayers('techniqueAdded', clienttranslate('${character_inject_code} has gained Technique: ${technique_name}.'), [
-            'i18n' => ['technique_name'],
-            'character_inject_code' => $this->getInjectCode(),
-            'characterId' => $this->Id,
-            'technique' => $technique->getPropertyArray($game),
-            'technique_name' => $technique->Name
-        ]);
-
+        if ($notify)
+        {
+            $game->notify->all('techniqueAdded', clienttranslate('${character_inject_code} has gained Technique: ${technique_name}.'), [
+                'i18n' => ['technique_name'],
+                'character_inject_code' => $this->getInjectCode(),
+                'characterId' => $this->Id,
+                'technique' => $technique->getPropertyArray($game),
+                'technique_name' => $technique->Name
+            ]);
+        }
     }
 
-    public function removeTechnique(Technique $technique, Game $game)
+    public function removeTechnique(Technique $technique, Game $game, bool $notify = true)
     {
         $this->Techniques = array_values(array_filter($this->Techniques, fn($t) => $t->Id != $technique->Id));
 
-        $game->notifyAllPlayers('techniqueRemoved', clienttranslate('${character_inject_code} has lost Technique: ${technique_name}.'), [
-            'i18n' => ['technique_name'],
-            'character_inject_code' => $this->getInjectCode(),
-            'characterId' => $this->Id,
-            'techniqueId' => $technique->Id,
-            'technique_name' => $technique->Name
-        ]);
+        if ($notify)
+        {
+            $game->notify->all('techniqueRemoved', clienttranslate('${character_inject_code} has lost Technique: ${technique_name}.'), [
+                    'i18n' => ['technique_name'],
+                    'character_inject_code' => $this->getInjectCode(),
+                    'characterId' => $this->Id,
+                    'techniqueId' => $technique->Id,
+                    'technique_name' => $technique->Name
+                ]);
+        }
     }
 }
