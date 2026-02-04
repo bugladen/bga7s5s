@@ -57,7 +57,7 @@ class Maneuver_01165 extends Maneuver
         foreach ($this->copiedTechniques as $technique)
         {
             $techniqueOwner = $technique->getOwningCard($theah);
-            if ($techniqueOwner instanceof IHasTechniques) $techniqueOwner->removeTechnique($technique, $theah->game);
+            if ($techniqueOwner instanceof IHasTechniques) $techniqueOwner->removeTechnique($technique, $theah->game, $notify = false);
             $techniqueOwner->IsUpdated = true;
         }
         $this->copiedTechniques = [];
@@ -132,10 +132,9 @@ class Maneuver_01165 extends Maneuver
             $actor = $game->theah->getDuelRoundActor();
             $technique = $game->theah->getTechniqueById($id);
             $copy = clone $technique;
-            $techniqueOwner = $technique->getOwningCard($game->theah);
-            $copy->setOwnerId($techniqueOwner->Id);
+            $copy->setOwnerId($actor->Id);
 
-            if ($actor instanceof IHasTechniques) $actor->addTechnique($copy, $game);
+            if ($actor instanceof IHasTechniques) $actor->addTechnique($copy, $game, $notify = false);
 
             $this->copiedTechniques[] = $copy;
             $owner->IsUpdated = true;
