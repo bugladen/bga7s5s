@@ -1433,6 +1433,13 @@ trait EventHub
                     $sql = "SELECT combat_card_id FROM duel_round_combat_card where duel_id = $duelId AND round = {$round}";
                     $db = $theah->getDBObject();
                     $combatCardIds = $db->getCollection($sql);
+                    if (count($combatCardIds) == 0)
+                    {
+                        $dashedRiposte = false;
+                        $dashedParry = false;
+                        $dashedThrust = false;
+                    }
+                    
                     foreach ($combatCardIds as $combatCardId)
                     {
                         $combatCard = $theah->getCardById($combatCardId['combat_card_id']);
