@@ -6,10 +6,15 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01008;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01012;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01025;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01030;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01068;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01076;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01085;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01132;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01133;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01134;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01161;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01172;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
@@ -17,6 +22,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02008;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -182,12 +188,46 @@ class Reaction_01008 extends CardReaction
                 $ability = $card->getAbilityById("{$card->Id}_Action_01025");
             }
 
+            //Matuska's Command
+            if ($ability instanceof Action_01132)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01132", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01132");
+            }
+
             //Matushka's Efficiency
             if ($ability instanceof Action_01133)
             {
                 $cardCopied = true;
                 $card = $this->copyCard($game, "01133", $cesca->ControllerId);
                 $ability = $card->getAbilityById("{$card->Id}_Action_01133");
+            }
+
+            //Matushka's Sight
+            if ($ability instanceof Action_01134)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01134", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01134");
+            }
+
+            //Léontine Giroux
+            if ($ability instanceof Action_01068)
+            {
+                $copyAction = true;
+                $action = new Action_01068();
+                $action->setId("Action_01068");
+                $action->setOwnerId($cesca->Id);
+                if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
+            }
+
+            //Blood Mark
+            if ($ability instanceof Action_01076)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "01076", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_01076");
             }
 
             //Porté Travel
