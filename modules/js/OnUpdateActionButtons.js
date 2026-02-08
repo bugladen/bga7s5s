@@ -76,7 +76,7 @@ onUpdateActionButtons: function( stateName, args )
             if (args._private.canMove)
                 this.addActionButton(`actMoveAction`, _('Move'), () => this.bgaPerformAction('actHighDramaMoveActionStart', {}));
             if (args._private.canRecruit)
-                this.addActionButton(`actRecruitAction`, _('Recruit'), () => this.bgaPerformAction('actHighDramaRecruitActionStart', {}));
+                this.addActionButton(`actRecruitAction`, _('Recruit'), () => this.basicRecruitActionCrewCapCheck());
             if (args._private.hasInPlayActions)
             {
                 this.addActionButton(`btnInPlayAction`, _('In-Play Action'), () => this.bgaPerformAction('actHighDramaChooseInPlayActionStart', {})) 
