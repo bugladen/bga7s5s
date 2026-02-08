@@ -728,6 +728,21 @@ trait ArgumentsTrait
         ];
     }
 
+    public function argsDuskPhaseDiscard(): array
+    {
+        $playerId = $this->getCurrentPlayerId();
+        $hand = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+        $leader = $this->theah->getLeaderByPlayerId($playerId);
+        $handSize = count($hand);
+        $expectedDiscardCount = $handSize - $leader->Panache;
+        $args["expectedDiscardCount"] = $expectedDiscardCount;
+        $args["panache"] = $leader->Panache;
+
+        return [
+            "args" => $args
+        ];       
+    }
+
     public function argsForState(): array
     {
         $this->theah->buildCity();

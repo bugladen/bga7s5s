@@ -2716,7 +2716,7 @@ $machinestates = [
         "description" => clienttranslate('Your opponent(s) must discard cards down to their Leader Panache value.'),
         "descriptionmyturn" => clienttranslate('${you} must discard cards down to your unmodified Leader Panache value:'),
         "type" => "multipleactiveplayer",
-        "args" => "argsEmpty",
+        "args" => "argsDuskPhaseDiscard",
         "action" => "stDuskPhaseDiscard",
         "possibleactions" => [
             "actDuskPhaseCardsDiscarded", 

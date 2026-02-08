@@ -1643,7 +1643,7 @@ trait FrameworkActionsTrait
 
         $cardIds = json_decode($ids, true);
         if ($expectedDiscard != count($cardIds))
-            throw new \BgaUserException(sprintf(self::_("You must discard exactly %d cards."), $expectedDiscard));
+            throw new \BgaUserException(sprintf(self::_("You must discard exactly %d card(s)."), $expectedDiscard));
         
         foreach ($cardIds as $cardId) 
         {
