@@ -1439,23 +1439,11 @@ trait FrameworkActionsTrait
 
         $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
 
-        $resolveEvent = $this->theah->createEvent(Events::ResolveManeuver);
-        if ($resolveEvent instanceof EventResolveManeuver)
-        {
-            $resolveEvent->playerId = $playerId;
-            $resolveEvent->adversaryId = $adversaryId;
-            $resolveEvent->maneuverId = $maneuver->Id;
-        }
+        $resolveEvent = EventFactory::createResolveManeuverEvent($playerId, $adversaryId, $maneuver->Id);
         $this->theah->eventCheck($resolveEvent);
         $this->theah->queueEvent($resolveEvent);
 
-        $threatEvent = $this->theah->createEvent(Events::DuelCalculateManeuverValues);
-        if ($threatEvent instanceof EventDuelCalculateManeuverValues)
-        {
-            $threatEvent->actorId = $actor->Id;
-            $threatEvent->adversaryId = $adversaryId;
-            $threatEvent->maneuverId = $maneuver->Id;
-        }
+        $threatEvent = EventFactory::createDuelCalculateManeuverValuesEvent($actor->Id, $adversaryId, $maneuver->Id);
         $this->theah->eventCheck($threatEvent);
         $this->theah->queueEvent($threatEvent);
 

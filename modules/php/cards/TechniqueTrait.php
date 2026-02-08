@@ -79,6 +79,7 @@ trait TechniqueTrait
         }
 
         $this->Techniques[] = $technique;
+        $this->IsUpdated = true;
 
         if ($notify)
         {
@@ -95,7 +96,8 @@ trait TechniqueTrait
     public function removeTechnique(Technique $technique, Game $game, bool $notify = true)
     {
         $this->Techniques = array_values(array_filter($this->Techniques, fn($t) => $t->Id != $technique->Id));
-
+        $this->IsUpdated = true;
+        
         if ($notify)
         {
             $game->notify->all('techniqueRemoved', clienttranslate('${character_inject_code} has lost Technique: ${technique_name}.'), [

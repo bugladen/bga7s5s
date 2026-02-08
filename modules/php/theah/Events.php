@@ -110,6 +110,7 @@ class Events
     const SorcererAbilityPlayed = 'EventSorcererAbilityPlayed';
     const SorcererAbilityStart = 'EventSorcererAbilityStart';
     const RiskPlayed = 'EventRiskPlayed';
+    const RangedAbilityPlayed = 'EventRangedAbilityPlayed';
 
     //Character events
     const CharacterCombatModified = 'EventCharacterCombatModified';

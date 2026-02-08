@@ -3,12 +3,13 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRangedAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Maneuver_01055 extends Maneuver
+class Maneuver_01055 extends Maneuver implements IRangedAbility
 {
     public function __construct()
     {
@@ -59,6 +60,9 @@ class Maneuver_01055 extends Maneuver
             $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $event->theah->eventCheck($woundEvent);
             $event->theah->queueEvent($woundEvent);
+
+            $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $actor->Id);
+            $event->theah->queueEvent($rangedAbilityPlayedEvent);
         }
     }
 }

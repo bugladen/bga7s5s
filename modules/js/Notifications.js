@@ -223,6 +223,36 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
+    notif_maneuverAdded: function( notif )
+    {
+        debug( 'notif_maneuverAdded' );
+        debug( notif );
+        
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        if (card)
+        {
+            //Add the maneuver to the card
+            card.maneuvers.push(args.maneuver);
+            this.createTooltipForCard(card);
+        }
+    },
+
+    notif_maneuverRemoved: function( notif )
+    {
+        debug( 'notif_maneuverRemoved' );
+        debug( notif );
+        
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        if (card)
+        {
+            //Remove the maneuver from the card
+            card.maneuvers = card.maneuvers.filter(maneuver => maneuver.id !== args.maneuverId);
+            this.createTooltipForCard(card);
+        }
+    },
+
     notif_techniqueAdded: function( notif )
     {
         debug( 'notif_techniqueAdded' );

@@ -80,7 +80,8 @@ trait ActionTrait
     public function addAction(CardAction $action, Game $game, bool $notify = true)
     {
         $this->Actions[] = $action;
-
+        $this->IsUpdated = true;
+        
         if ($notify)
         {
             $game->notify->all('actionAdded', clienttranslate('${character_inject_code} has gained Action: ${action_name}.'), [
@@ -96,7 +97,8 @@ trait ActionTrait
     public function removeAction(CardAction $action, Game $game, bool $notify = true)
     {
         $this->Actions = array_values(array_filter($this->Actions, fn($a) => $a->Id != $action->Id));
-
+        $this->IsUpdated = true;
+        
         if ($notify)
         {
             $game->notify->all('actionRemoved', clienttranslate('${character_inject_code} has lost Action: ${action_name}.'), [

@@ -3,11 +3,13 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRangedAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 
-class Action_01191 extends AttachmentAction
+class Action_01191 extends AttachmentAction implements IRangedAbility
 {
     public function __construct()
     {
@@ -33,15 +35,19 @@ class Action_01191 extends AttachmentAction
                 'location' => $location
             ]);
 
+            //This ability effect could be copied, so we need to make sure the attachment is equipped to do this ability
+            if ($duckfootPistol instanceof Attachment && $duckfootPistol->isAttached())
+            {
+                $unequippedEvent = EventFactory::createAttachmentUnequippedEvent($event->playerId, $owner->Id, $duckfootPistol->Id);
+                $event->theah->queueEvent($unequippedEvent);
+    
+                $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($event->playerId, $duckfootPistol->Id, $location, $duckfootPistol->Id, $asEffect = false);
+                $event->theah->queueEvent($discardEvent);    
+            }
+
             $characters = $event->theah->getCharactersAtLocation($location);
             // Filter out characters are not leaders
             $characters = array_filter($characters, fn($character) => ! $character->hasTrait("Leader"));
-
-            $unequippedEvent = EventFactory::createAttachmentUnequippedEvent($event->playerId, $owner->Id, $duckfootPistol->Id);
-            $event->theah->queueEvent($unequippedEvent);
-
-            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($event->playerId, $duckfootPistol->Id, $location, $duckfootPistol->Id, $asEffect = false);
-            $event->theah->queueEvent($discardEvent);
 
             foreach ($characters as $character)
             {
@@ -49,9 +55,13 @@ class Action_01191 extends AttachmentAction
                 $event->theah->queueEvent($woundEvent);
             }
 
+            $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($duckfootPistol->ControllerId, $duckfootPistol->Id, $this->Id, $owner->Id);
+            $event->theah->queueEvent($rangedAbilityPlayedEvent);
+
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);
 
+            //Custom announce above $this->announceAction() not needed
             $this->resetPlayerPassCount($event->theah->game);
             // $this->setUsed() not called because this card is destroyed
         }

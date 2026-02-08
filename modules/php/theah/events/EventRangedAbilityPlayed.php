@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventSorcererAbilityPlayed extends Event
+class EventRangedAbilityPlayed extends Event
 {
     public int $playerId;
     public int $sourceId;
