@@ -154,6 +154,7 @@ class Reaction_01144 extends CardReaction
             $recruit = $game->theah->getCharacterById($recruitId);
             $owner = $this->getOwningCard($game->theah);
             $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $recruitId, $recruit->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
+            $moveEvent->unstoppable = true;
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 

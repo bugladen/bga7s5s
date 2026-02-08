@@ -43,7 +43,7 @@ class Reaction_01140 extends CancelReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCardMoving && ! $event->canceled && $this->isAvailable())
+        if ($event instanceof EventCardMoving && ! $event->canceled && $this->isAvailable() && ! $event->unstoppable)
         {
             $owner = $this->getOwningCard($event->theah);
             if ($owner->Location == Game::LOCATION_HAND)
