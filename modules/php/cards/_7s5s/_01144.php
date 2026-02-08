@@ -2,17 +2,20 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPhaseHighDrama;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01144;
 
-class _01144 extends Scheme
+class _01144 extends Scheme implements IHasReactions
 {
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -32,6 +35,10 @@ class _01144 extends Scheme
         ];
 
         $this->resetCard();
+
+        $this->Reactions = [
+            new Reaction_01144(),
+        ];
     }
 
     public function handleEvent(Event $event)
@@ -52,42 +59,6 @@ class _01144 extends Scheme
             $transition->priority = Event::MEDIUM_PRIORITY;
             $event->theah->queueEvent($transition);
         }
-
-        if ($event instanceof EventPhaseHighDrama && $this->Location == Game::LOCATION_PLAYER_HOME) 
-        {
-            $game = $event->theah->game;
-            list($playerIdWithLeastCharacters, $lowestCount) = $game->getPlayerControllingFewestCharacters();
-
-            if ($playerIdWithLeastCharacters == $this->ControllerId) 
-            {
-                $characters = $game->theah->getAllCards();
-                $characters = array_filter($characters, fn($card) => $card instanceof Character && ! $card->isControlled() && $game->theah->cardInCity($card));
-                if (count($characters) == 0)
-                {
-                    return;
-                }
-    
-                $players = $game->loadPlayersBasicInfos();
-    
-                // Get the higest stat for the player's leader
-                $leader = $event->theah->getLeaderByPlayerId($this->ControllerId);
-                $discount = max($leader->ModifiedCombat, $leader->ModifiedFinesse, $leader->ModifiedInfluence);
-    
-                //Set the discount for recruiting a mercenary.
-                $game->globals->set(Game::DISCOUNT, $discount);
-    
-                $game->notify->all("message", clienttranslate('${scheme_inject_code} Leader Reaction: ${player_name} has the least (non-tied) amount of characters in play (${amount}).
-                They may now Recruit a mercenary at a discount of their Leader\'s highest stat.'), [
-                    "scheme_inject_code" => $this->getInjectCode(),
-                    "amount" => $lowestCount,
-                    "player_name" => $players[$this->ControllerId]['player_name'],
-                ]);
-    
-                //Transition to the state where player can choose a mercenary to recruit.
-                $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, '01144');
-                $event->theah->queueEvent($transition);
-            }
-        }
     }
 
     public function argsFromCard(Game $game, int $state, string $stateName, string $internalId): array
@@ -99,46 +70,7 @@ class _01144 extends Scheme
             $args["location"] = $game->globals->get(GAME::CHOSEN_LOCATION);
         }
 
-        if ($state == States::HIGH_DRAMA_BEGINNING_01144)
-        {
-            $args["discount"] = $game->globals->get(GAME::DISCOUNT);
-        }
-
-        if ($state == States::HIGH_DRAMA_BEGINNING_01144_2)
-        {
-            $args["mercenaryId"] = $game->globals->get(Game::CHOSEN_CARD);
-            $args["discount"] = $game->globals->get(GAME::DISCOUNT);
-        }
-
         return $args;
-    }
-
-    public function actFromCardWithId(Game $game, int $state, string $stateName, string $internalId, int $id): void
-    {
-        parent::actFromCardWithId($game, $state, $stateName, $internalId, $id);
-
-        if ($state == States::HIGH_DRAMA_BEGINNING_01144)
-        {
-            $mercenary = $game->theah->getCharacterById($id);
-            if ($mercenary == null)
-            {
-                throw new \BgaUserException($game->translate("Invalid character"));
-            }
-
-            if ($mercenary->isControlled())
-            {
-                throw new \BgaUserException($game->translate("Character is already controlled"));
-            }
-
-            if (! $game->theah->cardInCity($mercenary))
-            {
-                throw new \BgaUserException($game->translate("Character is not in the city"));
-            }
-
-            $game->globals->set(Game::CHOSEN_CARD, $mercenary->Id);
-
-            $game->gamestate->nextState("mercenaryChosen");    
-        }
     }
 
     public function actFromCardWithIds(Game $game, int $state, string $stateName, string $internalId, array $ids): void
@@ -194,19 +126,6 @@ class _01144 extends Scheme
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
             
-            $game->gamestate->nextState();
-        }
-
-        if ($state == States::HIGH_DRAMA_BEGINNING_01144_2)
-        {
-            $recruitId = $game->globals->get(Game::CHOSEN_CARD);
-            $game->actRecruitMercenary($recruitId, json_encode($ids));
-
-            $recruit = $game->theah->getCharacterById($recruitId);
-            $moveEvent = EventFactory::createCardMovingEvent($this->ControllerId, $recruitId, $recruit->Location, Game::LOCATION_PLAYER_HOME, false, $this->Id);
-            $game->theah->eventCheck($moveEvent);
-            $game->theah->queueEvent($moveEvent);
-
             $game->gamestate->nextState();
         }
     }
