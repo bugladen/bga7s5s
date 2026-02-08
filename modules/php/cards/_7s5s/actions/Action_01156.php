@@ -18,7 +18,6 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCards,
     {
         parent::__construct();
         $this->Name = clienttranslate("Discard Card, Wound Adjacent Opposing Character");
-        $this->RequiresPerformerSelected = true;
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -65,16 +64,15 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCards,
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01156)
         {
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $args['performerId'] = $performerId;
+            $performer = $this->getOwningCharacter($game->theah);
+            $args['performerId'] = $performer->Id;
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01156_2)
         {
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $args['performerId'] = $performerId;
-
             $performer = $this->getOwningCharacter($game->theah);
+            $args['performerId'] = $performer->Id;
+
             $adjacentLocations = $game->theah->getAdjacentCityLocations($performer->Location, $includeHome = false);
             foreach ($adjacentLocations as $adjacentLocation)
             {
@@ -92,8 +90,8 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCards,
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01156_3)
         {
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $args['performerId'] = $performerId;
+            $performer = $this->getOwningCharacter($game->theah);
+            $args['performerId'] = $performer->Id;
 
             $targetId = $game->globals->get(Game::CHOSEN_TARGET);
             $args['targetId'] = $targetId;
@@ -108,7 +106,7 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCards,
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01156)
         {
-            $performer = $this->getOwningCharacter($game->theah);
+            $performer = $this->getOwningCard($game->theah);
 
             $card = $game->getCardObjectFromDb($id);
 
