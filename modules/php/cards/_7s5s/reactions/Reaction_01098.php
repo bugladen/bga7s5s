@@ -40,7 +40,8 @@ class Reaction_01098 extends CardReaction
         {
             $game = $event->theah->game;
             $card = $game->getCardObjectFromDb($event->cardId);
-            if ($card->hasCondition(Game::CATS_EMBARGO_TARGET))
+            $owner = $this->getOwningCard($event->theah);
+            if ($card->hasCondition(Game::CATS_EMBARGO_TARGET) && $card->ControllerId != $owner->ControllerId)
             {
                 $owner = $this->getOwningCard($event->theah);
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
