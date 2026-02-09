@@ -749,8 +749,8 @@ trait ArgumentsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
-        $state = $this->gamestate->state_id();
-        $stateName = $this->gamestate->state()['name'];
+        $state = $this->gamestate->getCurrentMainStateId();
+        $stateName = $this->gamestate->getCurrentMainState()->name;
 
         if ($sourceId === null)
         {
@@ -783,8 +783,8 @@ trait ArgumentsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
-        $state = $this->gamestate->state_id();
-        $stateName = $this->gamestate->state()['name'];
+        $state = $this->gamestate->getCurrentMainStateId();
+        $stateName = $this->gamestate->getCurrentMainState()->name;
 
         if ($sourceId === null)
         {

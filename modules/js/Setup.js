@@ -13,6 +13,8 @@ return declare('seventhseacityoffivesails.setup', null, {
 
     setup: function( gamedatas )
     {
+        this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', this.mainBoardhtml);
+
         debug( "Starting game setup" );
         debug( "gamedatas", gamedatas );
 

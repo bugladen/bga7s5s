@@ -434,7 +434,7 @@ trait StatesTrait
                 unset($card);
             }
 
-            $cardList = implode(", ", array_map(function($card) { return self::_($card['name']); }, $cards));
+            $cardList = implode(", ", array_map(function($card) { return clienttranslate($card['name']); }, $cards));
             $this->notifyPlayer($playerId, "factionResolveCardDraw", 
                 clienttranslate('Private: Your panache value is: ${panache}.  As your draw you received: ${card_list}'), [
                     "panache" => $panache,
@@ -2022,6 +2022,6 @@ trait StatesTrait
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $transitionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
         $card = $this->theah->getCardById($sourceId);
-        $card->stateFromCard($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $transitionId);
+        $card->stateFromCard($this, $this->gamestate->getCurrentMainStateId(), $this->gamestate->getCurrentMainState()->name, $transitionId);
     }
 }

@@ -68,7 +68,7 @@ trait DebugTrait
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
-            throw new \BgaUserException(self::_("Card not found"));
+            throw new \BgaUserException(clienttranslate("Card not found"));
 
         $recruitCharacterEvent = $this->theah->createEvent(Events::CharacterRecruited);
         if ($recruitCharacterEvent instanceof EventCharacterRecruited) {
@@ -86,7 +86,7 @@ trait DebugTrait
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
-            throw new \BgaUserException(self::_("Card not found"));
+            throw new \BgaUserException(clienttranslate("Card not found"));
 
         $event = EventFactory::createCardEngagedEvent($playerId, $cardId);
         $this->theah->queueEvent($event);
@@ -98,7 +98,7 @@ trait DebugTrait
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
-            throw new \BgaUserException(self::_("Card not found"));
+            throw new \BgaUserException(clienttranslate("Card not found"));
 
         $event = EventFactory::createCardEngardedEvent($playerId, $cardId);
         $this->theah->queueEvent($event);
@@ -111,7 +111,7 @@ trait DebugTrait
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
-            throw new \BgaUserException(self::_("Card not found"));
+            throw new \BgaUserException(clienttranslate("Card not found"));
 
         $card->Reknown = $reknown;
         $this->updateCardObjectInDb($card);
