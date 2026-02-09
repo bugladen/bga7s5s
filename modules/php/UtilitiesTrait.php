@@ -15,7 +15,6 @@
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IFactionCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskAttachment;
 
@@ -23,12 +22,14 @@ trait UtilitiesTrait
 {
     function dbGetAuxScore($player_id) 
     {
-        return $this->getUniqueValueFromDB("SELECT player_score_aux FROM player WHERE player_id = $player_id");
+        return $this->bga->playerScoreAux->get($player_id);
+        // return $this->getUniqueValueFromDB("SELECT player_score_aux FROM player WHERE player_id = $player_id");
     }
 
     function dbSetAuxScore($player_id, $score) 
     {
-        $this->DbQuery("UPDATE player SET player_score_aux = $score WHERE player_id = $player_id");
+        $this->bga->playerScoreAux->set($player_id, $score);
+        // $this->DbQuery("UPDATE player SET player_score_aux = $score WHERE player_id = $player_id");
     }
 
     public function getAttachmentsInHand(int $playerId)
@@ -527,8 +528,10 @@ trait UtilitiesTrait
         }
     }
 
-    function setPlayerReknown($playerId, $reknown) {
-        $this->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
+    function setPlayerReknown($playerId, $reknown) 
+    {
+        $this->bga->playerScore->set($playerId, $reknown);
+        // $this->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
     }
 
     function isInReactionState(int $state) : bool

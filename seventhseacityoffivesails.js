@@ -37,6 +37,7 @@ define([
    g_gamethemeurl + 'modules/js/Notifications.js',
    g_gamethemeurl + 'modules/js/EventHandlers.js',
    g_gamethemeurl + 'modules/js/PlayerActions.js',
+   g_gamethemeurl + 'modules/js/Templates.js',
 ],
 function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCards, tippyLoaderPromise)
 {
@@ -75,6 +76,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
         seventhseacityoffivesails.notifications,
         seventhseacityoffivesails.eventhandlers,
         seventhseacityoffivesails.actions,
+        seventhseacityoffivesails.templates,
     ],
     {
         constructor: function(){

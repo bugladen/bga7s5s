@@ -212,7 +212,8 @@ class DB
 
     function setPlayerReknown($playerId, $reknown) {
         /** @disregard P1013 */
-        $this->game->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
+        $this->game->bga->playerScore->set($playerId, $reknown);
+        // $this->game->DbQuery("UPDATE player SET player_score='$reknown' WHERE player_id=$playerId");
     }
 
     function incrementPlayerReknown($player_id, $inc) {

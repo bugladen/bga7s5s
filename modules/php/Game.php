@@ -437,6 +437,6 @@ class Game extends \Bga\GameFramework\Table
 
     public function translate($text) 
     {
-        return self::_($text);
+        return clienttranslate($text);
     }
 }

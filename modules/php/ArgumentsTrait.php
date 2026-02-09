@@ -728,14 +728,29 @@ trait ArgumentsTrait
         ];
     }
 
+    public function argsDuskPhaseDiscard(): array
+    {
+        $playerId = $this->getCurrentPlayerId();
+        $hand = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+        $leader = $this->theah->getLeaderByPlayerId($playerId);
+        $handSize = count($hand);
+        $expectedDiscardCount = $handSize - $leader->Panache;
+        $args["expectedDiscardCount"] = $expectedDiscardCount;
+        $args["panache"] = $leader->Panache;
+
+        return [
+            "args" => $args
+        ];       
+    }
+
     public function argsForState(): array
     {
         $this->theah->buildCity();
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
-        $state = $this->gamestate->state_id();
-        $stateName = $this->gamestate->state()['name'];
+        $state = $this->gamestate->getCurrentMainStateId();
+        $stateName = $this->gamestate->getCurrentMainState()->name;
 
         if ($sourceId === null)
         {
@@ -768,8 +783,8 @@ trait ArgumentsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
-        $state = $this->gamestate->state_id();
-        $stateName = $this->gamestate->state()['name'];
+        $state = $this->gamestate->getCurrentMainStateId();
+        $stateName = $this->gamestate->getCurrentMainState()->name;
 
         if ($sourceId === null)
         {

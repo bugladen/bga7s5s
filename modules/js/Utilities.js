@@ -1254,5 +1254,24 @@ return declare('seventhseacityoffivesails.utilities', null, {
     getCardImageUrlRoot: function(cardImage) {
         return cardImage.startsWith('img/') ? g_gamethemeurl : 'https://dtdb.co/images/7s5s/en/';
     },
+
+    crewCapCheck: function() {
+        const player = this.gamedatas.players[this.player_id];
+        const leader = player.leader;
+        const crewCap = leader.modifiedCrewCap;
+
+        const characters = Object.values(this.cardProperties).filter((card) => 
+            (card.type === 'Character' ||card.type === 'Leader') && card.controllerId === this.player_id && this.isCardInPlay(card.id));
+        return characters.length + 1 <= crewCap; // +1 for the character being recruited
+    },
+
+    basicRecruitActionCrewCapCheck: function() {
+        if (!this.crewCapCheck()) 
+            this.confirmationDialog(_("You will exceed your crew cap if you Recruit. Are you sure you want to continue?"),
+                () => {this.bgaPerformAction('actHighDramaRecruitActionStart', {})}
+            );
+            else
+                this.bgaPerformAction('actHighDramaRecruitActionStart', {}) 
+    },
 })
 });

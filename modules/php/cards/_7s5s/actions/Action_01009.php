@@ -31,6 +31,11 @@ class Action_01009 extends CharacterAction implements IAbilityThatTargetsCards
             return false;
         }
 
+        if ($owner->Engaged)
+        {
+            return false;
+        }
+
         $characters = $theah->getCharactersAtLocation($owner->Location, $includeUncontrolled = true);
         $characters = array_filter($characters, fn($character) => !$character->isControlled() && $character->hasTrait("Mercenary"));
         return count($characters) > 0;
@@ -54,6 +59,8 @@ class Action_01009 extends CharacterAction implements IAbilityThatTargetsCards
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01009", $this->Id);
             $event->theah->queueEvent($transition);
 
+            //createActionResolvedEvent not called because it merges into the recruit action
+            //$this->announceAction() not called because it merges into the recruit action
             $this->setUsed($event->theah, true);
             $this->resetPlayerPassCount($game);
         }

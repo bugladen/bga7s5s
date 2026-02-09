@@ -290,7 +290,7 @@ class Reaction_01008 extends CardReaction
                 $card = $this->copyCard($game, "02010", $cesca->ControllerId);
                 $ability = $card->getAbilityById("{$card->Id}_Action_02010");
             }
-
+            
             //If it was an action, check if it is available to copy
             if ($copyAction)
             {

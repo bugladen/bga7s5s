@@ -98,7 +98,7 @@ trait FrameworkActionsTrait
             $deck = current(array_filter($starter_decks->decks, fn($deck) => $deck->id === $deck_id));
             if (! $deck)
             {
-                throw new \BgaUserException(sprintf(self::_("%s is not a starter valid deck."), $deck_id));
+                throw new \BgaUserException(sprintf(clienttranslate("%s is not a starter valid deck."), $deck_id));
             }
 
             $this->notifyPlayer($playerId, 'message', clienttranslate('Private: You have chosen ${deck_name} as your Starter Deck.'), [
@@ -113,7 +113,7 @@ trait FrameworkActionsTrait
             //Validate the deck JSON
             if (! json_validate($deck_json))
             {
-                throw new \BgaUserException(self::_("Invalid deck JSON."));
+                throw new \BgaUserException(clienttranslate("Invalid deck JSON."));
             }
 
             $deck = json_decode($deck_json);
@@ -138,7 +138,7 @@ trait FrameworkActionsTrait
         }
         else
         {
-            throw new \BgaUserException(sprintf(self::_("%s is not a valid deck type."), $deck_type));
+            throw new \BgaUserException(sprintf(clienttranslate("%s is not a valid deck type."), $deck_type));
         }
 
         if ($valid)
@@ -199,11 +199,11 @@ trait FrameworkActionsTrait
         $character = $this->getCardObjectFromDb($recruitId);
         if ($character == null)
         {
-            throw new \BgaUserException(self::_("Character not found."));
+            throw new \BgaUserException(clienttranslate("Character not found."));
         }
         if ( ! $character instanceof CityCharacter)
         {
-            throw new \BgaUserException(self::_("Character is not a City Character."));
+            throw new \BgaUserException(clienttranslate("Character is not a City Character."));
         }
 
         $discount = $this->globals->get(Game::DISCOUNT, 0); 
@@ -226,13 +226,13 @@ trait FrameworkActionsTrait
             $card = $this->getCardObjectFromDb($cardId);
 
             if ($card == null)
-                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
+                throw new \BgaUserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(self::_("Cost of Mercenary is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+            throw new \BgaUserException(sprintf(clienttranslate("Cost of Mercenary is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         $playerId = $this->getActivePlayerId();
@@ -264,7 +264,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if ($this->theah->playerCanMove($player_id) == false) {
-            throw new \BgaUserException(self::_("Moving is not allowed right now."));
+            throw new \BgaUserException(clienttranslate("Moving is not allowed right now."));
         }
 
         $this->gamestate->nextState("moveActionStart");
@@ -308,7 +308,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if ($this->theah->playerCanRecruit($player_id) == false) {
-            throw new \BgaUserException(self::_("Recruiting is not allowed right now."));
+            throw new \BgaUserException(clienttranslate("Recruiting is not allowed right now."));
         }
 
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
@@ -323,7 +323,7 @@ trait FrameworkActionsTrait
         $performer = $this->theah->getCharacterById($id);
 
         if (!$this->theah->cardInCity($performer)) {
-            throw new \BgaUserException(self::_("Character is not in the City."));
+            throw new \BgaUserException(clienttranslate("Character is not in the City."));
         }
 
         $characters = $this->theah->getCharactersInCityByPlayerId($playerId);
@@ -338,7 +338,7 @@ trait FrameworkActionsTrait
         //Select only the Ids of the characters
         $characterIds = array_map(function($character) { return $character->Id; }, $charactersThatCanReruit);
         if (!in_array($id, $characterIds)) {
-            throw new \BgaUserException(self::_("Character not in a state to recruit mercenaries."));
+            throw new \BgaUserException(clienttranslate("Character not in a state to recruit mercenaries."));
         }
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
@@ -394,7 +394,7 @@ trait FrameworkActionsTrait
         $mercenariesAtLocation = array_filter($charactersAtLocation, function($character) { return $character->hasTrait("Mercenary"); });        
         $mercenaryIds = array_map(function($character) { return $character->Id; }, $mercenariesAtLocation);
         if (!in_array($recruitId, $mercenaryIds)) {
-            throw new \BgaUserException(self::_("Chosen character is not a Mercenary at the Performer's Location."));
+            throw new \BgaUserException(clienttranslate("Chosen character is not a Mercenary at the Performer's Location."));
         }
 
         $this->globals->set(GAME::CHOSEN_CARD, $recruitId);
@@ -444,7 +444,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if (!$this->handHasAttachments($playerId) && !$this->theah->playerCanEquip($playerId)) {
-            throw new \BgaUserException(self::_("Equipping is not allowed right now."));
+            throw new \BgaUserException(clienttranslate("Equipping is not allowed right now."));
         }
 
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
@@ -495,7 +495,7 @@ trait FrameworkActionsTrait
         //Select only the Ids of the characters
         $characterIds = array_map(function($character) { return $character->Id; }, $charactersThatCanEquip);
         if (!in_array($id, $characterIds)) {
-            throw new \BgaUserException(self::_("Character cannot equip attachments."));
+            throw new \BgaUserException(clienttranslate("Character cannot equip attachments."));
         }
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
@@ -516,7 +516,7 @@ trait FrameworkActionsTrait
         $attachment = $this->getCardObjectFromDb($id);
         if ($attachment == null || $attachment->Location != Game::LOCATION_HAND || $attachment->ControllerId != $playerId) 
         {
-            throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
+            throw new \BgaUserException(clienttranslate("Attachment is not in Player's Hand."));
         }
 
         $this->globals->set(GAME::CHOSEN_CARD, $id);
@@ -526,7 +526,7 @@ trait FrameworkActionsTrait
 
         if ($performer->ControllerId != $playerId && ! $attachment->CanEquipToOpponents)
         {
-            throw new \BgaUserException(self::_("Attachment cannot be equipped to an opponent."));
+            throw new \BgaUserException(clienttranslate("Attachment cannot be equipped to an opponent."));
         }
 
         $event = EventFactory::createEnteringPayStateEvent($playerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
@@ -543,19 +543,19 @@ trait FrameworkActionsTrait
 
         $attachment = $this->theah->getCardById($attachmentId);
         if ($attachment == null) {
-            throw new \BgaUserException(self::_("Attachment not found."));
+            throw new \BgaUserException(clienttranslate("Attachment not found."));
         }
 
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
         if ($attachment->Location != $performer->Location) {
-            throw new \BgaUserException(self::_("Attachment is not at Performer's Location."));
+            throw new \BgaUserException(clienttranslate("Attachment is not at Performer's Location."));
         }
 
         if ($performer->ControllerId != $playerId && ! $attachment->CanEquipToOpponents)
         {
-            throw new \BgaUserException(self::_("Attachment cannot be equipped to an opponent."));
+            throw new \BgaUserException(clienttranslate("Attachment cannot be equipped to an opponent."));
         }
 
         $this->globals->set(GAME::CHOSEN_CARD, $attachmentId);
@@ -584,7 +584,7 @@ trait FrameworkActionsTrait
             $handCards = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
             $handCardIds = array_map(function($handCard) { return $handCard['id']; }, $handCards);
             if (!in_array($attachmentId, $handCardIds)) {
-                throw new \BgaUserException(self::_("Attachment is not in Player's Hand."));
+                throw new \BgaUserException(clienttranslate("Attachment is not in Player's Hand."));
             }
         }
 
@@ -593,7 +593,7 @@ trait FrameworkActionsTrait
         {
             if ($attachment->Location != Game::LOCATION_CITY_BAZAAR)
             {
-                throw new \BgaUserException(self::_("Let's Haggle: Attachment is not at Bazaar."));
+                throw new \BgaUserException(clienttranslate("Let's Haggle: Attachment is not at Bazaar."));
             }
         } 
 
@@ -603,7 +603,7 @@ trait FrameworkActionsTrait
             $attachmentIds = array_map(function($attachment) { return $attachment->Id; }, $attachmentsAtLocation);
 
             if (!in_array($attachmentId, $attachmentIds)) {
-                throw new \BgaUserException(self::_("Attachment is not at Performer's Location."));
+                throw new \BgaUserException(clienttranslate("Attachment is not at Performer's Location."));
             }
         }
 
@@ -624,13 +624,13 @@ trait FrameworkActionsTrait
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
             if ($card == null)
-                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
+                throw new \BgaUserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
 
                 //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(self::_("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+            throw new \BgaUserException(sprintf(clienttranslate("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         $playerId = $this->getActivePlayerId();
@@ -699,7 +699,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if ($this->theah->playerCanBasicClaim($player_id) == false) {
-            throw new \BgaUserException(self::_("Claim Action is not allowed right now."));
+            throw new \BgaUserException(clienttranslate("Claim Action is not allowed right now."));
         }
 
         $this->gamestate->nextState("claimActionStart");
@@ -712,18 +712,18 @@ trait FrameworkActionsTrait
 
         $performer = $this->theah->getCharacterById($id);
         if ($performer->Engaged) {
-            throw new \BgaUserException(self::_("Performer cannot Claim because it is engaged."));
+            throw new \BgaUserException(clienttranslate("Performer cannot Claim because it is engaged."));
         }
 
         if ($performer->DashedInfluence) {
-            throw new \BgaUserException(self::_("Performer cannot Claim because it has a Dashed Influence."));
+            throw new \BgaUserException(clienttranslate("Performer cannot Claim because it has a Dashed Influence."));
         }
 
         $charactersInCity = $this->theah->getCharactersInCityByPlayerId($activePlayerId);
         $characterIds = array_map(fn($character) => $character->Id, $charactersInCity);
 
         if (!in_array($id, $characterIds)) {
-            throw new \BgaUserException(self::_("Performer is not in the City."));
+            throw new \BgaUserException(clienttranslate("Performer is not in the City."));
         }
 
         $this->globals->set(Game::PRESSURING_PLAYER, $activePlayerId);
@@ -744,7 +744,7 @@ trait FrameworkActionsTrait
         $player_id = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
         if ($this->theah->playerHasInPlayActions($player_id) == false) {
-            throw new \BgaUserException(self::_("In-Play Action is not allowed right now."));
+            throw new \BgaUserException(clienttranslate("In-Play Action is not allowed right now."));
         }
 
         $this->gamestate->nextState("inPlayActionStart");
@@ -758,11 +758,11 @@ trait FrameworkActionsTrait
         $action = $this->theah->getInPlayActionById($actionId);
 
         if ($action == null) {
-            throw new \BgaUserException(self::_("Action not found."));
+            throw new \BgaUserException(clienttranslate("Action not found."));
         }
 
         if ( ! $action->isAvailabletoPlayer($player_id, $this->theah)) {
-            throw new \BgaUserException(self::_("Action is not available to player."));
+            throw new \BgaUserException(clienttranslate("Action is not available to player."));
         }
 
         $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
@@ -815,7 +815,7 @@ trait FrameworkActionsTrait
         $player_id = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
         if ($this->theah->playerHasInHandActions($player_id) == false) {
-            throw new \BgaUserException(self::_("In-Hand Action is not allowed right now."));
+            throw new \BgaUserException(clienttranslate("In-Hand Action is not allowed right now."));
         }
 
         $this->gamestate->nextState("inHandActionStart");
@@ -828,11 +828,11 @@ trait FrameworkActionsTrait
 
         $action = $this->theah->getInHandActionById($actionId);
         if ($action == null) {
-            throw new \BgaUserException(self::_("Action not found."));
+            throw new \BgaUserException(clienttranslate("Action not found."));
         }
 
         if ( ! $action->isAvailabletoPlayer($player_id, $this->theah)) {
-            throw new \BgaUserException(self::_("Action is not available to player."));
+            throw new \BgaUserException(clienttranslate("Action is not available to player."));
         }
 
         $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
@@ -880,13 +880,13 @@ trait FrameworkActionsTrait
         $action = $this->theah->getInHandActionById($actionId);
 
         if ($action == null) {
-            throw new \BgaUserException(self::_("In-Hand Action not found."));
+            throw new \BgaUserException(clienttranslate("In-Hand Action not found."));
         }
         $risk = $this->theah->getCardById($action->OwnerId);
 
         //Sanity checks
         if ($risk->Location != Game::LOCATION_HAND || $risk->ControllerId != $playerId) {
-            throw new \BgaUserException(self::_("Risk is not in Player's Hand."));
+            throw new \BgaUserException(clienttranslate("Risk is not in Player's Hand."));
         }
 
         $performerId = 0;
@@ -907,19 +907,19 @@ trait FrameworkActionsTrait
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
             if ($card == null)
-                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
+                throw new \BgaUserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
 
             //Edge case: Bravos cannot be paid for with a Thug card
             if ($risk instanceof _01024 && $card->hasTrait('Thug'))
             {
-                throw new \BgaUserException(self::_("A Thug cannot be used to pay for Bravos."));
+                throw new \BgaUserException(clienttranslate("A Thug cannot be used to pay for Bravos."));
             }
 
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+            throw new \BgaUserException(sprintf(clienttranslate("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         //Move the cards used to pay to the player's discard pile
@@ -973,7 +973,7 @@ trait FrameworkActionsTrait
         $player_id = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
         if ($this->theah->playerHasBrutes($player_id) == false) {
-            throw new \BgaUserException(self::_("Brute is not allowed right now."));
+            throw new \BgaUserException(clienttranslate("Brute is not allowed right now."));
         }
 
         $this->gamestate->nextState("bruteStart");
@@ -987,7 +987,7 @@ trait FrameworkActionsTrait
         $brute = $this->getCardObjectFromDb($id);
         if ($brute == null || $brute->Location != Game::LOCATION_HAND || $brute->ControllerId != $playerId) 
         {
-            throw new \BgaUserException(self::_("Brute is not in Player's Hand."));
+            throw new \BgaUserException(clienttranslate("Brute is not in Player's Hand."));
         }
 
         $discount = $this->theah->getPlayBruteDiscount($brute);
@@ -1009,7 +1009,7 @@ trait FrameworkActionsTrait
         //Sanity checks
         if ($brute == null || $brute->Location != Game::LOCATION_HAND || $brute->ControllerId != $playerId) 
         {
-            throw new \BgaUserException(self::_("Brute is not in Player's Hand."));
+            throw new \BgaUserException(clienttranslate("Brute is not in Player's Hand."));
         }
 
         $discount = $this->globals->get(Game::DISCOUNT);
@@ -1023,13 +1023,13 @@ trait FrameworkActionsTrait
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
             if ($card == null)
-                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
+                throw new \BgaUserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(self::_("Cost of Brute is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+            throw new \BgaUserException(sprintf(clienttranslate("Cost of Brute is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         $playerId = $this->getActivePlayerId();
@@ -1058,7 +1058,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if ($this->theah->playerCanBasicChallenge($player_id) == false) {
-            throw new \BgaUserException(self::_("Challenge Action is not allowed right now."));
+            throw new \BgaUserException(clienttranslate("Challenge Action is not allowed right now."));
         }
 
         //Set the challenge to the default stat
@@ -1080,14 +1080,14 @@ trait FrameworkActionsTrait
         {
             if (! $performer->canChallenge())
             {
-                throw new \BgaUserException(self::_("Performer cannot Challenge."));
+                throw new \BgaUserException(clienttranslate("Performer cannot Challenge."));
             }
         }
         else
         {
             if (! $performer->canChallenge() || $performer->Engaged)
             {
-                throw new \BgaUserException(self::_("Performer cannot Challenge."));
+                throw new \BgaUserException(clienttranslate("Performer cannot Challenge."));
             }
         }
 
@@ -1097,14 +1097,14 @@ trait FrameworkActionsTrait
         $characterIds = array_map(function($character) { return $character->Id; }, $characters);
 
         if (!in_array($id, $characterIds)) {
-            throw new \BgaUserException(self::_("Performer is not in the City."));
+            throw new \BgaUserException(clienttranslate("Performer is not in the City."));
         }
 
         $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
         $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => $character->ControllerId && $character->ControllerId != $activePlayerId );
         if (count($charactersAtLocation) == 0)
         {
-            throw new \BgaUserException(self::_("No Challengable Characters at Performer's location."));
+            throw new \BgaUserException(clienttranslate("No Challengable Characters at Performer's location."));
         }
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
@@ -1118,7 +1118,7 @@ trait FrameworkActionsTrait
         $target = $this->getCardObjectFromDb($id);
 
         if ($target->Location != $performer->Location) {
-            throw new \BgaUserException(self::_("Target is not in the same location as your Peformer."));
+            throw new \BgaUserException(clienttranslate("Target is not in the same location as your Peformer."));
         }
 
         $this->globals->set(GAME::CHOSEN_TARGET, $target->Id);
@@ -1135,7 +1135,7 @@ trait FrameworkActionsTrait
 
         $technique = $this->theah->getTechniqueById($techniqueId);
         if ($technique == null) {
-            throw new \BgaUserException(self::_("Technique not found."));
+            throw new \BgaUserException(clienttranslate("Technique not found."));
         }
 
         $this->globals->set(GAME::CHOSEN_TECHNIQUE, $technique->Id);
@@ -1181,7 +1181,7 @@ trait FrameworkActionsTrait
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
         if ($challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE)
         {
-            throw new \BgaUserException(self::_("Épée Sanglante: Refusing a Challenge is not allowed."));
+            throw new \BgaUserException(clienttranslate("Épée Sanglante: Refusing a Challenge is not allowed."));
         }
 
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
@@ -1250,7 +1250,7 @@ trait FrameworkActionsTrait
 
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
         if (count($techniques) == 0) {
-            throw new \BgaUserException(sprintf(self::_("No Techniques available for %s."), $actor->Name));
+            throw new \BgaUserException(sprintf(clienttranslate("No Techniques available for %s."), $actor->Name));
         }
 
         $this->gamestate->nextState("chooseTechnique");
@@ -1265,11 +1265,11 @@ trait FrameworkActionsTrait
 
         $technique = $this->theah->getTechniqueById($techniqueId);
         if ($technique == null) {
-            throw new \BgaUserException(self::_("Technique not found."));
+            throw new \BgaUserException(clienttranslate("Technique not found."));
         }
         
         if ( ! $this->theah->isTechniqueOwnedByCharacter($technique, $actor)) {
-            throw new \BgaUserException(self::_("Technique does not belong to the Actor."));
+            throw new \BgaUserException(clienttranslate("Technique does not belong to the Actor."));
         }
 
         $this->globals->set(GAME::CHOSEN_TECHNIQUE, $technique->Id);
@@ -1315,16 +1315,16 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null) {
-            throw new \BgaUserException(self::_("Card not found."));
+            throw new \BgaUserException(clienttranslate("Card not found."));
         }
 
         $playerId = $this->getActivePlayerId();
         if ($card->OwnerId != $playerId) {
-            throw new \BgaUserException(self::_("Card does not belong to the player."));
+            throw new \BgaUserException(clienttranslate("Card does not belong to the player."));
         }
 
         if ($card->Location != Game::LOCATION_HAND) {
-            throw new \BgaUserException(self::_("Card is not in your hand."));
+            throw new \BgaUserException(clienttranslate("Card is not in your hand."));
         }
 
         $this->globals->set(Game::CHOSEN_CARD, $card->Id);
@@ -1356,14 +1356,14 @@ trait FrameworkActionsTrait
 
         $maneuver = $this->theah->getManeuverById($maneuverId);
         if ($maneuver == null) {
-            throw new \BgaUserException(self::_("Maneuver not found."));
+            throw new \BgaUserException(clienttranslate("Maneuver not found."));
         }
         
         $cardId = $this->globals->get(Game::CHOSEN_CARD);
         $card = $this->theah->getCardById($cardId);
 
         if ($maneuver->OwnerId != $card->Id) {
-            throw new \BgaUserException(self::_("Maneuver does not belong to chosen combat card."));
+            throw new \BgaUserException(clienttranslate("Maneuver does not belong to chosen combat card."));
         }
 
         $this->globals->set(Game::CHOSEN_MANEUVER, $maneuverId);
@@ -1411,13 +1411,13 @@ trait FrameworkActionsTrait
             $payCard = $this->getCardObjectFromDb($cardId);
 
             if ($payCard == null)
-                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
+                throw new \BgaUserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += $payCard->hasTrait("Wealth") ? 2 : 1;
         }
         if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+            throw new \BgaUserException(sprintf(clienttranslate("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         $this->notifyAllPlayers("message", clienttranslate('${player_name} is playing ${card_inject_code} as their Combat Card.'), [
@@ -1463,18 +1463,18 @@ trait FrameworkActionsTrait
 
         $deckCard = $this->cards->getCard($id);
         if ($deckCard == null) {
-            throw new \BgaUserException(self::_("Card not found."));
+            throw new \BgaUserException(clienttranslate("Card not found."));
         }
 
         $card = $this->getCardObjectFromDb($id);
         if ($card->Location != $deckName) {
-            throw new \BgaUserException(self::_("Card is not in your faction deck."));
+            throw new \BgaUserException(clienttranslate("Card is not in your faction deck."));
         }
 
         $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
         $cards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
         if (!in_array($id, array_column($cards, 'id'))) {
-            throw new \BgaUserException(self::_("Chosen card is not in the top $count cards of your faction deck."));
+            throw new \BgaUserException(clienttranslate("Chosen card is not in the top $count cards of your faction deck."));
         }
 
         //Sink the cards that are not chosen
@@ -1556,7 +1556,7 @@ trait FrameworkActionsTrait
             //Check to see if a combat card was played (but if you can't gamble or have no cards in hand, you can pass)
             if ($combatCardsCount == 0 && ($handCardsCount > 0 || $gamblesLeft > 0))
             {
-                throw new \BgaUserException(self::_("For the first round, you must either gamble or a combat card must be played."));
+                throw new \BgaUserException(clienttranslate("For the first round, you must either gamble or a combat card must be played."));
             }
         }
         
@@ -1577,7 +1577,7 @@ trait FrameworkActionsTrait
         $duelType = $this->globals->get(Game::DUEL_TYPE);
         if ($duelType != Game::VLADISLAV_DUEL_TYPE)
         {
-            throw new \BgaUserException(self::_("Duel is not type Vladislav duel."));
+            throw new \BgaUserException(clienttranslate("Duel is not type Vladislav duel."));
         }
 
         $this->gamestate->nextState("doneWithRound");
@@ -1598,7 +1598,7 @@ trait FrameworkActionsTrait
 
         $cardIds = json_decode($ids, true);
         if ($expectedDiscard != count($cardIds))
-            throw new \BgaUserException(sprintf(self::_("You must discard exactly %d cards."), $expectedDiscard));
+            throw new \BgaUserException(sprintf(clienttranslate("You must discard exactly %d card(s)."), $expectedDiscard));
         
         foreach ($cardIds as $cardId) 
         {
@@ -1615,15 +1615,15 @@ trait FrameworkActionsTrait
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
 
         if ($sourceId === null) {
-            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Unable to process action. Please try again or refresh the page."));
         }
 
         $card = $this->theah->getCardById($sourceId);
         if ($card === null) {
-            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Card not found. Please try again or refresh the page."));
         }
 
-        $card->actFromCardPass($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId);
+        $card->actFromCardPass($this, $this->gamestate->getCurrentMainStateId(), $this->gamestate->getCurrentMainState()->name, $actionId);
     }
 
     public function actFromCardWithId(int $id)
@@ -1634,15 +1634,15 @@ trait FrameworkActionsTrait
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
 
         if ($sourceId === null) {
-            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Unable to process action. Please try again or refresh the page."));
         }
 
         $card = $this->theah->getCardById($sourceId);
         if ($card === null) {
-            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Card not found. Please try again or refresh the page."));
         }
 
-        $card->actFromCardWithId($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $id);
+        $card->actFromCardWithId($this, $this->gamestate->getCurrentMainStateId(), $this->gamestate->getCurrentMainState()->name, $actionId, $id);
     }
 
     public function actFromCardWithIds(string $ids)
@@ -1654,15 +1654,15 @@ trait FrameworkActionsTrait
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
 
         if ($sourceId === null) {
-            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Unable to process action. Please try again or refresh the page."));
         }
 
         $card = $this->theah->getCardById($sourceId);
         if ($card === null) {
-            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Card not found. Please try again or refresh the page."));
         }
 
-        $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $ids);
+        $card->actFromCardWithIds($this, $this->gamestate->getCurrentMainStateId(), $this->gamestate->getCurrentMainState()->name, $actionId, $ids);
     }
 
     public function actFromCardWithLocations(string $locations)
@@ -1674,15 +1674,15 @@ trait FrameworkActionsTrait
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
 
         if ($sourceId === null) {
-            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Unable to process action. Please try again or refresh the page."));
         }
 
         $card = $this->theah->getCardById($sourceId);
         if ($card === null) {
-            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Card not found. Please try again or refresh the page."));
         }
 
-        $card->actFromCardWithIds($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $actionId, $locations);
+        $card->actFromCardWithIds($this, $this->gamestate->getCurrentMainStateId(), $this->gamestate->getCurrentMainState()->name, $actionId, $locations);
     }
 
     public function actFromCardWithActionId(int $actionSourceId, string $actionId)
@@ -1692,15 +1692,15 @@ trait FrameworkActionsTrait
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
 
         if ($sourceId === null) {
-            throw new \BgaUserException(self::_("Unable to process action. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Unable to process action. Please try again or refresh the page."));
         }
 
         $card = $this->theah->getCardById($sourceId);
         if ($card === null) {
-            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Card not found. Please try again or refresh the page."));
         }
 
-        $card->actFromCardWithActionId($this, $this->gamestate->state_id(), $this->gamestate->state()['name'], $internalId, $actionSourceId, $actionId);
+        $card->actFromCardWithActionId($this, $this->gamestate->getCurrentMainStateId(), $this->gamestate->getCurrentMainState()->name, $internalId, $actionSourceId, $actionId);
     }
 
     public function actReactionForState(string $reactionId)
@@ -1709,11 +1709,11 @@ trait FrameworkActionsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
-        $state = $this->gamestate->state_id();
+        $state = $this->gamestate->getCurrentMainStateId();
 
         if ($sourceId === null)
         {
-            throw new \BgaUserException(self::_("Unable to process reaction. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Unable to process reaction. Please try again or refresh the page."));
         }
 
         if ($sourceId == Game::THEAH_ID)
@@ -1726,7 +1726,7 @@ trait FrameworkActionsTrait
             $card = $this->theah->getCardById($sourceId);
             if ($card === null)
             {
-                throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+                throw new \BgaUserException(clienttranslate("Card not found. Please try again or refresh the page."));
             }
             $card->reactionFromCard($this, $state, $internalId, $reactionId);
         }
@@ -1741,12 +1741,12 @@ trait FrameworkActionsTrait
         
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         if ($sourceId === null) {
-            throw new \BgaUserException(self::_("Unable to process reaction. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Unable to process reaction. Please try again or refresh the page."));
         }
 
         $card = $this->theah->getCardById($sourceId);
         if ($card === null) {
-            throw new \BgaUserException(self::_("Card not found. Please try again or refresh the page."));
+            throw new \BgaUserException(clienttranslate("Card not found. Please try again or refresh the page."));
         }
 
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
@@ -1770,20 +1770,20 @@ trait FrameworkActionsTrait
             if (in_array($cardId, $invalidPayCardIds))
             {
                 $card = $this->getCardObjectFromDb($cardId);
-                throw new \BgaUserException(sprintf(self::_("%s is not valid to pay for the reaction."), $card->Name));
+                throw new \BgaUserException(sprintf(clienttranslate("%s is not valid to pay for the reaction."), $card->Name));
             }
 
             $payCard = $this->getCardObjectFromDb($cardId);
 
             if ($payCard == null)
-                throw new \BgaUserException(sprintf(self::_("Card #%d not found."), $cardId));
+                throw new \BgaUserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
             $totalWealth += $payCard->hasTrait("Wealth") ? 2 : 1;
         }
 
         if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(self::_("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+            throw new \BgaUserException(sprintf(clienttranslate("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }        
 
         //Move the cards used to pay to the player's discard pile
@@ -1795,7 +1795,7 @@ trait FrameworkActionsTrait
 
         $this->globals->delete(Game::INVALID_PAY_CARD_IDS);
 
-        $announcement = $reaction->getReactionAnnouncement($this, $this->gamestate->state_id(), $internalId, $reactionId);
+        $announcement = $reaction->getReactionAnnouncement($this, $this->gamestate->getCurrentMainStateId(), $internalId, $reactionId);
         if ($announcement != "")
         {
             $this->notifyAllPlayers("message", clienttranslate('${player_name} ${announcement}'), [

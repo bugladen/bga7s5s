@@ -168,12 +168,15 @@ class _01098 extends Scheme implements IHasReactions
     
             foreach ($cards as $card) {
                 $card = $game->getCardObjectFromDb($card['id']);
-                $card->addCondition(Game::CATS_EMBARGO_TARGET);
-                $game->updateCardObjectInDb($card);
-    
-                $game->notify->player($pickedCard->ControllerId, "catsEmbargoTargetChosen", "", [
-                    "cardId" => $card->Id,
-                ]);
+                if ($card->ControllerId != $this->ControllerId)
+                {
+                    $card->addCondition(Game::CATS_EMBARGO_TARGET);
+                    $game->updateCardObjectInDb($card);
+
+                    $game->notify->player($pickedCard->ControllerId, "catsEmbargoTargetChosen", "", [
+                        "cardId" => $card->Id,
+                    ]);
+                }    
             }
     
             $game->notify->all('message', 
