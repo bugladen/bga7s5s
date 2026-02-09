@@ -1583,7 +1583,11 @@ class Theah
         if ($payStateType == Game::PAY_STATE_IN_HAND_REACTION)
         {
             $card = $this->getCardById($cardId);
-            $reaction = $card->getReactionById($internalId);
+            if ($card instanceof IHasReactions)
+                $reaction = $card->getReactionById($internalId);
+            else
+                throw new \BgaUserException(sprintf($this->game->translate("Card %d - %s does not have reactions"), $cardId, $card->Name));
+            
             [$discount, $explanations] = $this->getReactionFromHandDiscount($reaction);
         }
 
