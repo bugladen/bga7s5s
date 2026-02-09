@@ -143,7 +143,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
 
         // Update the player panel
-        dojo.addClass( `overall_player_board_${args.player_id}`, `_7sfs-home-${args.leader.faction.toLowerCase()}` );
+        //Fishing for what is currently called overall_player_board_${playerId}
+        const element = this.bga.playerPanels.getElement(args.player_id).parentElement.parentElement.parentElement;
+        element.classList.add(`_7sfs-home-${args.leader.faction.toLowerCase()}`);
+
         dojo.addClass( `${args.player_id}-score-seal`, `_7sfs-seal-score _7sfs-seal-${args.leader.faction.toLowerCase()}-score` );
         $(`${args.player_id}-score-crewcap`).innerHTML = args.leader.crewCap;
         $(`${args.player_id}-score-panache`).innerHTML = args.leader.panache;

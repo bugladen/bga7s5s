@@ -101,7 +101,10 @@ return declare('seventhseacityoffivesails.setup', null, {
             if (gamedatas.homeCards.length > 0) {
                 // Home
                 this.createHome(playerId, player.color, player.leader);
-                dojo.addClass( `overall_player_board_${playerId}`, `_7sfs-home-${player.leader.faction.toLowerCase()}` );
+
+                //Fishing for what is currently called overall_player_board_${playerId}
+                const element = this.bga.playerPanels.getElement(playerId).parentElement.parentElement.parentElement;
+                element.classList.add(`_7sfs-home-${player.leader.faction.toLowerCase()}`);
                 dojo.addClass( `${playerId}-score-seal`, `_7sfs-seal-score _7sfs-seal-${player.leader.faction.toLowerCase()}-score` );
 
                 // Discard Pile
