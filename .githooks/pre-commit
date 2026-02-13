@@ -106,6 +106,13 @@ for file in $staged_files; do
             echo -e "  Class extends CardReaction/AttachmentReaction but does not call ${YELLOW}\$this->setUsed()${NC}"
             errors_found=1
         fi
+
+        # Check for $this->isAvailable()
+        if ! echo "$content" | grep -q '\$this->isAvailable('; then
+            echo -e "${RED}ERROR:${NC} $file"
+            echo -e "  Class extends CardReaction/AttachmentReaction but does not call ${YELLOW}\$this->isAvailable()${NC}"
+            errors_found=1
+        fi
     fi
 
     # Check if the class calls createAttachmentEquippedEvent
