@@ -359,12 +359,10 @@ class Game extends \Bga\GameFramework\Table
         $default_colors = $gameinfos['player_colors'];
 
         foreach ($players as $player_id => $player) {
-            $query_values[] = vsprintf("('%s', '%s', '%s', '%s', '%s')", [
+            $query_values[] = vsprintf("('%s', '%s', '%s')", [
                 $player_id,
                 array_shift($default_colors),
-                $player["player_canal"],
                 addslashes($player["player_name"]),
-                addslashes($player["player_avatar"]),
             ]);
         }
 
@@ -374,7 +372,7 @@ class Game extends \Bga\GameFramework\Table
         // additional fields directly here.
         static::DbQuery(
             sprintf(
-                "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES %s",
+                "INSERT INTO player (player_id, player_color, player_name) VALUES %s",
                 implode(",", $query_values)
             )
         );
