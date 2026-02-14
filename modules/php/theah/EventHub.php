@@ -1464,16 +1464,27 @@ trait EventHub
                         $effects .= "<p>{$thrustText} {$results["thrust"]}";
                     }
 
+                    $challengerId = $theah->getDuelChallengerId();
+                    $challeger = $theah->getCharacterById($challengerId);
+                    $defenderId = $theah->getDuelDefenderId();
+                    $defender = $theah->getCharacterById($defenderId);
+
                     $challengerThreatIsLethal = $results['challengerThreatIsLethal'];
                     $defenderThreatIsLethal = $results['defenderThreatIsLethal'];
 
-                    $challengerThreatIsLethalText = $challengerThreatIsLethal ? clienttranslate("<br><strong>Challenger Threat is LETHAL</strong>") : "";
-                    $defenderThreatIsLethalText = $defenderThreatIsLethal ? clienttranslate("<br><strong>Defender Threat is LETHAL</strong>") : "";
+                    $challengerThreatIsLethalText = $challengerThreatIsLethal ? sprintf(clienttranslate("<br><strong>%s Threat is LETHAL</strong>"), $challeger->getInjectCode()) : "";
+                    $defenderThreatIsLethalText = $defenderThreatIsLethal ? sprintf(clienttranslate("<br><strong>%s Threat is LETHAL</strong>"), $defender->getInjectCode()) : "";
 
+                    $effects .= "<p>At the end of the round, the following will occur:</p>";
                     if ($results["endingChallengerThreatBefore"] != $results["endingChallengerThreatAfter"])
-                        $effects .= sprintf($theah->game->translate("<p>Challenger Threat went from %d to %d. %s"), $results["endingChallengerThreatBefore"], $results["endingChallengerThreatAfter"], $challengerThreatIsLethalText);
+                        $effects .= sprintf($theah->game->translate("<p>%s Threat will go from %d to %d. %s"), $challeger->getInjectCode(), $results["endingChallengerThreatBefore"], $results["endingChallengerThreatAfter"], $challengerThreatIsLethalText);
+                    else
+                        $effects .= sprintf($theah->game->translate("<p>%s Threat will remain at %d. %s"), $challeger->getInjectCode(), $results["endingChallengerThreatBefore"], $challengerThreatIsLethalText);
+
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
-                        $effects .= sprintf($theah->game->translate("<p>Defender Threat went from %d to %d. %s"), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"], $defenderThreatIsLethalText);
+                        $effects .= sprintf($theah->game->translate("<p>%s Threat will go from %d to %d. %s"), $defender->getInjectCode(), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"], $defenderThreatIsLethalText);
+                    else
+                        $effects .= sprintf($theah->game->translate("<p>%s Threat will remain at %d. %s"), $defender->getInjectCode(), $results["endingDefenderThreatBefore"], $defenderThreatIsLethalText);
 
                     $deck = $theah->game->getGameDeckObject();
                     $theah->game->notify->all("updateRoundWithCombatStats", clienttranslate('Duel Update: ${character_inject_code} adds the Technique [<strong>${effect_name}</strong>] from ${card_inject_code}. ${effects}'), [
@@ -1577,16 +1588,27 @@ trait EventHub
                         $effects .= "<p>{$thrustText} {$results["thrust"]}";
                     }
 
+                    $challengerId = $theah->getDuelChallengerId();
+                    $challeger = $theah->getCharacterById($challengerId);
+                    $defenderId = $theah->getDuelDefenderId();
+                    $defender = $theah->getCharacterById($defenderId);
+
                     $challengerThreatIsLethal = $results['challengerThreatIsLethal'];
                     $defenderThreatIsLethal = $results['defenderThreatIsLethal'];
 
-                    $challengerThreatIsLethalText = $challengerThreatIsLethal ? clienttranslate("<br><strong>Challenger Threat is LETHAL</strong>") : "";
-                    $defenderThreatIsLethalText = $defenderThreatIsLethal ? clienttranslate("<br><strong>Defender Threat is LETHAL</strong>") : "";
+                    $challengerThreatIsLethalText = $challengerThreatIsLethal ? sprintf(clienttranslate("<br><strong>%s Threat is LETHAL</strong>"), $challeger->getInjectCode()) : "";
+                    $defenderThreatIsLethalText = $defenderThreatIsLethal ? sprintf(clienttranslate("<br><strong>%s Threat is LETHAL</strong>"), $defender->getInjectCode()) : "";
 
+                    $effects .= "<p>At the end of the round, the following will occur:</p>";
                     if ($results["endingChallengerThreatBefore"] != $results["endingChallengerThreatAfter"])
-                        $effects .= sprintf($theah->game->translate("<p>Challenger Threat went from %d to %d. %s"), $results["endingChallengerThreatBefore"], $results["endingChallengerThreatAfter"], $challengerThreatIsLethalText);
+                        $effects .= sprintf($theah->game->translate("<p>%s Threat will go from %d to %d. %s"), $challeger->getInjectCode(), $results["endingChallengerThreatBefore"], $results["endingChallengerThreatAfter"], $challengerThreatIsLethalText);
+                    else
+                        $effects .= sprintf($theah->game->translate("<p>%s Threat will remain at %d. %s"), $challeger->getInjectCode(), $results["endingChallengerThreatBefore"], $challengerThreatIsLethalText);
+
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
-                        $effects .= sprintf($theah->game->translate("<p>Defender Threat went from %d to %d. %s"), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"], $defenderThreatIsLethalText);
+                        $effects .= sprintf($theah->game->translate("<p>%s Threat will go from %d to %d. %s"), $defender->getInjectCode(), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"], $defenderThreatIsLethalText);
+                    else
+                        $effects .= sprintf($theah->game->translate("<p>%s Threat will remain at %d. %s"), $defender->getInjectCode(), $results["endingDefenderThreatBefore"], $defenderThreatIsLethalText);
 
                     $message = clienttranslate('Duel Update: ${character_inject_code} activated the Maneuver [${effect_name}] ${effects}');
                     if (! $maneuverCard instanceof Character)
@@ -1660,21 +1682,32 @@ trait EventHub
                     {
                         $effects .= "<p>{$parryText} {$results["parry"]}";
                     }
-                    if ($results["thrust"] < 0) 
+                    if ($results["thrust"] < 0)
                     {
                         $effects .= "<p>{$thrustText} {$results["thrust"]}";
                     }
 
+                    $challengerId = $theah->getDuelChallengerId();
+                    $challeger = $theah->getCharacterById($challengerId);
+                    $defenderId = $theah->getDuelDefenderId();
+                    $defender = $theah->getCharacterById($defenderId);
+
                     $challengerThreatIsLethal = $results['challengerThreatIsLethal'];
                     $defenderThreatIsLethal = $results['defenderThreatIsLethal'];
 
-                    $challengerThreatIsLethalText = $challengerThreatIsLethal ? clienttranslate("<br><strong>Challenger Threat is LETHAL</strong>") : "";
-                    $defenderThreatIsLethalText = $defenderThreatIsLethal ? clienttranslate("<br><strong>Defender Threat is LETHAL</strong>") : "";
+                    $challengerThreatIsLethalText = $challengerThreatIsLethal ? sprintf(clienttranslate("<br><strong>%s Threat is LETHAL</strong>"), $challeger->getInjectCode()) : "";
+                    $defenderThreatIsLethalText = $defenderThreatIsLethal ? sprintf(clienttranslate("<br><strong>%s Threat is LETHAL</strong>"), $defender->getInjectCode()) : "";
     
+                    $effects .= "<p>At the end of the round, the following will occur:</p>";
                     if ($results["endingChallengerThreatBefore"] != $results["endingChallengerThreatAfter"])
-                        $effects .= sprintf($theah->game->translate("<p>Challenger Threat went from %d to %d. %s"), $results["endingChallengerThreatBefore"], $results["endingChallengerThreatAfter"], $challengerThreatIsLethalText);
+                        $effects .= sprintf($theah->game->translate("<p>%s Threat will go from %d to %d. %s"), $challeger->getInjectCode(), $results["endingChallengerThreatBefore"], $results["endingChallengerThreatAfter"], $challengerThreatIsLethalText);
+                    else
+                        $effects .= sprintf($theah->game->translate("<p>%s Threat will remain at %d. %s"), $challeger->getInjectCode(), $results["endingChallengerThreatBefore"], $challengerThreatIsLethalText);
+
                     if ($results["endingDefenderThreatBefore"] != $results["endingDefenderThreatAfter"])
-                        $effects .= sprintf($theah->game->translate("<p>Defender Threat went from %d to %d. %s"), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"], $defenderThreatIsLethalText);
+                        $effects .= sprintf($theah->game->translate("<p>%s Threat will go from %d to %d. %s"), $defender->getInjectCode(), $results["endingDefenderThreatBefore"], $results["endingDefenderThreatAfter"], $defenderThreatIsLethalText);
+                    else
+                        $effects .= sprintf($theah->game->translate("<p>%s Threat will remain at %d. %s"), $defender->getInjectCode(), $results["endingDefenderThreatBefore"], $defenderThreatIsLethalText);
 
                     $deck = $theah->game->getGameDeckObject();
                     $theah->game->notify->all("updateRoundWithCombatStats", clienttranslate('Duel Update: ${player_name} has played ${card_inject_code} as their Combat Card. ${effects}'), [
@@ -2029,17 +2062,18 @@ trait EventHub
                     $challengerThreatIsLethal = $result['challenger_threat_is_lethal'];
                     $defenderThreatIsLethal = $result['defender_threat_is_lethal'];
 
-                    $challengerThreatIsLethalText = $challengerThreatIsLethal ? clienttranslate("<br><strong>Challenger Threat is LETHAL</strong>") : "";
-                    $defenderThreatIsLethalText = $defenderThreatIsLethal ? clienttranslate("<br><strong>Defender Threat is LETHAL</strong>") : "";
+                    $challengerThreatIsLethalText = $challengerThreatIsLethal ? sprintf(clienttranslate("<br><strong>%s Threat is LETHAL</strong>"), $challenger->getInjectCode()) : "";
+                    $defenderThreatIsLethalText = $defenderThreatIsLethal ? sprintf(clienttranslate("<br><strong>%s Threat is LETHAL</strong>"), $defender->getInjectCode()) : "";
 
                     $theah->game->notify->all("updateRoundThreats", clienttranslate(
                         'Threat for ${challenger_inject_code} has been modified by ${challenger_modification}.
                         <br>
                         Threat for ${defender_inject_code} has been modified by ${defender_modification}.
                         <br>
-                        Current Challenger Threat: ${challenger_threat}. ${challenger_lethal_text}
+                        Current Threat for ${challenger_inject_code}: ${challenger_threat}. ${challenger_lethal_text}
                         <br>
-                        Current Defender Threat: ${defender_threat}. ${defender_lethal_text}'), [
+                        Current Threat for ${defender_inject_code}: ${defender_threat}. ${defender_lethal_text}'), [
+                        'i18n' => ['challenger_inject_code', 'defender_inject_code'],
                         "challenger_inject_code" => $challenger->getInjectCode(),
                         "defender_inject_code" => $defender->getInjectCode(),
                         "challenger_modification" => $event->challengerThreat,
