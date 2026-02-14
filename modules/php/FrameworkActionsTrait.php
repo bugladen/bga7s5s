@@ -22,11 +22,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 
 trait FrameworkActionsTrait
 {
@@ -1466,31 +1464,7 @@ trait FrameworkActionsTrait
             $this->theah->queueEvent($event);
         }
 
-        $activateEvent = EventFactory::createManeuverActivatedEvent($playerId, $cardId, $maneuver->Id);
-        $this->theah->eventCheck($activateEvent);
-        $this->theah->queueEvent($activateEvent);
-
-        $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
-
-        $resolveEvent = $this->theah->createEvent(Events::ResolveManeuver);
-        if ($resolveEvent instanceof EventResolveManeuver)
-        {
-            $resolveEvent->playerId = $playerId;
-            $resolveEvent->adversaryId = $adversaryId;
-            $resolveEvent->maneuverId = $maneuver->Id;
-        }
-        $this->theah->eventCheck($resolveEvent);
-        $this->theah->queueEvent($resolveEvent);
-
-        $threatEvent = $this->theah->createEvent(Events::DuelCalculateManeuverValues);
-        if ($threatEvent instanceof EventDuelCalculateManeuverValues)
-        {
-            $threatEvent->actorId = $actor->Id;
-            $threatEvent->adversaryId = $adversaryId;
-            $threatEvent->maneuverId = $maneuver->Id;
-        }
-        $this->theah->eventCheck($threatEvent);
-        $this->theah->queueEvent($threatEvent);
+        $this->globals->set(Game::DUEL_MANUEVER_ID, $maneuver->Id);
 
         //Remove card from hand
         $card->Location = Game::LOCATION_DUELING_LINE;

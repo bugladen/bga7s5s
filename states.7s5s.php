@@ -1724,7 +1724,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithId", 
         ],
         "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
         ]
     ],
 
@@ -1738,7 +1738,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithLocations", 
         ],
         "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
         ]
     ],
 
@@ -1752,7 +1752,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithId", 
         ],
         "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
         ]
     ],
     States::DUEL_RESOLVE_MANEUVER_01079_2 => [
@@ -1765,7 +1765,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithId", 
         ],
         "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
         ]
     ],
 
@@ -1779,7 +1779,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithIds", 
         ],
         "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
         ]
     ],
 
@@ -1807,7 +1807,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithId",
         ],
         "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
             
         ]
     ],

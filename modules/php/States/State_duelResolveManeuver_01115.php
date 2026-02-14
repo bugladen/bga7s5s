@@ -22,7 +22,7 @@ class State_duelResolveManeuver_01115 extends GameState
             description: clienttranslate('${actplayer} is choosing a card to discard.'),
             descriptionMyTurn: clienttranslate('Taunt') . clienttranslate(': ${you} must choose a card to discard:'),
             transitions: [
-                "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+                "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
             ],
         );
     }

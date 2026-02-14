@@ -23,7 +23,7 @@ class State_duelResolveManeuver_01103 extends GameState
             description: clienttranslate('${actplayer} is choosing their Duel Action options.'),
             descriptionMyTurn: clienttranslate('Adaptable') . clienttranslate(': ${you} must choose +2 Parry or +2 Thrust: '),
             transitions: [
-                "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+                "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,

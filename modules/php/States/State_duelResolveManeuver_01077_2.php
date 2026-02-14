@@ -23,7 +23,7 @@ class State_duelResolveManeuver_01077_2 extends GameState
             description: clienttranslate('${actplayer} is choosing their Duel Action options.'),
             descriptionMyTurn: clienttranslate('Broken-Time') . clienttranslate(': ${you} must choose a Combat Card to play: '),
             transitions: [
-                "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+                "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,
