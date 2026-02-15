@@ -351,18 +351,24 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actChooseDiscardCards', 'disabled');
 
             //Code here instead of onEnteringState because multiactive client states are not ready at that point
+            const player = this.gamedatas.players[this.player_id];
+            const leader = player.leader;
+            const panache = leader.panache;
+            const count = this.factionHand.getCards().length;
+            const expectedDiscardCount = count - panache;
 
             var translated = dojo.string.substitute(
                 _("(${amount} card(s) to discard)"),
                 {
-                    amount: args.args.expectedDiscardCount
+                    amount: expectedDiscardCount
                 }
             );
 
-            const statusBarTitle = _('${you} must discard ${count} card(s) down to your unmodified Leader Panache value (${panache}): ');
+            const statusBarTitle = _('${you} have discarded ${discarded}/${count} card(s) down to your unmodified Leader Panache value of ${panache}:');
             this.bga.statusBar.setTitle(statusBarTitle, {
-                count: args.args.expectedDiscardCount,
-                panache: args.args.panache,
+                discarded: this.factionHand.getSelection().length,
+                count: expectedDiscardCount,
+                panache: panache,
             });
 
             $('faction_hand_info').innerHTML = translated;
