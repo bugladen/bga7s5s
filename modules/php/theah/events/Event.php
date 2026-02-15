@@ -20,6 +20,7 @@ abstract class Event
     public bool $canceled;
     /** @var bool */
     public bool $wasStacked;
+    public ?int $batchId;
 
     public function __construct()
     {
@@ -27,6 +28,7 @@ abstract class Event
         $this->runEventHubAfterCards = false;
         $this->canceled = false;
         $this->wasStacked = false;
+        $this->batchId = null;
     }
 
     public function queueEvent(Event $event)

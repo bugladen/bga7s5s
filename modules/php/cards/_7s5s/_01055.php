@@ -6,12 +6,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01055;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01055;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAmARiskThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 
-class _01055 extends Risk implements IHasActions, IHasManeuvers, IAmARiskThatTargetsCharacters
+class _01055 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTargetsCharacters
 {
     use ActionTrait;
     use ManeuverTrait;

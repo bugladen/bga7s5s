@@ -91,6 +91,10 @@ trait ReactionTrait
         $args['reactionId'] = $this->Id;
 
         $args['discount'] = $game->globals->get(Game::DISCOUNT);
+
+        $owner = $reaction->getOwningCard($game->theah);
+        if ($owner instanceof IWealthCost)
+            $args['cost'] = $owner->getWealthCost();
     }
 
     public function updateReactionOwnerIds($id)

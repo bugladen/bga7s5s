@@ -22,7 +22,7 @@ class State_duelResolveManeuver_01113 extends GameState
             description: clienttranslate('${actplayer} is choosing their Robbery options.'),
             descriptionMyTurn: clienttranslate('Robbery') . clienttranslate(': ${you} must choose an Attachment to take control of:'),
             transitions: [
-                "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+                "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
             ],
         );
     }

@@ -22,7 +22,7 @@ class State_duelResolveManeuver_01164 extends GameState
             description: clienttranslate('${actplayer} is choosing their Duel Action options.'),
             descriptionMyTurn: clienttranslate('Hidden Corridors') . clienttranslate(': ${you} must choose a location to move to:'),
             transitions: [
-                "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+                "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
             ],
         );
     }

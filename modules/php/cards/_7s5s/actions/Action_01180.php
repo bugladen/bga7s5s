@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -120,6 +121,8 @@ class Action_01180 extends CharacterAction
 
             $discount = $game->globals->get(Game::DISCOUNT);
             $args['discount'] = $discount;
+            if ($chosenAttachment instanceof IWealthCost)
+                $args['cost'] = $chosenAttachment->getWealthCost();
         }
 
         return $args;
@@ -274,6 +277,7 @@ class Action_01180 extends CharacterAction
     
             $playerId = $game->getActivePlayerId();
     
+            // This announcement is used in lieu of $this->announceAction()
             $game->notify->all('message', clienttranslate('${player_name} has chosen to Equip ${card_inject_code} from the top 4 cards of the City Deck.'), [
                 'player_name' => $game->getActivePlayerName(),
                 'card_inject_code' => $attachment->getInjectCode(),

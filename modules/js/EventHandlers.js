@@ -561,6 +561,18 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duskPhaseDiscard': () => {
+                const player = this.gamedatas.players[this.player_id];
+                const leader = player.leader;
+                const panache = leader.panache;
+                const count = this.factionHand.getCards().length;
+                const expectedDiscardCount = count - panache;
+                const statusBarTitle = _('${you} have discarded ${discarded}/${count} card(s) down to your unmodified Leader Panache value of ${panache}:');
+                this.bga.statusBar.setTitle(statusBarTitle, {
+                    discarded: this.factionHand.getSelection().length,
+                    count: expectedDiscardCount,
+                    panache: panache,
+                });
+        
                 if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');
                 } else {

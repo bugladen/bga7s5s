@@ -52,6 +52,7 @@ class Game extends \Bga\GameFramework\Table
     final const LOCATION_DUELING_LINE = 'Dueling Line';
 
     //Global variable names
+    final const EVENT_BATCH_ID = "eventBatchId";
     final const FIRST_PLAYER = "firstPlayer";
     final const CURRENT_PLAYER = "currentPlayer";
     final const DAY = "day";
@@ -167,6 +168,7 @@ class Game extends \Bga\GameFramework\Table
     final const DUEL_ID = "duelId";
     final const DUEL_ROUND = "duelRound";
     final const DUEL_GAMBLED = "duelGambled";
+    final const DUEL_MANUEVER_ID = "duelManeuverId";
     final const GAMBLE_REVEAL_COUNT = "gambleRevealCount";
     final const GAMBLE_REVEAL_EXPLANATIONS = "gambleRevealExplanations";
 
@@ -413,6 +415,9 @@ class Game extends \Bga\GameFramework\Table
 
         //Set the initial duel round number
         $this->globals->set(Game::DUEL_ID, 0);
+
+        //Set the initial event batch id
+        $this->globals->set(Game::EVENT_BATCH_ID, 0);
 
         // Init game statistics.
         //

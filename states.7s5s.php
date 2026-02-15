@@ -376,7 +376,7 @@ $machinestates += [
         States::HIGH_DRAMA_BEGINNING_01144_2 => [
             "name" => "highDramaBeginning_01144_2",
             "description" => clienttranslate('Filling The Ranks: ${actplayer} must choose cards from your Faction Hand to pay for selected Mercenary'),
-            "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose cards from your Faction Hand to pay for selected Mercenary: '),
+            "descriptionmyturn" => clienttranslate('Filling The Ranks: ${you} must choose cards from your Faction Hand to pay #{cost} Wealth for selected Mercenary: '),
             "type" => "activeplayer",
             "args" => "argsForState",
             "possibleactions" => [
@@ -1392,7 +1392,7 @@ $machinestates += [
     States::HIGH_DRAMA_PLAYER_TURN_01180_5 => [
         "name" => "highDramaPhase01180_5",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('${you} must choose cards from Your Hand to pay for chosen Artifact:'),
+        "descriptionmyturn" => clienttranslate('${you} must choose cards from Your Hand to pay #{cost} Wealth for chosen Artifact:'),
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
@@ -1724,7 +1724,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithId", 
         ],
         "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
         ]
     ],
 
@@ -1738,7 +1738,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithLocations", 
         ],
         "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
         ]
     ],
 
@@ -1752,7 +1752,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithId", 
         ],
         "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
         ]
     ],
     States::DUEL_RESOLVE_MANEUVER_01079_2 => [
@@ -1765,7 +1765,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithId", 
         ],
         "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
         ]
     ],
 
@@ -1779,7 +1779,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithIds", 
         ],
         "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
         ]
     ],
 
@@ -1807,7 +1807,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             "actFromCardWithId",
         ],
         "transitions" => [
-            "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
             
         ]
     ],

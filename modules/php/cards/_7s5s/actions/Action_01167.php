@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -182,6 +183,8 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
 
             $discount = $game->globals->get(Game::DISCOUNT);
             $args['discount'] = $discount;
+            if ($chosenAttachment instanceof IWealthCost)
+                $args['cost'] = $chosenAttachment->getWealthCost();
         }
 
         return $args;

@@ -1436,7 +1436,7 @@ $machinestates = [
         States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_HAND => [
             "name" => "highDramaEquipActionPayForAttachmentFromHand",
             "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            "descriptionmyturn" => clienttranslate('${you} are performing an Equip Action.  Choose cards to pay for selected Attachment:'),
+            "descriptionmyturn" => clienttranslate('${you} are performing an Equip Action.  Choose cards to pay #{cost} Wealth for selected Attachment:'),
             "type" => "activeplayer",
             "args" => "argsHighDramaEquipActionPayForAttachmentFromHand",
             "possibleactions" => [
@@ -1506,7 +1506,7 @@ $machinestates = [
         States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_PLAY => [
             "name" => "highDramaEquipActionPayForAttachmentFromPlay",
             "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            "descriptionmyturn" => clienttranslate('${you} are performing an Equip Action.  Choose cards to pay for selected Attachment:'),
+            "descriptionmyturn" => clienttranslate('${you} are performing an Equip Action.  Choose cards to pay #{cost} Wealth for selected Attachment:'),
             "type" => "activeplayer",
             "args" => "argsHighDramaEquipActionPayForAttachmentFromPlay",
             "possibleactions" => [
@@ -1610,7 +1610,7 @@ $machinestates = [
             States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY => [
                 "name" => "highDramaRecruitActionPayForMercenary",
                 "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-                "descriptionmyturn" => clienttranslate('${you} are performing a Recruit Action. Choose cards from your Faction Hand to pay for selected Mercenary: '),
+                "descriptionmyturn" => clienttranslate('${you} are performing a Recruit Action. Choose cards from your Faction Hand to pay #{cost} Wealth for selected Mercenary:'),
                 "type" => "activeplayer",
                 "args" => "argsHighDramaRecruitActionPayForMercenary",
                 "possibleactions" => [
@@ -1731,7 +1731,7 @@ $machinestates = [
             States::HIGH_DRAMA_IN_HAND_ACTION_PAY => [
                 "name" => "highDramaInHandActionPay",
                 "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-                "descriptionmyturn" => clienttranslate('${you} must pay for the In-Hand Action:'),
+                "descriptionmyturn" => clienttranslate('${you} must pay #{cost} Wealth for the In-Hand action by selecting cards in your hand:'),
                 "type" => "activeplayer",
                 "args" => "argsHighDramaInHandActionPay",
                 "possibleactions" => [
@@ -1762,7 +1762,7 @@ $machinestates = [
         States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE => [
             "name" => "highDramaBruteActionPayForBrute",
             "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            "descriptionmyturn" => clienttranslate('${you} must pay for the chosen Brute:'),
+            "descriptionmyturn" => clienttranslate('${you} must pay #{cost} Wealth for the chosen Brute:'),
             "type" => "activeplayer",
             "args" => "argsHighDramaBruteActionPayForBrute",
             "possibleactions" => [
@@ -2068,7 +2068,7 @@ $machinestates = [
             States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD => [
                 "name" => "duelPayForManeuverFromCombatCard",
                 "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
-                "descriptionmyturn" => clienttranslate('${you} must pay for Maneuver from chosen combat card by selecting cards in your hand:'),
+                "descriptionmyturn" => clienttranslate('${you} must pay #{cost} Wealth for the Maneuver by selecting cards in your hand:'),
                 "type" => "activeplayer",
                 "args" => "argsDuelPayForManeuverFromCombatCard",
                 "possibleactions" => [
@@ -2077,13 +2077,22 @@ $machinestates = [
                     "actBackWithTransition"
                 ],
                 "transitions" => [
-                    "maneuverPaidFor" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+                    "maneuverPaidFor" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "back" => States::DUEL_CHOOSE_ACTION,
                     "backAbnormalFlow" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD
                 ]
             ],
+
+            States::DUEL_RESOLVE_MANEUVER => [
+                "name" => "duelResolveManeuverFromCombatCard",
+                "type" => "game",
+                "action" => "stResolveManeuverFromCombatCard",
+                "transitions" => [
+                    "" => States::DUEL_RESOLVE_MANEUVER_EVENTS
+                ]
+            ],
                 // Add custom maneuver transitions here
-                States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS => [
+                States::DUEL_RESOLVE_MANEUVER_EVENTS => [
                     "name" => "duelUseManeuverFromCombatCardEvents",
                     "type" => "game",
                     "action" => "stRunEvents",
@@ -2105,13 +2114,13 @@ $machinestates = [
                         "01164" => States::DUEL_RESOLVE_MANEUVER_01164,
                         "01165" => States::DUEL_RESOLVE_MANEUVER_01165,
                         "1200" => States::DUEL_RESOLVE_MANEUVER_01200,
-                        "reaction" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_REACTIONS,
-                        "pay" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_PAY_FOR_REACTION,
-                        "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS,
+                        "reaction" => States::DUEL_RESOLVE_MANEUVER_REACTIONS,
+                        "pay" => States::DUEL_RESOLVE_MANEUVER_PAY_FOR_REACTION,
+                        "endOfEvents" => States::DUEL_SET_NEXT_COMBAT_CARD,
                         "endOfGame" => States::END_GAME
                         ]
                 ],
-                States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_REACTIONS => [
+                States::DUEL_RESOLVE_MANEUVER_REACTIONS => [
                     "name" => "playerReaction",
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
@@ -2121,10 +2130,10 @@ $machinestates = [
                         "actReactionForState", 
                     ],
                     "transitions" => [
-                        "done" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS, 
+                        "done" => States::DUEL_RESOLVE_MANEUVER_EVENTS, 
                     ]
                 ],
-                States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_PAY_FOR_REACTION => [
+                States::DUEL_RESOLVE_MANEUVER_PAY_FOR_REACTION => [
                     "name" => "playerPayForReaction",
                     "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                     "descriptionmyturn" => "",
@@ -2135,8 +2144,8 @@ $machinestates = [
                         "actPayForReaction", 
                     ],
                     "transitions" => [
-                        "back" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_REACTIONS, 
-                        "paid" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS, 
+                        "back" => States::DUEL_RESOLVE_MANEUVER_REACTIONS, 
+                        "paid" => States::DUEL_RESOLVE_MANEUVER_EVENTS, 
                     ]
                 ],
             States::DUEL_APPLY_COMBAT_CARD_STATS => [
@@ -2153,6 +2162,7 @@ $machinestates = [
                     "action" => "stRunEvents",
                     "transitions" => [
                         "01085" => States::DUEL_APPLY_COMBAT_CARD_STATS_01085,
+                        "useManeuver" => States::DUEL_RESOLVE_MANEUVER,
                         "reaction" => States::DUEL_APPLY_COMBAT_CARD_STATS_REACTIONS,
                         "pay" => States::DUEL_APPLY_COMBAT_CARD_STATS_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_SET_NEXT_COMBAT_CARD,
@@ -2728,7 +2738,7 @@ $machinestates = [
         "description" => clienttranslate('Your opponent(s) must discard cards down to their Leader Panache value.'),
         "descriptionmyturn" => clienttranslate('${you} must discard cards down to your unmodified Leader Panache value:'),
         "type" => "multipleactiveplayer",
-        "args" => "argsDuskPhaseDiscard",
+        "args" => "argsEmpty",
         "action" => "stDuskPhaseDiscard",
         "possibleactions" => [
             "actDuskPhaseCardsDiscarded", 

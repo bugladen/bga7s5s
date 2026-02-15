@@ -23,7 +23,7 @@ class State_duelResolveManeuver_01135 extends GameState
             description: clienttranslate('${actplayer} is choosing options from Mireli\'s Revision.'),
             descriptionMyTurn: clienttranslate('Mireli\'s Revision') . clienttranslate(': ${you} must choose +2 Parry, or wound adversary and give them -2 Thrust next round: '),
             transitions: [
-                "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+                "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
             ],
         );
     }

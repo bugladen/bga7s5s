@@ -30,6 +30,10 @@ class Action_01097 extends CharacterAction
         $characters = $theah->getOpposingCharactersAtLocation($owner->Location, $playerId);
         foreach ($characters as $character)
         {
+            if ($character->Engaged)
+            {
+                continue;
+            }
 
             $hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $character->ControllerId);
             $handCount = count($hand);

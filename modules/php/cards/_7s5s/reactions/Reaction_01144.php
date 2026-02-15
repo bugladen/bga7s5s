@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -39,7 +40,7 @@ class Reaction_01144 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventPhaseHighDrama) 
+        if ($event instanceof EventPhaseHighDrama && $this->isAvailable()) 
         {
             $owner = $this->getOwningCard($event->theah);
             if ($owner->Location == Game::LOCATION_PLAYER_HOME)
@@ -107,7 +108,11 @@ class Reaction_01144 extends CardReaction
 
         if ($state == States::HIGH_DRAMA_BEGINNING_01144_2)
         {
-            $args["mercenaryId"] = $game->globals->get(Game::CHOSEN_CARD);
+            $mercenaryId = $game->globals->get(Game::CHOSEN_CARD);
+            $mercenary = $game->theah->getCharacterById($mercenaryId);
+            $args["mercenaryId"] = $mercenaryId;
+            if ($mercenary instanceof IWealthCost)
+                $args["cost"] = $mercenary->getWealthCost();
             $args["discount"] = $game->globals->get(GAME::DISCOUNT);
         }
 

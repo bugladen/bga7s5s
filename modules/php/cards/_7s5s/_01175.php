@@ -6,8 +6,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01175;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskThatTargetsCharacters;
 
-class _01175 extends Risk implements IHasActions
+class _01175 extends Risk implements IHasActions, IRiskThatTargetsCharacters
 {
     use ActionTrait;
 

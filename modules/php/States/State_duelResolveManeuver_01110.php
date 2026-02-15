@@ -22,7 +22,7 @@ class State_duelResolveManeuver_01110 extends GameState
             description: clienttranslate('${actplayer} is choosing their Nothing Personal options.'),
             descriptionMyTurn: clienttranslate('Nothing Personal') . clienttranslate(': ${you} must choose to take another wound or Location becomes Uncontrolled:'),
             transitions: [
-                "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+                "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,

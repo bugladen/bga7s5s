@@ -25,12 +25,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTakeReknownForControlledLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 
@@ -1081,6 +1083,18 @@ trait StatesTrait
         $this->globals->delete(Game::ABNORMAL_FLOW);
     }
 
+    public function stDuelGetManeuverFromCombatCardCost(): void
+    {
+        $cardId = $this->globals->get(GAME::CHOSEN_CARD);
+        $card = $this->getCardObjectFromDb($cardId);
+        $this->globals->set(Game::CHOSEN_CARD_COST, $card->WealthCost);
+
+        $event = EventFactory::createEnteringPayStateEvent($this->getActivePlayerId(), $card->Id, Game::PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD);
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState();
+    }
+
     public function stApplyCombatCardStats(): void
     {
         $duelId = $this->globals->get(Game::DUEL_ID);
@@ -1114,20 +1128,57 @@ trait StatesTrait
             $event->gambled = $gambled == 1;
         }
         $this->theah->queueEvent($event);
+
+        $maneuverId = $this->globals->get(Game::DUEL_MANUEVER_ID, null);
+        if ($maneuverId != null)
+        {
+            $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "useManeuver");
+            $this->theah->queueEvent($transitionEvent);
+        }
         
         $this->gamestate->nextState();
     }
 
-    public function stDuelGetManeuverFromCombatCardCost(): void
+    public function stResolveManeuverFromCombatCard(): void
     {
-        $cardId = $this->globals->get(GAME::CHOSEN_CARD);
-        $card = $this->getCardObjectFromDb($cardId);
-        $this->globals->set(Game::CHOSEN_CARD_COST, $card->WealthCost);
+        $playerId = $this->getActivePlayerId();
+        $actor = $this->theah->getDuelRoundActor();
+        $maneuverId = $this->globals->get(Game::DUEL_MANUEVER_ID, null);
+        if ($maneuverId != null)
+        {
+            $cardId = $this->globals->get(GAME::CHOSEN_CARD);
 
-        $event = EventFactory::createEnteringPayStateEvent($this->getActivePlayerId(), $card->Id, Game::PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD);
-        $this->theah->queueEvent($event);
+            $activateEvent = EventFactory::createManeuverActivatedEvent($playerId, $cardId, $maneuverId);
+            $this->theah->eventCheck($activateEvent);
+            $this->theah->queueEvent($activateEvent);
+    
+            $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
+    
+            $resolveEvent = $this->theah->createEvent(Events::ResolveManeuver);
+            if ($resolveEvent instanceof EventResolveManeuver)
+            {
+                $resolveEvent->playerId = $playerId;
+                $resolveEvent->adversaryId = $adversaryId;
+                $resolveEvent->maneuverId = $maneuverId;
+            }
+            $this->theah->eventCheck($resolveEvent);
+            $this->theah->queueEvent($resolveEvent);
+    
+            $threatEvent = $this->theah->createEvent(Events::DuelCalculateManeuverValues);
+            if ($threatEvent instanceof EventDuelCalculateManeuverValues)
+            {
+                $threatEvent->actorId = $actor->Id;
+                $threatEvent->adversaryId = $adversaryId;
+                $threatEvent->maneuverId = $maneuverId;
+            }
 
-        $this->gamestate->nextState();
+            $this->theah->eventCheck($threatEvent);
+            $this->theah->queueEvent($threatEvent);
+
+            $this->globals->delete(Game::DUEL_MANUEVER_ID); 
+            
+            $this->gamestate->nextState();
+        }
     }
 
     //Handles whether special conditions (like Broken Time) exist for another combat card
@@ -1252,6 +1303,7 @@ trait StatesTrait
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(GAME::REVEALED_CARDS);
         $this->globals->delete(Game::DUEL_GAMBLED);
+        $this->globals->delete(Game::DUEL_MANUEVER_ID);
         $this->globals->delete(Game::GAMBLE_TYPE);
         $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);

@@ -23,7 +23,7 @@ class State_duelResolveManeuver_01133 extends GameState
             description: clienttranslate('${actplayer} is choosing an adjacent location to move both participants to.'),
             descriptionMyTurn: clienttranslate('Matushka\'s Efficiency') . clienttranslate(': ${you} must choose an adjacent location to move both participants to:'),
             transitions: [
-                "" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD_EVENTS,
+                "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,

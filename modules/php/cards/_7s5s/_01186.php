@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01186;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAmARiskThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
@@ -62,7 +62,7 @@ class _01186 extends CityCharacter
         )
         {
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source && $source instanceof Risk && $source instanceof IAmARiskThatTargetsCharacters)
+            if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
             {
                 $this->addMaryamCondition($event->theah->game);
 
@@ -74,7 +74,7 @@ class _01186 extends CityCharacter
         if ( ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED) && $event instanceof EventChallengeIssued && $event->defenderId == $this->Id && $event->sourceId != 0)
         {
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source && $source instanceof Risk && $source instanceof IAmARiskThatTargetsCharacters)
+            if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
             {
                 $this->addMaryamCondition($event->theah->game);
 

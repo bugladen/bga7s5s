@@ -126,6 +126,13 @@ onEnteringState: function( stateName, args )
         'highDramaRecruitActionPayForMercenary': () => {
             if (this.isCurrentPlayerActive()) 
             {
+                const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
+                this.bga.statusBar.setTitle(statusBarTitle, {
+                    cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                        cost: args.args.cost - args.args.discount,
+                    }),
+                });
+
                 let card = this.cardProperties[args.args.performerId];
                 let image = $(`${card.divId}_image`);
                 dojo.addClass(image, '_7sfs-chosen');
@@ -238,6 +245,13 @@ onEnteringState: function( stateName, args )
 
         'highDramaEquipActionPayForAttachmentFromHand': () => {
             if (this.isCurrentPlayerActive()) {
+                const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
+                this.bga.statusBar.setTitle(statusBarTitle, {
+                    cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                        cost: args.args._private.cost - args.args._private.discount,
+                    }),
+                });
+    
                 performer = this.cardProperties[args.args._private.performerId];
                 const image = $(`${performer.divId}_image`);
                 this.clearCardAsSelectable(image);
@@ -278,6 +292,13 @@ onEnteringState: function( stateName, args )
         'highDramaEquipActionPayForAttachmentFromPlay': () => {
             if (this.isCurrentPlayerActive()) 
             {
+                const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
+                this.bga.statusBar.setTitle(statusBarTitle, {
+                    cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                        cost: args.args._private.cost - args.args._private.discount,
+                    }),
+                });
+    
                 const performer = this.cardProperties[args.args._private.performerId];
                 let image = $(`${performer.divId}_image`);
                 this.clearCardAsSelectable(image);
@@ -343,6 +364,14 @@ onEnteringState: function( stateName, args )
 
         'highDramaInHandActionPay': () => {
             if (this.isCurrentPlayerActive()) {
+                const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
+                this.bga.statusBar.setTitle(statusBarTitle, {
+                    cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                        cost: args.args._private.cost - args.args._private.discount,
+                    }),
+                });
+
+
                 if (args.args._private.performerId)
                 {
                     performer = this.cardProperties[args.args._private.performerId];
@@ -397,6 +426,13 @@ onEnteringState: function( stateName, args )
 
         'highDramaBruteActionPayForBrute': () => {
             if (this.isCurrentPlayerActive()) {
+                const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
+                this.bga.statusBar.setTitle(statusBarTitle, {
+                    cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                        cost: args.args._private.cost - args.args._private.discount,
+                    }),
+                });
+
                 const chosenBruteId = args.args._private.bruteId;
                 const bruteData = args.args._private.brute;
 
@@ -504,9 +540,14 @@ onEnteringState: function( stateName, args )
 
         'playerPayForReaction': () => {
             if (this.isCurrentPlayerActive()) {
-                this.gamedatas.gamestate.descriptionmyturn = _(args.args._private.args.descriptionmyturn);
-                this.updatePageTitle();
-
+                let statusBarTitle = _(args.args._private.args.descriptionmyturn);
+                statusBarTitle = statusBarTitle.replace('#{cost}', '${cost}');
+                this.bga.statusBar.setTitle(statusBarTitle, {
+                    cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                        cost: args.args._private.args.cost - args.args._private.args.discount,
+                    }),
+                });
+    
                 const reactionId = args.args._private.args.reactionId;
                 const cardProps = this.cardProperties[reactionId];
                 this.clientStateArgs.reactionCardId = reactionId;
@@ -569,6 +610,13 @@ onEnteringState: function( stateName, args )
         'duelPayForManeuverFromCombatCard' : () => {
             if (this.isCurrentPlayerActive()) 
             {
+                const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
+                this.bga.statusBar.setTitle(statusBarTitle, {
+                    cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                        cost: args.args._private.cost - args.args._private.discount,
+                    }),
+                });
+
                 setTimeout(async () => {
                     let div = null;
                     if (args.args._private.gambled)
