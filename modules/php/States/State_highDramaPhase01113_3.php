@@ -20,7 +20,7 @@ class State_highDramaPhase01113_3 extends GameState
             name: "highDramaPhase01113_3",
 
             description: clienttranslate('${actplayer} is choosing their Robbery options.'),
-            descriptionMyTurn: clienttranslate('Robbery') . clienttranslate(': ${you} must pay for the chosen Attachment:'),
+            descriptionMyTurn: clienttranslate('Robbery') . clienttranslate(': ${you} must pay #{cost} Wealth for the chosen Attachment:'),
             transitions: [
                 "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],

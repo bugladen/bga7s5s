@@ -442,6 +442,13 @@
             },
     
             'highDramaBeginning_01144_2': () => {
+                const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
+                this.bga.statusBar.setTitle(statusBarTitle, {
+                    cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                        cost: args.args.args.cost - args.args.args.discount,
+                    }),
+                });
+
                 const card = this.cardProperties[args.args.args.mercenaryId];
                 const image = $(`${card.divId}_image`);
                 dojo.addClass(image, '_7sfs-chosen');
@@ -1457,32 +1464,39 @@
             },
             'highDramaPhase01113_3': () => {
                 if (this.isCurrentPlayerActive()) 
-                    {
-                        const cardId = args.args.args.cardId;
-                        const card = this.factionHand.getCards().find(c => c.id === cardId);
-                        const cardElement = card ? this.factionHand.getCardElement(card) : null;
-                        if (cardElement) {
-                            dojo.addClass(cardElement, '_7sfs-unselectable');
-                
-                            dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
-                                id: cardElement.id,
-                                cost: args.args.args.cost,
-                            }), cardElement, "first" );    
+                {
+                    const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
+                    this.bga.statusBar.setTitle(statusBarTitle, {
+                        cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                            cost: args.args.args.cost - args.args.args.discount,
+                        }),
+                    });    
+    
+                    const cardId = args.args.args.cardId;
+                    const card = this.factionHand.getCards().find(c => c.id === cardId);
+                    const cardElement = card ? this.factionHand.getCardElement(card) : null;
+                    if (cardElement) {
+                        dojo.addClass(cardElement, '_7sfs-unselectable');
             
-                            const costDiv = $(`${cardElement.id}_wealth_cost`);
-                            const cost = parseInt(costDiv.innerHTML);
-                            let discountedCost = cost - args.args.args.discount;
-                            discountedCost = discountedCost < 0 ? 0 : discountedCost;
-                            if (discountedCost !== cost)
-                            {
-                                costDiv.innerHTML = parseInt(discountedCost);
-                                dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
-                            }
-                        }
+                        dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                            id: cardElement.id,
+                            cost: args.args.args.cost,
+                        }), cardElement, "first" );    
         
-                        $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
-                        this.factionHand.setSelectionMode('multiple');
+                        const costDiv = $(`${cardElement.id}_wealth_cost`);
+                        const cost = parseInt(costDiv.innerHTML);
+                        let discountedCost = cost - args.args.args.discount;
+                        discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                        if (discountedCost !== cost)
+                        {
+                            costDiv.innerHTML = parseInt(discountedCost);
+                            dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                        }
                     }
+    
+                    $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
+                    this.factionHand.setSelectionMode('multiple');
+                }
             },
 
             'highDramaPhase01115': () => {
@@ -2024,6 +2038,13 @@
 
             'highDramaPhase01167_4': () => {
                 if (this.isCurrentPlayerActive()) {
+                    const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
+                    this.bga.statusBar.setTitle(statusBarTitle, {
+                        cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                            cost: args.args.args.cost - args.args.args.discount,
+                        }),
+                    });
+
                     dojo.removeClass('choose_container', 'hidden');
                     dojo.removeClass('chooseList', 'hidden');
                     setTimeout(() => {
@@ -2137,6 +2158,13 @@
     
             'highDramaPhase01180_5': () => {
                 if (this.isCurrentPlayerActive()) {
+                    const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
+                    this.bga.statusBar.setTitle(statusBarTitle, {
+                        cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                            cost: args.args.args.cost - args.args.args.discount,
+                        }),
+                    });
+
                     dojo.removeClass('choose_container', 'hidden');
                     dojo.removeClass('chooseList', 'hidden');
                     setTimeout(() => {
@@ -2581,6 +2609,13 @@
             'duelResolveManeuver_01113_2': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
+                    const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
+                    this.bga.statusBar.setTitle(statusBarTitle, {
+                        cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                            cost: args.args.args.cost - args.args.args.discount,
+                        }),
+                    });
+    
                     const cardId = args.args.args.attachmentId;
                     const card = this.factionHand.getCards().find(c => c.id === cardId);
                     const cardElement = card ? this.factionHand.getCardElement(card) : null;

@@ -21,7 +21,7 @@ class State_highDramaPhase01167_4 extends GameState
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Liberating Goods') . clienttranslate(': ${you} must choose cards from Your Hand to pay for chosen Attachment:'),
+            descriptionMyTurn: clienttranslate('Liberating Goods') . clienttranslate(': ${you} must choose cards from Your Hand to pay #{cost} Wealth for chosen Attachment:'),
             transitions: [
                 "back" => States::HIGH_DRAMA_PLAYER_TURN_01167_3,
                 "attachmentEquipped" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS

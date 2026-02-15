@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -120,6 +121,8 @@ class Action_01180 extends CharacterAction
 
             $discount = $game->globals->get(Game::DISCOUNT);
             $args['discount'] = $discount;
+            if ($chosenAttachment instanceof IWealthCost)
+                $args['cost'] = $chosenAttachment->getWealthCost();
         }
 
         return $args;

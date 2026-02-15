@@ -800,7 +800,7 @@ body {
     background-size: calc(var(--png-board-resource-width) * 0.3) calc(var(--png-board-resource-height) * 0.3);
     background-position: -69px -47px;
     width: 30px;
-    height:30px;
+    height: 30px;
     margin-left: 15px;
     font-family: "Pirata One", system-ui;
     font-size: 14pt;
@@ -822,6 +822,13 @@ body {
 }
 ._7sfs-discounted-wealth-cost {
     color: yellow;
+}
+._7sfs-status-bar-wealth-cost {
+    margin-left: 0px;
+    width: 32px;
+    min-width: 32px;
+    display: inline-block;
+    overflow: visible;
 }
 
 ._7sfs-card-stat-box {

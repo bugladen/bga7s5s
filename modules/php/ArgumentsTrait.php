@@ -163,13 +163,15 @@ trait ArgumentsTrait
     {
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $recruitId = $this->globals->get(GAME::CHOSEN_CARD);
+        $recruit = $this->theah->getCharacterById($recruitId);
         $discount = $this->globals->get(GAME::DISCOUNT);        
 
         return [
             "performerId" => $performerId,
             "recruitId" => $recruitId,
             "discount" => $discount,
-            "recruitType" => $this->globals->get(Game::RECRUIT_TYPE)
+            "recruitType" => $this->globals->get(Game::RECRUIT_TYPE),
+            "cost" => $recruit->WealthCost
         ];
     }
 
@@ -253,7 +255,8 @@ trait ArgumentsTrait
                     "performerId" => $performerId,
                     "chosenAttachmentId" => $attachmentId,
                     "chosenAttachment" => $attachment->getPropertyArray($this),
-                    "discount" => $this->globals->get(GAME::DISCOUNT)
+                    "discount" => $this->globals->get(GAME::DISCOUNT),
+                    "cost" => $attachment->WealthCost
                 ]
             ],
         ];
@@ -281,6 +284,7 @@ trait ArgumentsTrait
     {
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $attachmentId = $this->globals->get(GAME::CHOSEN_CARD);
+        $attachment = $this->getCardObjectFromDb($attachmentId);
 
         return [
             "_private" => [
@@ -288,7 +292,8 @@ trait ArgumentsTrait
                     "performerId" => $performerId,
                     "chosenAttachmentId" => $attachmentId,
                     "discount" => $this->globals->get(GAME::DISCOUNT),
-                    "equipType" => $this->globals->get(Game::EQUIP_TYPE)
+                    "equipType" => $this->globals->get(Game::EQUIP_TYPE),
+                    "cost" => $attachment->WealthCost
                 ]
             ],
         ];
@@ -427,6 +432,8 @@ trait ArgumentsTrait
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);        
         $actionId = $this->globals->get(Game::CHOSEN_ACTION);
         $action = $this->theah->getInHandActionById($actionId);
+        $owningCard = $action->getOwningCard($this->theah);
+        $cardCost = $owningCard->WealthCost;
 
         $owner = $action->getOwningCard($this->theah);
         $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
@@ -438,6 +445,7 @@ trait ArgumentsTrait
                     "chosenActionId" => $actionId,
                     "choseActionCardId" => $owner->Id,
                     "requiresPerformerSelected" => $action->RequiresPerformerSelected,
+                    "cost" => $cardCost,
                     "discount" => $this->globals->get(GAME::DISCOUNT),
                     "abnormalFlow" => $abnormalFlow,
                 ]
@@ -469,6 +477,7 @@ trait ArgumentsTrait
                 "active" => [
                     "bruteId" => $bruteId,
                     "brute" => $brute->getPropertyArray($this),
+                    "cost" => $brute->WealthCost,
                     "discount" => $this->globals->get(GAME::DISCOUNT)
                 ]
             ],
