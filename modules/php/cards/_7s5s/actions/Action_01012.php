@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
@@ -65,6 +66,18 @@ class Action_01012 extends CharacterAction implements ISorcererAbility, IAbility
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): bool
+    {
+        $performer = $this->getOwningCharacter($game->theah);
+
+        if ($character->Location != $performer->Location)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -77,13 +90,13 @@ class Action_01012 extends CharacterAction implements ISorcererAbility, IAbility
                 throw new \BgaUserException($game->translate("Character not found"));
             }
 
-            $performer = $this->getOwningCharacter($game->theah);
-
-            if ($target->Location != $performer->Location)
+            if (! $this->isValidTargetForAbility($game, $target))
             {
-                throw new \BgaUserException($game->translate("Character not at the same location"));
+                throw new \BgaUserException($game->translate("Invalid target"));
             }
 
+            $performer = $this->getOwningCharacter($game->theah);
+            
             $this->announceAction($game);
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
@@ -97,16 +110,22 @@ class Action_01012 extends CharacterAction implements ISorcererAbility, IAbility
             $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $performer->Id, 1, $performer->getInjectCode());
             $game->theah->queueEvent($event);
 
+            $batchId = $game->getNextEventBatchId();
+
             $event = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
+            $event->batchId = $batchId;
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createCharacterBeingWoundedEvent($target->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
+            $event->batchId = $batchId;
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
+            $event->batchId = $batchId;
             $game->theah->queueEvent($event);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $actionResolvedEvent->batchId = $batchId;
             $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("opposingCharacterChosen");
