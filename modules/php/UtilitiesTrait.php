@@ -872,4 +872,11 @@ trait UtilitiesTrait
         return strpos($character->Location, "Discard-") !== false || strpos($character->Location, "Locker-") !== false;
     }
 
+    public function getNextEventBatchId(): int
+    {
+        $batchId = $this->globals->get(Game::EVENT_BATCH_ID, 0) + 1;
+        $this->globals->set(Game::EVENT_BATCH_ID, $batchId);
+        return $batchId;
+    }
+
 }
