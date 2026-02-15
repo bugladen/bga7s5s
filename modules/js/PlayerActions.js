@@ -271,8 +271,8 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onRecruitCharacterConfirmed: function()
     {
-        var items = this.factionHand.getSelection();
-        items = items.map((item) => item.id);
+        const selectedCards = this.factionHand.getSelection();
+        const payWithCards = selectedCards.map((item) => item.id);
 
         const actionArray = {
             'highDramaRecruitActionPayForMercenary'         : 'actHighDramaRecruitActionPayForMercenary',
@@ -283,13 +283,13 @@ return declare('seventhseacityoffivesails.actions', null, {
         switch (action) {
             case 'actHighDramaRecruitActionPayForMercenary':
                 this.bgaPerformAction(action, { 
-                    'payWithCards': JSON.stringify(items),
+                    'payWithCards': JSON.stringify(payWithCards),
                 }).catch(() =>  {
                     errors = true;
                 }).then(() =>  {
                     if (!errors)
                     {
-                        items.forEach((item) => this.factionHand.removeCard(item));
+                        selectedCards.forEach((card) => this.factionHand.removeCard(card));
                     }
                 });
                 break;
@@ -298,12 +298,12 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onActionCardFromHandPaymentConfirmed: function()
     {
-        var items = this.factionHand.getSelection();
-        items = items.map((item) => item.id);
+        const selectedCards = this.factionHand.getSelection();
+        const payWithCards = selectedCards.map((item) => item.id);
 
         let errors = false;
         this.bgaPerformAction('actPayForInHandAction', { 
-            'payWithCards': JSON.stringify(items),
+            'payWithCards': JSON.stringify(payWithCards),
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
@@ -313,8 +313,8 @@ return declare('seventhseacityoffivesails.actions', null, {
                     const actionCard = this.cardProperties[this.clientStateArgs.chosenActionCardId];
                     if (actionCard) this.factionHand.removeCard(actionCard);
                 }
-                
-                items.forEach((item) => this.factionHand.removeCard(item));
+
+                selectedCards.forEach((card) => this.factionHand.removeCard(card));
             }
 
         });
@@ -322,8 +322,8 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onPaymentConfirmed: function()
     {
-        var items = this.factionHand.getSelection();
-        items = items.map((item) => item.id);
+        const selectedCards = this.factionHand.getSelection();
+        const payWithCards = selectedCards.map((item) => item.id);
 
         const actionArray = {
             'highDramaEquipActionPayForAttachmentFromHand' : 'actHighDramaEquipAttachment',
@@ -334,7 +334,7 @@ return declare('seventhseacityoffivesails.actions', null, {
         const action = actionArray[this.gamedatas.gamestate.name];
         let errors = false;
         this.bgaPerformAction(action, { 
-            'payWithCards': JSON.stringify(items),
+            'payWithCards': JSON.stringify(payWithCards),
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
@@ -345,15 +345,15 @@ return declare('seventhseacityoffivesails.actions', null, {
                     if (chosenCard) this.factionHand.removeCard(chosenCard);
                 }
 
-                items.forEach((item) => this.factionHand.removeCard(item));
+                selectedCards.forEach((card) => this.factionHand.removeCard(card));
             }
         });            
     },
 
     onPaymentConfirmedFromCard: function()
     {
-        var items = this.factionHand.getSelection();
-        items = items.map((item) => item.id);
+        const selectedCards = this.factionHand.getSelection();
+        const ids = selectedCards.map((item) => item.id);
 
         const actionArray = {
             'highDramaPhase01180_5'               : 'actFromCardWithIds',
@@ -366,31 +366,31 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         let errors = false;
         this.bgaPerformAction(action, { 
-            'ids': JSON.stringify(items),
+            'ids': JSON.stringify(ids),
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
             if (!errors)
             {
-                items.forEach((item) => this.factionHand.removeCard(item));
+                selectedCards.forEach((card) => this.factionHand.removeCard(card));
             }
         });        
     },
 
     onCombatCardPaymentConfirmed: function()
     {
-        var items = this.factionHand.getSelection();
-        items = items.map((item) => item.id);
+        const selectedCards = this.factionHand.getSelection();
+        const payWithCards = selectedCards.map((item) => item.id);
 
         let errors = false;
         this.bgaPerformAction('actDuelPayForManeuverFromCombatCard', { 
-            'payWithCards': JSON.stringify(items),
+            'payWithCards': JSON.stringify(payWithCards),
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
             if (!errors)
             {
-                items.forEach((item) => this.factionHand.removeCard(item));
+                selectedCards.forEach((card) => this.factionHand.removeCard(card));
                 const combatCard = this.cardProperties[this.clientStateArgs.combatCardId];
                 if (combatCard) this.factionHand.removeCard(combatCard);
             }
@@ -399,12 +399,12 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onReactionPaymentConfirmed: function()
     {
-        var items = this.factionHand.getSelection();
-        items = items.map((item) => item.id);
+        const selectedCards = this.factionHand.getSelection();
+        const payWithCards = selectedCards.map((item) => item.id);
 
         let errors = false;
         this.bgaPerformAction('actPayForReaction', { 
-            'payWithCards': JSON.stringify(items),
+            'payWithCards': JSON.stringify(payWithCards),
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
@@ -412,23 +412,23 @@ return declare('seventhseacityoffivesails.actions', null, {
             {
                 const reactionCard = this.cardProperties[this.clientStateArgs.reactionCardId];
                 if (reactionCard) this.factionHand.removeCard(reactionCard);
-                items.forEach((item) => this.factionHand.removeCard(item));
+                selectedCards.forEach((card) => this.factionHand.removeCard(card));
             }
         });        
     },
 
     onCardsChosenForDiscard: function()
     {
-        let items = this.factionHand.getSelection();
-        items = items.map((item) => item.id);
-    
+        const selectedCards = this.factionHand.getSelection();
+        const ids = selectedCards.map((item) => item.id);
+
         let errors = false;
         this.bgaPerformAction('actDuskPhaseCardsDiscarded', { 
-            'ids': JSON.stringify(items),
+            'ids': JSON.stringify(ids),
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
-            if (!errors) items.forEach((item) => this.factionHand.removeCard(item));
+            if (!errors) selectedCards.forEach((card) => this.factionHand.removeCard(card));
         });        
     },
 
@@ -449,16 +449,16 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onCardsDiscarded: function()
     {
-        let items = this.factionHand.getSelection();
-        items = items.map((item) => item.id);
+        const selectedCards = this.factionHand.getSelection();
+        const ids = selectedCards.map((item) => item.id);
         let errors = false;
-    
+
         this.bgaPerformAction('actFromCardWithIds', { 
-            'ids': JSON.stringify(items),
+            'ids': JSON.stringify(ids),
         }).catch(() =>  {
             errors = true;
         }).then(() =>  {
-            if (!errors) items.forEach((item) => this.factionHand.removeCard(item));
+            if (!errors) selectedCards.forEach((card) => this.factionHand.removeCard(card));
         });        
     },
 
