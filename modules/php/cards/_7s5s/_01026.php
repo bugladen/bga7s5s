@@ -4,11 +4,11 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01026;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAmARiskThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 
-class _01026 extends Risk implements IHasActions, IAmARiskThatTargetsCharacters
+class _01026 extends Risk implements IHasActions, IRiskThatTargetsCharacters
 {
     use ActionTrait;
 
