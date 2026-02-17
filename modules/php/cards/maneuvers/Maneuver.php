@@ -69,4 +69,8 @@ abstract class Maneuver implements ICardAbility
 
     public function getManeuverFromCombatCardDiscount(Theah $theah, Card $combatCard, Array &$explanations): int { return 0; }
 
+    public function doCost(Game $game): void {}
+
+    public function doEffect(Game $game): void {}
+
 }

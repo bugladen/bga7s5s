@@ -65,4 +65,9 @@ abstract class Technique implements ICardAbility
     public function stateFromTechnique(Game $game, int $state, string $stateName): void { }
 
     public function getNumberOfGambleCardsToReveal(Theah $theah, Character $actor, Array &$explanations): int { return 0; }
+
+    public function doCost(Game $game): void {}
+
+    public function doEffect(Game $game): void {}
+
 }

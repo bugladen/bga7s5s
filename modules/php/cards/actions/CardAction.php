@@ -71,4 +71,8 @@ abstract class CardAction extends Action implements ICardAbility
             'owner_inject_code' => $owner->getInjectCode(),
         ]);
     }
+
+    public function doCost(Game $game): void {}
+
+    public function doEffect(Game $game): void {}
 }
