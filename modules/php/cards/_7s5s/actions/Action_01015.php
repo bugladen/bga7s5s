@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -89,6 +91,25 @@ class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCards,
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): bool
+    {
+        $scheme = $this->getOwningCard($game->theah);
+        if ($character->ControllerId == $scheme->ControllerId)
+        {
+            return false;
+        }
+
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($performer->Location != $character->Location)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -99,27 +120,22 @@ class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCards,
             $character = $game->theah->getCharacterById($id);
             if ($character == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
-            if ($character->ControllerId == $scheme->ControllerId)
+            if (! $this->isValidTargetForAbility($game, $character))
             {
-                throw new \BgaUserException($game->translate("You cannot destroy your own character"));
+                throw new UserException($game->translate("Invalid target"));
             }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
-            if ($performer->Location != $character->Location)
-            {
-                throw new \BgaUserException($game->translate("Character is not at the same location"));
-            }
-
             $game->notify->all("message", clienttranslate('${scheme_inject_code}: ${player_name} used the [${action_name}] action.'), [
                 "i18n" => ["action_name"],
                 "scheme_inject_code" => $scheme->getInjectCode(),
                 "action_name" => $this->Name,
-                "player_name" => $game->getActivePlayerName(),
+                "player_name" => $game->getPlayerNameById($performer->ControllerId),
             ]);
 
             $performer->unEquipAllAttachments($game->theah);
