@@ -145,6 +145,22 @@
                 }
             },
 
+            'highDramaPhase02013': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.factionHand.setSelectionMode('none');
+                }
+            },
+
+            'highDramaPhase02013_2': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'duelChooseTechnique_02006': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

@@ -587,8 +587,16 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
             };
 
-            if (methods[this.gamedatas.gamestate.name]) {
+            if (methods[this.gamedatas.gamestate.name])
                 methods[this.gamedatas.gamestate.name]();
+            else
+            {
+                // Default to if any cards are selected, enable the confirm button
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
             }
         } finally {
             this._processingFactionCardClick = false;

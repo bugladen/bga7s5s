@@ -254,7 +254,9 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaChallengeActionActivateTechnique': () => {
-            if (args.challengeType != this.SERVO_SCARPA_CHALLENGE_TYPE && args.challengeType != this.ANDRIANA_DONDOLOS_CHALLENGE_TYPE)
+            if (args.challengeType != this.SERVO_SCARPA_CHALLENGE_TYPE && 
+                args.challengeType != this.ANDRIANA_DONDOLOS_CHALLENGE_TYPE &&
+                args.challengeType != this.WILHELM_DUNST_CHALLENGE_TYPE)
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
             args.techniques.forEach((technique) => { 
                 this.addActionButton(

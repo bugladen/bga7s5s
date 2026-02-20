@@ -153,6 +153,7 @@ class Game extends \Bga\GameFramework\Table
     final const VALERI_MIKHAILOV_CHALLENGE_TYPE = 10;
     final const IRON_AND_VELVET_CHALLENGE_TYPE = 11;
     final const ANDRIANA_DONDOLOS_CHALLENGE_TYPE = 12;
+    final const WILHELM_DUNST_CHALLENGE_TYPE = 13;
 
     //Duel global variables
     //Duel Names

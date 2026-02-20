@@ -231,6 +231,29 @@
                 }            
             },
 
+            'highDramaPhase02013': () => {
+                if (this.isCurrentPlayerActive()) 
+                {
+                    // Filter cards to only those with the Sorcery trait
+                    const availableCards = this.factionHand.getCards().filter((card) => card.traits.includes('Sorcery') || card.traits.includes('Relic') || card.traits.includes('Faith'));
+                    
+                    // Set selection mode and restrict selectable cards to Sorcery cards only
+                    this.factionHand.setSelectionMode('single');
+                    this.factionHand.setSelectableCards(availableCards);
+                }
+            },
+
+            'highDramaPhase02013_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }            
+            },
+
             'duelChooseTechnique_02006': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
