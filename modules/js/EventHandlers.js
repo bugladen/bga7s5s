@@ -484,14 +484,6 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
-            'highDramaPhase02001': () => {
-                if (this.factionHand.getSelection().length > 0) {
-                    dojo.removeClass('actChooseDiscardCard', 'disabled');
-                } else {
-                    dojo.addClass('actChooseDiscardCard', 'disabled');
-                }
-            },
-
             'highDramaPhase01175': () => {
                 if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
@@ -505,6 +497,22 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');
                 } else {
                     dojo.addClass('actChooseDiscardCards', 'disabled');
+                }
+            },
+
+            'highDramaPhase02001': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
+            'highDramaPhase02013': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
                 }
             },
 
@@ -589,15 +597,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
             if (methods[this.gamedatas.gamestate.name])
                 methods[this.gamedatas.gamestate.name]();
-            else
-            {
-                // Default to if any cards are selected, enable the confirm button
-                if (this.factionHand.getSelection().length > 0) {
-                    dojo.removeClass('actChooseDiscardCard', 'disabled');
-                } else {
-                    dojo.addClass('actChooseDiscardCard', 'disabled');
-                }
-            }
+
         } finally {
             this._processingFactionCardClick = false;
         }
