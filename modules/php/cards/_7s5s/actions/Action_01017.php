@@ -1,7 +1,9 @@
 <?php
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -70,6 +72,17 @@ class Action_01017 extends CharacterAction implements IAbilityThatTargetsCards, 
 
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): bool
+    {
+        $owner = $this->getOwningCharacter($game->theah);
+        if ($character->Location != $owner->Location)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -80,17 +93,17 @@ class Action_01017 extends CharacterAction implements IAbilityThatTargetsCards, 
             $target = $game->theah->getCharacterById($id);
             if ($target == null)
             {
-                throw new \BgaUserException(sprintf($game->translate("Invalid target character id: %d"), $id));
+                throw new UserException(sprintf($game->translate("Invalid target character id: %d"), $id));
             }
 
-            if ($target->Location != $owner->Location)
+            if (! $this->isValidTargetForAbility($game, $target))
             {
-                throw new \BgaUserException($game->translate("Target character is not at the same location as Alcee."));
+                throw new UserException($game->translate("Invalid target"));
             }
 
             $this->announceAction($game);
             $this->resetPlayerPassCount($game);
-            // $this->setUsed not called because card is destroyed
+            $this->setUsed($game->theah, true);
 
             $owner->unEquipAllAttachments($game->theah);
             $event = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());
