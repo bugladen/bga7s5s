@@ -131,19 +131,9 @@ class Action_02013 extends CharacterAction
             }
 
             $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
-            $game->globals->set(Game::CHALLENGE_TYPE, Game::WILHELM_DUNST_CHALLENGE_TYPE);
-            $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
 
-            $discardedCardId = $game->globals->get(Game::CHOSEN_CARD);
-            $discardedCardEvent = EventFactory::createCardDiscardedFromHandEvent($wilhelm->ControllerId, $discardedCardId, $wilhelm->Id);
-            $game->theah->queueEvent($discardedCardEvent);
-
-            $character->addTrait($game, "Sorcerer");
-            $this->TargetedCharacterId = $character->Id;
-            $wilhelm->IsUpdated = true;
-
-            $transitionEvent = EventFactory::createTransitionEvent($wilhelm->ControllerId, $wilhelm->Id, "02013_2", $this->Id);
-            $game->theah->queueEvent($transitionEvent);
+            $this->doCost($game);
+            $this->doEffect($game);
 
             $this->announceAction($game);
             $this->setUsed($game->theah, true);
@@ -152,7 +142,36 @@ class Action_02013 extends CharacterAction
             //createActionResolvedEvent not needed because the challenge will issue it
 
             $game->gamestate->nextState();
-
         }
+    }
+
+    public function doCost(Game $game): void
+    {
+        parent::doCost($game);
+
+        $wilhelm = $this->getOwningCard($game->theah);
+        $discardedCardId = $game->globals->get(Game::CHOSEN_CARD);
+        $discardedCardEvent = EventFactory::createCardDiscardedFromHandEvent($wilhelm->ControllerId, $discardedCardId, $wilhelm->Id);
+        $game->theah->queueEvent($discardedCardEvent);
+    }
+
+    public function doEffect(Game $game): void
+    {
+        parent::doEffect($game);
+
+        $wilhelm = $this->getOwningCard($game->theah);
+        $characterId = $game->globals->get(Game::CHOSEN_TARGET);
+        $character = $game->theah->getCharacterById($characterId);
+
+        $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
+        $game->globals->set(Game::CHALLENGE_TYPE, Game::WILHELM_DUNST_CHALLENGE_TYPE);
+        $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+
+        $character->addTrait($game, "Sorcerer");
+        $this->TargetedCharacterId = $character->Id;
+        $wilhelm->IsUpdated = true;
+
+        $transitionEvent = EventFactory::createTransitionEvent($wilhelm->ControllerId, $wilhelm->Id, "02013_2", $this->Id);
+        $game->theah->queueEvent($transitionEvent);
     }
 }
