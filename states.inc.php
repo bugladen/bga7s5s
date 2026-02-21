@@ -551,6 +551,7 @@ $machinestates = [
         "action" => "stPlanningPhaseResolveSchemes",
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
+        // Add Planning Phase transitions here
         States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS => [
             "name" => "planningPhaseResolveSchemesEvents",
             "description" => clienttranslate("Resolving events for the Played Schemes..."),
@@ -576,6 +577,7 @@ $machinestates = [
                 "02005" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02005,
                 "02005_2" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02005_2,
                 "02005_3" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02005_3,
+                "02014" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02014,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_SCHEMES_REACTIONS,
                 "pay" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_DRAW,
@@ -882,6 +884,7 @@ $machinestates = [
                 "02010" => States::HIGH_DRAMA_PLAYER_TURN_02010,
                 "02013" => States::HIGH_DRAMA_PLAYER_TURN_02013,
                 "02013_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "02014" => States::HIGH_DRAMA_PLAYER_TURN_02014,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,

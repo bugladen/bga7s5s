@@ -41,6 +41,12 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');            
             },
 
+            'planningPhaseResolveSchemes_02014': () => {
+                this.addActionButton(`actAddRenown`, _('Add Renown to The City Forum'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'highDramaPhase02001': () => {
                 this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
                 this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onChooseHandCardConfirmed());
@@ -118,6 +124,16 @@
             'highDramaPhase02013_2': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase02014': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onMultipleChooseListCardsConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');            
+            },
+
+            'highDramaPhase02014_2': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onCardsSorted());
+                dojo.addClass('actChooseCardSelected', 'disabled');            
             },
 
             'duelChooseTechnique_02006': () => {

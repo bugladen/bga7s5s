@@ -14,6 +14,7 @@
     onEnteringState_tac: function( stateName, args )
     {
         const methods = {
+
             'planningPhaseResolveSchemes_02005': () => {
                 if (this.isCurrentPlayerActive()) {
                     const locations = this.getListofAvailableCityLocationImages();
@@ -78,6 +79,21 @@
                     );
                     $('choose_container_name').innerHTML = translated;
                     this.chooseList.setSelectionMode(2);
+                }
+            },
+
+            'planningPhaseResolveSchemes_02014': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    const locations = this.getListofAvailableCityLocationImages();
+                    locations.forEach((location) => {
+                        const imageElement = $(location);
+                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
+                        const reknown = parseInt(reknownElement.innerHTML);
+                        if (reknown == 0) return;
+    
+                        this.makeCityLocationSelectable(location);
+                    });
                 }
             },
 
@@ -252,6 +268,42 @@
                     this.clientStateArgs.ids = args.args.args.ids;
                     this.highlightCardsAsSelectable(args.args.args.ids);
                 }            
+            },
+
+            'highDramaPhase02014': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Top 4 Cards of the City Deck"),
+                        {}
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+
+            'highDramaPhase02014_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+        
+                    var translated = dojo.string.substitute(
+                        _("Remaining City Deck Cards"),
+                        {}
+                    );
+                    $('choose_container_name').innerHTML = translated;
+                    this.chooseList.setSelectionMode(2);
+                }
             },
 
             'duelChooseTechnique_02006': () => {
