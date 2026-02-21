@@ -1633,6 +1633,19 @@ trait FrameworkActionsTrait
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
 
+        //Pull the source id of the internal id
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($actionId, 0, strpos($actionId, "_"));
+            
+            // If the internal source id is not empty, make sure it matches the source id
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }
+    
+        }
+
         if ($sourceId === null) {
             throw new \BgaUserException(clienttranslate("Unable to process action. Please try again or refresh the page."));
         }
@@ -1651,6 +1664,19 @@ trait FrameworkActionsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        //Pull the source id of the internal id
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($actionId, 0, strpos($actionId, "_"));
+            
+            // If the internal source id is not empty, make sure it matches the source id
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }
+    
+        }
 
         if ($sourceId === null) {
             throw new \BgaUserException(clienttranslate("Unable to process action. Please try again or refresh the page."));
@@ -1672,6 +1698,19 @@ trait FrameworkActionsTrait
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
 
+        //Pull the source id of the internal id
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($actionId, 0, strpos($actionId, "_"));
+            
+            // If the internal source id is not empty, make sure it matches the source id
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }
+    
+        }
+
         if ($sourceId === null) {
             throw new \BgaUserException(clienttranslate("Unable to process action. Please try again or refresh the page."));
         }
@@ -1692,6 +1731,19 @@ trait FrameworkActionsTrait
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
 
+        //Pull the source id of the internal id
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($actionId, 0, strpos($actionId, "_"));
+            
+            // If the internal source id is not empty, make sure it matches the source id
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }
+    
+        }
+
         if ($sourceId === null) {
             throw new \BgaUserException(clienttranslate("Unable to process action. Please try again or refresh the page."));
         }
@@ -1709,6 +1761,19 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        //Pull the source id of the internal id
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($internalId, 0, strpos($internalId, "_"));
+            
+            // If the internal source id is not empty, make sure it matches the source id
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }
+    
+        }
 
         if ($sourceId === null) {
             throw new \BgaUserException(clienttranslate("Unable to process action. Please try again or refresh the page."));
@@ -1728,6 +1793,20 @@ trait FrameworkActionsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
+
+        //Pull the source id of the internal id
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($internalId, 0, strpos($internalId, "_"));
+            
+            // If the internal source id is not empty, make sure it matches the source id
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }
+    
+        }
+
         $state = $this->gamestate->getCurrentMainStateId();
 
         if ($sourceId === null)
@@ -1759,6 +1838,20 @@ trait FrameworkActionsTrait
         $playerId = $this->getActivePlayerId();
         
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
+
+        //Pull the source id of the internal id
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($internalId, 0, strpos($internalId, "_"));
+            
+            // If the internal source id is not empty, make sure it matches the source id
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }    
+        }
+
         if ($sourceId === null) {
             throw new \BgaUserException(clienttranslate("Unable to process reaction. Please try again or refresh the page."));
         }
@@ -1768,7 +1861,6 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(clienttranslate("Card not found. Please try again or refresh the page."));
         }
 
-        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
         $reaction = $card->getReactionById($internalId);
 
         $reactionId = $this->globals->get(Game::REACTION_ID);
