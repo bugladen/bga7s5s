@@ -1359,21 +1359,7 @@ $machinestates += [
         "action" => "stSetCurrentPlayer",
         "transitions" => ["" => States::HIGH_DRAMA_PLAYER_TURN_01180_3]
     ],
-    States::HIGH_DRAMA_PLAYER_TURN_01180_3 => [
-        "name" => "highDramaPhase01180_3",
-        "description" => clienttranslate('${actplayer} may choose to Equip an Artifact from the top 4 cards of the City Deck.'),
-        "descriptionmyturn" => clienttranslate('${you} may choose to Equip an Artifact from the top 4 cards of the City Deck:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId",
-            "actFromCardPass"
-        ],
-        "transitions" => [
-            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_01180_4,
-            "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
-        ]
-    ],
+    // States::HIGH_DRAMA_PLAYER_TURN_01180_3 migrated to State_highDramaPhase01180_3.php
     States::HIGH_DRAMA_PLAYER_TURN_01180_4 => [
         "name" => "highDramaPhase01180_4",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
