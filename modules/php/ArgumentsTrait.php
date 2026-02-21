@@ -743,6 +743,20 @@ trait ArgumentsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
+
+        //Pull the source id of the internal id
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($internalId, 0, strpos($internalId, "_"));
+
+            // If the internal source id is not empty, make sure it matches the source id
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }
+    
+        }
+
         $state = $this->gamestate->getCurrentMainStateId();
         $stateName = $this->gamestate->getCurrentMainState()->name;
 
@@ -777,6 +791,20 @@ trait ArgumentsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
+
+        //Pull the source id of the internal id
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($internalId, 0, strpos($internalId, "_"));
+            
+            // If the internal source id is not empty, make sure it matches the source id
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }
+    
+        }
+
         $state = $this->gamestate->getCurrentMainStateId();
         $stateName = $this->gamestate->getCurrentMainState()->name;
 
