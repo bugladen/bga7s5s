@@ -97,6 +97,21 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_02015': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 2;
+                    const locations = this.getListofAvailableCityLocationImages();
+                    locations.forEach((location) => {
+                        const imageElement = $(location);
+                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
+                        const reknown = parseInt(reknownElement.innerHTML);
+                        if (reknown > 0) return;
+    
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
             'highDramaPhase02001': () => {
                 if (this.isCurrentPlayerActive())
                 {

@@ -53,6 +53,12 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_02015': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
             'highDramaPhase02001': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
