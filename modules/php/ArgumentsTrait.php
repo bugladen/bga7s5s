@@ -562,8 +562,16 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
         $performerId = $this->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $this->theah->getCharacterById($performerId);
         $targetId = $this->globals->get(Game::CHOSEN_TARGET);
         $target = $this->theah->getCharacterById($targetId);
+
+        $challengeStat = $this->globals->get(Game::CHALLENGE_STAT);
+        $defenderThreat = match ($challengeStat) {
+            Game::STAT_FINESSE => $performer->ModifiedFinesse,
+            Game::STAT_INFLUENCE => $performer->ModifiedInfluence,
+            default => $performer->ModifiedCombat,
+        };
 
         //Get a list of characters that could intervene
         $charactersAtLocation = $this->theah->getCharactersAtLocation($target->Location);
@@ -592,7 +600,8 @@ trait ArgumentsTrait
             "performerId" => $performerId,
             "targetId" => $targetId,
             "ids" => array_map(fn($character) => $character->Id, $charactersCanIntervene),
-            "challengeType" => $this->globals->get(Game::CHALLENGE_TYPE)
+            "challengeType" => $this->globals->get(Game::CHALLENGE_TYPE),
+            "defenderThreat" => $defenderThreat
         ];
 
     }
@@ -743,6 +752,20 @@ trait ArgumentsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
+
+        //Pull the source id of the internal id
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($internalId, 0, strpos($internalId, "_"));
+
+            // If the internal source id is not empty, make sure it matches the source id
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }
+    
+        }
+
         $state = $this->gamestate->getCurrentMainStateId();
         $stateName = $this->gamestate->getCurrentMainState()->name;
 
@@ -777,6 +800,20 @@ trait ArgumentsTrait
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
         $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
+
+        //Pull the source id of the internal id
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($internalId, 0, strpos($internalId, "_"));
+            
+            // If the internal source id is not empty, make sure it matches the source id
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }
+    
+        }
+
         $state = $this->gamestate->getCurrentMainStateId();
         $stateName = $this->gamestate->getCurrentMainState()->name;
 

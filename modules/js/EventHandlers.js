@@ -627,76 +627,108 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
     onCityDiscardClicked: function( event )
     {
-        this.myDlg = new ebg.popindialog();
-        this.myDlg.create( 'discardDialog' );
-        this.myDlg.setTitle( _("City Discard Pile") );
-        this.myDlg.setMaxWidth( 675 );
+        const overlay = document.createElement('div');
+        overlay.className = '_7sfs-confirm-overlay';
 
-        let cards = "";
+        const dialog = document.createElement('div');
+        dialog.className = '_7sfs-confirm-dialog _7sfs-discard-dialog';
+
+        let cardsHtml = '';
         this.gamedatas.cityDiscard.forEach(card => {
-             cards += this.format_block('jstpl_discard_card', {
+            cardsHtml += this.format_block('jstpl_discard_card', {
                 image : this.getCardImageUrlRoot(card.image) + card.image,
-             });
+            });
         });
 
-        this.myDlg.setContent( cards ); // Must be set before calling show() so that the size of the content is defined before positioning the dialog
-        this.myDlg.show();
+        dialog.innerHTML =
+            '<div class="_7sfs-confirm-text">' + _("City Discard Pile") + '</div>' +
+            '<div class="_7sfs-discard-cards">' + cardsHtml + '</div>' +
+            '<div class="_7sfs-confirm-buttons">' +
+                '<button class="_7sfs-confirm-btn _7sfs-confirm-close">' + _("Close") + '</button>' +
+            '</div>';
+
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+
+        const close = () => overlay.remove();
+        dialog.querySelector('._7sfs-confirm-close').addEventListener('click', close);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
     },
 
     onPlayerDiscardClicked: function (event)
     {
-        //Get the data-player-id attribute from the element
         let playerId = $(event.target.id).getAttribute('data-player-id');
         let playerName = this.getFormattedPlayerName(playerId);
 
-        this.myDlg = new ebg.popindialog();
-        this.myDlg.create( 'discardDialog' );
-        var translated = dojo.string.substitute(
-            _("${playerName} Discard Pile"),
-            {
-                playerName: playerName
-            }
-        );
-        this.myDlg.setTitle( translated );
-        this.myDlg.setMaxWidth( 675 );
+        const overlay = document.createElement('div');
+        overlay.className = '_7sfs-confirm-overlay';
 
-        let cards = "";
+        const dialog = document.createElement('div');
+        dialog.className = '_7sfs-confirm-dialog _7sfs-discard-dialog';
+
+        let cardsHtml = '';
         this.gamedatas.players[playerId].discard.forEach(card => {
-             cards += this.format_block('jstpl_discard_card', {
+            cardsHtml += this.format_block('jstpl_discard_card', {
                 image : this.getCardImageUrlRoot(card.image) + card.image,
-             });
+            });
         });
 
-        this.myDlg.setContent( cards ); // Must be set before calling show() so that the size of the content is defined before positioning the dialog
-        this.myDlg.show();
+        var translated = dojo.string.substitute(
+            _("${playerName} Discard Pile"),
+            { playerName: playerName }
+        );
+
+        dialog.innerHTML =
+            '<div class="_7sfs-confirm-text">' + translated + '</div>' +
+            '<div class="_7sfs-discard-cards">' + cardsHtml + '</div>' +
+            '<div class="_7sfs-confirm-buttons">' +
+                '<button class="_7sfs-confirm-btn _7sfs-confirm-close">' + _("Close") + '</button>' +
+            '</div>';
+
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+
+        const close = () => overlay.remove();
+        dialog.querySelector('._7sfs-confirm-close').addEventListener('click', close);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
     },
 
     onPlayerLockerClicked: function (event)
     {
-        //Get the data-player-id attribute from the element
         let playerId = $(event.target.id).getAttribute('data-player-id');
         let playerName = this.getFormattedPlayerName(playerId);
 
-        this.myDlg = new ebg.popindialog();
-        this.myDlg.create( 'discardDialog' );
-        var translated = dojo.string.substitute(
-            _("${playerName} Locker"),
-            {
-                playerName: playerName
-            }
-        );
-        this.myDlg.setTitle( translated );
-        this.myDlg.setMaxWidth( 675 );
+        const overlay = document.createElement('div');
+        overlay.className = '_7sfs-confirm-overlay';
 
-        let cards = "";
+        const dialog = document.createElement('div');
+        dialog.className = '_7sfs-confirm-dialog _7sfs-discard-dialog';
+
+        let cardsHtml = '';
         this.gamedatas.players[playerId].locker.forEach(card => {
-             cards += this.format_block('jstpl_discard_card', {
+            cardsHtml += this.format_block('jstpl_discard_card', {
                 image : this.getCardImageUrlRoot(card.image) + card.image,
-             });
+            });
         });
 
-        this.myDlg.setContent( cards ); // Must be set before calling show() so that the size of the content is defined before positioning the dialog
-        this.myDlg.show();
+        var translated = dojo.string.substitute(
+            _("${playerName} Locker"),
+            { playerName: playerName }
+        );
+
+        dialog.innerHTML =
+            '<div class="_7sfs-confirm-text">' + translated + '</div>' +
+            '<div class="_7sfs-discard-cards">' + cardsHtml + '</div>' +
+            '<div class="_7sfs-confirm-buttons">' +
+                '<button class="_7sfs-confirm-btn _7sfs-confirm-close">' + _("Close") + '</button>' +
+            '</div>';
+
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+
+        const close = () => overlay.remove();
+        dialog.querySelector('._7sfs-confirm-close').addEventListener('click', close);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
     },
 
     payForCard: function(item_id)

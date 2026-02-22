@@ -195,7 +195,6 @@ trait ZombieTrait
                 case "highDramaPhase01038_3": // Otto Streit attachment choice
                 case "highDramaPhase01180": // Kaj Kousei
                 case "highDramaPhase01180_2": // Kaj Kousei
-                case "highDramaPhase01180_3": // Kaj Kousei artifact choice
                 case "highDramaPhase01180_4": // Kaj Kousei performer
                 case "highDramaPhase01180_5": // Kaj Kousei payment
                 case "highDramaPhase01185": // Risky Undertaking

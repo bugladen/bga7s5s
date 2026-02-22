@@ -58,7 +58,7 @@ class Action_01180 extends CharacterAction
             $game = $event->theah->game;
             $game->notify->all("message", clienttranslate('${player_name} has used the [${action}] Action from ${owner_inject_code}'), [
                 'i18n' => ['action'],
-                'player_name' => $game->getActivePlayerName(),
+                'player_name' => $game->getPlayerNameById($kaj->ControllerId),
                 'action' => $this->Name,
                 'owner_inject_code' => $kaj->getInjectCode(),
             ]);
@@ -72,7 +72,8 @@ class Action_01180 extends CharacterAction
 
             $this->resetPlayerPassCount($event->theah->game);
 
-            $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01180", $this->Id);
+            $owner = $this->getOwningCard($event->theah);
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01180", $this->Id);
             $event->theah->queueEvent($transition);
         }
     }
