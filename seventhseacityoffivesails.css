@@ -1644,3 +1644,52 @@ body {
         max-width: 248px;
     }
 }
+
+/* Confirm-pass dialog */
+._7sfs-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+._7sfs-confirm-dialog {
+    background: #d4b896;
+    border: 2px solid #8b6d4b;
+    border-radius: 8px;
+    padding: 18px 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    text-align: center;
+    width: max-content;
+}
+
+._7sfs-confirm-text {
+    font-family: "Pirata One", system-ui;
+    font-size: 16px;
+    color: #3b2a1a;
+    margin-bottom: 14px;
+}
+
+._7sfs-confirm-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+._7sfs-confirm-btn {
+    font-family: "Pirata One", system-ui;
+    font-size: 15px;
+    padding: 6px 22px;
+    border: 1px solid #6b4f34;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #3b2a1a;
+    background: #e8d5b7;
+}
+
+._7sfs-confirm-btn:hover {
+    background: #c9a97a;
+}
