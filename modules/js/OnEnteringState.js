@@ -511,6 +511,13 @@ onEnteringState: function( stateName, args )
 
         'highDramaChallengeActionAcceptChallenge' : () => {
             if (this.isCurrentPlayerActive()) {
+                const statusBarTitle = _(args.descriptionmyturn).replace('#{threat}', '${threat}');
+                this.bga.statusBar.setTitle(statusBarTitle, {
+                    threat: this.format_block('jstpl_status_bar_threat_chip', {
+                        threat: args.args.defenderThreat,
+                    }),
+                });
+
                 this.numberOfCardsSelectable = 1;
                 card = this.cardProperties[args.args.performerId];
                 image = $(`${card.divId}_image`);

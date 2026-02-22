@@ -1073,6 +1073,30 @@ body {
     margin-bottom: 5px;
 }
 
+/* Approach Deck scroll image for web desktop */
+@media (min-width: 769px) {
+    #approachDeck-container {
+        background-image: url('img/scroll.png');
+        background-repeat: no-repeat;
+        overflow: visible !important;
+        min-height: 250px;
+        min-width: 1300px;
+    }
+
+    #approachDeck {
+        margin-top: 15px;
+        margin-left: 75px;
+    }
+
+    ._7sfs-hand-label {
+        visibility: hidden;
+    }
+
+    #approachDeck-container._7sfs-dimmed {
+        opacity: 0.3 !important;
+    }
+}
+
 /* ============================================
    FLOATING HAND STYLES
    ============================================ */
@@ -1325,6 +1349,10 @@ body {
         top: 175px !important;
         width: 248px !important;
     }
+    
+    #approachDeck-container {
+        background: #c9a87c !important;
+    }
 }
 
 ._7sfs-selectable {
@@ -1422,6 +1450,14 @@ body {
     font-size: 12pt;
     text-align: center;
     color: #EE4B38;;
+}
+._7sfs-status-bar-wound-chip {
+    position: relative;
+    left: 0px;
+    top: 0px;
+    margin-left: 0px;
+    min-width: 23px;
+    overflow: visible;
 }
 
 #duel {
@@ -1635,4 +1671,111 @@ body {
     .tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-img {
         max-width: 248px;
     }
+}
+
+/* Confirm-pass dialog */
+._7sfs-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+._7sfs-confirm-dialog {
+    background: #d4b896;
+    border: 2px solid #8b6d4b;
+    border-radius: 8px;
+    padding: 18px 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    text-align: center;
+    width: max-content;
+}
+
+._7sfs-confirm-text {
+    font-family: "Pirata One", system-ui;
+    font-size: 16px;
+    color: #3b2a1a;
+    margin-bottom: 14px;
+}
+
+._7sfs-confirm-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+._7sfs-confirm-btn {
+    font-family: "Pirata One", system-ui;
+    font-size: 15px;
+    padding: 6px 22px;
+    border: 1px solid #6b4f34;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #3b2a1a;
+    background: #e8d5b7;
+}
+
+._7sfs-confirm-btn:hover {
+    background: #c9a97a;
+}
+
+._7sfs-discard-dialog {
+    max-width: 675px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+._7sfs-discard-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 14px;
+}
+
+._7sfs-discard-dialog ._7sfs-discard-pile-card {
+    width: 200px;
+}
+
+#page-title {
+    background: #c9a87c !important;
+}
+
+/* Action buttons in the title bar styled to match confirm dialog */
+#maintitlebar_content a {
+    font-family: "Pirata One", system-ui;
+    font-size: 20px;
+    padding: 6px 22px;
+    border: 1px solid #6b4f34;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #3b2a1a;
+    background: #e8d5b7;
+}
+
+#maintitlebar_content a:hover {
+    background: #c9a97a;
+}
+
+#maintitlebar_content a.disabled {
+    background: #8a8a8a;
+    color: #555;
+    border-color: #777;
+    cursor: default;
+}
+
+#maintitlebar_content span {
+    font-family: "Pirata One", system-ui;
+    font-size: 20px;
+}
+
+#factionHand-placeholder {
+    background: #c9a87c !important;
+}
+
+#choose_container {
+    background: #c9a87c !important;
 }

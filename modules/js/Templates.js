@@ -149,6 +149,10 @@
         <span class="_7sfs-card-wealth-cost _7sfs-status-bar-wealth-cost">\${cost}</span>
         `;
 
+        window.jstpl_status_bar_threat_chip = `
+        <span class="_7sfs-wound-chip _7sfs-status-bar-wound-chip">\${threat}</span>
+        `;
+
         window.jstpl_hand_wealth_cost_chip = `
         <div id="\${id}_wealth_cost" class="_7sfs-card-wealth-cost _7sfs-hand-wealth-cost">\${cost}</div>
         `;

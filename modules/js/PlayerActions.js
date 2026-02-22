@@ -484,9 +484,26 @@ return declare('seventhseacityoffivesails.actions', null, {
 
     onConfirmPass: function()
     {
-        this.confirmationDialog(_("Are you sure you want to pass?"),
-        () => {this.onPass();}
-        );
+        const overlay = document.createElement('div');
+        overlay.className = '_7sfs-confirm-overlay';
+
+        const dialog = document.createElement('div');
+        dialog.className = '_7sfs-confirm-dialog';
+        dialog.innerHTML =
+            '<div class="_7sfs-confirm-text">' + _("Are you sure you want to pass?") + '</div>' +
+            '<div class="_7sfs-confirm-buttons">' +
+                '<button class="_7sfs-confirm-btn _7sfs-confirm-yes">' + _("Yes") + '</button>' +
+                '<button class="_7sfs-confirm-btn _7sfs-confirm-no">' + _("No") + '</button>' +
+            '</div>';
+
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+
+        const close = () => overlay.remove();
+
+        dialog.querySelector('._7sfs-confirm-yes').addEventListener('click', () => { close(); this.onPass(); });
+        dialog.querySelector('._7sfs-confirm-no').addEventListener('click', close);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
     },
 
     onMultipleOk: function()

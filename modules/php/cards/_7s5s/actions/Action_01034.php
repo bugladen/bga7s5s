@@ -162,11 +162,6 @@ class Action_01034 extends RiskAction implements IAbilityThatTargetsCards, IAbil
     {
         parent::actFromActionPass($game, $state);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01034)
-        {
-            $game->gamestate->nextState();
-        }
-        
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01034_2)
         {
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);

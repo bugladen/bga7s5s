@@ -1193,10 +1193,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     showApproachDeckAtTop: () => {
         dojo.place('approachDeck-container', 'city', 'before');
+        dojo.removeClass('approachDeck-container', '_7sfs-dimmed');
     },
 
     showApproachDeckAtBottom: () => {
         dojo.place('approachDeck-container', 'hand_anchor', 'before');
+        dojo.addClass('approachDeck-container', '_7sfs-dimmed');
     },
 
     getCityLocationElement: function(location) {
