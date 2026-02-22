@@ -562,8 +562,16 @@ trait ArgumentsTrait
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
         $performerId = $this->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $this->theah->getCharacterById($performerId);
         $targetId = $this->globals->get(Game::CHOSEN_TARGET);
         $target = $this->theah->getCharacterById($targetId);
+
+        $challengeStat = $this->globals->get(Game::CHALLENGE_STAT);
+        $defenderThreat = match ($challengeStat) {
+            Game::STAT_FINESSE => $performer->ModifiedFinesse,
+            Game::STAT_INFLUENCE => $performer->ModifiedInfluence,
+            default => $performer->ModifiedCombat,
+        };
 
         //Get a list of characters that could intervene
         $charactersAtLocation = $this->theah->getCharactersAtLocation($target->Location);
@@ -592,7 +600,8 @@ trait ArgumentsTrait
             "performerId" => $performerId,
             "targetId" => $targetId,
             "ids" => array_map(fn($character) => $character->Id, $charactersCanIntervene),
-            "challengeType" => $this->globals->get(Game::CHALLENGE_TYPE)
+            "challengeType" => $this->globals->get(Game::CHALLENGE_TYPE),
+            "defenderThreat" => $defenderThreat
         ];
 
     }

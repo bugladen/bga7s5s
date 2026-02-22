@@ -1423,6 +1423,14 @@ body {
     text-align: center;
     color: #EE4B38;;
 }
+._7sfs-status-bar-wound-chip {
+    position: relative;
+    left: 0px;
+    top: 0px;
+    margin-left: 0px;
+    min-width: 23px;
+    overflow: visible;
+}
 
 #duel {
     overflow-x: auto;
