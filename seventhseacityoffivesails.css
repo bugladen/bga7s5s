@@ -1073,6 +1073,30 @@ body {
     margin-bottom: 5px;
 }
 
+/* Approach Deck scroll image for web desktop */
+@media (min-width: 769px) {
+    #approachDeck-container {
+        background-image: url('img/scroll.png');
+        background-repeat: no-repeat;
+        overflow: visible !important;
+        min-height: 250px;
+        min-width: 1300px;
+    }
+
+    #approachDeck {
+        margin-top: 15px;
+        margin-left: 75px;
+    }
+
+    ._7sfs-hand-label {
+        visibility: hidden;
+    }
+
+    #approachDeck-container._7sfs-dimmed {
+        opacity: 0.3 !important;
+    }
+}
+
 /* ============================================
    FLOATING HAND STYLES
    ============================================ */
@@ -1324,6 +1348,10 @@ body {
         left: 0px !important;
         top: 175px !important;
         width: 248px !important;
+    }
+    
+    #approachDeck-container {
+        background: #c9a87c !important;
     }
 }
 
@@ -1692,4 +1720,44 @@ body {
 
 ._7sfs-confirm-btn:hover {
     background: #c9a97a;
+}
+
+#page-title {
+    background: #c9a87c !important;
+}
+
+/* Action buttons in the title bar styled to match confirm dialog */
+#maintitlebar_content a {
+    font-family: "Pirata One", system-ui;
+    font-size: 20px;
+    padding: 6px 22px;
+    border: 1px solid #6b4f34;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #3b2a1a;
+    background: #e8d5b7;
+}
+
+#maintitlebar_content a:hover {
+    background: #c9a97a;
+}
+
+#maintitlebar_content a.disabled {
+    background: #8a8a8a;
+    color: #555;
+    border-color: #777;
+    cursor: default;
+}
+
+#maintitlebar_content span {
+    font-family: "Pirata One", system-ui;
+    font-size: 20px;
+}
+
+#factionHand-placeholder {
+    background: #c9a87c !important;
+}
+
+#choose_container {
+    background: #c9a87c !important;
 }

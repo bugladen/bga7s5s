@@ -272,6 +272,7 @@ return declare('seventhseacityoffivesails.setup', null, {
 
         });
         this.approachDeck.setSelectionMode(0);
+        dojo.addClass('approachDeck-container', '_7sfs-dimmed');
 
         // Create CardManager for faction hand cards
         // Mobile includes portrait (width <= 768) and landscape (height <= 500 with landscape orientation)
