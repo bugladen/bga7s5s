@@ -1722,6 +1722,24 @@ body {
     background: #c9a97a;
 }
 
+._7sfs-discard-dialog {
+    max-width: 675px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+._7sfs-discard-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 14px;
+}
+
+._7sfs-discard-dialog ._7sfs-discard-pile-card {
+    width: 200px;
+}
+
 #page-title {
     background: #c9a87c !important;
 }
