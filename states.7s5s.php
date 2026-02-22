@@ -639,7 +639,6 @@ $machinestates += [
         "args" => "argsForState",
         "possibleactions" => [
             "actFromCardWithId",
-            "actFromCardPass"
         ],
         "transitions" => [
             "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
