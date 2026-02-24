@@ -1757,6 +1757,7 @@ body {
     cursor: pointer;
     color: #3b2a1a;
     background: #e8d5b7;
+    font-weight: normal !important;
 }
 
 #maintitlebar_content a:hover {
@@ -1773,6 +1774,7 @@ body {
 #maintitlebar_content span {
     font-family: "Pirata One", system-ui;
     font-size: 20px;
+    font-weight: normal !important;
 }
 
 #factionHand-placeholder {
