@@ -388,7 +388,6 @@ onEnteringState: function( stateName, args )
                 const handCard = this.factionHand.getCards().find(c => c.id === chosenActionCardId);
                 const cardElement = handCard ? this.factionHand.getCardElement(handCard) : null;
                 if (cardElement) {
-                    dojo.addClass(cardElement, '_7sfs-unselectable');
 
                     dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
                         id: cardElement.id,
@@ -409,6 +408,10 @@ onEnteringState: function( stateName, args )
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
                 this.factionHand.setSelectionMode('multiple');
+                const availableCards = this.factionHand
+                    .getCards()
+                    .filter((card) => card.id !== chosenActionCardId);
+                this.factionHand.setSelectableCards(availableCards);
             }
         },
 
