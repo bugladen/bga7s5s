@@ -32,6 +32,10 @@ abstract class Character extends Card implements IHasTechniques
 
     public bool $IsDying;
 
+    // Cards like Sorte Deck can heal wounds as a reaction.  This is the number of wounds that have been healed as a reaction.
+    // Used to prevent the character from dying if they have been healed as a reaction.
+    public int $WoundsHealedIncoming = 0;
+
     public Array $Attachments = [];
 
     public function __construct()
@@ -216,7 +220,7 @@ abstract class Character extends Card implements IHasTechniques
             $this->Wounds += $event->wounds;            
             $this->IsUpdated = true;
 
-            $event->theah->game->notifyAllPlayers("characterWounded", clienttranslate('${target_inject_code} has received ${wounds} wound(s) due to: ${reason}'), [
+            $event->theah->game->notify->all("characterWounded", clienttranslate('${target_inject_code} has received ${wounds} wound(s) due to: ${reason}'), [
                 'i18n' => ['reason'],
                 "target_inject_code" => $this->getInjectCode(),
                 "characterId" => $this->Id,
@@ -225,7 +229,7 @@ abstract class Character extends Card implements IHasTechniques
                 'resolve' => $this->ModifiedResolve
             ]);
 
-            if ($this->Wounds >= $this->ModifiedResolve)
+            if ($this->Wounds >= $this->ModifiedResolve + $this->WoundsHealedIncoming)
             {
                 $this->IsDying = true;
 
@@ -247,6 +251,7 @@ abstract class Character extends Card implements IHasTechniques
                 $this->Wounds = 0;
             }
 
+            $this->WoundsHealedIncoming = 0;
             $this->IsUpdated = true;
 
             $event->theah->game->notify->all("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason}'), [
