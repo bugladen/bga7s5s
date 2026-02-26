@@ -6,12 +6,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\AttachmentReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01181 extends AttachmentReaction
 {
     public Array $HealTargetIds = [];
+    private ?EventCharacterBeingWounded $characterWoundedEvent = null;
+    private bool $skipNextEvent = false;
 
     public function __construct()
     {
@@ -50,14 +52,30 @@ class Reaction_01181 extends AttachmentReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCharacterWounded && $this->ownerIsAttached($event->theah) && $this->isAvailable())
+        if ($event instanceof EventCharacterBeingWounded && $this->ownerIsAttached($event->theah) && $this->isAvailable())
         {
             $attachment = $this->getOwningCard($event->theah);
+
+            if ($this->skipNextEvent)
+            {
+                $this->skipNextEvent = false;
+                $attachment->IsUpdated = true;
+                return;
+            }
+
             $character = $event->theah->getCardById($event->characterId);
             if ($character->Location == $attachment->Location && ! $attachment->Engaged) 
             {
                 $this->HealTargetIds[] =  $event->characterId;
                 $attachment->IsUpdated = true;
+
+                if (count($this->HealTargetIds) == 1)
+                {
+                    $this->characterWoundedEvent = clone $event;
+                    unset($this->characterWoundedEvent->theah);
+                    $attachment->IsUpdated = true;
+                    $event->canceled = true;
+                }
 
                 $transition = EventFactory::createReactionTransitionEvent($attachment->ControllerId, $attachment->Id, $this->Id);
                 $event->theah->queueEvent($transition);
@@ -87,6 +105,10 @@ class Reaction_01181 extends AttachmentReaction
             $attachment = $this->getOwningCard($game->theah);
             $game->theah->addCardToWorld($attachment);
             $game->updateCardObjectInDb($attachment);
+
+            $this->releaseEvent($game);
+            $this->skipNextEvent = true;
+            $attachment->IsUpdated = true;
         }
 
         $game->gamestate->nextState("done");
@@ -101,6 +123,12 @@ class Reaction_01181 extends AttachmentReaction
         //Pop the first target id from the array.  The rest are removed.
         $id = array_shift($this->HealTargetIds);
         $this->HealTargetIds = [];
+
+        //Tell the character that they have incoming wounds that will be healed as a reaction.
+        $character = $game->theah->getCharacterById($id);
+        $character->WoundsHealedIncoming += $wounds;
+        $character->IsUpdated = true;
+
         $game->theah->addCardToWorld($attachment);
         $game->updateCardObjectInDb($attachment);
 
@@ -110,7 +138,20 @@ class Reaction_01181 extends AttachmentReaction
         $engageEvent = EventFactory::createCardEngagedEvent($attachment->ControllerId, $attachment->Id, $attachment->Id, $this->Id);
         $game->theah->queueEvent($engageEvent);
 
+        $this->releaseEvent($game);
+        $this->skipNextEvent = true;
+        $attachment->IsUpdated = true;
+
         $healedEvent = EventFactory::createCharacterBeingHealedEvent($id, $attachment->Id, $wounds, $attachment->getInjectCode(), $this->Id);
         $game->theah->queueEvent($healedEvent);
+    }
+
+    private function releaseEvent(Game $game)
+    {
+        if ($this->characterWoundedEvent)
+        {
+            $game->theah->queueEvent($this->characterWoundedEvent);
+            $this->characterWoundedEvent = null;
+        }
     }
 }
