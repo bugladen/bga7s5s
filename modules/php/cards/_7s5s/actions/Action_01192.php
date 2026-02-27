@@ -69,6 +69,8 @@ class Action_01192 extends CharacterAction
                 'names' => implode(', ', $names)
             ]);
 
+            $event->theah->game->globals->set(Game::MULTI_STATE_INITIATING_PLAYER, $gustavo->ControllerId);
+
             $this->setUsed($event->theah, true);
             $this->resetPlayerPassCount($event->theah->game);
 
