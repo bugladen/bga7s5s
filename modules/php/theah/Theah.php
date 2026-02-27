@@ -277,6 +277,15 @@ class Theah
             }
         }
 
+        //After all the events are run, we need to reset the wounds healed incoming for all characters
+        foreach ($this->cards as $card)
+        {
+            if ($card instanceof Character)
+            {
+                $card->WoundsHealedIncoming = 0;
+            }
+        }
+
         //After all the events are run, we need to change back to the current player
         $inDuel = $this->game->globals->get(Game::IN_DUEL);
         if ($inDuel) 
