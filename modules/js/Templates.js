@@ -290,7 +290,7 @@
 
             mainBoardhtml: `
                 <div id="choose_container" class="whiteblock _7sfs-hand hidden">
-                    <div class="_7sfs-hand-label"><b><span id="choose_container_name"></span></b></div>
+                    <div class="_7sfs-hand-label"><span id="choose_container_name"></span></div>
                     <div id="chooseList" class="hidden">
                     </div>
                 </div>
@@ -298,7 +298,7 @@
                 <!-- Faction hand placeholder - contains the hand when not floating -->
                 <div id="factionHand-placeholder" class="whiteblock _7sfs-hand _7sfs-hand-placeholder hidden">
                     <div class="_7sfs-hand-label">
-                        <span><b>Your Faction Hand</b></span>
+                        <span>Your Faction Hand</span>
                         <span id="faction_hand_info"></span>
                     </div>
                     <!-- The hand wrapper - floats when scrolled -->
@@ -386,7 +386,7 @@
                 <div id="home_anchor"></div>
 
                 <div id="approachDeck-container" class="whiteblock _7sfs-hand">
-                    <div class="_7sfs-hand-label"><b>Your Approach Deck</b></div>
+                    <div class="_7sfs-hand-label">Your Approach Deck</div>
                     <div id="approachDeck">
                     </div>
                 </div>

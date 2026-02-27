@@ -63,6 +63,7 @@ trait DebugTrait
         $this->createCardInLocation($className, Game::LOCATION_CITY_DISCARD, 0, 0);
     }
 
+    #[Debug(reload: true)] 
     public function debug_RecruitMercenary(int $cardId, int $playerId)
     {
         $this->theah->buildCity();
@@ -81,6 +82,7 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
+    #[Debug(reload: true)] 
     public function debug_EngageCard(int $cardId, int $playerId)
     {
         $this->theah->buildCity();
@@ -93,6 +95,7 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
+    #[Debug(reload: true)] 
     public function debug_EngardeCard(int $cardId, int $playerId)
     {
         $this->theah->buildCity();
@@ -122,6 +125,7 @@ trait DebugTrait
         $this->setGameStateValue(Game::DAY, $day);
     }
 
+    #[Debug(reload: true)] 
     public function debug_SetPlayerReknown(int $score, int $playerId)
     {
         $db = $this->theah->getDBObject();
@@ -136,6 +140,7 @@ trait DebugTrait
 
     }
 
+    #[Debug(reload: true)] 
     public function debug_AddReknownToLocation(string $location, int $amount)
     {
         $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
@@ -148,6 +153,7 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
+    #[Debug(reload: true)] 
     public function debug_RemoveReknownFromLocation(string $location, int $amount)
     {
         $event = $this->theah->createEvent(Events::ReknownRemovedFromLocation);
@@ -160,6 +166,7 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
+    #[Debug(reload: true)] 
     public function debug_WoundCharacter(int $characterId, int $wounds, int $sourceId = 0)
     {
         $event = $this->theah->createEvent(Events::CharacterWounded);
@@ -174,6 +181,7 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
+    #[Debug(reload: true)] 
     public function debug_HealCharacter(int $characterId, int $wounds, int $sourceId = 0)
     {
         $event = $this->theah->createEvent(Events::CharacterHealed);
@@ -188,6 +196,7 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
+    #[Debug(reload: true)] 
     public function debug_UnequipAttachment(int $playerId, int $characterId, int $attachmentId)
     {
         $event = $this->theah->createEvent(Events::AttachmentUnequipped);
@@ -208,6 +217,7 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
+    #[Debug(reload: true)] 
     public function debug_ClaimLocation(string $location, int $playerId)
     {
         $this->setControllerForLocation($location, $playerId);
