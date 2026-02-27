@@ -132,6 +132,13 @@ class Reaction_01181 extends AttachmentReaction
         $game->theah->addCardToWorld($attachment);
         $game->updateCardObjectInDb($attachment);
 
+        $game->notify->all("characterWoundsHealedIncoming", clienttranslate('${object_inject_code}: ${player_name} has used the Reaction to heal ${wounds} wounds from ${target_inject_code}.'), [
+            "object_inject_code" => $attachment->getInjectCode(),
+            "player_name" => $game->getPlayerNameById($attachment->ControllerId),
+            "wounds" => $wounds,
+            "target_inject_code" => $character->getInjectCode(),
+        ]);
+
         //Delete any remaining transition events for this reaction
         $game->theah->deleteTransitionEvents($this->Id);
 
