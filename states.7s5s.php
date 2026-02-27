@@ -1444,7 +1444,7 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Gustavo') . clienttranslate(': ${you} must acknowledge revealed cards:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
-        "action" => "stMultiPlayerInit",
+        "action" => "stMultiPlayerInitSansInitiatingPlayer",
         "possibleactions" => [
             "actMultipleOk", 
         ],

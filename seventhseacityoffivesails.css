@@ -121,22 +121,25 @@ body {
 }
 
 ._7sfs-deck-picker-tab-buttons button {
-    padding: 10px 20px;
-    background: #007BFF;
-    border: none;
+    font-family: "Pirata One", system-ui;
+    font-size: 16px;
+    padding: 6px 22px;
+    border: 1px solid #6b4f34;
     border-radius: 4px;
-    color: white;
-    font-size: 14px;
     cursor: pointer;
-    transition: background 0.3s;
+    color: #3b2a1a;
+    background: #e8d5b7;
 }
 
 ._7sfs-deck-picker-tab-buttons button:hover {
-    background: #0056b3;
+    background: #c9a97a;
 }
+
 ._7sfs-deck-picker-tab-buttons button:disabled {
-    background: #cccccc;
-    cursor: not-allowed;
+    background: #8a8a8a;
+    color: #555;
+    border-color: #777;
+    cursor: default;
 }
 
 ._7sfs-deck-picker-banner-image {
@@ -1088,7 +1091,7 @@ body {
         margin-left: 75px;
     }
 
-    ._7sfs-hand-label {
+    #approachDeck-container ._7sfs-hand-label {
         visibility: hidden;
     }
 
@@ -1754,6 +1757,7 @@ body {
     cursor: pointer;
     color: #3b2a1a;
     background: #e8d5b7;
+    font-weight: normal !important;
 }
 
 #maintitlebar_content a:hover {
@@ -1770,6 +1774,7 @@ body {
 #maintitlebar_content span {
     font-family: "Pirata One", system-ui;
     font-size: 20px;
+    font-weight: normal !important;
 }
 
 #factionHand-placeholder {

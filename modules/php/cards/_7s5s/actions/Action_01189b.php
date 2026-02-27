@@ -78,9 +78,6 @@ class Action_01189b extends EventCityAction
     
             $locations = $game->theah->getAdjacentCityLocations($currentLocation, $includeHome = false);
     
-            //Filter out locations that do not have at least one Reknown
-            $locations = array_values(array_filter($locations, fn($location) => $game->getReknownForLocation($location) > 0));
-    
             $args["locations"] = $locations;
             $args["performerId"] = $performerId;
     
