@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 
 class _01075 extends FactionAttachment implements IHasActions
 {
@@ -69,5 +70,24 @@ class _01075 extends FactionAttachment implements IHasActions
         }
 
         return ! $character->hasTrait("Diplomat");
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id)
+        {
+            $game = $event->theah->game;
+            $character = $event->theah->getCharacterById($event->characterId);
+            $character->addTrait($game, "Musketeer");
+        }
+
+        if ($event instanceof EventAttachmentUnequipped && $event->attachmentId == $this->Id)
+        {
+            $game = $event->theah->game;
+            $character = $event->theah->getCharacterById($event->characterId);
+            $character->removeTrait($game, "Musketeer");
+        }
     }
 }
