@@ -83,7 +83,7 @@ class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCards,
             $args['performerId'] = $performerId;
 
             $characters = $game->theah->getCharactersAtLocation($performer->Location);
-            $characters = array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($performer->ControllerId)));
+            $characters = array_values(array_filter($characters, fn($character) => $character->Id != $performer->Id));
 
             $args['ids'] = array_map(fn($character) => $character->Id, $characters);
         }
@@ -91,23 +91,22 @@ class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCards,
         return $args;
     }
 
-    public function isValidTargetForAbility(Game $game, Character $character): bool
+    public function isValidTargetForAbility(Game $game, Character $character): array
     {
-        $scheme = $this->getOwningCard($game->theah);
-        if ($character->ControllerId == $scheme->ControllerId)
-        {
-            return false;
-        }
-
         $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
         $performer = $game->theah->getCharacterById($performerId);
 
-        if ($performer->Location != $character->Location)
+        if ($character->ControllerId == $performer->ControllerId)
         {
-            return false;
+            return [false, $game->translate("Target character is the same as the performer")];
         }
 
-        return true;
+        if ($performer->Location != $character->Location)
+        {
+            return [false, $game->translate("Target character is not at the same location as the performer")];
+        }
+
+        return [true, ""];
     }
 
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
@@ -123,9 +122,10 @@ class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCards,
                 throw new UserException($game->translate("Character not found"));
             }
 
-            if (! $this->isValidTargetForAbility($game, $character))
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new UserException($game->translate("Invalid target"));
+                throw new UserException($errorMessage);
             }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);

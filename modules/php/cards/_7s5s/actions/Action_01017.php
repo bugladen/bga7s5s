@@ -72,15 +72,15 @@ class Action_01017 extends CharacterAction implements IAbilityThatTargetsCards, 
 
     }
 
-    public function isValidTargetForAbility(Game $game, Character $character): bool
+    public function isValidTargetForAbility(Game $game, Character $character): array
     {
         $owner = $this->getOwningCharacter($game->theah);
         if ($character->Location != $owner->Location)
         {
-            return false;
+            return [false, $game->translate("Target character is not at the same location as the performer")];
         }
 
-        return true;
+        return [true, ""];
     }
 
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
@@ -96,9 +96,10 @@ class Action_01017 extends CharacterAction implements IAbilityThatTargetsCards, 
                 throw new UserException(sprintf($game->translate("Invalid target character id: %d"), $id));
             }
 
-            if (! $this->isValidTargetForAbility($game, $target))
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $target);
+            if (! $isValid)
             {
-                throw new UserException($game->translate("Invalid target"));
+                throw new UserException($errorMessage);
             }
 
             $this->announceAction($game);
