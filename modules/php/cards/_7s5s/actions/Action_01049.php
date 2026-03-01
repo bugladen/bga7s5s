@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -72,29 +74,47 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCards,
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $owner = $this->getOwningAttachment($game->theah);
+
+        if (! $character->isControlled())
+        {
+            return [false, $game->translate("You cannot manipulate a character that is not controlled.")];
+        }
+
+        if ($character->ControllerId == $owner->ControllerId)
+        {
+            return [false, $game->translate("You cannot manipulate a character that you control.")];
+        }
+
+        if ($character->Location != $owner->Location)
+        {
+            return [false, $game->translate("You cannot manipulate a character that is not at the same location as the attachment.")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01049)
         {
-            $character = $game->theah->getCharacterById($id);            
+            $character = $game->theah->getCharacterById($id);
+            if (! $character)
+            {
+                throw new UserException($game->translate("Invalid character"));
+            }
+
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
+            {
+                throw new UserException($errorMessage);
+            }
+
             $owner = $this->getOwningAttachment($game->theah);
-
-            if (! $character->isControlled())
-            {
-                throw new \BgaUserException($game->translate("You cannot manipulate a character that is not controlled."));
-            }
-
-            if ($character->ControllerId == $owner->ControllerId)
-            {
-                throw new \BgaUserException($game->translate("You cannot manipulate a character that you control."));
-            }
-
-            if ($character->Location != $owner->Location)
-            {
-                throw new \BgaUserException($game->translate("You cannot manipulate a character that is not at the same location as the attachment."));
-            }
 
             if ($character->Engaged)
             {
