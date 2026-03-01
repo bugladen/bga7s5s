@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -73,6 +75,32 @@ class Action_01041 extends CharacterAction implements IAbilityThatTargetsCards, 
 
         return $args;
     }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $owner = $this->getOwningCharacter($game->theah);
+        if ($character->ControllerId == $owner->ControllerId)
+        {
+            return [false, $game->translate("You cannot manipulate your own character")];
+        }
+        
+        if ($character->Location != $owner->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        if ($character->hasTrait("Leader"))
+        {
+            return [false, $game->translate("Character is a leader")];
+        }
+
+        if ($character->ModifiedInfluence > $owner->ModifiedInfluence)
+        {
+            return [false, $game->translate("Character has more influence than the performer")];
+        }
+
+        return [true, ""];
+    }
     
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
@@ -83,30 +111,16 @@ class Action_01041 extends CharacterAction implements IAbilityThatTargetsCards, 
             $character = $game->theah->getCharacterById($id);
             if ($character == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
-            $owner = $this->getOwningCharacter($game->theah);
-            if ($character->ControllerId == $owner->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("You cannot manipulate your own character"));
-            }
-            
-            if ($character->Location != $owner->Location)
-            {
-                throw new \BgaUserException($game->translate("Character is not at the same location as the performer"));
+                throw new UserException($errorMessage);
             }
 
-            if ($character->hasTrait("Leader"))
-            {
-                throw new \BgaUserException($game->translate("Character is a leader"));
-            }
-
-            if ($character->ModifiedInfluence > $owner->ModifiedInfluence)
-            {
-                throw new \BgaUserException($game->translate("Character has more influence than the performer"));
-            }
-
+            $owner = $this->getOwningCard($game->theah);
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
 
