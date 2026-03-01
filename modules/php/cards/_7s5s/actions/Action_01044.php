@@ -2,8 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -114,6 +116,29 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCards,
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->isControlled() && $character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("Character is not opposing the performer")];
+        }
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        if(count($character->Attachments) > count($performer->Attachments))
+        {
+            return [false, $game->translate("Character has more or equal number of attachments than the performer")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -143,25 +168,13 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCards,
             $character = $game->theah->getCharacterById($id);
             if (! $character)
             {
-                throw new \BgaUserException($game->translate("Invalid character"));
+                throw new UserException($game->translate("Invalid character"));
             }
 
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-
-            if ($character->isControlled() && $character->ControllerId == $performer->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("Character is not opposing the performer"));
-            }
-
-            if ($character->Location != $performer->Location)
-            {
-                throw new \BgaUserException($game->translate("Character is not at the same location as the performer"));
-            }
-
-            if(count($character->Attachments) > count($performer->Attachments))
-            {
-                throw new \BgaUserException($game->translate("Character has more or equal number of attachments than the performer"));
+                throw new UserException($errorMessage);
             }
             
             $game->globals->set(Game::CHOSEN_CARD, $character->Id);
