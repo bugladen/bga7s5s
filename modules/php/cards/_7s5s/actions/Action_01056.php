@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -95,6 +97,24 @@ class Action_01056 extends RiskCityAction implements IAbilityThatTargetsCards, I
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("You cannot challenge a character that is controlled by you.")];
+        }
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("You cannot challenge a character that is not at the same location as you.")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -104,19 +124,16 @@ class Action_01056 extends RiskCityAction implements IAbilityThatTargetsCards, I
             $target = $game->theah->getCharacterById($id);
             if ($target == null)
             {
-                throw new \BgaUserException($game->translate("Character not found."));
+                throw new UserException($game->translate("Character not found."));
             }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
-            if ($target->ControllerId == $performer->ControllerId)
-            {
-                throw new \BgaUserException($game->translate("You cannot challenge a character that is controlled by you."));
-            }
 
-            if ($target->Location != $performer->Location)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $target);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("You cannot challenge a character that is not at the same location as you."));
+                throw new UserException($errorMessage);
             }
 
             $game->notify->all("message", clienttranslate('${player_name} chose ${performer_inject_code} to confront ${character_inject_code}.'), [
@@ -150,6 +167,12 @@ class Action_01056 extends RiskCityAction implements IAbilityThatTargetsCards, I
 
                 $moveEvent = EventFactory::createCardMovingEvent($target->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = true, $owner->Id, $this->Id);
                 $game->theah->queueEvent($moveEvent);
+
+                $this->resetPlayerPassCount($game);
+                $this->setUsed($game->theah, true);
+
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $game->theah->queueEvent($actionResolvedEvent);
 
             }
 

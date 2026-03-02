@@ -45,9 +45,15 @@ class Action_01033 extends RiskAction implements IAbilityThatTargetsCards, IAbil
     {
         $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
         $performer = $game->theah->getCharacterById($performerId);
-        if ($performer->Location != $character->Location)
+
+        if ($character->ControllerId == $performer->ControllerId)
         {
-            return [false, $game->translate("Character is not at the same location as the performer")];
+            return [false, $game->translate("You cannot challenge a character that is controlled by you.")];
+        }
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("You cannot challenge a character that is not at the same location as you.")];
         }
 
         return [true, ""];

@@ -63,6 +63,12 @@ class Action_01036 extends CharacterAction implements IAbilityThatTargetsCards, 
     {
         $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
         $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("You cannot challenge a character that is controlled by you.")];
+        }
+
         if ($performer->Location != $character->Location)
         {
             return [false, $game->translate("Character is not at the same location as the performer")];
