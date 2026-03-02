@@ -61,8 +61,9 @@ class Action_01036 extends CharacterAction implements IAbilityThatTargetsCards, 
 
     public function isValidTargetForAbility(Game $game, Character $character): array
     {
-        $owner = $this->getOwningCard($game->theah);
-        if ($owner->Location != $character->Location)
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+        if ($performer->Location != $character->Location)
         {
             return [false, $game->translate("Character is not at the same location as the performer")];
         }
