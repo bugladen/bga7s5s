@@ -61,6 +61,12 @@ class Action_01036 extends CharacterAction implements IAbilityThatTargetsCards, 
 
     public function isValidTargetForAbility(Game $game, Character $character): array
     {
+        $owner = $this->getOwningCard($game->theah);
+        if ($owner->Location != $character->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
         return [true, ""];
     }
 
@@ -80,6 +86,7 @@ class Action_01036 extends CharacterAction implements IAbilityThatTargetsCards, 
 
             //resetPlayerPassCount is called in stSetupChallenge
             // $this->setUsed() is called in stSetupChallenge        
+            //createActionResolvedEvent() is called when the challenge is resolved
         }
     }
 

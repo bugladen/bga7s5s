@@ -43,6 +43,12 @@ class Action_01033 extends RiskAction implements IAbilityThatTargetsCards, IAbil
 
     public function isValidTargetForAbility(Game $game, Character $character): array
     {
+        $owner = $this->getOwningCard($game->theah);
+        if ($owner->Location != $character->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
         return [true, ""];
     }
 
@@ -60,6 +66,10 @@ class Action_01033 extends RiskAction implements IAbilityThatTargetsCards, IAbil
             
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01033", $this->Id);
             $event->theah->queueEvent($transition);
+
+            //resetPlayerPassCount is called in stSetupChallenge
+            // $this->setUsed() is called in stSetupChallenge        
+            //createActionResolvedEvent() is called when the challenge is resolved
         }
     }
 }
