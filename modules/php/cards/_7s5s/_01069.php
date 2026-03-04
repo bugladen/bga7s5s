@@ -81,7 +81,7 @@ class _01069 extends Character implements IHasActions
                     }
                 }
 
-                $ignoreWounds = $sorcererAbility || $source->hasTrait("Sorcerer");
+                $ignoreWounds = $sorcererAbility || $source->hasTrait("Sorcery");
             }
 
             if ($ignoreWounds)
