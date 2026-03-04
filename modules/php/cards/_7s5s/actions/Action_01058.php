@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
@@ -89,6 +91,29 @@ class Action_01058 extends RiskAction implements IAbilityThatTargetsCards, IAbil
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $target): array
+    {
+        if ($target->hasTrait("Leader"))
+        {
+            return [false, $game->translate("Cannot move a Leader HOME")];
+        }
+        
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($target->Location != $performer->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        if ($target->ModifiedCombat >= $performer->ModifiedCombat)
+        {
+            return [false, $game->translate("Character has an equal or higher Combat stat than the performer")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -98,26 +123,17 @@ class Action_01058 extends RiskAction implements IAbilityThatTargetsCards, IAbil
             $target = $game->theah->getCharacterById($id);
             if ($target == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
-            }
-
-            if ($target instanceof Leader)
-            {
-                throw new \BgaUserException($game->translate("Cannot move a Leader HOME"));
+                throw new UserException($game->translate("Character not found"));
             }
             
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $target);
+            if (! $isValid)
+            {
+                throw new UserException($errorMessage);
+            }
+
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
-
-            if ($target->Location != $performer->Location)
-            {
-                throw new \BgaUserException($game->translate("Character is not at the same location as the performer"));
-            }
-
-            if ($target->ModifiedCombat >= $performer->ModifiedCombat)
-            {
-                throw new \BgaUserException($game->translate("Character has an equal or higher Combat stat than the performer"));
-            }
 
             $game->notify->all("message", clienttranslate('${player_name} has chosen to engage ${character_inject_code} and move them HOME.'), [
                 "player_name" => $game->getPlayerNameById($performer->ControllerId),
