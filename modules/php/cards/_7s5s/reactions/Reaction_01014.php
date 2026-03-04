@@ -328,7 +328,7 @@ class Reaction_01014 extends CardReaction
         {
             $owner = $this->getOwningCharacter($event->theah);
             $source = $event->theah->getCardById($event->sourceId);
-            if (($owner->Id == $event->challengerId ||$owner->Id == $event->defenderId) && $owner->ControllerId != $source->ControllerId && 
+            if ($source && ($owner->Id == $event->challengerId || $owner->Id == $event->defenderId) && $owner->ControllerId != $source->ControllerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
                 if ($this->skipNextEvent)
