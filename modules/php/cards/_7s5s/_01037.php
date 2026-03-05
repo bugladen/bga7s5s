@@ -73,14 +73,25 @@ class _01037 extends Character implements IHasReactions
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCardMoved && ($event->cardId == $this->Id || $event instanceof EventCardMoved && $event->toLocation == $this->Location))
+        if ($event instanceof EventCardMoved && $event->cardId == $this->Id)
         {
             $this->updateInfluence($event->theah, $event->toLocation, 1);
         }
-        
+
+        if ($event instanceof EventCardMoved && $event->cardId != $this->Id && $event->toLocation == $this->Location)
+        {
+            if ($event->toLocation != Game::LOCATION_PLAYER_HOME || $event->theah->getCardById($event->cardId)->ControllerId == $this->ControllerId)
+            {
+                $this->updateInfluence($event->theah, $event->toLocation, 1);
+            }
+        }
+
         if ($event instanceof EventCardMoved && $event->cardId != $this->Id && $event->fromLocation == $this->Location)
         {
-            $this->updateInfluence($event->theah, $event->fromLocation, -1);
+            if ($event->fromLocation != Game::LOCATION_PLAYER_HOME || $event->theah->getCardById($event->cardId)->ControllerId == $this->ControllerId)
+            {
+                $this->updateInfluence($event->theah, $event->fromLocation, -1);
+            }
         }
 
         if ($event instanceof EventCharacterMustered && ($event->characterId == $this->Id || $event->location == $this->Location))
