@@ -2,4 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
-interface IAbilityThatTargetsCards {}
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+
+interface IAbilityThatTargetsCards 
+{
+    function isValidTargetForAbility(Game $game, Character $character): array;
+}
