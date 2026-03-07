@@ -49,6 +49,19 @@ class Action_01198 extends AttachmentAction implements IAbilityThatTargetsCards,
         return true;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        return [true, ""];
+    }
+
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);
@@ -86,6 +99,7 @@ class Action_01198 extends AttachmentAction implements IAbilityThatTargetsCards,
 
             //resetPlayerPassCount is called in stSetupChallenge
             // $this->setUsed() is called in stSetupChallenge
+            // createActionResolvedEvent() is called when the challenge is resolved
         }
     }
     

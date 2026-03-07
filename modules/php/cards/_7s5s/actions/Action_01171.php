@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
@@ -89,6 +90,24 @@ class Action_01171 extends RiskAction implements IAbilityThatTargetsCards, IAbil
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($performer->Location != $character->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer.")];
+        }
+
+        if (! $character->hasTrait('Mercenary'))
+        {
+            return [false, $game->translate("Character is not a Mercenary.")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -98,20 +117,13 @@ class Action_01171 extends RiskAction implements IAbilityThatTargetsCards, IAbil
             $character = $game->theah->getCharacterById($id);
             if ($character == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-
-            if ($performer->Location != $character->Location)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("Character is not at the same location as the performer."));
-            }
-
-            if (! $character->hasTrait('Mercenary'))
-            {
-                throw new \BgaUserException($game->translate("Character is not a Mercenary."));
+                throw new UserException($errorMessage);
             }
 
             $owner = $this->getOwningCard($game->theah);

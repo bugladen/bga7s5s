@@ -62,6 +62,16 @@ class Action_01176 extends RiskAction implements IAbilityThatTargetsCards, IAbil
         return $discount;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        if ($character->Wounds == 0)
+        {
+            return [false, $game->translate("Character is not wounded")];
+        }
+
+        return [true, ""];
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);

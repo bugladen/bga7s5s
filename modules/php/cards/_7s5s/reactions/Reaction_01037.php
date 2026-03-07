@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
@@ -24,6 +25,24 @@ class Reaction_01037 extends CardReaction implements IAbilityThatTargetsCards, I
         $this->Name = clienttranslate("Move Engaged Participant to Location After Duel");
         $this->ChallengerId = 0;
         $this->DefenderId = 0;
+    }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $owner = $this->getOwningCharacter($game->theah);
+        $adjacentLocations = $game->theah->getAdjacentCityLocations($owner->Location, false);
+
+        if (!in_array($character->Location, $adjacentLocations))
+        {
+            return [false, $game->translate("Character is not at an adjacent location to Edeline.")];
+        }
+
+        if (!$character->Engaged)
+        {
+            return [false, $game->translate("Character is not engaged.")];
+        }
+
+        return [true, ""];
     }
 
     public function getReactionDescription(Theah $theah): string

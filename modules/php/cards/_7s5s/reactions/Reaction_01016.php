@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 
@@ -21,6 +22,27 @@ class Reaction_01016 extends CardReaction implements IAbilityThatTargetsCards, I
 
         $this->Name = "En Garde your Character after Claiming Location with Opponent";
         $this->claimedLocation = "";
+    }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $owner = $this->getOwningCard($game->theah);
+        if ($character->ControllerId != $owner->ControllerId)
+        {
+            return [false, $game->translate("You cannot target a character that is not controlled by you.")];
+        }
+
+        if (! $character->Engaged)
+        {
+            return [false, $game->translate("Character is not engaged.")];
+        }
+
+        if ($character->Location != $this->claimedLocation)
+        {
+            return [false, $game->translate("Character is not at the claimed location.")];
+        }
+
+        return [true, ""];
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -50,7 +72,7 @@ class Reaction_01016 extends CardReaction implements IAbilityThatTargetsCards, I
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventLocationClaimed && ! $this->Used)
+        if ($event instanceof EventLocationClaimed && $this->isAvailable())
         {
             $scheme = $this->getOwningCard($event->theah);
             if ($event->playerId == $scheme->ControllerId)

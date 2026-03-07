@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -54,6 +55,11 @@ class Action_01162 extends RiskAction implements IAbilityThatTargetsCards, IAbil
         }
 
         return $args;
+    }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        return [true, ""];
     }
 
     public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void

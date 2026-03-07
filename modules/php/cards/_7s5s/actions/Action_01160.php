@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
@@ -84,6 +85,26 @@ class Action_01160 extends RiskAction implements IAbilityThatTargetsCards, IAbil
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        if (! $game->theah->cardInCity($character))
+        {
+            return [false, $game->translate("Character is not in the city")];
+        }
+
+        if ($character->Wounds == 0)
+        {
+            return [false, $game->translate("Character is not wounded")];
+        }
+
+        if ($character->hasTrait('Leader'))
+        {
+            return [false, $game->translate("Character is a leader")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -93,17 +114,13 @@ class Action_01160 extends RiskAction implements IAbilityThatTargetsCards, IAbil
             $character = $game->theah->getCharacterById($id);
             if ($character == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
-            if (! $game->theah->cardInCity($character))
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("Character is not in the city"));
-            }
-
-            if ($character->Wounds == 0)
-            {
-                throw new \BgaUserException($game->translate("Character is not wounded"));
+                throw new UserException($errorMessage);
             }
 
             $owner = $this->getOwningCard($game->theah);
