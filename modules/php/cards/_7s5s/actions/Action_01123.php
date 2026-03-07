@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -86,6 +88,23 @@ class Action_01123 extends CharacterAction implements IAbilityThatTargetsCards, 
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $owner = $this->getOwningCharacter($game->theah);
+        if ($character->ControllerId == $owner->ControllerId)
+        {
+            return [false, $game->translate("You cannot challenge your own character")];
+        }
+
+        $locations = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
+        if (! in_array($character->Location, $locations))
+        {
+            return [false, $game->translate("Target character is not at an adjacent location")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -96,18 +115,13 @@ class Action_01123 extends CharacterAction implements IAbilityThatTargetsCards, 
             $target = $game->theah->getCharacterById($id);
             if ($target == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
-            if ($target->ControllerId == $owner->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $target);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("You cannot challenge your own character"));
-            }
-
-            $locations = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
-            if (! in_array($target->Location, $locations))
-            {
-                throw new \BgaUserException($game->translate("Target character is not at an adjacent location"));
+                throw new UserException($errorMessage);
             }
 
             $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, $target->Location, true, $owner->Id, $this->Id);
