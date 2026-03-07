@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
@@ -96,6 +98,24 @@ class Action_01085 extends RiskAction implements ISorcererAbility, IAbilityThatT
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->Id == $performer->Id)
+        {
+            return [false, $game->translate("Character cannot be the same as the performer")];
+        }
+
+        if ($character->Location == $performer->Location)
+        {
+            return [false, $game->translate("Character is already at the performer's location")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -122,15 +142,19 @@ class Action_01085 extends RiskAction implements ISorcererAbility, IAbilityThatT
 
             $target = $game->theah->getCharacterById($id);
             if ($target == null)
-                throw new \BgaUserException($game->translate("Character not found"));
-
-            if ($target->Location == $performer->Location)
             {
-                throw new \BgaUserException($game->translate("Character is already at the performer's location"));
+                throw new UserException($game->translate("Character not found"));
             }
 
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $target);
+            if (! $isValid)
+            {
+                throw new UserException($errorMessage);
+            }
+
+
             $game->notify->all("message", $game->translate('Porté Travel: ${player_name} has chosen to move ${character_inject_code} to ${performer_inject_code}\'s location.'), [
-                "player_name" => $game->getActivePlayerName(),
+                "player_name" => $game->getPlayerNameById($performer->ControllerId),
                 "character_inject_code" => $target->getInjectCode(),
                 "performer_inject_code" => $performer->getInjectCode(),
             ]);
@@ -140,14 +164,19 @@ class Action_01085 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $game->updateCardObjectInDb($porteTravel);
             $game->theah->addCardToWorld($porteTravel);
 
+            $batchId = $game->getNextEventBatchId();
+
             $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $porteTravel->Id, 1, $porteTravel->getInjectCode(), $this->Id);
+            $event->batchId = $batchId;
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createSorcererAbilityStartEvent($porteTravel->ControllerId, $porteTravel->Id, $this->Id, $performer->Id, $this->LastTargetId, $this->LastTargetLocation);
+            $event->batchId = $batchId;
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, $engage = false, $porteTravel->Id, $this->Id);
+            $event->batchId = $batchId;
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
             
