@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -67,6 +69,27 @@ class Action_01092 extends CharacterAction implements IAbilityThatTargetsCards, 
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $makepeace = $this->getOwningCharacter($game->theah);
+        if ($character->Location != $makepeace->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as Makepeace Botwighte")];
+        }
+        
+        if ($character->ControllerId == $makepeace->ControllerId)
+        {
+            return [false, $game->translate("You cannot manipulate your own character")];
+        }
+
+        if (! $character->Engaged)
+        {
+            return [false, $game->translate("Character is not engaged")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -77,24 +100,15 @@ class Action_01092 extends CharacterAction implements IAbilityThatTargetsCards, 
 
             if ($character == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
             $makepeace = $this->getOwningCharacter($game->theah);
 
-            if ($character->Location != $makepeace->Location)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("Character is not at the same location as Makepeace Botwighte"));
-            }
-
-            if ($character->ControllerId == $makepeace->ControllerId)
-            {
-                throw new \BgaUserException($game->translate("You cannot manipulate your own character"));
-            }
-
-            if (! $character->Engaged)
-            {
-                throw new \BgaUserException($game->translate("Character is not engaged"));
+                throw new UserException($errorMessage);
             }
 
             $this->announceAction($game);
