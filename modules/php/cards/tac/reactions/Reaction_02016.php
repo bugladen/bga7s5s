@@ -24,6 +24,8 @@ class Reaction_02016 extends CardReaction
     private ?EventCharacterBeingHealed $characterHealedEvent = null;
     private ?EventChallengeIssued $challengeIssuedEvent = null;
     private bool $isChallenger = false;
+    private ?string $savedAbilityId = null;
+    private ?int $savedSourceId = null;
     private ?int $targetCharacterId = null;
 
     private bool $skipNextEvent = false;
@@ -93,6 +95,8 @@ class Reaction_02016 extends CardReaction
             return false;
         }
 
+        $this->savedAbilityId = $abilityId;
+        $this->savedSourceId = $sourceId;
         return true;
     }
 
@@ -313,6 +317,41 @@ class Reaction_02016 extends CardReaction
         }
     }
 
+    private function loadAbility(Theah $theah): ?IAbilityThatTargetsCharacters
+    {
+        if ($this->savedSourceId !== null && $this->savedAbilityId !== null)
+        {
+            $source = $theah->getCardById($this->savedSourceId);
+            if ($source)
+            {
+                $ability = $source->getAbilityById($this->savedAbilityId);
+                if ($ability instanceof IAbilityThatTargetsCharacters)
+                {
+                    return $ability;
+                }
+            }
+
+            $action = $theah->getInPlayActionById($this->savedAbilityId);
+            if ($action instanceof IAbilityThatTargetsCharacters)
+            {
+                return $action;
+            }
+        }
+        return null;
+    }
+
+    private function cancelEvents(Game $game): void
+    {
+        $this->engagedEvent = null;
+        $this->engardedEvent = null;
+        $this->cardMovingEvent = null;
+        $this->characterWoundedEvent = null;
+        $this->characterHealedEvent = null;
+        $this->isChallenger = false;
+        $this->challengeIssuedEvent = null;
+        $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+    }
+
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
     {
         parent::performReaction($game, $state, $internalId, $reactionId);
@@ -322,13 +361,29 @@ class Reaction_02016 extends CardReaction
             $owner = $this->getOwningCard($game->theah);
             $characterId = str_replace("redirect-", "", $reactionId);
             $character = $game->theah->getCharacterById($characterId);
-            $this->releaseEvent($game, $characterId);
 
             $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to set ${character_inject_code} as the new target.'), [
                 "reaction_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "character_inject_code" => $character->getInjectCode(),
             ]);
+
+            $ability = $this->loadAbility($game->theah);
+            if ($ability)
+            {
+                [$isValid, ] = $ability->isValidTargetForAbility($game, $character);
+                if ($isValid)
+                {
+                    $this->releaseEvent($game, $characterId);
+                }
+                else
+                {
+                    $game->notify->all("message", clienttranslate('${character_inject_code} is not a valid target for the ability. The ability has been canceled.'), [
+                        "character_inject_code" => $character->getInjectCode(),
+                    ]);
+                    $this->cancelEvents($game);
+                }
+            }
 
             $this->setUsed($game->theah, true);
         }
