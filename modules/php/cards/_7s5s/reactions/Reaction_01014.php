@@ -99,6 +99,13 @@ class Reaction_01014 extends CardReaction
                 return true;
             }
         }
+
+        $action = $theah->getInPlayActionById($abilityId);
+        if ($action instanceof IAbilityThatTargetsCharacters)
+        {
+            return true;
+        }
+
         return false;
     }
 
@@ -328,7 +335,8 @@ class Reaction_01014 extends CardReaction
         {
             $owner = $this->getOwningCharacter($event->theah);
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source && ($owner->Id == $event->challengerId || $owner->Id == $event->defenderId) && $owner->ControllerId != $source->ControllerId && 
+            $initiatingControllerId = $source ? $source->ControllerId : $event->playerId;
+            if (($owner->Id == $event->challengerId || $owner->Id == $event->defenderId) && $owner->ControllerId != $initiatingControllerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
                 if ($this->skipNextEvent)

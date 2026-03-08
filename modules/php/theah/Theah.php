@@ -24,6 +24,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions\Reaction_CrewCapLimit;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\BasicChallengeAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\GovernorsGardenAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\OlesInnAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
@@ -92,6 +93,8 @@ class Theah
             $playersThatUsedGovernorsGarden = $this->game->globals->get(Game::PLAYERS_THAT_USED_GOVERNORS_GARDEN, []);
             $this->Actions[] = new GovernorsGardenAction($playersThatUsedGovernorsGarden, $this->game);
         }
+
+        $this->Actions[] = new BasicChallengeAction();
 
         $this->Reactions = [
             new Reaction_CrewCapLimit(),
