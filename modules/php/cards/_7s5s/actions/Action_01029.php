@@ -2,9 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -12,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01029 extends RiskAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01029 extends RiskAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -97,23 +98,51 @@ class Action_01029 extends RiskAction implements IAbilityThatTargetsCards, IAbil
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCardById($performerId);
+
+        if ($character->Id == $performer->Id)
+        {
+            return [false, $game->translate("Target character cannot be the same as the performer")];
+        }
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("Target character is not at the same location as the performer")];
+        }
+
+        if ($character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("Target character cannot be controlled by the same player as the performer")];
+        }
+
+        $location = $game->theah->getCityLocation($character->Location);
+        if ($location->Controller != $performer->ControllerId)
+        {
+            return [false, $game->translate("Player does not control the location of the target character")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void  
     { 
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01029)
         {
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCardById($performerId);
-    
-            $characters = $game->theah->getCharactersAtLocation($performer->Location);
-            $characters = array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($performer->ControllerId)));
-    
-            $character_ids = array_map(fn($character) => $character->Id, $characters);
-    
-            if ( ! in_array($id, $character_ids))
+            $character = $game->theah->getCharacterById($id);
+            if ($character == null)
             {
-                throw new \BgaUserException($game->translate("Invalid character selected"));
+                throw new UserException($game->translate("Character not found"));
+            }
+    
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
+            {
+                throw new UserException($errorMessage);
             }
     
             $owner = $this->getOwningCard($game->theah);

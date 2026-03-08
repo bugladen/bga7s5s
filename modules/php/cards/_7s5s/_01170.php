@@ -6,6 +6,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01170;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 
 class _01170 extends Risk implements IHasActions
 {
@@ -35,5 +38,16 @@ class _01170 extends Risk implements IHasActions
         $this->Actions = [
             new Action_01170(),
         ];
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventCardDiscardedFromHand && $event->cardId == $this->Id && $event->AsPayment)
+        {
+            $lockerEvent = EventFactory::createCardSentToLockerEvent($event->ownerId, $this->Id);
+            $event->theah->queueEvent($lockerEvent);
+        }
     }
 }

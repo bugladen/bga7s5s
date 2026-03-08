@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -12,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01175 extends CardAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01175 extends CardAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -58,6 +58,21 @@ class Action_01175 extends CardAction implements IAbilityThatTargetsCards, IAbil
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01175", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
+    }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        if ($character->hasTrait('Leader'))
+        {
+            return [false, $game->translate("Character is a leader")];
+        }
+
+        if ($character->Wounds == 0)
+        {
+            return [false, $game->translate("Character is not wounded")];
+        }
+
+        return [true, ""];
     }
 
     public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void

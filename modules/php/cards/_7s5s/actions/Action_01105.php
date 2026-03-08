@@ -2,8 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -13,7 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01105 extends RiskCityAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01105 extends RiskCityAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -126,6 +127,24 @@ class Action_01105 extends RiskCityAction implements IAbilityThatTargetsCards, I
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        if ($character->Engaged)
+        {
+            return [false, $game->translate("Character is already engaged.")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -135,25 +154,16 @@ class Action_01105 extends RiskCityAction implements IAbilityThatTargetsCards, I
             $character = $game->theah->getCharacterById($id);
             if ($character == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
-            if ($character->ControllerId == $performer->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("You cannot engage your own character."));
-            }
-
-            if ($character->Engaged)
-            {
-                throw new \BgaUserException($game->translate("Character is already engaged."));
-            }
-
-            if ($character->Location != $performer->Location)
-            {
-                throw new \BgaUserException($game->translate("Character is not at the same location as the performer."));
+                throw new UserException($errorMessage);
             }
 
             $owner = $this->getOwningCard($game->theah);

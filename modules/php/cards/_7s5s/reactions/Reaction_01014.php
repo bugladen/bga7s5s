@@ -24,6 +24,8 @@ class Reaction_01014 extends CardReaction
     private ?EventCharacterBeingHealed $characterHealedEvent = null;
     private ?EventChallengeIssued $challengeIssuedEvent = null;
     private bool $isChallenger = false;
+    private ?string $savedAbilityId = null;
+    private ?int $savedSourceId = null;
 
     private bool $inHandThug = false;
     private bool $inPlayThug = false;
@@ -46,7 +48,7 @@ class Reaction_01014 extends CardReaction
         }
         if ($this->inPlayThug)
         {
-            $message = $theah->game->translate('${you} may choose an In-Play Thug at Vittoria\'s Location to play as the new target: ');
+            $message = $theah->game->translate('${you} may choose a Thug at Vittoria\'s Location as the new target: ');
         }
 
         if ($this->moveHome)
@@ -96,10 +98,44 @@ class Reaction_01014 extends CardReaction
             $ability = $source->getAbilityById($abilityId);
             if ($ability instanceof IAbilityThatTargetsCharacters)
             {
+                $this->savedAbilityId = $abilityId;
+                $this->savedSourceId = $sourceId;
                 return true;
             }
         }
+
+        $action = $theah->getInPlayActionById($abilityId);
+        if ($action instanceof IAbilityThatTargetsCharacters)
+        {
+            $this->savedAbilityId = $abilityId;
+            $this->savedSourceId = $sourceId;
+            return true;
+        }
+
         return false;
+    }
+
+    private function loadAbility(Theah $theah): ?IAbilityThatTargetsCharacters
+    {
+        if ($this->savedSourceId !== null && $this->savedAbilityId !== null)
+        {
+            $source = $theah->getCardById($this->savedSourceId);
+            if ($source)
+            {
+                $ability = $source->getAbilityById($this->savedAbilityId);
+                if ($ability instanceof IAbilityThatTargetsCharacters)
+                {
+                    return $ability;
+                }
+            }
+
+            $action = $theah->getInPlayActionById($this->savedAbilityId);
+            if ($action instanceof IAbilityThatTargetsCharacters)
+            {
+                return $action;
+            }
+        }
+        return null;
     }
 
     private function thugsInHand(Theah $theah): bool
@@ -328,7 +364,8 @@ class Reaction_01014 extends CardReaction
         {
             $owner = $this->getOwningCharacter($event->theah);
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source && ($owner->Id == $event->challengerId || $owner->Id == $event->defenderId) && $owner->ControllerId != $source->ControllerId && 
+            $initiatingControllerId = $source ? $source->ControllerId : $event->playerId;
+            if (($owner->Id == $event->challengerId || $owner->Id == $event->defenderId) && $owner->ControllerId != $initiatingControllerId && 
                 $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
             {
                 if ($this->skipNextEvent)
@@ -429,7 +466,17 @@ class Reaction_01014 extends CardReaction
         }
     }
 
-
+    private function cancelEvents(Game $game): void
+    {
+        $this->engagedEvent = null;
+        $this->engardedEvent = null;
+        $this->cardMovingEvent = null;
+        $this->characterWoundedEvent = null;
+        $this->characterHealedEvent = null;
+        $this->isChallenger = false;
+        $this->challengeIssuedEvent = null;
+        $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+    }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
     {
@@ -457,14 +504,29 @@ class Reaction_01014 extends CardReaction
                 $owner = $this->getOwningCharacter($game->theah);
                 $characterId = str_replace("putIntoPlay-", "", $reactionId);
                 $character = $game->theah->getCharacterById($characterId);
-                
-                $this->releaseEvent($game, $characterId);
 
                 $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to use ${character_inject_code} (same location) as the new target.'), [
                     "reaction_inject_code" => $owner->getInjectCode(),
                     "player_name" => $game->getPlayerNameById($owner->ControllerId),
                     "character_inject_code" => $character->getInjectCode(),
                 ]);
+
+                $ability = $this->loadAbility($game->theah);
+                if ($ability)
+                {
+                    [$isValid, ] = $ability->isValidTargetForAbility($game, $character);
+                    if ($isValid)
+                    {
+                        $this->releaseEvent($game, $characterId);
+                    }
+                    else
+                    {
+                        $game->notify->all("message", clienttranslate('${character_inject_code} is not a valid target for the ability. The ability has been canceled.'), [
+                            "character_inject_code" => $character->getInjectCode(),
+                        ]);
+                        $this->cancelEvents($game);
+                    }
+                }
 
                 $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $game->theah->queueEvent($transitionEvent);

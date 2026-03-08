@@ -3,8 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -13,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Maneuver_01079 extends Maneuver implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Maneuver_01079 extends Maneuver implements IAbilityThatTargetsCards
 {
     public function __construct()
     {
@@ -50,6 +50,11 @@ class Maneuver_01079 extends Maneuver implements IAbilityThatTargetsCards, IAbil
         }
 
         return false;
+    }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        return [true, ""];
     }
 
     public function getManeuverFromCombatCardDiscount(Theah $theah, Card $combatCard, Array &$explanations): int

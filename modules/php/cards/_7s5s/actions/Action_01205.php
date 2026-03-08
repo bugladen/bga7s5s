@@ -2,8 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -12,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01205 extends CharacterAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01205 extends CharacterAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -92,28 +93,39 @@ class Action_01205 extends CharacterAction implements IAbilityThatTargetsCards, 
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $giacinto = $this->getOwningCharacter($game->theah);
+
+        if ($character->ControllerId == $giacinto->ControllerId)
+        {
+            return [false, $game->translate("You cannot target your own character.")];
+        }
+
+        if ($character->Location != $giacinto->Location)
+        {
+            return [false, $game->translate("Target character is not at Giacinto's location.")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void  
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01205)
         {
-            $giacinto = $this->getOwningCharacter($game->theah);
-
             $targetCharacter = $game->theah->getCharacterById($id);
             if ($targetCharacter == null)
             {
-                throw new \BgaUserException(sprintf($game->translate("Invalid target character id: %d"), $id));
+                throw new UserException(sprintf($game->translate("Invalid target character id: %d"), $id));
             }
 
-            if ($targetCharacter->ControllerId == $giacinto->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $targetCharacter);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("Target character cannot be the same as Giacinto."));
-            }
-
-            if ($targetCharacter->Location != $giacinto->Location)
-            {
-                throw new \BgaUserException($game->translate("Target character is not at Giacinto's location."));
+                throw new UserException($errorMessage);
             }
 
             $game->globals->set(Game::CHOSEN_CARD, $targetCharacter->Id);
