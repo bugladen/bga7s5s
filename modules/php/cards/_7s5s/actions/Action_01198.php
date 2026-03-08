@@ -4,7 +4,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -14,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01198 extends AttachmentAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01198 extends AttachmentAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {

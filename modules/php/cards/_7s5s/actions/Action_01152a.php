@@ -5,7 +5,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -14,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01152a extends SchemeCityAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01152a extends SchemeCityAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {

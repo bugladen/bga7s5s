@@ -3,7 +3,6 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -13,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_01037 extends CardReaction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Reaction_01037 extends CardReaction implements IAbilityThatTargetsCharacters
 {
     private int $ChallengerId;
     private int $DefenderId;

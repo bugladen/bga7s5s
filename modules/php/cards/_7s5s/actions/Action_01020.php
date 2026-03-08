@@ -5,7 +5,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -14,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01020 extends CharacterAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01020 extends CharacterAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -106,7 +105,7 @@ class Action_01020 extends CharacterAction implements IAbilityThatTargetsCards, 
 
             $this->announceAction($game);
             $this->resetPlayerPassCount($game);
-            // $this->setUsed not called because card is destroyed
+            $this->setUsed($game->theah, true);
 
             $owner->unEquipAllAttachments($game->theah);
             $event = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());

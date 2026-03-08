@@ -6,7 +6,6 @@ use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -15,7 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -213,7 +212,11 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCards,
                 $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $character->Id, $aam->Id, $this->Id);
                 $game->theah->queueEvent($event);
 
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $game->theah->queueEvent($actionResolvedEvent);
+
                 $this->setUsed($game->theah, true);
+                $this->resetPlayerPassCount($game);
             }
 
             //Chooses to send the character home

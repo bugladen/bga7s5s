@@ -9,10 +9,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 
-class Reaction_01016 extends CardReaction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Reaction_01016 extends CardReaction implements IAbilityThatTargetsCharacters
 {
     private string $claimedLocation;
     
