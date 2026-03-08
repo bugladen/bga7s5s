@@ -515,7 +515,7 @@ class Reaction_01014 extends CardReaction
                 if ($ability)
                 {
                     [$isValid, ] = $ability->isValidTargetForAbility($game, $character);
-                    if (!$isValid)
+                    if ($isValid)
                     {
                         $this->releaseEvent($game, $characterId);
                     }
