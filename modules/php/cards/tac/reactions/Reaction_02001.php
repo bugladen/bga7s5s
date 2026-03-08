@@ -3,9 +3,9 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -13,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_02001 extends CardReaction implements ISorcererAbility, IAbilityThatTargetsCharacters, IAbilityThatTargetsCards
+class Reaction_02001 extends CardReaction implements ISorcererAbility, IAbilityThatTargetsCharacters
 {
     public int $CharacterId = 0;
 
@@ -74,6 +74,28 @@ class Reaction_02001 extends CardReaction implements ISorcererAbility, IAbilityT
         }
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $andriana = $this->getOwningCharacter($game->theah);
+        
+        if ($character->ControllerId == $andriana->ControllerId)
+        {
+            return [false, $game->translate("You cannot wound a character that is controlled by you.")];
+        }
+
+        if ($character->hasTrait("Sorcerer"))
+        {
+            return [false, $game->translate("You cannot wound a sorcerer.")];
+        }
+
+        if ($character->Location != $andriana->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as Andriana.")];
+        }
+
+        return [true, ""];
+    }
+
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
     {
         parent::performReaction($game, $state, $internalId, $reactionId);
@@ -94,7 +116,7 @@ class Reaction_02001 extends CardReaction implements ISorcererAbility, IAbilityT
 
             $game->notify->all("message", clienttranslate('${andriana_inject_code}: ${player_name} used Reaction to wound ${character_inject_code}'), [
                 "andriana_inject_code" => $andriana->getInjectCode(),
-                "player_name" => $game->getActivePlayerName(),
+                "player_name" => $game->getPlayerNameById($andriana->ControllerId),
                 "character_inject_code" => $character->getInjectCode(),
             ]);
 

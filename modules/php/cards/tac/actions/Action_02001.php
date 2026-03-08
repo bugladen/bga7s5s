@@ -2,10 +2,11 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -13,7 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_02001 extends CharacterAction implements ISorcererAbility, IAbilityThatTargetsCharacters, IAbilityThatTargetsCards
+class Action_02001 extends CharacterAction implements ISorcererAbility, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -85,6 +86,28 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $andriana = $this->getOwningCharacter($game->theah);
+
+        if ($character->ControllerId == $andriana->ControllerId)
+        {
+            return [false, $game->translate("You cannot move yourself to your own location")];
+        }
+
+        if ($character->Location == $andriana->Location)
+        {
+            return [false, $game->translate("Character is already at Andriana's location")];
+        }
+
+        if (! $game->theah->cardInCity($character))
+        {
+            return [false, $game->translate("Character is not in the City")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -96,14 +119,14 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
             $card = $game->theah->getCardById($id);
             if ($card == null)
             {
-                throw new \BgaUserException($game->translate("Card not found"));
+                throw new UserException($game->translate("Card not found"));
             }
 
             $hand = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $andriana->ControllerId);
             $hand = array_filter($hand, fn($card) => $card->Id == $card->Id);
             if (count($hand) == 0)
             {
-                throw new \BgaUserException($game->translate("Card not found in hand"));
+                throw new UserException($game->translate("Card not found in hand"));
             }
 
             $game->globals->set(Game::CHOSEN_CARD, $card->Id);
@@ -118,22 +141,13 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
             $character = $game->theah->getCharacterById($id);
             if ($character == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
-            if ($character->ControllerId == $andriana->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("You cannot move yourself to your own location"));
-            }
-
-            if ($character->Location == $andriana->Location)
-            {
-                throw new \BgaUserException($game->translate("Character is already at Andriana's location"));
-            }
-
-            if (! $game->theah->cardInCity($character))
-            {
-                throw new \BgaUserException($game->translate("Character is not in the City"));
+                throw new UserException($errorMessage);
             }
 
             $game->globals->set(Game::CHOSEN_TARGET, $character->Id);

@@ -2,8 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
@@ -15,7 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters, IAbilityThatTargetsCards
+class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -95,6 +96,18 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $owner = $this->getOwningCard($game->theah);
+
+        if ($character->ControllerId == $owner->ControllerId)
+        {
+            return [false, $game->translate("You cannot place a Risk under your own character")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -104,14 +117,14 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $risk = $game->theah->getCardById($id);
             if ( ! $risk instanceof Risk)
             {
-                throw new \BgaUserException($game->translate("Risk not found"));
+                throw new UserException($game->translate("Risk not found"));
             }
 
             $owner = $this->getOwningCard($game->theah);
             $discardName = $game->getPlayerDiscardDeckName($owner->ControllerId);
             if ($risk->Location != $discardName)
             {
-                throw new \BgaUserException($game->translate("Risk is not in your Discard Pile"));
+                throw new UserException($game->translate("Risk is not in your Discard Pile"));
             }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
@@ -127,13 +140,13 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $character = $game->theah->getCharacterById($id);
             if ( ! $character)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
-            $owner = $this->getOwningCard($game->theah);
-            if ($character->ControllerId == $owner->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("You cannot place a Risk under your own character"));
+                throw new UserException($errorMessage);
             }
 
             $riskCardId = $game->globals->get(Game::CHOSEN_CARD);

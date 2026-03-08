@@ -2,8 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -13,7 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_02010 extends RiskCityAction implements ISorcererAbility, IAbilityThatTargetsCharacters, IAbilityThatTargetsCards
+class Action_02010 extends RiskCityAction implements ISorcererAbility, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -127,34 +128,45 @@ class Action_02010 extends RiskCityAction implements ISorcererAbility, IAbilityT
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->ControllerId != $performer->ControllerId)
+        {
+            return [false, $game->translate("You cannot move wounds from a character that is not yours")];
+        }
+
+        if ($character->Wounds == 0)
+        {
+            return [false, $game->translate("Character has no wounds to move")];
+        }
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_02010)
         {
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-
             $character = $game->theah->getCharacterById($id);
             if ($character == null)
             {
-                throw new \BgaUserException(sprintf($game->translate("Invalid character id: %d"), $id));
+                throw new UserException(sprintf($game->translate("Invalid character id: %d"), $id));
             }
 
-            if ($character->ControllerId != $performer->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("You cannot move wounds from a character that is not yours"));
-            }
-
-            if ($character->Wounds == 0)
-            {
-                throw new \BgaUserException($game->translate("Character has no wounds to move"));
-            }
-
-            if ($character->Location != $performer->Location)
-            {
-                throw new \BgaUserException($game->translate("Character is not at the same location as the performer"));
+                throw new UserException($errorMessage);
             }
 
             $game->globals->set(Game::CHOSEN_CARD, $character->Id);
@@ -172,22 +184,22 @@ class Action_02010 extends RiskCityAction implements ISorcererAbility, IAbilityT
             $character = $game->theah->getCharacterById($id);
             if ($character == null)
             {
-                throw new \BgaUserException(sprintf($game->translate("Invalid character id: %d"), $id));
+                throw new UserException(sprintf($game->translate("Invalid character id: %d"), $id));
             }
 
             if ($character->ControllerId != $performer->ControllerId)
             {
-                throw new \BgaUserException($game->translate("You cannot move wounds to a character that is not yours"));
+                throw new UserException($game->translate("You cannot move wounds to a character that is not yours"));
             }
 
             if ($character->Location != $performer->Location)
             {
-                throw new \BgaUserException($game->translate("Character is not at the same location as the performer"));
+                throw new UserException($game->translate("Character is not at the same location as the performer"));
             }
 
             if ($character->Id == $fromId)
             {
-                throw new \BgaUserException($game->translate("You cannot move wounds to the same character"));
+                throw new UserException($game->translate("You cannot move wounds to the same character"));
             }
 
             $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
@@ -198,7 +210,7 @@ class Action_02010 extends RiskCityAction implements ISorcererAbility, IAbilityT
         {
             if ($id != 1 && $id != 2)
             {
-                throw new \BgaUserException(sprintf($game->translate("Invalid wounds count: %d"), $id));
+                throw new UserException(sprintf($game->translate("Invalid wounds count: %d"), $id));
             }
 
             $fromId = $game->globals->get(Game::CHOSEN_CARD);
@@ -206,7 +218,7 @@ class Action_02010 extends RiskCityAction implements ISorcererAbility, IAbilityT
 
             if ($from->Wounds < $id)
             {
-                throw new \BgaUserException(sprintf($game->translate("Character has not enough wounds to move: %d"), $id));
+                throw new UserException(sprintf($game->translate("Character has not enough wounds to move: %d"), $id));
             }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
