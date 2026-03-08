@@ -2,8 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -12,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01091 extends CharacterAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01091 extends CharacterAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -77,6 +78,22 @@ class Action_01091 extends CharacterAction implements IAbilityThatTargetsCards, 
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $owner = $this->getOwningCharacter($game->theah);
+        if ($character->Location != $owner->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as \"Madre\" Dolores.")];
+        }
+        
+        if ($character->Wounds == 0)
+        {
+            return [false, $game->translate("Character is not wounded.")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void
     {
         parent::actFromActionWithIds($game, $state, $stateName, $ids);
@@ -88,23 +105,19 @@ class Action_01091 extends CharacterAction implements IAbilityThatTargetsCards, 
                 $character = $game->theah->getCharacterById($id);
                 if ($character == null)
                 {
-                    throw new \BgaUserException($game->translate("Invalid character id: %d"), $id);
+                    throw new UserException($game->translate("Invalid character id: %d"), $id);
                 }
 
-                $owner = $this->getOwningCharacter($game->theah);
-                if ($character->Location != $owner->Location)
+                [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+                if (! $isValid)
                 {
-                    throw new \BgaUserException($game->translate("Character is not at the same location as \"Madre\" Dolores."));
-                }
-
-                if ($character->Wounds == 0)
-                {
-                    throw new \BgaUserException($game->translate("Character is not wounded."));
+                    throw new UserException($errorMessage);
                 }
             }
 
             if (count($ids) == 1)
             {
+                $owner = $this->getOwningCharacter($game->theah);
                 $healEvent = EventFactory::createCharacterBeingHealedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($healEvent);
 
@@ -136,7 +149,7 @@ class Action_01091 extends CharacterAction implements IAbilityThatTargetsCards, 
             $hand = array_filter($hand, fn($card) => $card->Id == $id);
             if (count($hand) == 0)
             {
-                throw new \BgaUserException($game->translate("Card is not in your hand."));
+                throw new UserException($game->translate("Card is not in your hand."));
             }
 
             $card = $game->getCardObjectFromDb($id);

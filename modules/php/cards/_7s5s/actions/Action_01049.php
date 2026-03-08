@@ -2,8 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRangedAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -13,7 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters, IRangedAbility
+class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharacters, IRangedAbility
 {
     // Used when creating copies.  Ensures the correct card is engaged when the copy is used.
     public ?int $originalAttachmentId = null;
@@ -69,6 +70,28 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCards,
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $owner = $this->getOwningAttachment($game->theah);
+
+        if (! $character->isControlled())
+        {
+            return [false, $game->translate("You cannot manipulate a character that is not controlled.")];
+        }
+
+        if ($character->ControllerId == $owner->ControllerId)
+        {
+            return [false, $game->translate("You cannot manipulate a character that you control.")];
+        }
+
+        if ($character->Location != $owner->Location)
+        {
+            return [false, $game->translate("You cannot manipulate a character that is not at the same location as the attachment.")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -76,22 +99,18 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCards,
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01049)
         {
             $character = $game->theah->getCharacterById($id);
-            $owner = $this->getOwningCard($game->theah);
-
-            if (! $character->isControlled())
+            if (! $character)
             {
-                throw new \BgaUserException($game->translate("You cannot manipulate a character that is not controlled."));
+                throw new UserException($game->translate("Invalid character"));
             }
 
-            if ($character->ControllerId == $owner->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("You cannot manipulate a character that you control."));
+                throw new UserException($errorMessage);
             }
 
-            if ($character->Location != $owner->Location)
-            {
-                throw new \BgaUserException($game->translate("You cannot manipulate a character that is not at the same location as the attachment."));
-            }
+            $owner = $this->getOwningAttachment($game->theah);
 
             if ($character->Engaged)
             {

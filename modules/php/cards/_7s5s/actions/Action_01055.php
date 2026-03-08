@@ -2,8 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRangedAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -13,7 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01055 extends RiskCityAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters, IRangedAbility
+class Action_01055 extends RiskCityAction implements IAbilityThatTargetsCharacters, IRangedAbility
 {
     public function __construct()
     {
@@ -115,6 +116,24 @@ class Action_01055 extends RiskCityAction implements IAbilityThatTargetsCards, I
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("You cannot move one of your own characters.")];
+        }
+
+        if ($performer->Location != $character->Location)
+        {
+            return [false, $game->translate("You cannot move a character that is at a different location.")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -124,20 +143,13 @@ class Action_01055 extends RiskCityAction implements IAbilityThatTargetsCards, I
             $target = $game->theah->getCharacterById($id);
             if ($target == null)
             {
-                throw new \BgaUserException($game->translate("Character not found."));
+                throw new UserException($game->translate("Character not found."));
             }
 
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-
-            if ($target->ControllerId == $performer->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $target);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("You cannot move one of your own characters."));
-            }
-
-            if ($performer->Location != $target->Location)
-            {
-                throw new \BgaUserException($game->translate("You cannot move a character that is at a different location."));
+                throw new UserException($errorMessage);
             }
 
             $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
@@ -162,7 +174,7 @@ class Action_01055 extends RiskCityAction implements IAbilityThatTargetsCards, I
             $locations = $game->theah->getAdjacentCityLocations($target->Location, $includeHome = false);
             if (!in_array($location, $locations))
             {
-                throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to %s."), $location, $target->Location));
+                throw new UserException(sprintf($game->translate("Location %s is not adjacent to %s."), $location, $target->Location));
             }
 
             $owner = $this->getOwningCard($game->theah);

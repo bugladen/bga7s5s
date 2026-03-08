@@ -10,6 +10,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
@@ -1063,6 +1064,10 @@ trait FrameworkActionsTrait
         $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
 
+        $action = $this->theah->getInPlayActionById('BasicChallenge');
+        $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
+        $this->globals->set(GAME::TRANSITION_INTERNAL_ID, $action->Id);
+
         $this->gamestate->nextState("challengeActionStart");
     }
 
@@ -1112,14 +1117,24 @@ trait FrameworkActionsTrait
 
     public function actHighDramaChallengeActionTargetChosen(int $id)
     {
-        $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
-        $target = $this->getCardObjectFromDb($id);
+        $this->theah->buildCity();
 
-        if ($target->Location != $performer->Location) {
-            throw new \BgaUserException(clienttranslate("Target is not in the same location as your Peformer."));
+        $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+        $action = $this->theah->getInPlayActionById($actionId);
+
+        $character = $this->theah->getCharacterById($id);
+        if ($character == null)
+        {
+            throw new UserException(clienttranslate("Character not found."));
         }
 
-        $this->globals->set(GAME::CHOSEN_TARGET, $target->Id);
+        [$isValid, $errorMessage] = $action->isValidTargetForAbility($this, $character);
+        if (!$isValid)
+        {
+            throw new UserException($errorMessage);
+        }
+
+        $this->globals->set(GAME::CHOSEN_TARGET, $character->Id);
 
         $this->gamestate->nextState("targetChosen");
     }

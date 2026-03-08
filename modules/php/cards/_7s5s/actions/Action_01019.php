@@ -2,9 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -12,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01019 extends CharacterAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01019 extends CharacterAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -72,6 +73,21 @@ class Action_01019 extends CharacterAction implements IAbilityThatTargetsCards, 
 
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $owner = $this->getOwningCharacter($game->theah);
+        if ($character->Location != $owner->Location)
+        {
+            return [false, $game->translate("Target character is not at the same location as the performer")];
+        }
+        if ($character->Id == $owner->Id)
+        {
+            return [false, $game->translate("Target character is the same as the performer")];
+        }
+        
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -82,17 +98,18 @@ class Action_01019 extends CharacterAction implements IAbilityThatTargetsCards, 
             $target = $game->theah->getCharacterById($id);
             if ($target == null)
             {
-                throw new \BgaUserException(sprintf($game->translate("Invalid target character id: %d"), $id));
+                throw new UserException(sprintf($game->translate("Invalid target character id: %d"), $id));
             }
 
-            if ($target->Location != $owner->Location)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $target);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("Target character is not at the same location as Buratino."));
+                throw new UserException($errorMessage);
             }
 
             $this->announceAction($game);
             $this->resetPlayerPassCount($game);
-            // $this->setUsed not called because card is destroyed
+            $this->setUsed($game->theah, true);
 
             $owner->unEquipAllAttachments($game->theah);
             $event = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());

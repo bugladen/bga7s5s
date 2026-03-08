@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -11,7 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01078 extends RiskAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01078 extends RiskAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -61,6 +61,24 @@ class Action_01078 extends RiskAction implements IAbilityThatTargetsCards, IAbil
         return $qualifiedCharacters;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("You cannot challenge a character that is controlled by you.")];
+        }
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        return [true, ""];
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -76,6 +94,10 @@ class Action_01078 extends RiskAction implements IAbilityThatTargetsCards, IAbil
 
             $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $owner->Id, "01078", $this->Id);
             $event->theah->queueEvent($transitionEvent);
+
+            //resetPlayerPassCount is called in stSetupChallenge
+            // $this->setUsed() is called in stSetupChallenge
+            // createActionResolvedEvent() is called when the challenge is resolved
         }
     }
 }

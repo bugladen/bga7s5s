@@ -2,10 +2,11 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -13,7 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters, IAbilityThatTargetsCards
+class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -80,6 +81,24 @@ class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatT
         return $args;
     }
     
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->Id == $performer->Id)
+        {
+            return [false, $game->translate("Target character is the same as the performer.")];
+        }
+
+        if ($character->Location == $performer->Location)
+        {
+            return [false, $game->translate("Target character is at the same location as the performer.")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -93,17 +112,13 @@ class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatT
 
             if ($target == null)
             {
-                throw new \BgaUserException(sprintf($game->translate("Invalid target character id: %d"), $id));
+                throw new UserException(sprintf($game->translate("Invalid target character id: %d"), $id));
             }
 
-            if ($target->Id == $performer->Id)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $target);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("Target character is the same as the performer."));
-            }
-
-            if ($target->Location == $performer->Location)
-            {
-                throw new \BgaUserException($game->translate("Target character is at the same location as the performer."));
+                throw new UserException($errorMessage);
             }
             
             $owner = $this->getOwningCard($game->theah);

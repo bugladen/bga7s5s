@@ -2,7 +2,8 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\GameFramework\UserException;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -15,7 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Maneuver_01051 extends Maneuver implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Maneuver_01051 extends Maneuver implements IAbilityThatTargetsCharacters
 {
     public int $characterToPreventWoundsFrom;
     public int $CharacterCurrentlyTakingWounds;
@@ -100,6 +101,24 @@ class Maneuver_01051 extends Maneuver implements IAbilityThatTargetsCards, IAbil
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $actor = $game->theah->getDuelRoundActor();
+        $owner = $this->getOwningCard($game->theah);
+
+        if ($character->ControllerId != $actor->ControllerId)
+        {
+            return [false, $game->translate("You cannot choose a character that is not yours")];
+        }
+
+        if (! $character->hasTrait('Mercenary', $owner))
+        {
+            return [false, $game->translate("Character is not a Mercenary")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromManeuverWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromManeuverWithId($game, $state, $stateName, $id);
@@ -111,20 +130,16 @@ class Maneuver_01051 extends Maneuver implements IAbilityThatTargetsCards, IAbil
             $owner = $this->getOwningCard($game->theah);
             if (! $character)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
-            if ($character->ControllerId != $actor->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("You cannot choose a character that is not yours"));
+                throw new UserException($errorMessage);
             }
 
-            if (! $character->hasTrait('Mercenary', $owner))
-            {
-                throw new \BgaUserException($game->translate("Character is not a Mercenary"));
-            }
-
-            $game->notifyAllPlayers("message", clienttranslate('${player_name} has chosen ${character_inject_code} to take all wounds this round.'), [
+            $game->notify->all("message", clienttranslate('${player_name} has chosen ${character_inject_code} to take all wounds this round.'), [
                 'player_name' => $game->getPlayerNameById($actor->ControllerId),
                 'character_inject_code' => $character->getInjectCode(),
             ]);

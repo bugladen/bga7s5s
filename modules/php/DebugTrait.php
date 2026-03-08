@@ -82,7 +82,6 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
-    #[Debug(reload: true)] 
     public function debug_EngageCard(int $cardId, int $playerId)
     {
         $this->theah->buildCity();
@@ -95,7 +94,6 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
-    #[Debug(reload: true)] 
     public function debug_EngardeCard(int $cardId, int $playerId)
     {
         $this->theah->buildCity();
@@ -166,7 +164,6 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
-    #[Debug(reload: true)] 
     public function debug_WoundCharacter(int $characterId, int $wounds, int $sourceId = 0)
     {
         $event = $this->theah->createEvent(Events::CharacterWounded);
@@ -181,7 +178,6 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
-    #[Debug(reload: true)] 
     public function debug_HealCharacter(int $characterId, int $wounds, int $sourceId = 0)
     {
         $event = $this->theah->createEvent(Events::CharacterHealed);
@@ -196,7 +192,6 @@ trait DebugTrait
         $this->theah->runEvents($debug = true);
     }
 
-    #[Debug(reload: true)] 
     public function debug_UnequipAttachment(int $playerId, int $characterId, int $attachmentId)
     {
         $event = $this->theah->createEvent(Events::AttachmentUnequipped);

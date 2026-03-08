@@ -2,10 +2,11 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -13,7 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01068 extends CharacterAction implements ISorcererAbility, IAbilityThatTargetsCharacters, IAbilityThatTargetsCards
+class Action_01068 extends CharacterAction implements ISorcererAbility, IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -105,6 +106,22 @@ class Action_01068 extends CharacterAction implements ISorcererAbility, IAbility
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $leontine = $this->getOwningCharacter($game->theah);
+        if ($character->ControllerId != $leontine->ControllerId)
+        {
+            return [false, $game->translate("You do not control that character.")];
+        }
+
+        if ($character->Location != $leontine->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as Léontine.")];
+        }
+        
+        return [true, ""];
+}
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -114,13 +131,13 @@ class Action_01068 extends CharacterAction implements ISorcererAbility, IAbility
             $character = $game->theah->getCharacterById($id);
             if ( ! $character)
             {
-                throw new \BgaUserException($game->translate("Character not found."));
+                throw new UserException($game->translate("Character not found."));
             }
 
-            $leontine = $this->getOwningCharacter($game->theah);
-            if ($character->ControllerId != $leontine->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("You do not control that character."));
+                throw new UserException($errorMessage);
             }
 
             $game->globals->set(Game::CHOSEN_CARD, $character->Id);
@@ -141,14 +158,14 @@ class Action_01068 extends CharacterAction implements ISorcererAbility, IAbility
             $locations = array_filter($locations, fn($validLocation) => $validLocation->Name == $location->Name);
             if (count($locations) == 0)
             {
-                throw new \BgaUserException(sprintf($game->translate("Location %s is not a valid location."), $location->Name));
+                throw new UserException(sprintf($game->translate("Location %s is not a valid location."), $location->Name));
             }
 
             $leontine = $this->getOwningCharacter($game->theah);
 
             if ($location->Name == $leontine->Location)
             {
-                throw new \BgaUserException($game->translate("Léontine cannot move character to the same location as herself."));
+                throw new UserException($game->translate("Léontine cannot move character to the same location as herself."));
             }
 
             $characterId = $game->globals->get(Game::CHOSEN_CARD);

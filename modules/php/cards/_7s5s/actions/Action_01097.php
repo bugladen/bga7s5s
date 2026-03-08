@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -93,6 +95,34 @@ class Action_01097 extends CharacterAction implements IAbilityThatTargetsCharact
         return $args;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $owner = $this->getOwningCharacter($game->theah);
+        
+        if ($character->Location != $owner->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the Performer")];
+        }
+        
+        if ($character->ControllerId == $owner->ControllerId)
+        {
+            return [false, $game->translate("You cannot manipulate your own character")];
+        }
+
+        $ownerHand = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
+        $ownerHandCount = count($ownerHand);
+
+        $targetHand = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $character->ControllerId);
+        $targetHandCount = count($targetHand);
+
+        if ($targetHandCount >= $ownerHandCount)
+        {
+            return [false, $game->translate("Target character's owner has more or equal number of cards in their hand than yours")];
+        }
+
+        return [true, ""];
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
@@ -104,28 +134,13 @@ class Action_01097 extends CharacterAction implements IAbilityThatTargetsCharact
             $target = $game->theah->getCharacterById($id);
             if ($target == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
-            if ($target->ControllerId == $owner->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $target);
+            if (! $isValid)
             {
-                throw new \BgaUserException($game->translate("You cannot manipulate your own character"));
-            }
-
-            if ($target->Location != $owner->Location)
-            {
-                throw new \BgaUserException($game->translate("Character is not at the same location as the Performer"));
-            }
-
-            $ownerHand = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
-            $ownerHandCount = count($ownerHand);
-
-            $targetHand = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $target->ControllerId);
-            $targetHandCount = count($targetHand);
-
-            if ($targetHandCount >= $ownerHandCount)
-            {
-                throw new \BgaUserException($game->translate("Target character's owner has more or equal number of cards in their hand than yours"));
+                throw new UserException($errorMessage);
             }
 
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);

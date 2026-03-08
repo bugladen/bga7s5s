@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -13,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01071 extends SchemeCityAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01071 extends SchemeCityAction implements IAbilityThatTargetsCharacters
 {
     public bool $firstWoundOccured = false;
     
@@ -47,6 +47,24 @@ class Action_01071 extends SchemeCityAction implements IAbilityThatTargetsCards,
         return $performers;
     }
 
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("You cannot challenge a character that is controlled by you.")];
+        }
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        return [true, ""];
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -58,8 +76,10 @@ class Action_01071 extends SchemeCityAction implements IAbilityThatTargetsCards,
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01071", $this->Id);
             $event->theah->queueEvent($transition);
 
-            //resetPlayerPassCount is called in stSetupChallenge
+            // $this->resetPlayerPassCount() is called in stSetupChallenge
             // $this->setUsed() is called in stSetupChallenge        
+            // createActionResolvedEvent() is called when the challenge is resolved
+            // $this->announceAction() is called in stSetupChallenge
         }
 
         if ($event instanceof EventCharacterWounded)

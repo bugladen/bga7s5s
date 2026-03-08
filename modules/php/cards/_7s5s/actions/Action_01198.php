@@ -4,7 +4,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -14,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\Theah\Events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01198 extends AttachmentAction implements IAbilityThatTargetsCards, IAbilityThatTargetsCharacters
+class Action_01198 extends AttachmentAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -47,6 +46,19 @@ class Action_01198 extends AttachmentAction implements IAbilityThatTargetsCards,
         }
 
         return true;
+    }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        return [true, ""];
     }
 
     public function eventCheck(Event $event)
@@ -84,8 +96,10 @@ class Action_01198 extends AttachmentAction implements IAbilityThatTargetsCards,
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01198", $this->Id);
             $event->theah->queueEvent($transition);
 
-            //resetPlayerPassCount is called in stSetupChallenge
+            // $this->resetPlayerPassCount() is called in stSetupChallenge
             // $this->setUsed() is called in stSetupChallenge
+            // createActionResolvedEvent() is called when the challenge is resolved
+            // $this->announceAction() is called in stSetupChallenge
         }
     }
     

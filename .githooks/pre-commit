@@ -9,6 +9,7 @@
 # 4. Classes extending CardReaction or AttachmentReaction must call $this->setUsed()
 # 5. Classes calling createAttachmentEquippedEvent must call getRequiredAttachTargetId
 # 6. Classes implementing IRangedAbility must call createRangedAbilityPlayedEvent
+# 6. Classes must not implement both IAbilityThatTargetsCharacters and IAbilityThatTargetsCards
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -48,6 +49,15 @@ for file in $staged_files; do
             echo -e "  Class implements ISorcererAbility but does not call ${YELLOW}createSorcererAbilityPlayedEvent()${NC}"
             errors_found=1
         fi
+    fi
+
+    # Check if the class implements both IAbilityThatTargetsCharacters and IAbilityThatTargetsCards
+    if echo "$content" | grep -qE 'class\s+\w+.*implements.*IAbilityThatTargetsCharacters' && \
+       echo "$content" | grep -qE 'class\s+\w+.*implements.*IAbilityThatTargetsCards'; then
+        echo -e "${RED}ERROR:${NC} $file"
+        echo -e "  Class implements both ${YELLOW}IAbilityThatTargetsCharacters${NC} and ${YELLOW}IAbilityThatTargetsCards${NC}"
+        echo -e "  A class should only implement one of these interfaces."
+        errors_found=1
     fi
 
     # Check if the class implements IRangedAbility
