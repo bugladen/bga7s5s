@@ -30,7 +30,7 @@ class Technique_01128 extends Technique
         }        
 
         $actor = $theah->getDuelRoundActor();
-        if ($actor->ModifiedFinesse < 2 || $actor->ModifiedCombat < 3)
+        if ($actor->ModifiedFinesse < 2 && $actor->ModifiedCombat < 3)
         {
             return false;
         }
@@ -45,12 +45,17 @@ class Technique_01128 extends Technique
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
             $actor = $event->theah->getDuelRoundActor();
-            if ($actor->ModifiedFinesse >= 2 && $actor->ModifiedCombat >= 3)
+            $owner = $this->getOwningCard($event->theah);
+            if ($actor->ModifiedFinesse >= 2)
             {
                 $event->parry += 1;
+                $event->explanations[] = sprintf($event->theah->game->translate("%s: Technique [%s] adds +1 Parry."), $owner->getInjectCode(), $this->Name);
+            }
+
+            if ($actor->ModifiedCombat >= 3)
+            {
                 $event->thrust += 1;
-                $owner = $this->getOwningCard($event->theah);
-                $event->explanations[] = sprintf($event->theah->game->translate("%s: Technique [%s] adds +1 Parry and +1 Thrust."), $owner->getInjectCode(), $this->Name);
+                $event->explanations[] = sprintf($event->theah->game->translate("%s: Technique [%s] adds +1 Thrust."), $owner->getInjectCode(), $this->Name);
             }
         }
     }
