@@ -424,10 +424,7 @@ trait StatesTrait
         {
             //Get the player's leader
             $leader = $this->theah->getLeaderByPlayerId($playerId);
-            //Get the modified panache value for the leader
-            if ($leader instanceof Leader) {
-                $panache = $leader->ModifiedPanache;
-            }
+            $panache = $leader->ModifiedPanache;
 
             $cards = [];
             for ($i = 0; $i < $panache; $i++) {

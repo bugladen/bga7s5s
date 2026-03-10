@@ -839,13 +839,19 @@ class Theah
     }
 
 
-    function getLeaderByPlayerId($playerId)
+    function getLeaderByPlayerId($playerId) : ?Leader
     {
-        foreach ($this->cards as $card) {
-            if ($card->ControllerId == $playerId && $card instanceof Leader) {
-                return $card;
+        $sql = "SELECT leader_card_id as leaderId FROM player WHERE player_id = $playerId";
+        $leaderId = $this->db->getUniqueValue($sql);
+        if ($leaderId) 
+        {
+            $leader = $this->getCardById($leaderId);
+            if ($leader instanceof Leader) 
+            {
+                return $leader;
             }
         }
+
         return null;
     }
 
