@@ -1111,11 +1111,11 @@ trait StatesTrait
             $event->actorId = $actorId;
             $event->adversaryId = $adversaryId;
             $event->combatCardId = $cardId;
-            $event->riposte = $card->Riposte;
+            $event->addRiposte($card->Riposte);
             $event->dashedRiposte = $card->DashedRiposte;
-            $event->parry = $card->Parry;
+            $event->addParry($card->Parry);
             $event->dashedParry = $card->DashedParry;
-            $event->thrust = $card->Thrust;
+            $event->addThrust($card->Thrust);
             $event->dashedThrust = $card->DashedThrust;
             $event->gambled = $gambled == 1;
         }

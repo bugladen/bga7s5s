@@ -7,11 +7,11 @@ class EventDuelCalculateCombatCardStats extends Event
     public int $actorId;
     public int $adversaryId;
     public int $combatCardId;
-    public int $riposte;
+    private(set) int $riposte;
     public bool $dashedRiposte;
-    public int $parry;
+    private(set) int $parry;
     public bool $dashedParry;
-    public int $thrust;
+    private(set) int $thrust;
     public bool $dashedThrust;
     public bool $gambled;
     public Array $explanations;
