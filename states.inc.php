@@ -348,56 +348,8 @@ $machinestates = [
         "possibleactions" => [
             "actDayPlanned", 
         ],
-        "transitions" => ["dayPlanned" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED]
+        "transitions" => ["dayPlanned" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER]
     ],
-
-    States::PLANNING_PHASE_APPROACH_CARDS_PLAYED => [
-        "name" => "planningPhaseApproachCardsPlayed",
-        "description" => clienttranslate("Approach Cards Played..."),
-        "type" => "game",
-        "action" => "stPlanningPhaseApproachCardsPlayed",
-        "transitions" => ["" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS]
-    ],
-        States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS => [
-            "name" => "planningPhaseApproachCardsPlayedEvents",
-            "description" => clienttranslate("Resolving Events for Approach Cards Played..."),
-            "type" => "game",
-            "action" => "stRunEvents",
-            "transitions" => [
-                "reaction" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_REACTIONS,
-                "pay" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_PAY_FOR_REACTION,
-                "endOfEvents" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER,
-                "endOfGame" => States::END_GAME
-            ]
-        ],
-        States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_REACTIONS => [
-            "name" => "playerReaction",
-            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
-            "descriptionmyturn" => "",
-            "type" => "activeplayer",
-            "args" => "argsForStatePrivate",
-            "possibleactions" => [
-                "actReactionForState", 
-            ],
-            "transitions" => [
-                "done" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS, 
-            ]
-        ],
-        States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_PAY_FOR_REACTION => [
-            "name" => "playerPayForReaction",
-            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
-            "descriptionmyturn" => "",
-            "type" => "activeplayer",
-            "args" => "argsForStatePrivate",
-            "possibleactions" => [
-                "actBack",
-                "actPayForReaction", 
-            ],
-            "transitions" => [
-                "back" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_REACTIONS, 
-                "paid" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS, 
-            ]
-        ],
 
     States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER => [
         "name" => "planningPhaseDetermineFirstPlayer",
@@ -414,7 +366,7 @@ $machinestates = [
             "transitions" => [
                 "reaction" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_REACTIONS,
                 "pay" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_PAY_FOR_REACTION,
-                "endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS,
+                "endOfEvents" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED,
                 "endOfGame" => States::END_GAME
             ]
         ],
@@ -444,6 +396,54 @@ $machinestates = [
             "transitions" => [
                 "back" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_REACTIONS, 
                 "paid" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_EVENTS, 
+            ]
+        ],
+
+    States::PLANNING_PHASE_APPROACH_CARDS_PLAYED => [
+        "name" => "planningPhaseApproachCardsPlayed",
+        "description" => clienttranslate("Approach Cards Played..."),
+        "type" => "game",
+        "action" => "stPlanningPhaseApproachCardsPlayed",
+        "transitions" => ["" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS]
+    ],
+        States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS => [
+            "name" => "planningPhaseApproachCardsPlayedEvents",
+            "description" => clienttranslate("Resolving Events for Approach Cards Played..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "reaction" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_REACTIONS,
+                "pay" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_PAY_FOR_REACTION,
+                "endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS,
+                "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actReactionForState", 
+            ],
+            "transitions" => [
+                "done" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS, 
+            ]
+        ],
+        States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction", 
+            ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_REACTIONS, 
+                "paid" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS, 
             ]
         ],
 

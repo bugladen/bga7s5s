@@ -17,7 +17,5 @@ class EventSchemeCardRevealed extends Event
         $this->playerId = 0;
         $this->location = "";
         $this->playerName = "";
-
-        $this->priority = Event::LOW_PRIORITY;
     }
 }
