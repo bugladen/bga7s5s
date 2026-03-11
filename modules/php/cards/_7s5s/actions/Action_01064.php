@@ -73,8 +73,17 @@ class Action_01064 extends CharacterAction
             $owner = $this->getOwningCard($game->theah);
             $args["performerId"] = $owner->Id;
 
+            $availableLocations = [];
             $adjacentLocations = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
-            $args["locationIds"] = $adjacentLocations;
+            foreach ($adjacentLocations as $locationName)
+            {
+                $location = $game->theah->getCityLocation($locationName);
+                if ($location->Reknown > 0)
+                {
+                    $availableLocations[] = $locationName;
+                }
+            }
+            $args["locationIds"] = $availableLocations;
         }
 
         return $args;
