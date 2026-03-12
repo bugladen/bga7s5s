@@ -159,7 +159,7 @@ class Maneuver_01165 extends Maneuver
             $game->theah->eventCheck($threatEvent);
             $game->theah->queueEvent($threatEvent);
 
-            $game->gamestate->nextState();
+            $game->gamestate->nextState("cardChosen");
         }
     }
 

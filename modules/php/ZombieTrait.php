@@ -245,8 +245,11 @@ trait ZombieTrait
                 case "duelResolveManeuver_01059": // Regroup
                 case "duelResolveManeuver_01079": // Disarm
                 case "duelResolveManeuver_01079_2": // Disarm choice
-                case "duelResolveManeuver_01165": // Copy Technique
                     $this->gamestate->nextState("");
+                    break;
+
+                case "duelResolveManeuver_01165": // Copy Technique
+                    $this->gamestate->nextState("pass");
                     break;
 
                 // Duel Apply Combat Card Stats States

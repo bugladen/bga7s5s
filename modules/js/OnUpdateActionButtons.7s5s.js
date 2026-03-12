@@ -1053,6 +1053,7 @@
             'duelResolveManeuver_01165': () => {
                 args._private.args.techniques.forEach((technique) => {
                     this.addActionButton(`actChooseTechnique-${technique.Id}`, technique.Name, () => this.bgaPerformAction('actFromCardWithIds', {ids: JSON.stringify([technique.Id])}));
+                    this.addActionButton(`btnPass`, _('Pass'), () => this.bgaPerformAction('actPassWithPass', {}));
                 });
             },
     
