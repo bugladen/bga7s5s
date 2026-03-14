@@ -594,6 +594,7 @@ trait EventHub
                                 continue;
                             }
 
+                            $deck->moveCard($attachmentId, $event->toLocation, $attachment->ControllerId);
                             $attachment->Location = $event->toLocation;
                             $attachment->IsUpdated = true;
                         }
