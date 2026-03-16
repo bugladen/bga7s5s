@@ -44,6 +44,8 @@
                     dojo.addClass('chooseList', 'hidden');
                     this.chooseList.removeAll();
                     this.chooseList.setSelectionMode(0);
+
+                    delete this.addSortTagToCard.order;
                 }
             },
 

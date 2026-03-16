@@ -37,7 +37,7 @@
             },
 
             'planningPhaseResolveSchemes_02005_5': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onMultipleChooseListCardsConfirmed());
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onCardsSorted());
                 dojo.addClass('actChooseCardSelected', 'disabled');            
             },
 

@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -89,7 +90,7 @@ class _02005 extends Scheme
             $locations = array_filter($locations, fn($location) => $location->Reknown == 0);
             if (count($locations) > 0)
             {
-                throw new \BgaUserException($game->translate("There are locations with no Renown."));
+                throw new UserException($game->translate("There are locations with no Renown."));
             }
 
             $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "02005_3");
@@ -109,7 +110,7 @@ class _02005 extends Scheme
             $players = $game->loadPlayersBasicInfos();
             if (! isset($players[$id]) && $id != 0)
             {
-                throw new \BgaUserException($game->translate("Invalid opponent"));
+                throw new UserException($game->translate("Invalid opponent"));
             }
 
             $game->globals->set(Game::CHOSEN_OPPONENT, $id);
@@ -177,7 +178,7 @@ class _02005 extends Scheme
             $loc = $game->theah->getCityLocation($location);
             if ($loc->Reknown > 0)
             {
-                throw new \BgaUserException(sprintf($game->translate("%s already has Renown."), $location));
+                throw new UserException(sprintf($game->translate("%s already has Renown."), $location));
             }
 
             $reknownEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
@@ -193,6 +194,11 @@ class _02005 extends Scheme
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_02005_4)
         {
+            if (count($ids) < 1)
+            {
+                throw new UserException($game->translate("You must sink at least one card."));
+            }
+
             $deck = $game->getGameDeckObject();
 
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
@@ -203,17 +209,17 @@ class _02005 extends Scheme
                 $card = $game->getCardObjectFromDb($id);
                 if ($card == null)
                 {
-                    throw new \BgaUserException($game->translate("Invalid card id"));
+                    throw new UserException($game->translate("Invalid card id"));
                 }
 
                 if ($card->ControllerId != $playerId)
                 {
-                    throw new \BgaUserException(sprintf($game->translate("Card %s is not owned by the player"), $card->Name));
+                    throw new UserException(sprintf($game->translate("Card %s is not owned by the player"), $card->Name));
                 }
 
                 if ($card->Location != $deckName)
                 {
-                    throw new \BgaUserException(sprintf($game->translate("Card %s is not in the deck of the player"), $card->Name));
+                    throw new UserException(sprintf($game->translate("Card %s is not in the deck of the player"), $card->Name));
                 }
             }
 
@@ -234,6 +240,9 @@ class _02005 extends Scheme
 
             if (count($originalCards) == 0)
             {
+                $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($this->ControllerId, $this->Id, $this->Id, $this->Id);
+                $game->theah->queueEvent($sorceryPlayedEvent);
+
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($this->ControllerId);
                 $game->theah->queueEvent($actionResolvedEvent);
 
@@ -262,7 +271,7 @@ class _02005 extends Scheme
             {
                 if (!in_array($id, $remainingIds))
                 {
-                    throw new \BgaUserException(sprintf($game->translate("Card %s is not in the remaining cards."), $id));
+                    throw new UserException(sprintf($game->translate("Card %s is not in the remaining cards."), $id));
                 }
 
                 //Move card to top of deck
