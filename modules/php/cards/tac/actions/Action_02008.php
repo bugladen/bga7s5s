@@ -166,6 +166,7 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             if ($card instanceof _02008_RiskClone)
             {
                 $card->ClonedCardId = $riskCard->Id;
+                $card->TargetCharacterId = $character->Id;
             }
 
             $game->updateCardObjectInDb($card);
