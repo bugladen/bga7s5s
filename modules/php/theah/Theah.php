@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02003;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -1636,8 +1637,8 @@ class Theah
             throw new \BgaUserException($this->game->translate("Character is not at the same location"));
         }    
 
-        //Special case for Carmella Vanessa Slavaggi
-        if ($character instanceof _01178)
+        //Special case for Carmella Vanessa Slavaggi and Mourad
+        if ($character instanceof _01178 || $character instanceof _02003)
         {
             if (! $character->canIntervene())
             {
