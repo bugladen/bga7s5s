@@ -60,6 +60,10 @@ class Reaction_02004 extends CardReaction
         {
             $theah = $event->theah;
             $owner = $this->getOwningCard($theah);
+
+            if ($event->playerId == $owner->ControllerId)
+                return;
+
             $adjacentLocations = $theah->getAdjacentCityLocations($event->location, $includeHome = false);
             $adjacentCharacters = [];
             foreach ($adjacentLocations as $locationName)
@@ -118,6 +122,12 @@ class Reaction_02004 extends CardReaction
             ]);
 
             $this->setUsed($game->theah, true);
+        }
+        else
+        {
+            $owner = $this->getOwningCard($game->theah);
+            $this->location = '';
+            $owner->IsUpdated = true;
         }
 
         $game->gamestate->nextState("done");
