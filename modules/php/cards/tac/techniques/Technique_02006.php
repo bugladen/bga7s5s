@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\techniques;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -28,6 +29,12 @@ class Technique_02006 extends Technique
 
         $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
         if (! $inDuel)
+        {
+            return false;
+        }
+
+        $owner = $this->getOwningCard($theah);
+        if ($owner->Engaged)
         {
             return false;
         }
@@ -84,17 +91,22 @@ class Technique_02006 extends Technique
             $character = $game->theah->getCharacterById($id);
             if ($character == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
-            }
-            
-            if ($character->ControllerId != $actor->ControllerId)
-            {
-                throw new \BgaUserException($game->translate("Character is not controlled by you."));
+                throw new UserException($game->translate("Character not found"));
             }
 
+            if ($character->ControllerId != $actor->ControllerId)
+            {
+                throw new UserException($game->translate("Character is not controlled by you."));
+            }
+
+            if ($character->Id == $actor->Id)
+            {
+                throw new UserException($game->translate("You must choose a different character."));
+            }
+            
             if ($character->Location != $actor->Location)
             {
-                throw new \BgaUserException(sprintf($game->translate("Character is not at the same location as %s."), $actor->Name));
+                throw new UserException(sprintf($game->translate("Character is not at the same location as %s."), $actor->Name));
             }
 
             $owner = $this->getOwningCard($game->theah);
