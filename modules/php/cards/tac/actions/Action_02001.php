@@ -105,6 +105,11 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
             return [false, $game->translate("Character is not in the City")];
         }
 
+        if ($character->hasTrait("Leader"))
+        {
+            return [false, $game->translate("Character is a Leader")];
+        }
+
         return [true, ""];
     }
 
@@ -123,10 +128,15 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
             }
 
             $hand = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $andriana->ControllerId);
-            $hand = array_filter($hand, fn($card) => $card->Id == $card->Id);
+            $hand = array_filter($hand, fn($handCard) => $handCard->Id == $id);
             if (count($hand) == 0)
             {
                 throw new UserException($game->translate("Card not found in hand"));
+            }
+
+            if (! $card->hasTrait("Sorcery"))
+            {
+                throw new UserException($game->translate("Card must have the Sorcery trait"));
             }
 
             $game->globals->set(Game::CHOSEN_CARD, $card->Id);
