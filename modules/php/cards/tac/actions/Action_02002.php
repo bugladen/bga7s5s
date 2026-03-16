@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsPlayers;
@@ -130,26 +131,32 @@ class Action_02002 extends CharacterAction implements ISorcererAbility, IAbility
             $deckName = $game->getPlayerFactionDeckName($playerId);
             $discardName = $game->getPlayerDiscardDeckName($playerId);
 
+            $originalCards = json_decode($game->globals->get(Game::CHOSEN_CARD));
+            $originalIds = array_map(fn($originalCard) => $originalCard->id, $originalCards);
+
             foreach ($ids as $id)
             {
+                if (!in_array($id, $originalIds))
+                {
+                    throw new UserException($game->translate("Invalid card id"));
+                }
+
                 $card = $game->getCardObjectFromDb($id);
                 if ($card == null)
                 {
-                    throw new \BgaUserException($game->translate("Invalid card id"));
+                    throw new UserException($game->translate("Invalid card id"));
                 }
 
                 if ($card->ControllerId != $playerId)
                 {
-                    throw new \BgaUserException(sprintf($game->translate("Card %s is not owned by the player"), $card->Name));
+                    throw new UserException(sprintf($game->translate("Card %s is not owned by the player"), $card->Name));
                 }
 
                 if ($card->Location != $deckName)
                 {
-                    throw new \BgaUserException(sprintf($game->translate("Card %s is not in the deck of the player"), $card->Name));
+                    throw new UserException(sprintf($game->translate("Card %s is not in the deck of the player"), $card->Name));
                 }
             }
-
-            $originalCards = json_decode($game->globals->get(Game::CHOSEN_CARD));
 
             foreach ($ids as $id)
             {
@@ -197,7 +204,7 @@ class Action_02002 extends CharacterAction implements ISorcererAbility, IAbility
             {
                 if (!in_array($id, $remainingIds))
                 {
-                    throw new \BgaUserException(sprintf($game->translate("Card %s is not in the remaining cards."), $id));
+                    throw new UserException(sprintf($game->translate("Card %s is not in the remaining cards."), $id));
                 }
 
                 //Move card to top of deck

@@ -21,7 +21,7 @@ class State_highDramaPhase02002_3 extends GameState
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Elissabetta Bonora') . clienttranslate(': ${you} must choose the order to replace the remaining cards: '),
+            descriptionMyTurn: clienttranslate('Elisabetta Bonora') . clienttranslate(': ${you} must choose the order to replace the remaining cards: '),
             transitions: [
                 "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
