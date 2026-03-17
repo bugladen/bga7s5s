@@ -73,7 +73,7 @@ class Technique_01096 extends Technique
                 {
                     $owner = $this->getOwningCard($event->theah);
                     $adversary = $event->theah->getDuelRoundActor();
-                    if ($adversary->Attachments > 0)
+                    if (count($adversary->Attachments) > 0)
                     {
                         $game = $event->theah->game;
                         $game->notify->all("message", clienttranslate('${owner_inject_code}: Technique has activated. ${player_name} will steal an attachment from ${opponent_name}.'), [
@@ -89,6 +89,14 @@ class Technique_01096 extends Technique
                 $this->IsActive = false;
                 $this->AdversaryWoundedThisRound = false;
                 $this->AdversaryId = 0;
+                $owner->IsUpdated = true;
+            }
+            else
+            {
+                // WHY: Reset wound tracking at the end of non-adversary rounds so that
+                // wounds dealt during Ratón's round don't carry over. The card only cares
+                // about wounds "during" the adversary's round, not earlier rounds.
+                $this->AdversaryWoundedThisRound = false;
                 $owner->IsUpdated = true;
             }
         }
