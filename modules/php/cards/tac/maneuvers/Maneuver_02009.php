@@ -10,11 +10,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Maneuver_02009 extends Maneuver
 {
-    public function __construct()
+    private string $RequiredTrait;
+
+    public function __construct(string $requiredTrait, string $name)
     {
         parent::__construct();
-        
-        $this->Name = clienttranslate("Wound Adversary");
+
+        $this->RequiredTrait = $requiredTrait;
+        $this->Name = $name;
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
@@ -25,7 +28,7 @@ class Maneuver_02009 extends Maneuver
         }
 
         $actor = $theah->getDuelRoundActor();
-        return ($actor->hasTrait("Thug") || $actor->hasTrait("Duelist") || $actor->hasTrait("Spy"));
+        return $actor->hasTrait($this->RequiredTrait);
     }
 
     public function handleEvent(Event $event)

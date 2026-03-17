@@ -38,8 +38,19 @@ class _02009 extends Risk implements IHasManeuvers
 
         $this->resetCard();
 
+        $thugManeuver = new Maneuver_02009("Thug", clienttranslate("Wound Adversary (Thug)"));
+        $thugManeuver->setId("Maneuver_02009_Thug");
+
+        $duelistManeuver = new Maneuver_02009("Duelist", clienttranslate("Wound Adversary (Duelist)"));
+        $duelistManeuver->setId("Maneuver_02009_Duelist");
+
+        $spyManeuver = new Maneuver_02009("Spy", clienttranslate("Wound Adversary (Spy)"));
+        $spyManeuver->setId("Maneuver_02009_Spy");
+
         $this->Maneuvers = [
-            new Maneuver_02009(),
+            $thugManeuver,
+            $duelistManeuver,
+            $spyManeuver,
         ];
     }
 }
