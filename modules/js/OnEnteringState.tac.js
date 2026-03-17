@@ -265,10 +265,8 @@
             'highDramaPhase02013': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
-                    // Filter cards to only those with the Sorcery trait
-                    const availableCards = this.factionHand.getCards().filter((card) => card.traits.includes('Sorcery') || card.traits.includes('Relic') || card.traits.includes('Faith'));
+                    const availableCards = this.factionHand.getCards().filter((card) => card.traits.includes('Relic') || card.traits.includes('Faith'));
                     
-                    // Set selection mode and restrict selectable cards to Sorcery cards only
                     this.factionHand.setSelectionMode('single');
                     this.factionHand.setSelectableCards(availableCards);
                 }

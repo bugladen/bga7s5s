@@ -6,6 +6,7 @@ use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02013;
@@ -51,6 +52,12 @@ class _02013 extends Character implements IHasActions
 
         if ($event instanceof EventChallengeIssued && $event->challengerId == $this->Id)
         {
+            $challengeStat = $event->theah->game->globals->get(Game::CHALLENGE_STAT);
+            if ($challengeStat != Game::STAT_COMBAT)
+            {
+                throw new UserException($event->theah->game->translate("Wilhelm Dünst may only issue Combat challenges."));
+            }
+
             $defender = $event->theah->getCharacterById($event->defenderId);
             if (!$defender->hasTrait("Villain") && !$defender->hasTrait("Sorcerer") && !$defender->hasTrait("Monster"))
             {
