@@ -39,7 +39,7 @@ class Reaction_02016 extends CardReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to a Character in Play at Location to Redirect Ability: ');
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose a Character at this Location to become the new target: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -82,7 +82,20 @@ class Reaction_02016 extends CardReaction
         }
 
         $owningCharacter = $this->getOwningCharacter($theah);
+
+        if ($source->ControllerId == $owningCharacter->ControllerId)
+        {
+            return false;
+        }
+
         $targetCharacter = $theah->getCharacterById($targetCharacterId);
+
+        // Target character must be controlled by the same player as the owning character
+        if ($targetCharacter && $targetCharacter->ControllerId != $owningCharacter->ControllerId)
+        {
+            return false;
+        }
+
         if ($targetCharacter && $targetCharacter->Location != $owningCharacter->Location)
         {
             return false;
@@ -362,11 +375,14 @@ class Reaction_02016 extends CardReaction
             $characterId = str_replace("redirect-", "", $reactionId);
             $character = $game->theah->getCharacterById($characterId);
 
-            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to set ${character_inject_code} as the new target.'), [
+            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to redirect the ability to ${character_inject_code}.'), [
                 "reaction_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "character_inject_code" => $character->getInjectCode(),
             ]);
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $game->theah->queueEvent($woundEvent);
 
             $ability = $this->loadAbility($game->theah);
             if ($ability)
