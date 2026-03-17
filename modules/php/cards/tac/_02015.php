@@ -79,7 +79,10 @@ class _02015 extends Scheme
                 throw new UserException($game->translate("You must choose two locations that have no Renown."));
             }
 
-            $locations = $game->theah->getCityLocations();
+            if ($ids[0] == $ids[1])
+            {
+                throw new UserException($game->translate("You must choose two different locations."));
+            }
 
             foreach ($ids as $id)
             {
