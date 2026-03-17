@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\techniques;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -36,7 +37,7 @@ class Technique_02011 extends Technique
         foreach ($katain->Attachments as $attachmentId)
         {
             $attachment = $theah->getAttachmentById($attachmentId);
-            if ($attachment && $attachment->hasTrait("Ranged") && !$attachment->Engaged)
+            if ($attachment && $attachment->hasTrait("Weapon") && $attachment->hasTrait("Ranged") && !$attachment->Engaged)
             {
                 return true;
             }
@@ -75,7 +76,7 @@ class Technique_02011 extends Technique
             foreach ($katain->Attachments as $attachmentId)
             {
                 $attachment = $game->theah->getAttachmentById($attachmentId);
-                if ($attachment && $attachment->hasTrait("Ranged") && !$attachment->Engaged)
+                if ($attachment && $attachment->hasTrait("Weapon") && $attachment->hasTrait("Ranged") && !$attachment->Engaged)
                 {
                     $attachments[] = $attachment;
                 }
@@ -96,13 +97,13 @@ class Technique_02011 extends Technique
 
             if (! in_array($id, $actor->Attachments))
             {
-                throw new \BgaUserException($game->translate("Attachment is not equipped to the Actor"));
+                throw new UserException($game->translate("Attachment is not equipped to the Actor"));
             }
 
             $attachment = $game->theah->getAttachmentById($id);
-            if ($attachment && (! $attachment->hasTrait("Ranged") || $attachment->Engaged))
+            if ($attachment && (! $attachment->hasTrait("Weapon") || ! $attachment->hasTrait("Ranged") || $attachment->Engaged))
             {
-                throw new \BgaUserException($game->translate("Attachment must have Ranged Trait and be not engaged"));
+                throw new UserException($game->translate("Attachment must be a Ranged Weapon and not engaged"));
             }
 
             $engageEvent = EventFactory::createCardEngagedEvent($actor->ControllerId, $id, $actor->Id, $this->Id);
