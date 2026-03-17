@@ -90,8 +90,8 @@
                         const imageElement = $(location);
                         const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
                         const reknown = parseInt(reknownElement.innerHTML);
-                        if (reknown == 0) return;
-    
+                        if (location == 'forum-image' || reknown == 0) return;
+
                         this.makeCityLocationSelectable(location);
                     });
                 }

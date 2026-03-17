@@ -133,7 +133,8 @@
 
             'highDramaPhase02014': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onMultipleChooseListCardsConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');            
+                dojo.addClass('actChooseCardSelected', 'disabled');
+                this.addActionButton(`actKeepAll`, _('Keep All'), () => this.bgaPerformAction('actFromCardWithIds', {'ids': JSON.stringify([])}));
             },
 
             'highDramaPhase02014_2': () => {
