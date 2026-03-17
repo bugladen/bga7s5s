@@ -21,7 +21,7 @@ class State_highDramaPhase01096 extends GameState
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Domenica') . clienttranslate(': ${you} must choose an adjacent Enemy with an Equipped Card: '),
+            descriptionMyTurn: clienttranslate('Ratón') . clienttranslate(': ${you} must choose an adjacent Enemy with an Equipped Card: '),
             transitions: [
                 "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
                 "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
