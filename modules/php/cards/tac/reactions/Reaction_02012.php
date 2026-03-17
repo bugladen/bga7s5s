@@ -39,7 +39,7 @@ class Reaction_02012 extends CardReaction
         if ($event instanceof EventChallengeIssued && $this->isAvailable())
         {
             $owner = $this->getOwningCharacter($event->theah);
-            if ($owner->hasTrait('Berserker') && $owner->Wounds + 1 < $owner->ModifiedResolve)
+            if ($event->challengerId == $owner->Id && $owner->hasTrait('Berserker') && $owner->Wounds + 1 < $owner->ModifiedResolve)
             {
                 $reactionTransition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($reactionTransition);
