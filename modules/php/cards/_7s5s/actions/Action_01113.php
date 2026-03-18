@@ -213,9 +213,6 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
             $game->updateCardObjectInDb($attachment);
             $game->theah->addCardToWorld($attachment);
 
-            $discardEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($opponentId, $attachment->Id);
-            $game->theah->queueEvent($discardEvent);
-
             $game->globals->set(Game::CHOSEN_ATTACHMENT, $attachment->Id);
             $game->globals->set(Game::CHOSEN_CARD_COST, $attachment->WealthCost);
 
