@@ -686,9 +686,16 @@ trait ArgumentsTrait
         $cardId = $this->globals->get(Game::CHOSEN_CARD);
         $gambled = $this->globals->get(Game::DUEL_GAMBLED, false);
 
+        $maneuvers = [];
         $card = $this->getCardObjectFromDb($cardId);
+        $playerId = $this->getActivePlayerId();
         if ($card instanceof IHasManeuvers)
-            $maneuvers = $card->getManeuversArray($this, $mustBeAvailable = true);
+        {
+            foreach ($card->getManeuversAvailableToPlayer($this, $playerId) as $maneuver)
+            {
+                $maneuvers[] = $maneuver->getPropertyArray($this);
+            }
+        }
 
         $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
 
