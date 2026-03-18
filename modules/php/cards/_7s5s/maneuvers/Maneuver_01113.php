@@ -193,6 +193,8 @@ class Maneuver_01113 extends Maneuver implements IAbilityThatTargetsCards
             $game->updateCardObjectInDb($attachment);
             $game->theah->addCardToWorld($attachment);
 
+            $game->globals->set(Game::CHOSEN_PERFORMER, $actor->Id);
+
             if ($attachment->Location == $adversary->Location)
             {
                 $unequipEvent = EventFactory::createAttachmentUnequippedEvent($adversary->ControllerId, $adversary->Id, $attachment->Id);
