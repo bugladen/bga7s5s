@@ -50,6 +50,17 @@ trait DebugTrait
         }
     }
 
+    public function debug_AddCardToTopOfFactionDeck(string $className, int $playerId)
+    {
+        $card = $this->instantiateCard($className);
+        if ($card) 
+        {
+            $deckName = $this->getPlayerFactionDeckName($playerId);
+            $card = $this->createCardInLocation($className, $deckName, $playerId, $playerId);
+            $this->cards->insertCardOnExtremePosition($card->Id, $deckName, true);
+        }
+    }
+
     #[Debug(reload: true)] 
     public function debug_SetCardInPlayerDiscardPile(string $className, int $playerId)
     {
