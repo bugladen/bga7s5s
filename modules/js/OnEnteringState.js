@@ -443,8 +443,7 @@ onEnteringState: function( stateName, args )
 
                 const handCard = this.factionHand.getCards().find(c => c.id === chosenBruteId);
                 const cardElement = handCard ? this.factionHand.getCardElement(handCard) : null;
-                if (cardElement) {
-                    dojo.addClass(cardElement, '_7sfs-unselectable');
+                if (cardElement) {  
 
                     dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
                         id: cardElement.id,
@@ -464,7 +463,12 @@ onEnteringState: function( stateName, args )
                 }
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
+                
                 this.factionHand.setSelectionMode('multiple');
+                const availableCards = this.factionHand
+                    .getCards()
+                    .filter((c) => c.id !== chosenBruteId);
+                this.factionHand.setSelectableCards(availableCards);
 
                 this.clientStateArgs.chosenCardId = chosenBruteId;
             }
@@ -569,8 +573,6 @@ onEnteringState: function( stateName, args )
 
                 if (cardElement)
                 {
-                    dojo.addClass(cardElement, '_7sfs-unselectable');
-
                     dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
                         id: cardElement.id,
                         cost: cardProps.wealthCost,
@@ -589,7 +591,12 @@ onEnteringState: function( stateName, args )
                 }
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);
+
                 this.factionHand.setSelectionMode('multiple');
+                const availableCards = this.factionHand
+                    .getCards()
+                    .filter((c) => c.id !== reactionId);
+                this.factionHand.setSelectableCards(availableCards);
             }
         },
 
