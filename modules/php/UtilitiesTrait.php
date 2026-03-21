@@ -659,17 +659,17 @@ trait UtilitiesTrait
         {
             //Ties win
             if ($attemptingPlayerId == $maxPlayerId || array_key_exists($attemptingPlayerId, $ties))
-                return [true, $totals, $difference];
+                return [true, $totals, $difference, $pressureStats];
 
-            return [false, $totals, $difference];
+            return [false, $totals, $difference, $pressureStats];
         }
         else
         {
             //Ties do not win
             if (count($ties) > 1 || $attemptingPlayerId != $maxPlayerId) 
-                return [false, $totals, $difference];
+                return [false, $totals, $difference, $pressureStats];
 
-            return [true, $totals, $difference];
+            return [true, $totals, $difference, $pressureStats];
         }
     }
 
