@@ -31,51 +31,13 @@ class Action_01105 extends RiskCityAction implements IAbilityThatTargetsCharacte
             return false;
         }
 
-        $characters = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        foreach ($characters as $character)
-        {
-            $opposingCharacters = $theah->getOpposingCharactersAtLocation($character->Location, $playerId);
-            $opposingCharacters = array_filter($opposingCharacters, fn($character) => ! $character->Engaged);
-            if (count($opposingCharacters) > 0)
-            {
-                return true;
-            }
-        }
-
-        return false;        
+        $characters = $theah->getCharactersInCityByPlayerId($playerId);
+        return count($characters) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        $characters = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $performers = [];
-        foreach ($characters as $character)
-        {
-            $opposingCharacters = $theah->getOpposingCharactersAtLocation($character->Location, $playerId);
-            $opposingCharacters = array_filter($opposingCharacters, fn($character) => ! $character->Engaged);
-            if (count($opposingCharacters) > 0)
-            {
-                $performers[] = $character;
-            }
-        }
-
-        return $performers;
-    }
-
-    public function getOpposingCharacters(int $playerId, Theah $theah): array
-    {
-        $characters = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $performers = [];
-        foreach ($characters as $character)
-        {
-            $opposingCharacters = $theah->getOpposingCharactersAtLocation($character->Location, $playerId);
-            $opposingCharacters = array_filter($opposingCharacters, fn($character) => ! $character->Engaged);
-            if (count($opposingCharacters) > 0)
-            {
-                $performers[] = $character;
-            }
-        }
-        return $performers;
+        return $theah->getCharactersInCityByPlayerId($playerId);
     }
 
     public function handleEvent(Event $event)
@@ -107,6 +69,26 @@ class Action_01105 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $owner = $this->getOwningCard($event->theah);
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01105", $this->Id);
             $event->theah->queueEvent($transitionEvent);
+        }
+    }
+
+    public function actFromActionPass(Game $game, int $state): void
+    {
+        parent::actFromActionPass($game, $state);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01105)
+        {
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
+
+            $game->notify->all("message", clienttranslate('${player_name} chooses not to Engage any character.'), [
+                "player_name" => $game->getPlayerNameById($performer->ControllerId),
+            ]);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
+            $game->gamestate->nextState();
         }
     }
 
