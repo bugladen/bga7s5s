@@ -616,6 +616,16 @@ trait UtilitiesTrait
             {
                 $playerInfluences[$attemptingPlayerId]['influence'] += $this->globals->get(Game::PRESSURE_BONUS, 0);
             }
+
+        }
+
+        //If Trial of Faith is in play, each player gets +1 to their influence total for each wound on each character at the location
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TRIAL_OF_FAITH_PRESSURE_TYPE))
+        {
+            foreach ($charactersAtLocation as $character)
+            {
+                $playerInfluences[$character->ControllerId]['influence'] += $character->Wounds;
+            }
         }
 
         //Get the player with the most influence

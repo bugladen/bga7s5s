@@ -110,6 +110,7 @@ class Game extends \Bga\GameFramework\Table
     final const PACK_TACTICS_PRESSURE_TYPE = 64;
     final const PULL_THE_STRAND_PRESSURE_TYPE = 128;
     final const KASPARS_OCCUPATION_PRESSURE_TYPE = 256;
+    final const TRIAL_OF_FAITH_PRESSURE_TYPE = 512;
 
     //Player action global variables
     //Delete these in stNextPlayer
