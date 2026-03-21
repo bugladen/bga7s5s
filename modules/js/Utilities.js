@@ -280,6 +280,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         
         // Hysteresis threshold to prevent jitter at boundary (pixels)
         const HYSTERESIS = 50;
+        // How far past the placeholder (in px) scrolling continues before the hand anchors
+        const FLOAT_OFFSET = 1000;
         // Cooldown period after state change (ms)
         const COOLDOWN_MS = 300;
         
@@ -294,19 +296,19 @@ return declare('seventhseacityoffivesails.utilities', null, {
             
             const placeholderRect = placeholder.getBoundingClientRect();
             
-            // Float when placeholder IS visible on the page
-            // Park in placeholder when placeholder is NOT visible (scrolled off top)
+            // Float when placeholder is visible or within FLOAT_OFFSET of the viewport top
+            // Park in placeholder when scrolled well past it
             let shouldFloat;
             
             if (isCurrentlyFloating === null) {
                 // Initial state - no hysteresis
-                shouldFloat = placeholderRect.bottom > 0;
+                shouldFloat = placeholderRect.bottom > -FLOAT_OFFSET;
             } else if (isCurrentlyFloating) {
-                // Currently floating - need to scroll further up to park (add hysteresis)
-                shouldFloat = placeholderRect.bottom > -HYSTERESIS;
+                // Currently floating - need to scroll further down to park (add hysteresis)
+                shouldFloat = placeholderRect.bottom > -(FLOAT_OFFSET + HYSTERESIS);
             } else {
-                // Currently parked - need to scroll further down to float (add hysteresis)
-                shouldFloat = placeholderRect.bottom > HYSTERESIS;
+                // Currently parked - need to scroll further up to float (add hysteresis)
+                shouldFloat = placeholderRect.bottom > -(FLOAT_OFFSET - HYSTERESIS);
             }
             
             // Only update DOM if state actually changed
