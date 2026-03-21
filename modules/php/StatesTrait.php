@@ -537,9 +537,8 @@ trait StatesTrait
         }
         
         $pressureStat = $this->globals->get(Game::PRESSURE_STAT, Game::STAT_INFLUENCE);
-        list($success, $totals, $difference) = $this->pressureLocation($claimingPlayerId, $performer, $location, $pressureStat);
+        list($success, $totals, $difference, $pressureStats) = $this->pressureLocation($claimingPlayerId, $performer, $location, $pressureStat);
 
-        $pressureStats = $this->theah->getPressureStats($performer, $location, $pressureStat);
         $pressuredEvent = EventFactory::createLocationPressuredEvent($claimingPlayerId, $performer?->Id, $location, implode(", ", $pressureStats), $success, $totals, $difference);
         $pressuredEvent->abilityId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, "");
         $pressuredEvent->highDramaBasicAction = $this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false);
