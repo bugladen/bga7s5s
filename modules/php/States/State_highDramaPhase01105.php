@@ -21,7 +21,7 @@ class State_highDramaPhase01105 extends GameState
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Drinking Games') . clienttranslate(': ${you} must choose an opposing character to Engage:'),
+            descriptionMyTurn: clienttranslate('Drinking Games') . clienttranslate(': ${you} may choose an opposing character to Engage:'),
             transitions: [
                 "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
@@ -45,6 +45,12 @@ class State_highDramaPhase01105 extends GameState
     public function actFromCardWithId(string $id): void
     {
         $this->game->actFromCardWithId($id);
+    }
+
+    #[PossibleAction]
+    public function actFromCardPass(): void
+    {
+        $this->game->actFromCardPass();
     }
 
     public function zombie(int $playerId): void

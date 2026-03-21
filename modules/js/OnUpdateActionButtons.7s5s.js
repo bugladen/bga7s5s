@@ -545,6 +545,7 @@
 
             'highDramaPhase01105': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
