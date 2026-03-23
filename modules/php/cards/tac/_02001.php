@@ -39,6 +39,8 @@ class _02001 extends Character implements IHasActions, IHasReactions
             'Vodacce',
         ];
 
+        $this->Text = "<p><b>Sorcerer Reaction:</b> When target opposing non-<b>Sorcerer</b> intervenes or refuses a challenge • Wound them.</p><p><b>Sorcerer City Action:</b> Discard a <b>Sorcery</b> and engage Andriana • Move target enemy non-<b>Leader</b> at a City location to Andriana's location. Then, she issues them a [com] challenge.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

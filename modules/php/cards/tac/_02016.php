@@ -45,6 +45,8 @@ class _02016 extends FactionAttachment implements IHasReactions
             "Unique",
         ];
 
+        $this->Text = "<p>Cannot equip to <b>Sorcerers.</b></p><p>Equipped character gains <b>Zealot.</b></p><p><b>Reaction:</b> When an opponent targets your character at this location, wound your performer • That opponent targets your performer instead.</p>";
+
         $this->Reactions = [
             new Reaction_02016(),
         ];

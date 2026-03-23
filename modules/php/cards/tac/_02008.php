@@ -36,6 +36,8 @@ class _02008 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             "Sorte",
         ];
 
+        $this->Text = "<p><b>Sorcerer Strega Action:</b> Choose a risk from your discard pile and place it face-down under target opposing character • When that character is destroyed, put that risk into your hand.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

@@ -41,6 +41,8 @@ class _02018 extends Risk implements IHasActions, IHasManeuvers
             "Penance",
         ];
 
+        $this->Text = "<p><b>Zealot City Action:</b> Wound all characters at your performer's location.</p><p><b>Maneuver:</b> Wound your participant • +X[thrust] where X is the number of wounds on your participant.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

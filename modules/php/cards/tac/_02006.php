@@ -42,6 +42,8 @@ class _02006 extends FactionAttachment implements IHasTechniques
             "Unique",
         ];
 
+        $this->Text = "<p>May only equip to your <b>Red Hand</b>.</p><p><b>Technique:</b> Wound your other character at this location and engage this card • +1[parry].</p>";
+
         $this->resetCard();
 
         $this->Techniques = [

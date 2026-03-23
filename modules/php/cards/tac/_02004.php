@@ -34,6 +34,8 @@ class _02004 extends Scheme implements IHasReactions
             'Unwelcome',
         ];
 
+        $this->Text = "<p>Add a Renown to [Docks] and [Bazaar]</p><p>{BAR}</p><p><b>City Reaction:</b> When an opponent initiates a pressure • Move your adjacent en garde performer to the pressured location. If the opponent's pressure succeeds, draw a card.</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

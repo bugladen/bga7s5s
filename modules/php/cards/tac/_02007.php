@@ -34,6 +34,8 @@ class _02007 extends Risk implements IHasActions
             "Sabotage",
         ];
 
+        $this->Text = "<p><b>Red Hand City Action:</b> Wound your performer • Remove a Renown and discard target available City card from your performer's location.</p>";
+
         $this->resetCard();
 
         $this->Actions = [
