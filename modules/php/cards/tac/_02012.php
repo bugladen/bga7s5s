@@ -38,7 +38,7 @@ class _02012 extends Character implements IHasReactions, IHasTechniques
             'Highland Marches'
         ];
 
-        $this->Text = "<p><b>Berserker Reaction:</b> When Turais issues a challenge, wound him • En garde him.</p><p><b>Berserker Technique:</b> Wound Turais • Remove all threat from him.</p>";
+        $this->Text = clienttranslate("<p><b>Berserker Reaction:</b> When Turais issues a challenge, wound him • En garde him.</p><p><b>Berserker Technique:</b> Wound Turais • Remove all threat from him.</p>");
 
         $this->resetCard();
 

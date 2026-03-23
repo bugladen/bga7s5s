@@ -35,7 +35,7 @@ class _02010 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             "Sorte",
         ];
 
-        $this->Text = "<p><b>Sorcerer Strega City Action:</b> Target two of your characters at your performer's location • Move up to two wounds between them.</p>";
+        $this->Text = clienttranslate("<p><b>Sorcerer Strega City Action:</b> Target two of your characters at your performer's location • Move up to two wounds between them.</p>");
 
         $this->resetCard();
 

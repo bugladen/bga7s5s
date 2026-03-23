@@ -39,7 +39,7 @@ class _02002 extends Character implements IHasActions, IHasTechniques
             'Vodacce',
         ];
 
-        $this->Text = "<p><b>Sorcerer City Action:</b> Look at the top three cards of target player's deck, put one or more of them into the discard pile, then replace the rest in any order.</p><p><b>Sorcerer Technique:</b> -1[thrust].</p>";
+        $this->Text = clienttranslate("<p><b>Sorcerer City Action:</b> Look at the top three cards of target player's deck, put one or more of them into the discard pile, then replace the rest in any order.</p><p><b>Sorcerer Technique:</b> -1[thrust].</p>");
 
         $this->resetCard();
 

@@ -36,7 +36,7 @@ class _02009 extends Risk implements IHasManeuvers
             "Crime"
         ];
 
-        $this->Text = "<p><b>Thug Maneuver:</b> Wound the adversary.</p><p><b>Duelist Maneuver:</b> Wound the adversary.</p><p><b>Spy Maneuver:</b> Wound the adversary.</p>";
+        $this->Text = clienttranslate("<p><b>Thug Maneuver:</b> Wound the adversary.</p><p><b>Duelist Maneuver:</b> Wound the adversary.</p><p><b>Spy Maneuver:</b> Wound the adversary.</p>");
 
         $this->resetCard();
 

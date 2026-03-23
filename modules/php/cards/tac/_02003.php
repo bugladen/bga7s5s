@@ -41,7 +41,7 @@ class _02003 extends Character implements IHasReactions, IHasTechniques
             'Maghreb'
         ];
 
-        $this->Text = "<p><b>Sorcerer</b> abilities cannot target Mourad.</p><p><b>Reaction:</b> When your <b>Strega</b> at this location is challenged • Mourad may intervene even while engaged.</p><p><b>Technique:</b> If Mourad's combat card is a <b>Sorcery</b> and you control a <b>Strega</b> at his location • Draw a card.</p>";
+        $this->Text = clienttranslate("<p><b>Sorcerer</b> abilities cannot target Mourad.</p><p><b>Reaction:</b> When your <b>Strega</b> at this location is challenged • Mourad may intervene even while engaged.</p><p><b>Technique:</b> If Mourad's combat card is a <b>Sorcery</b> and you control a <b>Strega</b> at his location • Draw a card.</p>");
 
         $this->resetCard();
 

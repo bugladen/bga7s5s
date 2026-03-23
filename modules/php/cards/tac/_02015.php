@@ -30,7 +30,7 @@ class _02015 extends Scheme
         $this->Traits = [
         ];
 
-        $this->Text = "<p>Add a Renown to two locations with no Renown.</p><p>{BAR}</p><p>Characters at uncontrolled locations cannot intervene.</p>";
+        $this->Text = clienttranslate("<p>Add a Renown to two locations with no Renown.</p><p>{BAR}</p><p>Characters at uncontrolled locations cannot intervene.</p>");
 
         $this->resetCard();
     }
