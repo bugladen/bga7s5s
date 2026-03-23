@@ -37,7 +37,7 @@ class _01029 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             'Duress',
         ];
 
-        $this->Text = "<p>City Action: Target a character opposing your performer at a location you control • Engage them (Opposing is an enemy character at the same location as your character.)</p>";
+        $this->Text = clienttranslate("<p>City Action: Target a character opposing your performer at a location you control • Engage them (Opposing is an enemy character at the same location as your character.)</p>");
 
         $this->resetCard();
 

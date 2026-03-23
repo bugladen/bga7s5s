@@ -35,7 +35,7 @@ class _01012 extends Character implements IHasActions
             "Vodacce",
         ];
 
-        $this->Text = "<p>Sorcerer City Action: Wound Sibella • Wound target opposing character.</p>";
+        $this->Text = clienttranslate("<p>Sorcerer City Action: Wound Sibella • Wound target opposing character.</p>");
 
         $this->resetCard();
         

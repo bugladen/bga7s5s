@@ -37,7 +37,7 @@ class _01119 extends Character
             "Anatol Ayh"
         ];
 
-        $this->Text = "<p>Nazem gains +1 [inf] for each engaged enemy character at his location.</p><p>When Nazem issues a challenge to an enemy character, if they refuse, engage them.</p>";
+        $this->Text = clienttranslate("<p>Nazem gains +1 [inf] for each engaged enemy character at his location.</p><p>When Nazem issues a challenge to an enemy character, if they refuse, engage them.</p>");
 
         $this->resetCard();
     }

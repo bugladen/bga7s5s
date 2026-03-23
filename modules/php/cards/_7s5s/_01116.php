@@ -41,7 +41,7 @@ class _01116 extends Leader implements IHasReactions
             "Ussura",
         ];
 
-        $this->Text = "<p>When Yevgeni plays a combat card, it gains +1[thrust].</p><p>Reaction: After Yevgeni's challenge is refused • En garde him.</p><p>Reaction: While paying for a non-character card • It has -1 cost.</p>";
+        $this->Text = clienttranslate("<p>When Yevgeni plays a combat card, it gains +1[thrust].</p><p>Reaction: After Yevgeni's challenge is refused • En garde him.</p><p>Reaction: While paying for a non-character card • It has -1 cost.</p>");
 
         $this->resetCard();
 

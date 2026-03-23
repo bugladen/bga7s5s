@@ -32,7 +32,7 @@ class _01159 extends Risk implements IHasActions
             'Heroic',
         ];
 
-        $this->Text = "<p>While your Leader is a Hero or a Diplomat, this card has -1 cost.</p><p>City Action: En garde your performer at a location you control.</p>";
+        $this->Text = clienttranslate("<p>While your Leader is a Hero or a Diplomat, this card has -1 cost.</p><p>City Action: En garde your performer at a location you control.</p>");
 
         $this->resetCard();
 

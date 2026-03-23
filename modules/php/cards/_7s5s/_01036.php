@@ -38,7 +38,7 @@ class _01036 extends Character implements IHasActions, IHasTechniques
             "Vodacce",
         ];
 
-        $this->Text = "<p>City Action: Your Mercenary at this location issues a [com] challenge to target opposing character.</p><p>Technique: When your round ends, move Daniella to an adjacent City location. Usable once per Day.</p>";
+        $this->Text = clienttranslate("<p>City Action: Your Mercenary at this location issues a [com] challenge to target opposing character.</p><p>Technique: When your round ends, move Daniella to an adjacent City location. Usable once per Day.</p>");
 
         $this->resetCard();
 

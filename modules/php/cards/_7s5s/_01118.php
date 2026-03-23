@@ -37,7 +37,7 @@ class _01118 extends Character implements IHasActions, IHasReactions
             "Ussura",
         ];
 
-        $this->Text = "<p>City Action: Move Elina to an adjacent City location. If she is opposed at the new location, en garde her.</p><p>City Reaction: After Elina performs a Sorcerer ability • Move a Renown to this location.</p>";
+        $this->Text = clienttranslate("<p>City Action: Move Elina to an adjacent City location. If she is opposed at the new location, en garde her.</p><p>City Reaction: After Elina performs a Sorcerer ability • Move a Renown to this location.</p>");
 
         $this->resetCard();
 

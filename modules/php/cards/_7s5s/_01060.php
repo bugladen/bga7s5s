@@ -32,7 +32,7 @@ class _01060 extends Risk implements IHasActions
             'Logistics',
         ];
 
-        $this->Text = "<p>Action: Move up to two performing characters you control from one location to an adjacent City location. (They move together.)</p>";
+        $this->Text = clienttranslate("<p>Action: Move up to two performing characters you control from one location to an adjacent City location. (They move together.)</p>");
 
         $this->resetCard();
 

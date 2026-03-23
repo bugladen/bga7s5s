@@ -35,7 +35,7 @@ class _01023 extends Risk implements IHasReactions
             'Gang',
         ];
 
-        $this->Text = "<p>While you have a character with Brute at the location of a challenge, this card has -1 cost.</p><p>Reaction: When a challenge is issued • Other characters cannot intervene.</p>";
+        $this->Text = clienttranslate("<p>While you have a character with Brute at the location of a challenge, this card has -1 cost.</p><p>Reaction: When a challenge is issued • Other characters cannot intervene.</p>");
 
         $this->Reactions = [
             new Reaction_01023()

@@ -40,7 +40,7 @@ class _01148 extends Scheme implements IHasActions
             "Solitary",
         ];
 
-        $this->Text = "<p>Add a Renown to [The Docks] and [The Grand Bazaar].</p><p>[BAR]</p><p>City Action: Target a Mercenary opposing your performer • You may discard any number of cards. Engage or wound that character for each card discarded this way.</p>";
+        $this->Text = clienttranslate("<p>Add a Renown to [The Docks] and [The Grand Bazaar].</p><p>[BAR]</p><p>City Action: Target a Mercenary opposing your performer • You may discard any number of cards. Engage or wound that character for each card discarded this way.</p>");
 
         $this->resetCard();
 

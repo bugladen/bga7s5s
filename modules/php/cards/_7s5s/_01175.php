@@ -32,7 +32,7 @@ class _01175 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             'Penance',
         ];
 
-        $this->Text = "<p>Action: Discard any number of cards • Target non-Leader character you control heals a wound for each card discarded this way.</p>";
+        $this->Text = clienttranslate("<p>Action: Discard any number of cards • Target non-Leader character you control heals a wound for each card discarded this way.</p>");
 
         $this->resetCard();
 

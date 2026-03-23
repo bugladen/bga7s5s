@@ -36,7 +36,7 @@ class _01044 extends Scheme implements IHasActions
             "Logistics",
         ];
 
-        $this->Text = "<p>Add a Renown to [The Docks] and [The Grand Bazaar].</p><p>Put target attachment from your discard pile into your hand.</p><p>[BAR]</p><p>City Action: Engage your performer's attachment and target an opposing character with equal or fewer attachments • Engage them or move them Home.</p>";
+        $this->Text = clienttranslate("<p>Add a Renown to [The Docks] and [The Grand Bazaar].</p><p>Put target attachment from your discard pile into your hand.</p><p>[BAR]</p><p>City Action: Engage your performer's attachment and target an opposing character with equal or fewer attachments • Engage them or move them Home.</p>");
 
         $this->resetCard();
 

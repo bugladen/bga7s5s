@@ -33,7 +33,7 @@ class _01193 extends CityAttachment implements IHasTechniques
             'Armor',
         ];
 
-        $this->Text = "<p>Technique: During the adversary's next round, their combat card has -1 [Thrust].</p>";
+        $this->Text = clienttranslate("<p>Technique: During the adversary's next round, their combat card has -1 [Thrust].</p>");
 
         $this->resetCard();
 

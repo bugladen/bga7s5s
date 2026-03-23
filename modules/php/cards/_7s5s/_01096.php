@@ -39,7 +39,7 @@ class _01096 extends Character implements IHasActions, IHasTechniques
             "Castille",
         ];
 
-        $this->Text = "<p>City Action: Target an adjacent enemy character equipped with attachment • Move Ratón to their location.</p><p>Technique: At the end of the adversary's next round, if they were not wounded during it, take control of target attachment on them and equip it to Ratón. (There are no adversaries if the challenge is refused.)</p>";
+        $this->Text = clienttranslate("<p>City Action: Target an adjacent enemy character equipped with attachment • Move Ratón to their location.</p><p>Technique: At the end of the adversary's next round, if they were not wounded during it, take control of target attachment on them and equip it to Ratón. (There are no adversaries if the challenge is refused.)</p>");
 
         $this->resetCard();
 

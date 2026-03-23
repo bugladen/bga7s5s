@@ -45,7 +45,7 @@ class _01200 extends CityAttachment implements IHasReactions
             'Unique',
         ];
 
-        $this->Text = "<p>Forced: After you equip this card • Look at an opponent's Approach Deck and choose a card in it.</p><p>Reaction: After an opponent plays the chosen card during any Day • Gain a Renown.</p>";
+        $this->Text = clienttranslate("<p>Forced: After you equip this card • Look at an opponent's Approach Deck and choose a card in it.</p><p>Reaction: After an opponent plays the chosen card during any Day • Gain a Renown.</p>");
 
         $this->resetCard();
 

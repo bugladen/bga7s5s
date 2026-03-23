@@ -37,7 +37,7 @@ class _01179 extends CityEventCard implements IHasActions
             "Monster"
         ];
 
-        $this->Text = "<p>Forced: When this card is revealed • Each player spends a Renown to it.</p><p>This card can only be discarded if it has no Renown. (Even during Dusk.)</p><p>City Action: Engage your performer • Take a Renown from this card. (Each player may activate this ability once per Day.)</p>";
+        $this->Text = clienttranslate("<p>Forced: When this card is revealed • Each player spends a Renown to it.</p><p>This card can only be discarded if it has no Renown. (Even during Dusk.)</p><p>City Action: Engage your performer • Take a Renown from this card. (Each player may activate this ability once per Day.)</p>");
 
         $this->resetCard();
 

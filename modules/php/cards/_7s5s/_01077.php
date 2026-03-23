@@ -31,7 +31,7 @@ class _01077 extends Risk implements IHasManeuvers
             'Valroux',
         ];
 
-        $this->Text = "<p>Duelist Maneuver: Reveal cards from your deck equal to your participant's [Fin]. Play one as an additional combat card and sink the rest. You may use a Maneuver on it, paying all costs.</p>";
+        $this->Text = clienttranslate("<p>Duelist Maneuver: Reveal cards from your deck equal to your participant's [Fin]. Play one as an additional combat card and sink the rest. You may use a Maneuver on it, paying all costs.</p>");
 
         $this->resetCard();
 

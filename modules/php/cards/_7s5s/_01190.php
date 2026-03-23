@@ -38,7 +38,7 @@ class _01190 extends CityCharacter
             'Vesten',
         ];
 
-        $this->Text = "<p>Negotiable (You may parley when paying for this card.)</p><p>Sigurd's [Combat] cannot be increased and he cannot issue challenges.</p><p>While Sigurd is en garde, he must be the target of enemy challenges at this location.</p>";
+        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Sigurd's [Combat] cannot be increased and he cannot issue challenges.</p><p>While Sigurd is en garde, he must be the target of enemy challenges at this location.</p>");
 
         $this->resetCard();
     }

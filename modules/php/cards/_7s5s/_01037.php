@@ -42,7 +42,7 @@ class _01037 extends Character implements IHasReactions
             "Eisen",
         ];
 
-        $this->Text = "<p>Edeline gains +1 [Inf] for each character at this location.</p><p>Reaction: After a duel, target an engaged participant at an adjacent location • Move them to this location.</p>";
+        $this->Text = clienttranslate("<p>Edeline gains +1 [Inf] for each character at this location.</p><p>Reaction: After a duel, target an engaged participant at an adjacent location • Move them to this location.</p>");
 
         $this->resetCard();
 

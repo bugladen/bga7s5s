@@ -41,7 +41,7 @@ class _01041 extends Character implements IHasActions
             "Eisen",
         ];
 
-        $this->Text = "<p>While Rosine is opposing a Sorcerer, she gains +1 [inf].</p><p>City Action: Target an opposing non-Leader character with equal or lower [Influence] • Engage them. If they are a Sorcerer, move them Home.</p>";
+        $this->Text = clienttranslate("<p>While Rosine is opposing a Sorcerer, she gains +1 [inf].</p><p>City Action: Target an opposing non-Leader character with equal or lower [Influence] • Engage them. If they are a Sorcerer, move them Home.</p>");
 
         $this->resetCard();
 

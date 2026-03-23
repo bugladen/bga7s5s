@@ -46,7 +46,7 @@ class _01120 extends Character implements IHasReactions, IHasTechniques
             "Ussura",
         ];
 
-        $this->Text = "<p>While Pavel is at a location you control, he gains +1[inf].</p><p>Reaction: After an opponent claims a location • Draw a card.</p><p>Technique: +1 Parry.</p>";
+        $this->Text = clienttranslate("<p>While Pavel is at a location you control, he gains +1[inf].</p><p>Reaction: After an opponent claims a location • Draw a card.</p><p>Technique: +1 Parry.</p>");
 
         $this->HasAddedInfluence = false;
 

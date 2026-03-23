@@ -44,7 +44,7 @@ class _01062 extends Leader implements IHasActions, IHasReactions
             "Montaigne",
         ];
 
-        $this->Text = "<p>When Odette is challenged, if you have an en garde Musketeer at this location, they may intervene without engaging.</p><p>City Action: Move your adjacent Duelist to this location.</p><p>Reaction: When a challenge is accepted at this location • Move an adjacent Renown to this location.</p>";
+        $this->Text = clienttranslate("<p>When Odette is challenged, if you have an en garde Musketeer at this location, they may intervene without engaging.</p><p>City Action: Move your adjacent Duelist to this location.</p><p>Reaction: When a challenge is accepted at this location • Move an adjacent Renown to this location.</p>");
 
         $this->resetCard();
 

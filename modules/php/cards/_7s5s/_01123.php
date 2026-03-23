@@ -37,7 +37,7 @@ class _01123 extends Character implements IHasActions, IHasTechniques
             "Ussura",
         ];
 
-        $this->Text = "<p>Action: Engage Valeri and target an enemy character at an adjacent City location • Move Valeri there and issue them a [combat] challenge. Other characters cannot intervene.</p><p>Technique: +1 [Thrust]. If Valeri has fewer wounds than the adversary, +1 [Riposte] instead.</p>";
+        $this->Text = clienttranslate("<p>Action: Engage Valeri and target an enemy character at an adjacent City location • Move Valeri there and issue them a [combat] challenge. Other characters cannot intervene.</p><p>Technique: +1 [Thrust]. If Valeri has fewer wounds than the adversary, +1 [Riposte] instead.</p>");
 
         $this->resetCard();
 

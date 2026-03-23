@@ -32,7 +32,7 @@ class _01166 extends Risk implements IHasManeuvers
             'Demoralize',
         ];
 
-        $this->Text = "<p>Maneuver: +1 [Parry] for each other card in your dueling line.</p>";
+        $this->Text = clienttranslate("<p>Maneuver: +1 [Parry] for each other card in your dueling line.</p>");
 
         $this->resetCard();
 
