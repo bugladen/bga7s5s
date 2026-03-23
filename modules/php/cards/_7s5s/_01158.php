@@ -37,6 +37,8 @@ class _01158 extends FactionAttachment implements IHasActions
             'Rilasciare',
         ];
 
+        $this->Text = "<p>Action: Discard a card • Draw a card.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

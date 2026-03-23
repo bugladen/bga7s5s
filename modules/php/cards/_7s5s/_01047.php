@@ -45,6 +45,8 @@ class _01047 extends FactionAttachment implements IHasReactions, IHasTechniques
             'Unique',
         ];
 
+        $this->Text = "<p>Offhand. This card cannot be moved.</p><p>Reaction: When the equipped participant's adversary announces a Technique • Cancel its effects.</p><p>Technique: If the equipped character has a Melee Weapon • +1 [Riposte].</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

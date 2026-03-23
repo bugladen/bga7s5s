@@ -31,6 +31,8 @@ class _01168 extends Risk implements IHasActions
             'Savvy',
         ];
 
+        $this->Text = "<p>Action: Spend a Renown • Draw two cards. Send this card to The Locker.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

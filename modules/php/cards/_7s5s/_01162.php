@@ -32,6 +32,8 @@ class _01162 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             'Temptation',
         ];
 
+        $this->Text = "<p>Action: Target a character • Move them to an adjacent City location.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

@@ -40,6 +40,8 @@ class _01073 extends FactionAttachment implements IHasActions
             'Hat',
         ];
 
+        $this->Text = "<p>May only equip to your Duelist.</p><p>City Action: Engage the equipped performer • They issue a [finesse] challenge to target opposing character.</p>";
+
         $this->resetCard();
         
         $this->Actions = [

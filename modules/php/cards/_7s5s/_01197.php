@@ -41,6 +41,8 @@ class _01197 extends CityCharacter implements IHasActions
             'Vesten',
         ];
 
+        $this->Text = "<p>Negotiable (You may parley when paying for this card.)</p><p>When Kalla equips an attachment, it has -1 cost.</p><p>Action: Move an equipped attachment between two of your characters at this location.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

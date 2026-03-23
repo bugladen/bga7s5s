@@ -38,6 +38,8 @@ class _01050 extends FactionAttachment implements IHasTechniques
         $this->Parry = 2;
         $this->Thrust = 3;
 
+        $this->Text = "<p>May only equip to your character that has a Weapon. (If they lose their Weapon, destroy this card.)</p><p>Technique: -1 [Thrust] • Wound the adversary. (Must have minimum of 1 Thrust)</p>";
+
         $this->resetCard();
 
         $this->Techniques = [

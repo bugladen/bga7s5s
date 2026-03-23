@@ -43,6 +43,8 @@ class _01064 extends Character implements IHasActions
             "Castille",
         ];
 
+        $this->Text = "<p>While an opponent has more Renown than you, Guillén gains +1 [Com].</p><p>City Action: Discard a card • Move an adjacent Renown to this location.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

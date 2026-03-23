@@ -37,6 +37,8 @@ class _01031 extends Risk implements IHasManeuvers
             'Zeal',
         ];
 
+        $this->Text = "<p>Maneuver: +1 [Thrust] for each of your Red Hands at this location. After you resolve your wounds, you may destroy your Thug at this location. If you do, gain Lethal.</p>";
+
         $this->resetCard();
 
         $this->Maneuvers = [

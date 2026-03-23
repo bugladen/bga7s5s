@@ -34,6 +34,8 @@ class _01146 extends Scheme implements IHasReactions
             "Honor",
         ];
 
+        $this->Text = "<p>Add a Renown to [The Docks] and [The Forums].</p><p>[BAR]</p><p>Reaction: After you equip a Weapon • Draw a card.</p><p>Reaction: When the adversary announces a Maneuver or Technique • Cancel its effects.</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

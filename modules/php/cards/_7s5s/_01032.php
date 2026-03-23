@@ -35,6 +35,8 @@ class _01032 extends Risk implements IHasReactions
             "Zeal",
         ];
 
+        $this->Text = "<p>Reaction: When one or more of your cards is targeted, destroy your Red Hand or discard a Thug from your hand • Cancel the effects.</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

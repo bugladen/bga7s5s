@@ -31,6 +31,8 @@ class _01079 extends Risk implements IHasManeuvers
             'Demoralize',
         ];
 
+        $this->Text = "<p>While your participant has more [Finesse] than the adversary, this card has -1 cost.</p><p>Maneuver: Target the adversary's Weapon • They may destroy it. If they do not, wound them.</p>";
+
         $this->resetCard();
 
         $this->Maneuvers = [

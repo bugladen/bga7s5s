@@ -32,6 +32,8 @@ class _01141 extends Risk implements IHasActions
             'Kulachniy Boi',
         ];
 
+        $this->Text = "<p>City Action: Pressure your performer's location with [Combat]. If successful, claim it.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

@@ -36,6 +36,8 @@ class _01153 extends FactionAttachment
             'Armor',
         ];
 
+        $this->Text = "<p>Forced: During a duel, the first time the equipped character would suffer any amount of wounds • Reduce the number by one.</p><p>Forced: When the equipped character is wounded • Destroy this card. (0 wounds is not wounded.)</p>";
+
         $this->resetCard();
 
         $this->hasBlockedWound = false;

@@ -35,15 +35,23 @@ trait ArgumentsTrait
 
     public function argAvailableDecks(): array
     {
-        $starter_decks = json_decode(StarterDecks::$decksJson);        
-        $decks = array_map(function($deck) { 
-            return [ 
+        $starter_decks = json_decode(StarterDecks::$decksJson);
+        $decks = array_map(function($deck) {
+            return [
                 "id" => $deck->id,
                 "name" => $deck->name
-            ]; 
+            ];
         }, $starter_decks->decks);
 
-        return ["availableDecks" => $decks];
+        $playerCount = $this->getPlayersNumber();
+        $opponent_message = $playerCount === 2
+            ? clienttranslate('Your opponent is selecting a deck to play with.')
+            : clienttranslate('Your opponents are selecting a deck to play with.');
+
+        return [
+            "availableDecks" => $decks,
+            "opponent_message" => $opponent_message,
+        ];
     }
 
     public function argsPlanningPhaseResolveSchemes_01016_3(): array

@@ -36,6 +36,8 @@ class _01122 extends Character implements IHasReactions
             "Vesten",
         ];
 
+        $this->Text = "<p>While Torsten has two or more wounds, his combat cards gain +1[thrust].</p><p>Reaction: When a Sorcery or a Sorcerer ability targets Torsten • Cancel the effects.</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

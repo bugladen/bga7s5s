@@ -29,6 +29,8 @@ class _01173 extends Risk implements IHasReactions
             'Savvy',
         ];
 
+        $this->Text = "<p>Reaction: After your character moves to a City location • Move them again to an adjacent City location.</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

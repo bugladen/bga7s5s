@@ -32,6 +32,8 @@ class _01038 extends Character implements IHasActions
             "Eisen",
         ];
 
+        $this->Text = "<p>City Action: Reveal the top three cards of your deck. Put a revealed attachment into your hand. Sink the rest.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

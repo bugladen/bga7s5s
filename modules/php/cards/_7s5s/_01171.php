@@ -32,6 +32,8 @@ class _01171 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             'Villainous',
         ];
 
+        $this->Text = "<p>While your performer is a Villain or Scoundrel, this card has -1 cost.</p><p>City Action. Engage target Mercenary opposing your performer. If they are already engaged, move them Home instead.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

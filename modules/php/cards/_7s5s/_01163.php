@@ -30,6 +30,8 @@ class _01163 extends Risk implements IHasActions
             'Faith',
         ];
 
+        $this->Text = "<p>Action: Look at the top three cards of your deck. Sink one, put one into your hand, and add the last to a location facedown. At the end of the day, if you control that location, put the added card into your hand. Otherwise, discard it.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

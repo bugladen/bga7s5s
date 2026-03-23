@@ -38,6 +38,8 @@ class _01048 extends FactionAttachment implements IHasTechniques
             'Sword',
         ];
 
+        $this->Text = "<p>Technique: +1 [Thrust].</p><p>Technique: +1 [Thrust].</p>";
+
         $this->resetCard();
 
         $technique = new Technique_PlusOneThrust();

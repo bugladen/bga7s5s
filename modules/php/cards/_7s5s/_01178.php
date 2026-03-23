@@ -39,6 +39,8 @@ class _01178 extends CityCharacter
             'Vodacce',
         ];
 
+        $this->Text = "<p>Negotiable (You may parley when paying for this card.)</p><p>Once per Day, Carmella may issue a challenge or intervene in one even while engaged.</p>";
+
         $this->resetCard();
 
         $this->AbilityUsed = false;

@@ -42,6 +42,8 @@ class _01139 extends Risk implements IHasActions, IHasManeuvers
             'Unique',
         ];
 
+        $this->Text = "<p>Action: Spend a Renown • Take two more actions. Send this card to The Locker.</p><p>Maneuver: Gain +X[Thrust] where X is equal to your participant's base [Combat]. Send this card to The Locker.</p>";
+
         $this->goToLocker = false;
 
         $this->resetCard();

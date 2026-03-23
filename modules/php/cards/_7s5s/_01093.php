@@ -38,6 +38,8 @@ class _01093 extends Character implements IHasActions, IHasTechniques
             "Castille",
         ];
 
+        $this->Text = "<p>Action: Move Maya to an adjacent City location. If you are not the first player, she may move to any location instead.</p><p>Technique: -1 Riposte • The adversary discards a card. (Your combat card must have at least 1 Riposte.)</p>";
+
         $this->resetCard();
 
         $this->Actions = [

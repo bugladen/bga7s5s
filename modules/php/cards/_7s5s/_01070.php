@@ -33,6 +33,8 @@ class _01070 extends Character implements IHasReactions
             "Castille",
         ];
 
+        $this->Text = "<p>Reaction: After you add a Renown to a location, discard a card • Add another Renown to that location. (Moving Renown is not adding Renown.)</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

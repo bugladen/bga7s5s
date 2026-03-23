@@ -33,6 +33,8 @@ class _01138 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             'Hunt',
         ];
 
+        $this->Text = "<p>City Action: Target an adjacent enemy character • Move your performer to their location. You may engage your performer. If you do, move the enemy character Home. If not, wound them instead.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

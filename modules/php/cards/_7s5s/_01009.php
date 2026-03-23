@@ -40,6 +40,8 @@ class _01009 extends Character implements IHasActions
             "Numa",
         ];
 
+        $this->Text = "<p>Your Mercenaries gain Brute. (Brutes do not count against your Crew Cap, go to the discard pile when destroyed, and are discarded from play at the end of the day.)</p><p>City Action: Engage Cirilo • Recruit target available Mercenary at this location. They lose Negotiable and have 1 cost instead of their printed value.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

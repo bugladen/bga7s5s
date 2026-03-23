@@ -42,6 +42,8 @@ class _01007 extends Character implements IHasActions
             "Vodacce",
         ];
 
+        $this->Text = "<p>Aldo gains +1 [Influence] for each Renown at this location.</p><p>City Action: Move a Renown from a location you control to this one.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

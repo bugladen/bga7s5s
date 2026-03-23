@@ -32,6 +32,8 @@ class _01057 extends Risk implements IHasManeuvers
             'Ranged',
         ];
 
+        $this->Text = "<p>Maneuver: Gain Lethal. (Ignore Restricted Hostilities until your next round.)</p>";
+
         $this->resetCard();
 
         $this->Maneuvers = [

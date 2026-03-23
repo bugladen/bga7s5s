@@ -33,6 +33,8 @@ class _01169 extends Risk
             'Ad Hoc',
         ];
 
+        $this->Text = "<p>Forced: When your round ends • Wound your participant and move them Home engaged.</p>";
+
         $this->resetCard();
 
         $this->EscapeDuel = false;

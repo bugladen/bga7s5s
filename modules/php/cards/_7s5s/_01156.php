@@ -37,6 +37,8 @@ class _01156 extends FactionAttachment implements IHasActions
             'Rifle',
         ];
 
+        $this->Text = "<p>City Action: Discard a card • Target character at an adjacent City location may engage. If they do not, wound them. (They cannot engage if they are already engaged.)</p>";
+
         $this->resetCard();
 
         $this->Actions = [

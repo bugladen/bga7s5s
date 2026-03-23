@@ -34,6 +34,8 @@ class _01014 extends Character implements IHasReactions
             "Vodacce",
         ];
 
+        $this->Text = "<p>Reaction: When an opponent targets Vittoria, you may put a Thug from your hand into play at this location ignoring all costs • Then, the opponent targets your Thug at this location instead. If your Thug was targeted this way, you may move Vittoria Home.</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

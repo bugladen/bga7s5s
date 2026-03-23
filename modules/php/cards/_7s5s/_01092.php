@@ -37,6 +37,8 @@ class _01092 extends Character implements IHasActions
             "Avalon",
         ];
 
+        $this->Text = "<p>When a character opposing Makepeace equips a card, it gains +1 cost.</p><p>City Action: Target an opposing engaged character with equal or less [Inf] • Move them Home.</p>";
+
         $this->Actions = [
             new Action_01092(),
         ];

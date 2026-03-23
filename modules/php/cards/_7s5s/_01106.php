@@ -31,6 +31,8 @@ class _01106 extends Risk implements IHasActions
             'Savvy',
         ];
 
+        $this->Text = "<p>Action: Play target risk from an opponent's discard pile, paying all costs. After it resolves, sink it. Send this card to The Locker. (Cards return to their owner's deck when sunk.)</p>";
+
         $this->resetCard();
 
         $this->Actions = [

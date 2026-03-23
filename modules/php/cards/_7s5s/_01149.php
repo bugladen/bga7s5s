@@ -33,6 +33,8 @@ class _01149 extends Scheme implements IHasActions
             "Market",
         ];
 
+        $this->Text = "<p>Add a Renown to [The Docks] and [The Grand Bazaar]. Then, add a City Card to [The Docks].</p><p>[BAR]</p><p>City Action: If [The Docks] has no City Cards or only events • Move your performer from [The Docks] to any City location.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

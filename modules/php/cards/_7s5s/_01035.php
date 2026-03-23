@@ -39,6 +39,8 @@ class _01035 extends Leader implements IHasActions
             "Eisen",
         ];
 
+        $this->Text = "<p>When Kaspar parleys, he gains +2 [Infl].</p><p>City Action: Engage Kaspar • Reveal cards from the City Deck until you find a Mercenary. Kaspar may recruit it and can parley even while engaged. Sink the rest.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

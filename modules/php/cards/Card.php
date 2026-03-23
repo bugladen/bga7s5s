@@ -24,6 +24,8 @@ abstract class Card
     public bool $Engaged;
     public Array $Traits = [];
     public Array $ModifiedTraits = [];
+
+    public string $Text = "";
     public Array $Conditions = [];
 
     public string $Location;
