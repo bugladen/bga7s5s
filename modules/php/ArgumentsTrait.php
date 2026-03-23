@@ -12,6 +12,7 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
@@ -583,14 +584,19 @@ trait ArgumentsTrait
         $charactersCanIntervene = [];
         foreach ($charactersAtLocation as $character)
         {
-            //Special case for Carmella Vanessa Slavaggi
+            if (! $character->canIntervene()) continue;
+
             if ($character instanceof _01178)
             {
-                if (! $character->canIntervene()) continue;
+                // Carmella can intervene while engaged
             }
-            else
+            else if ($character instanceof _01040 && $character->hasEngardeWeaponEquipped($this->theah))
             {
-                if (! $character->canIntervene() || $character->Engaged) continue;
+                // Rena can intervene while engaged if she has a ready weapon
+            }
+            else if ($character->Engaged)
+            {
+                continue;
             }
 
             $charactersCanIntervene[] = $character;
