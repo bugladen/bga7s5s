@@ -1694,18 +1694,10 @@ body {
 }
 
 ._7sfs-confirm-btn {
-
     font-size: 15px;
     padding: 6px 22px;
-    border: 1px solid #6b4f34;
     border-radius: 4px;
     cursor: pointer;
-    color: #3b2a1a;
-    background: #e8d5b7;
-}
-
-._7sfs-confirm-btn:hover {
-    background: #c9a97a;
 }
 
 ._7sfs-discard-dialog {
@@ -1739,8 +1731,6 @@ body {
 }
 
 #maintitlebar_content span {
-
-    font-size: 20px;
     font-weight: normal !important;
 }
 
