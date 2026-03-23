@@ -34,8 +34,9 @@ class Maneuver_02018 extends Maneuver
         {
             $owner = $this->getOwningCard($event->theah);
             $actor = $event->theah->getDuelRoundActor();
-            $event->thrust += $actor->Wounds + 1;
-            $event->explanations[] = sprintf($event->theah->game->translate("%s: Maneuver [%s] adds +%d Thrust."), $owner->getInjectCode(), $this->Name, $actor->Wounds);
+            $thrustBonus = $actor->Wounds + 1;
+            $event->thrust += $thrustBonus;
+            $event->explanations[] = sprintf($event->theah->game->translate("%s: Maneuver [%s] adds +%d Thrust."), $owner->getInjectCode(), $this->Name, $thrustBonus);
         }
     }
 }
