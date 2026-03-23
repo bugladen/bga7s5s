@@ -76,7 +76,7 @@ class Reaction_02019 extends RiskReaction
         if ($event instanceof EventPressureOccuring && $this->isAvailable())
         {
             $owner = $this->getOwningCard($event->theah);
-            if ($owner->Location == Game::LOCATION_HAND)
+            if ($owner->Location == Game::LOCATION_HAND && in_array(Game::STAT_INFLUENCE, $event->pressureTypes))
             {
                 $characters = $event->theah->getCharactersAtLocation($event->location);
                 $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId);
@@ -95,7 +95,7 @@ class Reaction_02019 extends RiskReaction
         {
             $owner = $this->getOwningCard($event->theah);
             $performer = $event->theah->getCharacterById($this->PerformerId);
-            if ($performer->hasTrait("Zealot"))
+            if ($performer->hasTrait("Zealot") && $performer->Wounds > 0)
             {
                 $healEvent = EventFactory::createCharacterBeingHealedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $event->theah->queueEvent($healEvent);
