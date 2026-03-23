@@ -182,19 +182,12 @@ trait StatesTrait
 
     public function stPlanningPhaseApproachCardsPlayed()
     {
-        $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
+        $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player ORDER BY turn_order";
         $players = $this->getCollectionFromDb($sql);
 
-        //Reveal the cards
+        //Reveal the schemes
         foreach ( $players as $playerId => $player ) 
         {
-            // Run events that the character has been played to a location
-            if ($player['characterId']) {
-                $character = $this->getCardObjectFromDb($player['characterId']);
-                $event = EventFactory::createApproachCharacterPlayedEvent($playerId, $character->Id);
-                $this->theah->queueEvent($event);
-            }
-
             //Update the scheme's location in the DB
             if ($player['schemeId']) 
             {
@@ -209,6 +202,17 @@ trait StatesTrait
                     $event->location = Game::LOCATION_PLAYER_HOME;
                     $event->playerName = $player['player_name'];
                 }
+                $this->theah->queueEvent($event);
+            }
+        }
+
+        //Reveal the characters
+        foreach ( $players as $playerId => $player ) 
+        {
+            // Run events that the character has been played to a location
+            if ($player['characterId']) {
+                $character = $this->getCardObjectFromDb($player['characterId']);
+                $event = EventFactory::createApproachCharacterPlayedEvent($playerId, $character->Id);
                 $this->theah->queueEvent($event);
             }
         }
@@ -314,7 +318,7 @@ trait StatesTrait
 
     public function stPlanningPhaseResolveWhenRevealedCards() 
     {
-        $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player";
+        $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player ORDER BY turn_order";
         $players = $this->getCollectionFromDb($sql);
 
         $whenRevealedEffectsCount = 0;
@@ -424,10 +428,7 @@ trait StatesTrait
         {
             //Get the player's leader
             $leader = $this->theah->getLeaderByPlayerId($playerId);
-            //Get the modified panache value for the leader
-            if ($leader instanceof Leader) {
-                $panache = $leader->ModifiedPanache;
-            }
+            $panache = $leader->ModifiedPanache;
 
             $cards = [];
             for ($i = 0; $i < $panache; $i++) {
@@ -1959,12 +1960,11 @@ trait StatesTrait
         }
 
         //Send all schemes to the locker
-        $players = $this->loadPlayersBasicInfos();
-        foreach ($players as $playerId => $player)
+        $sql = "SELECT player_id, selected_scheme_id as schemeId FROM player ORDER by turn_order";
+        $list = $this->getCollectionFromDB($sql);
+        foreach ( $list as $playerId => $player ) 
         {
-            $sql = "SELECT selected_scheme_id as id FROM player where player_id = $playerId";
-            $schemeId = $this->getUniqueValueFromDB($sql);
-
+            $schemeId = $player['schemeId'];
             if ($schemeId)
             {
                 $sql = "UPDATE player SET selected_scheme_id = NULL, selected_character_id = NULL WHERE player_id = $playerId";

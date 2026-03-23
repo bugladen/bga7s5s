@@ -545,7 +545,7 @@ trait UtilitiesTrait
     function pressureLocation(int $attemptingPlayerId, ?Character $performer, string $location, string $pressureType): Array
     {
         //Get an array of players to keep track of their influence at the location 
-        $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player");
+        $playerInfluences = $this->getCollectionFromDB("SELECT player_id FROM player ORDER by turn_order");
         foreach ($playerInfluences as $playerId => $player) {
             $player["influence"] = 0;
             $playerInfluences[$playerId] = $player;

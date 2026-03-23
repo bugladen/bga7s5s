@@ -598,7 +598,7 @@ trait ArgumentsTrait
             {
                 if (! $character->canIntervene() || $character->Engaged) continue;
             }
-
+            
             $charactersCanIntervene[] = $character;
         }
 
