@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02003;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
@@ -1637,8 +1638,8 @@ class Theah
             throw new \BgaUserException($this->game->translate("Character is not at the same location"));
         }    
 
-        //Special case for Carmella Vanessa Slavaggi and Mourad
-        if ($character instanceof _01178 || $character instanceof _02003)
+        //Special case for Carmella Vanessa Slavaggi, Mourad, and Rena Klingenhalter (with ready Weapon)
+        if ($character instanceof _01178 || $character instanceof _02003 || ($character instanceof _01040 && $character->hasEngardeWeaponEquipped($this)))
         {
             if (! $character->canIntervene())
             {

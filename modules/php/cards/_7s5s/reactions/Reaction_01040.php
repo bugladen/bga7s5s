@@ -31,10 +31,16 @@ class Reaction_01040 extends CardReaction
         foreach ($owner->Attachments as $attachmentId)
         {
             $attachment = $theah->getAttachmentById($attachmentId);
-            $array[] = $this->createButtonProperty($theah->game, $theah->game->translate("Engage: ") . $theah->game->translate($attachment->Name), "engageWeapon-$attachment->Id");
+            if ($attachment->hasTrait("Weapon") && !$attachment->Engaged)
+            {
+                $array[] = $this->createButtonProperty($theah->game, $theah->game->translate("Engage: ") . $theah->game->translate($attachment->Name), "engageWeapon-$attachment->Id");
+            }
         }
 
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate("Decline"), "decline");
+        if (!$owner->Engaged)
+        {
+            $array[] = $this->createButtonProperty($theah->game, $theah->game->translate("Decline"), "decline");
+        }
 
         return $array;
     }
@@ -43,10 +49,11 @@ class Reaction_01040 extends CardReaction
     {
         parent::handleEvent($event);
 
+        // $this->isAvailable() is not checked because this reaction is always available
         if ($event instanceof EventCharacterIntervened)
         {
             $owner = $this->getOwningCharacter($event->theah);
-            if ($event->playerId == $owner->ControllerId && $event->newTargetId == $owner->Id && count($owner->Attachments) > 0)
+            if ($event->playerId == $owner->ControllerId && $event->newTargetId == $owner->Id && $owner->hasEngardeWeaponEquipped($event->theah))
             {
                 $transition = EventFactory::createReactionTransitionEvent($event->playerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);
@@ -58,20 +65,23 @@ class Reaction_01040 extends CardReaction
     {
         parent::performReaction($game, $state, $internalId, $reactionId);
 
+        $owner = $this->getOwningCharacter($game->theah);
+
         if ($reactionId != "decline")
         {
-            $owner = $this->getOwningCharacter($game->theah);
             $attachmentId = str_replace("engageWeapon-", "", $reactionId);
-
-            $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
-            $game->theah->queueEvent($engardeEvent);
 
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $attachmentId, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
 
-            //This reaction always available, do not set it as used
+            //This reaction always available, do not call $this->setUsed()
+        }
+        else
+        {
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
+            $game->theah->queueEvent($engageEvent);
         }
 
-        $game->gamestate->nextState("done");        
+        $game->gamestate->nextState("done");
     }
 }
