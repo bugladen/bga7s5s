@@ -37,6 +37,8 @@ class _01069 extends Character implements IHasActions
             "Montaigne",
         ];
 
+        $this->Text = "<p>Maxime ignores wounds from Sorceries and Sorcerer abilities he performs. (Wound costs are considered paid.)</p><p>Sorcerer Action: Discard a card • Put target non-Unique attachment from your discard pile into your hand.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

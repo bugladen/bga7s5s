@@ -38,6 +38,8 @@ class _01203 extends CityCharacter implements IHasReactions
             'Sarmatian',
         ];
 
+        $this->Text = "<p>Negotiable (You may parley when paying for this card.)</p><p>Reaction: When a duel occurs at Leja's location, at the beginning of the first round • Add or remove a threat from one of the participants.</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

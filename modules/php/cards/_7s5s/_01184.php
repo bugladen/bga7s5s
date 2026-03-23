@@ -39,6 +39,8 @@ class _01184 extends CityCharacter implements IHasReactions
             'Montaigne',
         ];
 
+        $this->Text = "<p>Negotiable (You may parley when paying for this card.)</p><p>During pressures, Claude gains +1[inf].</p><p>City Reaction: When Claude's location is pressured • Count only the performer and en garde characters.</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

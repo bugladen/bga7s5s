@@ -32,6 +32,8 @@ class _01042 extends Character implements IHasTechniques
             "Eisen",
         ];
 
+        $this->Text = "<p>When Terrell's duel ends, attachments in his dueling line go into your hand instead of the discard pile. (They do not if Terrell was destroyed.)</p><p>Technique: +1 [Thrust].</p>";
+
         $this->resetCard();
 
         $technique = new Technique_PlusOneThrust();

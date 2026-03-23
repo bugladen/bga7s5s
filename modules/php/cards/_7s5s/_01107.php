@@ -31,6 +31,8 @@ class _01107 extends Risk implements IHasManeuvers
             'Aldana',
         ];
 
+        $this->Text = "<p>Maneuver: If your participant was wounded during this duel • Wound the adversary. If they are destroyed as a result of that wound, claim this location.</p>";
+
         $this->resetCard();
 
         $this->Maneuvers = [

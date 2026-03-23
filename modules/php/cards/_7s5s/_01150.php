@@ -34,6 +34,8 @@ class _01150 extends Scheme
             "Provocation",
         ];
 
+        $this->Text = "<p>Add a Renown to [The Forums]. Then, each opponent may move a Renown from any location to [The Forums].</p><p>[BAR]</p><p>Players can intervene in challenges at [The Forums] only if they added or moved a Renown there this Day. (Adding or moving a Renown during the Day counts.)</p>";
+
         $this->resetCard();
     }
 

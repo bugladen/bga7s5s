@@ -37,6 +37,8 @@ class _01100 extends FactionAttachment implements IHasReactions
             'Unique',
         ];
 
+        $this->Text = "<p>Reaction: When a character at this location accepts a challenge, engage this card • For the rest of the duel, while the adversary is at this location, they reveal one less card when gambling.</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

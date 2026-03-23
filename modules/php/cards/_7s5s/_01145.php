@@ -29,6 +29,8 @@ class _01145 extends Scheme
             "Camaraderie",
         ];
 
+        $this->Text = "<p>Move a Renown from a location to another location. Then, add a Renown to each location that has none.</p><p>Each player draws a card. Then, the player with the least Renown draws a card. Then, the player with the fewest characters draws a card. (Least and fewest cannot tie.)</p>";
+
         $this->resetCard();
     }
 

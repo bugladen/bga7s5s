@@ -32,6 +32,8 @@ class _01130 extends Risk implements IHasActions
             'Provocation',
         ];
 
+        $this->Text = "<p>City Action: If your performer's location is uncontrolled and they are your only character there • Claim it. You cannot lose control of it for as long as your performer is there. If your performer leaves this location, it becomes uncontrolled.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

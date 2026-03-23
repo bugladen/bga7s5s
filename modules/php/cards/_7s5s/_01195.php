@@ -36,6 +36,8 @@ class _01195 extends CityAttachment
             'Unique',
         ];
 
+        $this->Text = "<p>Forced: After this card enters a discard pile • Add it to [The Grand Bazaar].</p><p>When the equipped character plays a combat card, destroy this card and gain +1 [Riposte].</p>";
+
         $this->resetCard();
     }
 

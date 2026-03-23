@@ -35,6 +35,8 @@ class _01072 extends Scheme implements IHasActions
             "Honor",
         ];
 
+        $this->Text = "<p>Add a Renown to a location with no Renown.</p><p>[BAR]</p><p>Leader City Action: Engage your performer • Pressure with [Infl] counting only non-Mercenary characters. You succeed even if tied. If successful, discard a City Card and muster at that location. (Muster is a character from Approach Deck.)</p>";
+
         $this->resetCard();
 
         $this->Actions = [

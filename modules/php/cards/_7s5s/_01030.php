@@ -35,6 +35,8 @@ class _01030 extends Risk implements IHasActions
             'Sorte',
             'Unique',
         ];
+
+        $this->Text = "<p>Sorcerer Strega Action: Engage your opposed performer • Pressure their location with [Inf]. Target opposing character adds to your total instead. If successful, claim the location.</p>";
  
         $this->resetCard();
 

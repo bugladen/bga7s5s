@@ -39,6 +39,8 @@ class _01066 extends Character implements IHasReactions, IHasTechniques
             "Avalon",
         ];
 
+        $this->Text = "<p>City Reaction: After an opposing character moved to an adjacent location • Move Horatio to their new location.</p><p>Technique: If the adversary is the only enemy character at this location • +2 Thrust.</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

@@ -37,6 +37,8 @@ class _01097 extends Character implements IHasActions, IHasReactions
             "Aragosta",
         ];
 
+        $this->Text = "<p>City Action: Target an opposing character • If their controller has fewer cards in hand than you, engage them.</p><p>Reaction: After an opponent discards a card due to your effect • Draw a card.</p>";
+
         $this->Actions = [
             new Action_01097(),
         ];

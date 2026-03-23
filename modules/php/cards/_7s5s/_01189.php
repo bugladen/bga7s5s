@@ -29,6 +29,8 @@ class _01189 extends CityEventCard implements IHasActions
             'Fortune',
         ];
 
+        $this->Text = "<p>City Action: Engage your performer • Move a Renown from this location to an adjacent one, or from an adjacent location to this one. Discard this card.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

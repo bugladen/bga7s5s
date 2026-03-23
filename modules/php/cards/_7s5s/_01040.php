@@ -37,6 +37,8 @@ class _01040 extends Character implements IHasReactions
             "Eisen",
         ];
 
+        $this->Text = "<p>Rena may intervene by engaging her equipped Weapon instead of herself. She may do this even while engaged.</p><p>While Rena has a Weapon equipped, she gains +1 [Com].</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

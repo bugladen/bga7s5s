@@ -41,6 +41,8 @@ class _01043 extends Character implements IHasReactions
             "Eisen",
         ];
 
+        $this->Text = "<p>While using your abilities, Uwe may be considered a Mercenary. (For costs and effects.)</p><p>While the adversary is a Sorcerer, Uwe's combat cards gain +1 [Thrust] .</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

@@ -41,6 +41,8 @@ class _01053 extends Risk implements IHasReactions
             'Zeal',
         ];
 
+        $this->Text = "<p>Forced: When your round ends • Move your participant Home engaged unless the adversary is a Sorcerer.</p><p>Reaction: When a Sorcerer ability targets a card • Wound your performer at that location and cancel the effects.</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

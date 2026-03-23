@@ -43,6 +43,8 @@ class _01075 extends FactionAttachment implements IHasActions
             'Unique',            
         ];
 
+        $this->Text = "<p>May only equip to your non-Diplomat and they gain Musketeer.</p><p>City Action: Engage the equipped performer • Pressure with [Inf]. You succeed even if tied. If successful, claim this location.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

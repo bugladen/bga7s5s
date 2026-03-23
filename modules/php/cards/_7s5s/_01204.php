@@ -39,6 +39,8 @@ class _01204 extends CityAttachment implements IHasTechniques
             'Unique',
         ];
 
+        $this->Text = "<p>This card cannot be destroyed or moved from the equipped character.</p><p>Technique: Wound the equipped performer • During the adversary's next round, their combat card has -2 [Parry].</p>";
+
         $this->resetCard();
 
         $this->Techniques = [

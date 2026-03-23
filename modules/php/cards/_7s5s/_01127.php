@@ -43,6 +43,8 @@ class _01127 extends FactionAttachment implements IHasReactions, IHasTechniques
             'Unique',
         ];
 
+        $this->Text = "<p>Reaction: After your round of the duel begins • Unequip this card and play it as your combat card. Gain Lethal.</p><p>Technique: +2 [Thrust].</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

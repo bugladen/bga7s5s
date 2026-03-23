@@ -42,6 +42,8 @@ class _01021 extends FactionAttachment
             "Unique"
         ];
 
+        $this->Text = "<p>May equip to any non-Leader character at a City location.</p><p>Forced: After the equipped character en gardes • Wound them.</p>";
+
         $this->resetCard();
     }
 

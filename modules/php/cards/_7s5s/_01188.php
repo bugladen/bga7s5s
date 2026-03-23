@@ -42,6 +42,8 @@ class _01188 extends CityCharacter
             'Ussura',
         ];
 
+        $this->Text = "<p>Negotiable (You may parley when paying for this card.)</p><p>Vladislav may intervene even while engaged.</p><p>When Vladislav intervenes, do not play a combat card. Take the threat as wounds. The duel ends. (Restricted Hostilities still applies.)</p>";
+
         $this->resetCard();
 
         $this->HasIntervened = false;

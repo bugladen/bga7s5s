@@ -33,6 +33,8 @@ class _01170 extends Risk implements IHasActions
             'Fortune',
         ];
 
+        $this->Text = "<p>Wealth (This card counts as two when discarded to pay costs. Send it to The Locker after paying costs.)</p><p>Action: Discard your hand • Draw a card.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

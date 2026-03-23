@@ -35,6 +35,8 @@ class _01068 extends Character implements IHasActions
             "Montaigne",
         ];
 
+        $this->Text = "<p>Sorcerer City Action: Wound Léontine • Move target character you control from her location to another.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

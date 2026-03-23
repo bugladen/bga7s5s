@@ -39,6 +39,8 @@ class _01126 extends Scheme
             "Nature",
         ];
 
+        $this->Text = "<p>Choose one of the outermost locations. Add a Renown to two other locations.</p><p>Place this card on the chosen location. Discard all City Cards and Renown there. All characters there go Home and Renown cannot be added or moved to or from the location. It cannot be controlled. At the end of the Day, send this card to The Locker.</p>";
+
         $this->resetCard();
     }
 

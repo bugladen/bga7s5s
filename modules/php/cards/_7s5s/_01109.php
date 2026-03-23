@@ -31,6 +31,8 @@ class _01109 extends Risk implements IHasReactions
             'Torpor',
         ];
 
+        $this->Text = "<p>Reaction: When a non-Sorcery risk is announced • Cancel its effects. (All costs are still paid.)</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

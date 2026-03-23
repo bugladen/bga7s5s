@@ -34,6 +34,8 @@ class _01082 extends Risk implements IHasManeuvers
             'Final Strike',
         ];
 
+        $this->Text = "<p>Maneuver: Final Strike • Add two threat to the adversary and gain Lethal. (Final Strike activates if your participant is destroyed the round this card is played. Lethal ignores Restricted Hostilities.)</p>";
+
         $this->resetCard();
 
         $this->Maneuvers = [

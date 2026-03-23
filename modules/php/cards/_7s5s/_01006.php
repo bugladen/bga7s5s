@@ -43,6 +43,8 @@ class _01006 extends Leader implements IHasReactions
             "Vodacce",
         ];
 
+        $this->Text = "<p>During setup, reveal a Red Hand Thug from your deck and put it into your hand.</p><p>During pressures, if you control a Thug at that location, add +1.</p><p>Reaction: Before the end of the Day • Target character at Constanzo's location loses Brute. (After moving Home during Dusk.)</p>";
+
         $this->resetCard();
 
         $this->Reactions = [

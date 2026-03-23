@@ -37,6 +37,8 @@ class _01052 extends Risk implements IHasActions, IHasManeuvers
             'Eisenfaust',
         ];
 
+        $this->Text = "<p>Action: Target equipped character heals a wound.</p><p>Maneuver: When your round ends, your participant heals a wound.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

@@ -34,6 +34,8 @@ class _01191 extends CityAttachment implements IHasActions
             'Pistol',
         ];
 
+        $this->Text = "<p>Action: Destroy this card • Wound all non-Leader characters at this location.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

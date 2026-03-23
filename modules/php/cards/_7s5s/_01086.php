@@ -36,6 +36,8 @@ class _01086 extends Risk implements IHasActions, IHasManeuvers
             "Valroux",
         ];
 
+        $this->Text = "<p>Action: Target a location with no characters or only Mercenaries • It becomes uncontrolled.</p><p>Maneuver: While the adversary is a Mercenary, this card has -1cost • Engage the adversary. If they are already engaged, wound them instead.</p>";
+
         $this->resetCard();
         
         $this->Actions = [

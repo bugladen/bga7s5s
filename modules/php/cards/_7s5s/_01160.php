@@ -33,6 +33,8 @@ class _01160 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             'Villainous',
         ];
 
+        $this->Text = "<p>While your Leader is a Villain, this card has -1 cost.</p><p>Action: Target a wounded non-Leader character in a City location • Wound them.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

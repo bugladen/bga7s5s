@@ -36,6 +36,8 @@ class _01164 extends Risk implements IHasActions, IHasManeuvers
             'Stealth',
         ];
 
+        $this->Text = "<p>City Action: Move your performing character to a location that is not adjacent to this one.</p><p>Maneuver: When your round ends, move your participant to an adjacent City location.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

@@ -33,6 +33,8 @@ class _01076 extends Risk implements IHasActions
             'Porte',
         ];
 
+        $this->Text = "<p>Sorcerer Action: Move your performer to any City location. Then, you may wound them. If you do, move another of your characters from the first location to this one.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

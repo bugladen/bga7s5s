@@ -33,6 +33,8 @@ class _01132 extends Risk implements IHasActions
             'Dar Matushki',
         ];
 
+        $this->Text = "<p>Sorcerer Action: Move all engaged characters at your performer's location Home. Then, engage all of the remaining characters there.</p>";
+
         $this->resetCard();
 
         $this->Actions = [

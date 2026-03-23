@@ -44,6 +44,8 @@ class _01186 extends CityCharacter
             'Ashur',
         ];
 
+        $this->Text = "<p>Negotiable (You may parley when paying for this card.)</p><p>Forced: The first time a risk targets Maryam each Day • Cancel the effects. (Costs are still paid.)</p><p>Technique: During the adversary's next round, they cannot use Maneuvers.</p>";
+
         $this->resetCard();
 
         $this->Techniques = [

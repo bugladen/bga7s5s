@@ -37,6 +37,8 @@ class _01115 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTarget
             'Torres',
         ];
 
+        $this->Text = "<p>City Action: Target an adjacent enemy character • Move them to your performer's location.</p><p>Maneuver: If your participant has more [Finesse] than the adversary • They discard a card.</p>";
+
         $this->resetCard();
 
         $this->Actions = [
