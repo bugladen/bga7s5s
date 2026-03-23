@@ -56,6 +56,8 @@
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(3)">Montaigne</button>
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(4)">Ussura</button>
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(5)">Vodacce</button>
+                </div>
+                <div class="_7sfs-deck-picker-tab-buttons">
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(6)">Custom</button>
                 <button id="btnDeckSelect" class="deck-picker-button" disabled onclick="gameui.deckPickerDeckSelected()">\${select_description}</button>
                 </div>
