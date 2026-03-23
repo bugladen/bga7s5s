@@ -301,12 +301,26 @@ abstract class Character extends Card implements IHasTechniques
         foreach ($this->Attachments as $attachmentId)
         {
             $attachment = $theah->getCardById($attachmentId);
-            if ($attachment instanceof Attachment && $attachment->hasTrait("Weapon") && ! $attachment->Engaged)
+            if ($attachment instanceof Attachment && $attachment->hasTrait("Weapon"))
             {
                 return true;
             }
         }
         
+        return false;
+    }
+
+    public function hasEngardeWeaponEquipped(Theah $theah): bool
+    {
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getCardById($attachmentId);
+            if ($attachment instanceof Attachment && $attachment->hasTrait("Weapon") && !$attachment->Engaged)
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 
