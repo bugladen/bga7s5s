@@ -1730,28 +1730,12 @@ body {
     background: #c9a87c !important;
 }
 
-/* Action buttons in the title bar styled to match confirm dialog */
+/* Action buttons in the title bar */
 #maintitlebar_content a {
-
-    /* font-size: 20px; */
     padding: 6px 22px;
-    border: 1px solid #6b4f34;
     border-radius: 4px;
     cursor: pointer;
-    color: #3b2a1a;
-    background: #e8d5b7;
     font-weight: normal !important;
-}
-
-#maintitlebar_content a:hover {
-    background: #c9a97a;
-}
-
-#maintitlebar_content a.disabled {
-    background: #8a8a8a;
-    color: #555;
-    border-color: #777;
-    cursor: default;
 }
 
 #maintitlebar_content span {
