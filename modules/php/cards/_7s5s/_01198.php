@@ -37,7 +37,7 @@ class _01198 extends CityAttachment implements IHasActions
             'Trinket',
         ];
 
-        $this->Text = "<p>The equipped character gains Duelist.</p><p>City Action: Engage the equipped performer • Issue a [finesse] challenge to target opposing character. Only Leaders can refuse the challenge. (Intervening accepts the challenge.)</p>";
+        $this->Text = clienttranslate("<p>The equipped character gains Duelist.</p><p>City Action: Engage the equipped performer • Issue a [finesse] challenge to target opposing character. Only Leaders can refuse the challenge. (Intervening accepts the challenge.)</p>");
 
         $this->resetCard();
 

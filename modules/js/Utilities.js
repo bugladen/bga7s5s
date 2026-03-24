@@ -252,7 +252,22 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }
             
             // Add tooltip (with class for mobile scaling)
-            this.addTippyTooltip(frontDiv.id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+            if (this.getGameUserPreference(this.USER_PREFERENCES_CARD_HOVER_TYPE) == 2) {
+                const cardData = this.cardProperties[card.id];
+                if (cardData.type === 'Character') {
+                    this.createTextTooltipForCharacter(cardData, frontDiv.id);
+                } else if (cardData.type === 'Scheme') {
+                    this.createTextTooltipForScheme(cardData, frontDiv.id);
+                } else if (cardData.type === 'Attachment') {
+                    this.createTextTooltipForAttachment(cardData, frontDiv.id);
+                } else if (cardData.type === 'Risk') {
+                    this.createTextTooltipForRisk(cardData, frontDiv.id);
+                } else {
+                    this.addTippyTooltip(frontDiv.id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+                }
+            } else {
+                this.addTippyTooltip(frontDiv.id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+            }
         }
     },
 
@@ -361,9 +376,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
             crewcap: leader.modifiedCrewCap,
             panache: leader.modifiedPanache,
             player_color: playerColor,
-        }), 
-        playerId == this.player_id ? 'city' : 'home_anchor', 
-        playerId == this.player_id ? 'after' : 'before' );
+        }),
+        playerId == this.player_id ? 'home_wrapper' : 'home_anchor',
+        playerId == this.player_id ? 'first' : 'before' );
 
         this.addTippyTooltip( `${playerId}-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Capacity')}</div>` );
         this.addTippyTooltip( `${playerId}-discard`, `<div class='_7sfs-basic-tooltip'>${_('Faction Deck Discard Pile')}</div>` );
@@ -429,6 +444,25 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     createTooltipForCard: function(card)
     {
+        if (this.getGameUserPreference(this.USER_PREFERENCES_CARD_HOVER_TYPE) == 2) {
+            if (card.type === 'Character') {
+                this.createTextTooltipForCharacter(card);
+                return;
+            }
+            if (card.type === 'Scheme') {
+                this.createTextTooltipForScheme(card);
+                return;
+            }
+            if (card.type === 'Attachment') {
+                this.createTextTooltipForAttachment(card);
+                return;
+            }
+            if (card.type === 'Risk') {
+                this.createTextTooltipForRisk(card);
+                return;
+            }
+        }
+
         if (!card.controllerId) {
             this.addTippyTooltip(`${card.divId}_image`, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.CARD_TOOLTIP_DELAY);
             return;
@@ -449,6 +483,165 @@ return declare('seventhseacityoffivesails.utilities', null, {
         </div>
         `;
         this.addTippyTooltip(`${card.divId}_image`, html, this.CARD_TOOLTIP_DELAY);
+    },
+
+    createTextTooltipForCharacter: function(card, nodeId)
+    {
+        nodeId = nodeId ?? `${card.divId}_image`;
+        const strikeIf = (used, text) => used ? `<s>${text}</s>` : text;
+        const row = (label, value, vtop) => `<tr><td style="padding-right:10px;${vtop ? 'vertical-align:top;' : ''}">${label}</td><td>${value}</td></tr>`;
+        const traits = card.traits?.join(', ') ?? '';
+        const combat = card.dashedCombat ? '-' : card.modifiedCombat;
+        const finesse = card.dashedFinesse ? '-' : card.modifiedFinesse;
+        const influence = card.dashedInfluence ? '-' : card.modifiedInfluence;
+
+        let rows = [
+            row(_('Name'), _(card.name)),
+            row(_('Type'), _(card.type)),
+            row(_('Title'), _(card.title)),
+            row(_('Resolve'), card.modifiedResolve),
+            row(_('Combat'), combat),
+            row(_('Finesse'), finesse),
+            row(_('Influence'), influence),
+        ];
+
+        if (card.traits?.includes('Leader')) {
+            rows.push(row(_('Crew Cap'), card.modifiedCrewCap));
+            rows.push(row(_('Panache'), card.modifiedPanache));
+        }
+
+        rows.push(
+            row(_('Traits'), traits),
+            row(_('Text'), _(card.text), true)
+        );
+
+        if (card.controllerId && card.location !== 'Approach' && card.location !== 'hand') {
+            if (card.actions?.length) {
+                rows.push(row(_('Available&nbsp;Actions'), card.actions.map(a => strikeIf(!a.available, _(a.shortName))).join('<br>'), true));
+            }
+            if (card.reactions?.length) {
+                rows.push(row(_('Available&nbsp;Reactions'), card.reactions.map(r => strikeIf(!r.available, _(r.shortName))).join('<br>'), true));
+            }
+            if (card.techniques?.length) {
+                rows.push(row(_('Available&nbsp;Techniques'), card.techniques.map(t => strikeIf(!t.available, _(t.shortName))).join('<br>'), true));
+            }
+        }
+
+        const html = `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`;
+        this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
+    },
+
+    createTextTooltipForScheme: function(card, nodeId)
+    {
+        nodeId = nodeId ?? `${card.divId}_image`;
+        const strikeIf = (used, text) => used ? `<s>${text}</s>` : text;
+        const traits = card.traits?.join(', ') ?? '';
+
+        let lines = [
+            `${_('Name')}: ${_(card.name)}`,
+            `${_('Type')}: ${_(card.type)}`,
+            `${_('Traits')}: ${traits}`,
+            `${_('Initiative')}: ${card.initiative}`,
+            `${_('Panache&nbsp;Modifier')}: ${card.panacheModifier}`,
+            `${_('Text')}: ${_(card.text)}`
+        ];
+
+        if (card.controllerId && card.location !== 'Approach') {
+            if (card.actions?.length) {
+                lines.push(`${_('Available&nbsp;Actions')}:<br>` + card.actions.map(a => strikeIf(!a.available, _(a.shortName))).join('<br>'));
+            }
+            if (card.reactions?.length) {
+                lines.push(`${_('Available&nbsp;Reactions')}:<br>` + card.reactions.map(r => strikeIf(!r.available, _(r.shortName))).join('<br>'));
+            }
+            if (card.techniques?.length) {
+                lines.push(`${_('Available&nbsp;Techniques')}:<br>` + card.techniques.map(t => strikeIf(!t.available, _(t.shortName))).join('<br>'));
+            }
+        }
+
+        const html = `<div class='_7sfs-basic-tooltip'>${lines.join('<br>')}</div>`;
+        this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
+    },
+
+    createTextTooltipForAttachment: function(card, nodeId)
+    {
+        nodeId = nodeId ?? `${card.divId}_image`;
+        const strikeIf = (used, text) => used ? `<s>${text}</s>` : text;
+        const row = (label, value, vtop) => `<tr><td style="padding-right:10px;${vtop ? 'vertical-align:top;' : ''}">${label}</td><td>${value}</td></tr>`;
+        const fmtMod = (v) => v > 0 ? `+${v}` : (v || '-');
+        const traits = card.traits?.join(', ') ?? '';
+        const riposte = card.dashedRiposte ? '-' : (card.riposte ?? '-');
+        const parry = card.dashedParry ? '-' : (card.parry ?? '-');
+        const thrust = card.dashedThrust ? '-' : (card.thrust ?? '-');
+
+        let rows = [
+            row(_('Name'), _(card.name)),
+            row(_('Type'), _(card.type)),
+            row(_('Cost'), card.wealthCost ?? ''),
+            row(_('Resolve&nbsp;Modifier'), fmtMod(card.resolveModifier)),
+            row(_('Combat&nbsp;Modifier'), fmtMod(card.combatModifier)),
+            row(_('Finesse&nbsp;Modifier'), fmtMod(card.finesseModifier)),
+            row(_('Influence&nbsp;Modifier'), fmtMod(card.influenceModifier)),
+            row(_('Riposte'), riposte),
+            row(_('Parry'), parry),
+            row(_('Thrust'), thrust),
+            row(_('Traits'), traits),
+            row(_('Text'), _(card.text), true),
+        ];
+
+        if (card.controllerId && card.location !== 'hand') {
+            if (card.actions?.length) {
+                rows.push(row(_('Available&nbsp;Actions'), card.actions.map(a => strikeIf(!a.available, _(a.shortName))).join('<br>'), true));
+            }
+            if (card.reactions?.length) {
+                rows.push(row(_('Available&nbsp;Reactions'), card.reactions.map(r => strikeIf(!r.available, _(r.shortName))).join('<br>'), true));
+            }
+            if (card.maneuvers?.length) {
+                rows.push(row(_('Available&nbsp;Maneuvers'), card.maneuvers.map(m => strikeIf(!m.available, _(m.shortName))).join('<br>'), true));
+            }
+            if (card.techniques?.length) {
+                rows.push(row(_('Available&nbsp;Techniques'), card.techniques.map(t => strikeIf(!t.available, _(t.shortName))).join('<br>'), true));
+            }
+        }
+
+        const html = `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`;
+        this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
+    },
+
+    createTextTooltipForRisk: function(card, nodeId)
+    {
+        nodeId = nodeId ?? `${card.divId}_image`;
+        const strikeIf = (used, text) => used ? `<s>${text}</s>` : text;
+        const row = (label, value, vtop) => `<tr><td style="padding-right:10px;${vtop ? 'vertical-align:top;' : ''}">${label}</td><td>${value}</td></tr>`;
+        const traits = card.traits?.join(', ') ?? '';
+        const riposte = card.dashedRiposte ? '-' : card.riposte;
+        const parry = card.dashedParry ? '-' : card.parry;
+        const thrust = card.dashedThrust ? '-' : card.thrust;
+
+        let rows = [
+            row(_('Name'), _(card.name)),
+            row(_('Type'), _(card.type)),
+            row(_('Cost'), card.wealthCost ?? ''),
+            row(_('Riposte'), riposte),
+            row(_('Parry'), parry),
+            row(_('Thrust'), thrust),
+            row(_('Traits'), traits),
+            row(_('Text'), _(card.text), true),
+        ];
+
+        if (card.controllerId && card.location !== 'hand') {
+            if (card.actions?.length) {
+                rows.push(row(_('Available&nbsp;Actions'), card.actions.map(a => strikeIf(!a.available, _(a.shortName))).join('<br>'), true));
+            }
+            if (card.reactions?.length) {
+                rows.push(row(_('Available&nbsp;Reactions'), card.reactions.map(r => strikeIf(!r.available, _(r.shortName))).join('<br>'), true));
+            }
+            if (card.techniques?.length) {
+                rows.push(row(_('Available&nbsp;Techniques'), card.techniques.map(t => strikeIf(!t.available, _(t.shortName))).join('<br>'), true));
+            }
+        }
+
+        const html = `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`;
+        this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
     },
 
     createCharacterCard: function( divId, color, character, targetDiv, inDuel = false )
@@ -852,7 +1045,24 @@ return declare('seventhseacityoffivesails.utilities', null, {
     setupNewStockCard: function( cardDiv, cardTypeId, cardId )
     {
         const card = this.cardProperties[cardTypeId];
-        //Add tooltip to card
+        if (this.getGameUserPreference(this.USER_PREFERENCES_CARD_HOVER_TYPE) == 2) {
+            if (card.type === 'Character') {
+                this.createTextTooltipForCharacter(card, cardDiv.id);
+                return;
+            }
+            if (card.type === 'Scheme') {
+                this.createTextTooltipForScheme(card, cardDiv.id);
+                return;
+            }
+            if (card.type === 'Attachment') {
+                this.createTextTooltipForAttachment(card, cardDiv.id);
+                return;
+            }
+            if (card.type === 'Risk') {
+                this.createTextTooltipForRisk(card, cardDiv.id);
+                return;
+            }
+        }
         this.addTippyTooltip( cardDiv.id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
     },
 

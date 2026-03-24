@@ -492,8 +492,8 @@ return declare('seventhseacityoffivesails.actions', null, {
         dialog.innerHTML =
             '<div class="_7sfs-confirm-text">' + _("Are you sure you want to pass?") + '</div>' +
             '<div class="_7sfs-confirm-buttons">' +
-                '<button class="_7sfs-confirm-btn _7sfs-confirm-yes">' + _("Yes") + '</button>' +
-                '<button class="_7sfs-confirm-btn _7sfs-confirm-no">' + _("No") + '</button>' +
+                '<button class="_7sfs-confirm-btn _7sfs-confirm-yes bgabutton bgabutton_blue">' + _("Yes") + '</button>' +
+                '<button class="_7sfs-confirm-btn _7sfs-confirm-no bgabutton bgabutton_red">' + _("No") + '</button>' +
             '</div>';
 
         overlay.appendChild(dialog);

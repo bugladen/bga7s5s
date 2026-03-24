@@ -35,7 +35,7 @@ class _01026 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             'Zeal',
         ];
 
-        $this->Text = "<p>Red Hand City Action: Destroy your performer • Engage target character at that location. If they are already engaged, send them Home instead.</p>";
+        $this->Text = clienttranslate("<p>Red Hand City Action: Destroy your performer • Engage target character at that location. If they are already engaged, send them Home instead.</p>");
 
         $this->resetCard();
 

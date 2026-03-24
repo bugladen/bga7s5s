@@ -31,7 +31,7 @@ class _01081 extends Risk implements IHasActions
             'Honor',
         ];
 
-        $this->Text = "<p>City Action: Target an opposing engaged character • That character and your performer both en garde.</p>";
+        $this->Text = clienttranslate("<p>City Action: Target an opposing engaged character • That character and your performer both en garde.</p>");
 
         $this->resetCard();
 

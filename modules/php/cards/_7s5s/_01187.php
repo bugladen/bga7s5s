@@ -33,7 +33,7 @@ class _01187 extends CityAttachment implements IHasActions
             'Artifact',
         ];
 
-        $this->Text = "<p>Action: Destroy this card • Equip an attachment from your hand or a City location to this character, ignoring all costs. (It must be available.)</p>";
+        $this->Text = clienttranslate("<p>Action: Destroy this card • Equip an attachment from your hand or a City location to this character, ignoring all costs. (It must be available.)</p>");
 
         $this->resetCard();
 

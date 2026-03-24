@@ -38,7 +38,7 @@ class _01013 extends Character implements IHasTechniques, IHasReactions
             "Vodacce",
         ];
 
-        $this->Text = "<p>Reaction: After your Red Hand is destroyed at this location • Draw a card.</p><p>Technique: If Vissenta has equal or more wounds than the adversary • [+1 Parr]y or [+1 Thrust].</p>";
+        $this->Text = clienttranslate("<p>Reaction: After your Red Hand is destroyed at this location • Draw a card.</p><p>Technique: If Vissenta has equal or more wounds than the adversary • [+1 Parr]y or [+1 Thrust].</p>");
 
         $this->resetCard();
 

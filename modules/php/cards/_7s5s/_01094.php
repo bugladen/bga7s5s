@@ -34,7 +34,7 @@ class _01094 extends Character implements IHasActions
             "Castille",
         ];
 
-        $this->Text = "<p>During pressures, while Aníbal is at a location with one or fewer Renown, he gains +2 [inf].</p><p>City Action: If Aníbal's location has no Renown • En garde him.</p>";
+        $this->Text = clienttranslate("<p>During pressures, while Aníbal is at a location with one or fewer Renown, he gains +2 [inf].</p><p>City Action: If Aníbal's location has no Renown • En garde him.</p>");
 
         $this->resetCard();
 

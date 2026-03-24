@@ -34,7 +34,7 @@ class _01152 extends Scheme implements IHasActions
             "Demoralize",
         ];
 
-        $this->Text = "<p>Add a Renown to any location or move a Renown to an adjacent location.</p><p>[BAR]</p><p>City Action: Wound your performer • En garde target character at this location.</p><p>City Action: Wound your performer • Engage target character at this location.</p>";
+        $this->Text = clienttranslate("<p>Add a Renown to any location or move a Renown to an adjacent location.</p><p>[BAR]</p><p>City Action: Wound your performer • En garde target character at this location.</p><p>City Action: Wound your performer • Engage target character at this location.</p>");
 
         $this->resetCard();
 

@@ -31,7 +31,7 @@ class _01110 extends Risk implements IHasManeuvers
             'Aldana',
         ];
 
-        $this->Text = "<p>Maneuver: Wound the adversary. If your participant has 3 [Combat] or more, this location becomes uncontrolled unless they take another wound.</p>";
+        $this->Text = clienttranslate("<p>Maneuver: Wound the adversary. If your participant has 3 [Combat] or more, this location becomes uncontrolled unless they take another wound.</p>");
 
         $this->resetCard();
 

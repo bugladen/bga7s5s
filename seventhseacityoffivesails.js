@@ -133,6 +133,9 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 500;
 
+            //User preferences
+            this.USER_PREFERENCES_CARD_HOVER_TYPE = 100;
+
             //Card conditions
             this.ADVERSARY_OF_YEVGENI = 'Adversary of Yevgeni';
             this.CRYSTAL_EYE_TARGET = 'Crystal Eye Target';

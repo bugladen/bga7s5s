@@ -385,7 +385,9 @@
                 </div>
                 <!-- End  City -->
 
-                <div id="home_anchor"></div>
+                <div id="home_wrapper">
+                    <div id="home_anchor"></div>
+                </div>
 
                 <div id="approachDeck-container" class="whiteblock _7sfs-hand">
                     <div class="_7sfs-hand-label">Your Approach Deck</div>

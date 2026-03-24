@@ -35,7 +35,7 @@ class _01087 extends Risk implements IHasActions, IHasManeuvers
             'Duty',
         ];
 
-        $this->Text = "<p>Action: En garde your non-Mercenary performer.</p><p>Maneuver: En garde your non-Mercenary participant.</p>";
+        $this->Text = clienttranslate("<p>Action: En garde your non-Mercenary performer.</p><p>Maneuver: En garde your non-Mercenary participant.</p>");
 
         $this->resetCard();
 

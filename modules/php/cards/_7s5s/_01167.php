@@ -31,7 +31,7 @@ class _01167 extends Risk implements IHasActions
             'Theft',
         ];
 
-        $this->Text = "<p>City Action: Take control of target non-Unique attachment in an opponent's discard pile. Equip it to your performer, paying all costs.</p>";
+        $this->Text = clienttranslate("<p>City Action: Take control of target non-Unique attachment in an opponent's discard pile. Equip it to your performer, paying all costs.</p>");
 
         $this->resetCard();
 

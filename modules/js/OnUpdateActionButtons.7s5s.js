@@ -18,7 +18,7 @@
 
             'setupTable_01006': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             'setupTable_01006_2': () => {
@@ -32,7 +32,7 @@
     
             'planningPhaseResolveSchemes_01016_2': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
@@ -42,13 +42,13 @@
 
             'planningPhaseResolveSchemes_01044': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             
             'planningPhaseResolveSchemes_01045': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             
@@ -59,7 +59,7 @@
     
             'planningPhaseResolveSchemes_01072': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     
@@ -70,7 +70,7 @@
     
             'planningPhaseResolveSchemes_01125': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
+                this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actCityLocationsSelected', 'disabled');
     
                 let numberofLocationsWithReknown = 0;
@@ -86,7 +86,7 @@
     
             'planningPhaseResolveSchemes_01125_2': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
             },
     
             'planningPhaseResolveSchemes_01125_3': () => {
@@ -96,7 +96,7 @@
     
             'planningPhaseResolveSchemes_01125_4': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
+                this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
@@ -106,14 +106,14 @@
             },
     
             'planningPhaseResolveSchemes_01126_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     
             'planningPhaseResolveSchemes_01143': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
+                this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     
@@ -129,7 +129,7 @@
     
             'planningPhaseResolveSchemes_01145': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     
@@ -144,7 +144,7 @@
     
             'planningPhaseResolveSchemes_01150': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
@@ -160,17 +160,17 @@
     
             'planningPhaseResolveSchemes_01152': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+                this.statusBar.addActionButton(_('Pass'), () => this.onPass(), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     
             'planningPhaseResolveSchemes_01152_2': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
+                this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
             },
     
             'planningPhaseResolveSchemes_01152_3': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
@@ -187,7 +187,7 @@
     
             'highDramaBeginning_01144': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actPassWithPass', {})) 
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actPassWithPass', {}), { id: 'actPass', color: 'alert' }) 
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
@@ -196,7 +196,7 @@
             },
 
             'highDramaPhase01007': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
@@ -206,43 +206,43 @@
             },
             'highDramaPhase01008_4': () => {
                 this.addActionButton(`actSink`, _('Sink'), () => this.bgaPerformAction('actFromCardWithId', {id: 1})) 
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actPass', {})) 
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actPass', {}), { id: 'actPass', color: 'alert' }) 
             },
 
     
             'highDramaPhase01011': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01012': () => {
                 if (! args.args.abnormalFlow)
-                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                    this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01015': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
             'highDramaPhase01017': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01019': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01020': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
@@ -267,7 +267,7 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
             'highDramaPhase01028_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseMultipleInPlayCardsConfirmed());
             },
 
@@ -287,7 +287,7 @@
             },
             'highDramaPhase01034_2': () => {
                 this.addActionButton(`actEngage`, _('Engage'), () => this.bgaPerformAction('actFromCardWithId', {id: 1})) 
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {})) 
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' }) 
             },
 
             'highDramaPhase01035': () => {
@@ -296,11 +296,11 @@
     
             'highDramaPhase01035_3': () => {
                 this.addActionButton(`actRecruit`, _('Recruit'), () => this.bgaPerformAction('actFromCardWithId', {id: 1})) 
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {})) 
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' }) 
             },
     
             'highDramaPhase01035_4': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actParley`, _('Parley'), () => this.bgaPerformAction('actFromCardWithId', {id: 1})) 
                 this.addActionButton(`actNoParley`, _('No Parley'), () => this.bgaPerformAction('actFromCardWithId', {id: 0})) 
             },
@@ -310,42 +310,42 @@
             },
             'highDramaPhase01038_3': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {})) 
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' }) 
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01041': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
             'highDramaPhase01044': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 args.args.attachments.forEach((attachment) => {
                     this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
                 });
             },
             'highDramaPhase01044_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             'highDramaPhase01044_3': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 if ( ! args.args.engaged)
                     this.addActionButton(`actEngage`, _('Engage'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
                 this.addActionButton(`actSendHome`, _('Send Home'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
 
             'highDramaPhase01046a': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
             'highDramaPhase01049': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
@@ -360,7 +360,7 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             'highDramaPhase01055_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
@@ -391,45 +391,45 @@
             },
 
             'highDramaPhase01060_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseMultipleInPlayCardsConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01060_3': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
             'highDramaPhase01064': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onCardDiscarded());
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
 
             'highDramaPhase01064_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
             'highDramaPhase01068': () => {
                 if (! args.args.abnormalFlow)
-                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                    this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01068_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
             'highDramaPhase01069': () => {
                 if (! args.args.abnormalFlow)
-                    this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                    this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardDiscarded());
                 dojo.addClass('actChooseDiscardCards', 'disabled');
             },
@@ -448,7 +448,7 @@
             },
     
             'highDramaPhase01072_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Muster Card'), () => this.onMusterCardSelected());
                 dojo.addClass('actChooseCardSelected', 'disabled');
 
@@ -470,7 +470,7 @@
             },
 
             'highDramaPhase01076_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 this.addActionButton(`btnDecline`, _('Decline'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
                 dojo.addClass('actChooseCardSelected', 'disabled');
@@ -493,42 +493,42 @@
             },
 
             'highDramaPhase01091': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseMultipleInPlayCardsConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             'highDramaPhase01091_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actFactionCardSelected`, _('Confirm'), () => this.onChooseHandCardConfirmed());
                 dojo.addClass('actFactionCardSelected', 'disabled');
             },
 
             'highDramaPhase01092': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01093': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
             'highDramaPhase01096': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01097': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01102': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onCardsDiscarded());
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
@@ -545,7 +545,7 @@
 
             'highDramaPhase01105': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {}));
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
@@ -555,7 +555,7 @@
                 });
             },
             'highDramaPhase01106_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 args.args.actions.forEach((action) => {
                     this.addActionButton(`actChooseAction-${action.id}`, action.name, () => this.bgaPerformAction('actFromCardWithActionId', {actionSourceId: action.sourceId, actionId: action.id}));
                 });
@@ -586,7 +586,7 @@
                 });
             },
             'highDramaPhase01113_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
@@ -600,31 +600,31 @@
             },
 
             'highDramaPhase01117': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
             'highDramaPhase01117_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
             'highDramaPhase01118': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
             'highDramaPhase01123': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01124': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 args.args.actions.forEach((action) => {
                     this.addActionButton(`actChooseAction-${action.id}`, action.name, () => this.bgaPerformAction('actFromCardWithActionId', {actionSourceId: action.sourceId, actionId: action.id}));
                 });
@@ -636,7 +636,7 @@
             },
 
             'highDramaPhase01133_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
@@ -674,13 +674,13 @@
             },
 
             'highDramaPhase01147': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01148': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
@@ -698,19 +698,19 @@
             },
     
             'highDramaPhase01149': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
             'highDramaPhase01152a': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'highDramaPhase01152b': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
@@ -723,7 +723,7 @@
             },
 
             'highDramaPhase01156': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardDiscarded());
                 dojo.addClass('actChooseDiscardCards', 'disabled');
             },
@@ -737,7 +737,7 @@
             },
 
             'highDramaPhase01158': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onCardDiscarded());
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
@@ -783,17 +783,17 @@
                 });
             },
             'highDramaPhase01167_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             'highDramaPhase01167_3': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             'highDramaPhase01167_4': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onPaymentConfirmedFromCard());
             },
 
@@ -823,33 +823,33 @@
             },
             'highDramaPhase01180_3': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {})) 
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' }) 
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             'highDramaPhase01180_4': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             'highDramaPhase01180_5': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onPaymentConfirmedFromCard());
             },
     
             'highDramaPhase01185': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardsDiscarded());
                 dojo.addClass('actChooseDiscardCards', 'disabled');
             },
     
             'highDramaPhase01189a': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     
             'highDramaPhase01189b': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
@@ -860,38 +860,38 @@
     
             'highDramaPhase01192_3': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardPass', {})) 
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' }) 
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
             'highDramaPhase01194': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 args.args.attachments.forEach((attachment) => {
                     this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
                 });
             },
     
             'highDramaPhase01194_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
             'highDramaPhase01197': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
             'highDramaPhase01197_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 args.args.attachments.forEach((attachment) => {
                     this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
                 });
             },
     
             'highDramaPhase01197_3': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
@@ -908,13 +908,13 @@
             },
     
             'highDramaPhase01205': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
             'highDramaPhase01205_2': () => {
-                this.addActionButton(`actBack`, '<', () => this.bgaPerformAction('actBack', {}));
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
@@ -939,7 +939,7 @@
 
             'duelChooseTechnique_01010': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onMultipleChooseListCardsConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+                this.statusBar.addActionButton(_('Pass'), () => this.onPass(), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
@@ -1076,7 +1076,7 @@
 
             'duelEndOfRound_01031': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     
@@ -1099,7 +1099,7 @@
     
             'duskPhaseBegin01177': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Character'), () => this.onChooseInPlayCardConfirmed());
-                this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+                this.statusBar.addActionButton(_('Pass'), () => this.onPass(), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
     

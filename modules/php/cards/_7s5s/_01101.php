@@ -41,7 +41,7 @@ class _01101 extends FactionAttachment implements IHasTechniques
             'Aldana',
         ];
 
-        $this->Text = "<p>When the equipped character gambles during a duel, reveal an additional card.</p><p>Technique: -1 Parry • During the adversary's next round, they reveal one less card when they gamble.</p>";
+        $this->Text = clienttranslate("<p>When the equipped character gambles during a duel, reveal an additional card.</p><p>Technique: -1 Parry • During the adversary's next round, they reveal one less card when they gamble.</p>");
 
         $this->resetCard();
 

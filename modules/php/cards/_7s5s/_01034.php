@@ -37,7 +37,7 @@ class _01034 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             'Zeal',
         ];
 
-        $this->Text = "<p>City Action: Wound your performer • Target opposing en garde character may engage. If they do not, en garde your performer.</p>";
+        $this->Text = clienttranslate("<p>City Action: Wound your performer • Target opposing en garde character may engage. If they do not, en garde your performer.</p>");
         
         $this->resetCard();
         

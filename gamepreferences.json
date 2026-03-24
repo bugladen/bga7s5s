@@ -1,1 +1,15 @@
-{}
+{
+    "100": {
+      "name": "Card Hover Style",
+      "needReload": true,
+      "values": {
+        "1": {
+          "name": "Image"
+        },
+        "2": {
+          "name": "Text"
+        }
+      },
+      "default": 1
+    }
+  }

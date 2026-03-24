@@ -31,7 +31,7 @@ class _01142 extends Risk implements IHasManeuvers
             'Demoralize',
         ];
 
-        $this->Text = "<p>Maneuver: If you have greater or equal [Combat] than the adversary • Destroy target attachment on them.</p>";
+        $this->Text = clienttranslate("<p>Maneuver: If you have greater or equal [Combat] than the adversary • Destroy target attachment on them.</p>");
 
         $this->resetCard();
 

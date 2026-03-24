@@ -41,7 +41,7 @@ class _01074 extends FactionAttachment implements IHasTechniques
             "Sword",
         ];
 
-        $this->Text = "<p>May only equip to your Duelist.</p><p>Technique: +1 Riposte.</p>";
+        $this->Text = clienttranslate("<p>May only equip to your Duelist.</p><p>Technique: +1 Riposte.</p>");
         
         $this->resetCard();
 

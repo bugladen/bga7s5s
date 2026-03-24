@@ -36,7 +36,7 @@ class _01065 extends Character implements IHasReactions
             "Montaigne",
         ];
 
-        $this->Text = "<p>Your other Musketeers at Henri's location cannot be moved by an opponent's abilities.</p><p>Reaction: When Henri issues a challenge, engage his equipped Weapon • Target character cannot intervene.</p>";
+        $this->Text = clienttranslate("<p>Your other Musketeers at Henri's location cannot be moved by an opponent's abilities.</p><p>Reaction: When Henri issues a challenge, engage his equipped Weapon • Target character cannot intervene.</p>");
 
         $this->resetCard();
 

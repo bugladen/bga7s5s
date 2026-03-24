@@ -31,7 +31,7 @@ class _01080 extends Risk implements IHasReactions
             'Rumor',
         ];
 
-        $this->Text = "<p>City Reaction: After a duel where your adversary was destroyed • Pressure your performer's location with [inf]. If successful, claim the location.</p>";
+        $this->Text = clienttranslate("<p>City Reaction: After a duel where your adversary was destroyed • Pressure your performer's location with [inf]. If successful, claim the location.</p>");
 
         $this->resetCard();
 

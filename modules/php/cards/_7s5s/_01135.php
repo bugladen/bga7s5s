@@ -35,7 +35,7 @@ class _01135 extends Risk implements IHasReactions, IHasManeuvers
             'Mireli',
         ];
 
-        $this->Text = "<p>Reaction: When the adversary announces their combat card • Discard it. They gamble and play one for free instead. (It does not count against their total played gambles.)</p><p>Maneuver: Choose one: +2 [Parry], or wound the adversary and during their next, round their combat card has -2 [Thrust].</p>";
+        $this->Text = clienttranslate("<p>Reaction: When the adversary announces their combat card • Discard it. They gamble and play one for free instead. (It does not count against their total played gambles.)</p><p>Maneuver: Choose one: +2 [Parry], or wound the adversary and during their next, round their combat card has -2 [Thrust].</p>");
 
         $this->resetCard();
 

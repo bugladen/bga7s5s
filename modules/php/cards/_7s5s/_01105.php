@@ -33,7 +33,7 @@ class _01105 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             'Revelry',
         ];
 
-        $this->Text = "<p>City Action: Pressure your performer's location with Resolve. If successful, engage target character there. (Total Resolve. Ignore wounds.)</p>";
+        $this->Text = clienttranslate("<p>City Action: Pressure your performer's location with Resolve. If successful, engage target character there. (Total Resolve. Ignore wounds.)</p>");
 
         $this->resetCard();
 

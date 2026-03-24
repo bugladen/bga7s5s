@@ -32,7 +32,7 @@ class _01078 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             'Provocation',
         ];
 
-        $this->Text = "<p>Action: Target enemy character issues a [combat]challenge to one of your characters opposing them. (Their choice.)</p>";
+        $this->Text = clienttranslate("<p>Action: Target enemy character issues a [combat]challenge to one of your characters opposing them. (Their choice.)</p>");
 
         $this->resetCard();
 
