@@ -90,7 +90,7 @@ onUpdateActionButtons: function( stateName, args )
             if (args._private.hasBrutes)
                 this.addActionButton(`btnBrute`, _('Play Brute'), () => this.bgaPerformAction('actHighDramaChooseBruteStart', {})) 
                         
-            this.addActionButton(`actPass`, _('Pass'), () => this.onConfirmPass());
+            this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
         },
 
         'highDramaMoveActionChoosePerformer': () => {
@@ -260,7 +260,7 @@ onUpdateActionButtons: function( stateName, args )
                 this.addActionButton(
                     `actChooseTechnique${technique.id}-btn`, technique.name, () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 
             });
-            this.addActionButton(`actPass`, _('Pass'), () => this.onPass());
+            this.statusBar.addActionButton(_('Pass'), () => this.onPass(), { id: 'actPass', color: 'alert' });
         },
         
         'highDramaChallengeActionAcceptChallenge': () => {
