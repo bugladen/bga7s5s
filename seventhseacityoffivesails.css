@@ -483,16 +483,21 @@ body {
 ._7sfs-home-vodacce { background-color: #E7AE4D; }
 
 
+#home_wrapper {
+    width: fit-content;
+    margin: 0 auto;
+}
+
 ._7sfs-home-container {
     position: relative;
     display: flex;
     align-items: center;
     border-radius: 10px;
-    margin: 5px auto 10px auto;
-    width: fit-content;
+    margin: 5px 0 10px 0;
     border: 1px solid black;
     flex-wrap: wrap;
     min-height: 110px;
+    width: fit-content;
 }
 
 ._7sfs-home-panel {

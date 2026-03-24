@@ -376,9 +376,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
             crewcap: leader.modifiedCrewCap,
             panache: leader.modifiedPanache,
             player_color: playerColor,
-        }), 
-        playerId == this.player_id ? 'city' : 'home_anchor', 
-        playerId == this.player_id ? 'after' : 'before' );
+        }),
+        playerId == this.player_id ? 'home_wrapper' : 'home_anchor',
+        playerId == this.player_id ? 'first' : 'before' );
 
         this.addTippyTooltip( `${playerId}-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Capacity')}</div>` );
         this.addTippyTooltip( `${playerId}-discard`, `<div class='_7sfs-basic-tooltip'>${_('Faction Deck Discard Pile')}</div>` );
