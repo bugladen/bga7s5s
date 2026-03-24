@@ -17,7 +17,8 @@ Will create a new GameState class and add supporting entries to other files. The
 ## Steps to create a GameState class
 
 1. Use the pattern of the entire class from `modules\php\States\State_highDramaPhase01158.php`.
-2. Place the file in the `modules\php\States` folder
+2. If the name provided in the parameters contains '01' place the file in the `modules\php\States\7s5s` folder
+else if the name provided in the parameters contains '02' place the file in the `modules\php\States\tac` folder
 3. Name the file `State_*` and append the name provided in the parameters.
 4. In the `name` parameter of the constructor use the name provided in the parameters.
 5. In the `descriptionMyTurn` parameter update the second clientTranslate parameter to `: ${you} must choose a card `
