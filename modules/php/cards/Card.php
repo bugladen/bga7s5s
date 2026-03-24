@@ -447,6 +447,7 @@ abstract class Card
             'reknown' => $this->Reknown,
             'faceDown' => $this->FaceDown,
             'cardBackImage' => $this->CardBackImage,
+            'text' => $this->Text
         ];
 
         $properties['type'] = 'Card';

@@ -30,6 +30,9 @@ class Game extends \Bga\GameFramework\Table
     final const PLAYERS_THAT_USED_OLES_INN = "playersThatUsedOlesInn";
     final const PLAYERS_THAT_USED_GOVERNORS_GARDEN = "playersThatUsedGovernorsGarden";
 
+    //User preferences
+    final const USER_PREFERENCES_CARD_HOVER_TYPE = 100;
+
     //Game options
     final const OPTIONS_CITY_DECK = 100;
     final const OPTIONS_PLAYER_DECKS = 101;
