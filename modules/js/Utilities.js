@@ -631,22 +631,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
     },
 
-    findCardInDiscards: function(cardId) 
-    {
-        for (const playerId in this.gamedatas.players) {
-            const player = this.gamedatas.players[playerId];
-            if (player.discard) {
-                const found = player.discard.find(c => c.id == cardId);
-                if (found) return found;
-            }
-        }
-        if (this.gamedatas.cityDiscard) {
-            const found = this.gamedatas.cityDiscard.find(c => c.id == cardId);
-            if (found) return found;
-        }
-        return null;
-    },
-
     createCharacterCard: function( divId, color, character, targetDiv, inDuel = false )
     {
         //Set the divId of the card

@@ -246,7 +246,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
 
                     if (this.getGameUserPreference(this.USER_PREFERENCES_CARD_HOVER_TYPE) == 2) {
                         const card = cardId 
-                            ? (this.cardProperties[cardId] ?? this.logCardCache[cardId] ?? this.findCardInDiscards(cardId)) 
+                            ? (this.cardProperties[cardId] ?? this.logCardCache[cardId]) 
                             : null;
                         const type = card?.type ?? cardType;
                         if (type) {
