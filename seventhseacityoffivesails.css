@@ -291,26 +291,29 @@ body {
 
 #city-oles-inn {
     background-color: #71613F;
+    margin-top: 10px;
     margin-bottom: 5px;
 }
 
 #city-docks {
     background-color: #7C9A87;
+    margin-top: 10px;
     margin-bottom: 5px;
 }
 
 #city-forum {
     background-color: #DA985E;
+    margin-top: 10px;
 }
 
 #city-bazaar {
     background-color: #596676;
-    margin-top: 5px;
+    margin-top: 10px;
 }
 
 #city-governors-garden {
     background-color: #859370;
-    margin-top: 5px;
+    margin-top: 10px;
 }
 
 ._7sfs-reknown-chip {
