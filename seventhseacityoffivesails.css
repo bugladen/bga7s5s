@@ -1041,13 +1041,13 @@ body {
 }
  
 ._7sfs-basic-tooltip {
-
+    max-width: 500px;
     font-size: 18pt;
 }
 
 /* Tooltip card image styling - prevents layout shifts and ensures proper display */
 ._7sfs-card-tooltip-img {
-    max-width: 495px;
+    max-width: 400px;
     height: auto;
     display: block;
     border: none;
@@ -1636,13 +1636,14 @@ body {
 }
 
 .tippy-box[data-theme~='7sfs'] ._7sfs-basic-tooltip {
+    max-width: 500px;
     font-size: 18px;
     line-height: 1.4;
 }
 
 .tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-img {
     width: auto;
-    max-width: 495px;
+    max-width: 400px;
     height: auto;
     border-radius: 6px;
     display: block;
