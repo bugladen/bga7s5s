@@ -167,6 +167,14 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
 
         format_string_recursive_with_injection: function (log, args) 
         {
+            if (args) {
+                for (const key in args) {
+                    const val = args[key];
+                    if (val && typeof val === 'object' && !Array.isArray(val) && val.id && val.type && !this.logCardCache[val.id]) {
+                        this.logCardCache[val.id] = val;
+                    }
+                }
+            }
             var result = this.format_string_recursive_original(log, args);
             return this.logInject(result);
         },
@@ -246,7 +254,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
 
                     if (this.getGameUserPreference(this.USER_PREFERENCES_CARD_HOVER_TYPE) == 2) {
                         const card = cardId 
-                            ? (this.cardProperties[cardId] ?? this.logCardCache[cardId] ?? this.findCardInDiscards(cardId)) 
+                            ? (this.cardProperties[cardId] ?? this.logCardCache[cardId]) 
                             : null;
                         const type = card?.type ?? cardType;
                         if (type) {

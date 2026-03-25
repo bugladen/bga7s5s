@@ -56,5 +56,13 @@ WHY: After a page refresh, `getAllDatas` sends full card data for all discard pi
 - **Sending card data to all players on play**: Would require framework changes and might leak hidden information.
 - **Simple name+type fallback**: Lightweight, respects the text preference, and degrades gracefully when full data isn't available.
 
+### Notification handler timing issue (2026-03-25)
+
+City cards deployed via `notif_cityCardAddedToLocation` were showing "Name (Type)" fallback tooltips in the log. Root cause: BGA processes notifications in this order: (1) format log entry via `format_string_recursive`, (2) call `addToLog`, (3) call notification handler. So when the log entry was formatted and `addTooltipsToLog` ran, the city card's handler hadn't fired yet — meaning `cardProperties` didn't have the card yet.
+
+Fix: Pre-cache card data from notification args in `format_string_recursive_with_injection`, BEFORE the log is formatted. Most notifications include `"card" => $card->getPropertyArray(...)` in their args. By scanning `args` for objects with `id` and `type` properties and storing them in `logCardCache`, the card data is available when `addTooltipsToLog` runs.
+
+WHY this approach: The notification args are the EARLIEST point where card data is available on the JS side. Pre-caching here ensures the log tooltip lookup succeeds regardless of whether the notification handler has run yet. This is a general fix that works for ANY card type, not just city cards.
+
 ## Pending
 - `createTextTooltipForScheme` still uses `lines.join('<br>')` instead of HTML table format. Needs conversion to match the other three card types.
