@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\States;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\tac;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
@@ -8,22 +8,22 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_highDramaPhase02008_2 extends GameState
+class State_highDramaPhase02008 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::HIGH_DRAMA_PLAYER_TURN_02008_2,
+            id: States::HIGH_DRAMA_PLAYER_TURN_02008,
             type: StateType::ACTIVE_PLAYER,
-            name: "highDramaPhase02008_2",
+            name: "highDramaPhase02008",
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Fate\'s Kiss') . clienttranslate(': ${you} must choose an opposing Character to place chosen Risk under: '),
+            descriptionMyTurn: clienttranslate('Fate\'s Kiss') . clienttranslate(': ${you} must choose a Risk from your Discard Pile to place under Opponent\'s Character: '),
             transitions: [
-                "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "riskChosen" => States::HIGH_DRAMA_PLAYER_TURN_02008_2,
             ],
             updateGameProgression: false,
             initialPrivate: null,

@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\States;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\tac;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
@@ -8,20 +8,20 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_planningPhaseResolveSchemes_02014 extends GameState
+class State_planningPhaseResolveSchemes02005_2 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::PLANNING_PHASE_RESOLVE_SCHEMES_02014,
+            id: States::PLANNING_PHASE_RESOLVE_SCHEMES_02005_2,
             type: StateType::ACTIVE_PLAYER,
-            name: "planningPhaseResolveSchemes_02014",
+            name: "planningPhaseResolveSchemes_02005_2",
 
             // optional
-            description: clienttranslate('${actplayer} is choosing options to resolve their Scheme.'),
-            descriptionMyTurn: clienttranslate('Kaspar\'s Occupation') . clienttranslate(': ${you} must choose to Add Renown to The City Forum, or select a location to move Renown FROM: '),
+            description: clienttranslate('Decipher the Strands') . clienttranslate(': ${actplayer} must choose a City Location that has no Renown to place a Renown onto.'),
+            descriptionMyTurn: clienttranslate('Decipher the Strands') . clienttranslate(': ${you} must choose a City Location that has no Renown to place a Renown onto: '),
             transitions: [
                 "" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
             ],
@@ -29,18 +29,13 @@ class State_planningPhaseResolveSchemes_02014 extends GameState
             initialPrivate: null,
         );
     }
-    
-    public function getArgs(): array
-    {
-        return $this->game->argsForState();
-    } 
 
     #[PossibleAction]
-    public function actFromCardWithId(int $id): void
+    public function actFromCardPass(): void
     {
-        $this->game->actFromCardWithId($id);
+        $this->game->actFromCardPass();
     }
-
+    
     #[PossibleAction]
     public function actFromCardWithLocations(string $locations): void
     {

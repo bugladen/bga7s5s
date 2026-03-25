@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\States;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\tac;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
@@ -8,32 +8,39 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_planningPhaseResolveSchemes02005_3 extends GameState
+class State_highDramaPhase02010_2 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::PLANNING_PHASE_RESOLVE_SCHEMES_02005_3,
+            id: States::HIGH_DRAMA_PLAYER_TURN_02010_2,
             type: StateType::ACTIVE_PLAYER,
-            name: "planningPhaseResolveSchemes_02005_3",
+            name: "highDramaPhase02010_2",
 
             // optional
-            description: clienttranslate('Decipher the Strands') . clienttranslate(': ${actplayer} must choose an opponent to manipulate the top cards of their deck.'),
-            descriptionMyTurn: clienttranslate('Decipher the Strands') . clienttranslate(': ${you} must choose an opponent to manipulate the top cards of their deck: '),
+            description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            descriptionMyTurn: clienttranslate('Twist of the Arcana') . clienttranslate(': ${you} must choose a character to move wounds TO: '),
             transitions: [
-                "" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02005_4,
+                "back" => States::HIGH_DRAMA_PLAYER_TURN_02010,
+                "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_02010_3,
             ],
             updateGameProgression: false,
             initialPrivate: null,
         );
     }
-
+    
     public function getArgs(): array
     {
         return $this->game->argsForState();
     } 
+
+    #[PossibleAction]
+    public function actBack(): void
+    {
+        $this->game->actBack();
+    }
 
     #[PossibleAction]
     public function actFromCardWithId(string $id): void
@@ -43,7 +50,7 @@ class State_planningPhaseResolveSchemes02005_3 extends GameState
 
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->nextState();
+        $this->game->actBack();
     }
 
 }

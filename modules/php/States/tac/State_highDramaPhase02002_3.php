@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\States;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\tac;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
@@ -8,22 +8,22 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_highDramaPhase02008 extends GameState
+class State_highDramaPhase02002_3 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::HIGH_DRAMA_PLAYER_TURN_02008,
+            id: States::HIGH_DRAMA_PLAYER_TURN_02002_3,
             type: StateType::ACTIVE_PLAYER,
-            name: "highDramaPhase02008",
+            name: "highDramaPhase02002_3",
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Fate\'s Kiss') . clienttranslate(': ${you} must choose a Risk from your Discard Pile to place under Opponent\'s Character: '),
+            descriptionMyTurn: clienttranslate('Elisabetta Bonora') . clienttranslate(': ${you} must choose the order to replace the remaining cards: '),
             transitions: [
-                "riskChosen" => States::HIGH_DRAMA_PLAYER_TURN_02008_2,
+                "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,
@@ -36,14 +36,13 @@ class State_highDramaPhase02008 extends GameState
     } 
 
     #[PossibleAction]
-    public function actFromCardWithId(string $id): void
+    public function actFromCardWithIds(string $ids): void
     {
-        $this->game->actFromCardWithId($id);
+        $this->game->actFromCardWithIds($ids);
     }
 
     public function zombie(int $playerId): void
     {
         $this->game->gamestate->nextState();
     }
-
 }

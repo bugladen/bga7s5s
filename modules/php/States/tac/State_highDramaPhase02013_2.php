@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\States;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\tac;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
@@ -8,24 +8,22 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_highDramaPhase02014 extends GameState
+class State_highDramaPhase02013_2 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::HIGH_DRAMA_PLAYER_TURN_02014,
+            id: States::HIGH_DRAMA_PLAYER_TURN_02013_2,
             type: StateType::ACTIVE_PLAYER,
-            name: "highDramaPhase02014",
+            name: "highDramaPhase02013_2",
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate("Kaspar's Occupation") . clienttranslate(': ${you} may choose any cards to discard from the City Deck: '),
+            descriptionMyTurn: clienttranslate('Wilhelm Dünst') . clienttranslate(': ${you} must choose a character to Challenge: '),
             transitions: [
-                "allDiscarded" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-                "cardsChosen" => States::HIGH_DRAMA_PLAYER_TURN_02014_2,
-                "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,
@@ -38,14 +36,14 @@ class State_highDramaPhase02014 extends GameState
     } 
 
     #[PossibleAction]
-    public function actFromCardWithIds(string $ids): void
+    public function actFromCardWithId(string $id): void
     {
-        $this->game->actFromCardWithIds($ids);
+        $this->game->actFromCardWithId($id);
     }
 
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->nextState("zombie");
+        $this->game->gamestate->nextState();
     }
 
 }

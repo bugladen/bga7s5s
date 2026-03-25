@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\States;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\tac;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
@@ -8,25 +8,23 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_highDramaPhase02013_2 extends GameState
+class State_highDramaPhase02013 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::HIGH_DRAMA_PLAYER_TURN_02013_2,
+            id: States::HIGH_DRAMA_PLAYER_TURN_02013,
             type: StateType::ACTIVE_PLAYER,
-            name: "highDramaPhase02013_2",
+            name: "highDramaPhase02013",
 
-            // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Wilhelm Dünst') . clienttranslate(': ${you} must choose a character to Challenge: '),
+            descriptionMyTurn: clienttranslate('Wilhelm Dünst') . clienttranslate(': ${you} must choose a Relic or Faith card to discard: '),
             transitions: [
-                "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+                "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_02013_2,
             ],
-            updateGameProgression: false,
-            initialPrivate: null,
         );
     }
     
@@ -36,6 +34,12 @@ class State_highDramaPhase02013_2 extends GameState
     } 
 
     #[PossibleAction]
+    public function actBack(): void
+    {
+        $this->game->actBack();
+    }
+
+    #[PossibleAction]
     public function actFromCardWithId(string $id): void
     {
         $this->game->actFromCardWithId($id);
@@ -43,7 +47,7 @@ class State_highDramaPhase02013_2 extends GameState
 
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->nextState();
+        $this->game->actBack();
     }
 
 }

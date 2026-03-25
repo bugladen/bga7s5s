@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\States;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\tac;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
@@ -8,23 +8,24 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_highDramaPhase02001_2 extends GameState
+class State_highDramaPhase02014 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::HIGH_DRAMA_PLAYER_TURN_02001_2,
+            id: States::HIGH_DRAMA_PLAYER_TURN_02014,
             type: StateType::ACTIVE_PLAYER,
-            name: "highDramaPhase02001_2",
+            name: "highDramaPhase02014",
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Andriana Dondolo') . clienttranslate(': ${you} must choose a non-Leader character to move to her location: '),
+            descriptionMyTurn: clienttranslate("Kaspar's Occupation") . clienttranslate(': ${you} may choose any cards to discard from the City Deck: '),
             transitions: [
-                "back" => States::HIGH_DRAMA_PLAYER_TURN_02001,
-                "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "allDiscarded" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "cardsChosen" => States::HIGH_DRAMA_PLAYER_TURN_02014_2,
+                "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,
@@ -37,20 +38,14 @@ class State_highDramaPhase02001_2 extends GameState
     } 
 
     #[PossibleAction]
-    public function actBack(): void
+    public function actFromCardWithIds(string $ids): void
     {
-        $this->game->actBack();
-    }
-
-    #[PossibleAction]
-    public function actFromCardWithId(string $id): void
-    {
-        $this->game->actFromCardWithId($id);
+        $this->game->actFromCardWithIds($ids);
     }
 
     public function zombie(int $playerId): void
     {
-        $this->game->actBack();
+        $this->game->gamestate->nextState("zombie");
     }
 
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\States;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\tac;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
@@ -8,25 +8,23 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_duelChooseTechnique02006 extends GameState
+class State_highDramaPhase02001 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::DUEL_CHOOSE_TECHNIQUE_02006,
+            id: States::HIGH_DRAMA_PLAYER_TURN_02001,
             type: StateType::ACTIVE_PLAYER,
-            name: "duelChooseTechnique_02006",
+            name: "highDramaPhase02001",
 
-            // optional
-            description: clienttranslate('${actplayer} is choosing a Character to wound.'),
-            descriptionMyTurn: clienttranslate('The Red Scepter') . clienttranslate(': ${you} must choose a Character to wound:'),
+            description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            descriptionMyTurn: clienttranslate('Andriana Dondolo') . clienttranslate(': ${you} must choose a Sorcery card to discard: '),
             transitions: [
-                "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+                "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+                "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_02001_2,
             ],
-            updateGameProgression: false,
-            initialPrivate: null,
         );
     }
     
@@ -36,6 +34,12 @@ class State_duelChooseTechnique02006 extends GameState
     } 
 
     #[PossibleAction]
+    public function actBack(): void
+    {
+        $this->game->actBack();
+    }
+
+    #[PossibleAction]
     public function actFromCardWithId(string $id): void
     {
         $this->game->actFromCardWithId($id);
@@ -43,7 +47,7 @@ class State_duelChooseTechnique02006 extends GameState
 
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->nextState();
+        $this->game->actBack();
     }
 
 }

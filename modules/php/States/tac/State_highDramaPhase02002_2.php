@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\States;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\tac;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
@@ -8,23 +8,24 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_planningPhaseResolveSchemes02005_4 extends GameState
+class State_highDramaPhase02002_2 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::PLANNING_PHASE_RESOLVE_SCHEMES_02005_4,
+            id: States::HIGH_DRAMA_PLAYER_TURN_02002_2,
             type: StateType::ACTIVE_PLAYER,
-            name: "planningPhaseResolveSchemes_02005_4",
+            name: "highDramaPhase02002_2",
 
             // optional
-            description: clienttranslate('Decipher the Strands') . clienttranslate(': ${actplayer} is choosing options to resolve.'),
-            descriptionMyTurn: clienttranslate('Decipher the Strands') . clienttranslate(': ${you} may choose any number of cards to sink: '),
+            description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            descriptionMyTurn: clienttranslate('Elisabetta Bonora') . clienttranslate(': ${you} must choose 1 or more cards to discard: '),
             transitions: [
-                "allSunk" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
-                "cardsChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02005_5,
+                "cardsChosen" => States::HIGH_DRAMA_PLAYER_TURN_02002_3,
+                "allDiscarded" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,
@@ -44,7 +45,6 @@ class State_planningPhaseResolveSchemes02005_4 extends GameState
 
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->nextState("allSunk");
+        $this->game->gamestate->nextState("zombie");
     }
-
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\States;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\tac;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
@@ -8,25 +8,24 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_highDramaPhase02014_2 extends GameState
+class State_highDramaPhase02010_3 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::HIGH_DRAMA_PLAYER_TURN_02014_2,
+            id: States::HIGH_DRAMA_PLAYER_TURN_02010_3,
             type: StateType::ACTIVE_PLAYER,
-            name: "highDramaPhase02014_2",
+            name: "highDramaPhase02010_3",
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate("Kaspar's Occupation") . clienttranslate(': ${you} must order the remaining cards in the City Deck: '),
+            descriptionMyTurn: clienttranslate('Twist of the Arcana') . clienttranslate(': ${you} must choose how many wounds to move: '),
             transitions: [
-                "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "back" => States::HIGH_DRAMA_PLAYER_TURN_02010_2,
+                "woundsChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
-            updateGameProgression: false,
-            initialPrivate: null,
         );
     }
     
@@ -36,14 +35,20 @@ class State_highDramaPhase02014_2 extends GameState
     } 
 
     #[PossibleAction]
-    public function actFromCardWithIds(string $ids): void
+    public function actBack(): void
     {
-        $this->game->actFromCardWithIds($ids);
+        $this->game->actBack();
+    }
+
+    #[PossibleAction]
+    public function actFromCardWithId(string $id): void
+    {
+        $this->game->actFromCardWithId($id);
     }
 
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->nextState();
+        $this->game->actBack();
     }
 
 }

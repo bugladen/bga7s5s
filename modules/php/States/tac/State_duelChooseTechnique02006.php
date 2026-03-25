@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\SeventhSeaCityOfFiveSails\States;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\tac;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
@@ -8,23 +8,25 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_duelChooseTechnique02011 extends GameState
+class State_duelChooseTechnique02006 extends GameState
 {
     function __construct(
         protected Game $game,
     ) 
     {
         parent::__construct($game,
-            id: States::DUEL_CHOOSE_TECHNIQUE_02011,
+            id: States::DUEL_CHOOSE_TECHNIQUE_02006,
             type: StateType::ACTIVE_PLAYER,
-            name: "duelChooseTechnique_02011",
+            name: "duelChooseTechnique_02006",
 
             // optional
-            description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Katain DeWinter') . clienttranslate(': ${you} must choose an attachment to engage: '),
+            description: clienttranslate('${actplayer} is choosing a Character to wound.'),
+            descriptionMyTurn: clienttranslate('The Red Scepter') . clienttranslate(': ${you} must choose a Character to wound:'),
             transitions: [
                 "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
             ],
+            updateGameProgression: false,
+            initialPrivate: null,
         );
     }
     
