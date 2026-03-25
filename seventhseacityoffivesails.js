@@ -159,6 +159,14 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
 
         format_string_recursive_with_injection: function (log, args) 
         {
+            if (args) {
+                for (const key in args) {
+                    const val = args[key];
+                    if (val && typeof val === 'object' && !Array.isArray(val) && val.id && val.type && !this.logCardCache[val.id]) {
+                        this.logCardCache[val.id] = val;
+                    }
+                }
+            }
             var result = this.format_string_recursive_original(log, args);
             return this.logInject(result);
         },
