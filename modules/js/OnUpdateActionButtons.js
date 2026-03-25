@@ -274,7 +274,11 @@ onUpdateActionButtons: function( stateName, args )
 
         'playerReaction': () => {
             args._private.args.buttons.forEach((button, index) => {
-                this.addActionButton(`actReaction-${index}`, button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}));
+                if (button.text.includes('Pass') || button.text.includes('Decline')) {
+                    this.statusBar.addActionButton(button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}), { id: `actReaction-${index}`, color: 'alert' });
+                } else {
+                    this.addActionButton(`actReaction-${index}`, button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}));
+                }
             });
         },
 
