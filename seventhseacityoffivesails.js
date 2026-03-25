@@ -147,6 +147,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
 
             //Global array containing cached properties of all the cards this page has had access to
             this.cardProperties = {};
+            this.logCardCache = {};
 
             //City location selection
             this.numberOfCityLocationsSelectable = 0;
@@ -171,10 +172,23 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
         },
 
         logInject: function (log_entry) {
-            // Obsolete format: [card_id:card_name(image_path)]
-            const new_card_regex = /\[([^:\[\]]+?):([^\[\]]+?)\(([^()]+?)\)\]/g;
-            const new_cards_to_replace = log_entry.matchAll(new_card_regex);
-            for (let card of new_cards_to_replace) 
+            // Current format: [card_id:card_type:card_name(image_path)]
+            const typed_regex = /\[(\d+?):([^:\[\]]+?):([^\[\]]+?)\(([^()]+?)\)\]/g;
+            const typed_matches = log_entry.matchAll(typed_regex);
+            for (let card of typed_matches) 
+            {
+                const cardId = card[1];
+                const cardType = card[2];
+                const cardName = card[3];
+                const cardImage = card[4];
+                const cardSpan = this.getHTMLForLog(cardId, cardName, cardImage, 'card', cardType);
+                log_entry = log_entry.replace(card[0], cardSpan);
+            }
+
+            // Legacy format: [card_id:card_name(image_path)]
+            const id_regex = /\[([^:\[\]]+?):([^\[\]]+?)\(([^()]+?)\)\]/g;
+            const id_matches = log_entry.matchAll(id_regex);
+            for (let card of id_matches) 
             {
                 const cardId = card[1];
                 const cardName = card[2];
@@ -183,10 +197,10 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
                 log_entry = log_entry.replace(card[0], cardSpan);
             }
 
-            // Current format: [card_name(image_path)]
-            const old_card_regex = /\[([^\[\]]+?)\(([^()]+?)\)\]/g;
-            const old_cards_to_replace = log_entry.matchAll(old_card_regex);
-            for (let card of old_cards_to_replace) 
+            // Legacy format: [card_name(image_path)]
+            const old_regex = /\[([^\[\]]+?)\(([^()]+?)\)\]/g;
+            const old_matches = log_entry.matchAll(old_regex);
+            for (let card of old_matches) 
             {
                 const cardName = card[1];
                 const cardImage = card[2];
@@ -196,14 +210,25 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             return log_entry;
         },
 
-        getHTMLForLog: function (cardId, cardName, cardImage, type) 
+        getHTMLForLog: function (cardId, cardName, cardImage, type, cardType) 
         {
             switch(type) 
             {
                 case 'card':
-                    this.log_span_num++; // adds a unique num to the span id so that duplicate card names in the log have unique ids
+                    this.log_span_num++;
                     const item_type = '_7sfs-card_tt';
-                    return `<span id="${this.log_span_num}_${item_type}" image="${cardImage}" class="${item_type} _7sfs-log_tooltip"><strong>${_(cardName)}</strong></span>`;
+                    let dataAttrs = `image="${cardImage}"`;
+                    if (cardId) {
+                        dataAttrs += ` data-card-id="${cardId}"`;
+                        const cardData = this.cardProperties[cardId];
+                        if (cardData && !this.logCardCache[cardId]) {
+                            this.logCardCache[cardId] = Object.assign({}, cardData);
+                        }
+                    }
+                    if (cardType) {
+                        dataAttrs += ` data-card-type="${cardType}"`;
+                    }
+                    return `<span id="${this.log_span_num}_${item_type}" ${dataAttrs} class="${item_type} _7sfs-log_tooltip"><strong>${_(cardName)}</strong></span>`;
             }
         },        
 
@@ -212,10 +237,32 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             const item_elements = dojo.query('._7sfs-log_tooltip:not(.tt_processed)');
             Array.from(item_elements).forEach(ele => {
                 const ele_id = ele.id;
-                ele.classList.add('tt_processed');  // prevents tooltips being re-added to previous log entries
+                ele.classList.add('tt_processed');
                 if (ele.classList.contains('_7sfs-card_tt')) 
                 {
                     const cardImage = ele.getAttribute('image');
+                    const cardId = ele.getAttribute('data-card-id');
+                    const cardType = ele.getAttribute('data-card-type');
+
+                    if (this.getGameUserPreference(this.USER_PREFERENCES_CARD_HOVER_TYPE) == 2) {
+                        const card = cardId 
+                            ? (this.cardProperties[cardId] ?? this.logCardCache[cardId] ?? this.findCardInDiscards(cardId)) 
+                            : null;
+                        const type = card?.type ?? cardType;
+                        if (type) {
+                            if (card) {
+                                if (type === 'Character') { this.createTextTooltipForCharacter(card, ele_id); return; }
+                                if (type === 'Scheme') { this.createTextTooltipForScheme(card, ele_id); return; }
+                                if (type === 'Attachment') { this.createTextTooltipForAttachment(card, ele_id); return; }
+                                if (type === 'Risk') { this.createTextTooltipForRisk(card, ele_id); return; }
+                            } else {
+                                const cardName = ele.querySelector('strong')?.textContent ?? '';
+                                const html = `<div class='_7sfs-basic-tooltip'>${cardName} (${type})</div>`;
+                                this.addTippyTooltip(ele_id, html, this.CARD_TOOLTIP_DELAY);
+                                return;
+                            }
+                        }
+                    }
 
                     this.addTippyTooltip( ele_id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(cardImage) + cardImage}" />`, this.CARD_TOOLTIP_DELAY);
                 }

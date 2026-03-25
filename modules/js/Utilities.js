@@ -610,7 +610,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
     createTextTooltipForRisk: function(card, nodeId)
     {
         nodeId = nodeId ?? `${card.divId}_image`;
-        const strikeIf = (used, text) => used ? `<s>${text}</s>` : text;
         const row = (label, value, vtop) => `<tr><td style="padding-right:10px;${vtop ? 'vertical-align:top;' : ''}">${label}</td><td>${value}</td></tr>`;
         const traits = card.traits?.join(', ') ?? '';
         const riposte = card.dashedRiposte ? '-' : card.riposte;
@@ -628,20 +627,24 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Text'), _(card.text), true),
         ];
 
-        if (card.controllerId && card.location !== 'hand') {
-            if (card.actions?.length) {
-                rows.push(row(_('Available&nbsp;Actions'), card.actions.map(a => strikeIf(!a.available, _(a.shortName))).join('<br>'), true));
-            }
-            if (card.reactions?.length) {
-                rows.push(row(_('Available&nbsp;Reactions'), card.reactions.map(r => strikeIf(!r.available, _(r.shortName))).join('<br>'), true));
-            }
-            if (card.techniques?.length) {
-                rows.push(row(_('Available&nbsp;Techniques'), card.techniques.map(t => strikeIf(!t.available, _(t.shortName))).join('<br>'), true));
-            }
-        }
-
         const html = `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`;
         this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
+    },
+
+    findCardInDiscards: function(cardId) 
+    {
+        for (const playerId in this.gamedatas.players) {
+            const player = this.gamedatas.players[playerId];
+            if (player.discard) {
+                const found = player.discard.find(c => c.id == cardId);
+                if (found) return found;
+            }
+        }
+        if (this.gamedatas.cityDiscard) {
+            const found = this.gamedatas.cityDiscard.find(c => c.id == cardId);
+            if (found) return found;
+        }
+        return null;
     },
 
     createCharacterCard: function( divId, color, character, targetDiv, inDuel = false )

@@ -611,9 +611,18 @@ abstract class Card
     }
 
     //This will return a string that can be used to inject the card tooltip into the game log on the client
+    public function getCardType(): string
+    {
+        if ($this instanceof Character) return 'Character';
+        if ($this instanceof Scheme) return 'Scheme';
+        if ($this instanceof Risk) return 'Risk';
+        if ($this instanceof Attachment) return 'Attachment';
+        return 'Card';
+    }
+
     public function getInjectCode(): string
     {
-        return sprintf('[%s(%s)]', $this->Name, $this->Image);
+        return sprintf('[%d:%s:%s(%s)]', $this->Id, $this->getCardType(), $this->Name, $this->Image);
     }
 
     public function resetCard()
