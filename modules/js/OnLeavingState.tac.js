@@ -197,6 +197,31 @@
                 }
             },
 
+            'highDramaPhase02020': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase02020_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase02020_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'duelChooseTechnique_02006': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

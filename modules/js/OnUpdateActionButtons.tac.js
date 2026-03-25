@@ -142,6 +142,23 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');            
             },
 
+            'highDramaPhase02020': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase02020_2': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+
+            'highDramaPhase02020_3': () => {
+                this.addActionButton(`actEngage`, _('Engage'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actDecline`, _('Decline and Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
+
             'duelChooseTechnique_02006': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
