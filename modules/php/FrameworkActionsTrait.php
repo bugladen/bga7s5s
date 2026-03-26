@@ -384,6 +384,7 @@ trait FrameworkActionsTrait
     public function actHighDramaRecruitActionMercenaryChosen(int $id)
     {
         $this->theah->buildCity();
+        $playerId = (int)$this->getActivePlayerId();
         $recruitId = $id;
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
@@ -396,6 +397,9 @@ trait FrameworkActionsTrait
         }
 
         $this->globals->set(GAME::CHOSEN_CARD, $recruitId);
+
+        $event = EventFactory::createEnteringPayStateEvent($playerId, $recruitId, Game::PAY_STATE_RECRUIT_MERCENARY);
+        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("mercenaryChosen");
     }
@@ -985,13 +989,16 @@ trait FrameworkActionsTrait
         $brute = $this->getCardObjectFromDb($id);
         if ($brute == null || $brute->Location != Game::LOCATION_HAND || $brute->ControllerId != $playerId) 
         {
-            throw new \BgaUserException(clienttranslate("Brute is not in Player's Hand."));
+            throw new UserException(clienttranslate("Brute is not in Player's Hand."));
         }
 
         $discount = $this->theah->getPlayBruteDiscount($brute);
         $this->globals->set(Game::DISCOUNT, $discount);
 
         $this->globals->set(GAME::CHOSEN_CARD, $id);
+
+        $event = EventFactory::createEnteringPayStateEvent($playerId, $brute->Id, Game::PAY_STATE_PLAY_BRUTE);
+        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("bruteChosen");
     }

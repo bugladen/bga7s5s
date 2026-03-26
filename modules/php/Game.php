@@ -188,6 +188,8 @@ class Game extends \Bga\GameFramework\Table
     final const PAY_STATE_EQUIP_ATTACHMENT = 1;
     final const PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD = 2;
     final const PAY_STATE_IN_HAND_REACTION = 3;
+    final const PAY_STATE_RECRUIT_MERCENARY = 4;
+    final const PAY_STATE_PLAY_BRUTE = 5;
 
     use DeckTrait;
     use StatesTrait;

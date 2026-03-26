@@ -1611,8 +1611,47 @@ $machinestates = [
                     "actBack",
                 ],
                 "transitions" => [
-                    "mercenaryChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY, 
+                    "mercenaryChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS, 
                     "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
+                ]
+            ],
+            States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS => [
+                "name" => "highDramaRecruitActionChooseMercenaryEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "reaction" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_REACTIONS,
+                    "pay" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_PAY_FOR_REACTION,
+                    "endOfEvents" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY,
+                    "endOfGame" => States::END_GAME
+                ]
+            ],
+            States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsReactionForState",
+                "possibleactions" => [
+                    "actReactionForState",
+                ],
+                "transitions" => [
+                    "done" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS,
+                ]
+            ],
+            States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsPayForReaction",
+                "possibleactions" => [
+                    "actBackWithTransition",
+                    "actPayForReaction",
+                ],
+                "transitions" => [
+                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_REACTIONS,
+                    "paid" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS,
                 ]
             ],
             States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY => [
@@ -1763,8 +1802,47 @@ $machinestates = [
                 "actBack",
             ],
             "transitions" => [
-                "bruteChosen" => States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE,
+                "bruteChosen" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_EVENTS,
                 "back" => States::HIGH_DRAMA_PLAYER_TURN
+            ]
+        ],
+        States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_EVENTS => [
+            "name" => "highDramaBruteActionPlayBruteEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "reaction" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_REACTIONS,
+                "pay" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_PAY_FOR_REACTION,
+                "endOfEvents" => States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE,
+                "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsReactionForState",
+            "possibleactions" => [
+                "actReactionForState",
+            ],
+            "transitions" => [
+                "done" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_EVENTS,
+            ]
+        ],
+        States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsPayForReaction",
+            "possibleactions" => [
+                "actBackWithTransition",
+                "actPayForReaction",
+            ],
+            "transitions" => [
+                "back" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_REACTIONS,
+                "paid" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_EVENTS,
             ]
         ],
         States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE => [

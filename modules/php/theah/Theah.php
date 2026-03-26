@@ -1626,6 +1626,12 @@ class Theah
             [$discount, $explanations] = $this->getManeuverFromCombatCardDiscount($combatCard);
         }
 
+        if ($payStateType == Game::PAY_STATE_RECRUIT_MERCENARY || $payStateType == Game::PAY_STATE_PLAY_BRUTE)
+        {
+            $discount = $this->game->globals->get(Game::DISCOUNT, 0);
+            $explanations = $this->game->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
+        }
+
         if ($discount != 0)
         $this->game->notify->player($playerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
             "explanations" => $explanations,
