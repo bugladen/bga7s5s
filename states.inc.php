@@ -1631,7 +1631,7 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsReactionForState",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
                     "actReactionForState",
                 ],
@@ -1644,7 +1644,7 @@ $machinestates = [
                 "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
                 "descriptionmyturn" => "",
                 "type" => "activeplayer",
-                "args" => "argsPayForReaction",
+                "args" => "argsForStatePrivate",
                 "possibleactions" => [
                     "actBackWithTransition",
                     "actPayForReaction",
@@ -1822,7 +1822,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsReactionForState",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actReactionForState",
             ],
@@ -1835,7 +1835,7 @@ $machinestates = [
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
             "type" => "activeplayer",
-            "args" => "argsPayForReaction",
+            "args" => "argsForStatePrivate",
             "possibleactions" => [
                 "actBackWithTransition",
                 "actPayForReaction",
