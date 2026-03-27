@@ -26,7 +26,7 @@ class _01095 extends Character implements IHasActions
         $this->CardNumber = 95;
 
         $this->initializeFaction("Castille");
-        $this->Title = "Domineering Port Captain";
+        $this->Title = clienttranslate("Domineering Port Captain");
         $this->Resolve = 4;
         $this->Combat = 1;
         $this->Finesse = 2;

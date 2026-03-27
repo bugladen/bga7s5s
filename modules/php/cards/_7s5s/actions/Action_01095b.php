@@ -26,12 +26,12 @@ class Action_01095b extends CharacterAction
         }
 
         $patricia = $this->getOwningCharacter($theah);
-        if (! $theah->cardInCity($patricia))
+        if ($patricia->Location != Game::LOCATION_CITY_DOCKS)
         {
             return false;
         }
 
-        if ($patricia->Location == Game::LOCATION_CITY_DOCKS && $patricia->Engaged)
+        if ($patricia->Engaged)
         {
             return false;
         }
@@ -47,6 +47,10 @@ class Action_01095b extends CharacterAction
         {
             $game = $event->theah->game;
             $patricia = $this->getOwningCharacter($event->theah);
+
+            $engageEvent = EventFactory::createCardEngagedEvent($patricia->ControllerId, $patricia->Id, $patricia->Id, $this->Id);
+            $event->theah->queueEvent($engageEvent);
+
             $forcedNotFirstPlayer = $game->globals->get(Game::OVERRIDE_AS_NOT_FIRST_PLAYER, false);
             $isfirstPlayer = $game->globals->get(Game::FIRST_PLAYER) == $patricia->ControllerId && ! $forcedNotFirstPlayer;
 
@@ -65,6 +69,9 @@ class Action_01095b extends CharacterAction
             $this->announceAction($game);
             $this->resetPlayerPassCount($game);
             $this->setUsed($event->theah, true);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($patricia->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 
