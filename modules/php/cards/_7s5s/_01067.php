@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_PlusOneRipost
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 
 class _01067 extends Character 
 {
@@ -49,6 +50,24 @@ class _01067 extends Character
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($event instanceof EventCharacterRecruited)
+        {
+            $character = $event->theah->getCharacterById($event->characterId);
+            if ($character->Id != $this->Id &&
+                $character->ControllerId == $this->ControllerId && 
+                $character->Location == $this->Location && 
+                $character->Location != Game::LOCATION_PLAYER_HOME &&
+                $character->hasTrait("Musketeer") && 
+                $character instanceof IHasTechniques)
+            {
+                $technique = new Technique_PlusOneRiposte();
+                $technique->setId("Technique_01067");
+                $technique->setOwnerId($character->Id);
+                $character->addTechnique($technique, $event->theah->game);
+                $character->IsUpdated = true;
+            }
+        }
 
         if ($event instanceof EventCardMoved)
         {

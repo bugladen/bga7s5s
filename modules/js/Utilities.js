@@ -485,6 +485,11 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.addTippyTooltip(`${card.divId}_image`, html, this.CARD_TOOLTIP_DELAY);
     },
 
+    getSetDisplayName: function(expansionName) {
+        const setNames = { '_7s5s': _('Core') };
+        return setNames[expansionName] ?? expansionName ?? '';
+    },
+
     createTextTooltipForCharacter: function(card, nodeId)
     {
         nodeId = nodeId ?? `${card.divId}_image`;
@@ -498,6 +503,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         let rows = [
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
+            row(_('Set'), this.getSetDisplayName(card.expansionName)),
+            row(_('Card #'), card.cardNumber ?? ''),
             row(_('Title'), _(card.title)),
             row(_('Resolve'), card.modifiedResolve),
             row(_('Combat'), combat),
@@ -540,6 +547,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         let lines = [
             `${_('Name')}: ${_(card.name)}`,
             `${_('Type')}: ${_(card.type)}`,
+            `${_('Set')}: ${this.getSetDisplayName(card.expansionName)}`,
+            `${_('Card #')}: ${card.cardNumber ?? ''}`,
             `${_('Traits')}: ${traits}`,
             `${_('Initiative')}: ${card.initiative}`,
             `${_('Panache&nbsp;Modifier')}: ${card.panacheModifier}`,
@@ -576,6 +585,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         let rows = [
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
+            row(_('Set'), this.getSetDisplayName(card.expansionName)),
+            row(_('Card #'), card.cardNumber ?? ''),
             row(_('Cost'), card.wealthCost ?? ''),
             row(_('Resolve&nbsp;Modifier'), fmtMod(card.resolveModifier)),
             row(_('Combat&nbsp;Modifier'), fmtMod(card.combatModifier)),
@@ -619,6 +630,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         let rows = [
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
+            row(_('Set'), this.getSetDisplayName(card.expansionName)),
+            row(_('Card #'), card.cardNumber ?? ''),
             row(_('Cost'), card.wealthCost ?? ''),
             row(_('Riposte'), riposte),
             row(_('Parry'), parry),
@@ -1406,14 +1419,44 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.addTippyTooltip(`duel_round_${row.round}_wounds`, `<div class='_7sfs-basic-tooltip'>${_("The amount of wounds the Actor took, or will take, for this round")}</div>` );        
     },
 
-    showApproachDeckAtTop: () => {
+    showApproachDeckAtTop: function() {
+        const container = $('approachDeck-container');
+        if (!container) return;
+
+        const firstRect = container.getBoundingClientRect();
         dojo.place('approachDeck-container', 'city', 'before');
         dojo.removeClass('approachDeck-container', '_7sfs-dimmed');
+
+        if (this.animationManager && this.animationManager.animationsActive()) {
+            const lastRect = container.getBoundingClientRect();
+            const deltaY = firstRect.top - lastRect.top;
+            if (deltaY !== 0) {
+                container.animate([
+                    { transform: `translateY(${deltaY}px)`, opacity: 0.5 },
+                    { transform: 'translateY(0)', opacity: 1 }
+                ], { duration: 500, easing: 'ease-in-out' });
+            }
+        }
     },
 
-    showApproachDeckAtBottom: () => {
+    showApproachDeckAtBottom: function() {
+        const container = $('approachDeck-container');
+        if (!container) return;
+
+        const firstRect = container.getBoundingClientRect();
         dojo.place('approachDeck-container', 'hand_anchor', 'before');
         dojo.addClass('approachDeck-container', '_7sfs-dimmed');
+
+        if (this.animationManager && this.animationManager.animationsActive()) {
+            const lastRect = container.getBoundingClientRect();
+            const deltaY = firstRect.top - lastRect.top;
+            if (deltaY !== 0) {
+                container.animate([
+                    { transform: `translateY(${deltaY}px)`, opacity: 1 },
+                    { transform: 'translateY(0)', opacity: 0.5 }
+                ], { duration: 500, easing: 'ease-in-out' });
+            }
+        }
     },
 
     getCityLocationElement: function(location) {

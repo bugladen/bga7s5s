@@ -26,7 +26,8 @@ class Reaction_01140 extends CancelReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} may choose to cancel the movement of %s: '), $theah->game->translate($this->cardName));
+        $destination = $this->eventCardMoving ? $this->eventCardMoving->toLocation : '';
+        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} may choose to cancel the movement of %s to %s: '), $theah->game->translate($this->cardName), $theah->game->translate($destination));
     }
 
     public function getReactionButtonProperties(Theah $theah): array
