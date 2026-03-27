@@ -26,8 +26,8 @@ class _01165 extends Risk implements IHasManeuvers
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Flourish',
-            'Prepared',
+            clienttranslate('Flourish'),
+            clienttranslate('Prepared'),
         ];
 
         $this->Text = clienttranslate("<p>Maneuver: Copy the effects of a Technique on the adversary or one of their equipped attachments.</p>");

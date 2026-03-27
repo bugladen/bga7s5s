@@ -26,7 +26,7 @@ class _01062 extends Leader implements IHasActions, IHasReactions
         $this->CardNumber = 62;
 
         $this->initializeFaction("Montaigne");
-        $this->Title = "Genteel Spy";
+        $this->Title = clienttranslate("Genteel Spy");
         $this->Resolve = 5;
         $this->Combat = 1;
         $this->Finesse = 4;
@@ -38,10 +38,10 @@ class _01062 extends Leader implements IHasActions, IHasReactions
         $this->ModifiedPanache = $this->Panache;
 
         $this->Traits = [
-            "Leader",
-            "Hero",
-            "Diplomat",
-            "Montaigne",
+            clienttranslate("Leader"),
+            clienttranslate("Hero"),
+            clienttranslate("Diplomat"),
+            clienttranslate("Montaigne"),
         ];
 
         $this->Text = clienttranslate("<p>When Odette is challenged, if you have an en garde Musketeer at this location, they may intervene without engaging.</p><p>City Action: Move your adjacent Duelist to this location.</p><p>Reaction: When a challenge is accepted at this location • Move an adjacent Renown to this location.</p>");

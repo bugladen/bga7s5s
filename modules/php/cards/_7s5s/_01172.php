@@ -28,8 +28,8 @@ class _01172 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->Thrust = 3;
 
         $this->Traits = [
-            'Sorcery',
-            'Sorte',
+            clienttranslate('Sorcery'),
+            clienttranslate('Sorte'),
         ];
 
         $this->Text = clienttranslate("<p>Sorcerer City Action: Wound your performer unless they are a Strega • Move target character to your performer's location.</p>");

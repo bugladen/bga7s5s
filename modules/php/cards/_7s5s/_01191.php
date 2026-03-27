@@ -29,9 +29,9 @@ class _01191 extends CityAttachment implements IHasActions
         $this->InfluenceModifier = 0;
 
         $this->Traits = [
-            'Weapon',
-            'Ranged',
-            'Pistol',
+            clienttranslate('Weapon'),
+            clienttranslate('Ranged'),
+            clienttranslate('Pistol'),
         ];
 
         $this->Text = clienttranslate("<p>Action: Destroy this card • Wound all non-Leader characters at this location.</p>");

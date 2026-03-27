@@ -30,7 +30,7 @@ class _01174 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->WealthCost = 1;
 
         $this->Traits = [
-            'Sabotage',
+            clienttranslate('Sabotage'),
         ];
 
         $this->Text = clienttranslate("<p>Action: Destroy target non-Unique attachment.</p>");

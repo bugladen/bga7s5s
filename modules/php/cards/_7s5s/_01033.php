@@ -37,10 +37,10 @@ class _01033 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTarget
         $this->WealthCost = 1;
 
         $this->Traits = [
-            'Challenge',
-            'Flourish',
-            'Cunning',
-            'Ambrogia',
+            clienttranslate('Challenge'),
+            clienttranslate('Flourish'),
+            clienttranslate('Cunning'),
+            clienttranslate('Ambrogia'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Your performer issues an [inf] challenge to target opposing character.</p><p>Maneuver: If you have more [Influence] than the adversary • Move them Home.</p>");

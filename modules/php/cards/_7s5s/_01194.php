@@ -21,7 +21,7 @@ class _01194 extends CityCharacter implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 194;
         
-        $this->Title = 'First to Swing';
+        $this->Title = clienttranslate('First to Swing');
 
         $this->Resolve = 4;
         $this->Combat = 2;
@@ -34,8 +34,8 @@ class _01194 extends CityCharacter implements IHasActions
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Eisen',
+            clienttranslate('Mercenary'),
+            clienttranslate('Eisen'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>City Action: Discard an attachment • Wound target opposing character.</p>");

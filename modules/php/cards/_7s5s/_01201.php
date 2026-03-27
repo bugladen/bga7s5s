@@ -21,7 +21,7 @@ class _01201 extends CityCharacter implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 201;
 
-        $this->Title = 'Doomsayer';
+        $this->Title = clienttranslate('Doomsayer');
 
         $this->Resolve = 4;
         $this->Combat = 1;
@@ -33,10 +33,10 @@ class _01201 extends CityCharacter implements IHasActions
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Sorcerer',
-            'Strega',
-            'Vodacce',
+            clienttranslate('Mercenary'),
+            clienttranslate('Sorcerer'),
+            clienttranslate('Strega'),
+            clienttranslate('Vodacce'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Sorcerer City Action: Wound Ravenna • Draw a card.</p>");

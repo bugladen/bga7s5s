@@ -21,7 +21,7 @@ class _01192 extends CityCharacter implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 192;
         
-        $this->Title = 'Humble Powerbroker';
+        $this->Title = clienttranslate('Humble Powerbroker');
 
         $this->Resolve = 3;
         $this->Combat = 0;
@@ -33,11 +33,11 @@ class _01192 extends CityCharacter implements IHasActions
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Academic',
-            'Diplomat',
-            'Villain',
-            'Castille',
+            clienttranslate('Mercenary'),
+            clienttranslate('Academic'),
+            clienttranslate('Diplomat'),
+            clienttranslate('Villain'),
+            clienttranslate('Castille'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>City Action: Reveal cards from your deck equal to Gustavo's [Inf]. Put a revealed risk into your hand. Sink the rest.</p>");

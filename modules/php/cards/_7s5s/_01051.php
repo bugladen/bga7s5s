@@ -27,9 +27,9 @@ class _01051 extends Risk implements IHasManeuvers
         $this->Thrust = 3;
 
         $this->Traits = [
-            'Flourish',
-            'Camaraderie',
-            'Duty',
+            clienttranslate('Flourish'),
+            clienttranslate('Camaraderie'),
+            clienttranslate('Duty'),
         ];
 
         $this->Text = clienttranslate("<p>Maneuver: Until your next round, your target Mercenary at this location takes all wounds your participant would suffer instead.</p>");

@@ -28,8 +28,8 @@ class _01171 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->Thrust = 2;
 
         $this->Traits = [
-            'Cunning',
-            'Villainous',
+            clienttranslate('Cunning'),
+            clienttranslate('Villainous'),
         ];
 
         $this->Text = clienttranslate("<p>While your performer is a Villain or Scoundrel, this card has -1 cost.</p><p>City Action. Engage target Mercenary opposing your performer. If they are already engaged, move them Home instead.</p>");

@@ -21,7 +21,7 @@ class _01205 extends CityCharacter implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 205;
 
-        $this->Title = 'Dogged Kidnapper';
+        $this->Title = clienttranslate('Dogged Kidnapper');
 
         $this->Resolve = 3;
         $this->Combat = 0;
@@ -33,11 +33,11 @@ class _01205 extends CityCharacter implements IHasActions
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Academic',
-            'Diplomat',
-            'Scoundrel',
-            'Castille',
+            clienttranslate('Mercenary'),
+            clienttranslate('Academic'),
+            clienttranslate('Diplomat'),
+            clienttranslate('Scoundrel'),
+            clienttranslate('Castille'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>City Action: Engage Giacinto • Engage target opposing character. Move them and Giacinto to the same adjacent City location.</p>");

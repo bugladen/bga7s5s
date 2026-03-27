@@ -31,8 +31,8 @@ class _01026 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->WealthCost = 0;
 
         $this->Traits = [
-            'Glory',
-            'Zeal',
+            clienttranslate('Glory'),
+            clienttranslate('Zeal'),
         ];
 
         $this->Text = clienttranslate("<p>Red Hand City Action: Destroy your performer • Engage target character at that location. If they are already engaged, send them Home instead.</p>");

@@ -25,16 +25,16 @@ class _01069 extends Character implements IHasActions
         $this->CardNumber = 69;
 
         $this->initializeFaction("Montaigne");
-        $this->Title = "Bloody Socialite";
+        $this->Title = clienttranslate("Bloody Socialite");
         $this->Resolve = 4;
         $this->Combat = 1;
         $this->Finesse = 2;
         $this->Influence = 3;
 
         $this->Traits = [
-            "Villain",
-            "Sorcerer",
-            "Montaigne",
+            clienttranslate("Villain"),
+            clienttranslate("Sorcerer"),
+            clienttranslate("Montaigne"),
         ];
 
         $this->Text = clienttranslate("<p>Maxime ignores wounds from Sorceries and Sorcerer abilities he performs. (Wound costs are considered paid.)</p><p>Sorcerer Action: Discard a card • Put target non-Unique attachment from your discard pile into your hand.</p>");

@@ -26,16 +26,16 @@ class _01093 extends Character implements IHasActions, IHasTechniques
         $this->CardNumber = 93;
 
         $this->initializeFaction("Castille");
-        $this->Title = "Amoral Compass";
+        $this->Title = clienttranslate("Amoral Compass");
         $this->Resolve = 5;
         $this->Combat = 3;
         $this->Finesse = 2;       
         $this->Influence = 1;
 
         $this->Traits = [
-            "Duelist",
-            "Pirate",
-            "Castille",
+            clienttranslate("Duelist"),
+            clienttranslate("Pirate"),
+            clienttranslate("Castille"),
         ];
 
         $this->Text = clienttranslate("<p>Action: Move Maya to an adjacent City location. If you are not the first player, she may move to any location instead.</p><p>Technique: -1 Riposte • The adversary discards a card. (Your combat card must have at least 1 Riposte.)</p>");

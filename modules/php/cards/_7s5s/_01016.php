@@ -31,8 +31,8 @@ class _01016 extends Scheme implements IHasReactions
         $this->PanacheModifier = -1;
 
         $this->Traits = [
-            "Cunning", 
-            "Gang",
+            clienttranslate("Cunning"), 
+            clienttranslate("Gang"),
         ];
 
         $this->Text = clienttranslate("<p>Add a Renown to two different locations.</p><p>Search your deck for a Red Hand Thug. Reveal it and put it into your hand.</p><p>[BAR]</p><p>Reaction: After you claim a location that has an opposing character • En garde target character you control at that location.</p>");

@@ -23,15 +23,15 @@ class _01094 extends Character implements IHasActions
         $this->CardNumber = 94;
 
         $this->initializeFaction("Castille");
-        $this->Title = "Handyman and Husband";
+        $this->Title = clienttranslate("Handyman and Husband");
         $this->Resolve = 5;
         $this->Combat = 0;
         $this->Finesse = 1;       
         $this->Influence = 2;
 
         $this->Traits = [
-            "Academic",
-            "Castille",
+            clienttranslate("Academic"),
+            clienttranslate("Castille"),
         ];
 
         $this->Text = clienttranslate("<p>During pressures, while Aníbal is at a location with one or fewer Renown, he gains +2 [inf].</p><p>City Action: If Aníbal's location has no Renown • En garde him.</p>");

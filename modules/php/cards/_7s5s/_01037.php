@@ -38,8 +38,8 @@ class _01037 extends Character implements IHasReactions
         $this->Influence = 0;
 
         $this->Traits = [
-            "Innkeeper",
-            "Eisen",
+            clienttranslate("Innkeeper"),
+            clienttranslate("Eisen"),
         ];
 
         $this->Text = clienttranslate("<p>Edeline gains +1 [Inf] for each character at this location.</p><p>Reaction: After a duel, target an engaged participant at an adjacent location • Move them to this location.</p>");

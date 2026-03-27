@@ -23,15 +23,15 @@ class _01010 extends Character implements IHasTechniques
         $this->CardNumber = 10;
 
         $this->initializeFaction("Vodacce");
-        $this->Title = "Ice Heart";
+        $this->Title = clienttranslate("Ice Heart");
         $this->Resolve = 5;
         $this->Combat = 2;
         $this->Finesse = 2;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Spy",
-            "Vodacce",
+            clienttranslate("Spy"),
+            clienttranslate("Vodacce"),
         ];
 
         $this->Text = clienttranslate("<p>When Sarafina gambles, reveal an additional card.</p><p>Technique: Look at the top card of the adversary's deck, or two cards instead if you control a Strega at this location. Sink any number of them.</p>");

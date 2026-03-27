@@ -28,8 +28,8 @@ class _01175 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->Thrust = 2;
 
         $this->Traits = [
-            'Faith',
-            'Penance',
+            clienttranslate('Faith'),
+            clienttranslate('Penance'),
         ];
 
         $this->Text = clienttranslate("<p>Action: Discard any number of cards • Target non-Leader character you control heals a wound for each card discarded this way.</p>");

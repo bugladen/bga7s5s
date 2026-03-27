@@ -28,8 +28,8 @@ class _01060 extends Risk implements IHasActions
         $this->Thrust = 3;
 
         $this->Traits = [
-            'Camaraderie',
-            'Logistics',
+            clienttranslate('Camaraderie'),
+            clienttranslate('Logistics'),
         ];
 
         $this->Text = clienttranslate("<p>Action: Move up to two performing characters you control from one location to an adjacent City location. (They move together.)</p>");

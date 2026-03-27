@@ -26,15 +26,15 @@ class _01118 extends Character implements IHasActions, IHasReactions
         $this->CardNumber = 118;
 
         $this->initializeFaction("Ussura");
-        $this->Title = "Slient Schemer";
+        $this->Title = clienttranslate("Slient Schemer");
         $this->Resolve = 4;
         $this->Combat = 2;
         $this->Finesse = 2;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Sorcerer",
-            "Ussura",
+            clienttranslate("Sorcerer"),
+            clienttranslate("Ussura"),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Move Elina to an adjacent City location. If she is opposed at the new location, en garde her.</p><p>City Reaction: After Elina performs a Sorcerer ability • Move a Renown to this location.</p>");

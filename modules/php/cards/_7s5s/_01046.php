@@ -34,9 +34,9 @@ class _01046 extends FactionAttachment implements IHasActions
         $this->Thrust = 0;
 
         $this->Traits = [
-            'Sorcery',
-            'Corruption',
-            'Unique',
+            clienttranslate('Sorcery'),
+            clienttranslate('Corruption'),
+            clienttranslate('Unique'),
         ];
 
         $this->Text = clienttranslate("<p>Action: Engage this card • Wound the equipped performer and move them to an adjacent location.</p><p>Action: Engage this card • The equipped performer heals a wound.</p>");

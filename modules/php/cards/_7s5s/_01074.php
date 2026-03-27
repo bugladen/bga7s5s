@@ -36,9 +36,9 @@ class _01074 extends FactionAttachment implements IHasTechniques
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Weapon',
-            'Melee',
-            "Sword",
+            clienttranslate('Weapon'),
+            clienttranslate('Melee'),
+            clienttranslate("Sword"),
         ];
 
         $this->Text = clienttranslate("<p>May only equip to your Duelist.</p><p>Technique: +1 Riposte.</p>");

@@ -30,7 +30,7 @@ class _01160 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->WealthCost = 1;
 
         $this->Traits = [
-            'Villainous',
+            clienttranslate('Villainous'),
         ];
 
         $this->Text = clienttranslate("<p>While your Leader is a Villain, this card has -1 cost.</p><p>Action: Target a wounded non-Leader character in a City location • Wound them.</p>");

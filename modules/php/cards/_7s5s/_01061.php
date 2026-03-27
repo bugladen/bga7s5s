@@ -32,9 +32,9 @@ class _01061 extends Risk implements IHasActions, IHasManeuvers
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Flourish',
-            'Prepared',
-            'Drexel',
+            clienttranslate('Flourish'),
+            clienttranslate('Prepared'),
+            clienttranslate('Drexel'),
         ];
 
         $this->Text = clienttranslate("<p>Action: En garde your equipped performer.</p><p>Maneuver: +1 Riposte. If your participant is equipped with a Weapon, draw a card.</p>");

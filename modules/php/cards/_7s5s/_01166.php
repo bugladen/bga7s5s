@@ -28,8 +28,8 @@ class _01166 extends Risk implements IHasManeuvers
         $this->DashedThrust = true;
 
         $this->Traits = [
-            'Flourish',
-            'Demoralize',
+            clienttranslate('Flourish'),
+            clienttranslate('Demoralize'),
         ];
 
         $this->Text = clienttranslate("<p>Maneuver: +1 [Parry] for each other card in your dueling line.</p>");

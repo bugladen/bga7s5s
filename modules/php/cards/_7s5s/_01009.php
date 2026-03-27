@@ -28,16 +28,16 @@ class _01009 extends Character implements IHasActions
         $this->CardNumber = 9;
 
         $this->initializeFaction("Vodacce");
-        $this->Title = "Self-serving Serpent";
+        $this->Title = clienttranslate("Self-serving Serpent");
         $this->Resolve = 4;
         $this->Combat = 3;
         $this->Finesse = 1;
         $this->Influence = 2;
 
         $this->Traits = [
-            "Red Hand",
-            "Extortionist",
-            "Numa",
+            clienttranslate("Red Hand"),
+            clienttranslate("Extortionist"),
+            clienttranslate("Numa"),
         ];
 
         $this->Text = clienttranslate("<p>Your Mercenaries gain Brute. (Brutes do not count against your Crew Cap, go to the discard pile when destroyed, and are discarded from play at the end of the day.)</p><p>City Action: Engage Cirilo • Recruit target available Mercenary at this location. They lose Negotiable and have 1 cost instead of their printed value.</p>");

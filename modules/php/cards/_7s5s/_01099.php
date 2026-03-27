@@ -31,8 +31,8 @@ class _01099 extends Scheme implements IHasReactions
         $this->PanacheModifier = 0;
 
         $this->Traits = [
-            "Cunning", 
-            "Rumor",
+            clienttranslate("Cunning"), 
+            clienttranslate("Rumor"),
         ];
 
         $this->Text = clienttranslate("<p>Add a Renown to The Docks.</p><p>[BAR]</p><p>Reaction: After a player discards a card due to your effect • Draw a card.</p><p>Reaction: After an opponent claims a location • Add a Renown to a different location.</p>");

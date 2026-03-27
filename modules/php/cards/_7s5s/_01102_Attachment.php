@@ -23,7 +23,7 @@ class _01102_Attachment extends Attachment implements IRiskAttachment, IHasActio
         $this->FinesseModifier = -1;
         
         $this->Traits = [
-            'Hubris',
+            clienttranslate('Hubris'),
         ];
 
         $this->Actions = [

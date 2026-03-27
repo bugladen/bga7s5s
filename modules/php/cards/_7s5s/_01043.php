@@ -30,15 +30,15 @@ class _01043 extends Character implements IHasReactions
         $this->CardNumber = 43;
 
         $this->initializeFaction("Eisen");
-        $this->Title = "The Unbroken Will";
+        $this->Title = clienttranslate("The Unbroken Will");
         $this->Resolve = 5;
         $this->Combat = 3;
         $this->Finesse = 2;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Hunter",
-            "Eisen",
+            clienttranslate("Hunter"),
+            clienttranslate("Eisen"),
         ];
 
         $this->Text = clienttranslate("<p>While using your abilities, Uwe may be considered a Mercenary. (For costs and effects.)</p><p>While the adversary is a Sorcerer, Uwe's combat cards gain +1 [Thrust] .</p>");

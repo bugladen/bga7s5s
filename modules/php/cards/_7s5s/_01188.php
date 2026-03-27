@@ -23,7 +23,7 @@ class _01188 extends CityCharacter
         $this->ExpansionNumber = 1;
         $this->CardNumber = 188;
         
-        $this->Title = 'Gentle Giant';
+        $this->Title = clienttranslate('Gentle Giant');
 
         $this->Resolve = 5;
         $this->Combat = 0;
@@ -38,8 +38,8 @@ class _01188 extends CityCharacter
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Ussura',
+            clienttranslate('Mercenary'),
+            clienttranslate('Ussura'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Vladislav may intervene even while engaged.</p><p>When Vladislav intervenes, do not play a combat card. Take the threat as wounds. The duel ends. (Restricted Hostilities still applies.)</p>");

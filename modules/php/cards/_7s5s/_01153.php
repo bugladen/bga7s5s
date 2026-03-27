@@ -33,7 +33,7 @@ class _01153 extends FactionAttachment
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Armor',
+            clienttranslate('Armor'),
         ];
 
         $this->Text = clienttranslate("<p>Forced: During a duel, the first time the equipped character would suffer any amount of wounds • Reduce the number by one.</p><p>Forced: When the equipped character is wounded • Destroy this card. (0 wounds is not wounded.)</p>");

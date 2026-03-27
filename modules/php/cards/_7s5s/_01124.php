@@ -26,15 +26,15 @@ class _01124 extends Character implements IHasActions, IHasReactions
         $this->CardNumber = 124;
 
         $this->initializeFaction("Ussura");
-        $this->Title = "Ancient Witch";
+        $this->Title = clienttranslate("Ancient Witch");
         $this->Resolve = 3;
         $this->Combat = 1;
         $this->Finesse = 2;
         $this->Influence = 3;
 
         $this->Traits = [
-            "Sorcerer",
-            "Ussura",
+            clienttranslate("Sorcerer"),
+            clienttranslate("Ussura"),
         ];
 
         $this->Text = clienttranslate("<p>Sorcerer Action: Engage Ved'ma • Play target Sorcery in your discard pile as if it was in your hand. After it resolves, send it to The Locker.</p><p>Reaction: After you play a Sorcery from your hand that engaged Ved'ma • En garde her.</p>");

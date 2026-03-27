@@ -36,8 +36,8 @@ class _01073 extends FactionAttachment implements IHasActions
         $this->Thrust = 2;
 
         $this->Traits = [
-            'Attire',
-            'Hat',
+            clienttranslate('Attire'),
+            clienttranslate('Hat'),
         ];
 
         $this->Text = clienttranslate("<p>May only equip to your Duelist.</p><p>City Action: Engage the equipped performer • They issue a [finesse] challenge to target opposing character.</p>");

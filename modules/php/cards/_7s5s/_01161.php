@@ -27,8 +27,8 @@ class _01161 extends Risk implements IHasActions
         $this->Thrust = 3;
 
         $this->Traits = [
-            'Sorcery',
-            'Glamour',
+            clienttranslate('Sorcery'),
+            clienttranslate('Glamour'),
         ];
 
         $this->Text = clienttranslate("<p>Sorcerer City Action: Engage your performer • Equip this card to a character at this location. This ability cannot be copied.</p><p>The equipped character gains: \"+1 [Combat], [Finesse], and [Influence]. At the end of the Day, discard this card.\"</p>");

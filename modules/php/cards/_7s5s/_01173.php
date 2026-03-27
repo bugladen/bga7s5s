@@ -26,7 +26,7 @@ class _01173 extends Risk implements IHasReactions
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Savvy',
+            clienttranslate('Savvy'),
         ];
 
         $this->Text = clienttranslate("<p>Reaction: After your character moves to a City location • Move them again to an adjacent City location.</p>");

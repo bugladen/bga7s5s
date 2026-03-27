@@ -26,15 +26,15 @@ class _01123 extends Character implements IHasActions, IHasTechniques
         $this->CardNumber = 123;
 
         $this->initializeFaction("Ussura");
-        $this->Title = "Champion Narcissist";
+        $this->Title = clienttranslate("Champion Narcissist");
         $this->Resolve = 4;
         $this->Combat = 2;
         $this->Finesse = 3;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Duelist",
-            "Ussura",
+            clienttranslate("Duelist"),
+            clienttranslate("Ussura"),
         ];
 
         $this->Text = clienttranslate("<p>Action: Engage Valeri and target an enemy character at an adjacent City location • Move Valeri there and issue them a [combat] challenge. Other characters cannot intervene.</p><p>Technique: +1 [Thrust]. If Valeri has fewer wounds than the adversary, +1 [Riposte] instead.</p>");

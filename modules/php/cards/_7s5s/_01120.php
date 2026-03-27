@@ -35,15 +35,15 @@ class _01120 extends Character implements IHasReactions, IHasTechniques
         $this->CardNumber = 120;
 
         $this->initializeFaction("Ussura");
-        $this->Title = "Resolute Scribe";
+        $this->Title = clienttranslate("Resolute Scribe");
         $this->Resolve = 3;
         $this->Combat = 0;
         $this->Finesse = 2;
         $this->Influence = 3;
 
         $this->Traits = [
-            "Academic",
-            "Ussura",
+            clienttranslate("Academic"),
+            clienttranslate("Ussura"),
         ];
 
         $this->Text = clienttranslate("<p>While Pavel is at a location you control, he gains +1[inf].</p><p>Reaction: After an opponent claims a location • Draw a card.</p><p>Technique: +1 Parry.</p>");

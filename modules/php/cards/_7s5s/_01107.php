@@ -27,8 +27,8 @@ class _01107 extends Risk implements IHasManeuvers
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Flourish',
-            'Aldana',
+            clienttranslate('Flourish'),
+            clienttranslate('Aldana'),
         ];
 
         $this->Text = clienttranslate("<p>Maneuver: If your participant was wounded during this duel • Wound the adversary. If they are destroyed as a result of that wound, claim this location.</p>");

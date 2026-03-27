@@ -30,8 +30,8 @@ class _01181 extends CityAttachment implements IHasReactions
         $this->InfluenceModifier = 0;
 
         $this->Traits = [
-            'Sorte',
-            'Trinket',
+            clienttranslate('Sorte'),
+            clienttranslate('Trinket'),
         ];
 
         $this->Text = clienttranslate("<p>Reaction: After a character at this location is wounded, engage this card • Heal a wound from them, or two instead if the equipped character is a Strega.</p>");

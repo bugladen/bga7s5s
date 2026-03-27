@@ -30,8 +30,8 @@ class _01144 extends Scheme implements IHasReactions
         $this->PanacheModifier = 0;
 
         $this->Traits = [
-            "Bargain", 
-            "Conscription",
+            clienttranslate("Bargain"), 
+            clienttranslate("Conscription"),
         ];
 
         $this->Text = clienttranslate("<p>Add a Renown to any location. Then, if you have the fewest Renown, add a Renown to a different location. (Fewest cannot tie.)</p><p>Leader Reaction: At the beginning of High Drama, if you have the fewest characters • Recruit an available Mercenary to your Home. They lose Negotiable and their cost is reduced by your performer's [Combat], [Finesse], or [Influence].</p>");

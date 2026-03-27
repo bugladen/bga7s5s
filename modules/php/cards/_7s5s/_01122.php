@@ -24,16 +24,16 @@ class _01122 extends Character implements IHasReactions
         $this->CardNumber = 122;
 
         $this->initializeFaction("Ussura");
-        $this->Title = "Incorrigible Drunk";
+        $this->Title = clienttranslate("Incorrigible Drunk");
         $this->Resolve = 6;
         $this->Combat = 3;
         $this->Finesse = 1;
         $this->Influence = 2;
 
         $this->Traits = [
-            "Scoundrel",
-            "Murskaaja",
-            "Vesten",
+            clienttranslate("Scoundrel"),
+            clienttranslate("Murskaaja"),
+            clienttranslate("Vesten"),
         ];
 
         $this->Text = clienttranslate("<p>While Torsten has two or more wounds, his combat cards gain +1[thrust].</p><p>Reaction: When a Sorcery or a Sorcerer ability targets Torsten • Cancel the effects.</p>");

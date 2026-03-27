@@ -30,15 +30,15 @@ class _01041 extends Character implements IHasActions
         $this->CardNumber = 41;
 
         $this->initializeFaction("Eisen");
-        $this->Title = "Esoteric Pathologist";
+        $this->Title = clienttranslate("Esoteric Pathologist");
         $this->Resolve = 4;
         $this->Combat = 2;
         $this->Finesse = 2;
         $this->Influence = 2;
 
         $this->Traits = [
-            "Academic",
-            "Eisen",
+            clienttranslate("Academic"),
+            clienttranslate("Eisen"),
         ];
 
         $this->Text = clienttranslate("<p>While Rosine is opposing a Sorcerer, she gains +1 [inf].</p><p>City Action: Target an opposing non-Leader character with equal or lower [Influence] • Engage them. If they are a Sorcerer, move them Home.</p>");

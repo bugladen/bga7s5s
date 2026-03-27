@@ -24,7 +24,7 @@ class _01180 extends CityCharacter implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 180;
 
-        $this->Title = 'The Thorn';
+        $this->Title = clienttranslate('The Thorn');
 
         $this->Resolve = 4;
         $this->Combat = 1;
@@ -36,10 +36,10 @@ class _01180 extends CityCharacter implements IHasActions
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Academic',
-            "Explorer's Society",
-            'Numa'
+            clienttranslate('Mercenary'),
+            clienttranslate('Academic'),
+            clienttranslate("Explorer's Society"),
+            clienttranslate('Numa')
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>While equipping an Artifact to one of your characters, it has -1 cost.</p><p>City Action: Reveal the top four cards of the City Deck. You may equip a revealed Artifact to your character at this location. Sink the rest.</p>");

@@ -32,8 +32,8 @@ class _01164 extends Risk implements IHasActions, IHasManeuvers
         $this->DashedThrust = true;
 
         $this->Traits = [
-            'Flourish',
-            'Stealth',
+            clienttranslate('Flourish'),
+            clienttranslate('Stealth'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Move your performing character to a location that is not adjacent to this one.</p><p>Maneuver: When your round ends, move your participant to an adjacent City location.</p>");

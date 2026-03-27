@@ -27,8 +27,8 @@ class _01167 extends Risk implements IHasActions
         $this->Thrust = 3;
 
         $this->Traits = [
-            'Crime',
-            'Theft',
+            clienttranslate('Crime'),
+            clienttranslate('Theft'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Take control of target non-Unique attachment in an opponent's discard pile. Equip it to your performer, paying all costs.</p>");

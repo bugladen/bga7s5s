@@ -22,15 +22,15 @@ class _01091 extends Character implements IHasActions
         $this->CardNumber = 91;
 
         $this->initializeFaction("Castille");
-        $this->Title = "Cat Lady of Castille";
+        $this->Title = clienttranslate("Cat Lady of Castille");
         $this->Resolve = 4;
         $this->Combat = 1;
         $this->Finesse = 2;       
         $this->Influence = 3;
 
         $this->Traits = [
-            "Academic",
-            "Castille",
+            clienttranslate("Academic"),
+            clienttranslate("Castille"),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Target a character at this location, or two characters instead by discarding a card • Heal a wound from each targeted character.</p>");

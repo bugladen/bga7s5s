@@ -28,8 +28,8 @@ class _01057 extends Risk implements IHasManeuvers
         $this->Thrust = 4;
 
         $this->Traits = [
-            'Flourish',
-            'Ranged',
+            clienttranslate('Flourish'),
+            clienttranslate('Ranged'),
         ];
 
         $this->Text = clienttranslate("<p>Maneuver: Gain Lethal. (Ignore Restricted Hostilities until your next round.)</p>");

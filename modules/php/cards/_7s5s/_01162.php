@@ -28,8 +28,8 @@ class _01162 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->Thrust = 3;
 
         $this->Traits = [
-            'Romance',
-            'Temptation',
+            clienttranslate('Romance'),
+            clienttranslate('Temptation'),
         ];
 
         $this->Text = clienttranslate("<p>Action: Target a character • Move them to an adjacent City location.</p>");

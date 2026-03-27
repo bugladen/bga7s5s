@@ -26,7 +26,7 @@ class _01066 extends Character implements IHasReactions, IHasTechniques
         $this->CardNumber = 66;
 
         $this->initializeFaction("Montaigne");
-        $this->Title = "Smirking Rake";
+        $this->Title = clienttranslate("Smirking Rake");
         $this->Resolve = 5;
         $this->Combat = 3;
         $this->Finesse = 3;
@@ -34,9 +34,9 @@ class _01066 extends Character implements IHasReactions, IHasTechniques
         $this->DashedInfluence = true;
 
         $this->Traits = [
-            "Duelist",
-            "Scoundrel",
-            "Avalon",
+            clienttranslate("Duelist"),
+            clienttranslate("Scoundrel"),
+            clienttranslate("Avalon"),
         ];
 
         $this->Text = clienttranslate("<p>City Reaction: After an opposing character moved to an adjacent location • Move Horatio to their new location.</p><p>Technique: If the adversary is the only enemy character at this location • +2 Thrust.</p>");

@@ -33,8 +33,8 @@ class _01095 extends Character implements IHasActions
         $this->Influence = 1;
 
         $this->Traits = [
-            "Dockmaster",
-            "Numa"
+            clienttranslate("Dockmaster"),
+            clienttranslate("Numa")
         ];
 
         $this->Text = clienttranslate("<p>While Patricia is at [The Docks], if she is en garde, she cannot be issued challenges.</p><p>City Action: If Patricia is at [The Docks] • Claim it.</p><p>City Action: If Patricia is at [The Docks], engage her • If you are the first player, draw a card. Otherwise, each opponent discards a card.</p>");

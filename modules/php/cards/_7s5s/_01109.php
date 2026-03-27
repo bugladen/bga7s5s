@@ -27,8 +27,8 @@ class _01109 extends Risk implements IHasReactions
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Revelry',
-            'Torpor',
+            clienttranslate('Revelry'),
+            clienttranslate('Torpor'),
         ];
 
         $this->Text = clienttranslate("<p>Reaction: When a non-Sorcery risk is announced • Cancel its effects. (All costs are still paid.)</p>");

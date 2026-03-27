@@ -28,8 +28,8 @@ class _01159 extends Risk implements IHasActions
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Beauracracy',
-            'Heroic',
+            clienttranslate('Beauracracy'),
+            clienttranslate('Heroic'),
         ];
 
         $this->Text = clienttranslate("<p>While your Leader is a Hero or a Diplomat, this card has -1 cost.</p><p>City Action: En garde your performer at a location you control.</p>");

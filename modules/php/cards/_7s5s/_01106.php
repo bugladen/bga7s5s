@@ -27,8 +27,8 @@ class _01106 extends Risk implements IHasActions
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Ad Hoc',
-            'Savvy',
+            clienttranslate('Ad Hoc'),
+            clienttranslate('Savvy'),
         ];
 
         $this->Text = clienttranslate("<p>Action: Play target risk from an opponent's discard pile, paying all costs. After it resolves, sink it. Send this card to The Locker. (Cards return to their owner's deck when sunk.)</p>");

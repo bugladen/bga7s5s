@@ -28,8 +28,8 @@ class _01134 extends Risk implements IHasActions
         $this->Thrust = 4;
 
         $this->Traits = [
-            'Sorcery',
-            'Dar Matushki',
+            clienttranslate('Sorcery'),
+            clienttranslate('Dar Matushki'),
         ];
 
         $this->Text = clienttranslate("<p>Sorcerer Action: Look at the top five cards of any deck. You may discard any number of them up to your performer's [Influence]. Replace the rest in any order. You may engage your performer. If you do, draw a card.</p>");

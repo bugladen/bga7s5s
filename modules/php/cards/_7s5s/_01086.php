@@ -31,9 +31,9 @@ class _01086 extends Risk implements IHasActions, IHasManeuvers
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Flourish',
-            'Demoralize',
-            "Valroux",
+            clienttranslate('Flourish'),
+            clienttranslate('Demoralize'),
+            clienttranslate("Valroux"),
         ];
 
         $this->Text = clienttranslate("<p>Action: Target a location with no characters or only Mercenaries • It becomes uncontrolled.</p><p>Maneuver: While the adversary is a Mercenary, this card has -1cost • Engage the adversary. If they are already engaged, wound them instead.</p>");

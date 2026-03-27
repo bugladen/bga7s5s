@@ -36,10 +36,10 @@ class _01022 extends FactionAttachment implements IHasReactions
         $this->WealthCost = 1;
 
         $this->Traits = [
-            'Weapon',
-            'Melee',
-            'Knife',
-            'Ambrogia',
+            clienttranslate('Weapon'),
+            clienttranslate('Melee'),
+            clienttranslate('Knife'),
+            clienttranslate('Ambrogia'),
         ];
 
         $this->Text = clienttranslate("<p>Reaction: When a challenge is issued at this location, engage this card • Wound the challenger or the character they challenged. (This occurs before intervening.)</p>");

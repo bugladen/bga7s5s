@@ -27,8 +27,8 @@ class _01177 extends CityEventCard
         $this->CityCardNumber = 1;
 
         $this->Traits = [
-            "Heroic",
-            "Savvy"
+            clienttranslate("Heroic"),
+            clienttranslate("Savvy")
         ];
 
         $this->Text = clienttranslate("<p>Reaction: At the beginning of Dusk, if you control this location • You may choose one of your characters here. If you do, the chosen character does not move Home during Dusk and you look at the top three cards of the City Deck. Replace them in any order.</p>");

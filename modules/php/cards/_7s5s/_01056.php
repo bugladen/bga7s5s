@@ -28,8 +28,8 @@ class _01056 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->Thrust = 4;
 
         $this->Traits = [
-            'Challenge',
-            'Provocation',
+            clienttranslate('Challenge'),
+            clienttranslate('Provocation'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Your performer issues a [com] challenge to target opposing character. They may move Home engaged. If they do, cancel the challenge.</p>");

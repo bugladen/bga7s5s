@@ -29,8 +29,8 @@ class _01170 extends Risk implements IHasActions
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Wealth',
-            'Fortune',
+            clienttranslate('Wealth'),
+            clienttranslate('Fortune'),
         ];
 
         $this->Text = clienttranslate("<p>Wealth (This card counts as two when discarded to pay costs. Send it to The Locker after paying costs.)</p><p>Action: Discard your hand • Draw a card.</p>");

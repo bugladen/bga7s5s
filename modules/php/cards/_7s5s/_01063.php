@@ -24,16 +24,16 @@ class _01063 extends Character
         $this->CardNumber = 63;
 
         $this->initializeFaction("Montaigne");
-        $this->Title = "Worldly Wit";
+        $this->Title = clienttranslate("Worldly Wit");
         $this->Resolve = 3;
         $this->Combat = 2;
         $this->Finesse = 4;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Duelist",
-            "Musketeer",
-            "Montaigne",
+            clienttranslate("Duelist"),
+            clienttranslate("Musketeer"),
+            clienttranslate("Montaigne"),
         ];
 
         $this->Text = clienttranslate("<p>Your characters at Bastien's location gain \"Technique: Swap this character with a Musketeer at this location.\"</p><p>Technique: When your round ends, if Bastien was not wounded during it, wound the adversary. (Issuing a challenge is not a round of a duel.)</p>");

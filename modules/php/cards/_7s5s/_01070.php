@@ -22,15 +22,15 @@ class _01070 extends Character implements IHasReactions
         $this->CardNumber = 70;
 
         $this->initializeFaction("Montaigne");
-        $this->Title = "Madamoiselle Exemplar";
+        $this->Title = clienttranslate("Madamoiselle Exemplar");
         $this->Resolve = 5;
         $this->Combat = 1;
         $this->Finesse = 2;
         $this->Influence = 2;
 
         $this->Traits = [
-            "Dimplomat",
-            "Castille",
+            clienttranslate("Dimplomat"),
+            clienttranslate("Castille"),
         ];
 
         $this->Text = clienttranslate("<p>Reaction: After you add a Renown to a location, discard a card • Add another Renown to that location. (Moving Renown is not adding Renown.)</p>");

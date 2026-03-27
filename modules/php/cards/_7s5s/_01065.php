@@ -24,16 +24,16 @@ class _01065 extends Character implements IHasReactions
         $this->CardNumber = 67;
 
         $this->initializeFaction("Montaigne");
-        $this->Title = "Maestro Machinist";
+        $this->Title = clienttranslate("Maestro Machinist");
         $this->Resolve = 4;
         $this->Combat = 3;
         $this->Finesse = 3;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Duelist",
-            "Musketeer",
-            "Montaigne",
+            clienttranslate("Duelist"),
+            clienttranslate("Musketeer"),
+            clienttranslate("Montaigne"),
         ];
 
         $this->Text = clienttranslate("<p>Your other Musketeers at Henri's location cannot be moved by an opponent's abilities.</p><p>Reaction: When Henri issues a challenge, engage his equipped Weapon • Target character cannot intervene.</p>");

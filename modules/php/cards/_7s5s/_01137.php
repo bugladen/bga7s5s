@@ -28,8 +28,8 @@ class _01137 extends Risk implements IHasReactions
         $this->Thrust = 4;
 
         $this->Traits = [
-            'Hunt',
-            'Relentless',
+            clienttranslate('Hunt'),
+            clienttranslate('Relentless'),
         ];
 
         $this->Text = clienttranslate("<p>City Reaction: After an enemy character moved from this location to a different City location • Move your performer from this location to their new one and wound the enemy character.</p>");

@@ -34,9 +34,9 @@ class _01204 extends CityAttachment implements IHasTechniques
         $this->InfluenceModifier = 0;
 
         $this->Traits = [
-            'Artifact',
-            'Syrneth',
-            'Unique',
+            clienttranslate('Artifact'),
+            clienttranslate('Syrneth'),
+            clienttranslate('Unique'),
         ];
 
         $this->Text = clienttranslate("<p>This card cannot be destroyed or moved from the equipped character.</p><p>Technique: Wound the equipped performer • During the adversary's next round, their combat card has -2 [Parry].</p>");
