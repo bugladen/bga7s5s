@@ -263,6 +263,8 @@ onEnteringState: function( stateName, args )
                 const handCard = this.factionHand.getCards().find(c => c.id === chosenAttachmentId);
                 const cardElement = handCard ? this.factionHand.getCardElement(handCard) : null;
                 if (cardElement) {
+                    dojo.addClass(cardElement, '_7sfs-unselectable');
+
                     dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
                         id: cardElement.id,
                         cost: cardData.wealthCost,
@@ -390,6 +392,7 @@ onEnteringState: function( stateName, args )
                 const handCard = this.factionHand.getCards().find(c => c.id === chosenActionCardId);
                 const cardElement = handCard ? this.factionHand.getCardElement(handCard) : null;
                 if (cardElement) {
+                    dojo.addClass(cardElement, '_7sfs-unselectable');
 
                     dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
                         id: cardElement.id,
@@ -443,7 +446,8 @@ onEnteringState: function( stateName, args )
 
                 const handCard = this.factionHand.getCards().find(c => c.id === chosenBruteId);
                 const cardElement = handCard ? this.factionHand.getCardElement(handCard) : null;
-                if (cardElement) {  
+                if (cardElement) {
+                    dojo.addClass(cardElement, '_7sfs-unselectable');
 
                     dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
                         id: cardElement.id,
@@ -573,6 +577,8 @@ onEnteringState: function( stateName, args )
 
                 if (cardElement)
                 {
+                    dojo.addClass(cardElement, '_7sfs-unselectable');
+
                     dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
                         id: cardElement.id,
                         cost: cardProps.wealthCost,
