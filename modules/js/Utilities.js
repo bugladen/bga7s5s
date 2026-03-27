@@ -485,6 +485,11 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.addTippyTooltip(`${card.divId}_image`, html, this.CARD_TOOLTIP_DELAY);
     },
 
+    getSetDisplayName: function(expansionName) {
+        const setNames = { '_7s5s': _('Core') };
+        return setNames[expansionName] ?? expansionName ?? '';
+    },
+
     createTextTooltipForCharacter: function(card, nodeId)
     {
         nodeId = nodeId ?? `${card.divId}_image`;
@@ -498,6 +503,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         let rows = [
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
+            row(_('Set'), this.getSetDisplayName(card.expansionName)),
+            row(_('Card #'), card.cardNumber ?? ''),
             row(_('Title'), _(card.title)),
             row(_('Resolve'), card.modifiedResolve),
             row(_('Combat'), combat),
@@ -540,6 +547,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         let lines = [
             `${_('Name')}: ${_(card.name)}`,
             `${_('Type')}: ${_(card.type)}`,
+            `${_('Set')}: ${this.getSetDisplayName(card.expansionName)}`,
+            `${_('Card #')}: ${card.cardNumber ?? ''}`,
             `${_('Traits')}: ${traits}`,
             `${_('Initiative')}: ${card.initiative}`,
             `${_('Panache&nbsp;Modifier')}: ${card.panacheModifier}`,
@@ -576,6 +585,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         let rows = [
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
+            row(_('Set'), this.getSetDisplayName(card.expansionName)),
+            row(_('Card #'), card.cardNumber ?? ''),
             row(_('Cost'), card.wealthCost ?? ''),
             row(_('Resolve&nbsp;Modifier'), fmtMod(card.resolveModifier)),
             row(_('Combat&nbsp;Modifier'), fmtMod(card.combatModifier)),
@@ -619,6 +630,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         let rows = [
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
+            row(_('Set'), this.getSetDisplayName(card.expansionName)),
+            row(_('Card #'), card.cardNumber ?? ''),
             row(_('Cost'), card.wealthCost ?? ''),
             row(_('Riposte'), riposte),
             row(_('Parry'), parry),
