@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
@@ -28,6 +29,11 @@ class Reaction_01037 extends CardReaction implements IAbilityThatTargetsCharacte
 
     public function isValidTargetForAbility(Game $game, Character $character): array
     {
+        if ($character->Id != $this->ChallengerId && $character->Id != $this->DefenderId)
+        {
+            return [false, $game->translate("Character is not a participant in the duel.")];
+        }
+
         $owner = $this->getOwningCharacter($game->theah);
         $adjacentLocations = $game->theah->getAdjacentCityLocations($owner->Location, false);
 
@@ -106,9 +112,15 @@ class Reaction_01037 extends CardReaction implements IAbilityThatTargetsCharacte
 
         if ($reactionId != 'pass')
         {
-            //Get the character id from the reactionId
             $characterId = str_replace("move-", "", $reactionId);
             $character = $game->theah->getCharacterById($characterId);
+
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (!$isValid)
+            {
+                throw new UserException($errorMessage);
+            }
+
             $owner = $this->getOwningCharacter($game->theah);
             $event = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $owner->Location, $engage=false, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
