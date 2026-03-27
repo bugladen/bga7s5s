@@ -32,9 +32,9 @@ class _01115 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTarget
         $this->Thrust = 2;
 
         $this->Traits = [
-            'Flourish',
-            'Demoralize',
-            'Torres',
+            clienttranslate('Flourish'),
+            clienttranslate('Demoralize'),
+            clienttranslate('Torres'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Target an adjacent enemy character • Move them to your performer's location.</p><p>Maneuver: If your participant has more [Finesse] than the adversary • They discard a card.</p>");

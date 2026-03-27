@@ -37,10 +37,10 @@ class _01127 extends FactionAttachment implements IHasReactions, IHasTechniques
         $this->Thrust = 5;
 
         $this->Traits = [
-            'Weapon',
-            'Melee',
-            'Hammer',
-            'Unique',
+            clienttranslate('Weapon'),
+            clienttranslate('Melee'),
+            clienttranslate('Hammer'),
+            clienttranslate('Unique'),
         ];
 
         $this->Text = clienttranslate("<p>Reaction: After your round of the duel begins • Unequip this card and play it as your combat card. Gain Lethal.</p><p>Technique: +2 [Thrust].</p>");

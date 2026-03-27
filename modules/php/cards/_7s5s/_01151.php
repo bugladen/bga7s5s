@@ -31,7 +31,7 @@ class _01151 extends Scheme
         $this->PanacheModifier = 1;
 
         $this->Traits = [
-            "Nature"
+            clienttranslate("Nature")
         ];
 
         $this->Text = clienttranslate("<p>When this scheme is revealed, discard all City Cards from each City location. (\"When reveal\" is before any other scheme.)</p><p>Add a City Card to each City location. Then, discard all Renown from all locations and add a Renown to a location. Then, each opponent adds a Renown to a different location. (During normal initiative order.)</p>");

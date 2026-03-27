@@ -28,7 +28,7 @@ class _01140 extends Risk implements IHasReactions
         $this->Thrust = 3;
 
         $this->Traits = [
-            'Hubris',
+            clienttranslate('Hubris'),
         ];
 
         $this->Text = clienttranslate("<p>Reaction: Before your character moves • Cancel their movement. (Even during Dusk.)</p>");

@@ -21,7 +21,7 @@ class _01203 extends CityCharacter implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 203;
 
-        $this->Title = 'Whispered Shade';
+        $this->Title = clienttranslate('Whispered Shade');
 
         $this->Resolve = 4;
         $this->Combat = 2;
@@ -33,9 +33,9 @@ class _01203 extends CityCharacter implements IHasReactions
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Duelist',
-            'Sarmatian',
+            clienttranslate('Mercenary'),
+            clienttranslate('Duelist'),
+            clienttranslate('Sarmatian'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Reaction: When a duel occurs at Leja's location, at the beginning of the first round • Add or remove a threat from one of the participants.</p>");

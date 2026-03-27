@@ -26,16 +26,16 @@ class _01117 extends Character implements IHasActions, IHasReactions
         $this->CardNumber = 117;
 
         $this->initializeFaction("Ussura");
-        $this->Title = "Eternal Scholar";
+        $this->Title = clienttranslate("Eternal Scholar");
         $this->Resolve = 4;
         $this->Combat = 1;
         $this->Finesse = 2;
         $this->Influence = 3;
 
         $this->Traits = [
-            "Academic",
-            "Cartographer",
-            "Ussura",
+            clienttranslate("Academic"),
+            clienttranslate("Cartographer"),
+            clienttranslate("Ussura"),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Move a Renown from this location to another one • Move Ekaterina to another different City location.</p><p>Reaction: After an opponent claims this location • Remove a Renown from it.</p>");

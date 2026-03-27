@@ -26,16 +26,16 @@ class _01039 extends Character implements IHasReactions, IHasTechniques
         $this->CardNumber = 39;
 
         $this->initializeFaction("Eisen");
-        $this->Title = "Grim Trapper";
+        $this->Title = clienttranslate("Grim Trapper");
         $this->Resolve = 5;
         $this->Combat = 3;
         $this->Finesse = 1;
         $this->Influence = 2;
 
         $this->Traits = [
-            "Academic",
-            "Hunter",
-            "Eisen",
+            clienttranslate("Academic"),
+            clienttranslate("Hunter"),
+            clienttranslate("Eisen"),
         ];
 
         $this->Text = clienttranslate("<p>City Reaction: After Philip equips an attachment • Move him to an adjacent location.</p><p>Technique: If the adversary is engaged and you control a Mercenary at this location • Wound the adversary.</p>");

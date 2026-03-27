@@ -32,9 +32,9 @@ class _01156 extends FactionAttachment implements IHasActions
         $this->Thrust = 5;
 
         $this->Traits = [
-            'Weapon',
-            'Ranged',
-            'Rifle',
+            clienttranslate('Weapon'),
+            clienttranslate('Ranged'),
+            clienttranslate('Rifle'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Discard a card • Target character at an adjacent City location may engage. If they do not, wound them. (They cannot engage if they are already engaged.)</p>");

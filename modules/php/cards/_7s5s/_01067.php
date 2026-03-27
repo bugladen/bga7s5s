@@ -23,16 +23,16 @@ class _01067 extends Character
         $this->CardNumber = 67;
 
         $this->initializeFaction("Montaigne");
-        $this->Title = "Commander and Confidant";
+        $this->Title = clienttranslate("Commander and Confidant");
         $this->Resolve = 4;
         $this->Combat = 3;
         $this->Finesse = 2;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Duelist",
-            "Musketeer",
-            "Montaigne",
+            clienttranslate("Duelist"),
+            clienttranslate("Musketeer"),
+            clienttranslate("Montaigne"),
         ];
 
         $this->Text = clienttranslate("<p>Your other Musketeers at Jean's location gain \"Technique: +1 Riposte.\"</p><p>Technique: +1[Thrust]. If you control another Musketeer at this location, you may +1[Riposte] instead.</p>");

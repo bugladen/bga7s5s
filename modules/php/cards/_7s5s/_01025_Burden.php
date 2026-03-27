@@ -21,8 +21,8 @@ class _01025_Burden extends Attachment implements IRiskAttachment
         $this->Image = "01025v2.jpg";
 
         $this->Traits = [
-            'Sorcery',
-            'Sorte',
+            clienttranslate('Sorcery'),
+            clienttranslate('Sorte'),
         ];
 
         $this->ShowStatModifiers = false;

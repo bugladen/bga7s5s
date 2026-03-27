@@ -31,9 +31,9 @@ class _01030 extends Risk implements IHasActions
         $this->WealthCost = 0;
 
         $this->Traits = [
-            'Sorcery',
-            'Sorte',
-            'Unique',
+            clienttranslate('Sorcery'),
+            clienttranslate('Sorte'),
+            clienttranslate('Unique'),
         ];
 
         $this->Text = clienttranslate("<p>Sorcerer Strega Action: Engage your opposed performer • Pressure their location with [Inf]. Target opposing character adds to your total instead. If successful, claim the location.</p>");

@@ -33,10 +33,10 @@ class _01128 extends FactionAttachment implements IHasTechniques
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Weapon',
-            'Melee',
-            'Sword',
-            'Mireli',
+            clienttranslate('Weapon'),
+            clienttranslate('Melee'),
+            clienttranslate('Sword'),
+            clienttranslate('Mireli'),
         ];
 
         $this->Text = clienttranslate("<p>Technique: +1[Parry] if the equipped participant has 2 [Finess] or more; and</p><p>+1 [Thrust] if the equipped participant has 3 [Combat] or more. (Gain both if both are satisfied.)</p>");

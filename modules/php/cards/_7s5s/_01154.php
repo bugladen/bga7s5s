@@ -37,8 +37,8 @@ class _01154 extends FactionAttachment implements IHasActions
         $this->InfluenceLockedValue = 0;
 
         $this->Traits = [
-            "Sorcery",
-            "Unguent"
+            clienttranslate("Sorcery"),
+            clienttranslate("Unguent")
         ];
 
         $this->Text = clienttranslate("<p>May only equip to your Sorcerer. The equipped character's [Influence] is set to 0.</p><p>Action: Engage the equipped performer • Play target risk from your discard pile as if it was from your hand. Send this card to The Locker.</p>");

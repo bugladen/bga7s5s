@@ -29,9 +29,9 @@ class _01082 extends Risk implements IHasManeuvers
         $this->Thrust = 3;
 
         $this->Traits = [
-            'Flourish',
-            'Heroic',
-            'Final Strike',
+            clienttranslate('Flourish'),
+            clienttranslate('Heroic'),
+            clienttranslate('Final Strike'),
         ];
 
         $this->Text = clienttranslate("<p>Maneuver: Final Strike • Add two threat to the adversary and gain Lethal. (Final Strike activates if your participant is destroyed the round this card is played. Lethal ignores Restricted Hostilities.)</p>");

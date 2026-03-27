@@ -31,9 +31,9 @@ class _01202 extends CityAttachment implements IHasReactions
         $this->InfluenceModifier = 1;
 
         $this->Traits = [
-            'Artifact',
-            'Syrneth',
-            'Unique',
+            clienttranslate('Artifact'),
+            clienttranslate('Syrneth'),
+            clienttranslate('Unique'),
         ];
 
         $this->Text = clienttranslate("<p>Forced: When equipping this card • It always equips to your Leader. (Regardless of who equipped it.)</p><p>Reaction: When your non-Mercenary character is sent to The Locker • Put them into your Approach Deck and send this card to The Locker instead.</p>");

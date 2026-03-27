@@ -30,8 +30,8 @@ class _01027 extends Risk implements IHasReactions
         $this->WealthCost = 0;
 
         $this->Traits = [
-            'Bureaucracy',
-            'Cunning',
+            clienttranslate('Bureaucracy'),
+            clienttranslate('Cunning'),
         ];
 
         $this->Text = clienttranslate("<p>Reaction: When a pressure succeeds with a difference of 1 or less • The pressure fails instead.</p>");

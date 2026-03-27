@@ -25,7 +25,7 @@ class _01116 extends Leader implements IHasReactions
         $this->CardNumber = 116;
 
         $this->initializeFaction("Ussura");
-        $this->Title = "The Boar";
+        $this->Title = clienttranslate("The Boar");
         $this->Resolve = 12;
         $this->Combat = 4;
         $this->Finesse = 2;
@@ -34,11 +34,11 @@ class _01116 extends Leader implements IHasReactions
         $this->Panache = 5;
 
         $this->Traits = [
-            "Leader",
-            "Exile",
-            "Hero",
-            "Sorcerer",
-            "Ussura",
+            clienttranslate("Leader"),
+            clienttranslate("Exile"),
+            clienttranslate("Hero"),
+            clienttranslate("Sorcerer"),
+            clienttranslate("Ussura"),
         ];
 
         $this->Text = clienttranslate("<p>When Yevgeni plays a combat card, it gains +1[thrust].</p><p>Reaction: After Yevgeni's challenge is refused • En garde him.</p><p>Reaction: While paying for a non-character card • It has -1 cost.</p>");

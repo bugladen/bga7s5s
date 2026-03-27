@@ -21,7 +21,7 @@ class _01182 extends CityCharacter implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 182;
 
-        $this->Title = 'Short-Tempered Gambler';
+        $this->Title = clienttranslate('Short-Tempered Gambler');
 
         $this->Resolve = 3;
         $this->Combat = 3;
@@ -33,9 +33,9 @@ class _01182 extends CityCharacter implements IHasReactions
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Pirate',
-            'Maghreb',
+            clienttranslate('Mercenary'),
+            clienttranslate('Pirate'),
+            clienttranslate('Maghreb'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>City Reaction: Before an opposing character moves from this location • Wound them. (Even during Dusk.)</p>");

@@ -31,9 +31,9 @@ class _01088 extends Risk implements IHasManeuvers, IHasReactions
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Flourish',
-            'Demoralize',
-            'Valroux',
+            clienttranslate('Flourish'),
+            clienttranslate('Demoralize'),
+            clienttranslate('Valroux'),
         ];
 
         $this->Text = clienttranslate("<p>Reaction: When a challenge is issued by an opposing Mercenary • Cancel it.</p><p>Maneuver: If the adversary is a Mercenary • +1 Riposte.</p>");

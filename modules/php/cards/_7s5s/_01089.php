@@ -32,7 +32,7 @@ class _01089 extends Leader implements IHasReactions
         $this->CardNumber = 89;
 
         $this->initializeFaction("Castille");
-        $this->Title = "Prince of Thieves";
+        $this->Title = clienttranslate("Prince of Thieves");
         $this->Resolve = 7;
         $this->Combat = 3;
         $this->Finesse = 2;
@@ -41,10 +41,10 @@ class _01089 extends Leader implements IHasReactions
         $this->Panache = 6;
 
         $this->Traits = [
-            "Leader",
-            "Pirate",
-            "Scoundrel",
-            "Castille",
+            clienttranslate("Leader"),
+            clienttranslate("Pirate"),
+            clienttranslate("Scoundrel"),
+            clienttranslate("Castille"),
         ];
 
         $this->Text = clienttranslate("<p>Your adversaries at Soline's location have -1 [Fin].</p><p>City Reaction: After an Action resolves • Move Soline to an adjacent City location.</p>");

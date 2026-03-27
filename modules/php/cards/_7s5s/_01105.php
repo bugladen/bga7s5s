@@ -29,8 +29,8 @@ class _01105 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->Thrust = 3;
 
         $this->Traits = [
-            'Cheating',
-            'Revelry',
+            clienttranslate('Cheating'),
+            clienttranslate('Revelry'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Pressure your performer's location with Resolve. If successful, engage target character there. (Total Resolve. Ignore wounds.)</p>");

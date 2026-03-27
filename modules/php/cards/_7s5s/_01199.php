@@ -21,7 +21,7 @@ class _01199 extends CityCharacter implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 199;
 
-        $this->Title = 'Gilded Doctor';
+        $this->Title = clienttranslate('Gilded Doctor');
 
         $this->Resolve = 3;
         $this->Combat = 0;
@@ -33,10 +33,10 @@ class _01199 extends CityCharacter implements IHasReactions
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Academic',
-            'Surgeon',
-            'Maghreb',
+            clienttranslate('Mercenary'),
+            clienttranslate('Academic'),
+            clienttranslate('Surgeon'),
+            clienttranslate('Maghreb'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Reaction: After a duel, if your character that participated is at Takama's location • Heal a wound from them.</p>");

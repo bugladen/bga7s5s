@@ -37,9 +37,9 @@ class _01021 extends FactionAttachment
         $this->CanEquipToOpponents = true;
 
         $this->Traits = [
-            "Poison",
-            "Sabotage",
-            "Unique"
+            clienttranslate("Poison"),
+            clienttranslate("Sabotage"),
+            clienttranslate("Unique")
         ];
 
         $this->Text = clienttranslate("<p>May equip to any non-Leader character at a City location.</p><p>Forced: After the equipped character en gardes • Wound them.</p>");

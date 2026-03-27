@@ -21,15 +21,15 @@ class _01042 extends Character implements IHasTechniques
         $this->CardNumber = 42;
 
         $this->initializeFaction("Eisen");
-        $this->Title = "Instrument of Iron";
+        $this->Title = clienttranslate("Instrument of Iron");
         $this->Resolve = 5;
         $this->Combat = 3;
         $this->Finesse = 1;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Duelist",
-            "Eisen",
+            clienttranslate("Duelist"),
+            clienttranslate("Eisen"),
         ];
 
         $this->Text = clienttranslate("<p>When Terrell's duel ends, attachments in his dueling line go into your hand instead of the discard pile. (They do not if Terrell was destroyed.)</p><p>Technique: +1 [Thrust].</p>");

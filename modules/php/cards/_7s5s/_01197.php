@@ -24,7 +24,7 @@ class _01197 extends CityCharacter implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 197;
         
-        $this->Title = 'Exquisite Smith';
+        $this->Title = clienttranslate('Exquisite Smith');
 
         $this->Resolve = 4;
         $this->Combat = 2;
@@ -37,8 +37,8 @@ class _01197 extends CityCharacter implements IHasActions
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Vesten',
+            clienttranslate('Mercenary'),
+            clienttranslate('Vesten'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>When Kalla equips an attachment, it has -1 cost.</p><p>Action: Move an equipped attachment between two of your characters at this location.</p>");

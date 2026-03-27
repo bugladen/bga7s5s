@@ -30,8 +30,8 @@ class _01104 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->DashedThrust = true;
 
         $this->Traits = [
-            'Camaraderie',
-            'Romance',
+            clienttranslate('Camaraderie'),
+            clienttranslate('Romance'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Your en garde performer and target opposing character both engage and go Home.</p>");

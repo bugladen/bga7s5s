@@ -28,8 +28,8 @@ class _01129 extends Risk implements IHasManeuvers
         $this->Thrust = 2;
 
         $this->Traits = [
-            'Sorcery',
-            'Porte',
+            clienttranslate('Sorcery'),
+            clienttranslate('Porte'),
         ];
 
         $this->Text = clienttranslate("<p>Maneuver: For the rest of the duel, other Maneuvers and Techniques cannot be used.</p>");

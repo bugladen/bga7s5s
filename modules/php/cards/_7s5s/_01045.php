@@ -34,8 +34,8 @@ class _01045 extends Scheme implements IHasReactions
         $this->PanacheModifier = 0;
 
         $this->Traits = [
-            "Bargain", 
-            "Prepared",
+            clienttranslate("Bargain"), 
+            clienttranslate("Prepared"),
         ];
 
         $this->Text = clienttranslate("<p>Add a Renown to [The Forums].</p><p>Put target Mercenary from the City Deck discard pile on top of the City Deck.</p><p>[BAR]</p><p>Your Leader gains +1[inf] while parleying with a Mercenary.</p><p>Reaction: At the end of High Drama, if there are no available Mercenaries and attachments • Gain a Renown.</p>");

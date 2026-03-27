@@ -33,9 +33,9 @@ class _01048 extends FactionAttachment implements IHasTechniques
         $this->Thrust = 3;
 
         $this->Traits = [
-            'Weapon',
-            'Melee',
-            'Sword',
+            clienttranslate('Weapon'),
+            clienttranslate('Melee'),
+            clienttranslate('Sword'),
         ];
 
         $this->Text = clienttranslate("<p>Technique: +1 [Thrust].</p><p>Technique: +1 [Thrust].</p>");

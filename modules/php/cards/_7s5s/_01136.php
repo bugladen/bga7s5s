@@ -31,8 +31,8 @@ class _01136 extends Risk implements IHasActions, IHasManeuvers
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Flourish',
-            'Relentless',
+            clienttranslate('Flourish'),
+            clienttranslate('Relentless'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: If your performer is the only character you control at this location • They heal a wound.</p><p>Maneuver: If this is your only character at this location • +1 Riposte.</p>");

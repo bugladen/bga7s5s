@@ -19,17 +19,17 @@ class _01121 extends Character
         $this->CardNumber = 121;
 
         $this->initializeFaction("Ussura");
-        $this->Title = "Graven Pendant";
+        $this->Title = clienttranslate("Graven Pendant");
         $this->Resolve = 4;
         $this->Combat = 3;
         $this->Finesse = 3;
         $this->Influence = 0;
 
         $this->Traits = [
-            "Hero",
-            "Academic",
-            "Duelist",
-            "Shenzhou"
+            clienttranslate("Hero"),
+            clienttranslate("Academic"),
+            clienttranslate("Duelist"),
+            clienttranslate("Shenzhou")
         ];
 
         $this->Text = clienttranslate("<p>While Ren's adversary controls equal or more characters than you, her adversary's combat cards have -1[parry]. (Anything less than 0 is treated as a 0.)</p>");

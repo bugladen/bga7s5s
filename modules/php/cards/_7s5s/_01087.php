@@ -31,8 +31,8 @@ class _01087 extends Risk implements IHasActions, IHasManeuvers
         $this->Thrust = 2;
 
         $this->Traits = [
-            'Flourish',
-            'Duty',
+            clienttranslate('Flourish'),
+            clienttranslate('Duty'),
         ];
 
         $this->Text = clienttranslate("<p>Action: En garde your non-Mercenary performer.</p><p>Maneuver: En garde your non-Mercenary participant.</p>");

@@ -23,8 +23,8 @@ class _01161_Boon extends Attachment implements IRiskAttachment
         $this->InfluenceModifier = 1;
         
         $this->Traits = [
-            'Sorcery',
-            'Glamour',
+            clienttranslate('Sorcery'),
+            clienttranslate('Glamour'),
         ];
     }
 

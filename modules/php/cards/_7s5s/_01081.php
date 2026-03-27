@@ -27,8 +27,8 @@ class _01081 extends Risk implements IHasActions
         $this->Thrust = 2;
 
         $this->Traits = [
-            'Heroic',
-            'Honor',
+            clienttranslate('Heroic'),
+            clienttranslate('Honor'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Target an opposing engaged character • That character and your performer both en garde.</p>");

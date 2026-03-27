@@ -25,8 +25,8 @@ class _01189 extends CityEventCard implements IHasActions
         $this->CityCardNumber = 13;
 
         $this->Traits = [
-            'Duress',
-            'Fortune',
+            clienttranslate('Duress'),
+            clienttranslate('Fortune'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Engage your performer • Move a Renown from this location to an adjacent one, or from an adjacent location to this one. Discard this card.</p>");

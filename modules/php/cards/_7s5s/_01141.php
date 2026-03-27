@@ -28,8 +28,8 @@ class _01141 extends Risk implements IHasActions
         $this->Thrust = 4;
 
         $this->Traits = [
-            'Brawl',
-            'Kulachniy Boi',
+            clienttranslate('Brawl'),
+            clienttranslate('Kulachniy Boi'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Pressure your performer's location with [Combat]. If successful, claim it.</p>");

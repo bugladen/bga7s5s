@@ -22,17 +22,17 @@ class _01012 extends Character implements IHasActions
         $this->CardNumber = 12;
 
         $this->initializeFaction("Vodacce");
-        $this->Title = "Deceitful Witch";
+        $this->Title = clienttranslate("Deceitful Witch");
         $this->Resolve = 4;
         $this->Combat = 2;
         $this->Finesse = 2;
         $this->Influence = 3;
 
         $this->Traits = [
-            "Sorcerer",
-            "Strega",
-            "Red Hand",
-            "Vodacce",
+            clienttranslate("Sorcerer"),
+            clienttranslate("Strega"),
+            clienttranslate("Red Hand"),
+            clienttranslate("Vodacce"),
         ];
 
         $this->Text = clienttranslate("<p>Sorcerer City Action: Wound Sibella • Wound target opposing character.</p>");

@@ -20,7 +20,7 @@ class _01190 extends CityCharacter
         $this->ExpansionNumber = 1;
         $this->CardNumber = 190;
         
-        $this->Title = 'Grizzled Deathseeker';
+        $this->Title = clienttranslate('Grizzled Deathseeker');
 
         $this->Resolve = 5;
         $this->Combat = 2;
@@ -33,9 +33,9 @@ class _01190 extends CityCharacter
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Pirate',
-            'Vesten',
+            clienttranslate('Mercenary'),
+            clienttranslate('Pirate'),
+            clienttranslate('Vesten'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Sigurd's [Combat] cannot be increased and he cannot issue challenges.</p><p>While Sigurd is en garde, he must be the target of enemy challenges at this location.</p>");

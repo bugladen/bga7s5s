@@ -22,7 +22,7 @@ class _01178 extends CityCharacter
         $this->ExpansionNumber = 1;
         $this->CardNumber = 178;
 
-        $this->Title = 'Lady V';
+        $this->Title = clienttranslate('Lady V');
 
         $this->Resolve = 4;
         $this->Combat = 3;
@@ -34,9 +34,9 @@ class _01178 extends CityCharacter
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Duelist',
-            'Vodacce',
+            clienttranslate('Mercenary'),
+            clienttranslate('Duelist'),
+            clienttranslate('Vodacce'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Once per Day, Carmella may issue a challenge or intervene in one even while engaged.</p>");

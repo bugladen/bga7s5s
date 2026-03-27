@@ -24,7 +24,7 @@ class _01035 extends Leader implements IHasActions
         $this->CardNumber = 35;
 
         $this->initializeFaction("Eisen");
-        $this->Title = "Old Iron";
+        $this->Title = clienttranslate("Old Iron");
         $this->Resolve = 9;
         $this->Combat = 3;
         $this->Finesse = 2;
@@ -33,10 +33,10 @@ class _01035 extends Leader implements IHasActions
         $this->Panache = 6;
 
         $this->Traits = [
-            "Leader",
-            "Hero",
-            "General",
-            "Eisen",
+            clienttranslate("Leader"),
+            clienttranslate("Hero"),
+            clienttranslate("General"),
+            clienttranslate("Eisen"),
         ];
 
         $this->Text = clienttranslate("<p>When Kaspar parleys, he gains +2 [Infl].</p><p>City Action: Engage Kaspar • Reveal cards from the City Deck until you find a Mercenary. Kaspar may recruit it and can parley even while engaged. Sink the rest.</p>");

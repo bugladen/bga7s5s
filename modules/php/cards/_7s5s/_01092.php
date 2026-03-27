@@ -25,16 +25,16 @@ class _01092 extends Character implements IHasActions
         $this->CardNumber = 92;
 
         $this->initializeFaction("Castille");
-        $this->Title = "Gracious Cheat";
+        $this->Title = clienttranslate("Gracious Cheat");
         $this->Resolve = 4;
         $this->Combat = 2;
         $this->Finesse = 2;
         $this->Influence = 2;
 
         $this->Traits = [
-            "Diplomat",
-            "Scoundrel",
-            "Avalon",
+            clienttranslate("Diplomat"),
+            clienttranslate("Scoundrel"),
+            clienttranslate("Avalon"),
         ];
 
         $this->Text = clienttranslate("<p>When a character opposing Makepeace equips a card, it gains +1 cost.</p><p>City Action: Target an opposing engaged character with equal or less [Inf] • Move them Home.</p>");

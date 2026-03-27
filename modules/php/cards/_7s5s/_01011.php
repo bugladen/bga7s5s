@@ -26,16 +26,16 @@ class _01011 extends Character implements IHasActions, IHasTechniques
         $this->CardNumber = 11;
 
         $this->initializeFaction("Vodacce");
-        $this->Title = "Haughty Heir";
+        $this->Title = clienttranslate("Haughty Heir");
         $this->Resolve = 5;
         $this->Combat = 3;
         $this->Finesse = 2;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Deulist",
-            "Red Hand",
-            "Vodacce",
+            clienttranslate("Deulist"),
+            clienttranslate("Red Hand"),
+            clienttranslate("Vodacce"),
         ];
 
         $this->Text = clienttranslate("<p>Servo may issue challenges to characters opposing your Red Hands at locations adjacent to him. When he does, move him there.</p><p>Technique: +1 [Thrust] for each of your other Red Hands at this location.</p>");

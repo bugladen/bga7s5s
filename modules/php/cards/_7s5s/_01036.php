@@ -26,16 +26,16 @@ class _01036 extends Character implements IHasActions, IHasTechniques
         $this->CardNumber = 36;
 
         $this->initializeFaction("Eisen");
-        $this->Title = "Rueful Confidante";
+        $this->Title = clienttranslate("Rueful Confidante");
         $this->Resolve = 4;
         $this->Combat = 2;
         $this->Finesse = 3;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Sorcerer",
-            "Strega",
-            "Vodacce",
+            clienttranslate("Sorcerer"),
+            clienttranslate("Strega"),
+            clienttranslate("Vodacce"),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Your Mercenary at this location issues a [com] challenge to target opposing character.</p><p>Technique: When your round ends, move Daniella to an adjacent City location. Usable once per Day.</p>");

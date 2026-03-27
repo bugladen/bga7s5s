@@ -37,9 +37,9 @@ class _01139 extends Risk implements IHasActions, IHasManeuvers
         $this->Thrust = 0;
 
         $this->Traits = [
-            'Flourish',
-            'Relentless',
-            'Unique',
+            clienttranslate('Flourish'),
+            clienttranslate('Relentless'),
+            clienttranslate('Unique'),
         ];
 
         $this->Text = clienttranslate("<p>Action: Spend a Renown • Take two more actions. Send this card to The Locker.</p><p>Maneuver: Gain +X[Thrust] where X is equal to your participant's base [Combat]. Send this card to The Locker.</p>");

@@ -27,8 +27,8 @@ class _01080 extends Risk implements IHasReactions
         $this->Thrust = 3;
 
         $this->Traits = [
-            'Bureaucracy',
-            'Rumor',
+            clienttranslate('Bureaucracy'),
+            clienttranslate('Rumor'),
         ];
 
         $this->Text = clienttranslate("<p>City Reaction: After a duel where your adversary was destroyed • Pressure your performer's location with [inf]. If successful, claim the location.</p>");

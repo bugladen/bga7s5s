@@ -30,7 +30,7 @@ class _01187 extends CityAttachment implements IHasActions
         $this->InfluenceModifier = 1;
 
         $this->Traits = [
-            'Artifact',
+            clienttranslate('Artifact'),
         ];
 
         $this->Text = clienttranslate("<p>Action: Destroy this card • Equip an attachment from your hand or a City location to this character, ignoring all costs. (It must be available.)</p>");

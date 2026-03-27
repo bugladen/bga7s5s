@@ -29,8 +29,8 @@ class _01076 extends Risk implements IHasActions
         $this->DashedThrust = true;
 
         $this->Traits = [
-            'Sorcery',
-            'Porte',
+            clienttranslate('Sorcery'),
+            clienttranslate('Porte'),
         ];
 
         $this->Text = clienttranslate("<p>Sorcerer Action: Move your performer to any City location. Then, you may wound them. If you do, move another of your characters from the first location to this one.</p>");

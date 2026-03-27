@@ -37,8 +37,8 @@ class _01053 extends Risk implements IHasReactions
         $this->WealthCost = 0;
 
         $this->Traits = [
-            'Hunt',
-            'Zeal',
+            clienttranslate('Hunt'),
+            clienttranslate('Zeal'),
         ];
 
         $this->Text = clienttranslate("<p>Forced: When your round ends • Move your participant Home engaged unless the adversary is a Sorcerer.</p><p>Reaction: When a Sorcerer ability targets a card • Wound your performer at that location and cancel the effects.</p>");

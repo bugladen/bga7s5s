@@ -32,9 +32,9 @@ class _01113 extends Risk implements IHasActions, IHasManeuvers
         $this->Thrust = 3;
 
         $this->Traits = [
-            'Flourish',
-            'Crime',
-            'Theft',
+            clienttranslate('Flourish'),
+            clienttranslate('Crime'),
+            clienttranslate('Theft'),
         ];
 
         $this->Text = clienttranslate("<p>Pirate City Action: Take control of target attachment in an opponent's discard pile. Equip it to your performer, paying all costs.</p><p>Pirate Maneuver: Take control of target attachment on the adversary or in their discard pile. Equip it to your participant, paying all costs.</p>");

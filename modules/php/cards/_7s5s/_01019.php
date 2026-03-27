@@ -21,7 +21,7 @@ class _01019 extends Brute implements IHasActions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 19;
 
-        $this->Title = 'Lout';
+        $this->Title = clienttranslate('Lout');
         $this->initializeFaction('Vodacce');
 
         $this->Resolve = 2;
@@ -38,11 +38,11 @@ class _01019 extends Brute implements IHasActions
         $this->WealthCost = 1;
 
         $this->Traits = [
-            'Red Hand',
-            'Thug',
-            'Vodacce',
-            'Unique',
-            'Brute',
+            clienttranslate('Red Hand'),
+            clienttranslate('Thug'),
+            clienttranslate('Vodacce'),
+            clienttranslate('Unique'),
+            clienttranslate('Brute'),
         ];
 
         $this->Text = clienttranslate("<p>Brute (Brutes do not count against your Crew Cap, go to the discard pile when destroyed, and are discarded from play at the end of the day.)</p><p>City Action: Destroy Buratino • Wound target character at that location.</p>");

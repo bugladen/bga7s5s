@@ -37,8 +37,8 @@ class _01098 extends Scheme implements IHasReactions
         $this->PanacheModifier = 1;
 
         $this->Traits = [
-            "Logistics", 
-            "Sabotage",
+            clienttranslate("Logistics"), 
+            clienttranslate("Sabotage"),
         ];
 
         $this->Text = clienttranslate("<p>Add a Renown to two different locations.</p><p>[BAR]</p><p>Forced: At the end of Planning • Reveal a card at random from an opponent's hand.</p><p>Reaction: After an opponent plays or discards a card with the revealed card's name • Gain a Renown.</p>");

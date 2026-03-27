@@ -40,10 +40,10 @@ class _01155 extends FactionAttachment implements IHasManeuvers, IHasTechniques,
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Flourish',
-            'Weapon',
-            'Melee',
-            'Ad Hoc',
+            clienttranslate('Flourish'),
+            clienttranslate('Weapon'),
+            clienttranslate('Melee'),
+            clienttranslate('Ad Hoc'),
         ];
 
         $this->Text = clienttranslate("<p>Reaction: When your round ends, equip this card to your participant from your dueling line ignoring all costs.</p><p>Technique: Destroy this card • +1 Thrust.</p><p>Maneuver: +1 Parry.</p>");

@@ -32,9 +32,9 @@ class _01103 extends Risk implements IHasActions, IHasManeuvers
         $this->Thrust = 0;
 
         $this->Traits = [
-            'Flourish',
-            'Virtue',
-            'Unique',
+            clienttranslate('Flourish'),
+            clienttranslate('Virtue'),
+            clienttranslate('Unique'),
         ];
 
         $this->Text = clienttranslate("<p>Pirate City Action: If you are the first player • Claim your performer's location.</p><p>City Action: If you are not the first player • En garde your performer.</p><p>Maneuver: +2 [Riposte]. Then choose and gain: +2 [Parry]  or +2 [Thrust].</p>");

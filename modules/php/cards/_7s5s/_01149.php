@@ -29,8 +29,8 @@ class _01149 extends Scheme implements IHasActions
         $this->PanacheModifier = 0;
 
         $this->Traits = [
-            "Logistics", 
-            "Market",
+            clienttranslate("Logistics"), 
+            clienttranslate("Market"),
         ];
 
         $this->Text = clienttranslate("<p>Add a Renown to [The Docks] and [The Grand Bazaar]. Then, add a City Card to [The Docks].</p><p>[BAR]</p><p>City Action: If [The Docks] has no City Cards or only events • Move your performer from [The Docks] to any City location.</p>");

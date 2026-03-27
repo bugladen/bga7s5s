@@ -40,9 +40,9 @@ class _01200 extends CityAttachment implements IHasReactions
         $this->ChosenCard = 0;
 
         $this->Traits = [
-            'Artifact',
-            'Syrneth',
-            'Unique',
+            clienttranslate('Artifact'),
+            clienttranslate('Syrneth'),
+            clienttranslate('Unique'),
         ];
 
         $this->Text = clienttranslate("<p>Forced: After you equip this card • Look at an opponent's Approach Deck and choose a card in it.</p><p>Reaction: After an opponent plays the chosen card during any Day • Gain a Renown.</p>");

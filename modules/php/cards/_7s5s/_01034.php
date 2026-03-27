@@ -32,9 +32,9 @@ class _01034 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->WealthCost = 0;
 
         $this->Traits = [
-            'Demoralize',
-            'Duress',
-            'Zeal',
+            clienttranslate('Demoralize'),
+            clienttranslate('Duress'),
+            clienttranslate('Zeal'),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Wound your performer • Target opposing en garde character may engage. If they do not, en garde your performer.</p>");

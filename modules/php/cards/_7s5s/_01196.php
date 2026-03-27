@@ -22,7 +22,7 @@ class _01196 extends CityCharacter implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 196;
         
-        $this->Title = 'La Bouchere';
+        $this->Title = clienttranslate('La Bouchere');
 
         $this->Resolve = 4;
         $this->Combat = 3;
@@ -34,10 +34,10 @@ class _01196 extends CityCharacter implements IHasReactions
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Pirate',
-            'Sorcerer',
-            'Montaigne',
+            clienttranslate('Mercenary'),
+            clienttranslate('Pirate'),
+            clienttranslate('Sorcerer'),
+            clienttranslate('Montaigne'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>When Angeline would engage from moving, you may discard a card instead of engaging her.</p><p>Technique: If Angeline has equal or greater [combat] and [inf] than the adversary • +1 Riposte</p>");

@@ -28,8 +28,8 @@ class _01054 extends Risk implements IHasManeuvers
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Flourish',
-            'Eisenfaust',
+            clienttranslate('Flourish'),
+            clienttranslate('Eisenfaust'),
         ];
 
         $this->Text = clienttranslate("<p>While your participant is equipped with an Eisenfaust attachment, this card has -1 cost.</p><p>Maneuver: If your participant has equal or greater [Com] than the adversary, or is equipped with an Eisenfaust attachment • Wound the adversary.</p>");

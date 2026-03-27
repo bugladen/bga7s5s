@@ -21,15 +21,15 @@ class _01038 extends Character implements IHasActions
         $this->CardNumber = 38;
 
         $this->initializeFaction("Eisen");
-        $this->Title = "Industrous Ironmonger";
+        $this->Title = clienttranslate("Industrous Ironmonger");
         $this->Resolve = 4;
         $this->Combat = 1;
         $this->Finesse = 2;
         $this->Influence = 2;
 
         $this->Traits = [
-            "Academic",
-            "Eisen",
+            clienttranslate("Academic"),
+            clienttranslate("Eisen"),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Reveal the top three cards of your deck. Put a revealed attachment into your hand. Sink the rest.</p>");

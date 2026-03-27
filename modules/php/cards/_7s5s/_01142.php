@@ -27,8 +27,8 @@ class _01142 extends Risk implements IHasManeuvers
         $this->Thrust = 2;
 
         $this->Traits = [
-            'Flouish',
-            'Demoralize',
+            clienttranslate('Flouish'),
+            clienttranslate('Demoralize'),
         ];
 
         $this->Text = clienttranslate("<p>Maneuver: If you have greater or equal [Combat] than the adversary • Destroy target attachment on them.</p>");

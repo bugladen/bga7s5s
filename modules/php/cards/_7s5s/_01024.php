@@ -30,8 +30,8 @@ class _01024 extends Risk implements IHasActions
         $this->WealthCost = 1;
 
         $this->Traits = [
-            'Conscription',
-            'Gang',
+            clienttranslate('Conscription'),
+            clienttranslate('Gang'),
         ];
 
         $this->Text = clienttranslate("<p>While paying for this card, Thugs cannot be spent.</p><p>Leader Action: Put target Thug from your discard pile into play at your performer's location, ignoring all costs.</p>");

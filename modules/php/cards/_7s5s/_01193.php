@@ -30,7 +30,7 @@ class _01193 extends CityAttachment implements IHasTechniques
         $this->InfluenceModifier = 0;
 
         $this->Traits = [
-            'Armor',
+            clienttranslate('Armor'),
         ];
 
         $this->Text = clienttranslate("<p>Technique: During the adversary's next round, their combat card has -1 [Thrust].</p>");

@@ -30,16 +30,16 @@ class _01007 extends Character implements IHasActions
         $this->CardNumber = 7;
 
         $this->initializeFaction("Vodacce");
-        $this->Title = "'Creative' Clerk";
+        $this->Title = clienttranslate("'Creative' Clerk");
         $this->Resolve = 4;
         $this->Combat = 1;
         $this->Finesse = 3;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Diplomat",
-            "Red Hand",
-            "Vodacce",
+            clienttranslate("Diplomat"),
+            clienttranslate("Red Hand"),
+            clienttranslate("Vodacce"),
         ];
 
         $this->Text = clienttranslate("<p>Aldo gains +1 [Influence] for each Renown at this location.</p><p>City Action: Move a Renown from a location you control to this one.</p>");

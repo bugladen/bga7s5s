@@ -32,9 +32,9 @@ class _01158 extends FactionAttachment implements IHasActions
         $this->Thrust = 2;
 
         $this->Traits = [
-            'Attire',
-            'Coat',
-            'Rilasciare',
+            clienttranslate('Attire'),
+            clienttranslate('Coat'),
+            clienttranslate('Rilasciare'),
         ];
 
         $this->Text = clienttranslate("<p>Action: Discard a card • Draw a card.</p>");

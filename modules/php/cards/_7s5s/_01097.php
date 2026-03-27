@@ -26,15 +26,15 @@ class _01097 extends Character implements IHasActions, IHasReactions
         $this->CardNumber = 97;
 
         $this->initializeFaction("Castille");
-        $this->Title = "Loyal Merrymaker";
+        $this->Title = clienttranslate("Loyal Merrymaker");
         $this->Resolve = 4;
         $this->Combat = 1;
         $this->Finesse = 1;        
         $this->Influence = 2;
 
         $this->Traits = [
-            "Pirate",
-            "Aragosta",
+            clienttranslate("Pirate"),
+            clienttranslate("Aragosta"),
         ];
 
         $this->Text = clienttranslate("<p>City Action: Target an opposing character • If their controller has fewer cards in hand than you, engage them.</p><p>Reaction: After an opponent discards a card due to your effect • Draw a card.</p>");

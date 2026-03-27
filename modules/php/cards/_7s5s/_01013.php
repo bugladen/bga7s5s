@@ -26,16 +26,16 @@ class _01013 extends Character implements IHasTechniques, IHasReactions
         $this->CardNumber = 13;
 
         $this->initializeFaction("Vodacce");
-        $this->Title = "Mouse Among Rats";
+        $this->Title = clienttranslate("Mouse Among Rats");
         $this->Resolve = 4;
         $this->Combat = 3;
         $this->Finesse = 2;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Hero",
-            "Duelist",
-            "Vodacce",
+            clienttranslate("Hero"),
+            clienttranslate("Duelist"),
+            clienttranslate("Vodacce"),
         ];
 
         $this->Text = clienttranslate("<p>Reaction: After your Red Hand is destroyed at this location • Draw a card.</p><p>Technique: If Vissenta has equal or more wounds than the adversary • [+1 Parr]y or [+1 Thrust].</p>");

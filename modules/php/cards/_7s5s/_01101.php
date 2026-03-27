@@ -35,10 +35,10 @@ class _01101 extends FactionAttachment implements IHasTechniques
         $this->Thrust = 4;
 
         $this->Traits = [
-            'Weapon',
-            'Melee',
-            'Sword',
-            'Aldana',
+            clienttranslate('Weapon'),
+            clienttranslate('Melee'),
+            clienttranslate('Sword'),
+            clienttranslate('Aldana'),
         ];
 
         $this->Text = clienttranslate("<p>When the equipped character gambles during a duel, reveal an additional card.</p><p>Technique: -1 Parry • During the adversary's next round, they reveal one less card when they gamble.</p>");

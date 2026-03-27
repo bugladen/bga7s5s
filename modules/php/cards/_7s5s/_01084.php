@@ -27,8 +27,8 @@ class _01084 extends Risk implements IHasManeuvers
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Flourish',
-            'Valroux',
+            clienttranslate('Flourish'),
+            clienttranslate('Valroux'),
         ];
 
         $this->Text = clienttranslate("<p>While the adversary is engaged, this card has -1 cost.</p><p>Duelist Maneuver: +1 [Riposte] and draw a card. During the adversary's next round, their combat card gains +1 [Thrust.</p>");

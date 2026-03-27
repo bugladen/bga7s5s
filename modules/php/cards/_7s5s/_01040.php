@@ -26,15 +26,15 @@ class _01040 extends Character implements IHasReactions
         $this->CardNumber = 40;
 
         $this->initializeFaction("Eisen");
-        $this->Title = "Master-at-arms";
+        $this->Title = clienttranslate("Master-at-arms");
         $this->Resolve = 5;
         $this->Combat = 2;
         $this->Finesse = 3;
         $this->Influence = 1;
 
         $this->Traits = [
-            "Weapons Master",
-            "Eisen",
+            clienttranslate("Weapons Master"),
+            clienttranslate("Eisen"),
         ];
 
         $this->Text = clienttranslate("<p>Rena may intervene by engaging her equipped Weapon instead of herself. She may do this even while engaged.</p><p>While Rena has a Weapon equipped, she gains +1 [Com].</p>");

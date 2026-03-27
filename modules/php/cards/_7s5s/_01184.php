@@ -22,7 +22,7 @@ class _01184 extends CityCharacter implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 184;
 
-        $this->Title = 'Pompous Sleaze';
+        $this->Title = clienttranslate('Pompous Sleaze');
 
         $this->Resolve = 4;
         $this->Combat = 1;
@@ -34,9 +34,9 @@ class _01184 extends CityCharacter implements IHasReactions
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Diplomat',
-            'Montaigne',
+            clienttranslate('Mercenary'),
+            clienttranslate('Diplomat'),
+            clienttranslate('Montaigne'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>During pressures, Claude gains +1[inf].</p><p>City Reaction: When Claude's location is pressured • Count only the performer and en garde characters.</p>");

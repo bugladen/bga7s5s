@@ -31,16 +31,16 @@ class _01064 extends Character implements IHasActions
         $this->CardNumber = 64;
 
         $this->initializeFaction("Montaigne");
-        $this->Title = "High Marketeer";
+        $this->Title = clienttranslate("High Marketeer");
         $this->Resolve = 4;
         $this->Combat = 2;
         $this->Finesse = 1;
         $this->Influence = 2;
 
         $this->Traits = [
-            "Diplomat",
-            "Merchant",
-            "Castille",
+            clienttranslate("Diplomat"),
+            clienttranslate("Merchant"),
+            clienttranslate("Castille"),
         ];
 
         $this->Text = clienttranslate("<p>While an opponent has more Renown than you, Guillén gains +1 [Com].</p><p>City Action: Discard a card • Move an adjacent Renown to this location.</p>");

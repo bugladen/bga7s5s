@@ -39,8 +39,8 @@ class _01133 extends Risk implements IHasActions, IHasReactions, IHasManeuvers, 
         $this->Thrust = 1;
 
         $this->Traits = [
-            'Sorcery',
-            'Dar Matushki',
+            clienttranslate('Sorcery'),
+            clienttranslate('Dar Matushki'),
         ];
 
         $this->Text = clienttranslate("<p>Sorcerer Action: You may engage your performer. if you do, ignore all costs • Move target character you control from this location to any other one.</p><p>Sorcerer Maneuver: Move both participants to an adjacent location. (The duel continues.)</p>");

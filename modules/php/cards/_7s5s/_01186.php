@@ -25,7 +25,7 @@ class _01186 extends CityCharacter
         $this->ExpansionNumber = 1;
         $this->CardNumber = 186;
 
-        $this->Title = 'Impervious Champion';
+        $this->Title = clienttranslate('Impervious Champion');
 
         $this->Resolve = 5;
         $this->Combat = 4;
@@ -38,10 +38,10 @@ class _01186 extends CityCharacter
         $this->Negotiable = true;
 
         $this->Traits = [
-            'Mercenary',
-            'Duelist',
-            'Weapons Master',
-            'Ashur',
+            clienttranslate('Mercenary'),
+            clienttranslate('Duelist'),
+            clienttranslate('Weapons Master'),
+            clienttranslate('Ashur'),
         ];
 
         $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Forced: The first time a risk targets Maryam each Day • Cancel the effects. (Costs are still paid.)</p><p>Technique: During the adversary's next round, they cannot use Maneuvers.</p>");

@@ -30,7 +30,7 @@ class _01169 extends Risk
         $this->DashedThrust = true;
 
         $this->Traits = [
-            'Ad Hoc',
+            clienttranslate('Ad Hoc'),
         ];
 
         $this->Text = clienttranslate("<p>Forced: When your round ends • Wound your participant and move them Home engaged.</p>");

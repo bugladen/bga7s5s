@@ -37,10 +37,10 @@ class _01006 extends Leader implements IHasReactions
         $this->Panache = 6;
        
         $this->Traits = [
-            "Leader",
-            "Villain",
-            "Red Hand",
-            "Vodacce",
+            clienttranslate("Leader"),
+            clienttranslate("Villain"),
+            clienttranslate("Red Hand"),
+            clienttranslate("Vodacce"),
         ];
 
         $this->Text = clienttranslate("<p>During setup, reveal a Red Hand Thug from your deck and put it into your hand.</p><p>During pressures, if you control a Thug at that location, add +1.</p><p>Reaction: Before the end of the Day • Target character at Constanzo's location loses Brute. (After moving Home during Dusk.)</p>");

@@ -29,8 +29,8 @@ class _01125 extends Scheme
         $this->PanacheModifier = 1;
 
         $this->Traits = [
-            "Cunning", 
-            "Hunt",
+            clienttranslate("Cunning"), 
+            clienttranslate("Hunt"),
         ];
 
         $this->Text = clienttranslate("<p>You may add a Renown to any location. If you do not, move a Renown to an adjacent location.</p><p>Choose an enemy character. When the chosen character is your adversary, your combat cards gain +1 thrust.</p><p>[BAR]</p><p>Reaction: At the beginning of Dusk, if the chosen character is at Home • Gain a Renown.</p>");

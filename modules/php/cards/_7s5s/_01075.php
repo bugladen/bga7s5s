@@ -37,10 +37,10 @@ class _01075 extends FactionAttachment implements IHasActions
         $this->DashedThrust = true;
 
         $this->Traits = [
-            'Attire',
-            'Tabbard',
-            'Oathsworn',
-            'Unique',            
+            clienttranslate('Attire'),
+            clienttranslate('Tabbard'),
+            clienttranslate('Oathsworn'),
+            clienttranslate('Unique'),            
         ];
 
         $this->Text = clienttranslate("<p>May only equip to your non-Diplomat and they gain Musketeer.</p><p>City Action: Engage the equipped performer • Pressure with [Inf]. You succeed even if tied. If successful, claim this location.</p>");

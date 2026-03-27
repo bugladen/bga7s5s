@@ -34,9 +34,9 @@ class _01071 extends Scheme implements IHasActions
         $this->PanacheModifier = -1;
 
         $this->Traits = [
-            "Challenge", 
-            "Duty",
-            "Glory",
+            clienttranslate("Challenge"), 
+            clienttranslate("Duty"),
+            clienttranslate("Glory"),
         ];
 
         $this->Text = clienttranslate("<p>Add a Renown to any location.</p><p>[BAR]</p><p>While your Musketeers are at a location with two or more Renown, they gain +1[Inf].</p><p>Musketeer City Action: Your performer issues a [com] challenge to target opposing character. It cannot be refused. The first participant to wound their adversary steals a Renown from them.</p>");

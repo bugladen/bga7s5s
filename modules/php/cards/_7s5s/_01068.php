@@ -22,17 +22,17 @@ class _01068 extends Character implements IHasActions
         $this->CardNumber = 68;
 
         $this->initializeFaction("Montaigne");
-        $this->Title = "Lithe Lioness";
+        $this->Title = clienttranslate("Lithe Lioness");
         $this->Resolve = 5;
         $this->Combat = 2;
         $this->Finesse = 2;
         $this->Influence = 2;
 
         $this->Traits = [
-            "Duelist",
-            "Musketeer",
-            "Sorcerer",
-            "Montaigne",
+            clienttranslate("Duelist"),
+            clienttranslate("Musketeer"),
+            clienttranslate("Sorcerer"),
+            clienttranslate("Montaigne"),
         ];
 
         $this->Text = clienttranslate("<p>Sorcerer City Action: Wound Léontine • Move target character you control from her location to another.</p>");

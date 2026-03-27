@@ -32,17 +32,17 @@ class _01008 extends Character implements IHasActions, IHasReactions, IHasTechni
         $this->CardNumber = 8;
 
         $this->initializeFaction("Vodacce");
-        $this->Title = "Sadistic Weaver";
+        $this->Title = clienttranslate("Sadistic Weaver");
         $this->Resolve = 5;
         $this->Combat = 1;
         $this->Finesse = 1;
         $this->Influence = 2;
 
         $this->Traits = [
-            "Sorcerer",
-            "Strega",
-            "Red Hand",
-            "Vodacce",
+            clienttranslate("Sorcerer"),
+            clienttranslate("Strega"),
+            clienttranslate("Red Hand"),
+            clienttranslate("Vodacce"),
         ];
 
         $this->Text = clienttranslate("<p>Sorcerer CIty Action: Reveal the top card of your deck. If it is a Sorcery, put it into your hand. If not, you may sink it.</p><p>Reaction: After Cesca performed  a Sorcerer Ability, or one targeted a character at this location • Wound her. Cesca performs a copy of it, paying all costs. (Can choose new targets.)</p>");
