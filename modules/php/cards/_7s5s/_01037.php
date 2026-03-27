@@ -31,7 +31,7 @@ class _01037 extends Character implements IHasReactions
         $this->CardNumber = 37;
 
         $this->initializeFaction("Eisen");
-        $this->Title = "Mistress of the House";
+        $this->Title = clienttranslate("Mistress of the House");
         $this->Resolve = 4;
         $this->Combat = 1;
         $this->Finesse = 2;
@@ -98,7 +98,7 @@ class _01037 extends Character implements IHasReactions
 
         if ($event instanceof EventCharacterMustered && ($event->characterId == $this->Id || $event->location == $this->Location))
         {
-            $this->updateInfluence($event->theah, $event->location, 1);
+            $this->updateInfluence($event->theah, $event->location);
         }
 
         if ($event instanceof EventApproachCharacterPlayed && $event->characterId == $this->Id)
@@ -120,7 +120,7 @@ class _01037 extends Character implements IHasReactions
             $character = $event->theah->getCharacterById($event->characterId);
             if ($character->Location == $this->Location)
             {
-                $this->updateInfluence($event->theah, Game::LOCATION_PLAYER_HOME, 1);
+                $this->updateInfluence($event->theah, $this->Location);
             }
         }
     }
