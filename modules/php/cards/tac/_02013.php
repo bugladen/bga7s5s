@@ -26,17 +26,17 @@ class _02013 extends Character implements IHasActions
         $this->CardNumber = 13;
 
         $this->initializeFaction('Eisen');
-        $this->Title = 'Zealous Warrior';
+        $this->Title = clienttranslate('Zealous Warrior');
         $this->Resolve = 5;
         $this->Combat = 2;
         $this->Finesse = 3;
         $this->Influence = 2;
 
         $this->Traits = [
-            'Hero',
-            'Zealot',
-            'Hunter',
-            'Eisen',
+            clienttranslate('Hero'),
+            clienttranslate('Zealot'),
+            clienttranslate('Hunter'),
+            clienttranslate('Eisen'),
         ];
 
         $this->Text = clienttranslate("<p>Wilhelm may only issue [com] challenges to <b>Villains</b>, <b>Sorcerers</b>, and <b>Monsters</b>.</p><p><b>City Action:</b> Discard a <b>Relic</b> or <b>Faith</b> card and target an opposing character • Wilhelm issues a [com] challenge to them as if they were a <b>Sorcerer</b>.</p>");

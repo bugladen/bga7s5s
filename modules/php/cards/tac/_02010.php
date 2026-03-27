@@ -31,8 +31,8 @@ class _02010 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->WealthCost = 0;
 
         $this->Traits = [
-            "Sorcery",
-            "Sorte",
+            clienttranslate("Sorcery"),
+            clienttranslate("Sorte"),
         ];
 
         $this->Text = clienttranslate("<p><b>Sorcerer Strega City Action:</b> Target two of your characters at your performer's location • Move up to two wounds between them.</p>");

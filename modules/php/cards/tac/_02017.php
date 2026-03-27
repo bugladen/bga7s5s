@@ -41,8 +41,8 @@ class _02017 extends FactionAttachment implements IHasReactions, IHasTechniques
         $this->OffHand = true;
 
         $this->Traits = [
-            "Armor",
-            "Eisenfaust",
+            clienttranslate("Armor"),
+            clienttranslate("Eisenfaust"),
         ];
 
         $this->Text = clienttranslate("<p>Offhand <i>(Offhand attachments do not count against the limit of one Armor and one Weapon per character. Limit one attachment with Offhand per character.)</i></p><p><b>Reaction:</b> When equipped participant's adversary announces a combat card • It has -1 [riposte].</p><p><b>Technique:</b> The adversary cannot activate <b>Techniques</b> during their next round.</p>");

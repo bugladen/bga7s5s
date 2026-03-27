@@ -30,8 +30,8 @@ class _02007 extends Risk implements IHasActions
         $this->WealthCost = 0;
 
         $this->Traits = [
-            "Crime",
-            "Sabotage",
+            clienttranslate("Crime"),
+            clienttranslate("Sabotage"),
         ];
 
         $this->Text = clienttranslate("<p><b>Red Hand City Action:</b> Wound your performer • Remove a Renown and discard target available City card from your performer's location.</p>");

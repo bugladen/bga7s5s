@@ -32,8 +32,8 @@ class _02008 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->WealthCost = 0;
 
         $this->Traits = [
-            "Sorcery",
-            "Sorte",
+            clienttranslate("Sorcery"),
+            clienttranslate("Sorte"),
         ];
 
         $this->Text = clienttranslate("<p><b>Sorcerer Strega Action:</b> Choose a risk from your discard pile and place it face-down under target opposing character • When that character is destroyed, put that risk into your hand.</p>");

@@ -39,10 +39,10 @@ class _02016 extends FactionAttachment implements IHasReactions
         $this->Thrust = 2;
 
         $this->Traits = [
-            "Holy",
-            "Relic",
-            "Battle Standard",
-            "Unique",
+            clienttranslate("Holy"),
+            clienttranslate("Relic"),
+            clienttranslate("Battle Standard"),
+            clienttranslate("Unique"),
         ];
 
         $this->Text = clienttranslate("<p>Cannot equip to <b>Sorcerers.</b></p><p>Equipped character gains <b>Zealot.</b></p><p><b>Reaction:</b> When an opponent targets your character at this location, wound your performer • That opponent targets your performer instead.</p>");

@@ -36,9 +36,9 @@ class _02018 extends Risk implements IHasActions, IHasManeuvers
         $this->WealthCost = 1;
 
         $this->Traits = [
-            "Flourish",
-            "Faith",
-            "Penance",
+            clienttranslate("Flourish"),
+            clienttranslate("Faith"),
+            clienttranslate("Penance"),
         ];
 
         $this->Text = clienttranslate("<p><b>Zealot City Action:</b> Wound all characters at your performer's location.</p><p><b>Maneuver:</b> Wound your participant • +X[thrust] where X is the number of wounds on your participant.</p>");

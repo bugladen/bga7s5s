@@ -26,16 +26,16 @@ class _02012 extends Character implements IHasReactions, IHasTechniques
         $this->CardNumber = 12;
 
         $this->initializeFaction('Eisen');
-        $this->Title = 'The Curaidh';
+        $this->Title = clienttranslate('The Curaidh');
         $this->Resolve = 4;
         $this->Combat = 3;
         $this->Finesse = 1;
         $this->Influence = 0;
 
         $this->Traits = [
-            'Hero',
-            'Berserker',
-            'Highland Marches'
+            clienttranslate('Hero'),
+            clienttranslate('Berserker'),
+            clienttranslate('Highland Marches')
         ];
 
         $this->Text = clienttranslate("<p><b>Berserker Reaction:</b> When Turais issues a challenge, wound him • En garde him.</p><p><b>Berserker Technique:</b> Wound Turais • Remove all threat from him.</p>");

@@ -26,17 +26,17 @@ class _02001 extends Character implements IHasActions, IHasReactions
         $this->CardNumber = 1;
 
         $this->initializeFaction('Vodacce');
-        $this->Title = 'Femina Calamita';
+        $this->Title = clienttranslate('Femina Calamita');
         $this->Resolve = 4;
         $this->Combat = 2;
         $this->Finesse = 3;
         $this->Influence = 1;
 
         $this->Traits = [
-            'Duelist',
-            'Sorcerer',
-            'Strega',
-            'Vodacce',
+            clienttranslate('Duelist'),
+            clienttranslate('Sorcerer'),
+            clienttranslate('Strega'),
+            clienttranslate('Vodacce'),
         ];
 
         $this->Text = clienttranslate("<p><b>Sorcerer Reaction:</b> When target opposing non-<b>Sorcerer</b> intervenes or refuses a challenge • Wound them.</p><p><b>Sorcerer City Action:</b> Discard a <b>Sorcery</b> and engage Andriana • Move target enemy non-<b>Leader</b> at a City location to Andriana's location. Then, she issues them a [com] challenge.</p>");

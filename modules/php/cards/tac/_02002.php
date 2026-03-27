@@ -26,17 +26,17 @@ class _02002 extends Character implements IHasActions, IHasTechniques
         $this->CardNumber = 2;
 
         $this->initializeFaction('Vodacce');
-        $this->Title = 'Fortune Weaver';
+        $this->Title = clienttranslate('Fortune Weaver');
         $this->Resolve = 3;
         $this->Combat = 1;
         $this->Finesse = 3;
         $this->Influence = 2;
 
         $this->Traits = [
-            'Sorcerer',
-            'Strega',
-            'Red Hand',
-            'Vodacce',
+            clienttranslate('Sorcerer'),
+            clienttranslate('Strega'),
+            clienttranslate('Red Hand'),
+            clienttranslate('Vodacce'),
         ];
 
         $this->Text = clienttranslate("<p><b>Sorcerer City Action:</b> Look at the top three cards of target player's deck, put one or more of them into the discard pile, then replace the rest in any order.</p><p><b>Sorcerer Technique:</b> -1[thrust].</p>");

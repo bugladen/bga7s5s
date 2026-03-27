@@ -31,9 +31,9 @@ class _02020 extends Risk implements IHasActions
         $this->WealthCost = 0;
 
         $this->Traits = [
-            "Eisenfaust",
-            "Demoralize",
-            "Provocation",
+            clienttranslate("Eisenfaust"),
+            clienttranslate("Demoralize"),
+            clienttranslate("Provocation"),
         ];
 
         $this->Text = clienttranslate("<p><b>City Action:</b> Engage a <b>Melee Weapon</b> or <b>Eisenfaust</b> attachment equipped to your performer and target an opposing non-<b>Leader</b> • They may engage. If they do not, wound them.</p>");

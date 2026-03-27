@@ -31,9 +31,9 @@ class _02009 extends Risk implements IHasManeuvers
         $this->WealthCost = 0;
 
         $this->Traits = [
-            "Flourish",
-            "Villainous",
-            "Crime"
+            clienttranslate("Flourish"),
+            clienttranslate("Villainous"),
+            clienttranslate("Crime")
         ];
 
         $this->Text = clienttranslate("<p><b>Thug Maneuver:</b> Wound the adversary.</p><p><b>Duelist Maneuver:</b> Wound the adversary.</p><p><b>Spy Maneuver:</b> Wound the adversary.</p>");

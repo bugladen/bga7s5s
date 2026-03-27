@@ -37,9 +37,9 @@ class _02006 extends FactionAttachment implements IHasTechniques
         $this->Thrust = 1;
 
         $this->Traits = [
-            "Attire",
-            "Heirloom",
-            "Unique",
+            clienttranslate("Attire"),
+            clienttranslate("Heirloom"),
+            clienttranslate("Unique"),
         ];
 
         $this->Text = clienttranslate("<p>May only equip to your <b>Red Hand</b>.</p><p><b>Technique:</b> Wound your other character at this location and engage this card • +1[parry].</p>");

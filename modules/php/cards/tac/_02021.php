@@ -27,17 +27,17 @@ class _02021 extends Character implements IHasReactions, IHasTechniques
         $this->CardNumber = 21;
 
         $this->initializeFaction('Montaigne');
-        $this->Title = 'Golden Palms';
+        $this->Title = clienttranslate('Golden Palms');
         $this->Resolve = 3;
         $this->Combat = 2;
         $this->Finesse = 0;
         $this->Influence = 3;
 
         $this->Traits = [
-            'Dignitary',
-            'Diplomat',
-            'Merchant',
-            'Vesten'
+            clienttranslate('Dignitary'),
+            clienttranslate('Diplomat'),
+            clienttranslate('Merchant'),
+            clienttranslate('Vesten')
         ];
 
         $this->Text = clienttranslate("<p><b>City Reaction:</b> When discarding cards to pay costs • One of your attachments discarded this way gains Wealth. <i>(This card counts as two when discarded to pay costs. Send it to The Locker after paying costs.)</i></p><p><b>Technique:</b> If Grand Merchant Anghos has more [inf] than the adversary • +1[parry].</p>");

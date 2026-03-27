@@ -32,17 +32,17 @@ class _02011 extends Character implements IHasActions, IHasReactions, IHasTechni
         $this->CardNumber = 11;
 
         $this->initializeFaction('Eisen');
-        $this->Title = 'Eagle Eye';
+        $this->Title = clienttranslate('Eagle Eye');
         $this->Resolve = 4;
         $this->Combat = 2;
         $this->Finesse = 2;
         $this->Influence = 1;
 
         $this->Traits = [
-            'Knight',
-            'Academic',
-            'Zealot',
-            'Montaigne'
+            clienttranslate('Knight'),
+            clienttranslate('Academic'),
+            clienttranslate('Zealot'),
+            clienttranslate('Montaigne')
         ];
 
         $this->Text = clienttranslate("<p><b>Reaction:</b> When Katain performs an ability on a <b>Ranged</b> card, discard a card • Copy the effects.</p><p><b>Technique:</b> Engage Katain's equipped <b>Ranged Weapon</b> • +1[parry].</p>");

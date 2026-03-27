@@ -30,8 +30,8 @@ class _02004 extends Scheme implements IHasReactions
         $this->PanacheModifier = 0;
 
         $this->Traits = [
-            'Ad Hoc',
-            'Unwelcome',
+            clienttranslate('Ad Hoc'),
+            clienttranslate('Unwelcome'),
         ];
 
         $this->Text = clienttranslate("<p>Add a Renown to [Docks] and [Bazaar]</p><p>{BAR}</p><p><b>City Reaction:</b> When an opponent initiates a pressure • Move your adjacent en garde performer to the pressured location. If the opponent's pressure succeeds, draw a card.</p>");

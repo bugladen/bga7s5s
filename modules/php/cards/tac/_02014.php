@@ -31,8 +31,8 @@ class _02014 extends Scheme implements IHasActions
         $this->PanacheModifier = 0;
 
         $this->Traits = [
-            "Logistics",
-            "Demoralize",
+            clienttranslate("Logistics"),
+            clienttranslate("Demoralize"),
         ];
 
         $this->Text = clienttranslate("<p>Add or move a Renown to [Forums].</p><p>{BAR}</p><p><b>Leader City Action:</b> Pressure your <b>Leader</b>'s location with [com]. You succeed even if tied. If successful, look at the top four cards of the City Deck. Discard any number of them and replace the rest in any order.</p>");
