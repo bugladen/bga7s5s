@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
@@ -15,6 +16,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01119 extends Character
 {
+    private int $EngagedEnemyBonus = 0;
+
     public function __construct()
     {
         parent::__construct();
@@ -44,14 +47,22 @@ class _01119 extends Character
 
     private function updateInfluence(Theah $theah, int $count = 0)
     {
+        $newInfluence = $this->ModifiedInfluence - $this->EngagedEnemyBonus + $count;
+
+        if ($newInfluence == $this->ModifiedInfluence && $this->EngagedEnemyBonus == $count)
+            return;
 
         $influenceEvent = EventFactory::createCharacterInfluenceModifiedEvent(
             $this->ControllerId, 
             $this->Id, 
             $this->ModifiedInfluence, 
-            $count, 
+            $newInfluence, 
             $this->getInjectCode()
         );
+
+        $this->EngagedEnemyBonus = $count;
+        $this->IsUpdated = true;
+
         $theah->queueEvent($influenceEvent);
     }
 
@@ -75,14 +86,26 @@ class _01119 extends Character
 
         if ($event instanceof EventCardMoved && $event->cardId != $this->Id && $event->toLocation == $this->Location)
         {
-            $count = $this->getOpposingEngagedCharacterCount($event->theah, $event->toLocation);
-            $this->updateInfluence($event->theah, $count);
+            $movedCharacter = $event->theah->getCharacterById($event->cardId);
+            if (!($this->Location == Game::LOCATION_PLAYER_HOME && $movedCharacter && $movedCharacter->ControllerId != $this->ControllerId))
+            {
+                $count = $this->getOpposingEngagedCharacterCount($event->theah, $event->toLocation);
+                if ($movedCharacter && $movedCharacter->isNotControlledByPlayer($this->ControllerId) && ($movedCharacter->Engaged || $event->engage))
+                    $count++;
+                $this->updateInfluence($event->theah, $count);
+            }
         }
         
         if ($event instanceof EventCardMoved && $event->cardId != $this->Id && $event->fromLocation == $this->Location)
         {
-            $count = $this->getOpposingEngagedCharacterCount($event->theah, $event->fromLocation);
-            $this->updateInfluence($event->theah, $count);
+            $movedCharacter = $event->theah->getCharacterById($event->cardId);
+            if (!($this->Location == Game::LOCATION_PLAYER_HOME && $movedCharacter && $movedCharacter->ControllerId != $this->ControllerId))
+            {
+                $count = $this->getOpposingEngagedCharacterCount($event->theah, $event->fromLocation);
+                if ($movedCharacter && $movedCharacter->isNotControlledByPlayer($this->ControllerId) && $movedCharacter->Engaged)
+                    $count--;
+                $this->updateInfluence($event->theah, $count);
+            }
         }
 
         if ($event instanceof EventCharacterMustered && $event->characterId == $this->Id && $event->location == $this->Location)
@@ -94,9 +117,12 @@ class _01119 extends Character
         if ($event instanceof EventCharacterDestroyed && $event->characterId != $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if ($character->Location == $this->Location)
+            if ($character && $character->Location == $this->Location
+                && $this->Location != Game::LOCATION_PLAYER_HOME)
             {
                 $count = $this->getOpposingEngagedCharacterCount($event->theah, $this->Location);
+                if ($character->isNotControlledByPlayer($this->ControllerId) && $character->Engaged)
+                    $count--;
                 $this->updateInfluence($event->theah, $count);
             }
         }
@@ -104,7 +130,8 @@ class _01119 extends Character
         if ($event instanceof EventCardEngaged)
         {
             $character = $event->theah->getCharacterById($event->cardId);
-            if ($character->ControllerId != $this->ControllerId && $character->Location == $this->Location)
+            if ($character && $character->ControllerId != $this->ControllerId && $character->Location == $this->Location
+                && $this->Location != Game::LOCATION_PLAYER_HOME)
             {
                 $count = $this->getOpposingEngagedCharacterCount($event->theah, $character->Location) + 1;
                 $this->updateInfluence($event->theah, $count);
@@ -114,7 +141,8 @@ class _01119 extends Character
         if ($event instanceof EventCardEngarded)
         {
             $character = $event->theah->getCharacterById($event->cardId);
-            if ($character->ControllerId != $this->ControllerId && $character->Location == $this->Location)
+            if ($character && $character->ControllerId != $this->ControllerId && $character->Location == $this->Location
+                && $this->Location != Game::LOCATION_PLAYER_HOME)
             {
                 $count = $this->getOpposingEngagedCharacterCount($event->theah, $character->Location) - 1;
                 $this->updateInfluence($event->theah, $count);
@@ -124,11 +152,11 @@ class _01119 extends Character
         if ($event instanceof EventChallengeRejected && $event->challengerId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->targetId);
-            if (!$character->Engaged)
+            if ($character && !$character->Engaged)
             {
                 $game = $event->theah->game;
                 $game->notify->all("message", clienttranslate('${player_name} has rejected a challenge from ${challenger_inject_code}. ${target_inject_code} will be Engaged.'), [
-                    "player_name" => $game->getPlayerNameById($this->ControllerId),
+                    "player_name" => $game->getPlayerNameById($character->ControllerId),
                     "challenger_inject_code" => $this->getInjectCode(),
                     "target_inject_code" => $character->getInjectCode(),
                 ]);
