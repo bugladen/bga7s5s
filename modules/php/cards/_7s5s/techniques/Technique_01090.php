@@ -44,14 +44,15 @@ class Technique_01090 extends Technique
         {
             $game = $event->theah->game;
             $owner = $this->getOwningCharacter($event->theah);
-            $dbCardInfo = $game->getCardsOnTopOfPlayerFactionDeck($owner->ControllerId, 1)[0];
-            $card = $game->getCardObjectFromDb($dbCardInfo['id']);
 
             $actor = $game->theah->getDuelRoundActor();
             $playerName = $game->getPlayerNameById($actor->ControllerId);
 
             $adversary = $game->theah->getDuelRoundOpponent();
             $opponentName = $game->getPlayerNameById($adversary->ControllerId);
+
+            $dbCardInfo = $game->getCardsOnTopOfPlayerFactionDeck($adversary->ControllerId, 1)[0];
+            $card = $game->getCardObjectFromDb($dbCardInfo['id']);
 
             $this->RevealedCardId = $card->Id;
             $this->CardPlayerId = $adversary->ControllerId;
