@@ -1346,14 +1346,44 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.addTippyTooltip(`duel_round_${row.round}_wounds`, `<div class='_7sfs-basic-tooltip'>${_("The amount of wounds the Actor took, or will take, for this round")}</div>` );        
     },
 
-    showApproachDeckAtTop: () => {
+    showApproachDeckAtTop: function() {
+        const container = $('approachDeck-container');
+        if (!container) return;
+
+        const firstRect = container.getBoundingClientRect();
         dojo.place('approachDeck-container', 'city', 'before');
         dojo.removeClass('approachDeck-container', '_7sfs-dimmed');
+
+        if (this.animationManager && this.animationManager.animationsActive()) {
+            const lastRect = container.getBoundingClientRect();
+            const deltaY = firstRect.top - lastRect.top;
+            if (deltaY !== 0) {
+                container.animate([
+                    { transform: `translateY(${deltaY}px)`, opacity: 0.5 },
+                    { transform: 'translateY(0)', opacity: 1 }
+                ], { duration: 500, easing: 'ease-in-out' });
+            }
+        }
     },
 
-    showApproachDeckAtBottom: () => {
+    showApproachDeckAtBottom: function() {
+        const container = $('approachDeck-container');
+        if (!container) return;
+
+        const firstRect = container.getBoundingClientRect();
         dojo.place('approachDeck-container', 'hand_anchor', 'before');
         dojo.addClass('approachDeck-container', '_7sfs-dimmed');
+
+        if (this.animationManager && this.animationManager.animationsActive()) {
+            const lastRect = container.getBoundingClientRect();
+            const deltaY = firstRect.top - lastRect.top;
+            if (deltaY !== 0) {
+                container.animate([
+                    { transform: `translateY(${deltaY}px)`, opacity: 1 },
+                    { transform: 'translateY(0)', opacity: 0.5 }
+                ], { duration: 500, easing: 'ease-in-out' });
+            }
+        }
     },
 
     getCityLocationElement: function(location) {
