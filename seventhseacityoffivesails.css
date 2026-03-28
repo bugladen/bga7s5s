@@ -1029,6 +1029,25 @@ body {
     white-space: nowrap;
 }
 
+._7sfs-card-player-list {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 10px;
+    line-height: 1.3;
+    display: flex;
+    flex-direction: column;
+    z-index: 15;
+}
+
+._7sfs-card-player-list span {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
 ._7sfs-attachment-container {
     position:relative;
     margin-left: calc(var(--attachment-count) * 15px);

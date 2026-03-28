@@ -67,6 +67,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['firstPlayer', 2000],
             ['locationClaimed', 500],
             ['parleyInterveneListUpdated', 1],
+            ['sirensScreamUsedListUpdated', 1],
             ['locationUncontrolled', 500],
             ['maryamBenuPleromaAbilityUsed', 500],
             ['maryamBenuPleromaAbilityRemoved', 500],
@@ -2111,6 +2112,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         this.displayForumInterveneList(args.interveneList);
+    },
+
+    notif_sirensScreamUsedListUpdated: function( notif )
+    {
+        debug( 'notif_sirensScreamUsedListUpdated' );
+        debug( notif );
+
+        const args = notif.args;
+        this.displaySirensScreamUsedList(args.cardId, args.usedList);
     },
 
 })

@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01179;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityEventCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -44,6 +45,11 @@ class _01179 extends CityEventCard implements IHasActions
         $this->Actions = [
             new Action_01179(),
         ];
+    }
+
+    public function getSirensScreamUsedListData(Game $game): array
+    {
+        return $this->Actions[0]->getUsedListData($game);
     }
 
     public function eventCheck($event)

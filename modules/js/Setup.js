@@ -249,6 +249,10 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.displayLocationControlChip(this.LOCATION_CITY_GOVERNORS_GARDEN);
         }
 
+        if (gamedatas.sirensScreamUsedList && gamedatas.sirensScreamUsedList.usedList.length > 0) {
+            this.displaySirensScreamUsedList(gamedatas.sirensScreamUsedList.cardId, gamedatas.sirensScreamUsedList.usedList);
+        }
+
         // Create Approach deck (1.5x scaled)
         const approachDeckCardWidth = Math.round(this.wholeCardWidth * 1.5);
         const approachDeckCardHeight = Math.round(this.wholeCardHeight * 1.5);

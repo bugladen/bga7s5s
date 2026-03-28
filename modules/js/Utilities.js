@@ -1503,5 +1503,38 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.destroy(existing);
         }
     },
+
+    displaySirensScreamUsedList: function(cardId, usedList) {
+        this.removeSirensScreamUsedList();
+
+        if (!usedList || usedList.length === 0) {
+            return;
+        }
+
+        const card = this.cardProperties[cardId];
+        if (!card || !card.divId) return;
+
+        const imageElement = $(`${card.divId}_image`);
+        if (!imageElement) return;
+
+        dojo.place(this.format_block('jstpl_sirens_scream_used_list', {}), imageElement, 'last');
+
+        const container = $('sirens-scream-used-list');
+        usedList.forEach((entry) => {
+            dojo.create('span', {
+                innerHTML: entry.playerName,
+                style: `color:#${entry.playerColor}`,
+            }, container);
+        });
+
+        this.addTippyTooltip('sirens-scream-used-list', `<div class='_7sfs-basic-tooltip'>${_("Siren's Scream - Players who have taken a Renown this Day")}</div>`);
+    },
+
+    removeSirensScreamUsedList: function() {
+        const existing = $('sirens-scream-used-list');
+        if (existing) {
+            dojo.destroy(existing);
+        }
+    },
 })
 });

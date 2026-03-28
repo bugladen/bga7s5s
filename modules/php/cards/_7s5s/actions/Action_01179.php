@@ -77,6 +77,7 @@ class Action_01179 extends EventCityAction
             $this->playersUsed = [];
             $card = $this->getOwningCard($event->theah);
             $card->IsUpdated = true;
+            $this->notifyUsedList($event->theah->game, $card->Id);
         }
 
         // Take Reknown action
@@ -107,7 +108,29 @@ class Action_01179 extends EventCityAction
 
             $this->resetPlayerPassCount($event->theah->game);
             // $this->setUsed() not called because special use cases
-            
+
+            $this->notifyUsedList($event->theah->game, $owner->Id);
         }
+    }
+
+    private function notifyUsedList(Game $game, int $cardId): void
+    {
+        $game->notify->all("sirensScreamUsedListUpdated", '', [
+            'cardId' => $cardId,
+            'usedList' => $this->getUsedListData($game),
+        ]);
+    }
+
+    public function getUsedListData(Game $game): array
+    {
+        $list = [];
+        foreach ($this->playersUsed as $playerId) {
+            $list[] = [
+                'playerId' => $playerId,
+                'playerName' => $game->getPlayerNameById($playerId),
+                'playerColor' => $game->getPlayerColorById($playerId),
+            ];
+        }
+        return $list;
     }
 }
