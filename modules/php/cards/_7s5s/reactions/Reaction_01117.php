@@ -35,11 +35,11 @@ class Reaction_01117 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventLocationClaimed)
+        if ($event instanceof EventLocationClaimed && $this->isAvailable())
         {
             $ekaterina = $this->getOwningCharacter($event->theah);
             $location = $event->theah->getCityLocation($event->location);
-            if ($ekaterina->Location == $event->location && $location->Reknown > 0)
+            if ($event->playerId != $ekaterina->ControllerId && $ekaterina->Location == $event->location && $location->Reknown > 0)
             {
                 $transition = EventFactory::createReactionTransitionEvent($ekaterina->ControllerId, $ekaterina->Id, $this->Id);
                 $event->theah->queueEvent($transition);
