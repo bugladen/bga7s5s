@@ -60,11 +60,6 @@ class Technique_01049 extends Technique implements IRangedAbility
             $event->theah->queueEvent($rangedAbilityPlayedEvent);
         }
 
-        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
-        {
-            $event->adversaryThreatIsLethal = true;
-        }
-
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
             $lethalEvent = EventFactory::createGainLethalEvent($event->actorId, $event->theah);
