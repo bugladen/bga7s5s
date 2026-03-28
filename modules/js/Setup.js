@@ -216,6 +216,10 @@ return declare('seventhseacityoffivesails.setup', null, {
         $('forum-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_FORUM];
         $('forum-image').setAttribute('data-location', this.LOCATION_CITY_FORUM);
         this.displayLocationControlChip(this.LOCATION_CITY_FORUM);
+
+        if (gamedatas.forumInterveneList && gamedatas.forumInterveneList.length > 0) {
+            this.displayForumInterveneList(gamedatas.forumInterveneList);
+        }
             
         // Set up cards in the bazaar
         gamedatas.bazaarCards = this.moveAttachmentsToCharacters(gamedatas.bazaarCards);
@@ -243,6 +247,10 @@ return declare('seventhseacityoffivesails.setup', null, {
             $('garden-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_GOVERNORS_GARDEN];
             $('garden-image').setAttribute('data-location', this.LOCATION_CITY_GOVERNORS_GARDEN);
             this.displayLocationControlChip(this.LOCATION_CITY_GOVERNORS_GARDEN);
+        }
+
+        if (gamedatas.sirensScreamUsedList && gamedatas.sirensScreamUsedList.usedList.length > 0) {
+            this.displaySirensScreamUsedList(gamedatas.sirensScreamUsedList.cardId, gamedatas.sirensScreamUsedList.usedList);
         }
 
         // Create Approach deck (1.5x scaled)

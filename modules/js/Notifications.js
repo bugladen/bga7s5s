@@ -66,6 +66,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['factionResolveCardDrawPublic', 500],
             ['firstPlayer', 2000],
             ['locationClaimed', 500],
+            ['parleyInterveneListUpdated', 1],
+            ['sirensScreamUsedListUpdated', 1],
             ['locationUncontrolled', 500],
             ['maryamBenuPleromaAbilityUsed', 500],
             ['maryamBenuPleromaAbilityRemoved', 500],
@@ -1173,6 +1175,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
         let card = this.cardProperties[args.card.id];
         if (card)
         {
+            if (card.cardNumber == 150 && card.expansionName === '_7s5s') {
+                this.removeForumInterveneList();
+            }
+
             card.location = this.LOCATION_PLAYER_LOCKER;
 
             const cardElement = $(card.divId);
@@ -2127,6 +2133,24 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
         const player = this.gamedatas.players[args.playerId];
         player.discard = [];
+    },
+
+    notif_parleyInterveneListUpdated: function( notif )
+    {
+        debug( 'notif_parleyInterveneListUpdated' );
+        debug( notif );
+
+        const args = notif.args;
+        this.displayForumInterveneList(args.interveneList);
+    },
+
+    notif_sirensScreamUsedListUpdated: function( notif )
+    {
+        debug( 'notif_sirensScreamUsedListUpdated' );
+        debug( notif );
+
+        const args = notif.args;
+        this.displaySirensScreamUsedList(args.cardId, args.usedList);
     },
 
 })

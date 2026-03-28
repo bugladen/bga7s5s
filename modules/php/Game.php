@@ -337,6 +337,25 @@ class Game extends \Bga\GameFramework\Table
         $result["locationReknown"] = $this->theah->getCityLocationReknown();
         $result["locationControllers"] = $this->theah->getCityLocationControllers();
 
+        $result["forumInterveneList"] = [];
+        foreach ($this->theah->getCardsInPlay() as $card) {
+            if ($card instanceof cards\_7s5s\_01150) {
+                $result["forumInterveneList"] = $card->getInterveneListData($this);
+                break;
+            }
+        }
+
+        $result["sirensScreamUsedList"] = null;
+        foreach ($this->theah->getAllCards() as $card) {
+            if ($card instanceof cards\_7s5s\_01179 && $this->theah->cardInCity($card)) {
+                $result["sirensScreamUsedList"] = [
+                    'cardId' => $card->Id,
+                    'usedList' => $card->getSirensScreamUsedListData($this),
+                ];
+                break;
+            }
+        }
+
         $inDuel = $this->globals->get(Game::IN_DUEL, false);
         $result["inDuel"] = $inDuel;
         if ($inDuel)
