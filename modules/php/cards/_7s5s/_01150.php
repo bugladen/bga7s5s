@@ -58,7 +58,7 @@ class _01150 extends Scheme
 
             //For each opponent, create an event that transitions to the state where they can choose a location to remove reknown from.
             foreach ($players as $playerId => $player) {
-                if ($player['player_id'] == $this->OwnerId) continue;
+                if ($player['player_id'] == $this->ControllerId) continue;
 
                 $transition = EventFactory::createTransitionEvent($playerId, $this->Id, '01150');
                 $transition->priority = Event::MEDIUM_PRIORITY;
