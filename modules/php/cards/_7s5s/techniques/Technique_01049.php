@@ -45,6 +45,11 @@ class Technique_01049 extends Technique
             $event->adversaryThreatIsLethal = true;
         }
 
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
+        {
+            $event->adversaryThreatIsLethal = true;
+        }
+
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
             $challengerId = $event->theah->getDuelChallengerId();
