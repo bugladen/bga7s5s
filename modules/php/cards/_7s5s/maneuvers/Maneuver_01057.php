@@ -24,13 +24,8 @@ class Maneuver_01057 extends Maneuver implements IRangedAbility
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {
             $actor = $event->theah->getDuelRoundActor();
-            $challengerId = $event->theah->getDuelChallengerId();
-            $defenderId = $event->theah->getDuelDefenderId();
 
-            $challengerThreatIsLethal = $actor->Id == $challengerId ? null : true;
-            $defenderThreatIsLethal = $actor->Id == $defenderId ? null : true;
-        
-            $lethalEvent = EventFactory::createThreatModifiedEvent(0, 0, $challengerThreatIsLethal, $defenderThreatIsLethal);
+            $lethalEvent = EventFactory::createGainLethalEvent($actor->Id, $event->theah);
             $event->theah->queueEvent($lethalEvent);
 
             $owner = $this->getOwningCard($event->theah);

@@ -14,6 +14,7 @@
 
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
@@ -1132,6 +1133,16 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->defenderThreatIsLethal = $defenderThreatIsLethal;
         }
         return $event;
+    }
+
+    public static function createGainLethalEvent(int $actorId, Theah $theah): EventThreatModified
+    {
+        $challengerId = $theah->getDuelChallengerId();
+        $defenderId = $theah->getDuelDefenderId();
+        $challengerThreatIsLethal = $actorId == $challengerId ? null : true;
+        $defenderThreatIsLethal = $actorId == $defenderId ? null : true;
+
+        return self::createThreatModifiedEvent(0, 0, $challengerThreatIsLethal, $defenderThreatIsLethal);
     }
 
     public static function createTransitionEvent(int $playerId, int $sourceId, string $transitionName, string $internalId = ""): EventTransition

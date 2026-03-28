@@ -52,13 +52,7 @@ class Technique_01049 extends Technique implements IRangedAbility
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
-            $challengerId = $event->theah->getDuelChallengerId();
-            $defenderId = $event->theah->getDuelDefenderId();
-
-            $challengerThreatIsLethal = $event->actorId == $challengerId ? null : true;
-            $defenderThreatIsLethal = $event->actorId == $defenderId ? null : true;
-        
-            $lethalEvent = EventFactory::createThreatModifiedEvent(0, 0, $challengerThreatIsLethal, $defenderThreatIsLethal);
+            $lethalEvent = EventFactory::createGainLethalEvent($event->actorId, $event->theah);
             $event->theah->queueEvent($lethalEvent);
 
             $owner = $this->getOwningCard($event->theah);

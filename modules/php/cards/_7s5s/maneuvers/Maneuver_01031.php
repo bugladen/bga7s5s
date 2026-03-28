@@ -140,12 +140,8 @@ class Maneuver_01031 extends Maneuver
             $game->theah->queueEvent($event);
 
             $actor = $game->theah->getDuelRoundActor();
-            $challengerId = $game->theah->getDuelChallengerId();
-            $defenderId = $game->theah->getDuelDefenderId();
-            $challengerThreatIsLethal = $actor->Id == $challengerId ? null : true;
-            $defenderThreatIsLethal = $actor->Id == $defenderId ? null : true;
-        
-            $lethalEvent = EventFactory::createThreatModifiedEvent(0, 0, $challengerThreatIsLethal, $defenderThreatIsLethal);
+
+            $lethalEvent = EventFactory::createGainLethalEvent($actor->Id, $game->theah);
             $game->theah->queueEvent($lethalEvent);
 
             $game->gamestate->nextState();
