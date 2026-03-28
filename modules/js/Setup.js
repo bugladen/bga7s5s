@@ -216,6 +216,10 @@ return declare('seventhseacityoffivesails.setup', null, {
         $('forum-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_FORUM];
         $('forum-image').setAttribute('data-location', this.LOCATION_CITY_FORUM);
         this.displayLocationControlChip(this.LOCATION_CITY_FORUM);
+
+        if (gamedatas.forumInterveneList && gamedatas.forumInterveneList.length > 0) {
+            this.displayForumInterveneList(gamedatas.forumInterveneList);
+        }
             
         // Set up cards in the bazaar
         gamedatas.bazaarCards = this.moveAttachmentsToCharacters(gamedatas.bazaarCards);

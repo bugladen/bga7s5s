@@ -335,9 +335,10 @@ body {
     z-index: 20;
 }
 ._7sfs-city-reknown-chip {
-    position:absolute;    
+    position:absolute;
     left: 55px;
     top: 5px;
+    z-index: 1;
 }
 
 ._7sfs-yevgeni-adversary-chip {
@@ -419,6 +420,7 @@ body {
     display: inline-block;
     vertical-align: middle;
     border-radius: 10px;
+    position: relative;
 }
 
 ._7sfs-city-endcap {
@@ -1005,6 +1007,26 @@ body {
     top: 45px;
     left: 115px;
     border: 2px solid black;
+    z-index: 1;
+}
+
+._7sfs-forum-intervene-list {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 10px;
+    line-height: 1.3;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+}
+
+._7sfs-forum-intervene-list span {
+    font-weight: bold;
+    white-space: nowrap;
 }
 
 ._7sfs-attachment-container {

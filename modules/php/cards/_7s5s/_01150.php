@@ -85,6 +85,8 @@ class _01150 extends Scheme
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_names" => $playerNames
             ]);
+
+            $this->notifyInterveneList($game);
         }
 
         //Reset the intervene list at the end of the day
@@ -92,6 +94,7 @@ class _01150 extends Scheme
         {
             $this->interveneList = [];
             $this->IsUpdated = true;
+            $this->notifyInterveneList($event->theah->game);
         }
     }
 
@@ -154,5 +157,34 @@ class _01150 extends Scheme
 
             $game->gamestate->nextState();
         }
+    }
+
+    private function notifyInterveneList(Game $game): void
+    {
+        $list = [];
+        foreach ($this->interveneList as $playerId) {
+            $list[] = [
+                'playerId' => $playerId,
+                'playerName' => $game->getPlayerNameById($playerId),
+                'playerColor' => $game->getPlayerColorById($playerId),
+            ];
+        }
+
+        $game->notify->all("parleyInterveneListUpdated", '', [
+            'interveneList' => $list,
+        ]);
+    }
+
+    public function getInterveneListData(Game $game): array
+    {
+        $list = [];
+        foreach ($this->interveneList as $playerId) {
+            $list[] = [
+                'playerId' => $playerId,
+                'playerName' => $game->getPlayerNameById($playerId),
+                'playerColor' => $game->getPlayerColorById($playerId),
+            ];
+        }
+        return $list;
     }
 }

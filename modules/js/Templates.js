@@ -206,6 +206,10 @@
         <div id="\${id}-location-control-chip" style="--player-color:#\${player_color}" class="_7sfs-location-control-chip _7sfs-location-controller-player-color"></div>
         `;
         
+        window.jstpl_forum_parley_gone_wrong_intervene_list = `
+        <div id="forum-parley-intervene-list" class="_7sfs-forum-intervene-list"></div>
+        `;
+        
         window.jstpl_number_order_chip = `
         <div id="\${id}-number_order_chip" class="_7sfs-number-order-chip">\${id}</div>
         `;

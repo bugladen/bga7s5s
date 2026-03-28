@@ -1473,5 +1473,35 @@ return declare('seventhseacityoffivesails.utilities', null, {
             else
                 this.bgaPerformAction('actHighDramaRecruitActionStart', {}) 
     },
+
+    displayForumInterveneList: function(interveneList) {
+        this.removeForumInterveneList();
+
+        if (!interveneList || interveneList.length === 0) {
+            return;
+        }
+
+        const forumImage = $('forum-image');
+        if (!forumImage) return;
+
+        dojo.place(this.format_block('jstpl_forum_parley_gone_wrong_intervene_list', {}), forumImage, 'first');
+
+        const container = $('forum-parley-intervene-list');
+        interveneList.forEach((entry) => {
+            const span = dojo.create('span', {
+                innerHTML: entry.playerName,
+                style: `color:#${entry.playerColor}`,
+            }, container);
+        });
+
+        this.addTippyTooltip('forum-parley-intervene-list', `<div class='_7sfs-basic-tooltip'>${_('Parley Gone Wrong - These players are allowed to Intervene')}</div>`);
+    },
+
+    removeForumInterveneList: function() {
+        const existing = $('forum-parley-intervene-list');
+        if (existing) {
+            dojo.destroy(existing);
+        }
+    },
 })
 });
