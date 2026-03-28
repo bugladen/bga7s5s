@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -48,6 +49,15 @@ class Technique_01049 extends Technique implements IRangedAbility
             $engageId = $this->originalAttachmentId ?? $owner->Id;
             $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $engageId, $owner->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
+        }
+
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
+        {
+            $event->adversaryThreatIsLethal = true;
+
+            $owner = $this->getOwningCard($event->theah);
+            $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $event->actorId);
+            $event->theah->queueEvent($rangedAbilityPlayedEvent);
         }
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
