@@ -41,6 +41,12 @@ class _02022 extends Character
         $this->Text = clienttranslate("<p>When a challenge is issued to your <b>Diplomat</b> at this location, wound the challenging character.</p><p>Your <b>Musketeers</b> at Stranahan's location gain '<b>Technique:</b> Gain Lethal.'</p>");
 
         $this->resetCard();
+
+        $technique = new Technique_GainLethal();
+        $technique->setId("Technique_02022");
+        $this->Techniques = [
+            $technique
+        ];
     }
 
     public function handleEvent(Event $event)
@@ -77,7 +83,7 @@ class _02022 extends Character
 
         if ($event instanceof EventCardMoved)
         {
-            //Handle the case where Jean is moved to a new location.
+            //Handle the case where Stranahan is moved to a new location.
             if ($event->cardId == $this->Id)
             {
                 //Remove the technique from any musketeers in the old location.
@@ -124,7 +130,7 @@ class _02022 extends Character
                     }
                 }
             }
-            //Handle the case where Musketeer is moved to Jean Urbain's location.
+            //Handle the case where Musketeer is moved to Stranahan's location.
             else if ($event->toLocation == $this->Location && $event->toLocation != Game::LOCATION_PLAYER_HOME)
             {
                 $character = $event->theah->getCardById($event->cardId);
@@ -137,7 +143,7 @@ class _02022 extends Character
                     $character->IsUpdated = true;
                 }
             }
-            //Handle the case where Musketeer is moved from Jean Urbain's location.
+            //Handle the case where Musketeer is moved from Stranahan's location.
             else if ($event->fromLocation == $this->Location && $event->fromLocation != Game::LOCATION_PLAYER_HOME)
             {
                 $character = $event->theah->getCardById($event->cardId);
