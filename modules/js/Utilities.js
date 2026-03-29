@@ -486,7 +486,11 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     getSetDisplayName: function(expansionName) {
-        const setNames = { '_7s5s': _('Core') };
+        const setNames = 
+        {
+             '_7s5s': _('Core'), 
+             'tac': _('Tooth and Claw')
+        };
         return setNames[expansionName] ?? expansionName ?? '';
     },
 
