@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -81,9 +82,9 @@ class _01151 extends Scheme
                 $cardEvent = EventFactory::createCityCardAddedToLocationEvent($cityCard['id'], $location->Name);
                 $event->theah->queueEvent($cardEvent);
 
-                if ($location->Reknown > 0)
+                if ($location->Renown > 0)
                 {
-                    $renownEvent = EventFactory::createReknownRemovedFromLocationEvent($this->ControllerId, $location->Name, $location->Reknown, $this->getInjectCode());
+                    $renownEvent = EventFactory::createReknownRemovedFromLocationEvent($this->ControllerId, $location->Name, $location->Renown, $this->getInjectCode());
                     $event->theah->eventCheck($renownEvent);
                     $event->theah->queueEvent($renownEvent);
                 }
@@ -124,12 +125,12 @@ class _01151 extends Scheme
             $locations = array_map(fn($location) => $location->Name, array_values($locations));
             if (!in_array($location, $locations))
             {
-                throw new \BgaUserException($game->translate("Location is not a city location."));
+                throw new UserException($game->translate("Location is not a city location."));
             }
 
             if (in_array($location, $this->locations))
             {
-                throw new \BgaUserException($game->translate("Location has already been chosen."));
+                throw new UserException($game->translate("Location has already been chosen."));
             }
 
             $game->notify->all("message", clienttranslate('${player_name} has chosen to add a Renown to ${location}.'), [

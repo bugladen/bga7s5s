@@ -1589,17 +1589,17 @@ trait StatesTrait
             {
                 $event->playerId = $location->Controller;
                 $event->location = $location->Name;
-                $event->reknown = $location->Reknown;
+                $event->reknown = $location->Renown;
             }
             $this->theah->queueEvent($event);
 
-            $event = EventFactory::createPlayerGainsReknownEvent($location->Controller, $location->Reknown);
+            $event = EventFactory::createPlayerGainsReknownEvent($location->Controller, $location->Renown);
             $this->theah->queueEvent($event);
 
             $event = $this->theah->createEvent(Events::ReknownRemovedFromLocation);
             if ($event instanceof EventReknownRemovedFromLocation) {
                 $event->location = $location->Name;
-                $event->amount = $location->Reknown;
+                $event->amount = $location->Renown;
                 $event->source = "Location Claimed";
             }
             $this->theah->queueEvent($event);

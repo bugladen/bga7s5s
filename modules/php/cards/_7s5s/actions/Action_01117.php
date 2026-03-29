@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -33,7 +34,7 @@ class Action_01117 extends CharacterAction
         }
 
         $location = $theah->getCityLocation($ekaterina->Location);
-        return $location->Reknown > 0;
+        return $location->Renown > 0;
     }
 
     public function handleEvent(Event $event)
@@ -88,14 +89,14 @@ class Action_01117 extends CharacterAction
 
             if (! $game->theah->locationInCity($location->Name))
             {
-                throw new \BgaUserException(sprintf($game->translate("Location %s is not in the city."), $game->translate($location->Name)));
+                throw new UserException(sprintf($game->translate("Location %s is not in the city."), $game->translate($location->Name)));
             }
 
             $ekaterina = $this->getOwningCharacter($game->theah);
 
             if ($ekaterina->Location == $location->Name)
             {
-                throw new \BgaUserException(sprintf($game->translate("Ekaterina Ilyanava is at Location %s."), $game->translate($location->Name)));
+                throw new UserException(sprintf($game->translate("Ekaterina Ilyanava is at Location %s."), $game->translate($location->Name)));
             }
 
             $game->globals->set(Game::CHOSEN_LOCATION, $location->Name);
@@ -109,20 +110,20 @@ class Action_01117 extends CharacterAction
 
             if (! $game->theah->locationInCity($location->Name))
             {
-                throw new \BgaUserException(sprintf($game->translate("Location %s is not in the city."), $game->translate($location->Name)));
+                throw new UserException(sprintf($game->translate("Location %s is not in the city."), $game->translate($location->Name)));
             }
 
             $ekaterina = $this->getOwningCharacter($game->theah);
 
             if ($ekaterina->Location == $location->Name)
             {
-                throw new \BgaUserException(sprintf($game->translate("Ekaterina Ilyanava is at Location %s."), $game->translate($location->Name)));
+                throw new UserException(sprintf($game->translate("Ekaterina Ilyanava is at Location %s."), $game->translate($location->Name)));
             }
 
             $reknownMoveLocation = $game->globals->get(Game::CHOSEN_LOCATION);
             if ($reknownMoveLocation == $location->Name)
             {
-                throw new \BgaUserException(sprintf($game->translate("That location has been chosen already to move Renown to. Choose a different location."), $game->translate($location->Name)));
+                throw new UserException(sprintf($game->translate("That location has been chosen already to move Renown to. Choose a different location."), $game->translate($location->Name)));
             }
 
             $this->announceAction($game);

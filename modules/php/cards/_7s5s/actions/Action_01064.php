@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -78,7 +79,7 @@ class Action_01064 extends CharacterAction
             foreach ($adjacentLocations as $locationName)
             {
                 $location = $game->theah->getCityLocation($locationName);
-                if ($location->Reknown > 0)
+                if ($location->Renown > 0)
                 {
                     $availableLocations[] = $locationName;
                 }
@@ -99,12 +100,12 @@ class Action_01064 extends CharacterAction
             $card = $game->theah->getCardById($id);
             if ($card == null)
             {
-                throw new \BgaUserException($game->translate("Card not found"));
+                throw new UserException($game->translate("Card not found"));
             }
 
             if ($card->Location != Game::LOCATION_HAND)
             {
-                throw new \BgaUserException($game->translate("Card is not in your hand"));
+                throw new UserException($game->translate("Card is not in your hand"));
             }
 
             $game->globals->set(Game::CHOSEN_CARD, $card->Id);
@@ -125,7 +126,7 @@ class Action_01064 extends CharacterAction
             $locations = $game->theah->getAdjacentCityLocations($owner->Location);
             if (! in_array($location, $locations))
             {
-                throw new \BgaUserException(sprintf($game->translate('Location %s is not adjacent to %s.'), $location, $owner->Location));
+                throw new UserException(sprintf($game->translate('Location %s is not adjacent to %s.'), $location, $owner->Location));
             }
 
             $cardId = $game->globals->get(Game::CHOSEN_CARD);

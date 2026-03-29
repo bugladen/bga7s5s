@@ -48,7 +48,7 @@ class _01094 extends Character implements IHasActions
         $value = parent::getInfluencePressureValue($theah, $locationName);
 
         $location = $theah->getCityLocation($locationName);
-        if ($location->Reknown <= 1)
+        if ($location->Renown <= 1)
         {
             $value += 2;
         }

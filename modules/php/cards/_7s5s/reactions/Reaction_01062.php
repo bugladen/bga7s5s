@@ -33,7 +33,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
             foreach ($adjacentLocations as $locationName)
             {
                 $location = $theah->getCityLocation($locationName);
-                if ($location->Reknown > 0)
+                if ($location->Renown > 0)
                 {
                     $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Move Renown from %s'), $locationName), "moveFrom-$locationName");
                 }
@@ -62,7 +62,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
                         foreach ($adjacentLocations as $locationName)
                         {
                             $location = $event->theah->getCityLocation($locationName);
-                            if ($location->Reknown > 0)
+                            if ($location->Renown > 0)
                             {
                                 $renownAtLocations = true;
                             }
@@ -92,7 +92,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
                         foreach ($adjacentLocations as $locationName)
                         {
                             $location = $event->theah->getCityLocation($locationName);
-                            if ($location->Reknown > 0)
+                            if ($location->Renown > 0)
                             {
                                 $renownAtLocations = true;
                             }

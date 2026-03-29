@@ -1155,7 +1155,7 @@ trait EventHub
                 $reknown = $this->game->getReknownForLocation($event->location) + $event->amount;
                 $this->game->setReknownForLocation($event->location, $reknown);
 
-                $this->cityLocations[$event->location]->Reknown += $event->amount;
+                $this->cityLocations[$event->location]->Renown += $event->amount;
 
                 // Notify players that the player has lost reknown
                 $this->game->notify->all("reknownAddedToLocation", clienttranslate('${amount} Renown ADDED to ${location} ${source}.'), [
@@ -1173,7 +1173,7 @@ trait EventHub
                 $reknown = $this->game->getReknownForLocation($event->location) - $event->amount;
                 $this->game->setReknownForLocation($event->location, $reknown);
 
-                $this->cityLocations[$event->location]->Reknown -= $event->amount;
+                $this->cityLocations[$event->location]->Renown -= $event->amount;
 
                 // Notify players that the player has lost reknown
                 $this->game->notify->all("reknownRemovedFromLocation", clienttranslate('${amount} Renown REMOVED from ${location} ${source}.'), [

@@ -130,30 +130,30 @@ class Theah
         $game = $this->game;
 
         $location = new CityLocation(Game::LOCATION_CITY_DOCKS);
-        $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_DOCKS);
+        $location->Renown = $game->getReknownForLocation(Game::LOCATION_CITY_DOCKS);
         $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_DOCKS);
         $this->cityLocations[Game::LOCATION_CITY_DOCKS] = $location;
 
         $location = new CityLocation(Game::LOCATION_CITY_FORUM);
-        $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_FORUM);
+        $location->Renown = $game->getReknownForLocation(Game::LOCATION_CITY_FORUM);
         $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_FORUM);
         $this->cityLocations[Game::LOCATION_CITY_FORUM] = $location;
 
         $location = new CityLocation(Game::LOCATION_CITY_BAZAAR);
-        $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_BAZAAR);
+        $location->Renown = $game->getReknownForLocation(Game::LOCATION_CITY_BAZAAR);
         $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_BAZAAR);
         $this->cityLocations[Game::LOCATION_CITY_BAZAAR] = $location;
 
         if (count($players) > 2) {
             $location = new CityLocation(Game::LOCATION_CITY_OLES_INN);
-            $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_OLES_INN);
+            $location->Renown = $game->getReknownForLocation(Game::LOCATION_CITY_OLES_INN);
             $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_OLES_INN);
             $this->cityLocations[Game::LOCATION_CITY_OLES_INN] = $location;
         }
 
         if (count($players) > 3) {
             $location = new CityLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
-            $location->Reknown = $game->getReknownForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
+            $location->Renown = $game->getReknownForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
             $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
             $this->cityLocations[Game::LOCATION_CITY_GOVERNORS_GARDEN] = $location;
         }
@@ -564,7 +564,7 @@ class Theah
     {
         $reknown = [];
         foreach ($this->cityLocations as $location) {
-            $reknown[$location->Name] = $location->Reknown;
+            $reknown[$location->Name] = $location->Renown;
         }
         return $reknown;
     }
