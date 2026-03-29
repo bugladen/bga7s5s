@@ -89,7 +89,7 @@ class _02015 extends Scheme
             foreach ($ids as $id)
             {
                 $location = $game->theah->getCityLocation($id);
-                if ($location->Reknown > 0)
+                if ($location->Renown > 0)
                 {
                     throw new UserException(sprintf($game->translate("%s has/have Renown."), $location->Name));
                 }

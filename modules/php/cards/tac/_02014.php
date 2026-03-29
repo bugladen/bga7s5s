@@ -93,7 +93,7 @@ class _02014 extends Scheme implements IHasActions
             }
 
             $location = $game->theah->getCityLocation($locationName);
-            if ($location->Reknown == 0)
+            if ($location->Renown == 0)
             {
                 throw new UserException(sprintf($game->translate("%s does not have any Renown to move."), $locationName));
             }

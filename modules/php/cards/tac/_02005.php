@@ -89,7 +89,7 @@ class _02005 extends Scheme
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_02005_2)
         {
             $locations = $game->theah->getCityLocations();
-            $locations = array_filter($locations, fn($location) => $location->Reknown == 0);
+            $locations = array_filter($locations, fn($location) => $location->Renown == 0);
             if (count($locations) > 0)
             {
                 throw new UserException($game->translate("There are locations with no Renown."));
@@ -178,7 +178,7 @@ class _02005 extends Scheme
             $location = $ids[0];     
             
             $loc = $game->theah->getCityLocation($location);
-            if ($loc->Reknown > 0)
+            if ($loc->Renown > 0)
             {
                 throw new UserException(sprintf($game->translate("%s already has Renown."), $location));
             }

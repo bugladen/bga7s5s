@@ -34,7 +34,7 @@ class Action_02007 extends RiskCityAction
         foreach ($characters as $character)
         {
             $location = $theah->getCityLocation($character->Location);
-            if ($location->Reknown > 0)
+            if ($location->Renown > 0)
             {
                 return true;
             }
@@ -56,7 +56,7 @@ class Action_02007 extends RiskCityAction
         $performers = array_values(array_filter($performers, fn($character) => $character->hasTrait("Red Hand")));
         $performers = array_values(array_filter($performers, function($character) use ($theah) {
             $location = $theah->getCityLocation($character->Location);
-            if ($location->Reknown > 0)
+            if ($location->Renown > 0)
             {
                 return true;
             }

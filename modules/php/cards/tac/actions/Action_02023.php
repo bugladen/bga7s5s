@@ -45,7 +45,7 @@ class Action_02023 extends CharacterAction
         foreach ($adjacentLocations as $adjacentLocationName)
         {
             $adjacentLocation = $theah->getCityLocation($adjacentLocationName);
-            if ($adjacentLocation->Reknown < $location->Reknown)
+            if ($adjacentLocation->Renown < $location->Renown)
             {
                 return true;
             }
@@ -98,7 +98,7 @@ class Action_02023 extends CharacterAction
             foreach ($adjacentLocations as $adjacentLocation)
             {
                 $adjacentLocation = $game->theah->getCityLocation($adjacentLocation);
-                if ($adjacentLocation->Reknown < $performerLocation->Reknown)
+                if ($adjacentLocation->Renown < $performerLocation->Renown)
                 {
                     $availableLocations[] = $adjacentLocation->Name;
                 }
@@ -170,7 +170,7 @@ class Action_02023 extends CharacterAction
             $performerLocation = $game->theah->getCityLocation($performer->Location);
             $selectedLocation = $game->theah->getCityLocation($location);
 
-            if ($selectedLocation->Reknown >= $performerLocation->Reknown)
+            if ($selectedLocation->Renown >= $performerLocation->Renown)
             {
                 throw new UserException($game->translate("Location has the same or greater Renown as the performer"));
             }
