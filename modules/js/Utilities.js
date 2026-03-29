@@ -753,6 +753,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
             this.addTippyTooltip( woundChip, `<div class='_7sfs-basic-tooltip'>${_("Wounds")}</div>` );
         }
 
+        if (character.reknown > 0) {
+            dojo.place( this.format_block( 'jstpl_reknown_chip', {
+                id: `${divId}-reknown`,
+                amount: character.reknown,
+            }),  `${divId}_image`, 'last');
+        }
+
         if (character.engaged) 
             dojo.addClass(`${divId}_image`, '_7sfs-engaged');
 
@@ -862,6 +869,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.removeClass(`${divId}-player-color`, '_7sfs-scheme-player-color');
         }
         
+        if (scheme.reknown > 0) {
+            dojo.place( this.format_block( 'jstpl_reknown_chip', {
+                id: `${divId}-reknown`,
+                amount: scheme.reknown,
+            }),  `${divId}_image`, 'last');
+        }
+
         this.createTooltipForCard(scheme);
     },  
 
@@ -916,6 +930,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.addClass(divId, '_7sfs-attached-card-no-modifiers');
         }
         
+        if (attachment.reknown > 0) {
+            dojo.place( this.format_block( 'jstpl_reknown_chip', {
+                id: `${divId}-reknown`,
+                amount: attachment.reknown,
+            }),  `${divId}_image`, 'last');
+        }
+
         if (attachment.engaged) 
             dojo.addClass(`${divId}_image`, '_7sfs-engaged');
 
