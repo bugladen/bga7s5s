@@ -253,6 +253,12 @@
                 }
             },
 
+            'duskPhaseBegin02024': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
        }
 
         if ( methods[stateName] )

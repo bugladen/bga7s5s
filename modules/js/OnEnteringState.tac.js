@@ -399,6 +399,16 @@
                 }            
             },
 
+            'duskPhaseBegin02024': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
      }
 
         if ( methods[stateName] )

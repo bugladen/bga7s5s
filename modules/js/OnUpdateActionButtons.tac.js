@@ -182,6 +182,11 @@
                 });
             },
 
+            'duskPhaseBegin02024': () => {
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
         }
 
         if ( methods[stateName] )
