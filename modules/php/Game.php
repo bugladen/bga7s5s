@@ -300,7 +300,10 @@ class Game extends \Bga\GameFramework\Table
         $players = $this->getCollectionFromDb("SELECT player_id, player_score score, leader_card_id FROM player");
         
         // Add the leader card into the player array
-        foreach ($players as $player_id => $player) {
+        foreach ($players as $player_id => $player) 
+        {
+            $player["id"] = $player_id;
+
             if ($player['leader_card_id'] != null)
             {
                 $card = $this->theah->getCardById($player['leader_card_id']);
