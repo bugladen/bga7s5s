@@ -385,14 +385,14 @@ trait UtilitiesTrait
     }
 
     function getRenownForLocation($location) {
-        return $this->globals->get($this->getReknownLocationName(addslashes($location)));
+        return $this->globals->get($this->getRenownLocationName(addslashes($location)));
     }
 
     function setReknownForLocation($location, $reknown) {
-        $this->globals->set($this->getReknownLocationName(addslashes($location)), $reknown);
+        $this->globals->set($this->getRenownLocationName(addslashes($location)), $reknown);
     }
 
-    function getReknownLocationName($location) {
+    function getRenownLocationName($location) {
         return "Reknown_" . $location;
     }
 
