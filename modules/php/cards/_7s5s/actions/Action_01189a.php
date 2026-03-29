@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\EventCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -30,7 +31,7 @@ class Action_01189a extends EventCityAction
 
         $poo = $this->getOwningCard($theah);
         $locations = $theah->getAdjacentCityLocations($poo->Location, $includeHome = false);
-        $locations = array_filter($locations, fn($location) => $theah->game->getReknownForLocation($location) > 0);
+        $locations = array_filter($locations, fn($location) => $theah->game->getRenownForLocation($location) > 0);
 
         if (count($locations) == 0)
         {
@@ -78,7 +79,7 @@ class Action_01189a extends EventCityAction
             $locations = $game->theah->getAdjacentCityLocations($currentLocation, $includeHome = false);
     
             //Filter out locations that do not have at least one Reknown
-            $locations = array_values(array_filter($locations, fn($location) => $game->getReknownForLocation($location) > 0));
+            $locations = array_values(array_filter($locations, fn($location) => $game->getRenownForLocation($location) > 0));
     
             $args["locations"] = $locations;
             $args["performerId"] = $performerId;
@@ -104,14 +105,14 @@ class Action_01189a extends EventCityAction
             $locations = $game->theah->getAdjacentCityLocations($currentLocation, $includeHome = false);
             if ( ! in_array($location->Name, $locations))
             {
-                throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to Location %s."), $location->Name, $currentLocation));
+                throw new UserException(sprintf($game->translate("Location %s is not adjacent to Location %s."), $location->Name, $currentLocation));
             }
     
             //Check if the origin location has reknown to move
-            $reknown = $game->getReknownForLocation($location->Name);
+            $reknown = $game->getRenownForLocation($location->Name);
             if ($reknown <= 0)
             {
-                throw new \BgaUserException(sprintf($game->translate("%s does not have any Renown to move."), $location->Name));
+                throw new UserException(sprintf($game->translate("%s does not have any Renown to move."), $location->Name));
             }
     
             $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $poo->Id, $this->Id);

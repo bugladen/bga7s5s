@@ -43,7 +43,7 @@ class Action_01064 extends CharacterAction
         $adjacentLocations = $theah->getAdjacentCityLocations($guillen->Location);
         foreach ($adjacentLocations as $location)
         {
-            $reknown = $theah->game->getReknownForLocation($location);
+            $reknown = $theah->game->getRenownForLocation($location);
             if ($reknown > 0)
             {
                 return true;

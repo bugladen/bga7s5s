@@ -384,7 +384,7 @@ trait UtilitiesTrait
         return [$lowestPlayerId, $lowestCount];
     }
 
-    function getReknownForLocation($location) {
+    function getRenownForLocation($location) {
         return $this->globals->get($this->getReknownLocationName(addslashes($location)));
     }
 

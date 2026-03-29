@@ -96,7 +96,7 @@ class _01145 extends Scheme
         {
             $fromLocation = $ids[0];
 
-            if ($game->getReknownForLocation($fromLocation) == 0)
+            if ($game->getRenownForLocation($fromLocation) == 0)
             {
                 throw new \BgaUserException(sprintf($game->translate("%s does not have any Renown to move."), $fromLocation));
             }

@@ -1113,7 +1113,7 @@ trait EventHub
 
             case $event instanceof EventReknownAddedToLocation:
                 //Update the reknown for the location in the database
-                $reknown = $this->game->getReknownForLocation($event->location) + $event->amount;
+                $reknown = $this->game->getRenownForLocation($event->location) + $event->amount;
                 $this->game->setReknownForLocation($event->location, $reknown);
 
                 $this->cityLocations[$event->location]->Renown += $event->amount;
@@ -1131,7 +1131,7 @@ trait EventHub
             case $event instanceof EventReknownRemovedFromLocation:
 
                 //Update the reknown for the location in the database
-                $reknown = $this->game->getReknownForLocation($event->location) - $event->amount;
+                $reknown = $this->game->getRenownForLocation($event->location) - $event->amount;
                 $this->game->setReknownForLocation($event->location, $reknown);
 
                 $this->cityLocations[$event->location]->Renown -= $event->amount;
