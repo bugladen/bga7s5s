@@ -87,12 +87,7 @@ class _01179 extends CityEventCard implements IHasActions
                     $theah->queueEvent($reknownEvent);
     
                     // Add it to this card
-                    $reknown = $theah->createEvent(Events::ReknownAddedToCard);
-                    if ($reknown instanceof EventReknownAddedToCard) {
-                        $reknown->playerId = $playerId;
-                        $reknown->cardId = $this->Id;
-                        $reknown->amount = 1;
-                    }
+                    $reknown = EventFactory::createReknownAddedToCardEvent($playerId, $this->Id, 1);
                     $theah->queueEvent($reknown);
                 }
             }
