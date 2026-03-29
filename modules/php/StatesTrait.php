@@ -1570,7 +1570,7 @@ trait StatesTrait
         $this->gamestate->nextState("next");
     }
 
-    public function stPlunderGainReknown(): void
+    public function stPlunderGainRenown(): void
     {
         $this->theah->buildCity();
 
