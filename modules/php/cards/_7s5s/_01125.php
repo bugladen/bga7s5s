@@ -140,7 +140,7 @@ class _01125 extends Scheme
             $playerId = $game->getActivePlayerId();
 
             //Check if the location actually has reknown to move
-            $reknown = $game->getReknownForLocation($location);
+            $reknown = $game->getRenownForLocation($location);
             if ($reknown <= 0) 
                 throw new \BgaUserException(sprintf($game->translate("%s does not have any renown to move."), $location));
             

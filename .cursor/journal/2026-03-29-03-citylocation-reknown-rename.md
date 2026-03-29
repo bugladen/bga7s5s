@@ -23,5 +23,5 @@ The `Card` class also has a `Reknown` field with the same typo. Eddie explicitly
 - `DebugTrait.php` `$card->Reknown`
 - `Action_01179.php` `$card->Reknown`
 - Event class names (EventReknownAddedToLocation, etc.)
-- Method names (getReknownForLocation, etc.)
+- Method names (getRenownForLocation - done, etc.)
 - JS notification keys, variable names

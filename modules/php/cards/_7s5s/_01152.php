@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01152a;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01152b;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
@@ -94,9 +95,9 @@ class _01152 extends Scheme implements IHasActions
             $location = $ids[0];
 
             //Check if the location actually has reknown to move
-            $reknown = $game->getReknownForLocation($location);
+            $reknown = $game->getRenownForLocation($location);
             if ($reknown <= 0)
-                throw new \BgaUserException(sprintf($game->translate("%s does not have any Renown to move."), $location));
+                throw new UserException(sprintf($game->translate("%s does not have any Renown to move."), $location));
     
             $game->globals->set(GAME::CHOSEN_LOCATION, $location);
     

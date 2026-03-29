@@ -2613,27 +2613,27 @@ $machinestates = [
         "type" => "game",
         "action" => "stPlunderCheckDominanceVictory",
         "transitions" => [
-            "next" => States::PLUNDER_GAIN_REKNOWN,
+            "next" => States::PLUNDER_GAIN_RENOWN,
             "endOfGame" => States::END_GAME
         ]
     ],
-    States::PLUNDER_GAIN_REKNOWN => [
-        "name" => "plunderGainReknown",
+    States::PLUNDER_GAIN_RENOWN => [
+        "name" => "plunderGainRenown",
         "type" => "game",
-        "action" => "stPlunderGainReknown",
-        "transitions" => ["" => States::PLUNDER_GAIN_REKNOWN_EVENTS]
+        "action" => "stPlunderGainRenown",
+        "transitions" => ["" => States::PLUNDER_GAIN_RENOWN_EVENTS]
     ],
-        States::PLUNDER_GAIN_REKNOWN_EVENTS => [
-            "name" => "plunderGainReknownEvents",
+        States::PLUNDER_GAIN_RENOWN_EVENTS => [
+            "name" => "plunderGainRenownEvents",
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
-                "reaction" => States::PLUNDER_GAIN_REKNOWN_REACTIONS,
-                "pay" => States::PLUNDER_GAIN_REKNOWN_PAY_FOR_REACTION,
+                "reaction" => States::PLUNDER_GAIN_RENOWN_REACTIONS,
+                "pay" => States::PLUNDER_GAIN_RENOWN_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLUNDER_CHECK_ECONOMIC_VICTORY,
                 "endOfGame" => States::END_GAME]
         ],
-        States::PLUNDER_GAIN_REKNOWN_REACTIONS => [
+        States::PLUNDER_GAIN_RENOWN_REACTIONS => [
             "name" => "playerReaction",
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
@@ -2643,10 +2643,10 @@ $machinestates = [
                 "actReactionForState", 
             ],
             "transitions" => [
-                "done" => States::PLUNDER_GAIN_REKNOWN_EVENTS, 
+                "done" => States::PLUNDER_GAIN_RENOWN_EVENTS, 
             ]
         ],
-        States::PLUNDER_GAIN_REKNOWN_PAY_FOR_REACTION => [
+        States::PLUNDER_GAIN_RENOWN_PAY_FOR_REACTION => [
             "name" => "playerPayForReaction",
             "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
             "descriptionmyturn" => "",
@@ -2657,8 +2657,8 @@ $machinestates = [
                 "actPayForReaction", 
             ],
             "transitions" => [
-                "back" => States::PLUNDER_GAIN_REKNOWN_REACTIONS, 
-                "paid" => States::PLUNDER_GAIN_REKNOWN_EVENTS, 
+                "back" => States::PLUNDER_GAIN_RENOWN_REACTIONS, 
+                "paid" => States::PLUNDER_GAIN_RENOWN_EVENTS, 
             ]
         ],
 

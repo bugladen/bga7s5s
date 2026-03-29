@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\EventCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -30,7 +31,7 @@ class Action_01189b extends EventCityAction
 
         $poo = $this->getOwningCard($theah);
 
-        $reknown = $theah->game->getReknownForLocation($poo->Location);
+        $reknown = $theah->game->getRenownForLocation($poo->Location);
         if ($reknown <= 0)
         {
             return false;
@@ -102,14 +103,14 @@ class Action_01189b extends EventCityAction
             $locations = $game->theah->getAdjacentCityLocations($currentLocation, $includeHome = false);
             if ( ! in_array($location->Name, $locations))
             {
-                throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to Location %s."), $location->Name, $currentLocation));
+                throw new UserException(sprintf($game->translate("Location %s is not adjacent to Location %s."), $location->Name, $currentLocation));
             }
     
             //Check if the origin location has reknown to move
-            $reknown = $game->getReknownForLocation($poo->Location);
+            $reknown = $game->getRenownForLocation($poo->Location);
             if ($reknown <= 0)
             {
-                throw new \BgaUserException(sprintf($game->translate("%s does not have any Renown to move."), $poo->Location));
+                throw new UserException(sprintf($game->translate("%s does not have any Renown to move."), $poo->Location));
             }
 
             $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $poo->Id, $this->Id);
