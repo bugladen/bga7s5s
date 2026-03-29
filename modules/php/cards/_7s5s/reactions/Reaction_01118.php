@@ -36,7 +36,7 @@ class Reaction_01118 extends CardReaction
                 continue;
             }
 
-            if ($location->Reknown > 0)
+            if ($location->Renown > 0)
             {
                 $array[] = $this->createButtonProperty($theah->game, $theah->game->translate("From ") . $theah->game->translate($location->Name), "moveRenown-$location->Name");
             }

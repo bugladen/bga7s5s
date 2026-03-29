@@ -76,19 +76,19 @@ class _01007 extends Character implements IHasActions
         if ($event instanceof EventCardMoved && $event->cardId == $this->Id && $event->toLocation != Game::LOCATION_PLAYER_HOME)
         {
             $location = $event->theah->getCityLocation($event->toLocation);
-            $this->updateInfluence($event->theah, $location->Reknown);
+            $this->updateInfluence($event->theah, $location->Renown);
         }
 
         if ($event instanceof EventReknownAddedToLocation && $event->location == $this->Location)
         {
             $location = $event->theah->getCityLocation($event->location);
-            $this->updateInfluence($event->theah, $location->Reknown);
+            $this->updateInfluence($event->theah, $location->Renown);
         }
 
         if ($event instanceof EventReknownRemovedFromLocation && $event->location == $this->Location)
         {
             $location = $event->theah->getCityLocation($event->location);
-            $this->updateInfluence($event->theah, -$location->Reknown);
+            $this->updateInfluence($event->theah, -$location->Renown);
         }
 
     }

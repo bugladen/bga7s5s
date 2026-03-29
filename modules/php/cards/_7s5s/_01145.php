@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -77,10 +78,10 @@ class _01145 extends Scheme
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01145)
         {
             $locations = $game->theah->getCityLocations();
-            $locations = array_filter($locations, fn($location) => $location->Reknown > 0);
+            $locations = array_filter($locations, fn($location) => $location->Renown > 0);
             if (count($locations) > 0)
             {
-                throw new \BgaUserException($game->translate("There are locations with Renown to move."));
+                throw new UserException($game->translate("There are locations with Renown to move."));
             }
 
             $game->gamestate->nextState("pass");
@@ -141,7 +142,7 @@ class _01145 extends Scheme
             $locations = $game->theah->getCityLocations();
             foreach ($locations as $location)
             {
-                $amount = $location->Reknown;
+                $amount = $location->Renown;
                 if ($toLocation == $location->Name) {
                     $amount++;
                 }

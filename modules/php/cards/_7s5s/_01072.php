@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01072;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
@@ -69,10 +70,10 @@ class _01072 extends Scheme implements IHasActions
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01072)
         {
             $locations = $game->theah->getCityLocations();
-            $locations = array_filter($locations, fn($location) => $location->Reknown == 0);
+            $locations = array_filter($locations, fn($location) => $location->Renown == 0);
             if (count($locations) > 0)
             {
-                throw new \BgaUserException($game->translate("There are locations with no Renown."));
+                throw new UserException($game->translate("There are locations with no Renown."));
             }
 
             $game->gamestate->nextState("");
@@ -88,9 +89,9 @@ class _01072 extends Scheme implements IHasActions
             $location = $ids[0];     
             
             $loc = $game->theah->getCityLocation($location);
-            if ($loc->Reknown > 0)
+            if ($loc->Renown > 0)
             {
-                throw new \BgaUserException(sprintf($game->translate("%s already has Renown."), $location));
+                throw new UserException(sprintf($game->translate("%s already has Renown."), $location));
             }
 
             $reknownEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());

@@ -31,7 +31,7 @@ class Action_01094 extends CharacterAction
 
         $location = $theah->getCityLocation($owner->Location);
         
-        return $location->Reknown == 0;
+        return $location->Renown == 0;
     }
 
     public function handleEvent(Event $event)

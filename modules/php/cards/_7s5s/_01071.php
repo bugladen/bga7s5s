@@ -77,7 +77,7 @@ class _01071 extends Scheme implements IHasActions
                 if ($event->fromLocation == Game::LOCATION_PLAYER_HOME && $event->theah->locationInCity($event->toLocation))
                 {
                     $location = $event->theah->getCityLocation($event->toLocation);
-                    if ($location->Reknown >= 2)
+                    if ($location->Renown >= 2)
                     {
                         $addInfluence = true;
                     }
@@ -87,7 +87,7 @@ class _01071 extends Scheme implements IHasActions
                 else if ($event->theah->locationInCity($event->fromLocation) && $event->toLocation == Game::LOCATION_PLAYER_HOME)
                 {
                     $location = $event->theah->getCityLocation($event->fromLocation);
-                    if ($location->Reknown >= 2)
+                    if ($location->Renown >= 2)
                     {
                         $removeInfluence = true;
                     }
@@ -101,14 +101,14 @@ class _01071 extends Scheme implements IHasActions
 
                     // If the old location has less than 2 Reknown, 
                     // and the new location has 2 or more Reknown, +1 Influence
-                    if ($oldLocation->Reknown < 2 && $newLocation->Reknown >= 2)
+                    if ($oldLocation->Renown < 2 && $newLocation->Renown >= 2)
                     {
                         $addInfluence = true;
                     }
 
                     // If both locations are in the city and the old location has 2 or more Reknown, 
                     // and the new location has less than 2 Reknown, remove -1 Influence
-                    if ($oldLocation->Reknown >= 2 && $newLocation->Reknown < 2)
+                    if ($oldLocation->Renown >= 2 && $newLocation->Renown < 2)
                     {
                         $removeInfluence = true;
                     }
@@ -136,7 +136,7 @@ class _01071 extends Scheme implements IHasActions
                 $location = $event->theah->getCityLocation($event->location);
 
                 // If the location now has 2 or more Reknown, and before hand less than 2, then add Influence to all Musketeers
-                if ($location->Reknown >= 2 && $location->Reknown - $event->amount < 2)
+                if ($location->Renown >= 2 && $location->Renown - $event->amount < 2)
                 {
                     foreach ($musketeers as $musketeer)
                     {
@@ -155,7 +155,7 @@ class _01071 extends Scheme implements IHasActions
                 $location = $event->theah->getCityLocation($event->location);
 
                 // If the location now has less than 2 Reknown, and before hand had 2 or more, then remove Influence from all Musketeers
-                if ($location->Reknown < 2 && $location->Reknown + $event->amount >= 2)
+                if ($location->Renown < 2 && $location->Renown + $event->amount >= 2)
                 {
                     foreach ($musketeers as $musketeer)
                     {

@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -35,7 +36,7 @@ class Action_01007 extends CharacterAction
                 continue;
             }
 
-            if ($location->Controller == $owner->ControllerId && $location->Reknown > 0)
+            if ($location->Controller == $owner->ControllerId && $location->Renown > 0)
             {
                 return true;
             }
@@ -66,7 +67,7 @@ class Action_01007 extends CharacterAction
             $args["performerId"] = $owner->Id;
 
             $locations = $game->theah->getCityLocations();
-            $locations = array_filter($locations, fn($location) => $location->Controller == $owner->ControllerId && $location->Reknown > 0 && $location->Name != $owner->Location);
+            $locations = array_filter($locations, fn($location) => $location->Controller == $owner->ControllerId && $location->Renown > 0 && $location->Name != $owner->Location);
             $args["locationIds"] = array_map(fn($location) => $location->Name, array_values($locations));
         }
 
@@ -84,12 +85,12 @@ class Action_01007 extends CharacterAction
 
             if ($location->Controller != $owner->ControllerId)
             {
-                throw new \BgaUserException(sprintf($game->translate("You do not control %s."), $game->translate($location->Name)));
+                throw new UserException(sprintf($game->translate("You do not control %s."), $game->translate($location->Name)));
             }
 
-            if ($location->Reknown == 0)
+            if ($location->Renown == 0)
             {
-                throw new \BgaUserException(sprintf($game->translate("%s does not have any Renown to move."), $location->Name));
+                throw new UserException(sprintf($game->translate("%s does not have any Renown to move."), $location->Name));
             }
 
             $reknownRemovedEvent = EventFactory::createReknownRemovedFromLocationEvent($owner->ControllerId, $location->Name, 1, $owner->getInjectCode());
@@ -101,6 +102,9 @@ class Action_01007 extends CharacterAction
             $this->announceAction($game);
             $this->resetPlayerPassCount($game);
             $this->setUsed($game->theah, true);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("locationChosen");
         }
