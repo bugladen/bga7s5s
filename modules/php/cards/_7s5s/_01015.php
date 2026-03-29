@@ -38,7 +38,7 @@ class _01015 extends Scheme implements IHasActions, IHasReactions
             clienttranslate("Zeal"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [The Docks] and [The Grand Bazaar].</p><p>[BAR]</p><p>Reaction: After a character is destroyed • Draw a card.</p><p>City Action: Destroy your performing character • Wound target character at that location.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to [The Docks] and [The Grand Bazaar].</p><hr><p>Reaction: After a character is destroyed • Draw a card.</p><p>City Action: Destroy your performing character • Wound target character at that location.</p>");
 
         $this->resetCard();
         
