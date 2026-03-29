@@ -75,6 +75,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRangedAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
@@ -939,6 +940,19 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->ownerId = $ownerId;
             $event->reactionId = $reactionId;
             $event->used = $used;
+        }
+
+        return $event;
+    }
+
+    public static function createReknownAddedToCardEvent(int $playerId, int $cardId, int $amount): EventReknownAddedToCard
+    {
+        $event = self::createEvent(Events::ReknownAddedToCard);
+        if ($event instanceof EventReknownAddedToCard)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+            $event->amount = $amount;
         }
 
         return $event;
