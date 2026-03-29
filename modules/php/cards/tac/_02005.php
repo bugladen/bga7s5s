@@ -31,7 +31,7 @@ class _02005 extends Scheme
             clienttranslate('Weave'),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to any location. Then, add a Renown to a location with no Renown.</p><p>Look at the top three cards of an opponent's deck and an additional card for each <b>Strega</b> you control. Sink one or more of those cards and replace the rest in any order.</p><p>{BAR}</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to any location. Then, add a Renown to a location with no Renown.</p><p>Look at the top three cards of an opponent's deck and an additional card for each <b>Strega</b> you control. Sink one or more of those cards and replace the rest in any order.</p>");
 
         $this->resetCard();
     }
