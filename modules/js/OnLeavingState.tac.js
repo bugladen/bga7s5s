@@ -197,6 +197,18 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_02025': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
+            'planningPhaseResolveSchemes_02025_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
             'highDramaPhase02023': () => {
                 if (this.isCurrentPlayerActive())
                 {
@@ -207,6 +219,28 @@
             },
 
             'highDramaPhase02023_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    let image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    card = this.cardProperties[this.clientStateArgs.characterId];
+                    image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+                }
+            },
+
+            'highDramaPhase02025': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase02025_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
                     card = this.cardProperties[this.clientStateArgs.performerId];

@@ -319,6 +319,26 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_02025': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 1;
+                    locations.forEach((location) => {
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
+            'planningPhaseResolveSchemes_02025_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 1;
+                    locations.forEach((location) => {
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
             'highDramaPhase02023': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
@@ -331,6 +351,44 @@
             },
 
             'highDramaPhase02023_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        if (locationId == this.LOCATION_PLAYER_HOME)
+                        {
+                            this.makeHomeEndcapMarkerSelectable();
+                        }
+                        else
+                        {
+                            const imageElement = this.getCityLocationElement(locationId);
+                            this.makeCityLocationSelectable(imageElement);
+                        }
+                    });
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    let image = $(`${card.divId}_image`);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    card = this.cardProperties[args.args.args.characterId];
+                    image = $(`${card.divId}_image`);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.characterId = args.args.args.characterId;
+                }
+            },
+
+            'highDramaPhase02025': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
+            'highDramaPhase02025_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;
                     args.args.args.locationIds.forEach((locationId) => {
