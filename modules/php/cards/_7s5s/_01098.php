@@ -107,6 +107,19 @@ class _01098 extends Scheme implements IHasReactions
         }
     }
 
+    public function getCatsEmbargoData(Game $game): ?array
+    {
+        if ($this->EmbargoedCardId == 0) {
+            return null;
+        }
+
+        $embargoedCard = $game->getCardObjectFromDb($this->EmbargoedCardId);
+        return [
+            'cardId' => $this->Id,
+            'embargoedCardName' => $embargoedCard->Name,
+        ];
+    }
+
     public function argsFromCard(Game $game, int $state, string $stateName, string $internalId): array
     {
         $args = parent::argsFromCard($game, $state, $stateName, $internalId);
@@ -188,6 +201,11 @@ class _01098 extends Scheme implements IHasReactions
                 "chosen_player_name" => $chosenPlayerName,
                 "picked_card" => $pickedCard->getInjectCode(),
                 "card" => $pickedCard->getPropertyArray($game),
+            ]);
+
+            $game->notify->all('catsEmbargoUpdated', '', [
+                'cardId' => $scheme->Id,
+                'embargoedCardName' => $pickedCard->Name,
             ]);
     
             $game->gamestate->nextState();

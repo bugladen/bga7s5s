@@ -253,6 +253,10 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.displaySirensScreamUsedList(gamedatas.sirensScreamUsedList.cardId, gamedatas.sirensScreamUsedList.usedList);
         }
 
+        if (gamedatas.catsEmbargoData) {
+            this.displayCatsEmbargoCardName(gamedatas.catsEmbargoData.cardId, gamedatas.catsEmbargoData.embargoedCardName);
+        }
+
         // Create Approach deck (1.5x scaled)
         const approachDeckCardWidth = Math.round(this.wholeCardWidth * 1.5);
         const approachDeckCardHeight = Math.round(this.wholeCardHeight * 1.5);
