@@ -52,7 +52,6 @@ class _01163_CardClone extends Card
             else
             {
                 $game = $event->theah->game;
-                $clonedCard = $event->theah->getCardById($this->ClonedCardId);
                 $parentCard = $event->theah->getCardById($this->ParentCardId);
                 $game->notify->all("message", clienttranslate('${parent_card_inject_code}: ${player_name} does not control ${location}.  Hidden card will be discarded.'), [
                     'i18n' => ['location'],
