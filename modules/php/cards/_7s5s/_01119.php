@@ -61,6 +61,7 @@ class _01119 extends Character
         );
 
         $this->EngagedEnemyBonus = $count;
+        $this->ModifiedInfluence = max(0, $newInfluence);
         $this->IsUpdated = true;
 
         $theah->queueEvent($influenceEvent);
