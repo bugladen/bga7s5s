@@ -495,7 +495,7 @@ trait UtilitiesTrait
         foreach ($character->Attachments as $attachmentId) 
         {
             $attachment = $this->theah->getAttachmentById($attachmentId);
-            if ($attachment && $attachment->hasTrait($type))
+            if ($attachment && $attachment->hasTrait($type) && !$attachment->OffHand)
             {
                 $count++;
             }
@@ -504,8 +504,6 @@ trait UtilitiesTrait
                 $offHandCount++;
         }
         
-        // Offhand keywords allows for multiple attachments of the same type
-        // But only one offhand attachment can be equipped at a time.
         if ($newAttachmentIsOffHand) 
         {
             return $offHandCount > 0;
