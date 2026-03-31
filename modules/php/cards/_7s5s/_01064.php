@@ -55,8 +55,7 @@ class _01064 extends Character implements IHasActions
     private function checkRenown(Game $game)
     {
         $playerRenown = $game->getPlayerReknown($this->ControllerId);
-        $highestRenown = $playerRenown;
-        $playerHasHigherRenown = true;
+        $opponentHasMore = false;
 
         $players = $game->loadPlayersBasicInfos();
         foreach ($players as $playerId => $player)
@@ -67,15 +66,14 @@ class _01064 extends Character implements IHasActions
             }
 
             $renown = $game->getPlayerReknown($playerId);
-            if ($renown >= $playerRenown)
+            if ($renown > $playerRenown)
             {
-                $playerHasHigherRenown = false;
-                $highestRenown = $renown;
+                $opponentHasMore = true;
                 break;
             }
         }
 
-        if ($playerHasHigherRenown && $this->hasBonus)
+        if (!$opponentHasMore && $this->hasBonus)
         {
             $this->hasBonus = false;
             $this->IsUpdated = true;
@@ -90,7 +88,7 @@ class _01064 extends Character implements IHasActions
 
             $game->theah->queueEvent($event);
         }
-        else if (!$playerHasHigherRenown && !$this->hasBonus && $highestRenown != $playerRenown) //No ties
+        else if ($opponentHasMore && !$this->hasBonus)
         {
             $this->hasBonus = true;
             $this->IsUpdated = true;
