@@ -12,7 +12,7 @@ class Maneuver_01166 extends Maneuver
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate("+1 Parry for each card in your Duel Line");
+        $this->Name = clienttranslate("+1 Parry for each other card in your Duel Line");
     }
 
     public function handleEvent(Event $event)
@@ -23,8 +23,10 @@ class Maneuver_01166 extends Maneuver
         {
             $owner = $this->getOwningCard($event->theah);
             $cards = $event->theah->getCardObjectsAtLocation(Game::LOCATION_DUELING_LINE, $owner->ControllerId);
-            $event->parry += count($cards);
-            $event->explanations[] = sprintf($event->theah->game->translate("%s: adds %d Parry for each card in your Duel Line."), $owner->getInjectCode(), count($cards));
+            unset($cards[$owner->Id]);
+            $count = count($cards);
+            $event->parry += $count;
+            $event->explanations[] = sprintf($event->theah->game->translate("%s: adds %d Parry (1 for each other card in your Duel Line)."), $owner->getInjectCode(), $count);
         }
     }
 }
