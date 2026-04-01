@@ -90,6 +90,8 @@ class Maneuver_01165 extends Maneuver
         if ($event instanceof EventDuelEnd)
         {
             $this->removeCopiedTechniques($event->theah);
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
         }
     }
 
