@@ -30,6 +30,7 @@ class _01133 extends Risk implements IHasActions, IHasReactions, IHasManeuvers, 
         $this->Image = "01133.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 133;
         $this->initializeFaction("Ussura");
 
         $this->WealthCost = 1;

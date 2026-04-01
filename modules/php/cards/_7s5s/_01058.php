@@ -24,6 +24,7 @@ class _01058 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTarget
         $this->Image = "01058.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 58;
         $this->initializeFaction('Eisen');
         
         $this->WealthCost = 2;

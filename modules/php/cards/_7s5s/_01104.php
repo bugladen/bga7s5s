@@ -20,6 +20,7 @@ class _01104 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->Image = "01104.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 104;
         $this->initializeFaction("Castille");
         
         $this->WealthCost = 1;

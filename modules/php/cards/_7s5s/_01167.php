@@ -19,6 +19,7 @@ class _01167 extends Risk implements IHasActions
         $this->Image = "01167.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 167;
         
         $this->WealthCost = 0;
         $this->Riposte = 0;

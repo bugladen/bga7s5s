@@ -500,9 +500,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const strikeIf = (used, text) => used ? `<s>${text}</s>` : text;
         const row = (label, value, vtop) => `<tr><td style="padding-right:10px;${vtop ? 'vertical-align:top;' : ''}">${label}</td><td>${value}</td></tr>`;
         const traits = card.traits?.join(', ') ?? '';
-        const combat = card.dashedCombat ? '-' : card.modifiedCombat;
-        const finesse = card.dashedFinesse ? '-' : card.modifiedFinesse;
-        const influence = card.dashedInfluence ? '-' : card.modifiedInfluence;
+        const combat = card.dashedCombat ? '-' : card.combat;
+        const finesse = card.dashedFinesse ? '-' : card.finesse;
+        const influence = card.dashedInfluence ? '-' : card.influence;
 
         let rows = [
             row(_('Name'), _(card.name)),
@@ -510,15 +510,15 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Set'), this.getSetDisplayName(card.expansionName)),
             row(_('Card #'), card.cardNumber ?? ''),
             row(_('Title'), _(card.title)),
-            row(_('Resolve'), card.modifiedResolve),
+            row(_('Resolve'), card.resolve),
             row(_('Combat'), combat),
             row(_('Finesse'), finesse),
             row(_('Influence'), influence),
         ];
 
         if (card.traits?.includes('Leader')) {
-            rows.push(row(_('Crew Cap'), card.modifiedCrewCap));
-            rows.push(row(_('Panache'), card.modifiedPanache));
+            rows.push(row(_('Crew Cap'), card.crewCap));
+            rows.push(row(_('Panache'), card.panache));
         }
 
         rows.push(

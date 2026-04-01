@@ -19,6 +19,7 @@ class _01107 extends Risk implements IHasManeuvers
         $this->Image = "01107.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 107;
         $this->initializeFaction("Castille");
         
         $this->WealthCost = 0;
