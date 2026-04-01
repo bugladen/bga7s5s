@@ -38,9 +38,8 @@ class Technique_01010 extends Technique
             $owner = $this->getOwningCharacter($game->theah);
 
             $adversary = $game->theah->getDuelRoundOpponent();
-            $count = 1;
 
-            $characters = $game->theah->getCharactersInPlayByPlayerId($owner->ControllerId);
+            $characters = $game->theah->getCharactersAtLocationByPlayerId($owner->Location, $owner->ControllerId);
             $characters = array_filter($characters, fn($character) => $character->hasTrait("Strega"));
             $count = count($characters) > 0 ? 2 : 1;
 
@@ -65,7 +64,7 @@ class Technique_01010 extends Technique
         if ($state == States::DUEL_CHOOSE_TECHNIQUE_01010)
         {
             $owner = $this->getOwningCharacter($game->theah);
-            $characters = $game->theah->getCharactersInPlayByPlayerId($owner->ControllerId);
+            $characters = $game->theah->getCharactersAtLocationByPlayerId($owner->Location, $owner->ControllerId);
             $characters = array_filter($characters, fn($character) => $character->hasTrait("Strega"));
             $count = count($characters) > 0 ? 2 : 1;
 
