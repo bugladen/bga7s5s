@@ -46,14 +46,17 @@ class Reaction_01070 extends CardReaction
         if ($event instanceof EventReknownAddedToLocation && $this->isAvailable() && ! $event->isMove)
         {
             $owner = $this->getOwningCard($event->theah);
-            $hand = $event->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
-            if (count($hand) > 0)
+            if ($event->playerId == $owner->ControllerId)
             {
-                $this->location = $event->location;
-                $owner->IsUpdated = true;
+                $hand = $event->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
+                if (count($hand) > 0)
+                {
+                    $this->location = $event->location;
+                    $owner->IsUpdated = true;
 
-                $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->queueEvent($transition);
+                    $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->queueEvent($transition);
+                }
             }
         }
     }

@@ -88,7 +88,7 @@ class _01007 extends Character implements IHasActions
         if ($event instanceof EventReknownRemovedFromLocation && $event->location == $this->Location)
         {
             $location = $event->theah->getCityLocation($event->location);
-            $this->updateInfluence($event->theah, -$location->Renown);
+            $this->updateInfluence($event->theah, $location->Renown);
         }
 
     }

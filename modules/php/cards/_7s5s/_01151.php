@@ -40,6 +40,11 @@ class _01151 extends Scheme
         $this->resetCard();
     }
 
+    public function hasWhenRevealedEffect(): bool
+    {
+        return true;
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -108,7 +113,14 @@ class _01151 extends Scheme
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151 || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_2)
         {
-            $args["locationIds"] = array_map(fn($location) => $location->Name, array_values($game->theah->getCityLocations()));
+            $locations = array_map(fn($location) => $location->Name, array_values($game->theah->getCityLocations()));
+
+            if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_2)
+            {
+                $locations = array_values(array_filter($locations, fn($name) => !in_array($name, $this->locations)));
+            }
+
+            $args["locationIds"] = $locations;
         }
 
         return $args;

@@ -1628,5 +1628,36 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.destroy(existing);
         }
     },
+
+    displayCatsEmbargoCardName: function(cardId, embargoedCardName) {
+        this.removeCatsEmbargoCardName();
+
+        if (!embargoedCardName) {
+            return;
+        }
+
+        const card = this.cardProperties[cardId];
+        if (!card || !card.divId) return;
+
+        const imageElement = $(`${card.divId}_image`);
+        if (!imageElement) return;
+
+        dojo.place(this.format_block('jstpl_cats_embargo_card_name', {}), imageElement, 'last');
+
+        const container = $('cats-embargo-card-name');
+        dojo.create('span', {
+            innerHTML: _(embargoedCardName),
+            style: 'color: #ffffff',
+        }, container);
+
+        this.addTippyTooltip('cats-embargo-card-name', `<div class='_7sfs-basic-tooltip'>${_("The Cat's Embargo - Embargoed card")}</div>`);
+    },
+
+    removeCatsEmbargoCardName: function() {
+        const existing = $('cats-embargo-card-name');
+        if (existing) {
+            dojo.destroy(existing);
+        }
+    },
 })
 });

@@ -213,6 +213,10 @@
         window.jstpl_sirens_scream_used_list = `
         <div id="sirens-scream-used-list" class="_7sfs-card-player-list"></div>
         `;
+
+        window.jstpl_cats_embargo_card_name = `
+        <div id="cats-embargo-card-name" class="_7sfs-card-player-list"></div>
+        `;
         
         window.jstpl_number_order_chip = `
         <div id="\${id}-number_order_chip" class="_7sfs-number-order-chip">\${id}</div>

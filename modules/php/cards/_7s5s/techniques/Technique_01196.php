@@ -33,7 +33,7 @@ class Technique_01196 extends Technique
 
         $adversary = $theah->getCharacterById($theah->getDuelOpponentId($actor->Id));
 
-        return $actor->ModifiedCombat + $actor->ModifiedInfluence >= $adversary->ModifiedCombat + $adversary->ModifiedInfluence;
+        return $actor->ModifiedCombat >= $adversary->ModifiedCombat && $actor->ModifiedInfluence >= $adversary->ModifiedInfluence;
     }
 
     public function handleEvent(Event $event)
@@ -45,10 +45,10 @@ class Technique_01196 extends Technique
             $actor = $event->theah->getCharacterById($event->actorId);
             $adversary = $event->theah->getCharacterById($event->adversaryId);
 
-            if ($actor->ModifiedCombat + $actor->ModifiedInfluence >= $adversary->ModifiedCombat + $adversary->ModifiedInfluence)
+            if ($actor->ModifiedCombat >= $adversary->ModifiedCombat && $actor->ModifiedInfluence >= $adversary->ModifiedInfluence)
             {
                 $event->riposte += 1;
-                $event->explanations[] = sprintf($event->theah->game->translate("Technique: +1 Riposte from her technique because Angeline Dèmone has more Combat and Influence than %s."), $adversary->Name);
+                $event->explanations[] = sprintf($event->theah->game->translate("Technique: +1 Riposte from her technique because Angeline Dèmone has equal or greater Combat and Influence than %s."), $adversary->Name);
             }
         }
 
@@ -60,10 +60,10 @@ class Technique_01196 extends Technique
                 $actor = $event->theah->getCharacterById($event->actorId);
                 $adversary = $event->theah->getCharacterById($event->adversaryId);
 
-                if ($actor->ModifiedCombat + $actor->ModifiedInfluence >= $adversary->ModifiedCombat + $adversary->ModifiedInfluence)
+                if ($actor->ModifiedCombat >= $adversary->ModifiedCombat && $actor->ModifiedInfluence >= $adversary->ModifiedInfluence)
                 {
                     $event->adversaryThreat += 1;
-                    $event->explanations[] = sprintf($event->theah->game->translate("Technique: +1 Threat from her technique because Angeline Dèmone has more Combat and Influence than %s."), $adversary->Name);
+                    $event->explanations[] = sprintf($event->theah->game->translate("Technique: +1 Threat from her technique because Angeline Dèmone has equal or greater Combat and Influence than %s."), $adversary->Name);
                 }
             }
         }

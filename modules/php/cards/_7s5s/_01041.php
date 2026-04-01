@@ -114,7 +114,11 @@ class _01041 extends Character implements IHasActions
 
         if ($event instanceof EventCharacterMustered && $event->characterId != $this->Id)
         {
-            if ($this->getOpposingSorcererCount($event->theah, $event->location) == 1)
+            $character = $event->theah->getCharacterById($event->characterId);
+            if ($event->location == $this->Location && 
+                $character->hasTrait("Sorcerer") && 
+                $character->isNotControlledByPlayer($this->ControllerId) &&
+                $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)
             {
                 $this->updateInfluence($event->theah, 1);
             }
@@ -123,7 +127,10 @@ class _01041 extends Character implements IHasActions
         if ($event instanceof EventCharacterDestroyed && $event->characterId != $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if ($character->Location == $this->Location && $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)
+            if ($character->Location == $this->Location && 
+                $character->hasTrait("Sorcerer") && 
+                $character->isNotControlledByPlayer($this->ControllerId) &&
+                $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)
             {
                 $this->updateInfluence($event->theah, -1);
             }
@@ -132,7 +139,10 @@ class _01041 extends Character implements IHasActions
         if ($event instanceof EventCharacterRecruited)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if ($character->Location == $this->Location && $this->getOpposingSorcererCount($event->theah, $this->Location) == 0)
+            if ($character->Location == $this->Location && 
+                $character->hasTrait("Sorcerer") && 
+                $character->isNotControlledByPlayer($this->ControllerId) &&
+                $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)
             {
                 $this->updateInfluence($event->theah, 1);
             }

@@ -511,6 +511,7 @@ class Reaction_01014 extends CardReaction
                     "character_inject_code" => $character->getInjectCode(),
                 ]);
 
+                $thugWasTargeted = false;
                 $ability = $this->loadAbility($game->theah);
                 if ($ability)
                 {
@@ -518,6 +519,7 @@ class Reaction_01014 extends CardReaction
                     if ($isValid)
                     {
                         $this->releaseEvent($game, $characterId);
+                        $thugWasTargeted = true;
                     }
                     else
                     {
@@ -527,13 +529,24 @@ class Reaction_01014 extends CardReaction
                         $this->cancelEvents($game);
                     }
                 }
-
-                $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $game->theah->queueEvent($transitionEvent);
+                else
+                {
+                    $this->cancelEvents($game);
+                }
 
                 $this->inPlayThug = false;
-                $this->moveHome = true;
                 $owner->IsUpdated = true;
+
+                if ($thugWasTargeted)
+                {
+                    $this->moveHome = true;
+                    $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $game->theah->queueEvent($transitionEvent);
+                }
+                else
+                {
+                    $this->setUsed($game->theah, true);
+                }
             }
 
             if ($reactionId == 'decline')

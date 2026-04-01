@@ -29,7 +29,7 @@ class _01070 extends Character implements IHasReactions
         $this->Influence = 2;
 
         $this->Traits = [
-            clienttranslate("Dimplomat"),
+            clienttranslate("Diplomat"),
             clienttranslate("Castille"),
         ];
 

@@ -25,9 +25,11 @@ class Technique_01066 extends Technique
         if (! $inDuel)
             return false;
 
+        $owner = $this->getOwningCharacter($theah);
         $adversary = $theah->getDuelRoundOpponent();
-        $charactersAtLocation = $theah->getCharactersAtLocationByPlayerId($adversary->Location, $adversary->ControllerId);
-        return count($charactersAtLocation) == 1;
+        $allCharacters = $theah->getCharactersAtLocation($adversary->Location);
+        $enemyCharacters = array_filter($allCharacters, fn($c) => $c->ControllerId != $owner->ControllerId);
+        return count($enemyCharacters) == 1;
     }
 
     public function handleEvent(Event $event)
