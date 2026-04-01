@@ -65,7 +65,8 @@ class Reaction_01173 extends RiskReaction
         if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
         {
             $location = str_replace("moveAgain-", "", $event->reactionId);
-            if ($event->theah->locationInCity($location))
+            $adjacentLocations = $event->theah->getAdjacentCityLocations($this->ToLocation, false);
+            if ($event->theah->locationInCity($location) && in_array($location, $adjacentLocations))
             {
                 $game = $event->theah->game;
                 $owner = $this->getOwningCard($game->theah);
@@ -96,6 +97,8 @@ class Reaction_01173 extends RiskReaction
 
             $event = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
             $game->theah->queueEvent($event);
+
+            $this->setUsed($game->theah, true);
         }
 
         $game->gamestate->nextState("done");
