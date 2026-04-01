@@ -505,12 +505,19 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Type'), _(card.type)),
             row(_('Set'), this.getSetDisplayName(card.expansionName)),
             row(_('Card #'), card.cardNumber ?? ''),
+        ];
+
+        if (card.wealthCost != null) {
+            rows.push(row(_('Cost'), card.wealthCost));
+        }
+
+        rows.push(
             row(_('Title'), _(card.title)),
             row(_('Resolve'), card.resolve),
             row(_('Combat'), combat),
             row(_('Finesse'), finesse),
             row(_('Influence'), influence),
-        ];
+        );
 
         if (card.traits?.includes('Leader')) {
             rows.push(row(_('Crew Cap'), card.crewCap));
