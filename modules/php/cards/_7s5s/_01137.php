@@ -19,6 +19,7 @@ class _01137 extends Risk implements IHasReactions
         $this->Image = "01137.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 137;
         $this->initializeFaction("Ussura");
 
         $this->WealthCost = 1;

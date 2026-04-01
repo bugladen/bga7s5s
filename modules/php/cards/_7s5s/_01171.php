@@ -20,6 +20,7 @@ class _01171 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->Image = "01171.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 171;
         
         $this->WealthCost = 2;
         $this->Riposte = 1;

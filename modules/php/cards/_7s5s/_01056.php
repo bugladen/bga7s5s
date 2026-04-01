@@ -20,6 +20,7 @@ class _01056 extends Risk implements IHasActions, IRiskThatTargetsCharacters
         $this->Image = "01056.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 56;
         $this->initializeFaction('Eisen');
         
         $this->WealthCost = 1;

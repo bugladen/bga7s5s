@@ -24,6 +24,7 @@ class _01131 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTarget
         $this->Image = "01131.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 131;
         $this->initializeFaction("Ussura");
 
         $this->WealthCost = 1;

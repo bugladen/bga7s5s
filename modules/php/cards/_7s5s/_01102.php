@@ -17,6 +17,7 @@ class _01102 extends Risk
         $this->Image = "01102.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 102;
         $this->initializeFaction("Castille");
         
         $this->WealthCost = 0;

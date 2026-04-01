@@ -23,6 +23,7 @@ class _01052 extends Risk implements IHasActions, IHasManeuvers
         $this->Image = "01052.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 52;
         $this->initializeFaction('Eisen');
         
         $this->WealthCost = 0;
