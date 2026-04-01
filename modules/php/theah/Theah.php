@@ -209,7 +209,7 @@ class Theah
         }
     }
 
-    public function runEvents(bool $debug = false)
+    public function runEvents(bool $skipTransitions = false)
     {
         while (true) {
            
@@ -248,11 +248,11 @@ class Theah
                 }
             }
 
-            if (! $debug && $event instanceof EventChangeActivePlayer) {
+            if (! $skipTransitions && $event instanceof EventChangeActivePlayer) {
                 $this->game->gamestate->changeActivePlayer($event->playerId);
             }
 
-            if (! $debug && $event instanceof EventTransition) {              
+            if (! $skipTransitions && $event instanceof EventTransition) {              
                 
                 //If a reaction transition, make sure it is available.  
                 //This prevents multiple transition triggers of the same reaction from running.
@@ -296,7 +296,7 @@ class Theah
         if ($inDuel) 
         {
             $currentPlayerId = $this->game->globals->get(Game::DUEL_CURRENT_PLAYER);
-            if ($currentPlayerId && ! $debug) 
+            if ($currentPlayerId && ! $skipTransitions) 
             {
                 $this->game->gamestate->changeActivePlayer($currentPlayerId);
             }
@@ -307,14 +307,14 @@ class Theah
             if ($state['type'] == "activeplayer")
             {
                 $currentPlayerId = $this->game->globals->get(Game::CURRENT_PLAYER);
-                if ($currentPlayerId && ! $debug) 
+                if ($currentPlayerId && ! $skipTransitions) 
                 {
                     $this->game->gamestate->changeActivePlayer($currentPlayerId);
                 }
             }
         }
 
-        if (! $debug) {
+        if (! $skipTransitions) {
             $this->game->gamestate->nextState('endOfEvents');
         }
     }

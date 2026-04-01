@@ -534,6 +534,9 @@ trait StatesTrait
             $this->theah->eventCheck($engageEvent);
             $this->theah->queueEvent($engageEvent);
 
+            $this->theah->runEvents($skipTransitions = true);
+            $this->theah->buildCity();
+
             $this->globals->set(GAME::PASS_COUNT, 0);
         }
         
@@ -557,14 +560,83 @@ trait StatesTrait
         $performer = $this->theah->getCharacterById($id);
         if ($performer->Engaged || $performer->hasTrait("Mercenary"))
         {
-            //Discount might have special abilities above parleying
             [$discount, $explanations] = $this->theah->getParleyDiscount($performer, false);
             $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
             $this->globals->set(Game::DISCOUNT, $discount);
+            $this->globals->set(GAME::PERFORMER_PARLEYED, false);
             $this->gamestate->nextState("notParleyable");
         }
         else
             $this->gamestate->nextState("parleyable");
+    }
+
+    public function stRecruitComputeDiscount()
+    {
+        $this->theah->buildCity();
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->theah->getCharacterById($performerId);
+        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
+
+        [$discount, $explanations] = $this->theah->getParleyDiscount($performer, $performerParleyed);
+
+        if ($discount != 0)
+            $this->notify->player($performer->ControllerId, "message",
+                clienttranslate('Private: Explanations for discount:<br>${explanations}'),
+                ["explanations" => $explanations]);
+
+        $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+
+        $this->gamestate->nextState("");
+    }
+
+    public function stRecruitUndoEngage()
+    {
+        $this->theah->buildCity();
+        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+
+        if ($performerParleyed && $performerId)
+        {
+            $performer = $this->theah->getCharacterById($performerId);
+            if ($performer && $performer->Engaged)
+            {
+                $playerId = $performer->ControllerId;
+                $engardeEvent = EventFactory::createCardEngardedEvent($playerId, $performer->Id);
+                $this->theah->queueEvent($engardeEvent);
+                $this->theah->runEvents($skipTransitions = true);
+            }
+        }
+
+        $this->globals->set(GAME::PERFORMER_PARLEYED, false);
+        $this->gamestate->nextState("");
+    }
+
+    public function stRecruitUndoEngageToMerc()
+    {
+        $this->theah->buildCity();
+        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+
+        if ($performerParleyed && $performerId)
+        {
+            $performer = $this->theah->getCharacterById($performerId);
+            if ($performer && $performer->Engaged)
+            {
+                $playerId = $performer->ControllerId;
+                $engardeEvent = EventFactory::createCardEngardedEvent($playerId, $performer->Id);
+                $this->theah->queueEvent($engardeEvent);
+                $this->theah->runEvents($skipTransitions = true);
+                $this->theah->buildCity();
+            }
+        }
+
+        $performer = $this->theah->getCharacterById($performerId);
+        [$discount, $explanations] = $this->theah->getParleyDiscount($performer, $performerParleyed);
+        $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+
+        $this->gamestate->nextState("");
     }
 
     public function stTechniqueAvailable()

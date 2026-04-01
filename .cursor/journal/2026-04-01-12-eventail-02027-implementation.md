@@ -29,7 +29,7 @@ The card also has a static `FinesseModifier = 1` (always-on when equipped).
 - `EventAttachmentEquipped` / `EventAttachmentUnequipped`: `runEventHubAfterCards = false` → EventHub runs first (addAttachment/removeAttachment), then cards' handleEvent. So by the time our handleEvent fires, the character's Engaged state is current.
 - `EventCardEngaged` / `EventCardEngarded`: `runEventHubAfterCards = true` → cards' handleEvent runs first, THEN EventHub sets `Engaged = true/false`. So the character's `Engaged` flag hasn't changed yet when we see these events. We rely on the event type itself (not the Engaged flag) to know the direction.
 
-**WHY the reminder text is not implemented:** "(While performing the Parley Reaction or the Claim Action, engage costs occur first.)" is a game rules reminder, not an ability. Engage costs are already handled by the core system before Parley/Claim resolve.
+**WHY the reminder text is not implemented as card logic:** "(While performing the Parley Reaction or the Claim Action, engage costs occur first.)" is a game rules reminder, not a card ability. However, as documented in `2026-04-01-13-eventail-engage-ordering-fix.md`, the core system was NOT correctly processing engage costs before Parley/Claim resolve — that required a separate fix to the state machine and event ordering.
 
 ## Files Modified
 - `modules/php/cards/tac/_02027.php` — full implementation

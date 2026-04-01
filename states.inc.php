@@ -1618,7 +1618,7 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "mercenaryChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS, 
-                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
+                    "back" => States::HIGH_DRAMA_RECRUIT_UNDO_ENGAGE
                 ]
             ],
             States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS => [
@@ -1628,7 +1628,7 @@ $machinestates = [
                 "transitions" => [
                     "reaction" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_REACTIONS,
                     "pay" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_PAY_FOR_REACTION,
-                    "endOfEvents" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY,
+                    "endOfEvents" => States::HIGH_DRAMA_RECRUIT_COMPUTE_DISCOUNT,
                     "endOfGame" => States::END_GAME
                 ]
             ],
@@ -1660,6 +1660,30 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS,
                 ]
             ],
+            States::HIGH_DRAMA_RECRUIT_COMPUTE_DISCOUNT => [
+                "name" => "highDramaRecruitComputeDiscount",
+                "type" => "game",
+                "action" => "stRecruitComputeDiscount",
+                "transitions" => [
+                    "" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY
+                ]
+            ],
+            States::HIGH_DRAMA_RECRUIT_UNDO_ENGAGE => [
+                "name" => "highDramaRecruitUndoEngage",
+                "type" => "game",
+                "action" => "stRecruitUndoEngage",
+                "transitions" => [
+                    "" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
+                ]
+            ],
+            States::HIGH_DRAMA_RECRUIT_UNDO_ENGAGE_TO_MERC => [
+                "name" => "highDramaRecruitUndoEngageToMerc",
+                "type" => "game",
+                "action" => "stRecruitUndoEngageToMerc",
+                "transitions" => [
+                    "" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY
+                ]
+            ],
             States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY => [
                 "name" => "highDramaRecruitActionPayForMercenary",
                 "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -1673,7 +1697,7 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "mercenaryPaidFor" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
-                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY,
+                    "back" => States::HIGH_DRAMA_RECRUIT_UNDO_ENGAGE_TO_MERC,
                     "backKaspar" => States::HIGH_DRAMA_PLAYER_TURN_01035_4
                 ]
             ],

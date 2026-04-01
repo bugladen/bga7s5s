@@ -401,6 +401,14 @@ trait FrameworkActionsTrait
         $event = EventFactory::createEnteringPayStateEvent($playerId, $recruitId, Game::PAY_STATE_RECRUIT_MERCENARY);
         $this->theah->queueEvent($event);
 
+        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
+        if ($performerParleyed && !$performer->Engaged)
+        {
+            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performerId);
+            $this->theah->eventCheck($engageEvent);
+            $this->theah->queueEvent($engageEvent);
+        }
+
         $this->gamestate->nextState("mercenaryChosen");
     }
 
@@ -426,10 +434,6 @@ trait FrameworkActionsTrait
                 "player_name" => $playerName,
                 "card_inject_code" => $performer->getInjectCode(),
             ]);
-            
-            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
-            $this->theah->eventCheck($engageEvent);
-            $this->theah->queueEvent($engageEvent);
         }
 
         $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
