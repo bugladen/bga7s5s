@@ -34,9 +34,9 @@ class Maneuver_01054 extends Maneuver
             return false;
         }
 
-        if ($adversary->ModifiedCombat > $actor->ModifiedCombat)
+        if ($actor->ModifiedCombat >= $adversary->ModifiedCombat)
         {
-            return false;
+            return true;
         }
 
         foreach ($actor->Attachments as $attachmentId)
@@ -66,6 +66,7 @@ class Maneuver_01054 extends Maneuver
                 {
                     $discount += 1;
                     $explanations[] = sprintf($theah->game->translate("%s reduces the cost of Maneuver by 1 because your participant has an Eisenfaust Attachment."), $owner->getInjectCode());
+                    break;
                 }
             }    
         }
