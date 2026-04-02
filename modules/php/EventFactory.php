@@ -75,6 +75,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRangedAbilityPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
@@ -942,6 +943,19 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->internalId = $internalId;
             $event->reactionId = $reactionId;
         }
+        return $event;
+    }
+
+    public static function createReactionActivatedEvent(int $playerId, int $sourceId, string $reactionId): EventReactionActivated
+    {
+        $event = self::createEvent(Events::ReactionActivated);
+        if ($event instanceof EventReactionActivated)
+        {
+            $event->playerId = $playerId;
+            $event->sourceId = $sourceId;
+            $event->reactionId = $reactionId;
+        }
+
         return $event;
     }
 

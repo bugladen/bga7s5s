@@ -136,6 +136,7 @@ class Events
     const ActionResolved = 'EventActionResolved';
     const RiskReactionTriggered = 'EventRiskReactionTriggered';
     const ActionUsed = 'EventActionUsed';
+    const ReactionActivated = 'EventReactionActivated';
     const ReactionUsed = 'EventReactionUsed';
     const ManeuverUsed = 'EventManeuverUsed';
     const TechniqueUsed = 'EventTechniqueUsed';
