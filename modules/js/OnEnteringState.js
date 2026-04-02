@@ -127,9 +127,12 @@ onEnteringState: function( stateName, args )
             if (this.isCurrentPlayerActive()) 
             {
                 const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
+                let displayCost = args.args.cost - args.args.discount;
+                if (args.args.recruitType == this.CIRILO_RECRUIT_TYPE)
+                    displayCost = 1;
                 this.bga.statusBar.setTitle(statusBarTitle, {
                     cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
-                        cost: args.args.cost - args.args.discount,
+                        cost: displayCost,
                     }),
                 });
 
