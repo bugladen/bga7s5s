@@ -8,8 +8,8 @@
 # 3. Classes extending CharacterAction must call createActionResolvedEvent
 # 4. Classes extending CardReaction or AttachmentReaction must call $this->setUsed()
 # 5. Classes calling createAttachmentEquippedEvent must call getRequiredAttachTargetId
-# 6. Classes implementing IRangedAbility must call createRangedAbilityPlayedEvent
-# 7. Classes must not implement both IAbilityThatTargetsCharacters and IAbilityThatTargetsCards
+# 6. Classes must not implement both IAbilityThatTargetsCharacters and IAbilityThatTargetsCards
+# 7. Classes implementing IRangedAbility must call createRangedAbilityPlayedEvent
 # 8. Classes extending Maneuver must handle EventManeuverCanceled
 # 9. Classes extending Technique must handle EventTechniqueCanceled
 
