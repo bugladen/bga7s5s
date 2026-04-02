@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01096 extends Technique
@@ -99,6 +100,15 @@ class Technique_01096 extends Technique
                 $this->AdversaryWoundedThisRound = false;
                 $owner->IsUpdated = true;
             }
+        }
+
+        if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)
+        {
+            $this->IsActive = false;
+            $this->AdversaryWoundedThisRound = false;
+            $this->AdversaryId = 0;
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
         }
 
         if ($event instanceof EventDuelEnd && $this->IsActive)

@@ -61,16 +61,14 @@ class DB
     public function deleteManeuverEvents(string $maneuverId)
     {
         $sql = "DELETE FROM events 
-                WHERE (event_serialized LIKE '%EventResolveManeuver%' AND event_serialized LIKE '%{$maneuverId}%')
-                OR (event_serialized LIKE '%EventDuelCalculateManeuverValues%' AND event_serialized LIKE '%{$maneuverId}%')";
+                WHERE event_serialized LIKE '%{$maneuverId}%'";
         $this->executeSql($sql);
     }
 
     public function deleteTechniqueEvents(string $techniqueId)
     {
         $sql = "DELETE FROM events 
-                WHERE (event_serialized LIKE '%EventResolveTechnique%' AND event_serialized LIKE '%{$techniqueId}%')
-                OR (event_serialized LIKE '%EventDuelCalculateTechniqueValues%' AND event_serialized LIKE '%{$techniqueId}%')";
+                WHERE event_serialized LIKE '%{$techniqueId}%'";
         $this->executeSql($sql);
     }
 

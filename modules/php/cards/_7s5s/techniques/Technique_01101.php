@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechnique
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01101 extends Technique
@@ -60,6 +61,13 @@ class Technique_01101 extends Technique
                 $owner = $this->getOwningCard($event->theah);
                 $owner->IsUpdated = true;
             }
+        }
+
+        if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)
+        {
+            $this->IsActivated = false;
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
         }
 
         if ($event instanceof EventDuelEnd && $this->IsActivated)

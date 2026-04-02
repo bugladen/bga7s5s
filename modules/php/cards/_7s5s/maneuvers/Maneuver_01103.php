@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 
 class Maneuver_01103 extends Maneuver
@@ -51,6 +52,14 @@ class Maneuver_01103 extends Maneuver
                 $event->thrust += 2;
                 $event->explanations[] = sprintf($event->theah->game->translate("%s adds 2 Thrust."), $this->Name);
             }
+        }
+
+        if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
+        {
+            $this->UseParry = false;
+            $this->UseThrust = false;
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
         }
 
         if ($event instanceof EventDuelEndOfRound)

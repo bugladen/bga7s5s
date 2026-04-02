@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -71,6 +72,15 @@ class Maneuver_01107 extends Maneuver
 
             $claimEvent = EventFactory::createLocationClaimedEvent($actor->ControllerId, $actor->Id, $this->AdversaryLocation);
             $event->theah->queueEvent($claimEvent);
+        }
+
+        if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
+        {
+            $this->WillDieFromWound = false;
+            $this->AdversaryId = 0;
+            $this->AdversaryLocation = "";
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
         }
 
         if ($event instanceof EventDuelEndOfRound && $this->WillDieFromWound)

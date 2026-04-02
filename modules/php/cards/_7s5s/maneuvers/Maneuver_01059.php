@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 
 class Maneuver_01059 extends Maneuver
@@ -30,6 +31,13 @@ class Maneuver_01059 extends Maneuver
             $owner = $this->getOwningCard($event->theah);
             $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01059", $this->Id);
             $event->theah->queueEvent($transitionEvent);
+        }
+
+        if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
+        {
+            $this->selectedLocation = "";
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
         }
 
         if ($event instanceof EventDuelEndOfRound && $this->selectedLocation != "")
