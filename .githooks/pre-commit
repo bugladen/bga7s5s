@@ -9,7 +9,9 @@
 # 4. Classes extending CardReaction or AttachmentReaction must call $this->setUsed()
 # 5. Classes calling createAttachmentEquippedEvent must call getRequiredAttachTargetId
 # 6. Classes implementing IRangedAbility must call createRangedAbilityPlayedEvent
-# 6. Classes must not implement both IAbilityThatTargetsCharacters and IAbilityThatTargetsCards
+# 7. Classes must not implement both IAbilityThatTargetsCharacters and IAbilityThatTargetsCards
+# 8. Classes extending Maneuver must handle EventManeuverCanceled
+# 9. Classes extending Technique must handle EventTechniqueCanceled
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -133,6 +135,32 @@ for file in $staged_files; do
             echo -e "${RED}ERROR:${NC} $file"
             echo -e "  Class calls ${YELLOW}createAttachmentEquippedEvent()${NC} but does not call ${YELLOW}getRequiredAttachTargetId()${NC}"
             echo -e "  Some attachments may need to attach to a different target than the performer."
+            errors_found=1
+        fi
+    fi
+
+    # Check if the class extends Maneuver
+    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+Maneuver'; then
+        
+        if ! echo "$content" | grep -q 'instanceof EventManeuverCanceled && \$event->maneuverId == \$this->Id' && \
+           ! echo "$content" | grep -q 'EventManeuverCanceled handler not needed'; then
+            echo -e "${RED}ERROR:${NC} $file"
+            echo -e "  Class extends Maneuver but does not handle ${YELLOW}EventManeuverCanceled${NC}"
+            echo -e "  Add: if (\$event instanceof EventManeuverCanceled && \$event->maneuverId == \$this->Id)"
+            echo -e "  Or add a comment: // EventManeuverCanceled handler not needed"
+            errors_found=1
+        fi
+    fi
+
+    # Check if the class extends Technique
+    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+Technique'; then
+        
+        if ! echo "$content" | grep -q 'instanceof EventTechniqueCanceled && \$event->techniqueId == \$this->Id' && \
+           ! echo "$content" | grep -q 'EventTechniqueCanceled handler not needed'; then
+            echo -e "${RED}ERROR:${NC} $file"
+            echo -e "  Class extends Technique but does not handle ${YELLOW}EventTechniqueCanceled${NC}"
+            echo -e "  Add: if (\$event instanceof EventTechniqueCanceled && \$event->techniqueId == \$this->Id)"
+            echo -e "  Or add a comment: // EventTechniqueCanceled handler not needed"
             errors_found=1
         fi
     fi
