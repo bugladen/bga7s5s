@@ -91,6 +91,8 @@ class Action_01046a extends AttachmentAction
             $game->theah->queueEvent($woundEvent);
             $game->theah->queueEvent($moveEvent);
 
+            $this->announceAction($game);
+
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($attachedTo->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);            
 

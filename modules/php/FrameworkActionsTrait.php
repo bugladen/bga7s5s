@@ -647,10 +647,7 @@ trait FrameworkActionsTrait
             $smuggledItemId = $this->globals->get(Game::SMUGGLED_ITEM_ATTACHMENT_ID);
             $smuggledItem = $this->theah->getCardById($smuggledItemId);
 
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} performed the Action from ${card_inject_code}.'), [
-                "player_name" => $this->getPlayerNameById($playerId),
-                "card_inject_code" => $smuggledItem->getInjectCode(),
-            ]);
+            $smuggledItem->announceAction($this);
 
             $smuggledUnattachedEvent = EventFactory::createAttachmentUnequippedEvent($playerId, $performer->Id, $smuggledItem->Id);
             $this->theah->eventCheck($smuggledUnattachedEvent);
@@ -939,24 +936,25 @@ trait FrameworkActionsTrait
         $risk->Location = Game::LOCATION_PURGATORY;
         $this->updateCardObjectInDb($risk);
 
-        $message = clienttranslate('${player_name} is performing the In-Hand Action [${action_name}] from ${card_inject_code}. ');
+        $action->announceAction($this);
+
         if ($discount != 0)
         {
-            $message .= clienttranslate('This was played at a cost of ${cost} Wealth (discount of ${discount}).');
+            $message = clienttranslate('This was played at a cost of ${cost} Wealth (discount of ${discount}).');
             if ($explanations != '')
             {
                 $message .= clienttranslate('<br>${explanations}');
             }
+            $this->notify->all("message", $message, [
+                "i18n" => ["action_name"],
+                "player_name" => $this->getActivePlayerName(),
+                "action_name" => $action->Name,
+                "card_inject_code" => $risk->getInjectCode(),
+                "cost" => $cost,
+                "discount" => $discount,
+                "explanations" => $explanations,
+            ]);
         }
-        $this->notify->all("message", $message, [
-            "i18n" => ["action_name"],
-            "player_name" => $this->getActivePlayerName(),
-            "action_name" => $action->Name,
-            "card_inject_code" => $risk->getInjectCode(),
-            "cost" => $cost,
-            "discount" => $discount,
-            "explanations" => $explanations,
-        ]);
 
         $event = EventFactory::createRiskPlayedEvent($playerId, $risk->Id);
         $this->theah->queueEvent($event);

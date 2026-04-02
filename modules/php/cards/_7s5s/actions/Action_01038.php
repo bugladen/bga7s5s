@@ -50,6 +50,8 @@ class Action_01038 extends CharacterAction
                 $names[] = $card->getInjectCode();
             }
 
+            $this->announceAction($event->theah->game);
+
             $event->theah->game->notify->all('message', clienttranslate('${player_name} uses Otto Streit\'s Action to reveal Attachments from their deck. ${found} Attachment(s) have been revealed. 
             <p>Cards Revealed: ${names}'), [
                 'i18n' => ['card_name'],

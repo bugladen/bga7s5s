@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
@@ -70,6 +71,13 @@ abstract class CardAction extends Action implements ICardAbility
             'action' => $this->Name,
             'owner_inject_code' => $owner->getInjectCode(),
         ]);
+
+        $activatedEvent = EventFactory::createActionActivatedEvent(
+            (int)$game->getActivePlayerId(),
+            $owner->Id,
+            $this->Id
+        );
+        $game->theah->queueEvent($activatedEvent);
     }
 
     public function doCost(Game $game): void {}

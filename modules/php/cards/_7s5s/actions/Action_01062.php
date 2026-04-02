@@ -71,13 +71,7 @@ class Action_01062 extends CharacterAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
 
-            $game->notify->all("message", clienttranslate('${player_name} used the Action from ${odette_inject_code} to move ${performer_inject_code} to ${location_name}.'), [
-                "i18n" => ["location_name"],
-                "player_name" => $game->getPlayerNameById($performer->ControllerId),
-                "odette_inject_code" => $odette->getInjectCode(),
-                "performer_inject_code" => $performer->getInjectCode(),
-                "location_name" => $odette->Location,
-            ]);
+            $this->announceAction($game);
 
             $moveEvent = EventFactory::createCardMovingEvent($event->playerId, $performer->Id, $performer->Location, $odette->Location, $engage = false, $sourceId = $odette->Id, $this->Id);
             $event->theah->eventCheck($moveEvent);

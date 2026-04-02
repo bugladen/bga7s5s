@@ -132,6 +132,7 @@ class Events
     const CalculatePayDiscount = 'EventCalculatePayDiscount';
 
     const ActionTriggered = 'EventActionTriggered';
+    const ActionActivated = 'EventActionActivated';
     const ActionResolved = 'EventActionResolved';
     const RiskReactionTriggered = 'EventRiskReactionTriggered';
     const ActionUsed = 'EventActionUsed';

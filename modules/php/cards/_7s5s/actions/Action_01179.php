@@ -89,9 +89,7 @@ class Action_01179 extends EventCityAction
             $playerId = $performer->ControllerId;
             $this->playersUsed[] = $playerId;
     
-            $event->theah->game->notify->all("message", clienttranslate('${player_name} used Siren\'s Scream to take a Renown.'), [
-                "player_name" => $event->theah->game->getPlayerNameById($playerId),
-            ]);    
+            $this->announceAction($event->theah->game);
     
             $owner = $this->getOwningCard($event->theah);
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performerId, $owner->Id, $this->Id);
