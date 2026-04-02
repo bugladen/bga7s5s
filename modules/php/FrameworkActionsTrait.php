@@ -647,7 +647,11 @@ trait FrameworkActionsTrait
             $smuggledItemId = $this->globals->get(Game::SMUGGLED_ITEM_ATTACHMENT_ID);
             $smuggledItem = $this->theah->getCardById($smuggledItemId);
 
-            $smuggledItem->announceAction($this);
+            //Get the action that caused the equip
+            $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+            $action = $this->theah->getInPlayActionById($actionId);            
+            $action->announceAction($this);
+            $action->setUsed($this->theah, true);
 
             $smuggledUnattachedEvent = EventFactory::createAttachmentUnequippedEvent($playerId, $performer->Id, $smuggledItem->Id);
             $this->theah->eventCheck($smuggledUnattachedEvent);

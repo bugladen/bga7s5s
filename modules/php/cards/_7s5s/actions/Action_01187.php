@@ -50,7 +50,9 @@ class Action_01187 extends AttachmentAction
             $event->theah->queueEvent($transition);
 
             $this->resetPlayerPassCount($event->theah->game);
-            // $this->setUsed() not called because this card is destroyed
+            //createActionResolvedEvent() not needed because this passes off to attachmentEquipped
+            //$this->announceAction() is called later in a special section of code in actHighDramaEquipAttachment
+            //$this->setUsed() is called later in a special section of code in actHighDramaEquipAttachment
         }
     }
 
