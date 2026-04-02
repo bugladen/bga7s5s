@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -40,6 +41,13 @@ class Maneuver_01114 extends Maneuver
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
+        {
+            $this->IsActivated = false;
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
+        }
 
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {

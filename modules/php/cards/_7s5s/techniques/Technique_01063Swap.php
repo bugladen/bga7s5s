@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01063Swap extends Technique
@@ -66,6 +67,13 @@ class Technique_01063Swap extends Technique
 
             $challengerSwappedEvent = EventFactory::createChallengerSwappedEvent($owner->ControllerId, $owner->Id, $newChallenger->Id);
             $game->theah->queueEvent($challengerSwappedEvent);
+        }
+
+        if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)
+        {
+            $this->swapId = 0;
+            $owner = $this->getOwningCharacter($event->theah);
+            $owner->IsUpdated = true;
         }
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)    

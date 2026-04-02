@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverV
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Maneuver_01135 extends Maneuver
@@ -80,9 +81,18 @@ class Maneuver_01135 extends Maneuver
             }
         }
 
+        if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
+        {
+            $this->IsActive = false;
+            $this->ReduceThrustNextRound = false;
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
+        }
+
         if ($event instanceof EventDuelEnd)
         {
             $this->IsActive = false;
+            $this->ReduceThrustNextRound = false;
             $owner = $this->getOwningCard($event->theah);
             $owner->IsUpdated = true;
         }

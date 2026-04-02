@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01036 extends Technique
@@ -45,6 +46,14 @@ class Technique_01036 extends Technique
             $owner = $this->getOwningCharacter($event->theah);
             $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01036", $this->Id);
             $event->theah->queueEvent($transitionEvent);
+        }
+
+        if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)
+        {
+            $this->MoveDaniela = false;
+            $this->MoveLocation = "";
+            $owner = $this->getOwningCharacter($event->theah);
+            $owner->IsUpdated = true;
         }
 
         if ($event instanceof EventDuelEndOfRound && $this->MoveDaniela)

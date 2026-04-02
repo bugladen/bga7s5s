@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -42,6 +43,13 @@ class Maneuver_01052 extends Maneuver
         {
             $owner = $this->getOwningCard($event->theah);
             $this->HealAtEndOfRound = true;
+            $owner->IsUpdated = true;
+        }
+
+        if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
+        {
+            $this->HealAtEndOfRound = false;
+            $owner = $this->getOwningCard($event->theah);
             $owner->IsUpdated = true;
         }
 

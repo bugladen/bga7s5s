@@ -16,7 +16,13 @@ The `dashed*` booleans are still used — those indicate whether a stat is print
 ### WHY the number wasn't set before
 The original card implementations for Characters/Schemes/Attachments all set CardNumber, but Risk cards were apparently written without it. It only became visible when the text tooltip was added (preference 100 = Text), since the image tooltip just shows the card image which has the number printed on it.
 
+### CityCharacter cost in text tooltip
+`createTextTooltipForCharacter` now conditionally shows a "Cost" row when `card.wealthCost != null`. This covers CityCharacter cards which implement `IWealthCost` (via `WealthCostTrait`). Regular faction Characters don't have `wealthCost` in their property array, so the row is skipped for them. The Cost row appears after Card # and before Title, matching the ordering in `createTextTooltipForAttachment`.
+
+### WHY conditional check instead of always showing it
+Only CityCharacter (and potentially FactionCharacter) implement `IWealthCost`. Regular Characters don't have a cost, so always showing a Cost row would show "undefined" or empty for non-city characters. Using `!= null` (loose equality) catches both `undefined` and `null`.
+
 ## Files Modified
 
-- `modules/js/Utilities.js`: `createTextTooltipForCharacter` — changed 8 property references from modified to original values.
+- `modules/js/Utilities.js`: `createTextTooltipForCharacter` — changed 8 property references from modified to original values; added conditional Cost row for CityCharacter cards.
 - 66 Risk card files in `modules/php/cards/_7s5s/`: Added `$this->CardNumber = N;` to constructors.

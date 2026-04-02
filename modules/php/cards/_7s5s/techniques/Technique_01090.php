@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01090 extends Technique
@@ -67,6 +68,14 @@ class Technique_01090 extends Technique
 
             $transition = EventFactory::createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "01090", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)
+        {
+            $this->RevealedCardId = 0;
+            $this->CardPlayerId = 0;
+            $owner = $this->getOwningCharacter($event->theah);
+            $owner->IsUpdated = true;
         }
 
         if ($event instanceof EventDuelNewRound && $this->CardPlayerId > 0)
