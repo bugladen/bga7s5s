@@ -174,13 +174,20 @@ trait ArgumentsTrait
         $recruitId = $this->globals->get(GAME::CHOSEN_CARD);
         $recruit = $this->theah->getCharacterById($recruitId);
         $discount = $this->globals->get(GAME::DISCOUNT);        
+        $recruitType = $this->globals->get(Game::RECRUIT_TYPE);
+
+        $cost = $recruit->WealthCost;
+        if ($recruitType == Game::CIRILO_RECRUIT_TYPE)
+        {
+            $cost = 1;
+        }
 
         return [
             "performerId" => $performerId,
             "recruitId" => $recruitId,
             "discount" => $discount,
-            "recruitType" => $this->globals->get(Game::RECRUIT_TYPE),
-            "cost" => $recruit->WealthCost
+            "recruitType" => $recruitType,
+            "cost" => $cost
         ];
     }
 
