@@ -69,6 +69,13 @@ trait DebugTrait
     }
 
     #[Debug(reload: true)] 
+    public function debug_SetCardInPlayerLocker(string $className, int $playerId)
+    {
+        $location = $this->getPlayerLockerName($playerId);
+        $this->createCardInLocation($className, $location, $playerId, $playerId);
+    }
+
+    #[Debug(reload: true)] 
     public function debug_SetCardInCityDiscardPile(string $className)
     {
         $this->createCardInLocation($className, Game::LOCATION_CITY_DISCARD, 0, 0);
