@@ -534,6 +534,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'highDramaPhase02036_2': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
             'duelChooseAction': () => {
                 if (!$('btnCombatCard'))
                     return;
