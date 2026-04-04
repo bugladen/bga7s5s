@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_02034 extends Technique
 {
@@ -14,6 +15,15 @@ class Technique_02034 extends Technique
         parent::__construct();
 
         $this->Name = clienttranslate('+1 Parry or +1 Riposte (Aldana in dueling line)');
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+    {
+        if (! parent::isAvailableToPlayer($playerId, $theah)) {
+            return false;
+        }
+
+        return (bool) $theah->game->globals->get(Game::IN_DUEL, false);
     }
 
     public function handleEvent(Event $event)
