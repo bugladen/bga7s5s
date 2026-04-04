@@ -160,6 +160,7 @@ class Game extends \Bga\GameFramework\Table
     final const ANDRIANA_DONDOLOS_CHALLENGE_TYPE = 12;
     final const WILHELM_DUNST_CHALLENGE_TYPE = 13;
     final const BATTLE_OF_WITS_CHALLENGE_TYPE = 14;
+    final const TORVO_ESPADA_CHALLENGE_TYPE = 15;
 
     //Duel global variables
     //Duel Names

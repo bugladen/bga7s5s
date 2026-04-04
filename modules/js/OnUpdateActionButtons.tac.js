@@ -193,6 +193,17 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase02034': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase02034_2': () => {
+                this.addActionButton(`actIssueChallenge`, _('Issue challenge to Torvo'), () => this.bgaPerformAction('actFromCardWithId', { id: 1 }));
+                this.addActionButton(`actDeclineChallenge`, _('Decline (opponent draws)'), () => this.bgaPerformAction('actFromCardWithId', { id: 2 }));
+            },
+
             'highDramaPhase02025': () => {
                 this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());

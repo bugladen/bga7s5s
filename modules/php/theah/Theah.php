@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02003;
@@ -1673,6 +1674,10 @@ class Theah
         else if ($challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE)
         {
             throw new \BgaUserException($this->game->translate("Valeri Mikhailov: No Characters can Intervene."));
+        }
+        else if ($challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE)
+        {
+            throw new UserException($this->game->translate("Torvo Espada: No characters can intervene in this challenge."));
         }
     }
 }
