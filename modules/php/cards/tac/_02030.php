@@ -2,10 +2,16 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions\Reaction_02030a;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions\Reaction_02030b;
 
-class _02030 extends Risk
+class _02030 extends Risk implements IHasReactions
 {
+    use ReactionTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -34,6 +40,11 @@ class _02030 extends Risk
         $this->Text = clienttranslate("<p><b>Reaction:</b> When an ability is announced • Your character gains <b>Musketeer</b> until the action resolves. <i>(Announcing occurs before performers and targets are chosen.)</i></p><p><b>Reaction:</b> When a challenge is issued • Your character gains <b>Musketeer</b> until the action resolves. <i>(Any subsequent duel is part of the challenge action.)</i></p>");
 
         $this->resetCard();
+
+        $this->Reactions = [
+            new Reaction_02030a(),
+            new Reaction_02030b(),
+        ];
     }       
         
 }
