@@ -339,6 +339,20 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_02035': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = args.args.args.requiredLocationCount;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        if (locationId == this.LOCATION_PLAYER_HOME) {
+                            this.makeHomeEndcapMarkerSelectable();
+                        } else {
+                            const imageElement = this.getCityLocationElement(locationId);
+                            this.makeCityLocationSelectable(imageElement);
+                        }
+                    });
+                }
+            },
+
             'highDramaPhase02023': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

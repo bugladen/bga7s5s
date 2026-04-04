@@ -617,6 +617,23 @@ trait UtilitiesTrait
 
         }
 
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CASTILLIAN_CAPER_PRESSURE_TYPE))
+        {
+            $scoundrelBonus = 0;
+            foreach ($charactersAtLocation as $character) {
+                if (! $character->isControlled()) {
+                    continue;
+                }
+                if ($character->ControllerId != $attemptingPlayerId) {
+                    continue;
+                }
+                if ($character->hasTrait("Scoundrel")) {
+                    $scoundrelBonus++;
+                }
+            }
+            $playerInfluences[$attemptingPlayerId]['influence'] += $scoundrelBonus;
+        }
+
         //If Trial of Faith is in play, each player gets +1 to their influence total for each wound on each character at the location
         if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TRIAL_OF_FAITH_PRESSURE_TYPE))
         {
