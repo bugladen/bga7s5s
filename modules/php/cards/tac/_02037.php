@@ -53,10 +53,8 @@ class _02037 extends FactionAttachment implements IHasTechniques, IHasReactions
 
         $this->resetCard();
 
-        $technique = new Technique_02037();
-        $technique->setId("Technique_02037");
         $this->Techniques = [
-            $technique,
+            new Technique_02037()
         ];
 
         $this->Reactions = [
