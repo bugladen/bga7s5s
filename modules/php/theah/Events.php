@@ -75,6 +75,7 @@ class Events
     const DuelCalculateManeuverValues = 'EventDuelCalculateManeuverValues';
     const DuelCalculateCombatCardStats = 'EventDuelCalculateCombatCardStats';
     const DuelPlayerGambled = 'EventDuelPlayerGambled';
+    const DuelAttemptGamble = 'EventDuelAttemptGamble';
     const DuelActionsDone = 'EventDuelActionsDone';
     const DuelEndOfRound = 'EventDuelEndOfRound';
     const DuelEnd = 'EventDuelEnd';

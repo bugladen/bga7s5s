@@ -59,6 +59,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelAttemptGamble;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
@@ -1049,6 +1050,17 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->actorId = $actorId;
             $event->adversaryId = $adversaryId;
             $event->techniqueId = $techniqueId;
+        }
+
+        return $event;
+    }
+
+    public static function createDuelAttemptGambleEvent(int $actorId): EventDuelAttemptGamble
+    {
+        $event = self::createEvent(Events::DuelAttemptGamble);
+        if ($event instanceof EventDuelAttemptGamble)
+        {
+            $event->actorId = $actorId;
         }
 
         return $event;

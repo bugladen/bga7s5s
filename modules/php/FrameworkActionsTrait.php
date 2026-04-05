@@ -1327,6 +1327,8 @@ trait FrameworkActionsTrait
     {
         $this->theah->buildCity();
         $actor = $this->theah->getDuelRoundActor();
+        $gambleCheck = EventFactory::createDuelAttemptGambleEvent($actor->Id);
+        $this->theah->eventCheck($gambleCheck);
         [$cardCount, $explanations] = $this->theah->getNumberOfGambleCardsToReveal($actor);
         if ($explanations != '')
             $this->notify->player($actor->ControllerId, "message", clienttranslate('Private: Explanations for modification of number of gamble cards to reveal:<br>${explanations}'), [
@@ -1476,6 +1478,9 @@ trait FrameworkActionsTrait
     public function actGambleCardChosen(int $id)
     {
         $this->theah->buildCity();
+        $actor = $this->theah->getDuelRoundActor();
+        $gambleCheck = EventFactory::createDuelAttemptGambleEvent($actor->Id);
+        $this->theah->eventCheck($gambleCheck);
         $playerId = $this->getActivePlayerId();
         $deckName = $this->getPlayerFactionDeckName($playerId);
 

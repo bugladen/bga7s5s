@@ -12,6 +12,7 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
@@ -653,6 +654,14 @@ trait ArgumentsTrait
         $actor = $this->theah->getCharacterById($round['actor_id']);
         $gamblesLeft = $actor->ModifiedFinesse - $gamblesCount;
 
+        $gambleProbe = EventFactory::createDuelAttemptGambleEvent($actor->Id);
+        try {
+            $this->theah->eventCheck($gambleProbe);
+            $gambleAllowedByCardEffects = true;
+        } catch (\BgaUserException|UserException $e) {
+            $gambleAllowedByCardEffects = false;
+        }
+
         $characterManeuevers = $this->theah->getAvailableCharacterManeuvers($actor);
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
 
@@ -679,7 +688,7 @@ trait ArgumentsTrait
                     "active" => [
                         "maneuversAvailable" => $combatCardsCount > 0 && count($characterManeuevers) > 0 && $playedManeuversCount == 0,
                         "techniquesAvailable" => $combatCardsCount > 0 && count($techniques) > 0 && $playedTechniquesCount == 0,
-                        "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $combatCardsCount == 0,
+                        "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $combatCardsCount == 0 && $gambleAllowedByCardEffects,
                         "gamblesLeft" => $gamblesLeft,
                         "combatCardAvailable" => $combatCardsCount == 0,
                         "endDuelAvailable" => false

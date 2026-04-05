@@ -1277,6 +1277,10 @@ trait StatesTrait
         elseif ($rollTheBonesActivated)
         {
             $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
+            $this->theah->buildCity();
+            $actor = $this->theah->getDuelRoundActor();
+            $gambleCheck = EventFactory::createDuelAttemptGambleEvent($actor->Id);
+            $this->theah->eventCheck($gambleCheck);
             $this->gamestate->nextState("rollTheBones");
         }
         else
