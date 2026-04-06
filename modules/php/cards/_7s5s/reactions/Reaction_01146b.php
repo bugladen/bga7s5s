@@ -60,6 +60,7 @@ class Reaction_01146b extends CardReaction
                     $event->theah->queueEvent($reactionEvent);
     
                     $this->TechniqueId = $event->techniqueId;
+                    $this->ManeuverId = '';
                     $scheme->IsUpdated = true;
                 }
             }
@@ -82,6 +83,7 @@ class Reaction_01146b extends CardReaction
                     $event->theah->queueEvent($reactionEvent);
     
                     $this->ManeuverId = $event->maneuverId;
+                    $this->TechniqueId = '';
                     $scheme->IsUpdated = true;
                 }
             }
@@ -138,6 +140,14 @@ class Reaction_01146b extends CardReaction
             }
 
             $this->setUsed($game->theah, true);
+        }
+
+        if ($reactionId == 'decline')
+        {
+            $this->TechniqueId = '';
+            $this->ManeuverId = '';
+            $scheme = $this->getOwningCard($game->theah);
+            $scheme->IsUpdated = true;
         }
 
         $game->gamestate->nextState("done");
