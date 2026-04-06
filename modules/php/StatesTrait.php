@@ -1289,6 +1289,22 @@ trait StatesTrait
         }
     }
 
+    public function stDuelGambleRevealed(): void
+    {
+        $this->theah->buildCity();
+        $actor = $this->theah->getDuelRoundActor();
+        $playerId = $actor->ControllerId;
+        $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
+        $deckCards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
+        $revealedCardIds = array_map(fn($c) => (int)$c['id'], $deckCards);
+
+        $event = EventFactory::createDuelGambleCardsRevealedEvent($actor->Id, $playerId, $revealedCardIds);
+        $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState("processEvents");
+    }
+
     public function stDuelEndOfRound(): void
     {
         $this->theah->buildCity();

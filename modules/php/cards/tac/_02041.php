@@ -34,7 +34,7 @@ class _02041 extends Risk implements IHasManeuvers
             clienttranslate('Savvy'),
         ];
 
-        $this->Text = clienttranslate("<b>Scoundrel Maneuver:</b> This duel becomes a duel of [Finesse] for the remainder of the duel.");
+        $this->Text = clienttranslate("<b>Scoundrel Maneuver:</b> This duel becomes a duel of [Finesse] for the remainder of the duel.<br><i>(Use [Finesse] for Restricted Hostilities, including all current threat.)</i>");
 
         $this->resetCard();
 
