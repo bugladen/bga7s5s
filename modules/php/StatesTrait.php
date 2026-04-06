@@ -1332,7 +1332,11 @@ trait StatesTrait
         {
             $combatStatUsed = $this->globals->get(GAME::CHALLENGE_STAT);
 
-            $stat = $adversary->ModifiedCombat;
+            $stat = match ($combatStatUsed) {
+                GAME::STAT_FINESSE => $adversary->ModifiedFinesse,
+                GAME::STAT_INFLUENCE => $adversary->ModifiedInfluence,
+                default => $adversary->ModifiedCombat,
+            };
             $reason = "<p>$threat " . $this->translate("Threat was left over in their Pool.");
 
             if ($lethal == 1)
@@ -1346,15 +1350,12 @@ trait StatesTrait
                 switch ($combatStatUsed)
                 {
                     case GAME::STAT_COMBAT:
-                        $stat = $adversary->ModifiedCombat;
                         $reason .= "<p>" . $this->translate("Stat Used for Duel is Combat.");
                         break;
                     case GAME::STAT_FINESSE:
-                        $stat = $adversary->ModifiedFinesse;
                         $reason .= "<p>" . $this->translate("Stat Used for Duel is Finesse.");
                         break;
                     case GAME::STAT_INFLUENCE:
-                        $stat = $adversary->ModifiedInfluence;
                         $reason .= "<p>" . $this->translate("Stat Used for Duel is Influence.");
                         break;
                 }
