@@ -223,6 +223,18 @@
                 this.resetCityLocations();
             },
 
+            'planningPhaseResolveSchemes_02046': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
+            'planningPhaseResolveSchemes_02046_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
             'highDramaPhase02023': () => {
                 if (this.isCurrentPlayerActive())
                 {

@@ -382,6 +382,34 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_02046': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 1;
+                    locations.forEach((location) => {
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
+            'planningPhaseResolveSchemes_02046_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const selectedLocationElement = dojo.query(`[data-location="${args.args.args.chosenLocation}"]`)[0];
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 1;
+                    locations.forEach((location) => {
+                        const imageElement = $(location);
+                        if (imageElement.id == selectedLocationElement.id)
+                        {
+                            this.markCityLocationAsChosen(location);
+                            return;
+                        }
+
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
             'highDramaPhase02023': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
