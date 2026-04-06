@@ -353,6 +353,35 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_02045': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofOutermostCityLocations();
+                    this.numberOfCityLocationsSelectable = 1;
+
+                    locations.forEach((location) => {
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
+            'planningPhaseResolveSchemes_02045_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const selectedLocationElement = dojo.query(`[data-location="${args.args.args.chosenLocation}"]`)[0];
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 2;
+                    locations.forEach((location) => {
+                        const imageElement = $(location);
+                        if (imageElement.id == selectedLocationElement.id)
+                        {
+                            this.markCityLocationAsChosen(location);
+                            return;
+                        }
+
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
             'highDramaPhase02023': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
@@ -469,6 +498,19 @@
 
                     this.clientStateArgs.ids = args.args.args.ids;
                     this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
+            'highDramaPhase02045': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    $('choose_container_name').innerHTML = _('Dar Matushki / Poluchatel Cards in Your Faction Deck');
+
+                    args.args._private.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    this.chooseList.setSelectionMode(1);
                 }
             },
 

@@ -16,7 +16,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( 'notifications subscriptions setup' );
         
         const notifs = [
-            ['01126_2_scheme_moved', 500],
+            ['schemeMovedToCity', 500],
             ['actionUsed', 1],
             ['approachCardsReceived', 1000],
             ['approachCharacterPlayed', 2000],
@@ -1667,20 +1667,31 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
-    notif_01126_2_scheme_moved: function( notif )
+    notif_schemeMovedToCity: async function( notif )
     {
-        debug( 'notif_01126_2_scheme_moved');
+        debug( 'notif_schemeMovedToCity');
         debug( notif );
 
         const args = notif.args;
 
         const card = this.cardProperties[args.cardId];
+        const oldDivId = card.divId;
+        const oldElement = $(oldDivId);
+
         card.location = args.location;
         this.gamedatas.homeCards = this.gamedatas.homeCards.filter((scheme) => scheme.id !== card.id);
-        dojo.destroy(card.divId);
 
-        args.card = card;
-        this.notif_cityCardAddedToLocation(notif);
+        const targetId = this.getTargetElementForLocation(args.location, card.controllerId);
+        const targetElement = $(targetId);
+
+        if (oldElement && targetElement && this.animationManager && this.animationManager.animationsActive()) {
+            await this.animationManager.slideAndAttach(oldElement, targetElement);
+        }
+
+        dojo.destroy(oldDivId);
+
+        const cardId = this.createCardId(card, args.location);
+        this.createCard(cardId, card, targetId);
     },
 
     notif_locationClaimed: function( notif )

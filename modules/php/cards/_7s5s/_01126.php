@@ -98,7 +98,7 @@ class _01126 extends Scheme
             $playerId = $event->theah->game->getActivePlayerId();
             $deck = $event->theah->game->getGameDeckObject();
 
-            $event->theah->game->notify->all('01126_2_scheme_moved', 
+            $event->theah->game->notify->all('schemeMovedToCity', 
                 clienttranslate('${scheme_inject_code} moved to ${location}'), [
                     'i18n' => ['location'],
                     "scheme_inject_code" => $this->getInjectCode(),
