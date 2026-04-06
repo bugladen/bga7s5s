@@ -1052,15 +1052,16 @@ trait StatesTrait
             $sql = "SELECT actor_id, ending_challenger_threat, ending_defender_threat, challenger_threat_is_lethal, defender_threat_is_lethal FROM duel_round WHERE duel_id = {$duelId} AND round = " . ($round - 1);
             $result = $this->getObjectListFromDB($sql)[0];
             $lastActorId = $result['actor_id'];
+            $challengerThreat = $result['ending_challenger_threat'];
+            $challengerThreatIsLethal = $result['challenger_threat_is_lethal'];
+            $defenderThreat = $result['ending_defender_threat'];
+            $defenderThreatIsLethal = $result['defender_threat_is_lethal'];
+
             if ($lastActorId == $challengerId)
             {
                 $actorId = $defenderId;
                 $actor = $defender;
                 $playerId = $defendingPlayerId;
-                $challengerThreat = 0;
-                $challengerThreatIsLethal = 0;
-                $defenderThreat = $result['ending_defender_threat'];
-                $defenderThreatIsLethal = $result['defender_threat_is_lethal'];
                 $wounds = $defenderThreat;
             }
             else
@@ -1068,12 +1069,24 @@ trait StatesTrait
                 $actorId = $challengerId;
                 $actor = $challenger;
                 $playerId = $challengingPlayerId;
-                $challengerThreat = $result['ending_challenger_threat'];
-                $challengerThreatIsLethal = $result['challenger_threat_is_lethal'];
-                $defenderThreat = 0;
-                $defenderThreatIsLethal = 0;
                 $wounds = $challengerThreat;
             }
+        }
+
+        $pendingChallengerThreat = $this->globals->get(Game::PENDING_CHALLENGER_THREAT, 0);
+        $pendingDefenderThreat = $this->globals->get(Game::PENDING_DEFENDER_THREAT, 0);
+        if ($pendingChallengerThreat > 0 || $pendingDefenderThreat > 0)
+        {
+            $challengerThreat += $pendingChallengerThreat;
+            $defenderThreat += $pendingDefenderThreat;
+
+            if ($actorId == $challengerId)
+                $wounds += $pendingChallengerThreat;
+            else
+                $wounds += $pendingDefenderThreat;
+
+            $this->globals->delete(Game::PENDING_CHALLENGER_THREAT);
+            $this->globals->delete(Game::PENDING_DEFENDER_THREAT);
         }
 
         $serialized = addslashes(serialize($actor));
@@ -1457,7 +1470,10 @@ trait StatesTrait
         $endingChallengerThreat = $values['ending_challenger_threat'];
         $endingDefenderThreat = $values['ending_defender_threat'];
 
-        if ($endingChallengerThreat == 0 && $endingDefenderThreat == 0)
+        $hasPendingThreat = $this->globals->get(Game::PENDING_CHALLENGER_THREAT, 0) > 0
+            || $this->globals->get(Game::PENDING_DEFENDER_THREAT, 0) > 0;
+
+        if ($endingChallengerThreat == 0 && $endingDefenderThreat == 0 && !$hasPendingThreat)
         {
             $this->notifyAllPlayers("message", clienttranslate('No Threat remains in either player pool.'), []);
             
@@ -1507,6 +1523,8 @@ trait StatesTrait
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
         $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
         $this->globals->delete(Game::ABNORMAL_FLOW);
+        $this->globals->delete(Game::PENDING_CHALLENGER_THREAT);
+        $this->globals->delete(Game::PENDING_DEFENDER_THREAT);
 
         $sql = "SELECT challenging_player_id, defending_player_id, challenger_id, defender_id FROM duel where duel_id = $duelId";
         $result = $this->getObjectListFromDB($sql)[0];

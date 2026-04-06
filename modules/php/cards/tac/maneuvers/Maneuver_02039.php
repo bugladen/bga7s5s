@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\maneuvers;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
-use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
@@ -45,12 +45,18 @@ class Maneuver_02039 extends Maneuver
             $owner = $this->getOwningCard($event->theah);
             $owner->IsUpdated = true;
 
-            $event->theah->game->notify->all("message", clienttranslate('${card_inject_code}: Adds a threat to both participants.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${card_inject_code}: Adds a threat to both participants at the start of the next round.'), [
                 "card_inject_code" => $owner->getInjectCode(),
             ]);
 
-            $threatEvent = EventFactory::createThreatModifiedEvent(1, 1);
-            $event->theah->queueEvent($threatEvent);
+            // WHY: Threat added at end of round applies to the NEXT round, not the current one.
+            // The current round's threat resolution is already complete.
+            $game = $event->theah->game;
+            $pending = $game->globals->get(Game::PENDING_CHALLENGER_THREAT, 0);
+            $game->globals->set(Game::PENDING_CHALLENGER_THREAT, $pending + 1);
+
+            $pending = $game->globals->get(Game::PENDING_DEFENDER_THREAT, 0);
+            $game->globals->set(Game::PENDING_DEFENDER_THREAT, $pending + 1);
         }
     }
 }
