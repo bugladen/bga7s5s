@@ -20,12 +20,46 @@ Auto-resolving technique, no custom state needed. Once per day (`ResetOnDuelEnd 
 2. Player returns to action choice, sees this technique available
 3. Player activates technique → `EventResolveTechnique` fires:
    - Reads maneuver values from `duel_round` DB
-   - Re-fires `EventResolveManeuver` for special effects
-   - Sends combat card to locker via `createCardSentToLockerEvent`
-4. `EventDuelCalculateTechniqueValues` fires → adds the stored maneuver values through technique channel
-5. `EventDuelNewRound` / `EventDuelEnd` → resets tracking state
+   - Finds original maneuver on combat card, creates clone, adds to Miyato/Ota
+   - Queues `EventResolveManeuver` for clone's unique ID (activates clone's internal state)
+   - Sets `$pendingLockerSend = true` and stores combat card ID (deferred)
+4. Clone's `EventResolveManeuver` fires → clone sets `IsActive = true` (original unaffected — different ID)
+5. `EventDuelCalculateTechniqueValues` fires → adds the stored maneuver values through technique channel
+6. `EventDuelEndOfRound` fires:
+   - Original maneuver fires delayed effect (e.g., +1 threat each for 02039)
+   - Clone fires delayed effect independently (+1 threat each again)
+   - Technique queues `createCardSentToLockerEvent`
+7. `EventDuelNewRound` / `EventDuelEnd` → removes clone from Miyato/Ota, resets tracking state
 
-**WHY combat card to locker during technique resolution (not end of round):** Moving the card from `LOCATION_DUELING_LINE` to the locker immediately is safe because combat card stats were already committed to `duel_round` when the card was announced. Round cleanup iterates `LOCATION_DUELING_LINE` cards and won't find this one, so no double-handling.
+**WHY two mechanisms needed — deferred locker AND maneuver clone:**
+
+The original approach sent the combat card to the locker immediately during `EventResolveTechnique`. This broke `Maneuver_02039`'s delayed threat because cards in the locker are NOT loaded into `Theah::$cards`.
+
+Simply deferring the locker send to `EventDuelEndOfRound` fixed the original maneuver firing — but only gave 1x delayed effect instead of the expected 2x ("Copy the effects" means the delayed effect should also be duplicated).
+
+The fix uses BOTH mechanisms:
+
+1. **Deferred locker send** — Combat card stays in the dueling line until `EventDuelEndOfRound`, so the original maneuver fires its delayed effect normally. An `EventDuelEnd` fallback covers edge cases.
+
+2. **Maneuver clone on Miyato/Ota** — A fresh instance of the maneuver class is created via `new (get_class($originalManeuver))()`, registered on Miyato/Ota via `addManeuver(notify: false)`, and activated through its own `EventResolveManeuver`. Because `setOwnerId` generates `{ownerId}_{ClassId}`, the clone gets a unique ID (e.g., `43_Maneuver_02039`) that won't collide with the original (e.g., `100_Maneuver_02039`). The clone receives `EventDuelEndOfRound` through normal `Card::handleEvent` dispatch (which iterates `IHasManeuvers`) and fires its delayed effect independently.
+
+**Result for Maneuver_02039:** Original fires at end-of-round (+1 each) + clone fires at end-of-round (+1 each) = +2 each. Combat values are doubled through the technique channel separately.
+
+**Clone lifecycle:**
+- Created during `EventResolveTechnique`
+- Activated via queued `EventResolveManeuver` (unique clone ID)
+- Fires at `EventDuelEndOfRound` (checks `$this->IsActive`, no ID filter)
+- Cleaned up via `removeClonedManeuver()` at `EventDuelNewRound` or `EventDuelEnd`
+- Also cleaned on `EventTechniqueCanceled`
+
+**WHY _02043 now implements IHasManeuvers + ManeuverTrait:** The clone needs to be on a card in `Theah::$cards` to receive events. The Character card (Miyato/Ota) is always loaded. Adding `IHasManeuvers` follows the Katain (`_02011`) pattern exactly.
+
+**WHY NOT fire EventDuelCalculateManeuverValues for the clone:** Combat values are already doubled through `EventDuelCalculateTechniqueValues` (technique channel). Firing the calculate event for the clone would triple-count: 1x original maneuver + 1x technique channel + 1x clone maneuver channel.
+
+**Previous approaches (reverted):**
+1. Immediate locker send — broke delayed effects entirely (card removed from active cards)
+2. Deferred locker only (no clone) — delayed effect fired 1x instead of 2x
+3. Re-firing EventResolveManeuver on original — only re-set IsActive (already true), single instance still fires once
 
 ### Technique B (Technique_02043b): Flourish from Discard
 

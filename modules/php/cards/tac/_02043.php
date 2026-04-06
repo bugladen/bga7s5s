@@ -3,11 +3,15 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\techniques\Technique_02043a;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\techniques\Technique_02043b;
 
-class _02043 extends Character
+class _02043 extends Character implements IHasManeuvers
 {
+    use ManeuverTrait;
+
     public function __construct()
     {
         parent::__construct();
