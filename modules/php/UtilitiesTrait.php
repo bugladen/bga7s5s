@@ -615,6 +615,12 @@ trait UtilitiesTrait
                 $playerInfluences[$attemptingPlayerId]['influence'] += $this->globals->get(Game::PRESSURE_BONUS, 0);
             }
 
+            if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::SOLOMONIA_PRESSURE_TYPE) && $pressureStat == Game::STAT_INFLUENCE)
+            {
+                $solomonia = $this->theah->getCardById($this->globals->get(Game::SOLOMONIA_ID));
+                $playerInfluences[$solomonia->ControllerId]['influence'] += 1;
+            }
+
         }
 
         if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CASTILLIAN_CAPER_PRESSURE_TYPE))

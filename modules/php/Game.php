@@ -115,6 +115,8 @@ class Game extends \Bga\GameFramework\Table
     final const KASPARS_OCCUPATION_PRESSURE_TYPE = 256;
     final const TRIAL_OF_FAITH_PRESSURE_TYPE = 512;
     final const CASTILLIAN_CAPER_PRESSURE_TYPE = 1024;
+    final const SOLOMONIA_PRESSURE_TYPE = 2048;
+    final const SOLOMONIA_ID = "solomoniaId";
 
     //Player action global variables
     //Delete these in stNextPlayer
