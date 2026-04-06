@@ -261,6 +261,12 @@
                 });
             },
 
+            'duelChooseTechnique_02043b': () => {
+                args.args.cards.forEach((card) => {
+                    this.addActionButton(`actChooseCard-${card.id}`, card.name, () => this.bgaPerformAction('actFromCardWithId', {id: card.id}));
+                });
+            },
+
             'duskPhaseBegin02024': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
