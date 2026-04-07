@@ -21,7 +21,7 @@ class Reaction_01116b extends CardReaction
 {
     private bool $IsActive = false;
     private int $PayStateType = 0;
-    private int $CardId = 0;
+    private int $DiscountedCardId = 0;
     private string $InternalId = '';
 
     public function __construct()
@@ -59,7 +59,7 @@ class Reaction_01116b extends CardReaction
                 if (! $card instanceof Character && $card instanceof IWealthCost && $card->getWealthCost() > 0)
                 {
                     $this->PayStateType = $event->payStateType;
-                    $this->CardId = $event->cardId;
+                    $this->DiscountedCardId = $event->cardId;
                     $this->InternalId = $event->internalId;
                     $owner = $this->getOwningCard($event->theah);
                     $owner->IsUpdated = true;
@@ -73,7 +73,7 @@ class Reaction_01116b extends CardReaction
         if (($event instanceof EventPlayerTurnEnd || $event instanceof EventActionResolved || $event instanceof EventDuelEndOfRound) && $this->IsActive)
         {
             $this->IsActive = false;
-            $this->CardId = 0;
+            $this->DiscountedCardId = 0;
             $this->PayStateType = 0;
 
             $owner = $this->getOwningCard($event->theah);
@@ -95,7 +95,7 @@ class Reaction_01116b extends CardReaction
             $this->setUsed($game->theah, true);
             $game->theah->addCardToWorld($owner);
 
-            [$discount, $explanations] = $game->theah->calculateInHandPayDiscount($owner->ControllerId, $this->PayStateType, $this->CardId, $this->InternalId);
+            [$discount, $explanations] = $game->theah->calculateInHandPayDiscount($owner->ControllerId, $this->PayStateType, $this->DiscountedCardId, $this->InternalId);
         }
 
         $game->gamestate->nextState("done");
@@ -105,7 +105,7 @@ class Reaction_01116b extends CardReaction
     {
         $discount = parent::getActionFromHandDiscount($theah, $performer, $action, $explanations);
 
-        if ($this->IsActive)
+        if ($this->IsActive && $action->OwnerId == $this->DiscountedCardId)
         {
             $owner = $this->getOwningCard($theah);
             if ($owner->ControllerId == $performer->ControllerId)
@@ -122,7 +122,7 @@ class Reaction_01116b extends CardReaction
     {
         $discount = parent::getReactionFromHandDiscount($theah, $requestedReaction, $explanations);
 
-        if ($this->IsActive)
+        if ($this->IsActive && $requestedReaction->OwnerId == $this->DiscountedCardId)
         {
             $owner = $this->getOwningCard($theah);
             $reactionOwner = $requestedReaction->getOwningCard($theah);
@@ -139,7 +139,7 @@ class Reaction_01116b extends CardReaction
     {
         $discount = parent::getEquipDiscount($theah, $performer, $attachment, $explanations);
 
-        if ($this->IsActive)
+        if ($this->IsActive && $attachment->Id == $this->DiscountedCardId)
         {
             $owner = $this->getOwningCard($theah);
             if ($owner->ControllerId == $performer->ControllerId)
@@ -156,7 +156,7 @@ class Reaction_01116b extends CardReaction
     {
         $discount = parent::getManeuverFromCombatCardDiscount($theah, $combatCard, $explanations);
 
-        if ($this->IsActive)
+        if ($this->IsActive && $combatCard->Id == $this->DiscountedCardId)
         {
             $actor = $theah->getDuelRoundActor();
             $owner = $this->getOwningCard($theah);
