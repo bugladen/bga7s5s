@@ -76,7 +76,7 @@ class _01200 extends CityAttachment implements IHasReactions
                 {
                     $character->removeCondition(Game::CRYSTAL_EYE_TARGET);
                     $game->updateCardObjectInDb($character);
-                    $game->notify->player($character->ControllerId, 'crystalEyeTargetRemoved', clienttranslate('${skull_inject_code}: ${card_inject_code} has been been removed as a target.'), [
+                    $game->notify->player($character->ControllerId, 'crystalEyeTargetRemoved', clienttranslate('${skull_inject_code}: ${card_inject_code} has been removed as a target.'), [
                         "skull_inject_code" => $this->getInjectCode(),
                         "card_inject_code" => $character->getInjectCode(),
                         "cardId" => $character->Id,
