@@ -1381,6 +1381,27 @@ body {
     
     #approachDeck-container {
         background: #c9a87c !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    #approachDeck {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+        padding: 5px !important;
+        width: max-content !important;
+        min-width: 100%;
+        height: auto !important;
+    }
+    
+    #approachDeck .stockitem {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        flex-shrink: 0 !important;
     }
 }
 
