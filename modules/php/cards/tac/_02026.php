@@ -43,7 +43,7 @@ class _02026 extends FactionAttachment implements IHasTechniques
             clienttranslate('Unique'),
         ];
 
-        $this->Text = clienttranslate("<p>Offhand <i>(Offhand attachments do not count against the limit of one Armor and one Weapon per character. Limit one attachment with Offhand per character.)</i></p><p><b>Duelist Technique:</b> Engage target attachment equipped to the adversary.</p><p><b>Duelist Technique</b>: Destroy target engaged attachment equipped to the adversary.</p>");
+        $this->Text = clienttranslate("<p>Offhand <i>(Offhand attachments do not count against the limit of one Armor and one Weapon per character. Limit one attachment with Offhand per character.)</i></p><p><b>Duelist Technique:</b> Engage target attachment equipped to the adversary.</p><p><b>Duelist Technique:</b> Destroy target engaged attachment equipped to the adversary.</p>");
 
         $this->resetCard();
 

@@ -39,7 +39,7 @@ class _02023 extends Character implements IHasActions, IHasTechniques
             clienttranslate('Avalon')
         ];
 
-        $this->Text = clienttranslate("<p><b>City Action:</b> Move target opposing non-<b>Leader</b> to an adjacent City location with less Renown.</p><p><b>Technique:</b> If the adversary is a <b>Thug</b> or <b>Mercenary</b> • +1[thrust].</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Move target opposing non-<b>Leader</b> to an adjacent City location with less Renown.</p><p><b>Technique:</b> If the adversary is a <b>Thug</b> or <b>Mercenary</b> • +1[Thrust].</p>");
 
         $this->resetCard();
 

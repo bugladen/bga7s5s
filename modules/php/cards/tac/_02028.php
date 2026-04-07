@@ -41,7 +41,7 @@ class _02028 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTarget
             clienttranslate('Rescue'),
         ];
 
-        $this->Text = clienttranslate("<p><b>Diplomat City Action:</b> Your performer issues a [influence] challenge to target opposing character with 1[influence] or more.</p><p><b>Maneuver:</b> +X[thrust] where X is equal to your participant's [influence]. If your participant is a <b>Diplomat</b>, gain Lethal.</p>");
+        $this->Text = clienttranslate("<p><b>Diplomat City Action:</b> Your performer issues a [Influence] challenge to target opposing character with 1[Influence] or more.</p><p><b>Maneuver:</b> +X[Thrust] where X is equal to your participant's [Influence]. If your participant is a <b>Diplomat</b>, gain Lethal.</p>");
 
         $this->resetCard();
 

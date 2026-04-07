@@ -36,7 +36,7 @@ class _02025 extends Scheme implements IHasActions
             clienttranslate('Bargain'),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to any location. Target opponent adds a Renown to any location.</p><hr><p><b>Diplomat City Action:</b> Target an opposing character with equal or lower [inf] • Move them, your performer and a Renown from this location to the same adjacent location.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to any location. Target opponent adds a Renown to any location.</p><hr><p><b>Diplomat City Action:</b> Target an opposing character with equal or lower [Influence] • Move them, your performer and a Renown from this location to the same adjacent location.</p>");
 
         $this->resetCard();
 

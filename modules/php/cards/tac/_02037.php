@@ -49,7 +49,7 @@ class _02037 extends FactionAttachment implements IHasTechniques, IHasReactions
             clienttranslate('Unique'),
         ];
 
-        $this->Text = clienttranslate("<p><b>Forced</b>: When this card would be put in the discard pile, sink it instead.</p><p><b>Technique:</b> The adversary cannot gamble during their next round.</p><p><b>Reaction:</b> After an opposing character issues a challenge • Equip this card to your character at this location.</p>");
+        $this->Text = clienttranslate("<p><b>Forced:</b> When this card would be put in the discard pile, sink it instead.</p><p><b>Technique:</b> The adversary cannot gamble during their next round.</p><p><b>Reaction:</b> After an opposing character issues a challenge • Equip this card to your character at this location.</p>");
 
         $this->resetCard();
 

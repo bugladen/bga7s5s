@@ -34,7 +34,7 @@ class _02019 extends Risk implements IHasReactions
             clienttranslate("Zeal"),
         ];
 
-        $this->Text = clienttranslate("<p><b>City Reaction:</b> When your performer's location is pressured with [inf], wound them • Each player adds +1 to their total for each wound on their characters at this location. Then, if your performer is a <b>Zealot</b>, they may heal a wound.</p>");
+        $this->Text = clienttranslate("<p><b>City Reaction:</b> When your performer's location is pressured with [Influence], wound them • Each player adds +1 to their total for each wound on their characters at this location. Then, if your performer is a <b>Zealot</b>, they may heal a wound.</p>");
 
         $this->resetCard();
 

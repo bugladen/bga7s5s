@@ -35,7 +35,7 @@ class _02034 extends Character implements IHasActions
             clienttranslate('Castille'),
         ];
 
-        $this->Text = clienttranslate("<p><b>City Action:</b> Target an opposing character with 2[Combat] or more • They may issue a [Combat] challenge to Torvo. If they do not, draw a card. If they do, other characters cannot intervene.</p><p><b>Technique:</b> +1[Parry]. If there is an <b>Aldana</b> card in Torvo's dueling line, +1[riposte] instead.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Target an opposing character with 2[Combat] or more • They may issue a [Combat] challenge to Torvo. If they do not, draw a card. If they do, other characters cannot intervene.</p><p><b>Technique:</b> +1[Parry]. If there is an <b>Aldana</b> card in Torvo's dueling line, +1[Riposte] instead.</p>");
 
         $this->resetCard();
 

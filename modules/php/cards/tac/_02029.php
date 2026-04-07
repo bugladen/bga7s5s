@@ -40,7 +40,7 @@ class _02029 extends Risk implements IHasActions, IHasManeuvers
             clienttranslate('Camaraderie'),
         ];
 
-        $this->Text = clienttranslate("<p><b>Diplomat Action:</b> If you control more <b>Diplomats</b> at your performer's location than the amount of Renown there • Claim that location.</p><p><b>Maneuver</b> +1[riposte] for each <b>Diplomat</b> you control at this location.</p>");
+        $this->Text = clienttranslate("<p><b>Diplomat Action:</b> If you control more <b>Diplomats</b> at your performer's location than the amount of Renown there • Claim that location.</p><p><b>Maneuver:</b> +1[Riposte] for each <b>Diplomat</b> you control at this location.</p>");
 
         $this->resetCard();
 

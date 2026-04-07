@@ -39,7 +39,7 @@ class _02013 extends Character implements IHasActions
             clienttranslate('Eisen'),
         ];
 
-        $this->Text = clienttranslate("<p>Wilhelm may only issue [com] challenges to <b>Villains</b>, <b>Sorcerers</b>, and <b>Monsters</b>.</p><p><b>City Action:</b> Discard a <b>Relic</b> or <b>Faith</b> card and target an opposing character • Wilhelm issues a [com] challenge to them as if they were a <b>Sorcerer</b>.</p>");
+        $this->Text = clienttranslate("<p>Wilhelm may only issue [Combat] challenges to <b>Villains</b>, <b>Sorcerers</b>, and <b>Monsters</b>.</p><p><b>City Action:</b> Discard a <b>Relic</b> or <b>Faith</b> card and target an opposing character • Wilhelm issues a [Combat] challenge to them as if they were a <b>Sorcerer</b>.</p>");
 
         $this->resetCard();
 

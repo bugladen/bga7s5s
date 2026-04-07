@@ -45,7 +45,7 @@ class _02011 extends Character implements IHasActions, IHasReactions, IHasTechni
             clienttranslate('Montaigne')
         ];
 
-        $this->Text = clienttranslate("<p><b>Reaction:</b> When Katain performs an ability on a <b>Ranged</b> card, discard a card • Copy the effects.</p><p><b>Technique:</b> Engage Katain's equipped <b>Ranged Weapon</b> • +1[parry].</p>");
+        $this->Text = clienttranslate("<p><b>Reaction:</b> When Katain performs an ability on a <b>Ranged</b> card, discard a card • Copy the effects.</p><p><b>Technique:</b> Engage Katain's equipped <b>Ranged Weapon</b> • +1[Parry].</p>");
 
         $this->resetCard();
 

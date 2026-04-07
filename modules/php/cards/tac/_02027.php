@@ -37,7 +37,7 @@ class _02027 extends FactionAttachment
             clienttranslate('Fan'),
         ];
 
-        $this->Text = clienttranslate("<p>May only equip to your <b>Diplomat</b>.</p><p>While equipped character is en garde, they gain +1[influence]. <i>(While performing the Parley Reaction or the Claim Action, engage costs occur first.)</i></p>");
+        $this->Text = clienttranslate("<p>May only equip to your <b>Diplomat</b>.</p><p>While equipped character is en garde, they gain +1[Influence]. <i>(While performing the Parley Reaction or the Claim Action, engage costs occur first.)</i></p>");
         $this->resetCard();
     }
 

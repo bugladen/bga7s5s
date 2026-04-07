@@ -40,7 +40,7 @@ class _02021 extends Character implements IHasReactions, IHasTechniques
             clienttranslate('Vesten')
         ];
 
-        $this->Text = clienttranslate("<p><b>City Reaction:</b> When discarding cards to pay costs • One of your attachments discarded this way gains Wealth. <i>(This card counts as two when discarded to pay costs. Send it to The Locker after paying costs.)</i></p><p><b>Technique:</b> If Grand Merchant Anghos has more [inf] than the adversary • +1[parry].</p>");
+        $this->Text = clienttranslate("<p><b>City Reaction:</b> When discarding cards to pay costs • One of your attachments discarded this way gains Wealth. <i>(This card counts as two when discarded to pay costs. Send it to The Locker after paying costs.)</i></p><p><b>Technique:</b> If Grand Merchant Anghos has more [Influence] than the adversary • +1[Parry].</p>");
 
         $this->resetCard();
 
