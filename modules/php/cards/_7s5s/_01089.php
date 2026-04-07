@@ -47,7 +47,7 @@ class _01089 extends Leader implements IHasReactions
             clienttranslate("Castille"),
         ];
 
-        $this->Text = clienttranslate("<p>Your adversaries at Soline's location have -1 [Fin].</p><p>City Reaction: After an Action resolves • Move Soline to an adjacent City location.</p>");
+        $this->Text = clienttranslate("<p>Your adversaries at Soline's location have -1 [Finesse].</p><p><b>City Reaction:</b> After an Action resolves • Move Soline to an adjacent City location.</p>");
 
         $this->resetCard();
 

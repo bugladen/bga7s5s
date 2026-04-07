@@ -32,7 +32,7 @@ class _01042 extends Character implements IHasTechniques
             clienttranslate("Eisen"),
         ];
 
-        $this->Text = clienttranslate("<p>When Terrell's duel ends, attachments in his dueling line go into your hand instead of the discard pile. (They do not if Terrell was destroyed.)</p><p>Technique: +1 [Thrust].</p>");
+        $this->Text = clienttranslate("<p>When Terrell's duel ends, attachments in his dueling line go into your hand instead of the discard pile. (They do not if Terrell was destroyed.)</p><p><b>Technique:</b> +1 [Thrust].</p>");
 
         $this->resetCard();
 

@@ -33,7 +33,7 @@ class _01137 extends Risk implements IHasReactions
             clienttranslate('Relentless'),
         ];
 
-        $this->Text = clienttranslate("<p>City Reaction: After an enemy character moved from this location to a different City location • Move your performer from this location to their new one and wound the enemy character.</p>");
+        $this->Text = clienttranslate("<p><b>City Reaction:</b> After an enemy character moved from this location to a different City location • Move your performer from this location to their new one and wound the enemy character.</p>");
 
         $this->resetCard();
 

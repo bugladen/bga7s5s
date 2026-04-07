@@ -39,7 +39,7 @@ class _01035 extends Leader implements IHasActions
             clienttranslate("Eisen"),
         ];
 
-        $this->Text = clienttranslate("<p>When Kaspar parleys, he gains +2 [Infl].</p><p>City Action: Engage Kaspar • Reveal cards from the City Deck until you find a Mercenary. Kaspar may recruit it and can parley even while engaged. Sink the rest.</p>");
+        $this->Text = clienttranslate("<p>When Kaspar parleys, he gains +2 [Influence].</p><p><b>City Action:</b> Engage Kaspar • Reveal cards from the City Deck until you find a Mercenary. Kaspar may recruit it and can parley even while engaged. Sink the rest.</p>");
 
         $this->resetCard();
 

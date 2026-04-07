@@ -37,7 +37,7 @@ class _01143 extends Scheme implements IHasActions
             clienttranslate("Duress"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [The Forums]. Then, you may add another Renown to any location. If you do, discard all City Cards there.</p><hr><p>All Mercenaries have -1 [Influence].</p><p>City Action: Engage your performer • Pressure with [Influence]. You succeed even if tied. If successful, claim the location.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to [The Forums]. Then, you may add another Renown to any location. If you do, discard all City Cards there.</p><hr><p>All Mercenaries have -1 [Influence].</p><p><b>City Action:</b> Engage your performer • Pressure with [Influence]. You succeed even if tied. If successful, claim the location.</p>");
 
         $this->resetCard();
 

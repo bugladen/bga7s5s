@@ -39,7 +39,7 @@ class _01046 extends FactionAttachment implements IHasActions
             clienttranslate('Unique'),
         ];
 
-        $this->Text = clienttranslate("<p>Action: Engage this card • Wound the equipped performer and move them to an adjacent location.</p><p>Action: Engage this card • The equipped performer heals a wound.</p>");
+        $this->Text = clienttranslate("<p><b>Action:</b> Engage this card • Wound the equipped performer and move them to an adjacent location.</p><p><b>Action:</b> Engage this card • The equipped performer heals a wound.</p>");
 
         $this->resetCard();
 

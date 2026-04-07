@@ -43,7 +43,7 @@ class _01064 extends Character implements IHasActions
             clienttranslate("Castille"),
         ];
 
-        $this->Text = clienttranslate("<p>While an opponent has more Renown than you, Guillén gains +1 [Com].</p><p>City Action: Discard a card • Move an adjacent Renown to this location.</p>");
+        $this->Text = clienttranslate("<p>While an opponent has more Renown than you, Guillén gains +1 [Combat].</p><p><b>City Action:</b> Discard a card • Move an adjacent Renown to this location.</p>");
 
         $this->resetCard();
 

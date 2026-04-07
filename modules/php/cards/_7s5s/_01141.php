@@ -33,7 +33,7 @@ class _01141 extends Risk implements IHasActions
             clienttranslate('Kulachniy Boi'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Pressure your performer's location with [Combat]. If successful, claim it.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Pressure your performer's location with [Combat]. If successful, claim it.</p>");
 
         $this->resetCard();
 

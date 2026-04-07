@@ -39,7 +39,7 @@ class _01071 extends Scheme implements IHasActions
             clienttranslate("Glory"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to any location.</p><hr><p>While your Musketeers are at a location with two or more Renown, they gain +1[Inf].</p><p>Musketeer City Action: Your performer issues a [com] challenge to target opposing character. It cannot be refused. The first participant to wound their adversary steals a Renown from them.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to any location.</p><hr><p>While your Musketeers are at a location with two or more Renown, they gain +1[Influence].</p><p><b>Musketeer City Action:</b> Your performer issues a [Combat] challenge to target opposing character. It cannot be refused. The first participant to wound their adversary steals a Renown from them.</p>");
 
         $this->resetCard();
 

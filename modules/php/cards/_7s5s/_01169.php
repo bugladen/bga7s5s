@@ -34,7 +34,7 @@ class _01169 extends Risk
             clienttranslate('Ad Hoc'),
         ];
 
-        $this->Text = clienttranslate("<p>Forced: When your round ends • Wound your participant and move them Home engaged.</p>");
+        $this->Text = clienttranslate("<p><b>Forced:</b> When your round ends • Wound your participant and move them Home engaged.</p>");
 
         $this->resetCard();
 

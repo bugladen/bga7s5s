@@ -37,7 +37,7 @@ class _01157 extends FactionAttachment implements IHasTechniques
             clienttranslate('Knife'),
         ];
 
-        $this->Text = clienttranslate("<p>Technique: Destroy this card • +1 Thrust.</p>");
+        $this->Text = clienttranslate("<p><b>Technique:</b> Destroy this card • +1 Thrust.</p>");
 
         $this->resetCard();
 

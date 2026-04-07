@@ -37,7 +37,7 @@ class _01055 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTarget
             clienttranslate('Ranged'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: If your performer is equipped with a Ranged Weapon • Move target opposing character to an adjacent City location.</p><p>Maneuver: If your participant is equipped with a Ranged Weapon • Wound the adversary.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> If your performer is equipped with a Ranged Weapon • Move target opposing character to an adjacent City location.</p><p><b>Maneuver:</b> If your participant is equipped with a Ranged Weapon • Wound the adversary.</p>");
 
         $this->resetCard();
 

@@ -31,7 +31,7 @@ class _01165 extends Risk implements IHasManeuvers
             clienttranslate('Prepared'),
         ];
 
-        $this->Text = clienttranslate("<p>Maneuver: Copy the effects of a Technique on the adversary or one of their equipped attachments.</p>");
+        $this->Text = clienttranslate("<p><b>Maneuver:</b> Copy the effects of a Technique on the adversary or one of their equipped attachments.</p>");
 
         $this->resetCard();
 

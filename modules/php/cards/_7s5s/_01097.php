@@ -37,7 +37,7 @@ class _01097 extends Character implements IHasActions, IHasReactions
             clienttranslate("Aragosta"),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Target an opposing character • If their controller has fewer cards in hand than you, engage them.</p><p>Reaction: After an opponent discards a card due to your effect • Draw a card.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Target an opposing character • If their controller has fewer cards in hand than you, engage them.</p><p><b>Reaction:</b> After an opponent discards a card due to your effect • Draw a card.</p>");
 
         $this->Actions = [
             new Action_01097(),

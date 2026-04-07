@@ -38,7 +38,7 @@ class _01131 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTarget
             clienttranslate('Kulachniy Boi'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Your unequipped performer issues a [combat] challenge to target opposing character.</p><p>Maneuver: Wound each participant equipped with an attachment.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Your unequipped performer issues a [Combat] challenge to target opposing character.</p><p><b>Maneuver:</b> Wound each participant equipped with an attachment.</p>");
 
         $this->resetCard();
 

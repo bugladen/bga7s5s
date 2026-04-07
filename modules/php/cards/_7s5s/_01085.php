@@ -41,7 +41,7 @@ class _01085 extends Risk implements IHasActions
             clienttranslate('Unique'),
         ];
 
-        $this->Text = clienttranslate("<p>Forced: When played during a duel and if you control a Sorcerer • Wound them. Move your participant to their location and discard all your threat. (Immediately after playing.)</p><p>Sorcerer Action: Wound your performer • Move target character you control to your performer's location. Repeatable.</p>");
+        $this->Text = clienttranslate("<p><b>Forced:</b> When played during a duel and if you control a Sorcerer • Wound them. Move your participant to their location and discard all your threat. (Immediately after playing.)</p><p><b>Sorcerer Action:</b> Wound your performer • Move target character you control to your performer's location. Repeatable.</p>");
 
         $this->resetCard();
 

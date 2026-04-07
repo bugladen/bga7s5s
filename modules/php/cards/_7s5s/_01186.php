@@ -44,7 +44,7 @@ class _01186 extends CityCharacter
             clienttranslate('Ashur'),
         ];
 
-        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Forced: The first time a risk targets Maryam each Day • Cancel the effects. (Costs are still paid.)</p><p>Technique: During the adversary's next round, they cannot use Maneuvers.</p>");
+        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p><b>Forced:</b> The first time a risk targets Maryam each Day • Cancel the effects. (Costs are still paid.)</p><p><b>Technique:</b> During the adversary's next round, they cannot use Maneuvers.</p>");
 
         $this->resetCard();
 

@@ -37,7 +37,7 @@ class _01124 extends Character implements IHasActions, IHasReactions
             clienttranslate("Ussura"),
         ];
 
-        $this->Text = clienttranslate("<p>Sorcerer Action: Engage Ved'ma • Play target Sorcery in your discard pile as if it was in your hand. After it resolves, send it to The Locker.</p><p>Reaction: After you play a Sorcery from your hand that engaged Ved'ma • En garde her.</p>");
+        $this->Text = clienttranslate("<p><b>Sorcerer Action:</b> Engage Ved'ma • Play target Sorcery in your discard pile as if it was in your hand. After it resolves, send it to The Locker.</p><p><b>Reaction:</b> After you play a Sorcery from your hand that engaged Ved'ma • En garde her.</p>");
 
         $this->resetCard();
 

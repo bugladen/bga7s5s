@@ -37,7 +37,7 @@ class _01156 extends FactionAttachment implements IHasActions
             clienttranslate('Rifle'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Discard a card • Target character at an adjacent City location may engage. If they do not, wound them. (They cannot engage if they are already engaged.)</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Discard a card • Target character at an adjacent City location may engage. If they do not, wound them. (They cannot engage if they are already engaged.)</p>");
 
         $this->resetCard();
 

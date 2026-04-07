@@ -34,7 +34,7 @@ class _01028 extends Risk implements IHasActions
             clienttranslate('Gang'),
         ];
 
-        $this->Text = clienttranslate("<p>Action: Pressure target City location with [Inf]. You may move any number of your performing adjacent Thugs to it. Add +1 to your total for each Thug moved this way. If successful, claim the location.</p>");
+        $this->Text = clienttranslate("<p><b>Action:</b> Pressure target City location with [Influence]. You may move any number of your performing adjacent Thugs to it. Add +1 to your total for each Thug moved this way. If successful, claim the location.</p>");
 
         $this->resetCard();
 

@@ -38,7 +38,7 @@ class _01011 extends Character implements IHasActions, IHasTechniques
             clienttranslate("Vodacce"),
         ];
 
-        $this->Text = clienttranslate("<p>Servo may issue challenges to characters opposing your Red Hands at locations adjacent to him. When he does, move him there.</p><p>Technique: +1 [Thrust] for each of your other Red Hands at this location.</p>");
+        $this->Text = clienttranslate("<p>Servo may issue challenges to characters opposing your Red Hands at locations adjacent to him. When he does, move him there.</p><p><b>Technique:</b> +1 [Thrust] for each of your other Red Hands at this location.</p>");
 
         $this->resetCard();
 

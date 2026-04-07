@@ -31,7 +31,7 @@ class _01163 extends Risk implements IHasActions
             clienttranslate('Faith'),
         ];
 
-        $this->Text = clienttranslate("<p>Action: Look at the top three cards of your deck. Sink one, put one into your hand, and add the last to a location facedown. At the end of the day, if you control that location, put the added card into your hand. Otherwise, discard it.</p>");
+        $this->Text = clienttranslate("<p><b>Action:</b> Look at the top three cards of your deck. Sink one, put one into your hand, and add the last to a location facedown. At the end of the day, if you control that location, put the added card into your hand. Otherwise, discard it.</p>");
 
         $this->resetCard();
 

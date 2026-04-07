@@ -34,7 +34,7 @@ class _01010 extends Character implements IHasTechniques
             clienttranslate("Vodacce"),
         ];
 
-        $this->Text = clienttranslate("<p>When Sarafina gambles, reveal an additional card.</p><p>Technique: Look at the top card of the adversary's deck, or two cards instead if you control a Strega at this location. Sink any number of them.</p>");
+        $this->Text = clienttranslate("<p>When Sarafina gambles, reveal an additional card.</p><p><b>Technique:</b> Look at the top card of the adversary's deck, or two cards instead if you control a Strega at this location. Sink any number of them.</p>");
 
         $this->resetCard();
 

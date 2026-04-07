@@ -37,7 +37,7 @@ class _01147 extends Scheme implements IHasActions
             clienttranslate("Market"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [The Grand Bazaar] and [The Forums].</p><p>Reveal cards from the City Deck until you find an attachment. Add it to [The Grand Bazaar]. Sink the rest.</p><hr><p>City Action: Your performer equips target attachment from [The Grand Bazaar]. If they are at [The Grand Bazaar], it has -1 cost.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to [The Grand Bazaar] and [The Forums].</p><p>Reveal cards from the City Deck until you find an attachment. Add it to [The Grand Bazaar]. Sink the rest.</p><hr><p><b>City Action:</b> Your performer equips target attachment from [The Grand Bazaar]. If they are at [The Grand Bazaar], it has -1 cost.</p>");
 
         $this->resetCard();
 

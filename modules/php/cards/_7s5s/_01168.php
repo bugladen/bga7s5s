@@ -32,7 +32,7 @@ class _01168 extends Risk implements IHasActions
             clienttranslate('Savvy'),
         ];
 
-        $this->Text = clienttranslate("<p>Action: Spend a Renown • Draw two cards. Send this card to The Locker.</p>");
+        $this->Text = clienttranslate("<p><b>Action:</b> Spend a Renown • Draw two cards. Send this card to The Locker.</p>");
 
         $this->resetCard();
 

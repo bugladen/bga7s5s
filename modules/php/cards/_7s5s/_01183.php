@@ -27,7 +27,7 @@ class _01183 extends CityEventCard
             clienttranslate('Feud'),
         ];
 
-        $this->Text = clienttranslate("<p>During a duel, participants at this location have -1[parry] on their combat cards.</p><p>Pressures at this location also add [Combat]. (Pressures using Combat do not add Combat again.)</p>");
+        $this->Text = clienttranslate("<p>During a duel, participants at this location have -1[Parry] on their combat cards.</p><p>Pressures at this location also add [Combat]. (Pressures using Combat do not add Combat again.)</p>");
 
         $this->resetCard();
     }

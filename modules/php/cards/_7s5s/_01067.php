@@ -36,7 +36,7 @@ class _01067 extends Character
             clienttranslate("Montaigne"),
         ];
 
-        $this->Text = clienttranslate("<p>Your other Musketeers at Jean's location gain \"Technique: +1 Riposte.\"</p><p>Technique: +1[Thrust]. If you control another Musketeer at this location, you may +1[Riposte] instead.</p>");
+        $this->Text = clienttranslate("<p>Your other Musketeers at Jean's location gain \"<b>Technique:</b> +1 Riposte.\"</p><p><b>Technique:</b> +1[Thrust]. If you control another Musketeer at this location, you may +1[Riposte] instead.</p>");
 
         $this->resetCard();
         

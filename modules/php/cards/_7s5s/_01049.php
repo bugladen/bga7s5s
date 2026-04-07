@@ -42,7 +42,7 @@ class _01049 extends FactionAttachment implements IHasActions, IHasTechniques
             clienttranslate('Pistol'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Target an opposing character • They may engage. If they do not, wound them and engage this card.</p><p>Technique: Engage this card • Gain Lethal.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Target an opposing character • They may engage. If they do not, wound them and engage this card.</p><p><b>Technique:</b> Engage this card • Gain Lethal.</p>");
 
         $this->resetCard();
 

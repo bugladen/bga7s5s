@@ -39,7 +39,7 @@ class _01199 extends CityCharacter implements IHasReactions
             clienttranslate('Maghreb'),
         ];
 
-        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Reaction: After a duel, if your character that participated is at Takama's location • Heal a wound from them.</p>");
+        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p><b>Reaction:</b> After a duel, if your character that participated is at Takama's location • Heal a wound from them.</p>");
 
         $this->resetCard();
 

@@ -36,7 +36,7 @@ class _01111 extends Risk implements IHasActions
             clienttranslate('Scholarship'),
         ];
 
-        $this->Text = clienttranslate("<p>Action: Choose three cards with different names in your discard pile • An opponent of your choice puts one of them into your hand. Send this card to The Locker.</p>");
+        $this->Text = clienttranslate("<p><b>Action:</b> Choose three cards with different names in your discard pile • An opponent of your choice puts one of them into your hand. Send this card to The Locker.</p>");
 
         $this->resetCard();
 

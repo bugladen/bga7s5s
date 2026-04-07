@@ -40,7 +40,7 @@ class _01196 extends CityCharacter implements IHasReactions
             clienttranslate('Montaigne'),
         ];
 
-        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>When Angeline would engage from moving, you may discard a card instead of engaging her.</p><p>Technique: If Angeline has equal or greater [combat] and [inf] than the adversary • +1 Riposte</p>");
+        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>When Angeline would engage from moving, you may discard a card instead of engaging her.</p><p><b>Technique:</b> If Angeline has equal or greater [Combat] and [Influence] than the adversary • +1 Riposte</p>");
 
         $this->resetCard();
 

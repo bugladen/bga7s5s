@@ -43,7 +43,7 @@ class _01033 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTarget
             clienttranslate('Ambrogia'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Your performer issues an [inf] challenge to target opposing character.</p><p>Maneuver: If you have more [Influence] than the adversary • Move them Home.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Your performer issues an [Influence] challenge to target opposing character.</p><p><b>Maneuver:</b> If you have more [Influence] than the adversary • Move them Home.</p>");
 
         $this->resetCard();
 

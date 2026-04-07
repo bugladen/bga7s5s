@@ -37,7 +37,7 @@ class _01100 extends FactionAttachment implements IHasReactions
             clienttranslate('Unique'),
         ];
 
-        $this->Text = clienttranslate("<p>Reaction: When a character at this location accepts a challenge, engage this card • For the rest of the duel, while the adversary is at this location, they reveal one less card when gambling.</p>");
+        $this->Text = clienttranslate("<p><b>Reaction:</b> When a character at this location accepts a challenge, engage this card • For the rest of the duel, while the adversary is at this location, they reveal one less card when gambling.</p>");
 
         $this->resetCard();
 

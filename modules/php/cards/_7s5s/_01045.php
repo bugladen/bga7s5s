@@ -38,7 +38,7 @@ class _01045 extends Scheme implements IHasReactions
             clienttranslate("Prepared"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [The Forums].</p><p>Put target Mercenary from the City Deck discard pile on top of the City Deck.</p><hr><p>Your Leader gains +1[inf] while parleying with a Mercenary.</p><p>Reaction: At the end of High Drama, if there are no available Mercenaries and attachments • Gain a Renown.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to [The Forums].</p><p>Put target Mercenary from the City Deck discard pile on top of the City Deck.</p><hr><p>Your Leader gains +1[Influence] while parleying with a Mercenary.</p><p><b>Reaction:</b> At the end of High Drama, if there are no available Mercenaries and attachments • Gain a Renown.</p>");
 
         $this->resetCard();
 

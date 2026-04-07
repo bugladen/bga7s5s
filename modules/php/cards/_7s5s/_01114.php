@@ -32,7 +32,7 @@ class _01114 extends Risk implements IHasManeuvers
             clienttranslate('Cheating'),
         ];
 
-        $this->Text = clienttranslate("<p>Maneuver: Gamble for free and reveal an additional card if your participant is a Scoundrel. Add the chosen card's combat values to this one instead of playing it. Sink all gambled cards. (Gambling for free does not count against your total gambles in a duel.)</p>");
+        $this->Text = clienttranslate("<p><b>Maneuver:</b> Gamble for free and reveal an additional card if your participant is a Scoundrel. Add the chosen card's combat values to this one instead of playing it. Sink all gambled cards. (Gambling for free does not count against your total gambles in a duel.)</p>");
 
         $this->resetCard();
 

@@ -33,7 +33,7 @@ class _01091 extends Character implements IHasActions
             clienttranslate("Castille"),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Target a character at this location, or two characters instead by discarding a card • Heal a wound from each targeted character.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Target a character at this location, or two characters instead by discarding a card • Heal a wound from each targeted character.</p>");
 
         $this->resetCard();
 

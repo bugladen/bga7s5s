@@ -38,7 +38,7 @@ class _01059 extends Risk implements IHasActions, IHasManeuvers
             clienttranslate('Prepared'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Move your performer to an adjacent City location.</p><p>Maneuver: When your round ends, move your participant to an adjacent City location.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Move your performer to an adjacent City location.</p><p><b>Maneuver:</b> When your round ends, move your participant to an adjacent City location.</p>");
 
         $this->resetCard();
 

@@ -45,7 +45,7 @@ class _01047 extends FactionAttachment implements IHasReactions, IHasTechniques
             clienttranslate('Unique'),
         ];
 
-        $this->Text = clienttranslate("<p>Offhand. This card cannot be moved.</p><p>Reaction: When the equipped participant's adversary announces a Technique • Cancel its effects.</p><p>Technique: If the equipped character has a Melee Weapon • +1 [Riposte].</p>");
+        $this->Text = clienttranslate("<p>Offhand. This card cannot be moved.</p><p><b>Reaction:</b> When the equipped participant's adversary announces a Technique • Cancel its effects.</p><p><b>Technique:</b> If the equipped character has a Melee Weapon • +1 [Riposte].</p>");
 
         $this->resetCard();
 

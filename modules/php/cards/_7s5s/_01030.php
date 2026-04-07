@@ -36,7 +36,7 @@ class _01030 extends Risk implements IHasActions
             clienttranslate('Unique'),
         ];
 
-        $this->Text = clienttranslate("<p>Sorcerer Strega Action: Engage your opposed performer • Pressure their location with [Inf]. Target opposing character adds to your total instead. If successful, claim the location.</p>");
+        $this->Text = clienttranslate("<p><b>Sorcerer Strega Action:</b> Engage your opposed performer • Pressure their location with [Influence]. Target opposing character adds to your total instead. If successful, claim the location.</p>");
  
         $this->resetCard();
 

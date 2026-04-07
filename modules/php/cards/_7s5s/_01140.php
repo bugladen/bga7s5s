@@ -32,7 +32,7 @@ class _01140 extends Risk implements IHasReactions
             clienttranslate('Hubris'),
         ];
 
-        $this->Text = clienttranslate("<p>Reaction: Before your character moves • Cancel their movement. (Even during Dusk.)</p>");
+        $this->Text = clienttranslate("<p><b>Reaction:</b> Before your character moves • Cancel their movement. (Even during Dusk.)</p>");
 
         $this->resetCard();
 
