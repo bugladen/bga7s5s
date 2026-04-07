@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCar
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01193 extends Technique
@@ -42,6 +43,14 @@ class Technique_01193 extends Technique
             $this->ReduceAdversaryThrust = true;
         }
 
+        if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)
+        {
+            $this->ReduceAdversaryThrust = false;
+            $attachment = $this->getOwningCard($event->theah);
+            if ($attachment instanceof Attachment)
+                $attachment->IsUpdated = true;
+        }
+
         //Reduce the opponent's Thrust by 1 if the technique is activated
         if ($event instanceof EventDuelCalculateCombatCardStats && $this->ReduceAdversaryThrust)
         {
@@ -53,7 +62,7 @@ class Technique_01193 extends Technique
                 $character = $this->getOwningCharacter($event->theah);
                 if ($character->Id == $event->adversaryId)
                 {
-                    $event->explanations[] = $event->theah->game->translate($attachment->getInjectCode());
+                    $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the Adversary's Thrust by %d"), $attachment->getInjectCode(), 1);
                     $event->removeThrust(1);
                     $this->ReduceAdversaryThrust = false;
                     $attachment->IsUpdated = true;
