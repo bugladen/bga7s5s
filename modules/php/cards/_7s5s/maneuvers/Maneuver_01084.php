@@ -73,7 +73,7 @@ class Maneuver_01084 extends Maneuver
         {
             $owner = $this->getOwningCard($event->theah);
             $event->riposte += 1;
-            $event->explanations[] = $owner->Name;
+            $event->explanations[] = sprintf($event->theah->game->translate("%s adds 1 Riposte."), $owner->getInjectCode());
         }
 
         if ($event instanceof EventDuelCalculateCombatCardStats && $this->IncreaseAdversaryThrust)
