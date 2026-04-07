@@ -1381,9 +1381,6 @@ body {
     
     #approachDeck-container {
         background: #c9a87c !important;
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-        -webkit-overflow-scrolling: touch;
     }
     
     #approachDeck {
@@ -1392,9 +1389,10 @@ body {
         flex-wrap: nowrap !important;
         gap: 8px !important;
         padding: 5px !important;
-        width: max-content !important;
-        min-width: 100%;
         height: auto !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
     }
     
     #approachDeck .stockitem {
