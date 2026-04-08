@@ -1282,15 +1282,14 @@ trait FrameworkActionsTrait
             $engageRequired = false;
         }
 
+        $this->theah->queueEvent($interveneEvent);
+
         if ($engageRequired)
         {
-            // Intervening character is now engaged
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $character->Id);
             $this->theah->eventCheck($engageEvent);
             $this->theah->queueEvent($engageEvent);
         }
-        
-        $this->theah->queueEvent($interveneEvent);
 
         $this->globals->set(GAME::CHALLENGE_ACCEPTED, true);
 

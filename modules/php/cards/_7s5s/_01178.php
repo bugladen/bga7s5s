@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
@@ -68,20 +69,37 @@ class _01178 extends CityCharacter
 
         if ($event instanceof EventCharacterIntervened && $event->newTargetId == $this->Id && $this->Engaged)
         {
-            $this->AbilityUsed = true;
-            $this->IsUpdated = true;
+            $this->setAbilityUsed($event->theah->game);
         }
 
         if ($event instanceof EventChallengeIssued && $event->challengerId == $this->Id && $this->Engaged)
         {
-            $this->AbilityUsed = true;
-            $this->IsUpdated = true;
+            $this->setAbilityUsed($event->theah->game);
         }
 
         if ($event instanceof EventDuskEndOfDay)
         {
-            $this->AbilityUsed = false;
-            $this->IsUpdated = true;
+            $this->clearAbilityUsed($event->theah->game);
         }
+    }
+
+    private function setAbilityUsed(Game $game): void
+    {
+        $this->AbilityUsed = true;
+        $this->addCondition(Game::CARMELLA_ABILITY_USED);
+        $this->IsUpdated = true;
+        $game->notify->all("carmellaAbilityUsed", '', [
+            "cardId" => $this->Id,
+        ]);
+    }
+
+    private function clearAbilityUsed(Game $game): void
+    {
+        $this->AbilityUsed = false;
+        $this->removeCondition(Game::CARMELLA_ABILITY_USED);
+        $this->IsUpdated = true;
+        $game->notify->all("carmellaAbilityRemoved", '', [
+            "cardId" => $this->Id,
+        ]);
     }
 }

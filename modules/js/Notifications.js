@@ -72,6 +72,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['locationUncontrolled', 500],
             ['maryamBenuPleromaAbilityUsed', 500],
             ['maryamBenuPleromaAbilityRemoved', 500],
+            ['carmellaAbilityUsed', 1],
+            ['carmellaAbilityRemoved', 1],
             ['indomitableWillConditionStarted', 500],
             ['indomitableWillConditionEnded', 500],
             ['maneuverUsed', 1],
@@ -1524,6 +1526,44 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
             const id = `${args.cardId}_maryam_benu_pleroma_ability_used`;
             dojo.destroy(id);    
+        }
+    },
+
+    notif_carmellaAbilityUsed: function( notif )
+    {
+        debug( 'notif_carmellaAbilityUsed' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions.push(this.CARMELLA_ABILITY_USED);
+
+            const imageElement = dojo.query('._7sfs-card', card.divId)[0];
+            const id = `${card.divId}_carmella_ability_used`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: '_7sfs-carmella-ability-used-chip',
+            }),  imageElement, 'last');
+
+            this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Carmella's once-per-Day ability has been used")}</div>` );
+        }
+    },
+
+    notif_carmellaAbilityRemoved: function( notif )
+    {
+        debug( 'notif_carmellaAbilityRemoved' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.CARMELLA_ABILITY_USED);
+
+            const id = `${card.divId}_carmella_ability_used`;
+            dojo.destroy(id);
         }
     },
 

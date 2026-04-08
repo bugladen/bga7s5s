@@ -363,6 +363,20 @@ body {
     border: 2px solid orangered
 }
 
+._7sfs-carmella-ability-used-chip {
+    position: absolute;
+    background-image: url('https://dtdb.co/images/7s5s/en/01178.jpg');
+    background-size: 247px 337px;
+    background-position: -154px -69px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: inline-block;
+    left: 80px;
+    top: 30px;
+    border: 2px solid orangered
+}
+
 ._7sfs-indomitable-will-condition-chip {
     position: absolute;
     background-image: url('https://dtdb.co/images/7s5s/en/01130.jpg');

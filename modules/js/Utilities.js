@@ -724,6 +724,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }),  `${divId}_image`, 'last');
             this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Maryam Benu Pleroma Ability Used")}</div>` );
         }
+        if (character.conditions.includes(this.CARMELLA_ABILITY_USED)) {
+            const id = `${divId}_carmella_ability_used`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: '_7sfs-carmella-ability-used-chip',
+            }),  `${divId}_image`, 'last');
+            this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Carmella's once-per-Day ability has been used")}</div>` );
+        }
         if (character.conditions.includes(this.INDOMITABLE_WILL_CONDITION)) {
             //Get the first child of element divId
             const id = `${divId}_indomitable_will_condition`;
