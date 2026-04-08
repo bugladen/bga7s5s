@@ -53,6 +53,11 @@ class Action_01198 extends AttachmentAction implements IAbilityThatTargetsCharac
         $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
         $performer = $game->theah->getCharacterById($performerId);
 
+        if ($character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("You cannot challenge a character that is controlled by you.")];
+        }
+
         if ($character->Location != $performer->Location)
         {
             return [false, $game->translate("Character is not at the same location as the performer")];
