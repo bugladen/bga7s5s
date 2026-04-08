@@ -32,10 +32,10 @@ class Action_01197 extends CharacterAction
             return false;
         }
 
-        //There has to be at least two other friendly characters at her location with an attachment
         $characters = $theah->getCharactersAtLocation($kalla->Location);
-        $characters = array_filter($characters, fn($character) => $character->ControllerId == $kalla->ControllerId && count($character->Attachments) > 0);
-        if (count($characters) < 1)
+        $friendlyCharacters = array_filter($characters, fn($character) => $character->ControllerId == $kalla->ControllerId);
+        $friendlyWithAttachments = array_filter($friendlyCharacters, fn($character) => count($character->Attachments) > 0);
+        if (count($friendlyCharacters) < 2 || count($friendlyWithAttachments) < 1)
         {
             return false;
         }
@@ -195,11 +195,16 @@ class Action_01197 extends CharacterAction
                 throw new \BgaUserException($game->translate("Target character is not at Kalla's location."));
             }
 
+            $fromCharacterId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            if ($id == $fromCharacterId)
+            {
+                throw new \BgaUserException($game->translate("Target character cannot be the same as the source character."));
+            }
+
             $this->announceAction($game);
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
 
-            $fromCharacterId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $fromCharacter = $game->theah->getCharacterById($fromCharacterId);
             $chosenCharacter = $game->theah->getCharacterById($id);
 
