@@ -61,7 +61,7 @@ class Reaction_01202 extends AttachmentReaction
             } 
         }
 
-        if ($event instanceof EventDuelEnd && $this->ownerIsAttached($event->theah) && $this->isAvailable() && $this->WaitAfterDuel)
+        if ($event instanceof EventDuelEnd && $this->ownerIsAttached($event->theah) && $this->WaitAfterDuel)
         {
             $this->saveCharacter($event->theah->game);
         }
@@ -110,6 +110,7 @@ class Reaction_01202 extends AttachmentReaction
 
         if ($reactionId == 'saveCharacter')
         {
+            $this->setUsed($game->theah, true);
 
             $inDuel = $game->theah->game->globals->get(Game::IN_DUEL);
             if ($inDuel)
