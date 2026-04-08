@@ -34,7 +34,6 @@ class Action_01191 extends AttachmentAction
             ]);
 
             $characters = $event->theah->getCharactersAtLocation($location);
-            // Filter out characters are not leaders
             $characters = array_filter($characters, fn($character) => ! $character->hasTrait("Leader"));
 
             $unequippedEvent = EventFactory::createAttachmentUnequippedEvent($event->playerId, $owner->Id, $duckfootPistol->Id);
