@@ -45,7 +45,7 @@ class Reaction_01203 extends CardReaction
 
         if ($defenderThreat > 0)
         {
-            $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('-1 Threat to %s (Current Threat: %d)'), $defender->Name, $defenderThreat), 'removeThreatDefender');
+            $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('-1 Threat from %s (Current Threat: %d)'), $defender->Name, $defenderThreat), 'removeThreatDefender');
         }
 
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
@@ -87,11 +87,11 @@ class Reaction_01203 extends CardReaction
         $defenderId = $game->theah->getDuelDefenderId();
         $defender = $game->theah->getCharacterById($defenderId);
 
-        $playerName = $game->getActivePlayerName();
+        $playerName = $game->getPlayerNameById($leja->ControllerId);
 
         if ($reactionId == 'addThreatChallenger')
         {
-            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to add 1 Threat to ${challenger_inject_code}.'), [
+            $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to add 1 Threat to ${challenger_inject_code}.'), [
                 "owner_inject_code" => $leja->getInjectCode(),
                 "player_name" => $playerName,
                 "challenger_inject_code" => $challenger->getInjectCode(),
@@ -103,7 +103,7 @@ class Reaction_01203 extends CardReaction
 
         if ($reactionId == 'addThreatDefender')
         {
-            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to add 1 Threat to ${defender_inject_code}.'), [
+            $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to add 1 Threat to ${defender_inject_code}.'), [
                 "owner_inject_code" => $leja->getInjectCode(),
                 "player_name" => $playerName,
                 "defender_inject_code" => $defender->getInjectCode(),
@@ -115,7 +115,7 @@ class Reaction_01203 extends CardReaction
         
         if ($reactionId == 'removeThreatChallenger')
         {
-            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to remove 1 Threat to ${challenger_inject_code}.'), [
+            $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to remove 1 Threat from ${challenger_inject_code}.'), [
                 "owner_inject_code" => $leja->getInjectCode(),
                 "player_name" => $playerName,
                 "challenger_inject_code" => $challenger->getInjectCode(),
@@ -127,7 +127,7 @@ class Reaction_01203 extends CardReaction
         
         if ($reactionId == 'removeThreatDefender')
         {
-            $game->notifyAllPlayers("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to remove 1 Threat to ${defender_inject_code}.'), [
+            $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to remove 1 Threat from ${defender_inject_code}.'), [
                 "owner_inject_code" => $leja->getInjectCode(),
                 "player_name" => $playerName,
                 "defender_inject_code" => $defender->getInjectCode(),
@@ -137,7 +137,10 @@ class Reaction_01203 extends CardReaction
             $game->theah->queueEvent($event);
         }
 
-        $this->setUsed($game->theah, true);
+        if ($reactionId != 'pass')
+        {
+            $this->setUsed($game->theah, true);
+        }
 
         $game->gamestate->nextState("done");        
 
