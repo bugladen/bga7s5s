@@ -155,6 +155,9 @@ class Action_01205 extends CharacterAction implements IAbilityThatTargetsCharact
             $giacintoEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Id, $this->Id);
             $game->theah->eventCheck($giacintoEngageEvent);
 
+            $victimEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $victim->Id, $giacinto->Id, $this->Id);
+            $game->theah->eventCheck($victimEngageEvent);
+
             $giacintoMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Location, $location->Name, false, $giacinto->Id, $this->Id);
             $game->theah->eventCheck($giacintoMoveEvent);
 
@@ -162,6 +165,7 @@ class Action_01205 extends CharacterAction implements IAbilityThatTargetsCharact
             $game->theah->eventCheck($victimMoveEvent);
 
             $game->theah->queueEvent($giacintoEngageEvent);
+            $game->theah->queueEvent($victimEngageEvent);
 
             $game->theah->queueEvent($giacintoMoveEvent);
             $game->theah->queueEvent($victimMoveEvent);
