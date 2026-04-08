@@ -62,7 +62,7 @@ class Action_01192 extends CharacterAction
 
             $event->theah->game->notify->all('message', clienttranslate('${player_name} uses Gustavo\'s Action to reveal Risks from their deck.  ${found} Risks have been revealed. (${names})'), [
                 'i18n' => ['card_name'],
-                'player_name' => $event->theah->game->getActivePlayerName(),
+                'player_name' => $event->theah->game->getPlayerNameById($gustavo->ControllerId),
                 'card_name' => $gustavo->Name,
                 'count' => $count,
                 'found' => $found,
@@ -107,11 +107,21 @@ class Action_01192 extends CharacterAction
      
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192_3)
         {
-            $game->notify->all("message", clienttranslate('${player_name} chooses not to put any Risks into their Faction Hand.'), [
-                "player_name" => $game->getActivePlayerName(),
+            $gustavo = $this->getOwningCharacter($game->theah);
+
+            $game->notify->all("message", clienttranslate('${player_name} chooses not to put any Risks into their Faction Hand. The cards have been sunk.'), [
+                "player_name" => $game->getPlayerNameById($gustavo->ControllerId),
             ]);
 
-            $gustavo = $this->getOwningCharacter($game->theah);
+            $count = $gustavo->ModifiedInfluence;
+
+            $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($gustavo->ControllerId, $count);
+            foreach ($deckCards as $deckCard) 
+            {
+                $event = EventFactory::createCardAddedToFactionDeckEvent($gustavo->ControllerId, $deckCard['id'], false);
+                $game->theah->queueEvent($event);
+            }
+
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($gustavo->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
