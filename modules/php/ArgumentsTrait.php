@@ -14,6 +14,7 @@
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 
@@ -608,6 +609,10 @@ trait ArgumentsTrait
             else if ($character instanceof _01040 && $character->hasEngardeWeaponEquipped($this->theah))
             {
                 // Rena can intervene while engaged if she has a ready weapon
+            }
+            else if ($character instanceof _01188)
+            {
+                // Vladislav can intervene while engaged
             }
             else if ($character->Engaged)
             {
