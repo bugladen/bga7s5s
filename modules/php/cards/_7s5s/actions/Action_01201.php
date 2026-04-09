@@ -64,7 +64,6 @@ class Action_01201 extends CharacterAction implements ISorcererAbility
             $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $ravenna->getInjectCode());
             $event->theah->queueEvent($addEvent);
 
-            $this->setUsed($event->theah, true);
             $this->resetPlayerPassCount($event->theah->game);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($ravenna->ControllerId);
