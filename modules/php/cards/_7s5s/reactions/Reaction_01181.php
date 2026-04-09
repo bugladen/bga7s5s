@@ -40,7 +40,8 @@ class Reaction_01181 extends AttachmentReaction
         $owner = $this->getOwningCharacter($theah);
         $id = $this->HealTargetIds[0];
         $character = $theah->getCharacterById($id);
-        if ($owner->hasTrait("Strega") && $character->Wounds > 1)
+        $effectiveWounds = $character->Wounds + ($this->characterWoundedEvent !== null ? $this->characterWoundedEvent->wounds : 0);
+        if ($owner->hasTrait("Strega") && $effectiveWounds > 1)
             $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Heal 2 Wounds'), 'heal2Wounds');    
 
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
@@ -52,7 +53,7 @@ class Reaction_01181 extends AttachmentReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCharacterBeingWounded && $this->ownerIsAttached($event->theah) && $this->isAvailable())
+        if ($event instanceof EventCharacterBeingWounded && !$event->canceled && $this->ownerIsAttached($event->theah) && $this->isAvailable())
         {
             $attachment = $this->getOwningCard($event->theah);
 
