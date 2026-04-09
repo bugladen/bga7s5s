@@ -55,14 +55,17 @@ class Action_01093 extends CharacterAction implements IAbilityThatDependsOnNotBe
             $isFirstPlayer = $game->globals->get(Game::FIRST_PLAYER) == $performer->ControllerId && ! $forcedNotFirstPlayer;
             if ($isFirstPlayer)
             {
-                $args["locationIds"] = $game->theah->getAdjacentCityLocations($performer->Location, $includeHome = true);
+                $args["locationIds"] = $game->theah->getAdjacentCityLocations($performer->Location, $includeHome = false);
             }
             else
             {
                 $locations = $game->theah->getCityLocations();
                 $locations = array_values(array_filter($locations, fn($location) => $location->Name != $performer->Location));
                 $locations = array_map(fn($location) => $location->Name, $locations);
-                $locations[] = Game::LOCATION_PLAYER_HOME;
+                if ($performer->Location != Game::LOCATION_PLAYER_HOME)
+                {
+                    $locations[] = Game::LOCATION_PLAYER_HOME;
+                }
                 $args["locationIds"] = $locations;
             }
         }
@@ -76,27 +79,36 @@ class Action_01093 extends CharacterAction implements IAbilityThatDependsOnNotBe
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01093)
         {
-            $location = $game->theah->getCityLocation($ids[0]);
-
             $owner = $this->getOwningCharacter($game->theah);
-            $isFirstPlayer = $game->globals->get(Game::FIRST_PLAYER) == $owner->ControllerId;
+            $locationName = $ids[0];
 
-            if ($isFirstPlayer)
-            {
-                $locations = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = true);
-                if ( ! in_array($location->Name, $locations))
-                {
-                    throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to %s."), $location->Name, $owner->Location));
-                }
-
-            }
-
-            if ($location->Name == $owner->Location)
+            if ($locationName == $owner->Location)
             {
                 throw new \BgaUserException($game->translate("You cannot move to the same location as Maya."));
             }
 
-            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, $location->Name, $engage = false, $owner->Id, $this->Id);
+            $forcedNotFirstPlayer = $game->globals->get(Game::OVERRIDE_AS_NOT_FIRST_PLAYER, false);
+            $isFirstPlayer = $game->globals->get(Game::FIRST_PLAYER) == $owner->ControllerId && ! $forcedNotFirstPlayer;
+
+            if ($isFirstPlayer)
+            {
+                $locations = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
+                if ( ! in_array($locationName, $locations))
+                {
+                    throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to %s."), $locationName, $owner->Location));
+                }
+            }
+            else
+            {
+                $validLocations = array_map(fn($loc) => $loc->Name, $game->theah->getCityLocations());
+                $validLocations[] = Game::LOCATION_PLAYER_HOME;
+                if ( ! in_array($locationName, $validLocations))
+                {
+                    throw new \BgaUserException(sprintf($game->translate("Location %s is not a valid location."), $locationName));
+                }
+            }
+
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, $locationName, $engage = false, $owner->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

@@ -43,8 +43,12 @@ class Technique_01093 extends Technique
             $owner = $this->getOwningCard($event->theah);
             $adversary = $event->theah->getDuelRoundOpponent();
 
-            $transition = EventFactory::createTransitionEvent($adversary->ControllerId, $owner->Id, "01093", $this->Id);
-            $event->theah->queueEvent($transition);
+            $hand = $event->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $adversary->ControllerId);
+            if (count($hand) > 0)
+            {
+                $transition = EventFactory::createTransitionEvent($adversary->ControllerId, $owner->Id, "01093", $this->Id);
+                $event->theah->queueEvent($transition);
+            }
 
             $this->setUsed($event->theah, true);
         }
@@ -82,7 +86,6 @@ class Technique_01093 extends Technique
             }
 
             $owner = $this->getOwningCharacter($game->theah);
-            $card = $game->getCardObjectFromDb($id);
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
             $game->theah->queueEvent($discardEvent);
 
