@@ -31,6 +31,11 @@ class Action_01092 extends CharacterAction implements IAbilityThatTargetsCharact
 
         $makepeace = $this->getOwningCharacter($theah);
 
+        if (! $theah->cardInCity($makepeace))
+        {
+            return false;
+        }
+
         $opposingCharacters = $theah->getCharactersAtLocation($makepeace->Location);
         $opposingCharacters = array_filter($opposingCharacters, fn($character) => $character->isNotControlledByPlayer($playerId) && $character->Engaged);
         $opposingCharacters = array_filter($opposingCharacters, fn($character) => $character->ModifiedInfluence <= $makepeace->ModifiedInfluence);
@@ -84,6 +89,11 @@ class Action_01092 extends CharacterAction implements IAbilityThatTargetsCharact
         if (! $character->Engaged)
         {
             return [false, $game->translate("Character is not engaged")];
+        }
+
+        if ($character->ModifiedInfluence > $makepeace->ModifiedInfluence)
+        {
+            return [false, $game->translate("Character has more Influence than Makepeace Botwighte")];
         }
 
         return [true, ""];
