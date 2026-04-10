@@ -4,20 +4,17 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01043;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 
-// Having the controller choose to make Uwe a Mercenary is implemented as a reaction.
-// Consider and add any situations where controller has choice to make Uwe a Mercenary.
-// Make sure to set priority of reaction transitions to max so the choice is processed before the effect.
+// WHY hasTrait override instead of a reaction: The Mercenary trait check happens during
+// isAvailableToPlayer / getPerformersForAction (card selection phase), which runs before
+// events. Reactions can only fire in response to events, so they can't pre-empt trait checks.
+// The hasTrait override with $queryCard is the only mechanism that works at selection time.
+// Callers already validate ownership (ControllerId), so no ownership check needed here.
 
-class _01043 extends Character implements IHasReactions
+class _01043 extends Character
 {
-    use ReactionTrait;
 
     public function __construct()
     {
@@ -44,10 +41,6 @@ class _01043 extends Character implements IHasReactions
         $this->Text = clienttranslate("<p>While using your abilities, Uwe may be considered a Mercenary. (For costs and effects.)</p><p>While the adversary is a Sorcerer, Uwe's combat cards gain +1 [Thrust] .</p>");
 
         $this->resetCard();
-
-        $this->Reactions = [
-            new Reaction_01043(),
-        ];
     }
 
     public function handleEvent(Event $event)
@@ -63,17 +56,10 @@ class _01043 extends Character implements IHasReactions
                 $event->addThrust(1);
             }
         }
-
-
-        // At the end of the player turn Uwe resets to not being a Mercenary
-        if ($event instanceof EventPlayerTurnEnd)
-        {
-            $this->ModifiedTraits = array_filter($this->ModifiedTraits, fn($trait) => $trait != "Mercenary");
-            $this->IsUpdated = true;
-        }
     }
 
-    // When adding new cards that query for Mercenary traits, add here if it would benefit player
+    // WHY: Cards that benefit from Uwe being a Mercenary pass themselves as $queryCard.
+    // Add new entries here when adding cards whose abilities check for Mercenary via $queryCard.
     public function hasTrait(string $trait, ?Card $queryCard = null): bool
     {
         if ($trait == "Mercenary")
