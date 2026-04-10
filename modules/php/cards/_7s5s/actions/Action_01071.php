@@ -72,6 +72,7 @@ class Action_01071 extends SchemeCityAction implements IAbilityThatTargetsCharac
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $event->theah->game->globals->set(Game::CHALLENGE_TYPE, Game::EPEE_SANGLANTE_CHALLENGE_TYPE);
+            $event->theah->game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01071", $this->Id);
             $event->theah->queueEvent($transition);
