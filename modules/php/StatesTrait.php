@@ -13,6 +13,7 @@
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01042;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01078;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
@@ -1416,15 +1417,15 @@ trait StatesTrait
         $challengerId = $result['challenger_id'];
         $defenderId = $result['defender_id'];
 
-        //See if Terrell Brandt is in the duel
+        //See if Terrell Brandt is in the duel and was not destroyed
         $challenger = $this->theah->getCharacterById($challengerId);
         $defender = $this->theah->getCharacterById($defenderId);
-        $terrellInDuel = $challenger instanceof _01042 || $defender instanceof _01042;
-        $terrell = $terrellInDuel ? ($challenger instanceof _01042 ? $challenger : $defender) : null;
+        $terrell = $challenger instanceof _01042 ? $challenger : ($defender instanceof _01042 ? $defender : null);
+        $terrellInDuel = $terrell !== null && !$this->characterIsInDiscardOrLocker($terrell);
 
         if ($terrellInDuel)
         {
-            $this->notifyAllPlayers("message", clienttranslate('${terrell_inject_code} is in the duel. Cards in his dueling line will be returned to his hand.'), [
+            $this->notifyAllPlayers("message", clienttranslate('${terrell_inject_code} is in the duel. Attachments in his dueling line will be returned to his hand.'), [
                 "terrell_inject_code" => $terrell->getInjectCode(),
             ]);
         }
@@ -1446,8 +1447,8 @@ trait StatesTrait
             $card = $this->getCardObjectFromDb($duelingLineCard['id']);
             $playerId = $card->ControllerId;
 
-            //Terrell Brandt's dueling line will be returned to his hand
-            if ($terrellInDuel && $playerId == $terrell->ControllerId)
+            //Terrell Brandt's attachments in his dueling line will be returned to his hand
+            if ($terrellInDuel && $playerId == $terrell->ControllerId && $card instanceof Attachment)
             {
                 $event = EventFactory::createCardAddedToHandEvent($playerId, $card->Id);
                 $this->theah->queueEvent($event);
