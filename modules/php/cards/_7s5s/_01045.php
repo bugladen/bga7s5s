@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
@@ -89,6 +90,16 @@ class _01045 extends Scheme implements IHasReactions
         {
             $playerId = $game->getActivePlayerId();
             $card = $game->getCardObjectFromDb($id);
+
+            if ( ! $card->hasTrait('Mercenary'))
+            {
+                throw new UserException($game->translate("Selected card is not a Mercenary."));
+            }
+
+            if ($card->Location != Game::LOCATION_CITY_DISCARD)
+            {
+                throw new UserException($game->translate("Selected card is not in the City Deck discard pile."));
+            }
     
             $removeEvent = EventFactory::createCardRemovedFromCityDiscardPileEvent($playerId, $card->Id);
             $game->theah->eventCheck($removeEvent);
