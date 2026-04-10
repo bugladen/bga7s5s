@@ -147,14 +147,19 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $attachment = $game->theah->getAttachmentById($id);
             if (! $attachment)
             {
-                throw new \BgaUserException($game->translate("Invalid attachment"));
+                throw new UserException($game->translate("Invalid attachment"));
             }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
             if( ! in_array($attachment->Id, $performer->Attachments))
             {
-                throw new \BgaUserException($game->translate("Attachment is not equipped to the performer"));
+                throw new UserException($game->translate("Attachment is not equipped to the performer"));
+            }
+
+            if ($attachment->Engaged)
+            {
+                throw new UserException($game->translate("Attachment is already engaged"));
             }
 
             $game->globals->set(Game::CHOSEN_ATTACHMENT, $attachment->Id);
@@ -191,7 +196,7 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
             {
                 if ($character->Engaged)
                 {
-                    throw new \BgaUserException($game->translate("Character is already engaged"));
+                    throw new UserException($game->translate("Character is already engaged"));
                 }
 
                 $attachmentId = $game->globals->get(Game::CHOSEN_ATTACHMENT);
@@ -207,9 +212,11 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
 
                 $aam = $this->getOwningCard($game->theah);
                 $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id, $this->Id);
+                $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 
                 $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $character->Id, $aam->Id, $this->Id);
+                $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
@@ -242,7 +249,11 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 $game->theah->eventCheck($movedHome);
                 $game->theah->queueEvent($movedHome);
 
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $game->theah->queueEvent($actionResolvedEvent);
+
                 $this->setUsed($game->theah, true);
+                $this->resetPlayerPassCount($game);
             }
 
             $game->gamestate->nextState("manipulationChosen");
