@@ -2,6 +2,8 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\GameFramework\UserException;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -35,9 +37,26 @@ class Reaction_01065 extends CardReaction
         $defenderId = $theah->game->globals->get(Game::CHOSEN_TARGET);
         $characters = $theah->getCharactersAtLocation($henri->Location);
         $characters = array_filter($characters, fn($character) => $character->ControllerId != $henri->ControllerId && $character->Id != $defenderId);
+
+        $weapons = [];
+        foreach ($henri->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getAttachmentById($attachmentId);
+            if ($attachment instanceof Attachment && $attachment->hasTrait("Weapon") && ! $attachment->Engaged)
+            {
+                $weapons[] = $attachment;
+            }
+        }
+
         foreach ($characters as $character)
         {
-            $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Prevent %s from Intervening'), $character->Name), "prevent-$character->Id");
+            foreach ($weapons as $weapon)
+            {
+                $label = count($weapons) > 1
+                    ? sprintf($theah->game->translate('Engage %s, Prevent %s'), $weapon->Name, $character->Name)
+                    : sprintf($theah->game->translate('Prevent %s from Intervening'), $character->Name);
+                $array[] = $this->createButtonProperty($theah->game, $label, "prevent-$character->Id-weapon-$weapon->Id");
+            }
         }
 
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Decline'), 'decline');
@@ -49,7 +68,7 @@ class Reaction_01065 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventChallengeIssued && ! $this->Used)
+        if ($event instanceof EventChallengeIssued && $this->isAvailable())
         {
             $henriHasWeapon = false;
             $henri = $this->getOwningCharacter($event->theah);
@@ -92,7 +111,7 @@ class Reaction_01065 extends CardReaction
             if ($event->newTargetId == $this->preventedCharacterId && $challengerId == $henri->Id)
             {
                 $newTarget = $event->theah->getCharacterById($event->newTargetId);
-                throw new \BgaUserException(sprintf($event->theah->game->translate('Henri Michelet: %s is prevented from Intervening.'), $newTarget->Name));
+                throw new UserException(sprintf($event->theah->game->translate('Henri Michelet: %s is prevented from Intervening.'), $newTarget->Name));
             }
         }
     }
@@ -106,12 +125,18 @@ class Reaction_01065 extends CardReaction
             $henri = $this->getOwningCharacter($game->theah);
             $henri->IsUpdated = true;
 
-            $characterId = str_replace("prevent-", "", $reactionId);
-            $character = $game->theah->getCharacterById($characterId);
+            // reactionId format: "prevent-{charId}-weapon-{weaponId}"
+            preg_match('/^prevent-(\d+)-weapon-(\d+)$/', $reactionId, $matches);
+            $characterId = (int) $matches[1];
+            $weaponId = (int) $matches[2];
 
+            $character = $game->theah->getCharacterById($characterId);
             $this->preventedCharacterId = $characterId;
 
-            $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and prevented ${character_name} from intervening.'), [
+            $engageEvent = EventFactory::createCardEngagedEvent($henri->ControllerId, $weaponId, $henri->Id, $this->Id);
+            $game->theah->queueEvent($engageEvent);
+
+            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and prevented ${character_name} from intervening.'), [
                 "reaction_inject_code" => $henri->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($henri->ControllerId),
                 "character_name" => $character->getInjectCode(),
