@@ -53,7 +53,11 @@ class _01063 extends Character
         if ($event instanceof EventCharacterRecruited)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if ($character->ControllerId == $this->ControllerId && $character->Location == $this->Location && $character instanceof IHasTechniques)
+            if ($character->Id != $this->Id &&
+                $character->ControllerId == $this->ControllerId && 
+                $character->Location == $this->Location && 
+                $character->Location != Game::LOCATION_PLAYER_HOME &&
+                $character instanceof IHasTechniques)
             {
                 $technique = new Technique_01063Swap();
                 $technique->setId("Technique_01063Swap");
