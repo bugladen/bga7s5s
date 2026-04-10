@@ -59,6 +59,11 @@ class _01009 extends Character implements IHasActions
             $characters = array_filter($characters, fn($character) => $character->hasTrait("Mercenary"));
             foreach ($characters as $character)
             {
+                $game = $event->theah->game;
+                $game->notify->all("message", clienttranslate('${owner_inject_code}: Added [Brute] trait to ${character_inject_code}.'), [
+                    "owner_inject_code" => $this->getInjectCode(),
+                    "character_inject_code" => $character->getInjectCode(),
+                ]);
                 $character->addTrait($event->theah->game, "Brute");
             }
         }
@@ -68,6 +73,11 @@ class _01009 extends Character implements IHasActions
             $character = $event->theah->getCharacterById($event->characterId);
             if ($character->hasTrait("Mercenary"))
             {
+                $game = $event->theah->game;
+                $game->notify->all("message", clienttranslate('${owner_inject_code}: Added [Brute] trait to ${character_inject_code}.'), [
+                    "owner_inject_code" => $this->getInjectCode(),
+                    "character_inject_code" => $character->getInjectCode(),
+                ]);
                 $character->addTrait($event->theah->game, "Brute");
             }
 
@@ -79,6 +89,11 @@ class _01009 extends Character implements IHasActions
             $characters = array_filter($characters, fn($character) => $character->hasTrait("Mercenary"));
             foreach ($characters as $character)
             {
+                $game = $event->theah->game;
+                $game->notify->all("message", clienttranslate('${owner_inject_code}: Removed [Brute] trait from ${character_inject_code}.'), [
+                    "owner_inject_code" => $this->getInjectCode(),
+                    "character_inject_code" => $character->getInjectCode(),
+                ]);
                 $character->removeTrait($event->theah->game, "Brute");
 
                 $bruteEvent = EventFactory::createCharacterLostBruteEvent($event->playerId, $character->Id);
