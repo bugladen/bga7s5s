@@ -64,20 +64,13 @@ class _01069 extends Character implements IHasActions
             }
 
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source?->Id == $this->Id || $source?->ControllerId == $this->ControllerId)
+            if ($source?->Id == $this->Id || in_array($event->sourceId, $this->Attachments))
             {
                 $sorcererAbility = false;
                 if ($event->abilityId != '')
                 {
                     $ability = $source->getAbilityById($event->abilityId);
                     if ($ability && $ability instanceof ISorcererAbility)
-                    {
-                        $sorcererAbility = true;
-                    }
-                }
-                else
-                {
-                    if ($source instanceof ISorcererAbility)
                     {
                         $sorcererAbility = true;
                     }
