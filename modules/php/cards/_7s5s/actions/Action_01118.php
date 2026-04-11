@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -77,16 +78,16 @@ class Action_01118 extends CharacterAction
             $locations = $game->theah->getAdjacentCityLocations($elina->Location, $includeHome = false);
             if ( ! in_array($location, $locations))
             {
-                throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to Location %s."), $location->Name, $elina->Location));
+                throw new UserException(sprintf($game->translate("Location %s is not adjacent to Location %s."), $location, $elina->Location));
             }
 
             $moveEvent = EventFactory::createCardMovingEvent($elina->ControllerId, $elina->Id, $elina->Location, $location, $engage = false, $elina->Id, $this->Id);
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 
-            $characters = $game->theah->getCharactersAtLocation($location);
-            $characters = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($elina->ControllerId));
-            if (count($characters) > 0 && $elina->Engaged)
+            // WHY: En garde only if opposed at destination *and* Elina is already engaged — do not en garde when she is not engaged (rules intent / design team).
+            $opposing = $game->theah->getOpposingCharactersAtLocation($location, $elina->ControllerId);
+            if (count($opposing) > 0 && $elina->Engaged)
             {
                 $engardeEvent = EventFactory::createCardEngardedEvent($elina->ControllerId, $elina->Id, $elina->Id, $this->Id);
                 $game->theah->queueEvent($engardeEvent);
