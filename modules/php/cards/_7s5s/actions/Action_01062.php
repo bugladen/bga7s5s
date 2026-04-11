@@ -26,7 +26,7 @@ class Action_01062 extends CharacterAction
 
         $odette = $this->getOwningCharacter($theah);
 
-        if ($odette->Location == Game::LOCATION_PLAYER_HOME)
+        if ( ! $theah->cardInCity($odette))
             return false;
 
         //Check if there is a duelist adjacent to Odette
