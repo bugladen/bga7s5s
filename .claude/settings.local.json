@@ -6,7 +6,8 @@
       "Bash(grep:*)",
       "Bash(git:*)",
       "Bash(rm \"C:/repos/magnus/journal/7s5s/2026-04-12-01-pavel-01120-audit.md\")",
-      "Bash(rmdir \"C:/repos/magnus/journal/7s5s\")"
+      "Bash(rmdir \"C:/repos/magnus/journal/7s5s\")",
+      "Bash(bash .githooks/pre-commit)"
     ]
   }
 }

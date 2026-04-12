@@ -418,8 +418,8 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actPass",
-            "actFromCardWithId", 
+            "actFromCardPass",
+            "actFromCardWithId",
         ],
         "transitions" => [
             "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
