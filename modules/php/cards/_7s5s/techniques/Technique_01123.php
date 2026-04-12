@@ -27,9 +27,9 @@ class Technique_01123 extends Technique
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
-            $actor = $event->theah->getDuelRoundActor();
-            $adversary = $event->theah->getDuelRoundOpponent();
-            if ($actor->Wounds < $adversary->Wounds)
+            $valeri = $event->theah->getCharacterById($event->actorId);
+            $adversary = $event->theah->getCharacterById($event->adversaryId);
+            if ($valeri->Wounds < $adversary->Wounds)
             {
                 $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds +1 Riposte due to Valeri having fewer Wounds than opponent."), $this->Name);
                 $event->riposte += 1;
