@@ -52,7 +52,7 @@ class _01016 extends Scheme implements IHasReactions
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
             $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose two city locations to place Renown onto. 
-            Then they must search their deck for a Red Hand Thug, reaveal it, and put it in their hand.'), [
+            Then they must search their deck for a Red Hand Thug, reveal it, and put it in their hand.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);
