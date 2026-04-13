@@ -350,6 +350,16 @@ onUpdateActionButtons: function( stateName, args )
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
+        'planningPhaseResolveWhenRevealedCardsChooseOrder': () => {
+            args.whenRevealedCards.forEach((card) => {
+                this.addActionButton(
+                    `actChooseWhenRevealedCard_${card.cardId}`,
+                    `${card.playerName}: ${card.cardName}`,
+                    () => this.bgaPerformAction('actChooseWhenRevealedCard', { cardId: card.cardId })
+                );
+            });
+        },
+
         'duskPhaseDiscard': () => {
             this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardsChosenForDiscard());
             dojo.addClass('actChooseDiscardCards', 'disabled');

@@ -452,7 +452,10 @@ $machinestates = [
         "description" => clienttranslate("Resolving When Revealed Cards..."),
         "type" => "game",
         "action" => "stPlanningPhaseResolveWhenRevealedCards",
-        "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS]
+        "transitions" => [
+            "resolve" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS,
+            "chooseOrder" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER,
+        ]
     ],
         States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS => [
             "name" => "planningPhaseResolveWhenRevealedCardsEvents",
@@ -462,7 +465,7 @@ $machinestates = [
             "transitions" => [
                 "reaction" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_REACTIONS,
                 "pay" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_PAY_FOR_REACTION,
-                "endOfEvents" => States::PLANNING_PHASE_MUSTER,
+                "endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHECK_REMAINING,
                 "endOfGame" => States::END_GAME
             ]
         ],
@@ -490,12 +493,79 @@ $machinestates = [
                 "actPayForReaction", 
             ],
             "transitions" => [
-                "back" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_REACTIONS, 
-                "paid" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS, 
+                "back" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_REACTIONS,
+                "paid" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS,
             ]
         ],
 
-    States::PLANNING_PHASE_MUSTER 
+        States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER => [
+            "name" => "planningPhaseResolveWhenRevealedCardsChooseOrder",
+            "description" => clienttranslate('${actplayer} (First Player) must choose which When Revealed effect to resolve next.'),
+            "descriptionmyturn" => clienttranslate('${you} must choose which When Revealed effect to resolve next:'),
+            "type" => "activeplayer",
+            "args" => "argsPlanningPhaseResolveWhenRevealedCardsChooseOrder",
+            "possibleactions" => [
+                "actChooseWhenRevealedCard",
+            ],
+            "transitions" => [
+                "" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_EVENTS,
+            ]
+        ],
+
+        States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHECK_REMAINING => [
+            "name" => "planningPhaseResolveWhenRevealedCardsCheckRemaining",
+            "description" => clienttranslate("Checking remaining When Revealed effects..."),
+            "type" => "game",
+            "action" => "stPlanningPhaseResolveWhenRevealedCardsCheckRemaining",
+            "transitions" => [
+                "chooseOrder" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER,
+                "done" => States::PLANNING_PHASE_MUSTER,
+                "resolve" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS,
+            ]
+        ],
+
+        States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_EVENTS => [
+            "name" => "planningPhaseResolveWhenRevealedCardsChooseOrderEvents",
+            "description" => clienttranslate("Resolving Events for When Revealed Card chosen..."),
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "reaction" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_REACTIONS,
+                "pay" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_PAY_FOR_REACTION,
+                "endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHECK_REMAINING,
+                "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actReactionForState",
+            ],
+            "transitions" => [
+                "done" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_EVENTS,
+            ]
+        ],
+        States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actBack",
+                "actPayForReaction",
+            ],
+            "transitions" => [
+                "back" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_REACTIONS,
+                "paid" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_EVENTS,
+            ]
+        ],
+
+    States::PLANNING_PHASE_MUSTER
     => [
         "name" => "planningPhaseMuster",
         "description" => clienttranslate('Characters Mustered...'),

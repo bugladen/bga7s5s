@@ -20,6 +20,7 @@ class Events
     //Planning Phase Events
     const ApproachCharacterPlayed = 'EventApproachCharacterPlayed';
     const SchemeCardRevealed = 'EventSchemeCardRevealed';
+    const CardWhenRevealedEffect = 'EventCardWhenRevealedEffect';
     const SchemeMovedToCity = 'EventSchemeMovedToCity';
     const ResolveScheme = 'EventResolveScheme';
 

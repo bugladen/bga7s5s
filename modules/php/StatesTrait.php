@@ -317,49 +317,71 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }   
 
-    public function stPlanningPhaseResolveWhenRevealedCards() 
+    public function stPlanningPhaseResolveWhenRevealedCards()
     {
         $sql = "SELECT player_id, player_name, player_color, selected_scheme_id as schemeId, selected_character_id as characterId FROM player ORDER BY turn_order";
         $players = $this->getCollectionFromDb($sql);
 
-        $whenRevealedEffectsCount = 0;
-        foreach ( $players as $playerId => $player ) 
+        $whenRevealedCards = [];
+        foreach ( $players as $playerId => $player )
         {
-            $whenRevealedEffectsCard = null;
-
-            if ($player['characterId']) 
+            if ($player['characterId'])
             {
                 $character = $this->theah->getCardById($player['characterId']);
-                // Determine the number of "When Revealed" effects that will be triggered
                 if ($character->hasWhenRevealedEffect()) {
-                    $whenRevealedEffectsCount++;
-                    $whenRevealedEffectsCard = $character;
+                    $whenRevealedCards[] = ['playerId' => (int)$playerId, 'cardId' => $character->Id];
                 }
             }
 
-            if ($player['schemeId']) 
+            if ($player['schemeId'])
             {
                 $scheme = $this->theah->getCardById($player['schemeId']);
                 if ($scheme->hasWhenRevealedEffect()) {
-                    $whenRevealedEffectsCount++;
-                    $whenRevealedEffectsCard = $scheme;
+                    $whenRevealedCards[] = ['playerId' => (int)$playerId, 'cardId' => $scheme->Id];
                 }
-            }
-
-            if ($whenRevealedEffectsCount == 1) {
-                // Perform the necessary actions for the "When Revealed" effect
-            }
-            else if ($whenRevealedEffectsCount > 1) {
-                // Go into a state where the First Player must choose which "When Revealed" effect to trigger
-    
-                // 1. Determine initiative for the First Player
-                // 2. Go into a state where the First Player must choose which "When Revealed" effect to trigger
             }
         }
 
         $this->notifyAllPlayers("message", clienttranslate("Resolving any WHEN REVEALED effects on cards."), []);
 
-        $this->gamestate->nextState("");
+        if (count($whenRevealedCards) == 0) {
+            $this->gamestate->nextState("resolve");
+        }
+        else if (count($whenRevealedCards) == 1) {
+            $entry = $whenRevealedCards[0];
+            $event = EventFactory::createCardWhenRevealedEffectEvent($entry['playerId'], $entry['cardId']);
+            $this->theah->queueEvent($event);
+            $this->globals->set(Game::WHEN_REVEALED_REMAINING_CARDS, json_encode([]));
+            $this->gamestate->nextState("resolve");
+        }
+        else {
+            $this->globals->set(Game::WHEN_REVEALED_REMAINING_CARDS, json_encode($whenRevealedCards));
+            $firstPlayerId = $this->globals->get(Game::FIRST_PLAYER);
+            $this->gamestate->changeActivePlayer($firstPlayerId);
+            $this->gamestate->nextState("chooseOrder");
+        }
+    }
+
+    public function stPlanningPhaseResolveWhenRevealedCardsCheckRemaining()
+    {
+        $remainingJson = $this->globals->get(Game::WHEN_REVEALED_REMAINING_CARDS);
+        $remaining = $remainingJson ? json_decode($remainingJson, true) : [];
+
+        if (count($remaining) == 0) {
+            $this->gamestate->nextState("done");
+        }
+        else if (count($remaining) == 1) {
+            $entry = $remaining[0];
+            $event = EventFactory::createCardWhenRevealedEffectEvent($entry['playerId'], $entry['cardId']);
+            $this->theah->queueEvent($event);
+            $this->globals->set(Game::WHEN_REVEALED_REMAINING_CARDS, json_encode([]));
+            $this->gamestate->nextState("resolve");
+        }
+        else {
+            $firstPlayerId = $this->globals->get(Game::FIRST_PLAYER);
+            $this->gamestate->changeActivePlayer($firstPlayerId);
+            $this->gamestate->nextState("chooseOrder");
+        }
     }
 
     public function stPlanningPhaseMuster() {

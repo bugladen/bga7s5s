@@ -11,7 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPhasePlanningEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardWhenRevealedEffect;
 
 class _01151 extends Scheme
 {
@@ -49,7 +49,7 @@ class _01151 extends Scheme
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventSchemeCardRevealed && $event->schemeId == $this->Id)
+        if ($event instanceof EventCardWhenRevealedEffect && $event->cardId == $this->Id)
         {
             $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now activates its When Revealed effect. 
             All City Cards in play at City Locations will be discarded to the City Discard Pile.'), [
@@ -147,7 +147,7 @@ class _01151 extends Scheme
 
             $game->notify->all("message", clienttranslate('${player_name} has chosen to add a Renown to ${location}.'), [
                 "i18n" => ["location"],
-                "player_name" => $game->getActivePlayerName(),
+                "player_name" => $game->getPlayerNameById($this->ControllerId),
                 "location" => $location,
             ]);
 

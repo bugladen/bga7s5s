@@ -71,6 +71,7 @@ class Game extends \Bga\GameFramework\Table
     final const EXTRA_ACTIONS = "extraActions";
     final const OVERRIDE_AS_NOT_FIRST_PLAYER = "overrideAsNotFirstPlayer";
     final const INVALID_PAY_CARD_IDS = "invalidPayCardIds";
+    final const WHEN_REVEALED_REMAINING_CARDS = "whenRevealedRemainingCards";
 
     //Conditions\
     final const HELPED_BY_PENYA = "Helped By Penya";

@@ -1964,4 +1964,33 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("paid");
    }
 
+    public function actChooseWhenRevealedCard(int $cardId): void
+    {
+        $this->theah->buildCity();
+
+        $remainingJson = $this->globals->get(Game::WHEN_REVEALED_REMAINING_CARDS);
+        $remaining = $remainingJson ? json_decode($remainingJson, true) : [];
+
+        $matchedEntry = null;
+        $newRemaining = [];
+        foreach ($remaining as $entry)
+        {
+            if ($entry['cardId'] == $cardId) {
+                $matchedEntry = $entry;
+            } else {
+                $newRemaining[] = $entry;
+            }
+        }
+
+        if ($matchedEntry === null) {
+            throw new UserException(clienttranslate("Invalid card selection. Please try again."));
+        }
+
+        $event = EventFactory::createCardWhenRevealedEffectEvent($matchedEntry['playerId'], $matchedEntry['cardId']);
+        $this->theah->queueEvent($event);
+
+        $this->globals->set(Game::WHEN_REVEALED_REMAINING_CARDS, json_encode($newRemaining));
+        $this->gamestate->nextState("");
+    }
+
 }
