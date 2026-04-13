@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
@@ -137,7 +138,7 @@ class Action_01072 extends CardAction
                 $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled() && $card instanceof ICityDeckCard));
                 if (count($cards) > 0)
                 {
-                    throw new \BgaUserException($game->translate("There are available City Cards at the Leader's location"));
+                    throw new UserException($game->translate("There are available City Cards at the Leader's location"));
                 }
 
                 $game->globals->set(Game::CHOSEN_CARD, 0);
@@ -148,17 +149,17 @@ class Action_01072 extends CardAction
             $card = $game->theah->getCardById($id);
             if ($card == null)
             {
-                throw new \BgaUserException($game->translate("Invalid card id"));
+                throw new UserException($game->translate("Invalid card id"));
             }
 
             if ( ! $card instanceof ICityDeckCard)
             {
-                throw new \BgaUserException($game->translate("Card is not a City Card"));
+                throw new UserException($game->translate("Card is not a City Card"));
             }
 
             if ($leader->Location != $card->Location)
             {
-                throw new \BgaUserException($game->translate("Card is not at the Leader's location"));
+                throw new UserException($game->translate("Card is not at the Leader's location"));
             }
 
             $game->globals->set(Game::CHOSEN_CARD, $card->Id);
@@ -177,15 +178,15 @@ class Action_01072 extends CardAction
                 $cards = array_values(array_filter($cards, fn($card) => $card instanceof Character));
                 if (count($cards) > 0)
                 {
-                    throw new \BgaUserException($game->translate("There are available Character cards in your Approach Deck"));
+                    throw new UserException($game->translate("There are available Character cards in your Approach Deck"));
                 }
             }
             else
             {
-                $cards = array_values(array_filter($cards, fn($card) => $card->Id == $id));
+                $cards = array_values(array_filter($cards, fn($card) => $card->Id == $id && $card instanceof Character));
                 if (count($cards) == 0)
                 {
-                    throw new \BgaUserException($game->translate("Invalid card id"));
+                    throw new UserException($game->translate("Invalid card id"));
                 }
 
                 $musterCard = $cards[0];
