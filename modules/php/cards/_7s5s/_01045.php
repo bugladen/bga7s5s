@@ -5,7 +5,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01045;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -51,7 +50,10 @@ class _01045 extends Scheme implements IHasReactions
     public function getParleyDiscount(Theah $theah, Character $performer, bool $parleying, Array &$explanations) : int
     {
         $discount = parent::getParleyDiscount($theah, $performer, $parleying, $explanations);
-        if ($this->Location == Game::LOCATION_PLAYER_HOME && $parleying && $performer->ControllerId == $this->ControllerId && $performer instanceof Leader)
+        if ($this->Location == Game::LOCATION_PLAYER_HOME
+            && $parleying 
+            && $performer->ControllerId == $this->ControllerId 
+            && $performer->hasTrait("Leader"))
         {
             $discount += 1;
             $explanations[] = sprintf($theah->game->translate("%s: -1 because performer is a Leader Parleying with a Mercenary."), $this->getInjectCode());
@@ -129,7 +131,7 @@ class _01045 extends Scheme implements IHasReactions
                 $card = $game->getCardObjectFromDb($id);
                 if ($card->hasTrait('Mercenary') && $card->Location == Game::LOCATION_CITY_DISCARD)
                 {
-                    throw new \BgaUserException($game->translate("There are Mercenaries in the City Deck Discard Pile"));
+                    throw new UserException($game->translate("There are Mercenaries in the City Deck Discard Pile"));
                 }
             }
                    

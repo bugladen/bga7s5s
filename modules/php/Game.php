@@ -301,8 +301,8 @@ class Game extends \Bga\GameFramework\Table
 
             if ($player['leader_card_id'] != null)
             {
-                $card = $this->theah->getCardById($player['leader_card_id']);
-                $player['leader'] = $card->getPropertyArray($this);
+                $leader = $this->theah->getLeaderByPlayerId($player_id);
+                $player['leader'] = $leader->getPropertyArray($this);
             }
             $location = $this->getPlayerDiscardDeckName($player_id);
             $player['discard'] = $this->getCardPropertiesInLocation($location);

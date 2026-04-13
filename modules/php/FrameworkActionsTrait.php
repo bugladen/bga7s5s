@@ -1243,16 +1243,16 @@ trait FrameworkActionsTrait
         }
         else if ($character->Engaged)
         {
-            throw new \BgaUserException(clienttranslate("Character cannot Intervene."));
+            throw new UserException(clienttranslate("Character cannot Intervene."));
         }
 
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
-        if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE && ! $character instanceof Leader) {
-            throw new \BgaUserException(clienttranslate("Legendary Reputation: Only Leaders can Intervene"));
+        if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE && ! $character->hasTrait("Leader")) {
+            throw new UserException(clienttranslate("Legendary Reputation: Only Leaders can Intervene"));
         }
         else if ($challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE)
         {
-            throw new \BgaUserException(clienttranslate("Valeri Mikhailov: No Characters can Intervene."));
+            throw new UserException(clienttranslate("Valeri Mikhailov: No Characters can Intervene."));
         }
 
         //Reset the conditions for defender
@@ -1633,9 +1633,7 @@ trait FrameworkActionsTrait
     public function actDuskPhaseCardsDiscarded(string $ids)
     {
         $playerId = $this->getCurrentPlayerId();
-        $sql = "SELECT leader_card_id as leaderId FROM player WHERE player_id = $playerId";
-        $leaderId = $this->getUniqueValueFromDB($sql);
-        $leader = $this->getCardObjectFromDb($leaderId);
+        $leader = $this->theah->getLeaderByPlayerId($playerId);
 
         //Get the cards in hand
         $cards = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
