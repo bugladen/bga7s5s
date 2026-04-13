@@ -51,7 +51,7 @@ class Reaction_01144 extends CardReaction
                 if ($playerIdWithLeastCharacters == $owner->ControllerId) 
                 {
                     $characters = $game->theah->getAllCards();
-                    $characters = array_filter($characters, fn($card) => $card instanceof Character && ! $card->isControlled() && $game->theah->cardInCity($card));
+                    $characters = array_filter($characters, fn($card) => $card instanceof Character && $card->hasTrait("Mercenary") && ! $card->isControlled() && $game->theah->cardInCity($card));
                     if (count($characters) > 0)
                     {
                         $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
@@ -129,6 +129,11 @@ class Reaction_01144 extends CardReaction
             if ($mercenary == null)
             {
                 throw new \BgaUserException($game->translate("Invalid character"));
+            }
+
+            if (! $mercenary->hasTrait("Mercenary"))
+            {
+                throw new \BgaUserException($game->translate("Character is not a Mercenary"));
             }
 
             if ($mercenary->isControlled())
