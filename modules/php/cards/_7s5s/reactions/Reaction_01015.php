@@ -38,12 +38,8 @@ class Reaction_01015 extends CardReaction
         if ($event instanceof EventCharacterDestroyed && $this->isAvailable())
         {
             $scheme = $this->getOwningCard($event->theah);
-            $character = $event->theah->getCharacterById($event->characterId);
-            if ($character->ControllerId == $scheme->ControllerId)
-            {
-                $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
-                $event->theah->queueEvent($reactionEvent);
-            }
+            $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
+            $event->theah->queueEvent($reactionEvent);
         }
     }
 

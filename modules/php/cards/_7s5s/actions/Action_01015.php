@@ -29,7 +29,7 @@ class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCharac
         foreach ($performers as $performer)
         {
             $characters = $theah->getCharactersAtLocation($performer->Location);
-            $characters = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($playerId));
+            $characters = array_filter($characters, fn($character) => $character->Id != $performer->Id);
 
             if (count($characters) > 0)
             {
@@ -95,9 +95,9 @@ class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCharac
         $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
         $performer = $game->theah->getCharacterById($performerId);
 
-        if ($character->ControllerId == $performer->ControllerId)
+        if ($character->Id == $performer->Id)
         {
-            return [false, $game->translate("Target character is the same as the performer")];
+            return [false, $game->translate("Target character is the performer being destroyed")];
         }
 
         if ($performer->Location != $character->Location)
