@@ -101,6 +101,11 @@ class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCharac
             return [false, $game->translate("Card must be at the same location as the performer")];
         }
 
+        if (!$character->hasTrait("Mercenary"))
+        {
+            return [false, $game->translate("Target must be a Mercenary")];
+        }
+
         return [true, ""];
     }
 
@@ -129,7 +134,7 @@ class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $game->notify->all("message", clienttranslate('${scheme_inject_code}: ${player_name} has chosen ${performer_inject_code} to manipulate ${character_inject_code} at ${location}.'), [
                 "i18n" => ["location"],
                 "scheme_inject_code" => $scheme->getInjectCode(),
-                "player_name" => $game->getActivePlayerName(),
+                "player_name" => $game->getPlayerNameById($scheme->ControllerId),
                 "performer_inject_code" => $performer->getInjectCode(),
                 "character_inject_code" => $character->getInjectCode(),
                 "location" => $performer->Location,
@@ -147,6 +152,10 @@ class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCharac
             // Finished
             if ($id === 0)
             {
+                $scheme = $this->getOwningCard($game->theah);
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($scheme->ControllerId);
+                $game->theah->queueEvent($actionResolvedEvent);
+
                 $game->gamestate->nextState();
                 return;
             }
@@ -154,13 +163,13 @@ class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $card = $game->getCardObjectFromDb($id);
             if ($card == null)
             {
-                throw new \BgaUserException($game->translate("Invalid card selected"));
+                throw new UserException($game->translate("Invalid card selected"));
             }
 
             $scheme = $this->getOwningCard($game->theah);
             if ($card->ControllerId !== $scheme->ControllerId || $card->Location != Game::LOCATION_HAND)
             {
-                throw new \BgaUserException($game->translate("Card is not in your hand"));
+                throw new UserException($game->translate("Card is not in your hand"));
             }
 
             $owner = $this->getOwningCard($game->theah);

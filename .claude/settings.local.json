@@ -12,7 +12,8 @@
       "Bash(while read:*)",
       "Bash(do echo:*)",
       "Bash(sed 's|^\\\\./||')",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(find /c/code/7s5s/modules/php/cards/_7s5s/actions -name \"*.php\" -exec grep -l \"nextState\\(\\)\" {})"
     ]
   }
 }
