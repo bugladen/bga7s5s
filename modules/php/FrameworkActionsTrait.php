@@ -585,26 +585,26 @@ trait FrameworkActionsTrait
             $handCards = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
             $handCardIds = array_map(function($handCard) { return $handCard['id']; }, $handCards);
             if (!in_array($attachmentId, $handCardIds)) {
-                throw new \BgaUserException(clienttranslate("Attachment is not in Player's Hand."));
+                throw new UserException(clienttranslate("Attachment is not in Player's Hand."));
             }
         }
 
         // Let's Haggle can equip attachments only from the Bazaar
-        if ($equipType == Game::LETS_HAGGLE_EQUIP_TYPE) 
+        // The performer does NOT need to be at the Bazaar (only -1 discount requires it)
+        if ($equipType == Game::LETS_HAGGLE_EQUIP_TYPE)
         {
             if ($attachment->Location != Game::LOCATION_CITY_BAZAAR)
             {
-                throw new \BgaUserException(clienttranslate("Let's Haggle: Attachment is not at Bazaar."));
+                throw new UserException(clienttranslate("Let's Haggle: Attachment is not at Bazaar."));
             }
-        } 
-
-        if ($attachment->Location != Game::LOCATION_HAND)
+        }
+        else if ($attachment->Location != Game::LOCATION_HAND)
         {
             $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($performer->Location);
             $attachmentIds = array_map(function($attachment) { return $attachment->Id; }, $attachmentsAtLocation);
 
             if (!in_array($attachmentId, $attachmentIds)) {
-                throw new \BgaUserException(clienttranslate("Attachment is not at Performer's Location."));
+                throw new UserException(clienttranslate("Attachment is not at Performer's Location."));
             }
         }
 
