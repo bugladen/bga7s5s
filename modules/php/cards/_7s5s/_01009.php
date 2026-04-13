@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlaye
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 
 class _01009 extends Character implements IHasActions
 {
@@ -98,6 +99,25 @@ class _01009 extends Character implements IHasActions
 
                 $bruteEvent = EventFactory::createCharacterLostBruteEvent($event->playerId, $character->Id);
                 $event->theah->queueEvent($bruteEvent);
+            }
+        }
+
+        if ($event instanceof EventDuskEndOfDay)
+        {
+            //Fires off because Constanzo can remove Brute from his own characters during previous state
+            $characters = $event->theah->getCharactersInPlayByPlayerId($this->ControllerId);
+            $characters = array_filter($characters, fn($character) => $character->hasTrait("Mercenary"));
+            $game = $event->theah->game;
+            foreach ($characters as $character)
+            {
+                if (!$character->hasTrait("Brute"))
+                {
+                    $game->notify->all("message", clienttranslate('${owner_inject_code}: Added [Brute] trait to ${character_inject_code}.'), [
+                        "owner_inject_code" => $this->getInjectCode(),
+                        "character_inject_code" => $character->getInjectCode(),
+                    ]);
+                    $character->addTrait($event->theah->game, "Brute");
+                }
             }
         }
     }
