@@ -1,6 +1,7 @@
 <?php
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -19,8 +20,11 @@ class Action_01011 extends CharacterAction
 
     private function getTargetCharacters(int $playerId, Theah $theah): array
     {
+        $servo = $this->getOwningCharacter($theah);
+        $adjacentLocations = $theah->getAdjacentCityLocations($servo->Location, $includeHome = false);
+
         $thugs = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $thugs = array_values(array_filter($thugs, fn($character) => $character->hasTrait("Red Hand")));
+        $thugs = array_values(array_filter($thugs, fn($character) => $character->hasTrait("Red Hand") && in_array($character->Location, $adjacentLocations)));
         $targetCharacters = [];
         foreach ($thugs as $thug)
         {
@@ -31,7 +35,7 @@ class Action_01011 extends CharacterAction
             }
         }
         $targetCharacters = array_values($targetCharacters);
-        
+
         return $targetCharacters;
     }
 
@@ -98,13 +102,13 @@ class Action_01011 extends CharacterAction
             $target = $game->theah->getCharacterById($id);
             if ($target == null)
             {
-                throw new \BgaUserException($game->translate("Character not found."));
+                throw new UserException($game->translate("Character not found."));
             }
 
             $availableTargets = $this->getTargetCharacters($game->getActivePlayerId(), $game->theah);
             if (! in_array($target, $availableTargets))
             {
-                throw new \BgaUserException($game->translate("Character is not available to be challenged."));
+                throw new UserException($game->translate("Character is not available to be challenged."));
             }
 
             $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
@@ -122,6 +126,7 @@ class Action_01011 extends CharacterAction
 
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
+            // createActionResolvedEvent not needed here because it will be taken care of by the frameworkchallenge action
 
             $game->gamestate->nextState("opposingCharacterChosen");
         }

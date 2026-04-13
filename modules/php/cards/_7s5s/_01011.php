@@ -33,7 +33,7 @@ class _01011 extends Character implements IHasActions, IHasTechniques
         $this->Influence = 1;
 
         $this->Traits = [
-            clienttranslate("Deulist"),
+            clienttranslate("Duelist"),
             clienttranslate("Red Hand"),
             clienttranslate("Vodacce"),
         ];
