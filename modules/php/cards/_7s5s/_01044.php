@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01044;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
@@ -36,7 +37,7 @@ class _01044 extends Scheme implements IHasActions
             clienttranslate("Logistics"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [The Docks] and [The Grand Bazaar].</p><p>Put target attachment from your discard pile into your hand.</p><hr><p>City Action: Engage your performer's attachment and target an opposing character with equal or fewer attachments • Engage them or move them Home.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to [The Docks] and [The Grand Bazaar].</p><p>Put target attachment from your discard pile into your hand.</p><hr><p><b>City Action:</b> Engage your performer's attachment and target an opposing character with equal or fewer attachments • Engage them or move them Home.</p>");
 
         $this->resetCard();
 
@@ -82,7 +83,12 @@ class _01044 extends Scheme implements IHasActions
             $card = $game->getCardObjectFromDb($id);
             if (! $card)
             {
-                throw new \BgaUserException($game->translate("Invalid card"));
+                throw new UserException($game->translate("Invalid card"));
+            }
+
+            if (! $card instanceof Attachment)
+            {
+                throw new UserException($game->translate("Card is not an attachment"));
             }
 
             //Make sure the card is in the discard pile
@@ -91,7 +97,7 @@ class _01044 extends Scheme implements IHasActions
             $cardObjects = $deck->getCardsInLocation($discardPileName);
             if (! in_array($card->Id, array_column($cardObjects, 'id')))
             {
-                throw new \BgaUserException($game->translate("Card is not in the discard pile"));
+                throw new UserException($game->translate("Card is not in the discard pile"));
             }
     
             $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($playerId, $card->Id);
@@ -123,7 +129,7 @@ class _01044 extends Scheme implements IHasActions
                 $card = $game->getCardObjectFromDb($id);
                 if ($card instanceof Attachment)
                 {
-                    throw new \BgaUserException($game->translate("There are attachments in the discard pile"));
+                    throw new UserException($game->translate("There are attachments in the discard pile"));
                 }
             }
                    

@@ -32,7 +32,7 @@ class _01081 extends Risk implements IHasActions
             clienttranslate('Honor'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Target an opposing engaged character • That character and your performer both en garde.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Target an opposing engaged character • That character and your performer both en garde.</p>");
 
         $this->resetCard();
 

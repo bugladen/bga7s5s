@@ -83,7 +83,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
                 if ($odette->Location != Game::LOCATION_PLAYER_HOME)
                 {
-                    $challenger = $event->theah->getCharacterById($event->newTargetId);
+                    $challengerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
+                    $challenger = $event->theah->getCharacterById($challengerId);
 
                     if ($challenger->Location == $odette->Location)
                     {

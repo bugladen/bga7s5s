@@ -127,7 +127,7 @@ onEnteringState: function( stateName, args )
             if (this.isCurrentPlayerActive()) 
             {
                 const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
-                let displayCost = args.args.cost - args.args.discount;
+                let displayCost = Math.max(0, args.args.cost - args.args.discount);
                 if (args.args.recruitType == this.CIRILO_RECRUIT_TYPE)
                     displayCost = 1;
                 this.bga.statusBar.setTitle(statusBarTitle, {
@@ -251,7 +251,7 @@ onEnteringState: function( stateName, args )
                 const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
                 this.bga.statusBar.setTitle(statusBarTitle, {
                     cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
-                        cost: args.args._private.cost - args.args._private.discount,
+                        cost: Math.max(0, args.args._private.cost - args.args._private.discount),
                     }),
                 });
     
@@ -302,7 +302,7 @@ onEnteringState: function( stateName, args )
                 const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
                 this.bga.statusBar.setTitle(statusBarTitle, {
                     cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
-                        cost: args.args._private.cost - args.args._private.discount,
+                        cost: Math.max(0, args.args._private.cost - args.args._private.discount),
                     }),
                 });
     
@@ -374,7 +374,7 @@ onEnteringState: function( stateName, args )
                 const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
                 this.bga.statusBar.setTitle(statusBarTitle, {
                     cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
-                        cost: args.args._private.cost - args.args._private.discount,
+                        cost: Math.max(0, args.args._private.cost - args.args._private.discount),
                     }),
                 });
 
@@ -440,7 +440,7 @@ onEnteringState: function( stateName, args )
                 const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
                 this.bga.statusBar.setTitle(statusBarTitle, {
                     cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
-                        cost: args.args._private.cost - args.args._private.discount,
+                        cost: Math.max(0, args.args._private.cost - args.args._private.discount),
                     }),
                 });
 
@@ -567,7 +567,7 @@ onEnteringState: function( stateName, args )
                 statusBarTitle = statusBarTitle.replace('#{cost}', '${cost}');
                 this.bga.statusBar.setTitle(statusBarTitle, {
                     cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
-                        cost: args.args._private.args.cost - args.args._private.args.discount,
+                        cost: Math.max(0, args.args._private.args.cost - args.args._private.args.discount),
                     }),
                 });
     
@@ -641,7 +641,7 @@ onEnteringState: function( stateName, args )
                 const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
                 this.bga.statusBar.setTitle(statusBarTitle, {
                     cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
-                        cost: args.args._private.cost - args.args._private.discount,
+                        cost: Math.max(0, args.args._private.cost - args.args._private.discount),
                     }),
                 });
 

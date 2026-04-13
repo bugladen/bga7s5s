@@ -38,7 +38,7 @@ class _01039 extends Character implements IHasReactions, IHasTechniques
             clienttranslate("Eisen"),
         ];
 
-        $this->Text = clienttranslate("<p>City Reaction: After Philip equips an attachment • Move him to an adjacent location.</p><p>Technique: If the adversary is engaged and you control a Mercenary at this location • Wound the adversary.</p>");
+        $this->Text = clienttranslate("<p><b>City Reaction:</b> After Philip equips an attachment • Move him to an adjacent location.</p><p><b>Technique:</b> If the adversary is engaged and you control a Mercenary at this location • Wound the adversary.</p>");
 
         $this->resetCard();
 

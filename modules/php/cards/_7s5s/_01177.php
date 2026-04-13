@@ -31,7 +31,7 @@ class _01177 extends CityEventCard
             clienttranslate("Savvy")
         ];
 
-        $this->Text = clienttranslate("<p>Reaction: At the beginning of Dusk, if you control this location • You may choose one of your characters here. If you do, the chosen character does not move Home during Dusk and you look at the top three cards of the City Deck. Replace them in any order.</p>");
+        $this->Text = clienttranslate("<p><b>Reaction:</b> At the beginning of Dusk, if you control this location • You may choose one of your characters here. If you do, the chosen character does not move Home during Dusk and you look at the top three cards of the City Deck. Replace them in any order.</p>");
 
         $this->resetCard();
     }

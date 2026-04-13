@@ -37,7 +37,7 @@ class _01031 extends Risk implements IHasManeuvers
             clienttranslate('Zeal'),
         ];
 
-        $this->Text = clienttranslate("<p>Maneuver: +1 [Thrust] for each of your Red Hands at this location. After you resolve your wounds, you may destroy your Thug at this location. If you do, gain Lethal.</p>");
+        $this->Text = clienttranslate("<p><b>Maneuver:</b> +1 [Thrust] for each of your Red Hands at this location. After you resolve your wounds, you may destroy your Thug at this location. If you do, gain Lethal.</p>");
 
         $this->resetCard();
 

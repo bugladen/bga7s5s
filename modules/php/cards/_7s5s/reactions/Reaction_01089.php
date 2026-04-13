@@ -14,7 +14,7 @@ class Reaction_01089 extends CardReaction
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate("Move Soline to Adjecent Location after Action Resolves");
+        $this->Name = clienttranslate("Move Soline to Adjacent Location after Action Resolves");
     }
 
     public function getReactionDescription(Theah $theah): string

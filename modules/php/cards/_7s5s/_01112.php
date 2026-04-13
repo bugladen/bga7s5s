@@ -33,7 +33,7 @@ class _01112 extends Risk implements IHasActions
             clienttranslate('Revelry'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: If you are the first player, engage your en garde performer • This location becomes uncontrolled.</p><p>Action: If you are not the first player • Discard an available City Card at any location.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> If you are the first player, engage your en garde performer • This location becomes uncontrolled.</p><p><b>Action:</b> If you are not the first player • Discard an available City Card at any location.</p>");
 
         $this->resetCard();
 

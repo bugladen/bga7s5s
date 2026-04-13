@@ -427,7 +427,7 @@
                     this.numberOfCardsSelectable = 1;
                     for( const cardId in this.cardProperties ) {
                         card = this.cardProperties[cardId];
-                        if (card.type === 'Character' && !card.controllerId && this.isCardInCity(card.id) ) {
+                        if (card.type === 'Character' && card.traits.includes('Mercenary') && !card.controllerId && this.isCardInCity(card.id) ) {
                             const image = $(`${card.divId}_image`);
                             this.makeCardSelectable(image);
     
@@ -445,7 +445,7 @@
                 const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
                 this.bga.statusBar.setTitle(statusBarTitle, {
                     cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
-                        cost: args.args.args.cost - args.args.args.discount,
+                        cost: Math.max(0, args.args.args.cost - args.args.args.discount),
                     }),
                 });
 
@@ -1468,7 +1468,7 @@
                     const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
                     this.bga.statusBar.setTitle(statusBarTitle, {
                         cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
-                            cost: args.args.args.cost - args.args.args.discount,
+                            cost: Math.max(0, args.args.args.cost - args.args.args.discount),
                         }),
                     });    
     
@@ -2041,7 +2041,7 @@
                     const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
                     this.bga.statusBar.setTitle(statusBarTitle, {
                         cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
-                            cost: args.args.args.cost - args.args.args.discount,
+                            cost: Math.max(0, args.args.args.cost - args.args.args.discount),
                         }),
                     });
 
@@ -2161,7 +2161,7 @@
                     const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
                     this.bga.statusBar.setTitle(statusBarTitle, {
                         cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
-                            cost: args.args.args.cost - args.args.args.discount,
+                            cost: Math.max(0, args.args.args.cost - args.args.args.discount),
                         }),
                     });
 
@@ -2612,7 +2612,7 @@
                     const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
                     this.bga.statusBar.setTitle(statusBarTitle, {
                         cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
-                            cost: args.args.args.cost - args.args.args.discount,
+                            cost: Math.max(0, args.args.args.cost - args.args.args.discount),
                         }),
                     });
     

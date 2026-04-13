@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlaye
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 
 class _01009 extends Character implements IHasActions
 {
@@ -40,7 +41,7 @@ class _01009 extends Character implements IHasActions
             clienttranslate("Numa"),
         ];
 
-        $this->Text = clienttranslate("<p>Your Mercenaries gain Brute. (Brutes do not count against your Crew Cap, go to the discard pile when destroyed, and are discarded from play at the end of the day.)</p><p>City Action: Engage Cirilo • Recruit target available Mercenary at this location. They lose Negotiable and have 1 cost instead of their printed value.</p>");
+        $this->Text = clienttranslate("<p>Your Mercenaries gain Brute. (Brutes do not count against your Crew Cap, go to the discard pile when destroyed, and are discarded from play at the end of the day.)</p><p><b>City Action:</b> Engage Cirilo • Recruit target available Mercenary at this location. They lose Negotiable and have 1 cost instead of their printed value.</p>");
 
         $this->resetCard();
 
@@ -59,6 +60,11 @@ class _01009 extends Character implements IHasActions
             $characters = array_filter($characters, fn($character) => $character->hasTrait("Mercenary"));
             foreach ($characters as $character)
             {
+                $game = $event->theah->game;
+                $game->notify->all("message", clienttranslate('${owner_inject_code}: Added [Brute] trait to ${character_inject_code}.'), [
+                    "owner_inject_code" => $this->getInjectCode(),
+                    "character_inject_code" => $character->getInjectCode(),
+                ]);
                 $character->addTrait($event->theah->game, "Brute");
             }
         }
@@ -68,6 +74,11 @@ class _01009 extends Character implements IHasActions
             $character = $event->theah->getCharacterById($event->characterId);
             if ($character->hasTrait("Mercenary"))
             {
+                $game = $event->theah->game;
+                $game->notify->all("message", clienttranslate('${owner_inject_code}: Added [Brute] trait to ${character_inject_code}.'), [
+                    "owner_inject_code" => $this->getInjectCode(),
+                    "character_inject_code" => $character->getInjectCode(),
+                ]);
                 $character->addTrait($event->theah->game, "Brute");
             }
 
@@ -79,10 +90,34 @@ class _01009 extends Character implements IHasActions
             $characters = array_filter($characters, fn($character) => $character->hasTrait("Mercenary"));
             foreach ($characters as $character)
             {
+                $game = $event->theah->game;
+                $game->notify->all("message", clienttranslate('${owner_inject_code}: Removed [Brute] trait from ${character_inject_code}.'), [
+                    "owner_inject_code" => $this->getInjectCode(),
+                    "character_inject_code" => $character->getInjectCode(),
+                ]);
                 $character->removeTrait($event->theah->game, "Brute");
 
                 $bruteEvent = EventFactory::createCharacterLostBruteEvent($event->playerId, $character->Id);
                 $event->theah->queueEvent($bruteEvent);
+            }
+        }
+
+        if ($event instanceof EventDuskEndOfDay)
+        {
+            //Fires off because Constanzo can remove Brute from his own characters during previous state
+            $characters = $event->theah->getCharactersInPlayByPlayerId($this->ControllerId);
+            $characters = array_filter($characters, fn($character) => $character->hasTrait("Mercenary"));
+            $game = $event->theah->game;
+            foreach ($characters as $character)
+            {
+                if (!$character->hasTrait("Brute"))
+                {
+                    $game->notify->all("message", clienttranslate('${owner_inject_code}: Added [Brute] trait to ${character_inject_code}.'), [
+                        "owner_inject_code" => $this->getInjectCode(),
+                        "character_inject_code" => $character->getInjectCode(),
+                    ]);
+                    $character->addTrait($event->theah->game, "Brute");
+                }
             }
         }
     }

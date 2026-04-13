@@ -39,6 +39,13 @@ class Reaction_01133 extends RiskReaction
         if ($event instanceof EventEnteringPayState)
         {
             $owner = $this->getOwningCard($event->theah);
+
+            if ($event->cardId == $owner->Id && $owner instanceof _01133 && $owner->Location == Game::LOCATION_HAND)
+            {
+                $owner->WillEngage = false;
+                $owner->IsUpdated = true;
+            }
+
             $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
             if ($performerId != null)
             {

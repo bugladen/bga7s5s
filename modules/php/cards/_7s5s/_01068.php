@@ -35,7 +35,7 @@ class _01068 extends Character implements IHasActions
             clienttranslate("Montaigne"),
         ];
 
-        $this->Text = clienttranslate("<p>Sorcerer City Action: Wound Léontine • Move target character you control from her location to another.</p>");
+        $this->Text = clienttranslate("<p><b>Sorcerer City Action:</b> Wound Léontine • Move target character you control from her location to another.</p>");
 
         $this->resetCard();
 

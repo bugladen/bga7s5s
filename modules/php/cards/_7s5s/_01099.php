@@ -35,7 +35,7 @@ class _01099 extends Scheme implements IHasReactions
             clienttranslate("Rumor"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to The Docks.</p><hr><p>Reaction: After a player discards a card due to your effect • Draw a card.</p><p>Reaction: After an opponent claims a location • Add a Renown to a different location.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to The Docks.</p><hr><p><b>Reaction:</b> After a player discards a card due to your effect • Draw a card.</p><p><b>Reaction:</b> After an opponent claims a location • Add a Renown to a different location.</p>");
 
         $this->resetCard();
 

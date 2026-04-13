@@ -19,6 +19,8 @@ class Technique_01123 extends Technique
     { 
         parent::handleEvent($event);
 
+        // EventTechniqueCanceled handler not needed
+
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
             $event->adversaryThreat += 1;
@@ -27,9 +29,9 @@ class Technique_01123 extends Technique
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
-            $actor = $event->theah->getDuelRoundActor();
-            $adversary = $event->theah->getDuelRoundOpponent();
-            if ($actor->Wounds < $adversary->Wounds)
+            $valeri = $event->theah->getCharacterById($event->actorId);
+            $adversary = $event->theah->getCharacterById($event->adversaryId);
+            if ($valeri->Wounds < $adversary->Wounds)
             {
                 $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds +1 Riposte due to Valeri having fewer Wounds than opponent."), $this->Name);
                 $event->riposte += 1;

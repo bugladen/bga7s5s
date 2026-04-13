@@ -33,7 +33,7 @@ class _01174 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             clienttranslate('Sabotage'),
         ];
 
-        $this->Text = clienttranslate("<p>Action: Destroy target non-Unique attachment.</p>");
+        $this->Text = clienttranslate("<p><b>Action:</b> Destroy target non-Unique attachment.</p>");
 
         $this->resetCard();
 

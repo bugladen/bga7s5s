@@ -34,7 +34,7 @@ class _01146 extends Scheme implements IHasReactions
             clienttranslate("Honor"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [The Docks] and [The Forums].</p><hr><p>Reaction: After you equip a Weapon • Draw a card.</p><p>Reaction: When the adversary announces a Maneuver or Technique • Cancel its effects.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to [The Docks] and [The Forums].</p><hr><p><b>Reaction:</b> After you equip a Weapon • Draw a card.</p><p><b>Reaction:</b> When the adversary announces a Maneuver or Technique • Cancel its effects.</p>");
 
         $this->resetCard();
 
@@ -50,7 +50,7 @@ class _01146 extends Scheme implements IHasReactions
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  Renown will be added to The Docks and The Forum.'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  Renown will be added to The Docks and The Forums.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 

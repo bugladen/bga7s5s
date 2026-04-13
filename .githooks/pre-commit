@@ -127,9 +127,9 @@ for file in $staged_files; do
         fi
     fi
 
-    # Check if the class calls createAttachmentEquippedEvent
-    if echo "$content" | grep -q 'createAttachmentEquippedEvent'; then
-        
+    # Check if the class calls createAttachmentEquippedEvent (skip EventFactory.php)
+    if echo "$content" | grep -q 'createAttachmentEquippedEvent' && [[ "$file" != *"EventFactory.php" ]]; then
+
         # Check for getRequiredAttachTargetId
         if ! echo "$content" | grep -q 'getRequiredAttachTargetId'; then
             echo -e "${RED}ERROR:${NC} $file"

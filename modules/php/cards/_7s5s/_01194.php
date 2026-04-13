@@ -38,7 +38,7 @@ class _01194 extends CityCharacter implements IHasActions
             clienttranslate('Eisen'),
         ];
 
-        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>City Action: Discard an attachment • Wound target opposing character.</p>");
+        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p><b>City Action:</b> Discard an attachment • Wound target opposing character.</p>");
 
         $this->resetCard();
 

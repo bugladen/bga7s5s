@@ -18,10 +18,12 @@ class Maneuver_PlusOneParry extends Maneuver
     {
         parent::handleEvent($event);
 
+        // EventManeuverCanceled handler not needed
+
         if ($event instanceof EventDuelCalculateManeuverValues && $event->maneuverId == $this->Id) {
             $owner = $this->getOwningCard($event->theah);
             $event->parry += 1;
-            $event->explanations[] = $owner->getInjectCode();
+            $event->explanations[] = sprintf($event->theah->game->translate("%s adds 1 Parry."), $owner->getInjectCode());
         }
     }
 }

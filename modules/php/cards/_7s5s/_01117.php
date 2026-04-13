@@ -38,7 +38,7 @@ class _01117 extends Character implements IHasActions, IHasReactions
             clienttranslate("Ussura"),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Move a Renown from this location to another one • Move Ekaterina to another different City location.</p><p>Reaction: After an opponent claims this location • Remove a Renown from it.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Move a Renown from this location to another one • Move Ekaterina to another different City location.</p><p><b>Reaction:</b> After an opponent claims this location • Remove a Renown from it.</p>");
 
         $this->resetCard();
 

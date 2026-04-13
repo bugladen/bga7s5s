@@ -34,7 +34,7 @@ class _01132 extends Risk implements IHasActions
             clienttranslate('Dar Matushki'),
         ];
 
-        $this->Text = clienttranslate("<p>Sorcerer Action: Move all engaged characters at your performer's location Home. Then, engage all of the remaining characters there.</p>");
+        $this->Text = clienttranslate("<p><b>Sorcerer Action:</b> Move all engaged characters at your performer's location Home. Then, engage all of the remaining characters there.</p>");
 
         $this->resetCard();
 

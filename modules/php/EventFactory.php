@@ -36,6 +36,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMustered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardWhenRevealedEffect;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlay;
@@ -252,6 +253,17 @@ class EventFactory
             $event->onTop = $onTop;
         }
 
+        return $event;
+    }
+
+    public static function createCardWhenRevealedEffectEvent(int $playerId, int $cardId): EventCardWhenRevealedEffect
+    {
+        $event = self::createEvent(Events::CardWhenRevealedEffect);
+        if ($event instanceof EventCardWhenRevealedEffect)
+        {
+            $event->playerId = $playerId;
+            $event->cardId = $cardId;
+        }
         return $event;
     }
 

@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCar
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Technique_01204 extends Technique
@@ -49,7 +50,15 @@ class Technique_01204 extends Technique
             $attachment->IsUpdated = true;
         }
 
-        //Reduce the opponent's Parry by 1 if the technique is activated
+        if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)
+        {
+            $this->ReduceAdversaryParry = false;
+            $attachment = $this->getOwningCard($event->theah);
+            if ($attachment instanceof Attachment)
+                $attachment->IsUpdated = true;
+        }
+
+        //Reduce the opponent's Parry by 2 if the technique is activated
         if ($event instanceof EventDuelCalculateCombatCardStats && $this->ReduceAdversaryParry)
         {
             $attachment = $this->getOwningCard($event->theah);

@@ -37,7 +37,7 @@ class _01088 extends Risk implements IHasManeuvers, IHasReactions
             clienttranslate('Valroux'),
         ];
 
-        $this->Text = clienttranslate("<p>Reaction: When a challenge is issued by an opposing Mercenary • Cancel it.</p><p>Maneuver: If the adversary is a Mercenary • +1 Riposte.</p>");
+        $this->Text = clienttranslate("<p><b>Reaction:</b> When a challenge is issued by an opposing Mercenary • Cancel it.</p><p><b>Maneuver:</b> If the adversary is a Mercenary • +1 Riposte.</p>");
 
         $this->resetCard();
 

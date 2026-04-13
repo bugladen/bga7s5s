@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -32,10 +33,12 @@ class Action_01036 extends CharacterAction implements IAbilityThatTargetsCharact
 
         $characters = $theah->getCharactersAtLocation($daniella->Location);
 
-        $mercenaries = array_filter($characters, fn($character) => 
-            $character->ControllerId == $daniella->ControllerId && 
-            $character->hasTrait("Mercenary", $daniella) &&
-            $character->canChallenge());
+        $mercenaries = array_filter($characters, function($character) use ($daniella) {
+            if ($character->ControllerId != $daniella->ControllerId) return false;
+            if (!$character->hasTrait("Mercenary", $daniella)) return false;
+            if ($character instanceof _01178) return $character->canChallenge();
+            return $character->canChallenge() && !$character->Engaged;
+        });
         if (count($mercenaries) == 0)
             return false;
 
@@ -50,10 +53,12 @@ class Action_01036 extends CharacterAction implements IAbilityThatTargetsCharact
     {
         $daniella = $this->getOwningCharacter($theah);
         $performers = $theah->getCharactersAtLocation($daniella->Location);
-        $performers = array_filter($performers, fn($performer) => 
-            $performer->ControllerId == $daniella->ControllerId && 
-            $performer->hasTrait("Mercenary", $daniella) &&
-            $performer->canChallenge());
+        $performers = array_filter($performers, function($performer) use ($daniella) {
+            if ($performer->ControllerId != $daniella->ControllerId) return false;
+            if (!$performer->hasTrait("Mercenary", $daniella)) return false;
+            if ($performer instanceof _01178) return $performer->canChallenge();
+            return $performer->canChallenge() && !$performer->Engaged;
+        });
 
         return $performers;
     }

@@ -38,7 +38,7 @@ class _01182 extends CityCharacter implements IHasReactions
             clienttranslate('Maghreb'),
         ];
 
-        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>City Reaction: Before an opposing character moves from this location • Wound them. (Even during Dusk.)</p>");
+        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p><b>City Reaction:</b> Before an opposing character moves from this location • Wound them. (Even during Dusk.)</p>");
 
         $this->resetCard();
 

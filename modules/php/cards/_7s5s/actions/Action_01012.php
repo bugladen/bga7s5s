@@ -70,6 +70,11 @@ class Action_01012 extends CharacterAction implements ISorcererAbility, IAbility
     {
         $performer = $this->getOwningCharacter($game->theah);
 
+        if ($character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("Target character must be an opposing character")];
+        }
+
         if ($character->Location != $performer->Location)
         {
             return [false, $game->translate("Target character is not at the same location as the performer")];

@@ -34,7 +34,7 @@ class _01181 extends CityAttachment implements IHasReactions
             clienttranslate('Trinket'),
         ];
 
-        $this->Text = clienttranslate("<p>Reaction: After a character at this location is wounded, engage this card • Heal a wound from them, or two instead if the equipped character is a Strega.</p>");
+        $this->Text = clienttranslate("<p><b>Reaction:</b> After a character at this location is wounded, engage this card • Heal a wound from them, or two instead if the equipped character is a Strega.</p>");
 
         $this->resetCard();
 

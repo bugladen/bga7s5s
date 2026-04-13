@@ -34,7 +34,7 @@ class _01083 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             clienttranslate('Honor'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Your performer issues a [combat[ challenge to target opposing character. Only Leaders can intervene.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Your performer issues a [Combat] challenge to target opposing character. Only Leaders can intervene.</p>");
 
         $this->resetCard();
 

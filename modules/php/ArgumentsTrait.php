@@ -15,6 +15,7 @@
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 
@@ -610,6 +611,10 @@ trait ArgumentsTrait
             {
                 if (! $character->canIntervene()) continue;
             }
+            else if ($character instanceof _01188)
+            {
+                // Vladislav can intervene while engaged
+            }
             else
             {
                 if (! $character->canIntervene() || $character->Engaged) continue;
@@ -879,7 +884,32 @@ trait ArgumentsTrait
                     "args" => $args
                 ]
             ]
-        ];       
-        
+        ];
+
+    }
+
+    public function argsPlanningPhaseResolveWhenRevealedCardsChooseOrder(): array
+    {
+        $this->theah->buildCity();
+
+        $remainingJson = $this->globals->get(Game::WHEN_REVEALED_REMAINING_CARDS);
+        $remaining = $remainingJson ? json_decode($remainingJson, true) : [];
+
+        $whenRevealedCards = [];
+        foreach ($remaining as $entry)
+        {
+            $card = $this->theah->getCardById($entry['cardId']);
+            $playerName = $this->getPlayerNameById($entry['playerId']);
+            $whenRevealedCards[] = [
+                'playerId' => $entry['playerId'],
+                'cardId' => $entry['cardId'],
+                'playerName' => $playerName,
+                'cardName' => $card ? $card->Name : '',
+            ];
+        }
+
+        return [
+            "whenRevealedCards" => $whenRevealedCards,
+        ];
     }
 }

@@ -40,7 +40,7 @@ class _01205 extends CityCharacter implements IHasActions
             clienttranslate('Castille'),
         ];
 
-        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>City Action: Engage Giacinto • Engage target opposing character. Move them and Giacinto to the same adjacent City location.</p>");
+        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p><b>City Action:</b> Engage Giacinto • Engage target opposing character. Move them and Giacinto to the same adjacent City location.</p>");
 
         $this->resetCard();
 

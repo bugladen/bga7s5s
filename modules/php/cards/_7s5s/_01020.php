@@ -46,7 +46,7 @@ class _01020 extends Brute implements IHasActions
             clienttranslate('Brute'),
         ];
 
-        $this->Text = clienttranslate("<p>Brute (Brutes do not count against your Crew Cap, go to the discard pile when destroyed, and are discarded from play at the end of the day.)</p><p>City Action: Destroy Dante • Move target character to that location.</p>");
+        $this->Text = clienttranslate("<p>Brute (Brutes do not count against your Crew Cap, go to the discard pile when destroyed, and are discarded from play at the end of the day.)</p><p><b>City Action:</b> Destroy Dante • Move target character to that location.</p>");
 
         $this->resetCard();
 

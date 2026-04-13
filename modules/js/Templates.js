@@ -76,15 +76,6 @@
         </div>
         `;
         
-        window.jstpl_help_cards = `
-        <div>
-        <img id="help_card_1" src="https://dtdb.co/images/7s5s/en/help.card.1.jpg" class="_7sfs-help-card" />
-        <img id="help_card_2" src="https://dtdb.co/images/7s5s/en/help.card.2.jpg" class="_7sfs-help-card" />
-        <img id="help_card_3" src="https://dtdb.co/images/7s5s/en/help.card.3.jpg" class="_7sfs-help-card" />
-        <img id="help_card_4" src="https://dtdb.co/images/7s5s/en/help.card.4.jpg" class="_7sfs-help-card" />
-        </div>
-        `;
-        
         window.jstpl_home = `
         <div id="\${id}" class="_7sfs-home-container _7sfs-home-\${faction}">
             <div class="_7sfs-home-panel">

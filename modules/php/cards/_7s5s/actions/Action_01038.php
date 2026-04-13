@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+use Bga\GameFramework\UserException;
 
 class Action_01038 extends CharacterAction
 {
@@ -52,10 +53,11 @@ class Action_01038 extends CharacterAction
 
             $this->announceAction($event->theah->game);
 
+            $otto = $this->getOwningCharacter($event->theah);
             $event->theah->game->notify->all('message', clienttranslate('${player_name} uses Otto Streit\'s Action to reveal Attachments from their deck. ${found} Attachment(s) have been revealed. 
             <p>Cards Revealed: ${names}'), [
                 'i18n' => ['card_name'],
-                'player_name' => $event->theah->game->getActivePlayerName(),
+                'player_name' => $event->theah->game->getPlayerNameById($otto->ControllerId),
                 'card_name' => $otto->Name,
                 'count' => $count,
                 'found' => $found,
@@ -98,13 +100,20 @@ class Action_01038 extends CharacterAction
      
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01038_3)
         {
-            $game->notify->all("message", clienttranslate('${player_name} chooses not to put any Attachments into their Faction Hand.  The cards have been sunk.'), [
-                "player_name" => $game->getActivePlayerName(),
-            ]);
-
             $count = 3;
             $otto = $this->getOwningCharacter($game->theah);
             $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($otto->ControllerId, $count);
+
+            foreach ($deckCards as $deckCard) {
+                $card = $game->getCardObjectFromDb($deckCard['id']);
+                if ($card instanceof Attachment) {
+                    throw new UserException($game->translate("You must choose an Attachment to put into your hand."));
+                }
+            }
+
+            $game->notify->all("message", clienttranslate('${player_name} reveals no Attachments among the top cards.  The cards have been sunk.'), [
+                "player_name" => $game->getPlayerNameById($otto->ControllerId),
+            ]);
             foreach ($deckCards as $deckCard) 
             {
                 $event = EventFactory::createCardAddedToFactionDeckEvent($otto->ControllerId, $deckCard['id'], false);
@@ -141,14 +150,14 @@ class Action_01038 extends CharacterAction
 
             if (!$found)
             {
-                throw new \BgaUserException(sprintf($game->translate("Card %d is not in the top %d cards of the player's deck."), $id, $count));
+                throw new UserException(sprintf($game->translate("Card %d is not in the top %d cards of the player's deck."), $id, $count));
             }
 
             $chosenCard = $game->getCardObjectFromDb($id);
 
             if (! $chosenCard instanceof Attachment)
             {
-                throw new \BgaUserException(sprintf($game->translate("Card %d is not an Attachment."), $id));
+                throw new UserException(sprintf($game->translate("Card %d is not an Attachment."), $id));
             }
         
             // Put the chosen card into the player's hand. Sink the rest.

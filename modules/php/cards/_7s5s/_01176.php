@@ -30,7 +30,7 @@ class _01176 extends Risk implements IHasActions
             clienttranslate('Heroic'),
         ];
 
-        $this->Text = clienttranslate("<p>While this card is targeting a Hero or a Scoundrel, it has -1 cost.</p><p>Action: Target character heals a wound.</p>");
+        $this->Text = clienttranslate("<p>While this card is targeting a Hero or a Scoundrel, it has -1 cost.</p><p><b>Action:</b> Target character heals a wound.</p>");
 
         $this->Actions = [
             new Action_01176(),

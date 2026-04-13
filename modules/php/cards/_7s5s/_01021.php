@@ -42,7 +42,7 @@ class _01021 extends FactionAttachment
             clienttranslate("Unique")
         ];
 
-        $this->Text = clienttranslate("<p>May equip to any non-Leader character at a City location.</p><p>Forced: After the equipped character en gardes • Wound them.</p>");
+        $this->Text = clienttranslate("<p>May equip to any non-Leader character at a City location.</p><p><b>Forced:</b> After the equipped character en gardes • Wound them.</p>");
 
         $this->resetCard();
     }

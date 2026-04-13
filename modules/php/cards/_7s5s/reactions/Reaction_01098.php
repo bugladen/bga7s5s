@@ -6,9 +6,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMustered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01098 extends CardReaction
@@ -36,14 +41,14 @@ class Reaction_01098 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCardDiscardedFromHand && $this->isAvailable()) 
+        if (($event instanceof EventCardDiscardedFromHand || $event instanceof EventCardDiscardedFromPlay || $event instanceof EventCardAddedToCityDiscardPile) 
+            && $this->isAvailable()) 
         {
             $game = $event->theah->game;
             $card = $game->getCardObjectFromDb($event->cardId);
             $owner = $this->getOwningCard($event->theah);
             if ($card->hasCondition(Game::CATS_EMBARGO_TARGET) && $card->ControllerId != $owner->ControllerId)
             {
-                $owner = $this->getOwningCard($event->theah);
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);
             }
@@ -53,20 +58,44 @@ class Reaction_01098 extends CardReaction
         {
             $owner = $this->getOwningCard($event->theah);
             $attachment = $event->theah->getAttachmentById($event->attachmentId);
-            if ($attachment->hasCondition(Game::CATS_EMBARGO_TARGET))
+            if ($attachment->hasCondition(Game::CATS_EMBARGO_TARGET) && $event->playerId != $owner->ControllerId)
             {
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);
             }
         }
 
-        if ($event instanceof EventDuelCalculateCombatCardStats && $this->isAvailable())
+        if ($event instanceof EventCombatCardAnnounced && $this->isAvailable())
         {
             $game = $event->theah->game;
-            $card = $game->getCardObjectFromDb($event->combatCardId);
-            if ($card->hasCondition(Game::CATS_EMBARGO_TARGET))
+            $card = $game->getCardObjectFromDb($event->cardId);
+            $owner = $this->getOwningCard($event->theah);
+            if ($card->hasCondition(Game::CATS_EMBARGO_TARGET) && $event->playerId != $owner->ControllerId)
             {
-                $owner = $this->getOwningCard($event->theah);
+                $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $event->theah->queueEvent($transition);
+            }
+        }
+
+        if (($event instanceof EventCharacterMustered || $event instanceof EventApproachCharacterPlayed) && $this->isAvailable())
+        {
+            $game = $event->theah->game;
+            $card = $game->getCardObjectFromDb($event->characterId);
+            $owner = $this->getOwningCard($event->theah);
+            if ($card->hasCondition(Game::CATS_EMBARGO_TARGET) && $event->playerId != $owner->ControllerId)
+            {
+                $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $event->theah->queueEvent($transition);
+            }
+        }
+
+        if ($event instanceof EventCardMustered && $this->isAvailable())
+        {
+            $game = $event->theah->game;
+            $card = $game->getCardObjectFromDb($event->cardId);
+            $owner = $this->getOwningCard($event->theah);
+            if ($card->hasCondition(Game::CATS_EMBARGO_TARGET) && $event->playerId != $owner->ControllerId)
+            {
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);
             }

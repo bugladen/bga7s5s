@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -73,7 +74,7 @@ class Maneuver_01084 extends Maneuver
         {
             $owner = $this->getOwningCard($event->theah);
             $event->riposte += 1;
-            $event->explanations[] = $owner->Name;
+            $event->explanations[] = sprintf($event->theah->game->translate("%s adds 1 Riposte."), $owner->getInjectCode());
         }
 
         if ($event instanceof EventDuelCalculateCombatCardStats && $this->IncreaseAdversaryThrust)
@@ -91,6 +92,13 @@ class Maneuver_01084 extends Maneuver
                 $this->IncreaseAdversaryThrust = false;
                 $owner->IsUpdated = true;
             }
+        }
+
+        if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
+        {
+            $this->IncreaseAdversaryThrust = false;
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
         }
 
         if ($event instanceof EventDuelEnd && $this->IncreaseAdversaryThrust)

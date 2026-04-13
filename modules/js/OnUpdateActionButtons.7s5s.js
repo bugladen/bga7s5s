@@ -206,7 +206,7 @@
             },
             'highDramaPhase01008_4': () => {
                 this.addActionButton(`actSink`, _('Sink'), () => this.bgaPerformAction('actFromCardWithId', {id: 1})) 
-                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actPass', {}), { id: 'actPass', color: 'alert' }) 
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actFromCardPass', color: 'alert' })
             },
 
     
@@ -310,7 +310,9 @@
             },
             'highDramaPhase01038_3': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' }) 
+                const hasAttachment = args.args.cards.some(card => card.type === 'Attachment');
+                if (!hasAttachment)
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 

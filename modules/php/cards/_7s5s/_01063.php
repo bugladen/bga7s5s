@@ -36,7 +36,7 @@ class _01063 extends Character
             clienttranslate("Montaigne"),
         ];
 
-        $this->Text = clienttranslate("<p>Your characters at Bastien's location gain \"Technique: Swap this character with a Musketeer at this location.\"</p><p>Technique: When your round ends, if Bastien was not wounded during it, wound the adversary. (Issuing a challenge is not a round of a duel.)</p>");
+        $this->Text = clienttranslate("<p>Your characters at Bastien's location gain \"<b>Technique:</b> Swap this character with a Musketeer at this location.\"</p><p><b>Technique:</b> When your round ends, if Bastien was not wounded during it, wound the adversary. (Issuing a challenge is not a round of a duel.)</p>");
 
         $this->resetCard();
 
@@ -53,7 +53,11 @@ class _01063 extends Character
         if ($event instanceof EventCharacterRecruited)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if ($character->ControllerId == $this->ControllerId && $character->Location == $this->Location && $character instanceof IHasTechniques)
+            if ($character->Id != $this->Id &&
+                $character->ControllerId == $this->ControllerId && 
+                $character->Location == $this->Location && 
+                $character->Location != Game::LOCATION_PLAYER_HOME &&
+                $character instanceof IHasTechniques)
             {
                 $technique = new Technique_01063Swap();
                 $technique->setId("Technique_01063Swap");

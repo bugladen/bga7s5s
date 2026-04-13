@@ -40,7 +40,7 @@ class _01192 extends CityCharacter implements IHasActions
             clienttranslate('Castille'),
         ];
 
-        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>City Action: Reveal cards from your deck equal to Gustavo's [Inf]. Put a revealed risk into your hand. Sink the rest.</p>");
+        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p><b>City Action:</b> Reveal cards from your deck equal to Gustavo's [Influence]. Put a revealed risk into your hand. Sink the rest.</p>");
 
         $this->resetCard();
 

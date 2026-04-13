@@ -71,6 +71,7 @@ class Game extends \Bga\GameFramework\Table
     final const EXTRA_ACTIONS = "extraActions";
     final const OVERRIDE_AS_NOT_FIRST_PLAYER = "overrideAsNotFirstPlayer";
     final const INVALID_PAY_CARD_IDS = "invalidPayCardIds";
+    final const WHEN_REVEALED_REMAINING_CARDS = "whenRevealedRemainingCards";
 
     //Conditions\
     final const HELPED_BY_PENYA = "Helped By Penya";
@@ -78,6 +79,7 @@ class Game extends \Bga\GameFramework\Table
     final const CRYSTAL_EYE_TARGET = "Crystal Eye Target";
     final const CATS_EMBARGO_TARGET = "Cats Embargo Target";
     final const MARYAM_BENU_PLEROMA_ABILITY_USED = "Maryam Benu Pleroma Ability Used";
+    final const CARMELLA_ABILITY_USED = "Carmella Ability Used";
     final const INDOMITABLE_WILL_CONDITION = "Indomitable Will Condition";
     
     //Equip global variables
@@ -314,8 +316,8 @@ class Game extends \Bga\GameFramework\Table
 
             if ($player['leader_card_id'] != null)
             {
-                $card = $this->theah->getCardById($player['leader_card_id']);
-                $player['leader'] = $card->getPropertyArray($this);
+                $leader = $this->theah->getLeaderByPlayerId($player_id);
+                $player['leader'] = $leader->getPropertyArray($this);
             }
             $location = $this->getPlayerDiscardDeckName($player_id);
             $player['discard'] = $this->getCardPropertiesInLocation($location);

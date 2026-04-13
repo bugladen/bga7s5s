@@ -37,7 +37,7 @@ class _01147 extends Scheme implements IHasActions
             clienttranslate("Market"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [The Grand Bazaar] and [The Forums].</p><p>Reveal cards from the City Deck until you find an attachment. Add it to [The Grand Bazaar]. Sink the rest.</p><hr><p>City Action: Your performer equips target attachment from [The Grand Bazaar]. If they are at [The Grand Bazaar], it has -1 cost.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to [The Grand Bazaar] and [The Forums].</p><p>Reveal cards from the City Deck until you find an attachment. Add it to [The Grand Bazaar]. Sink the rest.</p><hr><p><b>City Action:</b> Your performer equips target attachment from [The Grand Bazaar]. If they are at [The Grand Bazaar], it has -1 cost.</p>");
 
         $this->resetCard();
 
@@ -54,8 +54,8 @@ class _01147 extends Scheme implements IHasActions
         {
             $game = $event->theah->game;
 
-            $game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  
-            Renown will be added to The Forum and The Grand Bazaar. 
+            $game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.
+            Renown will be added to The Grand Bazaar and The Forums.
             Cards will be revealed from the City Deck until an Attachment is revealed, then added to The Grand Bazaar.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
@@ -119,7 +119,7 @@ class _01147 extends Scheme implements IHasActions
     {
         parent::stateFromCard($game, $state, $stateName, $actionId);
 
-        //Sink all the cards except the revealed mercenary
+        //Sink all the cards except the revealed attachment
         $deck = $game->getGameDeckObject();
         $attachmentId = $game->globals->get(Game::CHOSEN_CARD);
         $revealed = json_decode($game->globals->get(Game::REVEALED_CARDS), true);

@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
@@ -590,26 +591,26 @@ trait FrameworkActionsTrait
             $handCards = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
             $handCardIds = array_map(function($handCard) { return $handCard['id']; }, $handCards);
             if (!in_array($attachmentId, $handCardIds)) {
-                throw new \BgaUserException(clienttranslate("Attachment is not in Player's Hand."));
+                throw new UserException(clienttranslate("Attachment is not in Player's Hand."));
             }
         }
 
         // Let's Haggle can equip attachments only from the Bazaar
-        if ($equipType == Game::LETS_HAGGLE_EQUIP_TYPE) 
+        // The performer does NOT need to be at the Bazaar (only -1 discount requires it)
+        if ($equipType == Game::LETS_HAGGLE_EQUIP_TYPE)
         {
             if ($attachment->Location != Game::LOCATION_CITY_BAZAAR)
             {
-                throw new \BgaUserException(clienttranslate("Let's Haggle: Attachment is not at Bazaar."));
+                throw new UserException(clienttranslate("Let's Haggle: Attachment is not at Bazaar."));
             }
-        } 
-
-        if ($attachment->Location != Game::LOCATION_HAND)
+        }
+        else if ($attachment->Location != Game::LOCATION_HAND)
         {
             $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($performer->Location);
             $attachmentIds = array_map(function($attachment) { return $attachment->Id; }, $attachmentsAtLocation);
 
             if (!in_array($attachmentId, $attachmentIds)) {
-                throw new \BgaUserException(clienttranslate("Attachment is not at Performer's Location."));
+                throw new UserException(clienttranslate("Attachment is not at Performer's Location."));
             }
         }
 
@@ -1228,7 +1229,7 @@ trait FrameworkActionsTrait
 
         $this->theah->buildCity();
         $character = $this->theah->getCardById($id);
-        
+
         $this->theah->interventionCheck($character);
 
         //Reset the conditions for defender
@@ -1257,15 +1258,14 @@ trait FrameworkActionsTrait
             $engageRequired = false;
         }
 
+        $this->theah->queueEvent($interveneEvent);
+
         if ($engageRequired)
         {
-            // Intervening character is now engaged
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $character->Id);
             $this->theah->eventCheck($engageEvent);
             $this->theah->queueEvent($engageEvent);
         }
-        
-        $this->theah->queueEvent($interveneEvent);
 
         $this->globals->set(GAME::CHALLENGE_ACCEPTED, true);
 
@@ -1609,9 +1609,7 @@ trait FrameworkActionsTrait
     public function actDuskPhaseCardsDiscarded(string $ids)
     {
         $playerId = $this->getCurrentPlayerId();
-        $sql = "SELECT leader_card_id as leaderId FROM player WHERE player_id = $playerId";
-        $leaderId = $this->getUniqueValueFromDB($sql);
-        $leader = $this->getCardObjectFromDb($leaderId);
+        $leader = $this->theah->getLeaderByPlayerId($playerId);
 
         //Get the cards in hand
         $cards = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);
@@ -1941,5 +1939,34 @@ trait FrameworkActionsTrait
         }
         $this->gamestate->nextState("paid");
    }
+
+    public function actChooseWhenRevealedCard(int $cardId): void
+    {
+        $this->theah->buildCity();
+
+        $remainingJson = $this->globals->get(Game::WHEN_REVEALED_REMAINING_CARDS);
+        $remaining = $remainingJson ? json_decode($remainingJson, true) : [];
+
+        $matchedEntry = null;
+        $newRemaining = [];
+        foreach ($remaining as $entry)
+        {
+            if ($entry['cardId'] == $cardId) {
+                $matchedEntry = $entry;
+            } else {
+                $newRemaining[] = $entry;
+            }
+        }
+
+        if ($matchedEntry === null) {
+            throw new UserException(clienttranslate("Invalid card selection. Please try again."));
+        }
+
+        $event = EventFactory::createCardWhenRevealedEffectEvent($matchedEntry['playerId'], $matchedEntry['cardId']);
+        $this->theah->queueEvent($event);
+
+        $this->globals->set(Game::WHEN_REVEALED_REMAINING_CARDS, json_encode($newRemaining));
+        $this->gamestate->nextState("");
+    }
 
 }

@@ -29,7 +29,7 @@ class _01102 extends Risk
             clienttranslate('Hubris'),
         ];
 
-        $this->Text = clienttranslate("<p>Forced: When your round ends • Equip this card to the adversary from your dueling line.</p><p>The equipped character has -1[fin] and gains \"Action: Discard two cards • Destroy this card.\"</p>");
+        $this->Text = clienttranslate("<p><b>Forced:</b> When your round ends • Equip this card to the adversary from your dueling line.</p><p>The equipped character has -1[Finesse] and gains \"<b>Action:</b> Discard two cards • Destroy this card.\"</p>");
 
         $this->resetCard();
     }

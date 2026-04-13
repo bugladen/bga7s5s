@@ -42,7 +42,7 @@ class _01007 extends Character implements IHasActions
             clienttranslate("Vodacce"),
         ];
 
-        $this->Text = clienttranslate("<p>Aldo gains +1 [Influence] for each Renown at this location.</p><p>City Action: Move a Renown from a location you control to this one.</p>");
+        $this->Text = clienttranslate("<p>Aldo gains +1 [Influence] for each Renown at this location.</p><p><b>City Action:</b> Move a Renown from a location you control to this one.</p>");
 
         $this->resetCard();
 

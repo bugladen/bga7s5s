@@ -37,13 +37,13 @@ class Reaction_01013 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCharacterDestroyed)
+        if ($event instanceof EventCharacterDestroyed && $this->isAvailable())
         {
             $owner = $this->getOwningCharacter($event->theah);
             if ($event->theah->cardInCity($owner))
             {
                 $character = $event->theah->getCharacterById($event->characterId);
-                if ($character->hasTrait("Red Hand") && $character->Location == $owner->Location)
+                if ($character->hasTrait("Red Hand") && $character->ControllerId == $owner->ControllerId && $character->Location == $owner->Location)
                 {
                     $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionEvent);
@@ -62,7 +62,7 @@ class Reaction_01013 extends CardReaction
             $event = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
             $game->theah->queueEvent($event);
 
-            $game->notifyAllPlayers("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to draw a card.'), [
+            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to draw a card.'), [
                 "reaction_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
             ]);

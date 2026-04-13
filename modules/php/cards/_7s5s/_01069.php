@@ -37,7 +37,7 @@ class _01069 extends Character implements IHasActions
             clienttranslate("Montaigne"),
         ];
 
-        $this->Text = clienttranslate("<p>Maxime ignores wounds from Sorceries and Sorcerer abilities he performs. (Wound costs are considered paid.)</p><p>Sorcerer Action: Discard a card • Put target non-Unique attachment from your discard pile into your hand.</p>");
+        $this->Text = clienttranslate("<p>Maxime ignores wounds from Sorceries and Sorcerer abilities he performs. (Wound costs are considered paid.)</p><p><b>Sorcerer Action:</b> Discard a card • Put target non-Unique attachment from your discard pile into your hand.</p>");
 
         $this->resetCard();
 
@@ -64,20 +64,13 @@ class _01069 extends Character implements IHasActions
             }
 
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source?->Id == $this->Id || $source?->ControllerId == $this->ControllerId)
+            if ($source?->Id == $this->Id || in_array($event->sourceId, $this->Attachments))
             {
                 $sorcererAbility = false;
                 if ($event->abilityId != '')
                 {
                     $ability = $source->getAbilityById($event->abilityId);
                     if ($ability && $ability instanceof ISorcererAbility)
-                    {
-                        $sorcererAbility = true;
-                    }
-                }
-                else
-                {
-                    if ($source instanceof ISorcererAbility)
                     {
                         $sorcererAbility = true;
                     }

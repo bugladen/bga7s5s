@@ -23,12 +23,15 @@ class Reaction_01200 extends AttachmentReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        $skull = $this->getOwningAttachment($theah);
-        if ($skull instanceof _01200)
+        $attachment = $this->getOwningAttachment($theah);
+        $cardName = '?';
+        if ($attachment instanceof _01200)
         {
-            $card = $theah->getCardById($skull->ChosenCard);
+            $card = $theah->getCardById($attachment->ChosenCard);
+            if ($card !== null)
+                $cardName = $card->Name;
         }
-        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('Chosen card %s was played.${you} may choose to gain Renown: '), $card->Name);
+        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('Chosen card %s was played. ${you} may choose to gain Renown: '), $cardName);
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -76,12 +79,14 @@ class Reaction_01200 extends AttachmentReaction
             $owner = $this->getOwningCard($game->theah);
             $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} used Reaction to gain a Renown.'), [
                 "owner_inject_code" => $owner->getInjectCode(),
-                "player_name" => $game->getActivePlayerName(), 
+                "player_name" => $game->getPlayerNameById($owner->ControllerId), 
             ]);
 
             $reknownEvent = EventFactory::createPlayerGainsReknownEvent($game->getActivePlayerId(), 1);
             $game->theah->eventCheck($reknownEvent);
             $game->theah->queueEvent($reknownEvent);
+
+            $this->setUsed($game->theah, true);
         }
 
         $game->gamestate->nextState("done");

@@ -13,7 +13,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 class Reaction_01199 extends CardReaction
 {
 
-    private int $TargetCharacterId;
+    private int $ChallengerId;
+    private int $DefenderId;
 
     public function __construct()
     {
@@ -21,7 +22,8 @@ class Reaction_01199 extends CardReaction
 
         $this->Name = clienttranslate('Heal Wound');
 
-        $this->TargetCharacterId = 0;
+        $this->ChallengerId = 0;
+        $this->DefenderId = 0;
 
     }
 
@@ -33,7 +35,18 @@ class Reaction_01199 extends CardReaction
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Heal Wound'), 'healWound');
+
+        if ($this->ChallengerId != 0)
+        {
+            $character = $theah->getCharacterById($this->ChallengerId);
+            $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Heal %s'), $theah->game->translate($character->Name)), "healWound-{$this->ChallengerId}");
+        }
+        if ($this->DefenderId != 0)
+        {
+            $character = $theah->getCharacterById($this->DefenderId);
+            $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Heal %s'), $theah->game->translate($character->Name)), "healWound-{$this->DefenderId}");
+        }
+
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
         return $array;
     }
@@ -49,24 +62,28 @@ class Reaction_01199 extends CardReaction
             {
                 $challenger = $event->theah->getCharacterById($event->challengerId);
                 $defender = $event->theah->getCharacterById($event->defenderId);
-    
+
+                $hasValidTarget = false;
+
                 if ($challenger->Location == $takama->Location && 
                     $takama->ControllerId == $challenger->ControllerId && 
                     $challenger->Wounds > 0)
                 {
-                    $this->TargetCharacterId = $challenger->Id;
-                    $takama->IsUpdated = true;
-
-                    $transition = EventFactory::createReactionTransitionEvent($takama->ControllerId, $takama->Id, $this->Id);
-                    $event->queueEvent($transition);
+                    $this->ChallengerId = $challenger->Id;
+                    $hasValidTarget = true;
                 }
-                else if ($defender->Location == $takama->Location && 
+
+                if ($defender->Location == $takama->Location && 
                     $takama->ControllerId == $defender->ControllerId && 
                     $defender->Wounds > 0)
                 {
-                    $this->TargetCharacterId = $defender->Id;
-                    $takama->IsUpdated = true;
+                    $this->DefenderId = $defender->Id;
+                    $hasValidTarget = true;
+                }
 
+                if ($hasValidTarget)
+                {
+                    $takama->IsUpdated = true;
                     $transition = EventFactory::createReactionTransitionEvent($takama->ControllerId, $takama->Id, $this->Id);
                     $event->queueEvent($transition);
                 }
@@ -76,7 +93,8 @@ class Reaction_01199 extends CardReaction
         if ($event instanceof EventDuskEndOfDay)
         {
             $takama = $this->getOwningCharacter($event->theah);
-            $this->TargetCharacterId = 0;
+            $this->ChallengerId = 0;
+            $this->DefenderId = 0;
             $takama->IsUpdated = true;
         }
     }
@@ -85,22 +103,26 @@ class Reaction_01199 extends CardReaction
     {
         parent::performReaction($game, $state, $internalId, $reactionId);
 
-        if ($reactionId == 'healWound')
+        if (str_starts_with($reactionId, 'healWound'))
         {
             $this->setUsed($game->theah, true);
 
+            $targetId = (int) str_replace("healWound-", "", $reactionId);
+
             $takama = $this->getOwningCharacter($game->theah);
-            $event = EventFactory::createCharacterBeingHealedEvent($this->TargetCharacterId, $takama->Id, 1, $takama->getInjectCode(), $this->Id);
+            $event = EventFactory::createCharacterBeingHealedEvent($targetId, $takama->Id, 1, $takama->getInjectCode(), $this->Id);
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
-            $this->TargetCharacterId = 0;
+            $this->ChallengerId = 0;
+            $this->DefenderId = 0;
             $takama->IsUpdated = true;
         }
 
         if ($reactionId == 'pass')
         {
-            $this->TargetCharacterId = 0;
+            $this->ChallengerId = 0;
+            $this->DefenderId = 0;
             $takama = $this->getOwningCharacter($game->theah);
             $takama->IsUpdated = true;
         }

@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
@@ -53,6 +54,11 @@ class Action_01198 extends AttachmentAction implements IAbilityThatTargetsCharac
         $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
         $performer = $game->theah->getCharacterById($performerId);
 
+        if ($character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("You cannot challenge a character that is controlled by you.")];
+        }
+
         if ($character->Location != $performer->Location)
         {
             return [false, $game->translate("Character is not at the same location as the performer")];
@@ -73,9 +79,12 @@ class Action_01198 extends AttachmentAction implements IAbilityThatTargetsCharac
                 $challengeType = $event->theah->game->globals->get(Game::CHALLENGE_TYPE);
                 $owner = $this->getOwningCharacter($event->theah);
                 $target = $event->theah->getCharacterById($event->targetId);
-                if ($challengeType == Game::TRISKELION_CHALLENGE_TYPE && $owner->Id == $event->challengerId && $target instanceof Character && ! $target instanceof Leader)
+                if ($challengeType == Game::TRISKELION_CHALLENGE_TYPE 
+                    && $owner->Id == $event->challengerId 
+                    && $target instanceof Character 
+                    && ! $target->hasTrait("Leader"))
                 {
-                    throw new \BgaUserException($event->theah->game->translate("Guild Triskelion: Only Leaders can reject a challenge!"));
+                    throw new UserException($event->theah->game->translate("Guild Triskelion: Only Leaders can reject a challenge!"));
                 }
             }
         }

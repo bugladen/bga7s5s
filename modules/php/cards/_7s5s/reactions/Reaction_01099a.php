@@ -49,17 +49,8 @@ class Reaction_01099a extends CardReaction
         {
             $owner = $this->getOwningCard($event->theah);
 
-            if ($event->sourceId == 0)
+            if ($event->sourceId != 0)
             {
-                $this->discardedCardId = $event->cardId;
-                $owner->IsUpdated = true;
-
-                $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->queueEvent($transition);
-            }
-            else if ($event->sourceId != 0)
-            {
-
                 $source = $event->theah->getCardById($event->sourceId);
                 if ($source?->ControllerId == $owner->ControllerId)
                 {

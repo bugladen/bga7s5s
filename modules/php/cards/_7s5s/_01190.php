@@ -6,7 +6,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterCombatModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+use Bga\GameFramework\UserException;
 
 class _01190 extends CityCharacter
 {
@@ -52,10 +54,35 @@ class _01190 extends CityCharacter
     {
         parent::addAttachment($theah, $attachment);
 
-        //Reset combat stat back to original if greater than original
         if ($this->ModifiedCombat > $this->Combat) 
         {
             $this->ModifiedCombat = $this->Combat;
+        }
+    }
+
+    public function removeAttachment(Theah $theah, Attachment $attachment)
+    {
+        parent::removeAttachment($theah, $attachment);
+
+        // WHY: parent subtracts the attachment's CombatModifier, but if that modifier
+        // was capped during addAttachment, the subtraction over-corrects. Recalculate
+        // from base + remaining attachments to avoid phantom subtraction.
+        $this->recalculateCappedCombat($theah);
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        // Cap combat after EventHub processes EventCharacterCombatModified,
+        // which bypasses the addAttachment path entirely
+        if ($event instanceof EventCharacterCombatModified && $event->CharacterId == $this->Id)
+        {
+            if ($this->ModifiedCombat > $this->Combat)
+            {
+                $this->ModifiedCombat = $this->Combat;
+                $this->IsUpdated = true;
+            }
         }
     }
 
@@ -67,14 +94,41 @@ class _01190 extends CityCharacter
         {
             $defender = $event->theah->getCardById($event->defenderId);
             $challenger = $event->theah->getCardById($event->challengerId);
-            if ($challenger->ControllerId != $this->ControllerId && //Challenger is not the same player as Sigurd
-                $this->Id != $event->defenderId && //Defender is not Sigurd
-                $defender->Location == $this->Location && //Defender is in the same location as Sigurd
-                ! $this->Engaged) //Sigurd is not engaged
+            if ($challenger->ControllerId != $this->ControllerId &&
+                $this->Id != $event->defenderId &&
+                $defender->Location == $this->Location &&
+                ! $this->Engaged)
             {
-                throw new \BgaUserException($event->theah->game->translate("Sigurd Ulfsen must be the target of the challenge if he is en garde and in the same location."));
+                throw new UserException($event->theah->game->translate("Sigurd Ulfsen must be the target of the challenge if he is en garde and in the same location."));
             }
         }
+    }
+
+    private function recalculateCappedCombat(Theah $theah)
+    {
+        $combat = $this->Combat;
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $att = $theah->getAttachmentById($attachmentId);
+            if (!$att)
+                continue;
+
+            $combat += $att->CombatModifier;
+        }
+
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $att = $theah->getAttachmentById($attachmentId);
+            if (!$att)
+                continue;
+
+            if ($att->CombatLocked)
+            {
+                $combat = $att->CombatLockedValue;
+            }
+        }
+
+        $this->ModifiedCombat = max(0, min($combat, $this->Combat));
     }
 
 }

@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02003;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
@@ -849,7 +850,8 @@ class Theah
         if ($leaderId) 
         {
             $leader = $this->getCardById($leaderId);
-            if ($leader instanceof Leader) 
+            $playerLockerName = $this->game->getPlayerLockerName($playerId);
+            if ($leader instanceof Leader && $leader->Location != $playerLockerName) 
             {
                 return $leader;
             }
@@ -1652,7 +1654,7 @@ class Theah
         }    
 
         //Special case for Carmella Vanessa Slavaggi, Mourad, and Rena Klingenhalter (with ready Weapon)
-        if ($character instanceof _01178 || $character instanceof _02003 || ($character instanceof _01040 && $character->hasEngardeWeaponEquipped($this)))
+        if ($character instanceof _01178 || $character instanceof _02003 || $character instanceof _01188 || ($character instanceof _01040 && $character->hasEngardeWeaponEquipped($this)))
         {
             if (! $character->canIntervene())
             {

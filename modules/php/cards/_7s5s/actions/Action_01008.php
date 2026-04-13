@@ -54,7 +54,7 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
             $card = $game->getCardObjectFromDb($cardInfo['id']);
 
             $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} uses Action to Reveal the Top Card of their Faction Deck. (${card_inject_code})'), [
-                "player_name" => $game->getActivePlayerName(),
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "owner_inject_code" => $owner->getInjectCode(),
                 "card_inject_code" => $card->getInjectCode(),
             ]);
@@ -103,14 +103,23 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
             $this->announceAction($game);
 
             $game->notify->all("message", clienttranslate('${player_name} has revealed ${card_inject_code}.'), [
-                "player_name" => $game->getActivePlayerName(),
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "card_inject_code" => $card->getInjectCode(),
             ]);
 
             if ($card->hasTrait("Sorcery"))
             {
+                $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
+                $game->theah->queueEvent($sorceryStartEvent);
+
                 $event = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
                 $game->theah->queueEvent($event);
+
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $game->theah->queueEvent($actionResolvedEvent);
+
+                $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
+                $game->theah->queueEvent($sorceryPlayedEvent);
 
                 $game->gamestate->nextState("cardDrawn");
                 return;
@@ -140,7 +149,7 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
             $deck->insertCardOnExtremePosition($cardInfo['id'], $location, false);
 
             $game->notify->all("message", clienttranslate('${player_name} has chosen to sink ${card_inject_code}.'), [
-                "player_name" => $game->getActivePlayerName(),
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "card_inject_code" => $card->getInjectCode(),
             ]);
 
@@ -149,6 +158,27 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
 
             $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
             $game->theah->queueEvent($event);
+
+            $game->gamestate->nextState();
+        }
+    }
+
+    public function actFromActionPass(Game $game, int $state): void
+    {
+        parent::actFromActionPass($game, $state);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01008_4)
+        {
+            $owner = $this->getOwningCharacter($game->theah);
+
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
+            $game->theah->queueEvent($sorceryStartEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
+            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
+            $game->theah->queueEvent($sorceryPlayedEvent);
 
             $game->gamestate->nextState();
         }

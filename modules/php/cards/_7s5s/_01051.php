@@ -33,7 +33,7 @@ class _01051 extends Risk implements IHasManeuvers
             clienttranslate('Duty'),
         ];
 
-        $this->Text = clienttranslate("<p>Maneuver: Until your next round, your target Mercenary at this location takes all wounds your participant would suffer instead.</p>");
+        $this->Text = clienttranslate("<p><b>Maneuver:</b> Until your next round, your target Mercenary at this location takes all wounds your participant would suffer instead.</p>");
 
         $this->resetCard();
 

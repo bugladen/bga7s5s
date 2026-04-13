@@ -35,7 +35,7 @@ class _01016 extends Scheme implements IHasReactions
             clienttranslate("Gang"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to two different locations.</p><p>Search your deck for a Red Hand Thug. Reveal it and put it into your hand.</p><hr><p>Reaction: After you claim a location that has an opposing character • En garde target character you control at that location.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to two different locations.</p><p>Search your deck for a Red Hand Thug. Reveal it and put it into your hand.</p><hr><p><b>Reaction:</b> After you claim a location that has an opposing character • En garde target character you control at that location.</p>");
 
         $this->resetCard();
         
@@ -52,7 +52,7 @@ class _01016 extends Scheme implements IHasReactions
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) {
 
             $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose two city locations to place Renown onto. 
-            Then they must search their deck for a Red Hand Thug, reaveal it, and put it in their hand.'), [
+            Then they must search their deck for a Red Hand Thug, reveal it, and put it in their hand.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $event->playerName,
             ]);

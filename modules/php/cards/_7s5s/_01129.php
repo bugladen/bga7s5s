@@ -32,7 +32,7 @@ class _01129 extends Risk implements IHasManeuvers
             clienttranslate('Porte'),
         ];
 
-        $this->Text = clienttranslate("<p>Maneuver: For the rest of the duel, other Maneuvers and Techniques cannot be used.</p>");
+        $this->Text = clienttranslate("<p><b>Maneuver:</b> For the rest of the duel, other Maneuvers and Techniques cannot be used.</p>");
 
         $this->resetCard();
 

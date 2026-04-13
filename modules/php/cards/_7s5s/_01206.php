@@ -33,7 +33,7 @@ class _01206 extends CityAttachment implements IHasActions
             clienttranslate('Coat'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Engage this card • Pressure the performer's location with [Influence]. If successful, claim this location.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Engage this card • Pressure the performer's location with [Influence]. If successful, claim this location.</p>");
 
         $this->resetCard();
 

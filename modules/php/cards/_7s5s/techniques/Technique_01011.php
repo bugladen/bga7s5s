@@ -19,11 +19,13 @@ class Technique_01011 extends Technique
     { 
         parent::handleEvent($event);
 
+        // EventTechniqueCanceled handler not needed
+
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
             $actor = $event->theah->getCharacterById($event->actorId);
             $characters = $event->theah->getCharactersAtLocation($actor->Location);
-            $redHands = array_values(array_filter($characters, fn($character) => $character->Id != $actor->Id && $character->hasTrait("Red Hand")));
+            $redHands = array_values(array_filter($characters, fn($character) => $character->Id != $actor->Id && $character->ControllerId == $actor->ControllerId && $character->hasTrait("Red Hand")));
 
             $event->adversaryThreat += count($redHands);
             $event->explanations[] = $event->theah->game->translate("+1 Threat for each OTHER Red Hand at same location");
@@ -33,7 +35,7 @@ class Technique_01011 extends Technique
         {
             $actor = $event->theah->getCharacterById($event->actorId);
             $characters = $event->theah->getCharactersAtLocation($actor->Location);
-            $redHands = array_values(array_filter($characters, fn($character) => $character->Id != $actor->Id && $character->hasTrait("Red Hand")));
+            $redHands = array_values(array_filter($characters, fn($character) => $character->Id != $actor->Id && $character->ControllerId == $actor->ControllerId && $character->hasTrait("Red Hand")));
 
             $event->thrust += count($redHands);
             $event->explanations[] = $event->theah->game->translate("+1 Thrust for each OTHER Red Hand at same location");

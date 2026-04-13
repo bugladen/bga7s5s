@@ -42,7 +42,7 @@ class _01180 extends CityCharacter implements IHasActions
             clienttranslate('Numa')
         ];
 
-        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>While equipping an Artifact to one of your characters, it has -1 cost.</p><p>City Action: Reveal the top four cards of the City Deck. You may equip a revealed Artifact to your character at this location. Sink the rest.</p>");
+        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>While equipping an Artifact to one of your characters, it has -1 cost.</p><p><b>City Action:</b> Reveal the top four cards of the City Deck. You may equip a revealed Artifact to your character at this location. Sink the rest.</p>");
 
         $this->resetCard();
 

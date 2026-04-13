@@ -27,7 +27,7 @@ class _01183 extends CityEventCard
             clienttranslate('Feud'),
         ];
 
-        $this->Text = clienttranslate("<p>During a duel, participants at this location have -1[parry] on their combat cards.</p><p>Pressures at this location also add [Combat]. (Pressures using Combat do not add Combat again.)</p>");
+        $this->Text = clienttranslate("<p>During a duel, participants at this location have -1[Parry] on their combat cards.</p><p>Pressures at this location also add [Combat]. (Pressures using Combat do not add Combat again.)</p>");
 
         $this->resetCard();
     }
@@ -36,7 +36,7 @@ class _01183 extends CityEventCard
     {
         parent::getPressureStats($theah, $performer, $location, $pressureTypes);
 
-        if ($location == $this->Location) 
+        if ($location == $this->Location && !in_array(Game::STAT_COMBAT, $pressureTypes)) 
         {
             $theah->game->notify->all("message", clienttranslate('${card_inject_code} will add Combat to the Pressure.'), [
                 'card_inject_code' => $this->getInjectCode(),
@@ -49,13 +49,12 @@ class _01183 extends CityEventCard
     {
         parent::handleEvent($event);
 
-        //Reduce duel parry by 1 if the card is in the same location as the actor or adversary
+        //Reduce duel parry by 1 if the actor is at this card's location
         if ($event instanceof EventDuelCalculateCombatCardStats && $event->theah->cardInCity($this)) 
         {
             $actor = $event->theah->getCardById($event->actorId);
-            $adversary = $event->theah->getCardById($event->adversaryId);
 
-            if ($actor->Location == $this->Location || $adversary->Location == $this->Location) 
+            if ($actor->Location == $this->Location) 
             {
                 $event->explanations[] = sprintf($event->theah->game->translate("%s: -1 Parry for being at same location"), $this->getInjectCode());
                 $event->removeParry(1);

@@ -34,7 +34,7 @@ class _01108 extends Risk implements IHasManeuvers
             clienttranslate('El Punal Occulto'),
         ];
 
-        $this->Text = clienttranslate("<p>Scoundrel Maneuver: The adversary discards a card.</p><p>Pirate Maneuver: Draw a card.</p>");
+        $this->Text = clienttranslate("<p><b>Scoundrel Maneuver:</b> The adversary discards a card.</p><p><b>Pirate Maneuver:</b> Draw a card.</p>");
 
         $this->resetCard();
 

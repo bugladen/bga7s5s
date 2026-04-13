@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
@@ -72,6 +73,14 @@ class Technique_01036 extends Technique
 
             $this->MoveDaniela = false;
             $this->MoveLocation = "";
+            $daniella->IsUpdated = true;
+        }
+
+        if ($event instanceof EventDuelEnd && $this->MoveDaniela)
+        {
+            $this->MoveDaniela = false;
+            $this->MoveLocation = "";
+            $daniella = $this->getOwningCharacter($event->theah);
             $daniella->IsUpdated = true;
         }
     }

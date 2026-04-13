@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(git:*)",
+      "Bash(rm \"C:/repos/magnus/journal/7s5s/2026-04-12-01-pavel-01120-audit.md\")",
+      "Bash(rmdir \"C:/repos/magnus/journal/7s5s\")",
+      "Bash(bash .githooks/pre-commit)",
+      "Bash(find . -type f \\\\\\(-name *01143* -o -path *01143* \\\\\\))",
+      "Bash(while read:*)",
+      "Bash(do echo:*)",
+      "Bash(sed 's|^\\\\./||')",
+      "Bash(done)",
+      "Bash(find /c/code/7s5s/modules/php/cards/_7s5s/actions -name \"*.php\" -exec grep -l \"nextState\\(\\)\" {})"
+    ]
+  }
+}

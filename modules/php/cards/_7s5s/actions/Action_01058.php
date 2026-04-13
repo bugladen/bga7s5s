@@ -33,7 +33,7 @@ class Action_01058 extends RiskAction implements IAbilityThatTargetsCharacters
             $opposingCharacters = array_values(array_filter($opposingCharacters, fn($opposingCharacter) => 
                             $opposingCharacter->isNotControlledByPlayer($playerId) && 
                             $opposingCharacter->ModifiedCombat < $performer->ModifiedCombat &&
-                            ! $opposingCharacter instanceof Leader));     
+                            ! $opposingCharacter->hasTrait("Leader")));     
 
             if (count($opposingCharacters) > 0)
                 $availablePerformers[] = $performer;
@@ -82,7 +82,7 @@ class Action_01058 extends RiskAction implements IAbilityThatTargetsCharacters
             $opposingCharacters = array_values(array_filter($characters, fn($character) => 
                             $character->isNotControlledByPlayer($performer->ControllerId) && 
                             $character->ModifiedCombat < $performer->ModifiedCombat &&
-                            ! $character instanceof Leader));
+                            ! $character->hasTrait("Leader")));
 
             $args['characterIds'] = array_map(fn($character) => $character->Id, $opposingCharacters);
         }

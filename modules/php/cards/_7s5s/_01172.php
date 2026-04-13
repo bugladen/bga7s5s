@@ -33,7 +33,7 @@ class _01172 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             clienttranslate('Sorte'),
         ];
 
-        $this->Text = clienttranslate("<p>Sorcerer City Action: Wound your performer unless they are a Strega • Move target character to your performer's location.</p>");
+        $this->Text = clienttranslate("<p><b>Sorcerer City Action:</b> Wound your performer unless they are a Strega • Move target character to your performer's location.</p>");
 
         $this->resetCard();
 

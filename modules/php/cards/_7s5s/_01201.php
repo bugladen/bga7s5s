@@ -39,7 +39,7 @@ class _01201 extends CityCharacter implements IHasActions
             clienttranslate('Vodacce'),
         ];
 
-        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Sorcerer City Action: Wound Ravenna • Draw a card.</p>");
+        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p><b>Sorcerer City Action:</b> Wound Ravenna • Draw a card.</p>");
 
         $this->resetCard();
 

@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\EventCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -70,19 +71,36 @@ class Action_01185 extends EventCityAction
         {
             if (count($ids) != 2)
             {
-                throw new \BgaUserException(sprintf($game->translate("Invalid number of cards selected for action: %d"), count($ids)));
+                throw new UserException(sprintf($game->translate("Invalid number of cards selected for action: %d"), count($ids)));
             }
 
             $riskyUndertaking = $this->getOwningCard($game->theah);
-            $playerName = $game->getActivePlayerName();
 
-            $this->announceAction($game);
-
-            //Move the cards used to pay to the player's discard pile
             $playerId = $game->getActivePlayerId();
+            $playerName = $game->getPlayerNameById($playerId);
+
+
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
-                $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $riskyUndertaking->Id, $asPayment = true);
+                if ($card == null)
+                {
+                    throw new UserException(sprintf($game->translate("Card not found: %d"), $cardId));
+                }
+                if ($card->OwnerId != $playerId)
+                {
+                    throw new UserException(sprintf($game->translate("Card is not owned by the active player: %d"), $cardId));
+                }
+                if ($card->Location != Game::LOCATION_HAND)
+                {
+                    throw new UserException(sprintf($game->translate("Card is not in the hand: %d"), $cardId));
+                }
+            }
+
+            $this->announceAction($game);
+            
+            foreach ($ids as $cardId) {
+                $card = $game->getCardObjectFromDb($cardId);
+                $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $riskyUndertaking->Id, $asPayment = true);
                 $game->theah->queueEvent($event);
             }
 

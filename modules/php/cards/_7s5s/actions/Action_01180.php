@@ -183,7 +183,7 @@ class Action_01180 extends CharacterAction
 
             $chosenCard = $game->getCardObjectFromDb($id);
 
-            if (! $chosenCard instanceof Attachment && ! $chosenCard->hasTrait('Artifact'))
+            if (! $chosenCard instanceof Attachment || ! $chosenCard->hasTrait('Artifact'))
             {
                 throw new \BgaUserException(sprintf($game->translate("Card %s is not an Artifact."), $id));
             }
@@ -216,17 +216,19 @@ class Action_01180 extends CharacterAction
             $chosenAttachmentId = $game->globals->get(Game::CHOSEN_CARD);
             $chosenAttachment = $game->getCardObjectFromDb($chosenAttachmentId);
 
-            //Get the wealth cost of the chosen card
-            if ($chosenAttachment instanceof Attachment)
-                $cost = $chosenAttachment->WealthCost;
-
-            //Get the hand of the player
-            $wealth = $game->handWealthCount($playerId);
+            if (! $chosenAttachment instanceof Attachment)
+            {
+                throw new \BgaUserException(sprintf($game->translate("Card %s is not an Attachment."), $chosenAttachmentId));
+            }
 
             //Get any discounts the player may have
             [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $chosenAttachment);
+            $cost = $chosenAttachment->WealthCost - $discount;
+            if ($cost < 0) $cost = 0;
 
-            if ($cost > $wealth - $discount)
+            $handWealth = $game->handWealthCount($playerId);
+
+            if ($handWealth < $cost)
             {
                 throw new \BgaUserException(sprintf($game->translate("You do not have enough Wealth to equip this card (with a discount of %s)."), $discount));
             }        
@@ -261,6 +263,7 @@ class Action_01180 extends CharacterAction
             $discount = $game->globals->get(Game::DISCOUNT);
             $explanations = $game->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
             $cost -= $discount;
+            if ($cost < 0) $cost = 0;
     
             //Total up the wealth of the cards to see if player paid correctly
             $totalWealth = 0;

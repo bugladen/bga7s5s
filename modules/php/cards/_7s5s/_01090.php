@@ -42,7 +42,7 @@ class _01090 extends Character implements IHasActions, IHasReactions, IHasTechni
             clienttranslate("Castille"),
         ];
 
-        $this->Text = clienttranslate("<p>Reaction: When you announce an ability • Resolve it as if you are not the first player.</p><p>Technique: Reveal and replace the top card of the adversary's deck. When their next round begins, they may play it as their combat card by discarding a card. If they do not, wound them.</p>");
+        $this->Text = clienttranslate("<p><b>Reaction:</b> When you announce an ability • Resolve it as if you are not the first player.</p><p><b>Technique:</b> Reveal and replace the top card of the adversary's deck. When their next round begins, they may play it as their combat card by discarding a card. If they do not, wound them.</p>");
 
         $this->Actions = [
             new Action_01090(),

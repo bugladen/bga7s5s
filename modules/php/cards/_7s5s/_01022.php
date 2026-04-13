@@ -42,7 +42,7 @@ class _01022 extends FactionAttachment implements IHasReactions
             clienttranslate('Ambrogia'),
         ];
 
-        $this->Text = clienttranslate("<p>Reaction: When a challenge is issued at this location, engage this card • Wound the challenger or the character they challenged. (This occurs before intervening.)</p>");
+        $this->Text = clienttranslate("<p><b>Reaction:</b> When a challenge is issued at this location, engage this card • Wound the challenger or the character they challenged. (This occurs before intervening.)</p>");
 
         $this->resetCard();
 

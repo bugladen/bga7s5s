@@ -33,7 +33,7 @@ class _01057 extends Risk implements IHasManeuvers
             clienttranslate('Ranged'),
         ];
 
-        $this->Text = clienttranslate("<p>Maneuver: Gain Lethal. (Ignore Restricted Hostilities until your next round.)</p>");
+        $this->Text = clienttranslate("<p><b>Maneuver:</b> Gain Lethal. (Ignore Restricted Hostilities until your next round.)</p>");
 
         $this->resetCard();
 

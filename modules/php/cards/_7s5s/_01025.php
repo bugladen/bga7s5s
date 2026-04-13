@@ -35,7 +35,7 @@ class _01025 extends Risk implements IHasActions
             clienttranslate('Sorte'),
         ];
 
-        $this->Text = clienttranslate("<p>Forced: At the end of High Drama, if this card is equipped • Destroy it.</p><p>Sorcerer Strega Action: Equip this card to an opposing character. This ability cannot be copied.</p><p>The equipped character gains:</p><p>\"Forced: When this character would en garde • Destroy this card instead.\"</p>");
+        $this->Text = clienttranslate("<p><b>Forced:</b> At the end of High Drama, if this card is equipped • Destroy it.</p><p><b>Sorcerer Strega Action:</b> Equip this card to an opposing character. This ability cannot be copied.</p><p>The equipped character gains:</p><p>\"<b>Forced:</b> When this character would en garde • Destroy this card instead.\"</p>");
  
         $this->resetCard();
 

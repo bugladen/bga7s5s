@@ -32,7 +32,7 @@ class _01121 extends Character
             clienttranslate("Shenzhou")
         ];
 
-        $this->Text = clienttranslate("<p>While Ren's adversary controls equal or more characters than you, her adversary's combat cards have -1[parry]. (Anything less than 0 is treated as a 0.)</p>");
+        $this->Text = clienttranslate("<p>While Ren's adversary controls equal or more characters than you, her adversary's combat cards have -1[Parry]. (Anything less than 0 is treated as a 0.)</p>");
 
         $this->resetCard();
     }

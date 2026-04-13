@@ -35,7 +35,7 @@ class _01104 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             clienttranslate('Romance'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Your en garde performer and target opposing character both engage and go Home.</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Your en garde performer and target opposing character both engage and go Home.</p>");
 
         $this->resetCard();
 

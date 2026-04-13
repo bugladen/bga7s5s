@@ -38,7 +38,7 @@ class _01052 extends Risk implements IHasActions, IHasManeuvers
             clienttranslate('Eisenfaust'),
         ];
 
-        $this->Text = clienttranslate("<p>Action: Target equipped character heals a wound.</p><p>Maneuver: When your round ends, your participant heals a wound.</p>");
+        $this->Text = clienttranslate("<p><b>Action:</b> Target equipped character heals a wound.</p><p><b>Maneuver:</b> When your round ends, your participant heals a wound.</p>");
 
         $this->resetCard();
 

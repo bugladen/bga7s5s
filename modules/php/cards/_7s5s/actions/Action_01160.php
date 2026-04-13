@@ -33,7 +33,7 @@ class Action_01160 extends RiskAction implements IAbilityThatTargetsCharacters
 
         $characters = $theah->getCharactersInPlay();
         $characters = array_filter($characters, fn($character) => $theah->cardInCity($character));
-        $characters = array_filter($characters, fn($character) => ! $character instanceof Leader);
+        $characters = array_filter($characters, fn($character) => ! $character->hasTrait("Leader"));
         $characters = array_filter($characters, fn($character) => $character->Wounds > 0);
 
         return count($characters) > 0;
@@ -76,7 +76,7 @@ class Action_01160 extends RiskAction implements IAbilityThatTargetsCharacters
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01160)
         {
             $characters = $game->theah->getCharactersInPlay();
-            $characters = array_filter($characters, fn($character) => ! $character instanceof Leader);
+            $characters = array_filter($characters, fn($character) => ! $character->hasTrait("Leader"));
             $characters = array_values(array_filter($characters, fn($character) => $character->Wounds > 0));
             $args['ids'] = array_map(fn($character) => $character->Id, $characters);
         }

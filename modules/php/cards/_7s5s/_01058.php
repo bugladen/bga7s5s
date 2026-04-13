@@ -38,7 +38,7 @@ class _01058 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTarget
             clienttranslate('Drexel'),
         ];
 
-        $this->Text = clienttranslate("<p>City Action: Target an opposing non-Leader character with lower [com] than your performer • Engage them and move them Home.</p><p>Maneuver: +1 [Thrust] and engage the adversary. If they are already engaged, +2 [Thrust] instead</p>");
+        $this->Text = clienttranslate("<p><b>City Action:</b> Target an opposing non-Leader character with lower [Combat] than your performer • Engage them and move them Home.</p><p><b>Maneuver:</b> +1 [Thrust] and engage the adversary. If they are already engaged, +2 [Thrust] instead</p>");
 
         $this->resetCard();
 

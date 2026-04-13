@@ -45,7 +45,7 @@ class _01200 extends CityAttachment implements IHasReactions
             clienttranslate('Unique'),
         ];
 
-        $this->Text = clienttranslate("<p>Forced: After you equip this card • Look at an opponent's Approach Deck and choose a card in it.</p><p>Reaction: After an opponent plays the chosen card during any Day • Gain a Renown.</p>");
+        $this->Text = clienttranslate("<p><b>Forced:</b> After you equip this card • Look at an opponent's Approach Deck and choose a card in it.</p><p><b>Reaction:</b> After an opponent plays the chosen card during any Day • Gain a Renown.</p>");
 
         $this->resetCard();
 
@@ -76,7 +76,7 @@ class _01200 extends CityAttachment implements IHasReactions
                 {
                     $character->removeCondition(Game::CRYSTAL_EYE_TARGET);
                     $game->updateCardObjectInDb($character);
-                    $game->notify->player($character->ControllerId, 'crystalEyeTargetRemoved', clienttranslate('${skull_inject_code}: ${card_inject_code} has been been removed as a target.'), [
+                    $game->notify->player($character->ControllerId, 'crystalEyeTargetRemoved', clienttranslate('${skull_inject_code}: ${card_inject_code} has been removed as a target.'), [
                         "skull_inject_code" => $this->getInjectCode(),
                         "card_inject_code" => $character->getInjectCode(),
                         "cardId" => $character->Id,

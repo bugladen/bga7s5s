@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01006;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
@@ -43,7 +44,7 @@ class _01006 extends Leader implements IHasReactions
             clienttranslate("Vodacce"),
         ];
 
-        $this->Text = clienttranslate("<p>During setup, reveal a Red Hand Thug from your deck and put it into your hand.</p><p>During pressures, if you control a Thug at that location, add +1.</p><p>Reaction: Before the end of the Day • Target character at Constanzo's location loses Brute. (After moving Home during Dusk.)</p>");
+        $this->Text = clienttranslate("<p>During setup, reveal a Red Hand Thug from your deck and put it into your hand.</p><p>During pressures, if you control a Thug at that location, add +1.</p><p><b>Reaction:</b> Before the end of the Day • Target character at Constanzo's location loses Brute. (After moving Home during Dusk.)</p>");
 
         $this->resetCard();
 
@@ -83,7 +84,7 @@ class _01006 extends Leader implements IHasReactions
                 $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::CONSTANZO_PRESSURE_TYPE);
                 $game->globals->set(Game::CONSTANZO_ID, $this->Id);
             }
-    }
+        }
     }
 
     public function argsFromCard(Game $game, int $state, string $stateName, string $internalId): array
@@ -143,7 +144,7 @@ class _01006 extends Leader implements IHasReactions
 
             if ($count > 0)
             {
-                throw new \BgaUserException($game->translate("There are Red Hand Thugs in your Faction Deck."));
+                throw new UserException($game->translate("There are Red Hand Thugs in your Faction Deck."));
             }
 
             $game->gamestate->nextState("pass");
@@ -159,13 +160,13 @@ class _01006 extends Leader implements IHasReactions
             $card = $game->theah->getCardById($id);
             if ($card == null)
             {
-                throw new \BgaUserException($game->translate("Invalid card ID."));
+                throw new UserException($game->translate("Invalid card ID."));
             }
 
             $deckName = $game->getPlayerFactionDeckName($this->ControllerId);
             if ($card->Location != $deckName)
             {
-                throw new \BgaUserException($game->translate("Card is not in your Faction Deck."));
+                throw new UserException($game->translate("Card is not in your Faction Deck."));
             }
 
             $game->globals->set(Game::MULTI_STATE_INITIATING_PLAYER, $this->ControllerId);

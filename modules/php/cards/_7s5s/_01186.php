@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 
@@ -44,7 +45,7 @@ class _01186 extends CityCharacter
             clienttranslate('Ashur'),
         ];
 
-        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Forced: The first time a risk targets Maryam each Day • Cancel the effects. (Costs are still paid.)</p><p>Technique: During the adversary's next round, they cannot use Maneuvers.</p>");
+        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p><b>Forced:</b> The first time a risk targets Maryam each Day • Cancel the effects. (Costs are still paid.)</p><p><b>Technique:</b> During the adversary's next round, they cannot use Maneuvers.</p>");
 
         $this->resetCard();
 
@@ -74,6 +75,18 @@ class _01186 extends CityCharacter
         }
 
         if ( ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED) && $event instanceof EventChallengeIssued && $event->defenderId == $this->Id && $event->sourceId != 0)
+        {
+            $source = $event->theah->getCardById($event->sourceId);
+            if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
+            {
+                $this->addMaryamCondition($event->theah->game);
+
+                $event->canceled = true;
+                return;
+            }
+        }
+
+        if ( ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED) && $event instanceof EventCharacterBeingWounded && $event->characterId == $this->Id && $event->sourceId != 0)
         {
             $source = $event->theah->getCardById($event->sourceId);
             if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)

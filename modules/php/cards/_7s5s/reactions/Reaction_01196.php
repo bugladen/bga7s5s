@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -16,7 +17,7 @@ class Reaction_01196 extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate('Discard a Card Instead of Engaging');
+        $this->Name = clienttranslate('(Continuous) Discard a Card Instead of Engaging');
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -67,7 +68,7 @@ class Reaction_01196 extends CardReaction
         // Check to make sure $reactionId has the discardCard- prefix
         if (strpos($reactionId, 'discardCard-') !== 0)
         {
-            throw new \BgaUserException(sprintf($game->translate('Invalid reactionId: %d'), $reactionId));
+            throw new UserException(sprintf($game->translate('Invalid reactionId: %d'), $reactionId));
         }
 
         $cardId = str_replace('discardCard-', '', $reactionId);
@@ -76,7 +77,7 @@ class Reaction_01196 extends CardReaction
 
         if ($card == null)
         {
-            throw new \BgaUserException(sprintf($game->translate('Card not found: %d'), $cardId));
+            throw new UserException(sprintf($game->translate('Card not found: %d'), $cardId));
         }
 
         $game->notify->all("message", clienttranslate('${player_name} uses Angeline Dèmone\'s Reaction.'), 
@@ -95,6 +96,8 @@ class Reaction_01196 extends CardReaction
 
         $game->theah->queueEvent($discardEvent);
         $game->theah->queueEvent($engardeEvent);
+
+        //$this->setUsed($game->theah, true) not called because this reaction is continuous
 
         $game->gamestate->nextState("done");        
     }

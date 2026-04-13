@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityEventCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
@@ -110,7 +111,7 @@ class Action_01149 extends SchemeCityAction
             $locations = array_filter($locations, fn($validLocation) => $validLocation->Name == $location->Name);
             if (count($locations) == 0)
             {
-                throw new \BgaUserException(sprintf($game->translate("Location %s is not a valid location."), $location->Name));
+                throw new UserException(sprintf($game->translate("Location %s is not a valid location."), $location->Name));
             }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
@@ -121,8 +122,12 @@ class Action_01149 extends SchemeCityAction
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
             $this->announceAction($game);
             $this->setUsed($game->theah, true);
+            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState("locationChosen");
         }

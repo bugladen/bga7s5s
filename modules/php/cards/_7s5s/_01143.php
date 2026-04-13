@@ -37,7 +37,7 @@ class _01143 extends Scheme implements IHasActions
             clienttranslate("Duress"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [The Forums]. Then, you may add another Renown to any location. If you do, discard all City Cards there.</p><hr><p>All Mercenaries have -1 [Influence].</p><p>City Action: Engage your performer • Pressure with [Influence]. You succeed even if tied. If successful, claim the location.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to [The Forums]. Then, you may add another Renown to any location. If you do, discard all City Cards there.</p><hr><p>All Mercenaries have -1 [Influence].</p><p><b>City Action:</b> Engage your performer • Pressure with [Influence]. You succeed even if tied. If successful, claim the location.</p>");
 
         $this->resetCard();
 
@@ -106,15 +106,18 @@ class _01143 extends Scheme implements IHasActions
         if ($event instanceof EventCharacterRecruited && $this->Location == Game::LOCATION_PLAYER_HOME)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
-                $event->playerId, 
-                $event->characterId, 
-                $character->ModifiedInfluence, 
-                $character->ModifiedInfluence - 1,
-                $this->getInjectCode()
-            );
+            if ($character->hasTrait("Mercenary"))
+            {
+                $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
+                    $event->playerId,
+                    $event->characterId,
+                    $character->ModifiedInfluence,
+                    $character->ModifiedInfluence - 1,
+                    $this->getInjectCode()
+                );
 
-            $event->theah->queueEvent($modifiedEvent);
+                $event->theah->queueEvent($modifiedEvent);
+            }
         }
     }
     

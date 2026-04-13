@@ -34,12 +34,6 @@ body {
     background-color: rgba(57, 135, 201, 0.9);
 }
 
-.player-name {
-    background-color: silver;
-    border-top-left-radius: 4px;    
-    border-bottom-right-radius: 4px;
-}
-
 ._7sfs-deck-picker-container {
     display: flex;
     align-items: center;
@@ -367,6 +361,20 @@ body {
     left: 80px;
     top: 30px;
     border: 2px solid orangered
+}
+
+._7sfs-carmella-ability-used-chip {
+    position: absolute;
+    background-image: url('https://dtdb.co/images/7s5s/en/01178.jpg');
+    background-size: 247px 337px;
+    background-position: -154px -69px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: inline-block;
+    left: 80px;
+    top: 30px;
+    border: 2px solid lime
 }
 
 ._7sfs-indomitable-will-condition-chip {
@@ -1388,6 +1396,25 @@ body {
     #approachDeck-container {
         background: #c9a87c !important;
     }
+    
+    #approachDeck {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+        padding: 5px !important;
+        height: auto !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    #approachDeck .stockitem {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        flex-shrink: 0 !important;
+    }
 }
 
 ._7sfs-selectable {
@@ -1766,10 +1793,6 @@ body {
 
 ._7sfs-discard-dialog ._7sfs-discard-pile-card {
     width: 200px;
-}
-
-#page-title {
-    background: #c9a87c !important;
 }
 
 /* Action buttons in the title bar */
