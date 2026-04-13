@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
@@ -79,7 +80,13 @@ class _01126 extends Scheme
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            $this->ChosenLocation = '';
+            $event->theah->game->updateCardObjectInDb($this);
+        }
+
+        if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id)
         {
             $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. 
             ${player_name} may first choose an outermost city location. Then they will choose two locations to place reknown onto. '), [
@@ -179,7 +186,7 @@ class _01126 extends Scheme
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2)
         {
             $playerId = $game->getActivePlayerId();
-            $playerName = $game->getActivePlayerName();
+            $playerName = $game->getPlayerNameById($playerId);
     
             $locations = $ids;
     
