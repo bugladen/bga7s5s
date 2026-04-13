@@ -92,6 +92,7 @@ class _01125 extends Scheme
                 }
 
                 $character->removeCondition(Game::ADVERSARY_OF_YEVGENI);
+                $game->updateCardObjectInDb($character);
 
                 $game->notify->all("yevgeniAdversaryRemoved", "", [
                     "cardId" => $character->Id,
@@ -142,7 +143,7 @@ class _01125 extends Scheme
             //Check if the location actually has reknown to move
             $reknown = $game->getRenownForLocation($location);
             if ($reknown <= 0) 
-                throw new \BgaUserException(sprintf($game->translate("%s does not have any renown to move."), $location));
+                throw new UserException(sprintf($game->translate("%s does not have any renown to move."), $location));
             
             $event = EventFactory::createReknownRemovedFromLocationEvent($playerId, $location, 1, "The Boar's Guile: Moving Renown from one Location to an adjacent location");
             $game->theah->eventCheck($event);
@@ -184,7 +185,7 @@ class _01125 extends Scheme
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4)
         {
-            $playerName = $game->getActivePlayerName();
+            $playerName = $game->getPlayerNameById($this->ControllerId);
             $character = $game->getCardObjectFromDb($id);
     
             $game->notify->all('yevgeniAdversaryChosen', 
