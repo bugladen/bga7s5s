@@ -159,6 +159,7 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $moveEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($riskCard->ControllerId, $riskCard->Id, $isHidden = true);
             $game->theah->queueEvent($moveEvent);
 
+            $owner = $this->getOwningCard($game->theah);
             $card = $game->createCardInLocation('02008_RiskClone', $character->Location, $owner->ControllerId, $owner->ControllerId);
             $card->Name = $riskCard->Name;
             $card->Image = $riskCard->Image;

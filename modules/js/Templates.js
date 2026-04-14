@@ -157,6 +157,14 @@
             </div>
         </div>
         `;
+
+        window.jstpl_card_hidden_attachment = `
+        <div id="\${id}" style="--attachment-index:\${attachmentIndex}">
+            <div id="\${id}_image" class="_7sfs-card _7sfs-card-back" style="--card_image:url('\${image}')">
+                <div id="\${id}-player-color" style="--player-color:#\${player_color}" class="_7sfs-character-player-color"></div>
+            </div>
+        </div>
+        `;
         
         window.jstpl_card_event = `
         <div id="\${id}">
