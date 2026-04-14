@@ -853,6 +853,8 @@ trait UtilitiesTrait
         $game->theah->queueEvent($moveEvent);
 
         $card = $game->createCardInLocation($className, $location, $ownerId, $controllerId);
+        $game->theah->addCardToWorld($card);
+
         if ($card instanceof IRiskAttachment)
         {
             $card->setOriginalCardId($owner->Id);

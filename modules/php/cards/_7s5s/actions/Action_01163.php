@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01163_CardClone;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -74,14 +75,14 @@ class Action_01163 extends RiskAction
             $card = $game->getCardObjectFromDb($id);
             if ($card == null)
             {
-                throw new \BgaUserException($game->translate("Card not found"));
+                throw new UserException($game->translate("Card not found"));
             }
 
             $owner = $this->getOwningCard($game->theah);
             $location = $game->getPlayerFactionDeckName($owner->ControllerId);
             if ($card->Location != $location)
             {
-                throw new \BgaUserException($game->translate("Card is not in your faction deck"));
+                throw new UserException($game->translate("Card is not in your faction deck"));
             }
         }
 
@@ -129,7 +130,7 @@ class Action_01163 extends RiskAction
             $locationNames = array_map(fn($location) => $location->Name, array_values($locations));
             if (!in_array($location, $locationNames))
             {
-                throw new \BgaUserException($game->translate("Location is not a valid city location"));
+                throw new UserException($game->translate("Location is not a valid city location"));
             }
 
             $cardIds = $game->globals->get(Game::REVEALED_CARDS);
@@ -142,6 +143,7 @@ class Action_01163 extends RiskAction
             //Create a clone of the saved card
             $owner = $this->getOwningCard($game->theah);
             $cloneCard = $game->createCardInLocation('01163_CardClone', $location, $owner->ControllerId, $owner->ControllerId);
+            $game->theah->addCardToWorld($cloneCard);
             $cloneCard->Name = $card->Name;
             $cloneCard->Image = $card->Image;
             $cloneCard->CardBackImage = $card->CardBackImage;
@@ -156,6 +158,12 @@ class Action_01163 extends RiskAction
 
             $playEvent = EventFactory::createCardMusteredEvent($owner->ControllerId, $cloneCard->Id, $location);
             $game->theah->queueEvent($playEvent);
+
+            $this->resetPlayerPassCount($game);
+            $this->setUsed($game->theah, true);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState();
        }

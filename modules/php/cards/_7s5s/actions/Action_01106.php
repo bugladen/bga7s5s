@@ -180,6 +180,7 @@ class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
             //Create a clone of the risk card
             $owner = $this->getOwningCard($game->theah);
             $card = $game->createCardInLocation('01106_RiskClone', Game::LOCATION_HAND, $owner->ControllerId, $owner->ControllerId);
+            $game->theah->addCardToWorld($card);
             $card->Name = $riskCard->Name;
             $card->Image = $riskCard->Image;
 

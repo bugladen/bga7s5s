@@ -161,6 +161,7 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
 
             $owner = $this->getOwningCard($game->theah);
             $card = $game->createCardInLocation('02008_RiskClone', $character->Location, $owner->ControllerId, $owner->ControllerId);
+            $game->theah->addCardToWorld($card);
             $card->Name = $riskCard->Name;
             $card->Image = $riskCard->Image;
 
@@ -169,7 +170,6 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
                 $card->ClonedCardId = $riskCard->Id;
                 $card->TargetCharacterId = $character->Id;
             }
-
             $game->updateCardObjectInDb($card);
 
             // getRequiredAttachTargetId not needed as this is a Risk, not an Attachment
