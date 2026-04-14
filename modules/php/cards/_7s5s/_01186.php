@@ -2,15 +2,18 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01186;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 
@@ -92,6 +95,34 @@ class _01186 extends CityCharacter
             if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
             {
                 $this->addMaryamCondition($event->theah->game);
+
+                $event->canceled = true;
+                return;
+            }
+        }
+
+        if ( ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED) && $event instanceof EventAttachmentEquipping && $event->characterId == $this->Id && $event->sourceId != 0)
+        {
+            $source = $event->theah->getCardById($event->sourceId);
+            if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
+            {
+                $this->addMaryamCondition($event->theah->game);
+
+                $attachment = $event->theah->getCardById($event->attachmentId);
+
+                $removedEvent = EventFactory::createCardRemovedFromPlayEvent($event->playerId, $attachment->Id, $attachment->Location);
+                $event->theah->queueEvent($removedEvent);
+
+                if ($attachment instanceof CityAttachment)
+                {
+                    $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($event->playerId, $attachment->Id, $attachment->Location);
+                    $event->queueEvent($discardEvent);
+                }
+                else
+                {
+                    $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location);
+                    $event->queueEvent($discardEvent);
+                }
 
                 $event->canceled = true;
                 return;
