@@ -301,7 +301,8 @@ class Action_01180 extends CharacterAction
             $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $performerId);
 
             //Equip the attachment
-            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $actualTargetId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
+            $owner = $this->getOwningCard($game->theah);
+            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $actualTargetId, $attachmentId, $discount, $cost, $asAction = true, $explanations, false, $owner->Id, $this->Id);
             $game->theah->eventCheck($equipAttachmentEvent);
             $game->theah->queueEvent($equipAttachmentEvent);
     

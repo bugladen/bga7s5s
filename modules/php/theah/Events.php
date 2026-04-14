@@ -89,6 +89,7 @@ class Events
     const PlunderPhaseAdditionalReknownEvent = 'EventPlunderPhaseAdditionalReknownEvent';
     
     //Card Manipulation events
+    const AttachmentEquipping = 'EventAttachmentEquipping';
     const AttachmentEquipped = 'EventAttachmentEquipped';
     const AttachmentUnequipped = 'EventAttachmentUnequipped';
     const AttachmentMoved = 'EventAttachmentMoved';

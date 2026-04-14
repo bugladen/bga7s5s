@@ -173,7 +173,7 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $game->updateCardObjectInDb($card);
 
             // getRequiredAttachTargetId not needed as this is a Risk, not an Attachment
-            $attachEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $character->Id, $card->Id, 0, 0, $asAction = false, '', $isQuiet = true);
+            $attachEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $character->Id, $card->Id, 0, 0, $asAction = false, '', $isQuiet = true, $owner->Id, $this->Id);
             $game->theah->queueEvent($attachEvent);
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);

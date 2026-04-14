@@ -137,7 +137,7 @@ class Reaction_02037 extends CardReaction
                 "character_inject_code" => $target->getInjectCode(),
             ]);
 
-            $equipEvent = EventFactory::createAttachmentEquippedEvent($mysta->ControllerId, $actualTargetId, $mysta->Id, 0, 0, $asAction = false);
+            $equipEvent = EventFactory::createAttachmentEquippedEvent($mysta->ControllerId, $actualTargetId, $mysta->Id, 0, 0, $asAction = false, '', false, $mysta->Id, $this->Id);
             $game->theah->queueEvent($equipEvent);
 
             $this->setUsed($game->theah, true);

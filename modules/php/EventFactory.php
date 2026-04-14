@@ -20,7 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCalculatePayDiscount;
@@ -170,11 +170,13 @@ class EventFactory
         return $event;
     }
 
-    public static function createAttachmentEquippedEvent(int $playerId, int $characterId, int $attachmentId, int $discount, int $cost, bool $asAction = true, string $explanations = '', bool $messageHidden = false): EventAttachmentEquipped
+    public static function createAttachmentEquippedEvent(int $playerId, int $characterId, int $attachmentId, int $discount, int $cost, bool $asAction = true, string $explanations = '',
+        bool $messageHidden = false,
+        ?int $sourceId = null, ?string $abilityId = null): EventAttachmentEquipping
     {
         //getRequiredAttachTargetId() commit hook not required for Event Factory
-        $event = self::createEvent(Events::AttachmentEquipped);
-        if ($event instanceof EventAttachmentEquipped)
+        $event = self::createEvent(Events::AttachmentEquipping);
+        if ($event instanceof EventAttachmentEquipping)
         {
             $event->playerId = $playerId;
             $event->characterId = $characterId;
@@ -184,6 +186,8 @@ class EventFactory
             $event->asAction = $asAction;
             $event->explanations = $explanations;
             $event->messageHidden = $messageHidden;
+            $event->sourceId = $sourceId;
+            $event->abilityId = $abilityId;
         }
 
         return $event;

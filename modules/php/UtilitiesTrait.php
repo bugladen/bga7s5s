@@ -842,7 +842,7 @@ trait UtilitiesTrait
         return ($global & $flag) == $flag;
     }
 
-    public function createRiskAttachment(Game $game, string $className, int $originalCardId, string $location, int $ownerId, int $controllerId, int $targetId)
+    public function createRiskAttachment(Game $game, string $className, int $originalCardId, string $location, int $ownerId, int $controllerId, int $targetId, string $abilityId = "")
     {
         //Place original card in special hiding location
         $owner = $game->theah->getCardById($originalCardId);
@@ -860,7 +860,7 @@ trait UtilitiesTrait
         $game->updateCardObjectInDb($card);
 
         // getRequiredAttachTargetId() not required for Risk Attachments
-        $event = EventFactory::createAttachmentEquippedEvent($controllerId, $targetId, $card->Id, 0, 0, $asAction = false);
+        $event = EventFactory::createAttachmentEquippedEvent($controllerId, $targetId, $card->Id, 0, 0, $asAction = false, '', false, $originalCardId, $abilityId);
         $game->theah->queueEvent($event);
     }
 

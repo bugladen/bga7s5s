@@ -334,7 +334,7 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
             $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $performerId);
 
             //Equip the attachment
-            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $actualTargetId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
+            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $actualTargetId, $attachmentId, $discount, $cost, $asAction = true, $explanations, false, $owner->Id, $this->Id);
             $game->theah->eventCheck($equipAttachmentEvent);
             $game->theah->queueEvent($equipAttachmentEvent);
     

@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCalculatePayDiscount;
@@ -134,10 +135,32 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventAttachmentEquipping:
+                $handler = function (Theah $theah, EventAttachmentEquipping $event)
+                {
+                    $equippedEvent = self::createEvent(Events::AttachmentEquipped);
+                    if ($equippedEvent instanceof EventAttachmentEquipped)
+                    {
+                        $equippedEvent->playerId = $event->playerId;
+                        $equippedEvent->characterId = $event->characterId;
+                        $equippedEvent->attachmentId = $event->attachmentId;
+                        $equippedEvent->discount = $event->discount;
+                        $equippedEvent->cost = $event->cost;
+                        $equippedEvent->asAction = $event->asAction;
+                        $equippedEvent->explanations = $event->explanations;
+                        $equippedEvent->messageHidden = $event->messageHidden;
+                        $equippedEvent->sourceId = $event->sourceId;
+                        $equippedEvent->abilityId = $event->abilityId;
+                    }
+                    $theah->queueEvent($equippedEvent);
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventAttachmentEquipped:
                 $handler = function (Theah $theah, EventAttachmentEquipped $event)
                 {
-                    $performer = $theah->getCharacterById($event->characterId);                    
+                    $performer = $theah->getCharacterById($event->characterId);
                     $attachment = $theah->getAttachmentById($event->attachmentId);
 
                     //Attachments might not be in the world (came from the City Deck, or created by an action), add it to the world

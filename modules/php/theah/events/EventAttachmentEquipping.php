@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventAttachmentEquipped extends Event
+class EventAttachmentEquipping extends Event
 {
     public int $playerId;
     public int $characterId;
@@ -26,5 +26,6 @@ class EventAttachmentEquipped extends Event
         $this->asAction = true;
         $this->explanations = '';
         $this->messageHidden = false;
+        $this->runEventHubAfterCards = true;
     }
 }

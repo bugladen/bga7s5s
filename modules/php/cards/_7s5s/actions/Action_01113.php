@@ -274,7 +274,8 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
             //Some attachments actually attach to different targets
             $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $performer->Id);
 
-            $musterEvent = EventFactory::createAttachmentEquippedEvent($performer->ControllerId, $actualTargetId, $attachment->Id, $discount, $cost, $asAction = false, $explanations);
+            $owner = $this->getOwningCard($game->theah);
+            $musterEvent = EventFactory::createAttachmentEquippedEvent($performer->ControllerId, $actualTargetId, $attachment->Id, $discount, $cost, $asAction = false, $explanations, false, $owner->Id, $this->Id);
             $game->theah->queueEvent($musterEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
