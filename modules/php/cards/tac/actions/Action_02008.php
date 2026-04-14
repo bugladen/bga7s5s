@@ -172,6 +172,12 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             }
             $game->updateCardObjectInDb($card);
 
+            $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} placed a Risk from their Discard Pile under ${character_name}'), [
+                "owner_inject_code" => $owner->getInjectCode(),
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                "character_name" => $character->Name,
+            ]);
+
             // getRequiredAttachTargetId not needed as this is a Risk, not an Attachment
             $attachEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $character->Id, $card->Id, 0, 0, $asAction = false, '', $isQuiet = true, $owner->Id, $this->Id);
             $game->theah->queueEvent($attachEvent);
