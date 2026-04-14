@@ -322,6 +322,20 @@
                 }
             },
 
+            'highDramaPhase02047': () => {
+                if (this.isCurrentPlayerActive()) {
+                    let performer = this.cardProperties[this.clientStateArgs.performerId];
+                    const performerImage = $(`${performer.divId}_image`);
+                    dojo.removeClass(performerImage, '_7sfs-chosen');
+
+                    this.clientStateArgs.attachmentsInPlay.forEach((attachmentId) => {
+                        let card = this.cardProperties[attachmentId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+
             'highDramaPhase02036_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.factionHand.setSelectionMode('none');

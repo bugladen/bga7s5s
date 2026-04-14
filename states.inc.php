@@ -975,6 +975,7 @@ $machinestates = [
                 "02036" => States::HIGH_DRAMA_PLAYER_TURN_02036,
                 "02036_2" => States::HIGH_DRAMA_PLAYER_TURN_02036_2,
                 "02045" => States::HIGH_DRAMA_PLAYER_TURN_02045,
+                "02047" => States::HIGH_DRAMA_PLAYER_TURN_02047,
                 "02034_3" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
                 "02028" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,

@@ -2004,7 +2004,7 @@ trait EventHub
                     $card->IsUpdated = true;
 
                     $theah->game->notify->all("cardSentToLocker", clienttranslate('${card_inject_code} has been sent to the locker.'), [
-                        "playerId" => $card->ControllerId,
+                        "playerId" => $event->playerId,
                         "card_inject_code" => $card->getInjectCode(),
                         "card" => $card->getPropertyArray($theah->game),
                     ]);

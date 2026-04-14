@@ -542,6 +542,25 @@
                 }
             },
 
+            'highDramaPhase02047': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    args.args.args.attachmentsInPlay.forEach((cardId) => {
+                        card = this.cardProperties[cardId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.attachmentsInPlay = args.args.args.attachmentsInPlay;
+                }
+            },
+
             'highDramaPhase02036_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.factionHand.setSelectionMode('single');
