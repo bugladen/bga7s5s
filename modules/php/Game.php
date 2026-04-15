@@ -166,6 +166,7 @@ class Game extends \Bga\GameFramework\Table
     final const WILHELM_DUNST_CHALLENGE_TYPE = 13;
     final const BATTLE_OF_WITS_CHALLENGE_TYPE = 14;
     final const TORVO_ESPADA_CHALLENGE_TYPE = 15;
+    final const JUSTICE_SERVED_COLD_CHALLENGE_TYPE = 16;
 
     //Duel global variables
     //Duel Names
