@@ -146,6 +146,22 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_02052': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 1;
+                    locations.forEach((location) => {
+                        const imageElement = $(location);
+                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
+                        const reknown = parseInt(reknownElement.innerHTML);
+                        if (location == 'bazaar-image' || reknown === 0)
+                            return;
+
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
             'planningPhaseResolveSchemes_02045': () => {
                 if (this.isCurrentPlayerActive()) {
                     const locations = this.getListofOutermostCityLocations();

@@ -87,6 +87,12 @@
                 this.resetCityLocations();
             },
 
+            'planningPhaseResolveSchemes_02052': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
             'planningPhaseResolveSchemes_02046': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
