@@ -2,10 +2,13 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01202;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01202 extends CityAttachment implements IHasReactions
@@ -45,11 +48,31 @@ class _01202 extends CityAttachment implements IHasReactions
         ];
     }
 
+    public function eventCheck(Event $event)
+    {
+        parent::eventCheck($event);
+
+        if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id)
+        {
+            $leader = $event->theah->getLeaderByPlayerId($event->playerId);
+            if (! $leader)
+            {
+                throw new UserException($event->theah->game->translate("You must equip this card to your Leader, and you have no Leader in play."));
+            }
+        }
+    }
+
     public function getRequiredAttachTargetId(Theah $theah, int $originalTargetId): int
     {
         // This only attaches to the leader
         $character = $theah->getCharacterById($originalTargetId);        
         $leader = $theah->getLeaderByPlayerId($character->ControllerId);
+
+        if (! $leader)
+        {
+            throw new UserException($theah->game->translate("You must equip this card to your Leader, and you have no Leader in play."));
+        }
+
         return $leader->Id;
     }
 }
