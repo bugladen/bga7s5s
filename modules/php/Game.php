@@ -118,6 +118,7 @@ class Game extends \Bga\GameFramework\Table
     final const TRIAL_OF_FAITH_PRESSURE_TYPE = 512;
     final const CASTILLIAN_CAPER_PRESSURE_TYPE = 1024;
     final const SOLOMONIA_PRESSURE_TYPE = 2048;
+    final const USSURAN_INTRIGUE_PRESSURE_TYPE = 4096;
     final const SOLOMONIA_ID = "solomoniaId";
 
     //Player action global variables

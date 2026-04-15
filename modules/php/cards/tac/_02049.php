@@ -23,7 +23,7 @@ class _02049 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTarget
         $this->Name = clienttranslate("Justice Served Cold");
         $this->Image = "02049.jpg";
         $this->ExpansionName = "tac";
-        $this->ExpansionNumber = 1;
+        $this->ExpansionNumber = 2;
         $this->CardNumber = 49;
 
         $this->initializeFaction("Ussura");

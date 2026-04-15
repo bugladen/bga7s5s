@@ -690,6 +690,7 @@ trait UtilitiesTrait
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::KASPARS_OCCUPATION_PRESSURE_TYPE)
+            || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::USSURAN_INTRIGUE_PRESSURE_TYPE)
         )
         {
             //Ties win
