@@ -114,8 +114,19 @@ body {
     background: #e8d5b7;
 }
 
-._7sfs-deck-picker-tab-buttons button:hover {
+._7sfs-deck-picker-tab-buttons button:hover,
+._7sfs-deck-picker-tab-buttons button._7sfs-deck-picker-tab-selected {
     background: #c9a97a;
+}
+
+._7sfs-deck-picker-tab-buttons button._7sfs-deck-picker-confirm-ready {
+    background: #4caf50;
+    color: #fff;
+    border-color: #388e3c;
+}
+
+._7sfs-deck-picker-tab-buttons button._7sfs-deck-picker-confirm-ready:hover {
+    background: #388e3c;
 }
 
 ._7sfs-deck-picker-tab-buttons button:disabled {

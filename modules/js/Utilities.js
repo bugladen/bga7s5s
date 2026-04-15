@@ -162,9 +162,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
             this.selectedDeck = deckName;
             var btnDeckSelect = document.getElementById('btnDeckSelect');
             btnDeckSelect.disabled = false;
+            btnDeckSelect.classList.add('_7sfs-deck-picker-confirm-ready');
         }
         });
 
+        const buttons = document.querySelectorAll('.deck-picker-button');
+        buttons.forEach((btn, i) => {
+          btn.classList.toggle('_7sfs-deck-picker-tab-selected', i === tabIndex - 1);
+        });
 
         this.selectedDeck = tabIndex;
     },
