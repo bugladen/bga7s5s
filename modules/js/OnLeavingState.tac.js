@@ -61,6 +61,44 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_02025': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
+            'planningPhaseResolveSchemes_02025_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
+            'planningPhaseResolveSchemes_02035': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
+            'planningPhaseResolveSchemes_02045': () => {
+                this.resetCityLocations();
+            },
+
+            'planningPhaseResolveSchemes_02045_2': () => {
+                this.resetCityLocations();
+            },
+
+            'planningPhaseResolveSchemes_02046': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
+            'planningPhaseResolveSchemes_02046_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
             'highDramaPhase02001': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
@@ -197,44 +235,6 @@
                 }
             },
 
-            'planningPhaseResolveSchemes_02025': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.resetCityLocations();
-                }
-            },
-
-            'planningPhaseResolveSchemes_02025_3': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.resetCityLocations();
-                }
-            },
-
-            'planningPhaseResolveSchemes_02035': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.resetCityLocations();
-                }
-            },
-
-            'planningPhaseResolveSchemes_02045': () => {
-                this.resetCityLocations();
-            },
-
-            'planningPhaseResolveSchemes_02045_2': () => {
-                this.resetCityLocations();
-            },
-
-            'planningPhaseResolveSchemes_02046': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.resetCityLocations();
-                }
-            },
-
-            'planningPhaseResolveSchemes_02046_2': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.resetCityLocations();
-                }
-            },
-
             'highDramaPhase02023': () => {
                 if (this.isCurrentPlayerActive())
                 {
@@ -366,6 +366,14 @@
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
                     this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase02051': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
                     this.clientStateArgs = {};
                 }
             },

@@ -19,7 +19,10 @@
       "Bash(php -l 'C:/code/7s5s/modules/php/States/tac/State_highDramaPhase02047.php')",
       "Bash(php -l modules/php/cards/tac/_02048.php)",
       "Bash(php -l modules/php/cards/tac/reactions/Reaction_02048.php)",
-      "Bash(find C:\\\\code\\\\7s5s\\\\modules\\\\php:*)"
+      "Bash(find C:\\\\code\\\\7s5s\\\\modules\\\\php:*)",
+      "Bash(php -l modules/php/cards/tac/_02051.php)",
+      "Bash(php -l modules/php/cards/tac/actions/Action_02051.php)",
+      "Bash(php -l modules/php/States/tac/State_highDramaPhase02051.php)"
     ]
   }
 }
