@@ -14,6 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -207,7 +208,7 @@ class Reaction_02048 extends RiskReaction
             }
         }
 
-        // Pressure result
+        // Initiate pressure
         if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
         {
             $game = $event->theah->game;
@@ -232,7 +233,17 @@ class Reaction_02048 extends RiskReaction
             $pressuredEvent->abilityId = $this->Id;
             $game->theah->queueEvent($pressuredEvent);
 
-            if ($success)
+            $this->setUsed($game->theah, true);
+            $owner->IsUpdated = true;
+        }
+
+        // Handle pressure outcome
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)
+        {
+            $game = $event->theah->game;
+            $owner = $this->getOwningCard($event->theah);
+
+            if ($event->success)
             {
                 $this->PressureSucceeded = true;
 
@@ -252,7 +263,6 @@ class Reaction_02048 extends RiskReaction
                 $this->reEmitSavedEvent($game);
             }
 
-            $this->setUsed($game->theah, true);
             $owner->IsUpdated = true;
         }
 
