@@ -82,13 +82,13 @@ class Maneuver_01103 extends Maneuver
         if ($state == States::DUEL_RESOLVE_MANEUVER_01103)
         {
             $owner = $this->getOwningCard($game->theah);
-            // +1 Parry
+            // +2 Parry
             if ($id == 1)
             {
                 $this->UseParry = true;
                 $game->updateCardObjectInDb($owner);
             }
-            // +1 Thrust
+            // +2 Thrust
             else if ($id == 2)
             {
                 $this->UseThrust = true;
