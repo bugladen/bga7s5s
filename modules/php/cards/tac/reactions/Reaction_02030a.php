@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
@@ -95,7 +96,8 @@ class Reaction_02030a extends RiskReaction
             $this->setUsed($event->theah, true);
         }
 
-        if ($event instanceof EventActionResolved && $this->MusketeerCharacterId !== null)
+        if (($event instanceof EventActionResolved || $event instanceof EventPlayerTurnEnd)
+        && $this->MusketeerCharacterId !== null)
         {
             $game = $event->theah->game;
             $character = $event->theah->getCharacterById($this->MusketeerCharacterId);
