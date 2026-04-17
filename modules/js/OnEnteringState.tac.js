@@ -652,6 +652,22 @@
                 }
             },
 
+            'duskPhaseBegin02053': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const stateArgs = args.args.args;
+                    if (stateArgs.cards && stateArgs.cards.length > 0) {
+                        dojo.removeClass('choose_container', 'hidden');
+                        dojo.removeClass('chooseList', 'hidden');
+                        $('choose_container_name').innerHTML = stateArgs.discardPileLabel || _('Discard Pile');
+
+                        stateArgs.cards.forEach((card) => {
+                            this.addCardToDeck(this.chooseList, card);
+                        });
+                        this.chooseList.setSelectionMode(1);
+                    }
+                }
+            },
+
      }
 
         if ( methods[stateName] )

@@ -399,6 +399,14 @@
                 }
             },
 
+            'duskPhaseBegin02053': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                }
+            },
+
        }
 
         if ( methods[stateName] )

@@ -82,7 +82,8 @@ class Game extends \Bga\GameFramework\Table
     final const MARYAM_BENU_PLEROMA_ABILITY_USED = "Maryam Benu Pleroma Ability Used";
     final const CARMELLA_ABILITY_USED = "Carmella Ability Used";
     final const INDOMITABLE_WILL_CONDITION = "Indomitable Will Condition";
-    
+    final const UNDER_COVER_OF_THE_NIGHT = "Under Cover of the Night";
+
     //Equip global variables
     final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';
     

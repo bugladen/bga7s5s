@@ -525,6 +525,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01152_2'       : 'actPassWithPass',
             'highDramaChallengeActionActivateTechnique' : 'actHighDramaChallengeActionActivateTechnique_Pass',
             'duskPhaseBegin01177'                       : 'actPassWithPass',
+            'duskPhaseBegin02053'                       : 'actFromCardPass',
         };
 
         //If the current game state is in actionArray set the action to the value in the array

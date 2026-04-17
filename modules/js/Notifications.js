@@ -88,6 +88,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['reknownRemovedFromLocation', 500],
             ['reknownUpdatedOnCard', 500],
             ['cardSentToLocker', 500],
+            ['cardSentToCityLocker', 500],
             ['actionAdded', 1],
             ['actionRemoved', 1],
             ['techniqueAdded', 1],
@@ -1224,6 +1225,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const player = this.gamedatas.players[args.playerId];
         player.locker.push(card);
+    },
+
+    notif_cardSentToCityLocker: function( notif )
+    {
+        debug( 'notif_cardSentToCityLocker' );
+        debug( notif );
+
+        const args = notif.args;
+        this.gamedatas.cityLocker.push(args.card);
     },
 
     notif_cardRemovedFromLocker: function( notif )

@@ -517,6 +517,7 @@ class States
         const DUSK_PHASE_BEGIN_01177 = 8001177;
         const DUSK_PHASE_BEGIN_01177_2 = 80011772;
         const DUSK_PHASE_BEGIN_02024 = 8002024;
+        const DUSK_PHASE_BEGIN_02053 = 8002053;
 
     const DUSK_PHASE_CLEANUP = 81;
         const DUSK_PHASE_CLEANUP_EVENTS = 810;

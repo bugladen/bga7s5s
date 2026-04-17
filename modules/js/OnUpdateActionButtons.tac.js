@@ -316,6 +316,12 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'duskPhaseBegin02053': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Send to Locker'), () => this.onChooseListCardConfirmed());
+                this.statusBar.addActionButton(_('Pass'), () => this.onPass(), { id: 'actPass', color: 'alert' });
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
         }
 
         if ( methods[stateName] )
