@@ -127,10 +127,10 @@ class Reaction_01109 extends CancelReaction
             $game->theah->deleteRiskReactionTriggeredEvents($this->RiskId);
 
             // Cancel Maneuver if it exists
-            if ($this->ManeuverId != 0)
+            if ($this->ManeuverId !== '')
             {
                 $game->theah->deleteManeuverEvents($this->ManeuverId);
-                $this->ManeuverId = 0;
+                $this->ManeuverId = '';
             }
 
             $this->RiskId = 0;
