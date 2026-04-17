@@ -111,7 +111,7 @@ class Reaction_01109 extends CancelReaction
             $owner = $this->getOwningCard($event->theah);
             $game = $event->theah->game;
             $game->notify->all("message", clienttranslate('${player_name} uses ${reaction_inject_code} to cancel the Risk just played.'), [
-                'player_name' => $game->getActivePlayerName(),
+                'player_name' => $game->getPlayerNameById($owner->ControllerId),
                 'reaction_inject_code' => $owner->getInjectCode(),
             ]);
 
@@ -152,6 +152,8 @@ class Reaction_01109 extends CancelReaction
             $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
             $event->priority = Event::HIGHEST_PRIORITY;
             $game->theah->stackEvent($event);
+
+            $this->setUsed($game->theah, true);
         }
 
         $game->gamestate->nextState("done");
