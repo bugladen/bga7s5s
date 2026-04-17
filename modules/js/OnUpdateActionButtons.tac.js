@@ -282,6 +282,11 @@
                 this.addActionButton('actLetDraw', _('Let Opponent Draw'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
 
+            'duelChooseTechnique_02054': () => {
+                this.addActionButton('actSufferWound', _('Suffer a Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton('actDecline', _('Decline'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
+
             'duelChooseTechnique_02006': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

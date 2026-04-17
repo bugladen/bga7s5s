@@ -26,7 +26,8 @@
       "Bash(php -l modules/php/cards/tac/_02052.php)",
       "Bash(php -l modules/php/States/tac/State_planningPhaseResolveSchemes02052.php)",
       "Bash(php:*)",
-      "Bash(where php:*)"
+      "Bash(where php:*)",
+      "Bash(xargs cat:*)"
     ]
   }
 }
