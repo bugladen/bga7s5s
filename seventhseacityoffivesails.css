@@ -196,10 +196,25 @@ body {
     border-top-right-radius: 10px;
 }
 
+#city-locker {
+    position: absolute;
+    left: 75px;
+    top: -15px;
+    background-image: url('img/boardResources.png');
+    background-position: -389px 0px;
+    background-size: var(--png-board-resource-width) var(--png-board-resource-height);
+    background-color: saddlebrown;
+    height: 23px;
+    width: 25px;
+    border: 3px solid saddlebrown;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
 #day-indicator {
     display: none;
     position: absolute;
-    left: 80px;
+    left: 110px;
     top: -15px;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * .25) calc(var(--png-board-resource-height) * .25);
@@ -220,7 +235,7 @@ body {
 #city-day-phase {
     display: none;
     position: absolute;
-    left: 130px;
+    left: 160px;
     top: -15px;
     line-height: 25px;
 

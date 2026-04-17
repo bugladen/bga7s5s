@@ -733,6 +733,36 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
     },
 
+    onCityLockerClicked: function( event )
+    {
+        const overlay = document.createElement('div');
+        overlay.className = '_7sfs-confirm-overlay';
+
+        const dialog = document.createElement('div');
+        dialog.className = '_7sfs-confirm-dialog _7sfs-discard-dialog';
+
+        let cardsHtml = '';
+        this.gamedatas.cityLocker.forEach(card => {
+            cardsHtml += this.format_block('jstpl_discard_card', {
+                image : this.getCardImageUrlRoot(card.image) + card.image,
+            });
+        });
+
+        dialog.innerHTML =
+            '<div class="_7sfs-confirm-text">' + _("City Locker Pile") + '</div>' +
+            '<div class="_7sfs-discard-cards">' + cardsHtml + '</div>' +
+            '<div class="_7sfs-confirm-buttons">' +
+                '<button class="_7sfs-confirm-btn _7sfs-confirm-close">' + _("Close") + '</button>' +
+            '</div>';
+
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+
+        const close = () => overlay.remove();
+        dialog.querySelector('._7sfs-confirm-close').addEventListener('click', close);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    },
+
     onPlayerDiscardClicked: function (event)
     {
         let playerId = $(event.target.id).getAttribute('data-player-id');
