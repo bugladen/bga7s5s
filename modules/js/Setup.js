@@ -39,6 +39,10 @@ return declare('seventhseacityoffivesails.setup', null, {
         dojo.style($('city-discard'), 'cursor', 'zoom-in');
         dojo.connect($('city-discard'), 'onclick', this, 'onCityDiscardClicked');
 
+        // City Locker Pile
+        dojo.style($('city-locker'), 'cursor', 'zoom-in');
+        dojo.connect($('city-locker'), 'onclick', this, 'onCityLockerClicked');
+
         // Set up the city tooltips
         if (playerCount >= 3)
         {
@@ -53,6 +57,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         }
     
         this.addTippyTooltip( 'city-discard', `<div class='_7sfs-basic-tooltip'>${_('City Discard Pile')}</div>` );
+        this.addTippyTooltip( 'city-locker', `<div class='_7sfs-basic-tooltip'>${_('City Locker Pile')}</div>` );
         this.addTippyTooltip( 'day-indicator', `<div class='_7sfs-basic-tooltip'>${_('The Current Day')}</div>` );
         this.addTippyTooltip( 'city-day-phase', `<div class='_7sfs-basic-tooltip'>${_('The Current Phase of the Day')}</div>` );
         this.addTippyTooltipToClass('_7sfs-city-reknown-chip', `<div class='_7sfs-basic-tooltip'>${_('Current Renown on this City Location')}</div>` );

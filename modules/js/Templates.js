@@ -323,6 +323,7 @@
                         </svg>
                     </div>
                     <div id="city-discard"></div>
+                    <div id="city-locker"></div>
                     <div id="day-indicator"></div>
                     <div id="city-day-phase"></div>
 

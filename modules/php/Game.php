@@ -42,6 +42,7 @@ class Game extends \Bga\GameFramework\Table
     //Card locations
     final const LOCATION_CITY_DECK = 'City Deck';
     final const LOCATION_CITY_DISCARD = 'City Discard';
+    final const LOCATION_CITY_LOCKER = 'City Locker';
     final const LOCATION_CITY_DOCKS = 'City Docks';
     final const LOCATION_CITY_FORUM = 'City Forum';
     final const LOCATION_CITY_BAZAAR = 'The Grand Bazaar';
@@ -332,6 +333,7 @@ class Game extends \Bga\GameFramework\Table
         $result["factionHand"] = $this->getCardPropertiesInLocation(Game::LOCATION_HAND, $currentPlayerId);
 
         $result['cityDiscard'] = $this->getCardPropertiesInLocation(Game::LOCATION_CITY_DISCARD);
+        $result['cityLocker'] = $this->getCardPropertiesInLocation(Game::LOCATION_CITY_LOCKER);
 
         $result["locationReknown"] = $this->theah->getCityLocationReknown();
         $result["locationControllers"] = $this->theah->getCityLocationControllers();
