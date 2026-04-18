@@ -609,6 +609,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Set'), this.getSetDisplayName(card.expansionName)),
             row(_('Card #'), card.cardNumber ?? ''),
             row(_('Cost'), card.wealthCost ?? ''),
+        ];
+
+        if (card.title) {
+            rows.push(row(_('Title'), _(card.title)));
+        }
+
+        rows.push(
             row(_('Resolve&nbsp;Modifier'), fmtMod(card.resolveModifier)),
             row(_('Combat&nbsp;Modifier'), fmtMod(card.combatModifier)),
             row(_('Finesse&nbsp;Modifier'), fmtMod(card.finesseModifier)),
@@ -618,7 +625,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Thrust'), thrust),
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true),
-        ];
+        );
 
         if (card.controllerId && card.location !== 'hand') {
             const hasAbilities = card.actions?.length || card.reactions?.length || card.maneuvers?.length || card.techniques?.length;

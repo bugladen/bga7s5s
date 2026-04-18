@@ -19,6 +19,7 @@ class _02047 extends FactionAttachment implements IHasActions
         parent::__construct();
 
         $this->Name = clienttranslate("Temnota");
+        $this->Title = clienttranslate("Clever & Gifted");
         $this->Image = "02047.jpg";
         $this->ExpansionName = "tac";
         $this->ExpansionNumber = 2;

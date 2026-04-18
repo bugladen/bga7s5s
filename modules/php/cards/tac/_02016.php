@@ -20,6 +20,7 @@ class _02016 extends FactionAttachment implements IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate("Cross of the Martyrs");
+        $this->Title = clienttranslate("Friedrich Dietrich's Standard");
         $this->Image = "02016.jpg";
         $this->ExpansionName = "tac";
         $this->ExpansionNumber = 2;

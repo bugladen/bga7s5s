@@ -18,6 +18,7 @@ class _02006 extends FactionAttachment implements IHasTechniques
         parent::__construct();
 
         $this->Name = clienttranslate("The Red Scepter");
+        $this->Title = clienttranslate("Argumentum Ad Baculum");
         $this->Image = "02006.jpg";
         $this->ExpansionName = "tac";
         $this->ExpansionNumber = 2;

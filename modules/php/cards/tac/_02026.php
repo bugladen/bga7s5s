@@ -17,6 +17,7 @@ class _02026 extends FactionAttachment implements IHasTechniques
         parent::__construct();
 
         $this->Name = clienttranslate('Croc de Lion');
+        $this->Title = clienttranslate("Léontine's Sword Breaker");
         $this->Image = "02026.jpg";
         $this->ExpansionName = "tac";
         $this->ExpansionNumber = 2;

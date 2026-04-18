@@ -9,6 +9,8 @@ abstract class Attachment extends Card implements IWealthCost
 {
     use WealthCostTrait;
 
+    public string $Title;
+
     public int $ResolveModifier;
     public int $CombatModifier;
     public int $FinesseModifier;
@@ -34,6 +36,8 @@ abstract class Attachment extends Card implements IWealthCost
     {
         parent::__construct();
 
+        $this->Title = "";
+
         $this->ResolveModifier = 0;
         $this->CombatModifier = 0;
         $this->FinesseModifier = 0;
@@ -46,6 +50,7 @@ abstract class Attachment extends Card implements IWealthCost
     {
         $properties = parent::getPropertyArray($game);
         
+        $properties['title'] = $this->Title;
         $properties['resolveModifier'] = $this->ResolveModifier;
         $properties['combatModifier'] = $this->CombatModifier;
         $properties['finesseModifier'] = $this->FinesseModifier;

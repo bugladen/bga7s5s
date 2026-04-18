@@ -24,6 +24,7 @@ class _02037 extends FactionAttachment implements IHasTechniques, IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate('Mysta');
+        $this->Title = clienttranslate("Everpresent Nuisance");
         $this->Image = "02037.jpg";
         $this->ExpansionName = "tac";
         $this->ExpansionNumber = 2;
