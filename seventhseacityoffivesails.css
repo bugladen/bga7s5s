@@ -114,8 +114,19 @@ body {
     background: #e8d5b7;
 }
 
-._7sfs-deck-picker-tab-buttons button:hover {
+._7sfs-deck-picker-tab-buttons button:hover,
+._7sfs-deck-picker-tab-buttons button._7sfs-deck-picker-tab-selected {
     background: #c9a97a;
+}
+
+._7sfs-deck-picker-tab-buttons button._7sfs-deck-picker-confirm-ready {
+    background: #4caf50;
+    color: #fff;
+    border-color: #388e3c;
+}
+
+._7sfs-deck-picker-tab-buttons button._7sfs-deck-picker-confirm-ready:hover {
+    background: #388e3c;
 }
 
 ._7sfs-deck-picker-tab-buttons button:disabled {
@@ -1130,13 +1141,13 @@ body {
 }
 
 /* Approach Deck scroll image for web desktop */
-@media (min-width: 769px) {
+@media (min-width: 1500px) {
     #approachDeck-container {
         background-image: url('img/scroll.png');
         background-repeat: no-repeat;
         overflow: visible !important;
         min-height: 250px;
-        min-width: 1300px;
+        min-width: 1500px;
         margin: 0 auto;
         width: fit-content;
     }
@@ -1152,6 +1163,12 @@ body {
 
     #approachDeck-container._7sfs-dimmed {
         opacity: 0.5 !important;
+    }
+}
+
+@media (max-width: 1500px) {
+    #approachDeck-container {
+        background: #c9a87c !important;
     }
 }
 
