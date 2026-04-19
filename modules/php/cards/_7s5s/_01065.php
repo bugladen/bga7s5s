@@ -2,12 +2,13 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01065;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 
 class _01065 extends Character implements IHasReactions
 {
@@ -49,7 +50,7 @@ class _01065 extends Character implements IHasReactions
     {
         parent::eventCheck($event);
 
-        if ($event instanceof EventCardMoved)
+        if ($event instanceof EventCardMoving)
         {
             $card = $event->theah->getCardById($event->cardId);
             if ($card instanceof Character && 
@@ -59,7 +60,7 @@ class _01065 extends Character implements IHasReactions
                 $card->hasTrait("Musketeer") &&
                 $event->initiatingPlayerId != $this->ControllerId)
             {
-                throw new \BgaUserException($event->theah->game->translate("Henri Michelet: other Musketeers at his location cannot be moved by opponent abilities."));
+                throw new UserException($event->theah->game->translate("Henri Michelet: other Musketeers at his location cannot be moved by opponent abilities."));
             }           
 
         }
