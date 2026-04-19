@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 
 class _01075 extends FactionAttachment implements IHasActions
@@ -54,7 +55,7 @@ class _01075 extends FactionAttachment implements IHasActions
 
     public function eventCheck(Event $event)
     {
-        if ($event instanceof EventAttachmentEquipped && $event->attachmentId === $this->Id)
+        if ($event instanceof EventAttachmentEquipping && $event->attachmentId === $this->Id)
         {
             $performer = $event->theah->getCharacterById($event->characterId);
             if ($performer->hasTrait("Diplomat"))

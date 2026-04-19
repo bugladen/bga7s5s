@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
@@ -45,7 +46,7 @@ class _02027 extends FactionAttachment
     {
         parent::eventCheck($event);
 
-        if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id)
+        if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
             if (! $character->hasTrait("Diplomat"))

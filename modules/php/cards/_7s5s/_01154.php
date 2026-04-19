@@ -7,7 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 
 class _01154 extends FactionAttachment implements IHasActions
 {
@@ -54,7 +54,7 @@ class _01154 extends FactionAttachment implements IHasActions
     {
         parent::eventCheck($event);
 
-        if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id)
+        if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
             if (! $character->hasTrait("Sorcerer"))

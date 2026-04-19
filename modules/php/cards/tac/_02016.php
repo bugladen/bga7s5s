@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions\Reaction_02016;
@@ -59,7 +60,7 @@ class _02016 extends FactionAttachment implements IHasReactions
     {
         parent::eventCheck($event);
 
-        if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id)
+        if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
             if ($character->hasTrait("Sorcerer"))

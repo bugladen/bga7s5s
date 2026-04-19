@@ -7,7 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\techniques\Technique_02006;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 
 class _02006 extends FactionAttachment implements IHasTechniques
 {
@@ -56,7 +56,7 @@ class _02006 extends FactionAttachment implements IHasTechniques
     {
         parent::eventCheck($event);
 
-        if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id)
+        if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
             if (!$character->hasTrait("Red Hand"))
