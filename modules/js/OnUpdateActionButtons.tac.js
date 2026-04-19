@@ -287,6 +287,12 @@
                 this.addActionButton('actDecline', _('Decline'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
 
+            'duelChooseTechnique_02055': () => {
+                args.args.techniques.forEach((technique) => {
+                    this.addActionButton(`actChooseTechnique-${technique.id}`, technique.name, () => this.bgaPerformAction('actFromCardWithIds', {ids: JSON.stringify([technique.id])}));
+                });
+            },
+
             'duelChooseTechnique_02006': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

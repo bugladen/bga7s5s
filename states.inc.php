@@ -2175,6 +2175,7 @@ $machinestates = [
                         "02026b" => States::DUEL_CHOOSE_TECHNIQUE_02026b,
                         "02043b" => States::DUEL_CHOOSE_TECHNIQUE_02043b,
                         "02054" => States::DUEL_CHOOSE_TECHNIQUE_02054,
+                        "02055" => States::DUEL_CHOOSE_TECHNIQUE_02055,
                         "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                         "endOfGame" => States::END_GAME
                         ]
