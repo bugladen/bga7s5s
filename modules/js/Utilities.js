@@ -1005,7 +1005,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         if (attachment.controllerId)
         {
-            dojo.addClass(divId, '_7sfs-attached-card');
+            if (attachment.attachedToId)
+                dojo.addClass(divId, '_7sfs-attached-card');
             dojo.addClass(`${divId}_wealth_cost`, 'hidden');
         } 
 
