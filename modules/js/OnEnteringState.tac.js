@@ -652,6 +652,18 @@
                 }
             },
 
+            'duelResolveManeuver_02057': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    args.args._private.args.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.characterIds = args.args._private.args.characterIds;
+                }
+            },
+
             'duskPhaseBegin02053': () => {
                 if (this.isCurrentPlayerActive()) {
                     const stateArgs = args.args.args;

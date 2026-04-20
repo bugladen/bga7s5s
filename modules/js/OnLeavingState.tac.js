@@ -393,6 +393,16 @@
                 }
             },
 
+            'duelResolveManeuver_02057': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+
             'duskPhaseBegin02024': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
