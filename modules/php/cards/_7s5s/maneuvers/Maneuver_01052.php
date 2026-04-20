@@ -20,7 +20,7 @@ class Maneuver_01052 extends Maneuver
         parent::__construct();
 
         $this->HealAtEndOfRound = false;
-        $this->Name = clienttranslate("Heal a Wound");
+        $this->Name = clienttranslate("Heal a Wound at the end of the round");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
@@ -30,9 +30,7 @@ class Maneuver_01052 extends Maneuver
             return false;
         }
 
-        $actor = $theah->getDuelRoundActor();
-        
-        return $actor->Wounds > 0;
+        return true;
     }
 
     public function handleEvent(Event $event)
