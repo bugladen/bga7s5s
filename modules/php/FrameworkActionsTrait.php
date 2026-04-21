@@ -1908,15 +1908,6 @@ trait FrameworkActionsTrait
 
         $this->globals->delete(Game::INVALID_PAY_CARD_IDS);
 
-        $announcement = $reaction->getReactionAnnouncement($this, $this->gamestate->getCurrentMainStateId(), $internalId, $reactionId);
-        if ($announcement != "")
-        {
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} ${announcement}'), [
-                "player_name" => $this->getActivePlayerName(),
-                "announcement" => $announcement,
-            ]);
-        }
-
         $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0, $asPayment = false, $asPlayed = true);
         $this->theah->queueEvent($event);
 
