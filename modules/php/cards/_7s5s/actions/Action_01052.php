@@ -11,7 +11,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
-use BgaUserException;
 
 class Action_01052 extends RiskAction implements IAbilityThatTargetsCharacters
 {
@@ -53,16 +52,18 @@ class Action_01052 extends RiskAction implements IAbilityThatTargetsCharacters
 
     public function isValidTargetForAbility(Game $game, Character $character): array
     {
-        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-        $performer = $game->theah->getCharacterById($performerId);
-
         $owner = $this->getOwningCard($game->theah);
-        if ($performer->ControllerId != $owner->ControllerId)
+        if ($character->ControllerId != $owner->ControllerId)
         {
             return [false, $game->translate("You cannot heal a wound on a character that is not yours.")];
         }
 
-        if ($performer->Wounds == 0)
+        if (count($character->Attachments) == 0)
+        {
+            return [false, $game->translate("You cannot target a character that is not equipped.")];
+        }
+
+        if ($character->Wounds == 0)
         {
             return [false, $game->translate("You cannot heal a wound on a character that is not wounded.")];
         }
