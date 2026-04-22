@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
@@ -42,13 +43,16 @@ class Technique_DestroyPlusOneThrust extends Technique
             $event->thrust += 1;
             $event->explanations[] = sprintf(clienttranslate("%s is destroyed and adds +1 Thrust"), $owner->getInjectCode());
 
-            $character = $this->getOwningCharacter($event->theah);
-            $unequipEvent = EventFactory::createAttachmentUnequippedEvent($owner->ControllerId, $character->Id, $owner->Id);
-            $event->theah->queueEvent($unequipEvent);
-
-            $owner = $this->getOwningCard($event->theah);
-            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($owner->OwnerId, $owner->Id, $owner->Location, $owner->Id);
-            $event->theah->queueEvent($discardEvent);
+            if ($owner instanceof Attachment && $owner->isAttached())
+            {
+                $character = $this->getOwningCharacter($event->theah);
+                $unequipEvent = EventFactory::createAttachmentUnequippedEvent($owner->ControllerId, $character->Id, $owner->Id);
+                $event->theah->queueEvent($unequipEvent);
+    
+                $owner = $this->getOwningCard($event->theah);
+                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($owner->OwnerId, $owner->Id, $owner->Location, $owner->Id);
+                $event->theah->queueEvent($discardEvent);
+            }
         }
 
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)

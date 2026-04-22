@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
@@ -50,7 +52,7 @@ abstract class LocationAction extends Action
         {
             if (in_array($event->playerId, $this->playersUsed))
             {
-                throw new \BgaUserException($event->theah->game->translate("You have already used this Action today."));
+                throw new UserException($event->theah->game->translate("You have already used this Action today."));
             }
         }
     }
@@ -58,6 +60,16 @@ abstract class LocationAction extends Action
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
+        {
+            $activatedEvent = EventFactory::createActionActivatedEvent(
+                $event->playerId,
+                0,
+                $this->Id
+            );
+            $event->theah->queueEvent($activatedEvent);
+        }
 
         if ($event instanceof EventDuskEndOfDay)
         {

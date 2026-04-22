@@ -491,7 +491,11 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     getSetDisplayName: function(expansionName) {
-        const setNames = { '_7s5s': _('Core') };
+        const setNames = 
+        {
+             '_7s5s': _('Core'), 
+             'tac': _('Tooth and Claw')
+        };
         return setNames[expansionName] ?? expansionName ?? '';
     },
 
@@ -605,6 +609,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Set'), this.getSetDisplayName(card.expansionName)),
             row(_('Card #'), card.cardNumber ?? ''),
             row(_('Cost'), card.wealthCost ?? ''),
+        ];
+
+        if (card.title) {
+            rows.push(row(_('Title'), _(card.title)));
+        }
+
+        rows.push(
             row(_('Resolve&nbsp;Modifier'), fmtMod(card.resolveModifier)),
             row(_('Combat&nbsp;Modifier'), fmtMod(card.combatModifier)),
             row(_('Finesse&nbsp;Modifier'), fmtMod(card.finesseModifier)),
@@ -614,7 +625,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Thrust'), thrust),
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true),
-        ];
+        );
 
         if (card.controllerId && card.location !== 'hand') {
             const hasAbilities = card.actions?.length || card.reactions?.length || card.maneuvers?.length || card.techniques?.length;
@@ -661,6 +672,22 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         const html = `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`;
         this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
+    },
+
+    findCardInDiscards: function(cardId) 
+    {
+        for (const playerId in this.gamedatas.players) {
+            const player = this.gamedatas.players[playerId];
+            if (player.discard) {
+                const found = player.discard.find(c => c.id == cardId);
+                if (found) return found;
+            }
+        }
+        if (this.gamedatas.cityDiscard) {
+            const found = this.gamedatas.cityDiscard.find(c => c.id == cardId);
+            if (found) return found;
+        }
+        return null;
     },
 
     createCharacterCard: function( divId, color, character, targetDiv, inDuel = false )
@@ -790,7 +817,15 @@ return declare('seventhseacityoffivesails.utilities', null, {
             // so that it doesn't interfere with the actual attachment in play
             if (character.duelPrefix)
                 divId = `${character.duelPrefix}_${attachment.id}`;
-            this.createAttachmentCard(divId, attachment, character.divId, inDuel);
+            if (attachment.faceDown) 
+            {
+                const playerInfo = this.gamedatas.players[attachment.controllerId];
+                this.createHiddenAttachmentCard(divId, attachment, character.divId, playerInfo.color, inDuel);
+            }
+            else
+            {
+                this.createAttachmentCard(divId, attachment, character.divId, inDuel);
+            }
         });
 
         dojo.connect($(divId), 'onclick', this, 'splayAttachments');
@@ -827,6 +862,42 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         if (card.controllerId === this.player_id)
             this.addTippyTooltip( divId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.CARD_TOOLTIP_DELAY);
+    },
+
+    createHiddenAttachmentCard: function( divId, attachment, targetDiv, playerColor, inDuel = false )
+    {
+        //Set the divId of the card
+        attachment.divId = divId;
+
+        //Add to the card properties cache
+        if (!inDuel)
+            this.cardProperties[attachment.id] = attachment;
+
+        //Get the attached character and set up as a container
+        if (attachment.attachedToId) 
+        {
+            const character = this.cardProperties[attachment.attachedToId];
+            if (character)
+                dojo.addClass(character.divId, '_7sfs-attachment-container');
+            else
+                attachment.attachedToId = undefined;
+        }
+
+        let placement = inDuel ? 'last' : attachment.attachedToId ? 'last' : 'before';
+        let attachmentIndex = attachment.attachmentIndex ?? 0;
+
+        dojo.place( this.format_block( 'jstpl_card_hidden_attachment', {
+            id: divId,
+            attachmentIndex: attachmentIndex,
+            image: attachment.cardBackImage,
+            player_color: playerColor,
+        }), targetDiv, placement );
+
+        dojo.addClass(divId, '_7sfs-attached-card');
+
+        //Show tooltip only to the controller
+        if (attachment.controllerId === this.player_id)
+            this.addTippyTooltip( divId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(attachment.image) + attachment.image}" />`, this.CARD_TOOLTIP_DELAY);
     },
 
     createEventCard: function( divId, event, targetDiv )
@@ -934,7 +1005,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         if (attachment.controllerId)
         {
-            dojo.addClass(divId, '_7sfs-attached-card');
+            if (attachment.attachedToId)
+                dojo.addClass(divId, '_7sfs-attached-card');
             dojo.addClass(`${divId}_wealth_cost`, 'hidden');
         } 
 

@@ -1,0 +1,53 @@
+<?php
+
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\tac;
+
+use Bga\GameFramework\StateType;
+use Bga\GameFramework\States\GameState;
+use Bga\GameFramework\States\PossibleAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
+
+class State_highDramaPhase02001 extends GameState
+{
+    function __construct(
+        protected Game $game,
+    ) 
+    {
+        parent::__construct($game,
+            id: States::HIGH_DRAMA_PLAYER_TURN_02001,
+            type: StateType::ACTIVE_PLAYER,
+            name: "highDramaPhase02001",
+
+            description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            descriptionMyTurn: clienttranslate('Andriana Dondolo') . clienttranslate(': ${you} must choose a Sorcery card to discard: '),
+            transitions: [
+                "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+                "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_02001_2,
+            ],
+        );
+    }
+    
+    public function getArgs(): array
+    {
+        return $this->game->argsForState();
+    } 
+
+    #[PossibleAction]
+    public function actBack(): void
+    {
+        $this->game->actBack();
+    }
+
+    #[PossibleAction]
+    public function actFromCardWithId(string $id): void
+    {
+        $this->game->actFromCardWithId($id);
+    }
+
+    public function zombie(int $playerId): void
+    {
+        $this->game->actBack();
+    }
+
+}

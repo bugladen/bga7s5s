@@ -76,6 +76,8 @@ class Events
     const DuelCalculateManeuverValues = 'EventDuelCalculateManeuverValues';
     const DuelCalculateCombatCardStats = 'EventDuelCalculateCombatCardStats';
     const DuelPlayerGambled = 'EventDuelPlayerGambled';
+    const DuelAttemptGamble = 'EventDuelAttemptGamble';
+    const DuelGambleCardsRevealed = 'EventDuelGambleCardsRevealed';
     const DuelActionsDone = 'EventDuelActionsDone';
     const DuelEndOfRound = 'EventDuelEndOfRound';
     const DuelEnd = 'EventDuelEnd';
@@ -87,6 +89,7 @@ class Events
     const PlunderPhaseAdditionalReknownEvent = 'EventPlunderPhaseAdditionalReknownEvent';
     
     //Card Manipulation events
+    const AttachmentEquipping = 'EventAttachmentEquipping';
     const AttachmentEquipped = 'EventAttachmentEquipped';
     const AttachmentUnequipped = 'EventAttachmentUnequipped';
     const AttachmentMoved = 'EventAttachmentMoved';
@@ -111,6 +114,7 @@ class Events
     const SorcererAbilityPlayed = 'EventSorcererAbilityPlayed';
     const SorcererAbilityStart = 'EventSorcererAbilityStart';
     const RiskPlayed = 'EventRiskPlayed';
+    const RangedAbilityPlayed = 'EventRangedAbilityPlayed';
 
     //Character events
     const CharacterCombatModified = 'EventCharacterCombatModified';
@@ -132,9 +136,11 @@ class Events
     const CalculatePayDiscount = 'EventCalculatePayDiscount';
 
     const ActionTriggered = 'EventActionTriggered';
+    const ActionActivated = 'EventActionActivated';
     const ActionResolved = 'EventActionResolved';
     const RiskReactionTriggered = 'EventRiskReactionTriggered';
     const ActionUsed = 'EventActionUsed';
+    const ReactionActivated = 'EventReactionActivated';
     const ReactionUsed = 'EventReactionUsed';
     const ManeuverUsed = 'EventManeuverUsed';
     const TechniqueUsed = 'EventTechniqueUsed';

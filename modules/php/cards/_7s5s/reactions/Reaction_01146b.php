@@ -34,7 +34,7 @@ class Reaction_01146b extends CardReaction
         $array = parent::getReactionButtonProperties($theah);
         $text = $this->ManeuverId != '' ? $theah->game->translate('Cancel Maneuver') : $theah->game->translate('Cancel Technique');
         $array[] = $this->createButtonProperty($theah->game, $text, 'cancel');
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Decline'), 'decline');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
 
         return $array;
     }
@@ -142,7 +142,7 @@ class Reaction_01146b extends CardReaction
             $this->setUsed($game->theah, true);
         }
 
-        if ($reactionId == 'decline')
+        if ($reactionId == 'pass')
         {
             $this->TechniqueId = '';
             $this->ManeuverId = '';

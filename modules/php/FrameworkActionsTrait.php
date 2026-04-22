@@ -19,11 +19,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
@@ -387,6 +385,7 @@ trait FrameworkActionsTrait
     public function actHighDramaRecruitActionMercenaryChosen(int $id)
     {
         $this->theah->buildCity();
+        $playerId = (int)$this->getActivePlayerId();
         $recruitId = $id;
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
@@ -399,6 +398,17 @@ trait FrameworkActionsTrait
         }
 
         $this->globals->set(GAME::CHOSEN_CARD, $recruitId);
+
+        $event = EventFactory::createEnteringPayStateEvent($playerId, $recruitId, Game::PAY_STATE_RECRUIT_MERCENARY);
+        $this->theah->queueEvent($event);
+
+        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
+        if ($performerParleyed && !$performer->Engaged)
+        {
+            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performerId);
+            $this->theah->eventCheck($engageEvent);
+            $this->theah->queueEvent($engageEvent);
+        }
 
         $this->gamestate->nextState("mercenaryChosen");
     }
@@ -425,10 +435,6 @@ trait FrameworkActionsTrait
                 "player_name" => $playerName,
                 "card_inject_code" => $performer->getInjectCode(),
             ]);
-            
-            $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
-            $this->theah->eventCheck($engageEvent);
-            $this->theah->queueEvent($engageEvent);
         }
 
         $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
@@ -642,10 +648,11 @@ trait FrameworkActionsTrait
             $smuggledItemId = $this->globals->get(Game::SMUGGLED_ITEM_ATTACHMENT_ID);
             $smuggledItem = $this->theah->getCardById($smuggledItemId);
 
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} performed the Action from ${card_inject_code}.'), [
-                "player_name" => $this->getPlayerNameById($playerId),
-                "card_inject_code" => $smuggledItem->getInjectCode(),
-            ]);
+            //Get the action that caused the equip
+            $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
+            $action = $this->theah->getInPlayActionById($actionId);            
+            $action->announceAction($this);
+            $action->setUsed($this->theah, true);
 
             $smuggledUnattachedEvent = EventFactory::createAttachmentUnequippedEvent($playerId, $performer->Id, $smuggledItem->Id);
             $this->theah->eventCheck($smuggledUnattachedEvent);
@@ -934,24 +941,25 @@ trait FrameworkActionsTrait
         $risk->Location = Game::LOCATION_PURGATORY;
         $this->updateCardObjectInDb($risk);
 
-        $message = clienttranslate('${player_name} is performing the In-Hand Action [${action_name}] from ${card_inject_code}. ');
+        $action->announceAction($this);
+
         if ($discount != 0)
         {
-            $message .= clienttranslate('This was played at a cost of ${cost} Wealth (discount of ${discount}).');
+            $message = clienttranslate('This was played at a cost of ${cost} Wealth (discount of ${discount}).');
             if ($explanations != '')
             {
                 $message .= clienttranslate('<br>${explanations}');
             }
+            $this->notify->all("message", $message, [
+                "i18n" => ["action_name"],
+                "player_name" => $this->getActivePlayerName(),
+                "action_name" => $action->Name,
+                "card_inject_code" => $risk->getInjectCode(),
+                "cost" => $cost,
+                "discount" => $discount,
+                "explanations" => $explanations,
+            ]);
         }
-        $this->notify->all("message", $message, [
-            "i18n" => ["action_name"],
-            "player_name" => $this->getActivePlayerName(),
-            "action_name" => $action->Name,
-            "card_inject_code" => $risk->getInjectCode(),
-            "cost" => $cost,
-            "discount" => $discount,
-            "explanations" => $explanations,
-        ]);
 
         $event = EventFactory::createRiskPlayedEvent($playerId, $risk->Id);
         $this->theah->queueEvent($event);
@@ -988,13 +996,16 @@ trait FrameworkActionsTrait
         $brute = $this->getCardObjectFromDb($id);
         if ($brute == null || $brute->Location != Game::LOCATION_HAND || $brute->ControllerId != $playerId) 
         {
-            throw new \BgaUserException(clienttranslate("Brute is not in Player's Hand."));
+            throw new UserException(clienttranslate("Brute is not in Player's Hand."));
         }
 
         $discount = $this->theah->getPlayBruteDiscount($brute);
         $this->globals->set(Game::DISCOUNT, $discount);
 
         $this->globals->set(GAME::CHOSEN_CARD, $id);
+
+        $event = EventFactory::createEnteringPayStateEvent($playerId, $brute->Id, Game::PAY_STATE_PLAY_BRUTE);
+        $this->theah->queueEvent($event);
 
         $this->gamestate->nextState("bruteChosen");
     }
@@ -1196,7 +1207,12 @@ trait FrameworkActionsTrait
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
         if ($challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE)
         {
-            throw new \BgaUserException(clienttranslate("Épée Sanglante: Refusing a Challenge is not allowed."));
+            throw new UserException(clienttranslate("Épée Sanglante: Refusing a Challenge is not allowed."));
+        }
+
+        if ($challengeType == Game::UNSANCTIONED_DUEL_CHALLENGE_TYPE)
+        {
+            throw new UserException(clienttranslate("Unsanctioned Duel: Refusing a Challenge is not allowed."));
         }
 
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
@@ -1219,54 +1235,15 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
         $character = $this->theah->getCardById($id);
 
-        $target = $this->theah->getCardById($this->globals->get(GAME::CHOSEN_TARGET));
-        if ($target->Location != $character->Location) {
-            throw new \BgaUserException(clienttranslate("Character is not at the same location"));
-        }    
-
-        if (! $character->canIntervene())
-        {
-            throw new \BgaUserException(clienttranslate("Character cannot Intervene."));
-        }
-
-        if ($character instanceof _01178)
-        {
-            // Carmella can intervene while engaged
-        }
-        else if ($character instanceof _01040 && $character->hasEngardeWeaponEquipped($this->theah))
-        {
-            // Rena can intervene while engaged if she has a ready weapon
-        }
-        else if ($character instanceof _01188)
-        {
-            // Vladislav can intervene while engaged
-        }
-        else if ($character->Engaged)
-        {
-            throw new UserException(clienttranslate("Character cannot Intervene."));
-        }
-
-        $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
-        if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE && ! $character->hasTrait("Leader")) {
-            throw new UserException(clienttranslate("Legendary Reputation: Only Leaders can Intervene"));
-        }
-        else if ($challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE)
-        {
-            throw new UserException(clienttranslate("Valeri Mikhailov: No Characters can Intervene."));
-        }
+        $this->theah->interventionCheck($character);
 
         //Reset the conditions for defender
+        $target = $this->theah->getCardById($this->globals->get(GAME::CHOSEN_TARGET));
         $target->removeCondition(Game::DUEL_DEFENDER);
         $character->addCondition(Game::DUEL_DEFENDER);
         $this->globals->set(Game::CHOSEN_TARGET, $character->Id);
 
-        $interveneEvent = $this->theah->createEvent(Events::CharacterIntervened);
-        if ($interveneEvent instanceof EventCharacterIntervened)
-        {
-            $interveneEvent->playerId = $playerId;
-            $interveneEvent->oldTargetId = $target->Id;
-            $interveneEvent->newTargetId = $character->Id;
-        }    
+        $interveneEvent = EventFactory::createCharacterIntervenedEvent($playerId, $target->Id, $character->Id);
         $this->theah->eventCheck($interveneEvent);
 
         $engageRequired = true;
@@ -1280,9 +1257,8 @@ trait FrameworkActionsTrait
 
             $engageRequired = false;
         }
-
-        // Rena defers engagement to her reaction (engage weapon instead or engage self)
-        if ($character instanceof _01040 && $character->hasEngardeWeaponEquipped($this->theah))
+        //Rena Klingenhalter: engagement is deferred to her reaction (engage weapon or engage self)
+        else if ($character instanceof _01040 && $character->hasEngardeWeaponEquipped($this->theah))
         {
             $engageRequired = false;
         }
@@ -1356,6 +1332,8 @@ trait FrameworkActionsTrait
     {
         $this->theah->buildCity();
         $actor = $this->theah->getDuelRoundActor();
+        $gambleCheck = EventFactory::createDuelAttemptGambleEvent($actor->Id);
+        $this->theah->eventCheck($gambleCheck);
         [$cardCount, $explanations] = $this->theah->getNumberOfGambleCardsToReveal($actor);
         if ($explanations != '')
             $this->notify->player($actor->ControllerId, "message", clienttranslate('Private: Explanations for modification of number of gamble cards to reveal:<br>${explanations}'), [
@@ -1505,6 +1483,9 @@ trait FrameworkActionsTrait
     public function actGambleCardChosen(int $id)
     {
         $this->theah->buildCity();
+        $actor = $this->theah->getDuelRoundActor();
+        $gambleCheck = EventFactory::createDuelAttemptGambleEvent($actor->Id);
+        $this->theah->eventCheck($gambleCheck);
         $playerId = $this->getActivePlayerId();
         $deckName = $this->getPlayerFactionDeckName($playerId);
 
@@ -1931,15 +1912,6 @@ trait FrameworkActionsTrait
         }
 
         $this->globals->delete(Game::INVALID_PAY_CARD_IDS);
-
-        $announcement = $reaction->getReactionAnnouncement($this, $this->gamestate->getCurrentMainStateId(), $internalId, $reactionId);
-        if ($announcement != "")
-        {
-            $this->notifyAllPlayers("message", clienttranslate('${player_name} ${announcement}'), [
-                "player_name" => $this->getActivePlayerName(),
-                "announcement" => $announcement,
-            ]);
-        }
 
         $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0, $asPayment = false, $asPlayed = true);
         $this->theah->queueEvent($event);

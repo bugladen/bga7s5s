@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02032;
 
 class DeckValidator
 {
@@ -97,6 +98,12 @@ class DeckValidator
 
         foreach ($deck->approach_deck as $approachCard)
         {
+            if ($approachCard == '02032')
+            {
+                $errors[] = clienttranslate('02032 - Lucas Martinez "Damned" cannot be in an Approach deck.');
+                continue;
+            }
+
             $className = $game->getCardClassName($approachCard);
             if (! class_exists($className))
             {

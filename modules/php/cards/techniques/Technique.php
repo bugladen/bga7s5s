@@ -5,9 +5,11 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -18,6 +20,7 @@ abstract class Technique implements ICardAbility
 
     public bool $ResetOnDuelEnd;
     public bool $ResetOnDayEnd;
+    public bool $IsTemporaryCopy = false;
 
     public function __construct()
     {
@@ -40,9 +43,29 @@ abstract class Technique implements ICardAbility
             $this->setUsed($event->theah, false);
         }
 
+        if ($event instanceof EventDuelNewRound && $this->IsTemporaryCopy)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner && $owner->ControllerId == $event->playerId && $owner instanceof IHasTechniques)
+            {
+                $owner->removeTechnique($this, $event->theah->game, $notify = false);
+                $owner->IsUpdated = true;
+            }
+        }
+
         if ($event instanceof EventDuelEnd && $this->ResetOnDuelEnd)
         {
             $this->setUsed($event->theah, false);
+        }
+
+        if ($event instanceof EventDuelEnd && $this->IsTemporaryCopy)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner && $owner instanceof IHasTechniques)
+            {
+                $owner->removeTechnique($this, $event->theah->game, $notify = false);
+                $owner->IsUpdated = true;
+            }
         }
     }
 
@@ -65,4 +88,9 @@ abstract class Technique implements ICardAbility
     public function stateFromTechnique(Game $game, int $state, string $stateName): void { }
 
     public function getNumberOfGambleCardsToReveal(Theah $theah, Character $actor, Array &$explanations): int { return 0; }
+
+    public function doCost(Game $game): void {}
+
+    public function doEffect(Game $game): void {}
+
 }

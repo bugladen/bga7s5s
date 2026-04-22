@@ -99,6 +99,24 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
     onChooseCardClicked: function(control_name, item_id) 
     {
         const methods = {
+            'planningPhaseResolveSchemes_02005_4': () => {
+                if (this.chooseList.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }                
+            },
+
+            'planningPhaseResolveSchemes_02005_5': () => {
+                this.addSortTagToCard(item_id);
+
+                if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }                
+            },
+
             'highDramaPhase01038_3': () => {
                 if (item_id === undefined) return;
                 var items = this.chooseList.getSelectedItems();
@@ -193,6 +211,42 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 } else {
                     dojo.addClass('actChooseCardSelected', 'disabled');
                 }
+            },
+
+            'highDramaPhase02002_2': () => {
+                if (this.chooseList.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }                
+            },
+
+            'highDramaPhase02002_3': () => {
+                this.addSortTagToCard(item_id);
+
+                if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }                
+            },
+
+            'highDramaPhase02014': () => {
+                if (this.chooseList.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }                
+            },
+
+            'highDramaPhase02014_2': () => {
+                this.addSortTagToCard(item_id);
+
+                if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }                
             },
 
             'duskPhaseBegin01177_2': () => {
@@ -464,6 +518,30 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'highDramaPhase02001': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
+            'highDramaPhase02013': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
+            'highDramaPhase02036_2': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
             'duelChooseAction': () => {
                 if (!$('btnCombatCard'))
                     return;
@@ -543,9 +621,9 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
             };
 
-            if (methods[this.gamedatas.gamestate.name]) {
+            if (methods[this.gamedatas.gamestate.name])
                 methods[this.gamedatas.gamestate.name]();
-            }
+
         } finally {
             this._processingFactionCardClick = false;
         }

@@ -26,4 +26,9 @@ interface ICardAbility
     function getPropertyArray(Game $game): array;
     
     function setUsed(Theah $theah, bool $used);
+    
+    function doCost(Game $game): void;
+    
+    function doEffect(Game $game): void;
+
 }

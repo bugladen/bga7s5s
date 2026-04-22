@@ -53,12 +53,9 @@ class Action_01072 extends CardAction
             $game = $event->theah->game;
             $leader = $event->theah->getLeaderByPlayerId($event->playerId);
 
+            $this->announceAction($game);
+
             $scheme = $this->getOwningCard($event->theah);
-            $game->notify->all("message", clienttranslate('${action_inject_code}: ${player_name} used Action.
-            They will pressure the location, discard a City Card, and muster a Character from their Approach Deck.'), [
-                "action_inject_code" => $scheme->getInjectCode(),
-                "player_name" => $game->getPlayerNameById($leader->ControllerId)
-            ]);
 
             $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $leader->Id, $scheme->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);

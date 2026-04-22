@@ -281,6 +281,7 @@ class Action_01180 extends CharacterAction
     
             $playerId = $game->getActivePlayerId();
     
+            // This announcement is used in lieu of $this->announceAction()
             $game->notify->all('message', clienttranslate('${player_name} has chosen to Equip ${card_inject_code} from the top 4 cards of the City Deck.'), [
                 'player_name' => $game->getActivePlayerName(),
                 'card_inject_code' => $attachment->getInjectCode(),
@@ -300,7 +301,8 @@ class Action_01180 extends CharacterAction
             $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $performerId);
 
             //Equip the attachment
-            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $actualTargetId, $attachmentId, $discount, $cost, $asAction = true, $explanations);
+            $owner = $this->getOwningCard($game->theah);
+            $equipAttachmentEvent = EventFactory::createAttachmentEquippedEvent($playerId, $actualTargetId, $attachmentId, $discount, $cost, $asAction = true, $explanations, false, $owner->Id, $this->Id);
             $game->theah->eventCheck($equipAttachmentEvent);
             $game->theah->queueEvent($equipAttachmentEvent);
     

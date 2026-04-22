@@ -171,7 +171,7 @@ class Technique_01096 extends Technique
             //Some attachments actually attach to different targets
             $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $owner->Id);
 
-            $equipEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $actualTargetId, $attachment->Id, 0, 0, $asAction = true, $explanations = '');
+            $equipEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $actualTargetId, $attachment->Id, 0, 0, $asAction = true, $explanations = '', false, $owner->Id, $this->Id);
             $game->theah->queueEvent($equipEvent);
 
             $this->setUsed($game->theah, true);

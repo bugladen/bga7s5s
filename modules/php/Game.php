@@ -82,7 +82,8 @@ class Game extends \Bga\GameFramework\Table
     final const MARYAM_BENU_PLEROMA_ABILITY_USED = "Maryam Benu Pleroma Ability Used";
     final const CARMELLA_ABILITY_USED = "Carmella Ability Used";
     final const INDOMITABLE_WILL_CONDITION = "Indomitable Will Condition";
-    
+    final const UNDER_COVER_OF_THE_NIGHT = "Under Cover of the Night";
+
     //Equip global variables
     final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';
     
@@ -115,6 +116,12 @@ class Game extends \Bga\GameFramework\Table
     final const CONTEMPT_AND_HATRED_PRESSURE_TYPE = 32;
     final const PACK_TACTICS_PRESSURE_TYPE = 64;
     final const PULL_THE_STRAND_PRESSURE_TYPE = 128;
+    final const KASPARS_OCCUPATION_PRESSURE_TYPE = 256;
+    final const TRIAL_OF_FAITH_PRESSURE_TYPE = 512;
+    final const CASTILLIAN_CAPER_PRESSURE_TYPE = 1024;
+    final const SOLOMONIA_PRESSURE_TYPE = 2048;
+    final const USSURAN_INTRIGUE_PRESSURE_TYPE = 4096;
+    final const SOLOMONIA_ID = "solomoniaId";
 
     //Player action global variables
     //Delete these in stNextPlayer
@@ -158,6 +165,12 @@ class Game extends \Bga\GameFramework\Table
     final const VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
     final const VALERI_MIKHAILOV_CHALLENGE_TYPE = 10;
     final const IRON_AND_VELVET_CHALLENGE_TYPE = 11;
+    final const ANDRIANA_DONDOLOS_CHALLENGE_TYPE = 12;
+    final const WILHELM_DUNST_CHALLENGE_TYPE = 13;
+    final const BATTLE_OF_WITS_CHALLENGE_TYPE = 14;
+    final const TORVO_ESPADA_CHALLENGE_TYPE = 15;
+    final const JUSTICE_SERVED_COLD_CHALLENGE_TYPE = 16;
+    final const UNSANCTIONED_DUEL_CHALLENGE_TYPE = 17;
 
     //Duel global variables
     //Duel Names
@@ -177,6 +190,9 @@ class Game extends \Bga\GameFramework\Table
     final const GAMBLE_REVEAL_COUNT = "gambleRevealCount";
     final const GAMBLE_REVEAL_EXPLANATIONS = "gambleRevealExplanations";
 
+    final const PENDING_CHALLENGER_THREAT = "pendingChallengerThreat";
+    final const PENDING_DEFENDER_THREAT = "pendingDefenderThreat";
+
     final const ROLL_THE_BONES_ACTIVATED = "rollTheBonesActivated";
     final const GAMBLE_TYPE = "gambleType";
     final const GAMBLE_TYPE_NORMAL = 0;
@@ -187,6 +203,8 @@ class Game extends \Bga\GameFramework\Table
     final const PAY_STATE_EQUIP_ATTACHMENT = 1;
     final const PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD = 2;
     final const PAY_STATE_IN_HAND_REACTION = 3;
+    final const PAY_STATE_RECRUIT_MERCENARY = 4;
+    final const PAY_STATE_PLAY_BRUTE = 5;
 
     use DeckTrait;
     use StatesTrait;

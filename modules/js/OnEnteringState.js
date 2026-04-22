@@ -724,6 +724,7 @@ onEnteringState: function( stateName, args )
         methods[stateName](args);
 
     this.onEnteringState_7s5s( stateName, args );
+    this.onEnteringState_tac( stateName, args );
 },
 
 })

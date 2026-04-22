@@ -68,6 +68,8 @@ class Maneuver_01113 extends Maneuver implements IAbilityThatTargetsCards
     {
         parent::handleEvent($event);
 
+        // EventManeuverCanceled handler not needed since this maneuver does not have any internal state
+
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
@@ -272,7 +274,8 @@ class Maneuver_01113 extends Maneuver implements IAbilityThatTargetsCards
             //Some attachments actually attach to different targets
             $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $actor->Id);
 
-            $musterEvent = EventFactory::createAttachmentEquippedEvent($actor->ControllerId, $actualTargetId, $attachment->Id, $discount, $cost, $asAction = false, $explanations);
+            $owner = $this->getOwningCard($game->theah);
+            $musterEvent = EventFactory::createAttachmentEquippedEvent($actor->ControllerId, $actualTargetId, $attachment->Id, $discount, $cost, $asAction = false, $explanations, false, $owner->Id, $this->Id);
             $game->theah->queueEvent($musterEvent);
     
             $game->gamestate->nextState();

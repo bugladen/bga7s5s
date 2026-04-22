@@ -13,7 +13,21 @@
       "Bash(do echo:*)",
       "Bash(sed 's|^\\\\./||')",
       "Bash(done)",
-      "Bash(find /c/code/7s5s/modules/php/cards/_7s5s/actions -name \"*.php\" -exec grep -l \"nextState\\(\\)\" {})"
+      "Bash(find /c/code/7s5s/modules/php/cards/_7s5s/actions -name \"*.php\" -exec grep -l \"nextState\\(\\)\" {})",
+      "Bash(php -l 'C:/code/7s5s/modules/php/cards/tac/_02047.php')",
+      "Bash(php -l 'C:/code/7s5s/modules/php/cards/tac/actions/Action_02047.php')",
+      "Bash(php -l 'C:/code/7s5s/modules/php/States/tac/State_highDramaPhase02047.php')",
+      "Bash(php -l modules/php/cards/tac/_02048.php)",
+      "Bash(php -l modules/php/cards/tac/reactions/Reaction_02048.php)",
+      "Bash(find C:\\\\code\\\\7s5s\\\\modules\\\\php:*)",
+      "Bash(php -l modules/php/cards/tac/_02051.php)",
+      "Bash(php -l modules/php/cards/tac/actions/Action_02051.php)",
+      "Bash(php -l modules/php/States/tac/State_highDramaPhase02051.php)",
+      "Bash(php -l modules/php/cards/tac/_02052.php)",
+      "Bash(php -l modules/php/States/tac/State_planningPhaseResolveSchemes02052.php)",
+      "Bash(php:*)",
+      "Bash(where php:*)",
+      "Bash(xargs cat:*)"
     ]
   }
 }

@@ -14,14 +14,16 @@ Will create a new GameState class and add supporting entries to other files. The
 ## Steps to create a GameState class
 
 1. Use the pattern of the entire class from `modules\php\States\State_highDramaPhase01111_2.php`.
-2. Place the file in the `modules\php\States` folder
+2. If the name provided in the parameters contains '01' place the file in the `modules\php\States\7s5s` folder
+else if the name provided in the parameters contains '02' place the file in the `modules\php\States\tac` folder
 3. Name the file `State_*` and append the name provided in the parameters.
 4. In the `name` parameter of the constructor use the name provided in the parameters.
 5. In the `descriptionMyTurn` parameter of the constructor there are two calls to clientTranslate().  Update the parameter in the second clientTranslate() call to `: ${you} must choose an opponent `
 6. In the `id` parameter of the constructor use the pattern from State_highDramaPhase01097.php but use the correct name from the command parameters.
 
 ## Steps to update the OnUpdateActionButtons file
-1. Update the file `modules\js\OnUpdateActionButtons.7s5s.jss`.
+1. If the name provided in the parameters contains '01' update the file `modules\js\OnUpdateActionButtons.7s5s.js`,
+else if the name provided in the parameters contains '02' update the file `modules\js\OnUpdateActionButtons.tac.js`.
 2. Create a new entry in the file using the name provided in the parameters
 3. Copy the exact pattern used for the entry `highDramaPhase01111_2`.
 4. Place the new entry in the file in alphabetical order in the area where similar named entries are located.

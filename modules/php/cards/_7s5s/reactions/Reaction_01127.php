@@ -69,17 +69,13 @@ class Reaction_01127 extends AttachmentReaction
 
             $game->globals->set(Game::CHOSEN_CARD, $owner->Id);
 
-            $challengerId = $game->theah->getDuelChallengerId();
-            $defenderId = $game->theah->getDuelDefenderId();
-            $challengerThreatIsLethal = $character->Id == $challengerId ? null : true;
-            $defenderThreatIsLethal = $character->Id == $defenderId ? null : true;
-        
-            $lethalEvent = EventFactory::createThreatModifiedEvent(0, 0, $challengerThreatIsLethal, $defenderThreatIsLethal);
+            $lethalEvent = EventFactory::createGainLethalEvent($character->Id, $game->theah);
             $game->theah->queueEvent($lethalEvent);
             
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01127", $this->Id);
             $game->theah->queueEvent($transition);
 
+            $this->setUsed($game->theah, true);
         }
 
 

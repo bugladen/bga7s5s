@@ -46,13 +46,9 @@ class Action_01201 extends CharacterAction implements ISorcererAbility
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $event->theah->game->notify->all('message', clienttranslate('${player_name} performed Ravenna\'s action to wound Ravenna and draw a card'), [
-                'player_name' => $event->theah->game->getActivePlayerName()
-            ]);
-
-            $this->setUsed($event->theah, true);
-
             $ravenna = $this->getOwningCard($event->theah);
+
+            $this->announceAction($event->theah->game);
 
             $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($ravenna->ControllerId, $ravenna->Id, $this->Id, $ravenna->Id);
             $event->theah->queueEvent($sorceryStartEvent);
@@ -64,6 +60,7 @@ class Action_01201 extends CharacterAction implements ISorcererAbility
             $addEvent = EventFactory::createCardDrawnEvent($event->playerId, $ravenna->getInjectCode());
             $event->theah->queueEvent($addEvent);
 
+            $this->setUsed($event->theah, true);
             $this->resetPlayerPassCount($event->theah->game);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($ravenna->ControllerId);

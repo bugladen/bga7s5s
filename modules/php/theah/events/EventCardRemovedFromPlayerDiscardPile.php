@@ -6,6 +6,8 @@ class EventCardRemovedFromPlayerDiscardPile extends Event
 {
     public int $cardId;
     public int  $playerId;
+    public bool $messageHidden;
+    public bool $permanentlyHide;
 
     public function __construct()
     {
@@ -13,6 +15,8 @@ class EventCardRemovedFromPlayerDiscardPile extends Event
 
         $this->cardId = 0;
         $this->playerId = 0;
+        $this->messageHidden = false;
+        $this->permanentlyHide = false;
     }
 
 }

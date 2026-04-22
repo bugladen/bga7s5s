@@ -69,6 +69,13 @@ trait DebugTrait
     }
 
     #[Debug(reload: true)] 
+    public function debug_SetCardInPlayerLocker(string $className, int $playerId)
+    {
+        $location = $this->getPlayerLockerName($playerId);
+        $this->createCardInLocation($className, $location, $playerId, $playerId);
+    }
+
+    #[Debug(reload: true)] 
     public function debug_SetCardInCityDiscardPile(string $className)
     {
         $this->createCardInLocation($className, Game::LOCATION_CITY_DISCARD, 0, 0);
@@ -90,7 +97,7 @@ trait DebugTrait
             $recruitCharacterEvent->cost = 0;
         }
         $this->theah->queueEvent($recruitCharacterEvent);
-        $this->theah->runEvents($debug = true);
+        $this->theah->runEvents($skipTransitions = true);
     }
 
     public function debug_EngageCard(int $cardId, int $playerId)
@@ -102,7 +109,7 @@ trait DebugTrait
 
         $event = EventFactory::createCardEngagedEvent($playerId, $cardId);
         $this->theah->queueEvent($event);
-        $this->theah->runEvents($debug = true);
+        $this->theah->runEvents($skipTransitions = true);
     }
 
     public function debug_EngardeCard(int $cardId, int $playerId)
@@ -114,7 +121,7 @@ trait DebugTrait
 
         $event = EventFactory::createCardEngardedEvent($playerId, $cardId);
         $this->theah->queueEvent($event);
-        $this->theah->runEvents($debug = true);
+        $this->theah->runEvents($skipTransitions = true);
     }
 
     #[Debug(reload: true)] 
@@ -159,7 +166,7 @@ trait DebugTrait
             $event->amount = $amount;
         }
         $this->theah->queueEvent($event);
-        $this->theah->runEvents($debug = true);
+        $this->theah->runEvents($skipTransitions = true);
     }
 
     #[Debug(reload: true)] 
@@ -172,7 +179,7 @@ trait DebugTrait
             $event->amount = $amount;
         }
         $this->theah->queueEvent($event);
-        $this->theah->runEvents($debug = true);
+        $this->theah->runEvents($skipTransitions = true);
     }
 
     public function debug_WoundCharacter(int $characterId, int $wounds, int $sourceId = 0)
@@ -186,7 +193,7 @@ trait DebugTrait
             $event->reason = 'Debug Wound';
         }
         $this->theah->queueEvent($event);
-        $this->theah->runEvents($debug = true);
+        $this->theah->runEvents($skipTransitions = true);
     }
 
     public function debug_HealCharacter(int $characterId, int $wounds, int $sourceId = 0)
@@ -200,7 +207,7 @@ trait DebugTrait
             $event->reason = 'Debug Heal';
         }
         $this->theah->queueEvent($event);
-        $this->theah->runEvents($debug = true);
+        $this->theah->runEvents($skipTransitions = true);
     }
 
     public function debug_UnequipAttachment(int $playerId, int $characterId, int $attachmentId)
@@ -213,14 +220,14 @@ trait DebugTrait
             $event->attachmentId = $attachmentId;
         }
         $this->theah->queueEvent($event);
-        $this->theah->runEvents($debug = true);
+        $this->theah->runEvents($skipTransitions = true);
     }
 
     public function debug_PlayApproachCharacterAtHome(int $playerId, int $characterId)
     {
         $event = EventFactory::createApproachCharacterPlayedEvent($playerId, $characterId);
         $this->theah->queueEvent($event);
-        $this->theah->runEvents($debug = true);
+        $this->theah->runEvents($skipTransitions = true);
     }
 
     #[Debug(reload: true)] 
@@ -231,7 +238,7 @@ trait DebugTrait
         $claimEvent = EventFactory::createLocationClaimedEvent($playerId, 0, $location);
         $this->theah->eventCheck($claimEvent);
         $this->theah->queueEvent($claimEvent);
-        $this->theah->runEvents($debug = true);
+        $this->theah->runEvents($skipTransitions = true);
     }
 
     public function debug_EmptyHand(int $playerId)
@@ -242,7 +249,7 @@ trait DebugTrait
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent($playerId, $card['id'], false, false);
             $this->theah->queueEvent($discardEvent);
         }
-        $this->theah->runEvents($debug = true);
+        $this->theah->runEvents($skipTransitions = true);
     }
 
     public function debug_SetFirstPlayer(int $playerId)
@@ -257,6 +264,6 @@ trait DebugTrait
         ]);    
         $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
         $this->theah->queueEvent($event);
-        $this->theah->runEvents($debug = true);
+        $this->theah->runEvents($skipTransitions = true);
     }
 }

@@ -37,7 +37,10 @@ class Reaction_01040 extends CardReaction
             }
         }
 
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate("Decline"), "decline");
+        if (!$owner->Engaged)
+        {
+            $array[] = $this->createButtonProperty($theah->game, $theah->game->translate("Decline"), "decline");
+        }
 
         return $array;
     }
@@ -75,10 +78,10 @@ class Reaction_01040 extends CardReaction
         }
         else
         {
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id);
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
         }
 
-        $game->gamestate->nextState("done");        
+        $game->gamestate->nextState("done");
     }
 }

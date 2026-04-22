@@ -1762,9 +1762,11 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "args" => "argsForStatePrivate",
         "possibleactions" => [
             "actFromCardWithIds", 
+            "actPassWithPass",
         ],
         "transitions" => [
-            "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+            "cardChosen" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+            "pass" => States::DUEL_RESOLVE_MANEUVER_EVENTS
         ]
     ],
 

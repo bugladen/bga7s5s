@@ -12,6 +12,7 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
@@ -600,25 +601,25 @@ trait ArgumentsTrait
         $charactersCanIntervene = [];
         foreach ($charactersAtLocation as $character)
         {
-            if (! $character->canIntervene()) continue;
-
+            //Special case for Carmella Vanessa Slavaggi
             if ($character instanceof _01178)
             {
-                // Carmella can intervene while engaged
+                if (! $character->canIntervene()) continue;
             }
+            //Special case for Rena Klingenhalter: can intervene while engaged if she has a ready Weapon equipped
             else if ($character instanceof _01040 && $character->hasEngardeWeaponEquipped($this->theah))
             {
-                // Rena can intervene while engaged if she has a ready weapon
+                if (! $character->canIntervene()) continue;
             }
             else if ($character instanceof _01188)
             {
                 // Vladislav can intervene while engaged
             }
-            else if ($character->Engaged)
+            else
             {
-                continue;
+                if (! $character->canIntervene() || $character->Engaged) continue;
             }
-
+            
             $charactersCanIntervene[] = $character;
         }
 
@@ -658,6 +659,14 @@ trait ArgumentsTrait
         $actor = $this->theah->getCharacterById($round['actor_id']);
         $gamblesLeft = $actor->ModifiedFinesse - $gamblesCount;
 
+        $gambleProbe = EventFactory::createDuelAttemptGambleEvent($actor->Id);
+        try {
+            $this->theah->eventCheck($gambleProbe);
+            $gambleAllowedByCardEffects = true;
+        } catch (\BgaUserException|UserException $e) {
+            $gambleAllowedByCardEffects = false;
+        }
+
         $characterManeuevers = $this->theah->getAvailableCharacterManeuvers($actor);
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
 
@@ -684,7 +693,7 @@ trait ArgumentsTrait
                     "active" => [
                         "maneuversAvailable" => $combatCardsCount > 0 && count($characterManeuevers) > 0 && $playedManeuversCount == 0,
                         "techniquesAvailable" => $combatCardsCount > 0 && count($techniques) > 0 && $playedTechniquesCount == 0,
-                        "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $combatCardsCount == 0,
+                        "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $combatCardsCount == 0 && $gambleAllowedByCardEffects,
                         "gamblesLeft" => $gamblesLeft,
                         "combatCardAvailable" => $combatCardsCount == 0,
                         "endDuelAvailable" => false

@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
@@ -87,15 +88,15 @@ class Action_01175 extends CardAction implements IAbilityThatTargetsCharacters
                 $card = $game->getCardObjectFromDb($id);
                 if ($card == null)
                 {
-                    throw new \BgaUserException(sprintf($game->translate("Card not found: %d"), $id));
+                    throw new UserException(sprintf($game->translate("Card not found: %d"), $id));
                 }
                 if ($card->OwnerId != $owner->ControllerId)
                 {
-                    throw new \BgaUserException(sprintf($game->translate("Card is not owned by the performer: %d"), $id));
+                    throw new UserException(sprintf($game->translate("Card is not owned by the performer: %d"), $id));
                 }
                 if ($card->Location != Game::LOCATION_HAND)
                 {
-                    throw new \BgaUserException(sprintf($game->translate("Card is not in the hand: %d"), $id));
+                    throw new UserException(sprintf($game->translate("Card is not in the hand: %d"), $id));
                 }
             }
 
@@ -106,8 +107,10 @@ class Action_01175 extends CardAction implements IAbilityThatTargetsCharacters
 
             if ($performer->Wounds < $wounds)
             {
-                throw new \BgaUserException(sprintf($game->translate("Performer has only %d wound(s), but %d cards are being discarded."), $performer->Wounds, $wounds));
+                throw new UserException(sprintf($game->translate("Performer has only %d wound(s), but %d cards are being discarded."), $performer->Wounds, $wounds));
             }
+
+            $this->announceAction($game);
 
             foreach ($ids as $id)
             {
@@ -119,6 +122,7 @@ class Action_01175 extends CardAction implements IAbilityThatTargetsCharacters
             $game->theah->queueEvent($healEvent);
 
             $this->resetPlayerPassCount($game);
+            $this->setUsed($game->theah, true);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);

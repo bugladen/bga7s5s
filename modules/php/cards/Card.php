@@ -254,19 +254,27 @@ abstract class Card
     {
         if ($this instanceof IHasActions)
         {
-            return $this->getActionById($id);
+            $action = $this->getActionById($id);
+            if ($action)
+                return $this->getActionById($id);
         }
         if ($this instanceof IHasTechniques)
         {
-            return $this->getTechniqueById($id);
+            $technique = $this->getTechniqueById($id);
+            if ($technique)
+                return $this->getTechniqueById($id);
         }
         if ($this instanceof IHasManeuvers)
         {
-            return $this->getManeuverById($id);
+            $maneuver = $this->getManeuverById($id);
+            if ($maneuver)
+                return $this->getManeuverById($id);
         }
         if ($this instanceof IHasReactions)
         {
-            return $this->getReactionById($id);
+            $reaction = $this->getReactionById($id);
+            if ($reaction)
+                return $this->getReactionById($id);
         }
 
         return null;

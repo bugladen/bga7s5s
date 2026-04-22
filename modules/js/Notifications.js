@@ -16,7 +16,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( 'notifications subscriptions setup' );
         
         const notifs = [
-            ['01126_2_scheme_moved', 500],
+            ['schemeMovedToCity', 500],
             ['actionUsed', 1],
             ['approachCardsReceived', 1000],
             ['approachCharacterPlayed', 2000],
@@ -88,6 +88,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['reknownRemovedFromLocation', 500],
             ['reknownUpdatedOnCard', 500],
             ['cardSentToLocker', 500],
+            ['cardSentToCityLocker', 500],
             ['actionAdded', 1],
             ['actionRemoved', 1],
             ['techniqueAdded', 1],
@@ -228,6 +229,36 @@ return declare('seventhseacityoffivesails.notifications', null, {
                 reaction.available = ! args.used;
                 this.createTooltipForCard(card);
             }
+        }
+    },
+
+    notif_maneuverAdded: function( notif )
+    {
+        debug( 'notif_maneuverAdded' );
+        debug( notif );
+        
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        if (card)
+        {
+            //Add the maneuver to the card
+            card.maneuvers.push(args.maneuver);
+            this.createTooltipForCard(card);
+        }
+    },
+
+    notif_maneuverRemoved: function( notif )
+    {
+        debug( 'notif_maneuverRemoved' );
+        debug( notif );
+        
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        if (card)
+        {
+            //Remove the maneuver from the card
+            card.maneuvers = card.maneuvers.filter(maneuver => maneuver.id !== args.maneuverId);
+            this.createTooltipForCard(card);
         }
     },
 
@@ -1196,6 +1227,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
         player.locker.push(card);
     },
 
+    notif_cardSentToCityLocker: function( notif )
+    {
+        debug( 'notif_cardSentToCityLocker' );
+        debug( notif );
+
+        const args = notif.args;
+        this.gamedatas.cityLocker.push(args.card);
+    },
+
     notif_cardRemovedFromLocker: function( notif )
     {
         debug( 'notif_cardRemovedFromLocker' );
@@ -1677,20 +1717,31 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
-    notif_01126_2_scheme_moved: function( notif )
+    notif_schemeMovedToCity: async function( notif )
     {
-        debug( 'notif_01126_2_scheme_moved');
+        debug( 'notif_schemeMovedToCity');
         debug( notif );
 
         const args = notif.args;
 
         const card = this.cardProperties[args.cardId];
+        const oldDivId = card.divId;
+        const oldElement = $(oldDivId);
+
         card.location = args.location;
         this.gamedatas.homeCards = this.gamedatas.homeCards.filter((scheme) => scheme.id !== card.id);
-        dojo.destroy(card.divId);
 
-        args.card = card;
-        this.notif_cityCardAddedToLocation(notif);
+        const targetId = this.getTargetElementForLocation(args.location, card.controllerId);
+        const targetElement = $(targetId);
+
+        if (oldElement && targetElement && this.animationManager && this.animationManager.animationsActive()) {
+            await this.animationManager.slideAndAttach(oldElement, targetElement);
+        }
+
+        dojo.destroy(oldDivId);
+
+        const cardId = this.createCardId(card, args.location);
+        this.createCard(cardId, card, targetId);
     },
 
     notif_locationClaimed: function( notif )

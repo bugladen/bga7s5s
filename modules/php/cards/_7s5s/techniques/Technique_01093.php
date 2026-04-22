@@ -38,6 +38,8 @@ class Technique_01093 extends Technique
     { 
         parent::handleEvent($event);
 
+        // EventTechniqueCanceled handler not needed
+
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);

@@ -3,7 +3,10 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
 use Bga\GameFramework\UserException;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02003;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -208,7 +211,7 @@ class Theah
         }
     }
 
-    public function runEvents(bool $debug = false)
+    public function runEvents(bool $skipTransitions = false)
     {
         while (true) {
            
@@ -247,11 +250,11 @@ class Theah
                 }
             }
 
-            if (! $debug && $event instanceof EventChangeActivePlayer) {
+            if (! $skipTransitions && $event instanceof EventChangeActivePlayer) {
                 $this->game->gamestate->changeActivePlayer($event->playerId);
             }
 
-            if (! $debug && $event instanceof EventTransition) {              
+            if (! $skipTransitions && $event instanceof EventTransition) {              
                 
                 //If a reaction transition, make sure it is available.  
                 //This prevents multiple transition triggers of the same reaction from running.
@@ -295,7 +298,7 @@ class Theah
         if ($inDuel) 
         {
             $currentPlayerId = $this->game->globals->get(Game::DUEL_CURRENT_PLAYER);
-            if ($currentPlayerId && ! $debug) 
+            if ($currentPlayerId && ! $skipTransitions) 
             {
                 $this->game->gamestate->changeActivePlayer($currentPlayerId);
             }
@@ -306,14 +309,14 @@ class Theah
             if ($state['type'] == "activeplayer")
             {
                 $currentPlayerId = $this->game->globals->get(Game::CURRENT_PLAYER);
-                if ($currentPlayerId && ! $debug) 
+                if ($currentPlayerId && ! $skipTransitions) 
                 {
                     $this->game->gamestate->changeActivePlayer($currentPlayerId);
                 }
             }
         }
 
-        if (! $debug) {
+        if (! $skipTransitions) {
             $this->game->gamestate->nextState('endOfEvents');
         }
     }
@@ -1454,7 +1457,26 @@ class Theah
         return $opponent;
     }
 
-
+    /**
+     * Get all combat cards played in the current duel round.
+     * @return Card[] Array of Card objects
+     */
+    public function getCombatCardsForCurrentRound(): array
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        
+        $sql = "SELECT combat_card_id FROM duel_round_combat_card WHERE duel_id = $duelId AND round = $round";
+        $combatCardIds = $this->db->getCollection($sql);
+        
+        $combatCards = [];
+        foreach ($combatCardIds as $row)
+        {
+            $combatCards[] = $this->getCardById($row['combat_card_id']);
+        }
+        
+        return $combatCards;
+    }
 
     public function getCurrentDuelThreat($characterId) : int
     {
@@ -1607,6 +1629,12 @@ class Theah
             [$discount, $explanations] = $this->getManeuverFromCombatCardDiscount($combatCard);
         }
 
+        if ($payStateType == Game::PAY_STATE_RECRUIT_MERCENARY || $payStateType == Game::PAY_STATE_PLAY_BRUTE)
+        {
+            $discount = $this->game->globals->get(Game::DISCOUNT, 0);
+            $explanations = $this->game->globals->get(Game::DISCOUNT_EXPLAINATIONS, '');
+        }
+
         if ($discount != 0)
         $this->game->notify->player($playerId, "message", clienttranslate('Private: Explanations for discount:<br>${explanations}'), [
             "explanations" => $explanations,
@@ -1617,4 +1645,42 @@ class Theah
 
         return [$discount, $explanations];
     }
+
+    public function interventionCheck(Character $character): void
+    {
+        $target = $this->getCardById($this->game->globals->get(GAME::CHOSEN_TARGET));
+        if ($target->Location != $character->Location) {
+            throw new \BgaUserException($this->game->translate("Character is not at the same location"));
+        }    
+
+        //Special case for Carmella Vanessa Slavaggi, Mourad, and Rena Klingenhalter (with ready Weapon)
+        if ($character instanceof _01178 || $character instanceof _02003 || $character instanceof _01188 || ($character instanceof _01040 && $character->hasEngardeWeaponEquipped($this)))
+        {
+            if (! $character->canIntervene())
+            {
+                throw new \BgaUserException($this->game->translate("Character cannot Intervene."));
+            }
+        }
+        else
+        {
+            if (! $character->canIntervene() || $character->Engaged)
+            {
+                throw new \BgaUserException($this->game->translate("Character cannot Intervene."));
+            }
+        }
+
+        $challengeType = $this->game->globals->get(Game::CHALLENGE_TYPE);
+        if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE && ! $character instanceof Leader) {
+            throw new \BgaUserException($this->game->translate("Legendary Reputation: Only Leaders can Intervene"));
+        }
+        else if ($challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE)
+        {
+            throw new \BgaUserException($this->game->translate("Valeri Mikhailov: No Characters can Intervene."));
+        }
+        else if ($challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE)
+        {
+            throw new UserException($this->game->translate("Torvo Espada: No characters can intervene in this challenge."));
+        }
+    }
 }
+

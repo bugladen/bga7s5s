@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 trait ReactionTrait
@@ -72,6 +73,9 @@ trait ReactionTrait
 
     public function reactionFromCard(Game $game, int $state, string $internalId, string $reactionId): void
     {
+        $event = EventFactory::createReactionActivatedEvent($this->ControllerId, $this->Id, $internalId);
+        $game->theah->queueEvent($event);
+
         $reaction = $this->getReactionById($internalId);
         $reaction->performReaction($game, $state, $internalId, $reactionId);
     }

@@ -48,6 +48,12 @@ class State_highDramaPhase01134_3 extends GameState
         $this->game->actFromCardWithIds($ids);
     }
 
+    #[PossibleAction]
+    public function actFromCardPass(): void
+    {
+        $this->game->actFromCardPass();
+    }
+
     public function zombie(int $playerId): void
     {
         $this->game->gamestate->nextState("zombie");

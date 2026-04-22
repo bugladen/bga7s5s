@@ -203,12 +203,6 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 $attachment = $game->theah->getAttachmentById($attachmentId);
 
                 $owner = $this->getOwningCard($game->theah);
-                $game->notify->all("message", clienttranslate('${action_inject_code}: ${player_name} uses Action to Engage ${attachment_inject_code} and ${character_inject_code}'), [
-                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                    "action_inject_code" => $owner->getInjectCode(),
-                    "attachment_inject_code" => $attachment->getInjectCode(),
-                    "character_inject_code" => $character->getInjectCode(),
-                ]);
 
                 $aam = $this->getOwningCard($game->theah);
                 $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id, $this->Id);
@@ -224,6 +218,7 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
 
                 $this->setUsed($game->theah, true);
                 $this->resetPlayerPassCount($game);
+                $this->announceAction($game);
             }
 
             //Chooses to send the character home
@@ -233,12 +228,6 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 $attachment = $game->theah->getAttachmentById($attachmentId);
 
                 $owner = $this->getOwningCard($game->theah);
-                $game->notify->all("message", clienttranslate('${action_inject_code}: ${player_name} uses Action to Engage ${attachment_inject_code} and send ${character_inject_code} Home'), [
-                    "action_inject_code" => $owner->getInjectCode(),
-                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                    "attachment_inject_code" => $attachment->getInjectCode(),
-                    "character_inject_code" => $character->getInjectCode(),
-                ]);
 
                 $aam = $this->getOwningCard($game->theah);
                 $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id, $this->Id);
@@ -253,6 +242,7 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 $game->theah->queueEvent($actionResolvedEvent);
 
                 $this->setUsed($game->theah, true);
+                $this->announceAction($game);
                 $this->resetPlayerPassCount($game);
             }
 

@@ -9,7 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 
 class _01050 extends FactionAttachment implements IHasTechniques
@@ -51,7 +51,7 @@ class _01050 extends FactionAttachment implements IHasTechniques
     {
         parent::eventCheck($event);
 
-        if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id)
+        if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
             if (! $character->hasWeaponEquipped($event->theah))

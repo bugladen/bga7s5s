@@ -60,4 +60,38 @@ trait ManeuverTrait
             $maneuver->setOwnerId($id);
         }
     }
+
+    public function addManeuver(Maneuver $maneuver, Game $game, bool $notify = true)
+    {
+        $this->Maneuvers[] = $maneuver;
+        $this->IsUpdated = true;
+
+        if ($notify)
+        {
+            $game->notify->all('maneuverAdded', clienttranslate('${character_inject_code} has gained Maneuver: ${maneuver_name}.'), [
+                'i18n' => ['maneuver_name'],
+                'character_inject_code' => $this->getInjectCode(),
+                'characterId' => $this->Id,
+                'maneuver' => $maneuver->getPropertyArray($game),
+                'maneuver_name' => $maneuver->Name
+            ]);
+        }
+    }
+
+    public function removeManeuver(Maneuver $maneuver, Game $game, bool $notify = true)
+    {
+        $this->Maneuvers = array_values(array_filter($this->Maneuvers, fn($m) => $m->Id != $maneuver->Id));
+        $this->IsUpdated = true;
+        
+        if ($notify)
+        {
+            $game->notify->all('maneuverRemoved', clienttranslate('${character_inject_code} has lost Maneuver: ${maneuver_name}.'), [
+                'i18n' => ['maneuver_name'],
+                'character_inject_code' => $this->getInjectCode(),
+                'characterId' => $this->Id,
+                'maneuverId' => $maneuver->Id,
+                'maneuver_name' => $maneuver->Name
+            ]);
+        }
+    }
 }

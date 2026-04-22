@@ -83,9 +83,10 @@ class Action_01073 extends AttachmentAction implements IAbilityThatTargetsCharac
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, '01073', $this->Id);
             $event->theah->queueEvent($transition);
 
-            //resetPlayerPassCount is called in stSetupChallenge
+            // $this->resetPlayerPassCount() is called in stSetupChallenge
             // $this->setUsed() is called in stSetupChallenge
             // createActionResolvedEvent() is called when the challenge is resolved
+            // $this->announceAction() is called in stSetupChallenge
         }
     }
 }

@@ -7,7 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 class _01073 extends FactionAttachment implements IHasActions
@@ -53,7 +53,7 @@ class _01073 extends FactionAttachment implements IHasActions
     {
         parent::eventCheck($event);
 
-        if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id) 
+        if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $performer = $event->theah->getCardById($event->characterId);
             if (! $performer->hasTrait("Duelist"))

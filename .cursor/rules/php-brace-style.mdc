@@ -1,0 +1,54 @@
+---
+description: PHP blocks — opening brace on the next line (Allman style)
+globs: ["**/*.php"]
+alwaysApply: false
+---
+
+# PHP brace placement
+
+When writing or editing PHP, put the opening `{` on its **own line** after the declaration or control header. Closing `}` stays aligned with the keyword that opened the block.
+
+Applies to: `class`, `function` / methods, `if` / `else` / `elseif`, `foreach`, `for`, `while`, `do`, `switch`, `try` / `catch` / `finally`, and anonymous functions when they use a braced body.
+
+```php
+// BAD — K&R / same-line brace
+if ($x) {
+    ...
+}
+
+class Foo {
+    public function bar() {
+        ...
+    }
+}
+
+// GOOD — brace on next line
+if ($x)
+{
+    ...
+}
+
+class Foo
+{
+    public function bar()
+    {
+        ...
+    }
+}
+```
+
+`else` / `elseif` / `catch` / `finally` follow the same pattern: keyword on one line, `{` on the next.
+
+```php
+// GOOD
+try
+{
+    ...
+}
+catch (Throwable $e)
+{
+    ...
+}
+```
+
+One-line closures with `fn` need no braces. For array literals and other non-block syntax, this rule does not apply.

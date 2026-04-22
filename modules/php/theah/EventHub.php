@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCalculatePayDiscount;
@@ -47,6 +48,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverV
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGambleCardsRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseBegin;
@@ -133,10 +135,32 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventAttachmentEquipping:
+                $handler = function (Theah $theah, EventAttachmentEquipping $event)
+                {
+                    $equippedEvent = self::createEvent(Events::AttachmentEquipped);
+                    if ($equippedEvent instanceof EventAttachmentEquipped)
+                    {
+                        $equippedEvent->playerId = $event->playerId;
+                        $equippedEvent->characterId = $event->characterId;
+                        $equippedEvent->attachmentId = $event->attachmentId;
+                        $equippedEvent->discount = $event->discount;
+                        $equippedEvent->cost = $event->cost;
+                        $equippedEvent->asAction = $event->asAction;
+                        $equippedEvent->explanations = $event->explanations;
+                        $equippedEvent->messageHidden = $event->messageHidden;
+                        $equippedEvent->sourceId = $event->sourceId;
+                        $equippedEvent->abilityId = $event->abilityId;
+                    }
+                    $theah->queueEvent($equippedEvent);
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventAttachmentEquipped:
                 $handler = function (Theah $theah, EventAttachmentEquipped $event)
                 {
-                    $performer = $theah->getCharacterById($event->characterId);                    
+                    $performer = $theah->getCharacterById($event->characterId);
                     $attachment = $theah->getAttachmentById($event->attachmentId);
 
                     //Attachments might not be in the world (came from the City Deck, or created by an action), add it to the world
@@ -156,14 +180,21 @@ trait EventHub
                     }
                     
                     // Notify players of attachment equipped
-                    $message = clienttranslate('${player_name} equipped ${attachment_inject_code} to ${performer_inject_code}. ');
-                    if ($event->asAction)
+                    if ($event->messageHidden)
                     {
-                        $message .= clienttranslate('This was done at a cost of ${cost} Wealth (discount of ${discount}).');
-                        if ($event->explanations != '')
+                        $message = '${player_name} equipped a card under ${performer_inject_code}. ';
+                    }
+                    else
+                    {
+                        $message = clienttranslate('${player_name} equipped ${attachment_inject_code} to ${performer_inject_code}. ');
+                        if ($event->asAction)
                         {
-                            $message .= clienttranslate('<br>${explanations}');
-                        }
+                            $message .= clienttranslate('This was done at a cost of ${cost} Wealth (discount of ${discount}).');
+                            if ($event->explanations != '')
+                            {
+                                $message .= clienttranslate('<br>${explanations}');
+                            }
+                        }    
                     }
 
                     $deck = $theah->game->getGameDeckObject();
@@ -268,7 +299,16 @@ trait EventHub
                     $modifiedFinesse = $character->ModifiedFinesse;
                     $modifiedInfluence = $character->ModifiedInfluence;
 
-                    $theah->game->notify->all("attachmentUnequipped", clienttranslate('${attachment_inject_code} has been unequipped from ${character_inject_code}.'), [
+                    if ($attachment->FaceDown)
+                    {
+                        $message = clienttranslate('[Hidden Card] has been unequipped from ${character_inject_code}.');
+                    }
+                    else
+                    {
+                        $message = clienttranslate('${attachment_inject_code} has been unequipped from ${character_inject_code}.');
+                    }
+
+                    $theah->game->notify->all("attachmentUnequipped", clienttranslate($message), [
                         "player_id" => $event->playerId,
                         "attachment_inject_code" => $attachment->getInjectCode(),
                         "character_inject_code" => $character->getInjectCode(),
@@ -497,7 +537,16 @@ trait EventHub
                     $card->Engaged = false;
                     $card->IsUpdated = true;
 
-                    $theah->game->notify->all("cardDiscardedFromPlay", clienttranslate('${card_inject_code} discarded from ${location}.'), [
+                    if ($card->FaceDown)
+                    {
+                        $message = clienttranslate('[Hidden Card] discarded from ${location}.');
+                    }
+                    else
+                    {
+                        $message = clienttranslate('${card_inject_code} discarded from ${location}.');
+                    }
+
+                    $theah->game->notify->all("cardDiscardedFromPlay", clienttranslate($message), [
                         'i18n' => ['location'],
                         "playerId" => $event->ownerId,
                         "card_inject_code" => $card->getInjectCode(),
@@ -680,13 +729,27 @@ trait EventHub
             case $event instanceof EventCardRemovedFromPlayerDiscardPile:
                 $handler = function (Theah $theah, EventCardRemovedFromPlayerDiscardPile $event)
                 {
+                    if ($event->messageHidden)
+                    {
+                        $message = clienttranslate('[Hidden Card] removed from ${player_name}\'s discard pile.');
+                    }
+                    else
+                    {
+                        $message = clienttranslate('${card_inject_code} removed from ${player_name}\'s discard pile.');
+                    }
                     $card = $theah->getCardById($event->cardId);
-                    $theah->game->notify->all("cardRemovedFromPlayerDiscardPile", clienttranslate('${card_inject_code} removed from ${player_name}\'s discard pile.'), [
+                    $theah->game->notify->all("cardRemovedFromPlayerDiscardPile", $message, [
                         "player_id" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "card_inject_code" => $card->getInjectCode(),
                         "card" => $card->getPropertyArray($this->game),
                     ]);
+
+                    if ($event->permanentlyHide)
+                    {
+                        $deck = $theah->game->getGameDeckObject();
+                        $deck->moveCard($event->cardId, Game::LOCATION_PERMANENTLY_HIDDEN);
+                    }
                 };
                 $handler($this, $event);
                 break;
@@ -1770,6 +1833,9 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventDuelGambleCardsRevealed:
+                break;
+
             case $event instanceof EventDuelPlayerGambled:
                 $handler = function(Theah $theah, EventDuelPlayerGambled $event) {
                     $card = $theah->game->getCardObjectFromDb($event->chosenCardId);
@@ -1961,7 +2027,7 @@ trait EventHub
                     $card->IsUpdated = true;
 
                     $theah->game->notify->all("cardSentToLocker", clienttranslate('${card_inject_code} has been sent to the locker.'), [
-                        "playerId" => $card->ControllerId,
+                        "playerId" => $event->playerId,
                         "card_inject_code" => $card->getInjectCode(),
                         "card" => $card->getPropertyArray($theah->game),
                     ]);

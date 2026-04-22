@@ -168,6 +168,7 @@ class Action_01124 extends CharacterAction implements ISorcererAbility, IAbility
 
             //Create a clone of the risk card
             $card = $game->createCardInLocation('01124_RiskClone', Game::LOCATION_HAND, $owner->ControllerId, $owner->ControllerId);
+            $game->theah->addCardToWorld($card);
             $card->Name = $riskCard->Name;
             $card->Image = $riskCard->Image;
 

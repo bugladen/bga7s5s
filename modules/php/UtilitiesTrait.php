@@ -426,6 +426,9 @@ trait UtilitiesTrait
             case '01':
                 $set = "_7s5s";
                 break;
+            case '02':
+                $set = "tac";
+                break;
             default:
                 $set = "_7s5s";
         }
@@ -611,6 +614,39 @@ trait UtilitiesTrait
             {
                 $playerInfluences[$attemptingPlayerId]['influence'] += $this->globals->get(Game::PRESSURE_BONUS, 0);
             }
+
+            if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::SOLOMONIA_PRESSURE_TYPE) && $pressureStat == Game::STAT_INFLUENCE)
+            {
+                $solomonia = $this->theah->getCardById($this->globals->get(Game::SOLOMONIA_ID));
+                $playerInfluences[$solomonia->ControllerId]['influence'] += 1;
+            }
+
+        }
+
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CASTILLIAN_CAPER_PRESSURE_TYPE))
+        {
+            $scoundrelBonus = 0;
+            foreach ($charactersAtLocation as $character) {
+                if (! $character->isControlled()) {
+                    continue;
+                }
+                if ($character->ControllerId != $attemptingPlayerId) {
+                    continue;
+                }
+                if ($character->hasTrait("Scoundrel")) {
+                    $scoundrelBonus++;
+                }
+            }
+            $playerInfluences[$attemptingPlayerId]['influence'] += $scoundrelBonus;
+        }
+
+        //If Trial of Faith is in play, each player gets +1 to their influence total for each wound on each character at the location
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TRIAL_OF_FAITH_PRESSURE_TYPE))
+        {
+            foreach ($charactersAtLocation as $character)
+            {
+                $playerInfluences[$character->ControllerId]['influence'] += $character->Wounds;
+            }
         }
 
         //Get the player with the most influence
@@ -653,6 +689,8 @@ trait UtilitiesTrait
         if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE)
+            || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::KASPARS_OCCUPATION_PRESSURE_TYPE)
+            || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::USSURAN_INTRIGUE_PRESSURE_TYPE)
         )
         {
             //Ties win
@@ -805,7 +843,7 @@ trait UtilitiesTrait
         return ($global & $flag) == $flag;
     }
 
-    public function createRiskAttachment(Game $game, string $className, int $originalCardId, string $location, int $ownerId, int $controllerId, int $targetId)
+    public function createRiskAttachment(Game $game, string $className, int $originalCardId, string $location, int $ownerId, int $controllerId, int $targetId, string $abilityId = "")
     {
         //Place original card in special hiding location
         $owner = $game->theah->getCardById($originalCardId);
@@ -816,6 +854,8 @@ trait UtilitiesTrait
         $game->theah->queueEvent($moveEvent);
 
         $card = $game->createCardInLocation($className, $location, $ownerId, $controllerId);
+        $game->theah->addCardToWorld($card);
+
         if ($card instanceof IRiskAttachment)
         {
             $card->setOriginalCardId($owner->Id);
@@ -823,7 +863,7 @@ trait UtilitiesTrait
         $game->updateCardObjectInDb($card);
 
         // getRequiredAttachTargetId() not required for Risk Attachments
-        $event = EventFactory::createAttachmentEquippedEvent($controllerId, $targetId, $card->Id, 0, 0, $asAction = false);
+        $event = EventFactory::createAttachmentEquippedEvent($controllerId, $targetId, $card->Id, 0, 0, $asAction = false, '', false, $originalCardId, $abilityId);
         $game->theah->queueEvent($event);
     }
 

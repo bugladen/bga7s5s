@@ -254,8 +254,11 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaChallengeActionActivateTechnique': () => {
-            if (args.challengeType != this.SERVO_SCARPA_CHALLENGE_TYPE)
+            if (args.challengeType != this.SERVO_SCARPA_CHALLENGE_TYPE && 
+                args.challengeType != this.ANDRIANA_DONDOLOS_CHALLENGE_TYPE &&
+                args.challengeType != this.WILHELM_DUNST_CHALLENGE_TYPE)
                 this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+
             args.techniques.forEach((technique) => { 
                 this.addActionButton(
                     `actChooseTechnique${technique.id}-btn`, technique.name, () => this.bgaPerformAction('actHighDramaChallengeActionTechniqueActivated', { techniqueId: technique.id})) 
@@ -267,17 +270,25 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`btnAccept`, _('Accept'), () => this.bgaPerformAction('actHighDramaChallengeActionAccept', {})) 
             this.addActionButton(`btnRefuse`, _('Refuse'), () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
             this.addActionButton(`actChooseCardSelected`, _('Intervene'), () => this.onChooseInPlayCardConfirmed());
-            if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE)
+            if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE || args.challengeType == this.UNSANCTIONED_DUEL_CHALLENGE_TYPE)
                 dojo.addClass('btnRefuse', 'disabled');
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
         'playerReaction': () => {
             args._private.args.buttons.forEach((button, index) => {
+                const buttonId = `actReaction-${index}`;
                 if (button.text.includes('Pass') || button.text.includes('Decline')) {
-                    this.statusBar.addActionButton(button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}), { id: `actReaction-${index}`, color: 'alert' });
+                    this.statusBar.addActionButton(button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}), { id: buttonId, color: 'alert' });
                 } else {
-                    this.addActionButton(`actReaction-${index}`, button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}));
+                    this.addActionButton(buttonId, button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}));
+                }
+                if (button.card) {
+                    if (this.getGameUserPreference(this.USER_PREFERENCES_CARD_HOVER_TYPE) == 2) {
+                        this.createTextTooltipForRisk(button.card, buttonId);
+                    } else {
+                        this.addTippyTooltip(buttonId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(button.card.image) + button.card.image}" />`);
+                    }
                 }
             });
         },
@@ -395,6 +406,7 @@ onUpdateActionButtons: function( stateName, args )
         methods[stateName]()
     
     this.onUpdateActionButtons_7s5s( stateName, args );        
+    this.onUpdateActionButtons_tac( stateName, args );
 }
 
 })

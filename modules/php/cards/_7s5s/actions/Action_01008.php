@@ -100,6 +100,8 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
             $cardInfo = $deck->getCardOnTop($location);
             $card = $game->getCardObjectFromDb($cardInfo['id']);
 
+            $this->announceAction($game);
+
             $game->notify->all("message", clienttranslate('${player_name} has revealed ${card_inject_code}.'), [
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "card_inject_code" => $card->getInjectCode(),

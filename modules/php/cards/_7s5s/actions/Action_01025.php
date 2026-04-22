@@ -102,7 +102,7 @@ class Action_01025 extends RiskAction implements ISorcererAbility
             $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id);
             $game->theah->queueEvent($sorceryStartEvent);
 
-            $game->createRiskAttachment($game, "01025_Burden", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id);
+            $game->createRiskAttachment($game, "01025_Burden", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id, $this->Id);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);

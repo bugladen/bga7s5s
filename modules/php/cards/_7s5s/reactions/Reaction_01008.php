@@ -23,6 +23,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02008;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02010;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -264,6 +265,32 @@ class Reaction_01008 extends CardReaction
                 $ability = $card->getAbilityById("{$card->Id}_Action_01172");
             }
 
+            //Adriana Dondolo
+            if ($ability instanceof Action_02001)
+            {
+                $copyAction = true;
+                $action = new Action_02001();
+                $action->setId("Action_02001");
+                $action->setOwnerId($cesca->Id);
+                if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
+            }
+
+            //Fate's Kiss
+            if ($ability instanceof Action_02008)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "02008", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_02008");
+            }
+
+            //Twist of the Arcana
+            if ($ability instanceof Action_02010)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "02010", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_02010");
+            }
+            
             //If it was an action, check if it is available to copy
             if ($copyAction)
             {

@@ -130,13 +130,6 @@ class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
-            $game->notify->all("message", clienttranslate('${scheme_inject_code}: ${player_name} used the [${action_name}] action.'), [
-                "i18n" => ["action_name"],
-                "scheme_inject_code" => $scheme->getInjectCode(),
-                "action_name" => $this->Name,
-                "player_name" => $game->getPlayerNameById($performer->ControllerId),
-            ]);
-
             $performer->unEquipAllAttachments($game->theah);
             $destroyEvent = EventFactory::createCharacterDestroyedEvent($performer->ControllerId, $performer->Id, $scheme->getInjectCode());
             $game->theah->queueEvent($destroyEvent);
@@ -149,6 +142,7 @@ class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCharac
 
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
+            $this->announceAction($game);
             
             $game->gamestate->nextState("characterChosen");
         }

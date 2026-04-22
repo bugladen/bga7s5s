@@ -60,6 +60,7 @@ class Action_01009 extends CharacterAction implements IAbilityThatTargetsCards
             $event->theah->queueEvent($transition);
 
             //createActionResolvedEvent not called because it merges into the recruit action
+            //$this->announceAction() not called because it merges into the recruit action
             $this->setUsed($event->theah, true);
             $this->resetPlayerPassCount($game);
         }

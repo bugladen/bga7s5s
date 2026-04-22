@@ -6,6 +6,7 @@ use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRangedAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -13,8 +14,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharacters
+class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharacters, IRangedAbility
 {
+    // Used when creating copies.  Ensures the correct card is engaged when the copy is used.
+    public ?int $originalAttachmentId = null;
+
     public function __construct()
     {
         parent::__construct();
@@ -26,13 +30,6 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
     {
         if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
             return false;
-
-        $owner = $this->getOwningAttachment($theah);
-
-        if ($owner->Engaged)
-        {
-            return false;
-        }
 
         $owningCharacter = $this->getOwningCharacter($theah);
         if ( ! $theah->cardInCity($owningCharacter))
@@ -52,7 +49,7 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $owner = $this->getOwningAttachment($event->theah);
+            $owner = $this->getOwningCard($event->theah);
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01049", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
@@ -126,7 +123,8 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
-                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
+                $engageId = $this->originalAttachmentId ?? $owner->Id;
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $engageId, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
             }
             else
@@ -144,6 +142,7 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
    
             }
 
+            //Custom announce above $this->announceAction() not needed
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
 
@@ -154,7 +153,7 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
         {
             $targetCharacterId = $game->globals->get(Game::CHOSEN_TARGET);
             $targetCharacter = $game->theah->getCharacterById($targetCharacterId);
-            $owner = $this->getOwningAttachment($game->theah);
+            $owner = $this->getOwningCard($game->theah);
 
             // Engage the target character
             if ($id == 1)
@@ -179,9 +178,14 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($targetCharacter->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
-                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
+                $engageId = $this->originalAttachmentId ?? $owner->Id;
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $engageId, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
             }
+
+            $performer = $this->getOwningCharacter($game->theah);
+            $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $targetCharacter->Id, $targetCharacter->Location);
+            $game->theah->queueEvent($rangedAbilityPlayedEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);

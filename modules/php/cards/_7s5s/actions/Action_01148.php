@@ -121,28 +121,18 @@ class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 throw new UserException($game->translate("Invalid character selected"));
             }
 
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-
             [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
             if (! $isValid)
             {
                 throw new UserException($errorMessage);
             }
 
-            $scheme = $this->getOwningCard($game->theah);
-            $game->notify->all("message", clienttranslate('${scheme_inject_code}: ${player_name} has chosen ${performer_inject_code} to manipulate ${character_inject_code} at ${location}.'), [
-                "i18n" => ["location"],
-                "scheme_inject_code" => $scheme->getInjectCode(),
-                "player_name" => $game->getPlayerNameById($scheme->ControllerId),
-                "performer_inject_code" => $performer->getInjectCode(),
-                "character_inject_code" => $character->getInjectCode(),
-                "location" => $performer->Location,
-            ]);
+
 
             $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
             $this->setUsed($game->theah, true);
             $this->resetPlayerPassCount($game);
+            $this->announceAction($game);
 
             $game->gamestate->nextState("mercenaryChosen");
         }

@@ -621,6 +621,7 @@ $machinestates = [
         "action" => "stPlanningPhaseResolveSchemes",
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
+        // Add Planning Phase transitions here
         States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS => [
             "name" => "planningPhaseResolveSchemesEvents",
             "description" => clienttranslate("Resolving events for the Played Schemes..."),
@@ -643,6 +644,20 @@ $machinestates = [
                 "01151" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01151,
                 "01151_2" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01151_2,
                 "01152" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152,
+                "02005" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02005,
+                "02005_2" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02005_2,
+                "02005_3" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02005_3,
+                "02014" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02014,
+                "02015" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02015,
+                "02025" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02025,
+                "02025_2" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02025_2,
+                "02025_3" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02025_3,
+                "02035" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02035,
+                "02045" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02045,
+                "02045_2" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02045_2,
+                "02046" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02046,
+                "02046_2" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02046_2,
+                "02052" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02052,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_SCHEMES_REACTIONS,
                 "pay" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_DRAW,
@@ -941,6 +956,32 @@ $machinestates = [
                 "01198" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01200" => States::HIGH_DRAMA_PLAYER_TURN_01200,
                 "01205" => States::HIGH_DRAMA_PLAYER_TURN_01205,
+                "02001" => States::HIGH_DRAMA_PLAYER_TURN_02001,
+                "02001_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "02002" => States::HIGH_DRAMA_PLAYER_TURN_02002,
+                "02007" => States::HIGH_DRAMA_PLAYER_TURN_02007,
+                "02008" => States::HIGH_DRAMA_PLAYER_TURN_02008,
+                "02010" => States::HIGH_DRAMA_PLAYER_TURN_02010,
+                "02013" => States::HIGH_DRAMA_PLAYER_TURN_02013,
+                "02013_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "02014" => States::HIGH_DRAMA_PLAYER_TURN_02014,
+                "02020" => States::HIGH_DRAMA_PLAYER_TURN_02020,
+                "02020_2" => States::HIGH_DRAMA_PLAYER_TURN_02020_3,
+                "02023" => States::HIGH_DRAMA_PLAYER_TURN_02023,
+                "02025" => States::HIGH_DRAMA_PLAYER_TURN_02025,
+                "02025_2" => States::HIGH_DRAMA_PLAYER_TURN_02025_2,
+                "02033" => States::HIGH_DRAMA_PLAYER_TURN_02033,
+                "02034" => States::HIGH_DRAMA_PLAYER_TURN_02034,
+                "02034_2" => States::HIGH_DRAMA_PLAYER_TURN_02034_2,
+                "02036" => States::HIGH_DRAMA_PLAYER_TURN_02036,
+                "02036_2" => States::HIGH_DRAMA_PLAYER_TURN_02036_2,
+                "02045" => States::HIGH_DRAMA_PLAYER_TURN_02045,
+                "02047" => States::HIGH_DRAMA_PLAYER_TURN_02047,
+                "02051" => States::HIGH_DRAMA_PLAYER_TURN_02051,
+                "02034_3" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "02028" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "02049" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "02061" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
@@ -1185,6 +1226,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stChallengeActionCheckCancelled",
             "transitions" => [
+                "accepted" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
                 "notCancelled" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE,
                 "cancelled" => States::NEXT_PLAYER,
             ]
@@ -1663,8 +1705,71 @@ $machinestates = [
                     "actBack",
                 ],
                 "transitions" => [
-                    "mercenaryChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY, 
-                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
+                    "mercenaryChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS, 
+                    "back" => States::HIGH_DRAMA_RECRUIT_UNDO_ENGAGE
+                ]
+            ],
+            States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS => [
+                "name" => "highDramaRecruitActionChooseMercenaryEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "reaction" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_REACTIONS,
+                    "pay" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_PAY_FOR_REACTION,
+                    "endOfEvents" => States::HIGH_DRAMA_RECRUIT_COMPUTE_DISCOUNT,
+                    "endOfGame" => States::END_GAME
+                ]
+            ],
+            States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsForStatePrivate",
+                "possibleactions" => [
+                    "actReactionForState",
+                ],
+                "transitions" => [
+                    "done" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS,
+                ]
+            ],
+            States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsForStatePrivate",
+                "possibleactions" => [
+                    "actBackWithTransition",
+                    "actPayForReaction",
+                ],
+                "transitions" => [
+                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_REACTIONS,
+                    "paid" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS,
+                ]
+            ],
+            States::HIGH_DRAMA_RECRUIT_COMPUTE_DISCOUNT => [
+                "name" => "highDramaRecruitComputeDiscount",
+                "type" => "game",
+                "action" => "stRecruitComputeDiscount",
+                "transitions" => [
+                    "" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY
+                ]
+            ],
+            States::HIGH_DRAMA_RECRUIT_UNDO_ENGAGE => [
+                "name" => "highDramaRecruitUndoEngage",
+                "type" => "game",
+                "action" => "stRecruitUndoEngage",
+                "transitions" => [
+                    "" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_PERFORMER
+                ]
+            ],
+            States::HIGH_DRAMA_RECRUIT_UNDO_ENGAGE_TO_MERC => [
+                "name" => "highDramaRecruitUndoEngageToMerc",
+                "type" => "game",
+                "action" => "stRecruitUndoEngageToMerc",
+                "transitions" => [
+                    "" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY
                 ]
             ],
             States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY => [
@@ -1680,7 +1785,7 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "mercenaryPaidFor" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
-                    "back" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY,
+                    "back" => States::HIGH_DRAMA_RECRUIT_UNDO_ENGAGE_TO_MERC,
                     "backKaspar" => States::HIGH_DRAMA_PLAYER_TURN_01035_4
                 ]
             ],
@@ -1815,8 +1920,47 @@ $machinestates = [
                 "actBack",
             ],
             "transitions" => [
-                "bruteChosen" => States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE,
+                "bruteChosen" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_EVENTS,
                 "back" => States::HIGH_DRAMA_PLAYER_TURN
+            ]
+        ],
+        States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_EVENTS => [
+            "name" => "highDramaBruteActionPlayBruteEvents",
+            "type" => "game",
+            "action" => "stRunEvents",
+            "transitions" => [
+                "reaction" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_REACTIONS,
+                "pay" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_PAY_FOR_REACTION,
+                "endOfEvents" => States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE,
+                "endOfGame" => States::END_GAME
+            ]
+        ],
+        States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_REACTIONS => [
+            "name" => "playerReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actReactionForState",
+            ],
+            "transitions" => [
+                "done" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_EVENTS,
+            ]
+        ],
+        States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_PAY_FOR_REACTION => [
+            "name" => "playerPayForReaction",
+            "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+            "descriptionmyturn" => "",
+            "type" => "activeplayer",
+            "args" => "argsForStatePrivate",
+            "possibleactions" => [
+                "actBackWithTransition",
+                "actPayForReaction",
+            ],
+            "transitions" => [
+                "back" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_REACTIONS,
+                "paid" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_EVENTS,
             ]
         ],
         States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE => [
@@ -1949,7 +2093,7 @@ $machinestates = [
             "transitions" => [
                 "combatCardChosen" => States::DUEL_COMBAT_CARD_EVENTS,
                 "chooseTechnique" => States::DUEL_CHOOSE_TECHNIQUE,
-                "chooseGambleCard" => States::DUEL_CHOOSE_GAMBLE_CARD,
+                "chooseGambleCard" => States::DUEL_GAMBLE_REVEALED,
                 "doneWithRound" => States::DUEL_END_OF_ROUND,
             ]
         ],
@@ -1958,7 +2102,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "01135" => States::DUEL_CHOOSE_GAMBLE_CARD,
+                    "01135" => States::DUEL_GAMBLE_REVEALED,
                     "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "reaction" => States::DUEL_COMBAT_CARD_REACTIONS,
@@ -2026,6 +2170,13 @@ $machinestates = [
                         "01067" => States::DUEL_CHOOSE_TECHNIQUE_01067,
                         "01090" => States::DUEL_CHOOSE_TECHNIQUE_01090,
                         "01093" => States::DUEL_CHOOSE_TECHNIQUE_01093,
+                        "02006" => States::DUEL_CHOOSE_TECHNIQUE_02006,
+                        "02011" => States::DUEL_CHOOSE_TECHNIQUE_02011,
+                        "02026a" => States::DUEL_CHOOSE_TECHNIQUE_02026a,
+                        "02026b" => States::DUEL_CHOOSE_TECHNIQUE_02026b,
+                        "02043b" => States::DUEL_CHOOSE_TECHNIQUE_02043b,
+                        "02054" => States::DUEL_CHOOSE_TECHNIQUE_02054,
+                        "02055" => States::DUEL_CHOOSE_TECHNIQUE_02055,
                         "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                         "endOfGame" => States::END_GAME
                         ]
@@ -2172,6 +2323,8 @@ $machinestates = [
                         "01164" => States::DUEL_RESOLVE_MANEUVER_01164,
                         "01165" => States::DUEL_RESOLVE_MANEUVER_01165,
                         "01200" => States::DUEL_RESOLVE_MANEUVER_01200,
+                        "02038" => States::DUEL_RESOLVE_MANEUVER_02038,
+                        "02057" => States::DUEL_RESOLVE_MANEUVER_02057,
                         "reaction" => States::DUEL_RESOLVE_MANEUVER_REACTIONS,
                         "pay" => States::DUEL_RESOLVE_MANEUVER_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_SET_NEXT_COMBAT_CARD,
@@ -2262,10 +2415,58 @@ $machinestates = [
                 "transitions" => [
                     "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
-                    "rollTheBones" => States::DUEL_CHOOSE_GAMBLE_CARD,
+                    "rollTheBones" => States::DUEL_GAMBLE_REVEALED,
                     "noMoreCombatCards" => States::DUEL_CHOOSE_ACTION
                 ]
             ],
+
+            States::DUEL_GAMBLE_REVEALED => [
+                "name" => "duelGambleRevealed",
+                "type" => "game",
+                "action" => "stDuelGambleRevealed",
+                "transitions" => [
+                    "processEvents" => States::DUEL_GAMBLE_REVEALED_EVENTS,
+                ]
+            ],
+                States::DUEL_GAMBLE_REVEALED_EVENTS => [
+                    "name" => "duelGambleRevealedEvents",
+                    "type" => "game",
+                    "action" => "stRunEvents",
+                    "transitions" => [
+                        "reaction" => States::DUEL_GAMBLE_REVEALED_REACTIONS,
+                        "pay" => States::DUEL_GAMBLE_REVEALED_PAY_FOR_REACTION,
+                        "endOfEvents" => States::DUEL_CHOOSE_GAMBLE_CARD,
+                        "endOfGame" => States::END_GAME
+                    ]
+                ],
+                States::DUEL_GAMBLE_REVEALED_REACTIONS => [
+                    "name" => "playerReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsForStatePrivate",
+                    "possibleactions" => [
+                        "actReactionForState",
+                    ],
+                    "transitions" => [
+                        "done" => States::DUEL_GAMBLE_REVEALED_EVENTS,
+                    ]
+                ],
+                States::DUEL_GAMBLE_REVEALED_PAY_FOR_REACTION => [
+                    "name" => "playerPayForReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsForStatePrivate",
+                    "possibleactions" => [
+                        "actBack",
+                        "actPayForReaction",
+                    ],
+                    "transitions" => [
+                        "back" => States::DUEL_GAMBLE_REVEALED_REACTIONS,
+                        "paid" => States::DUEL_GAMBLE_REVEALED_EVENTS,
+                    ]
+                ],
 
             States::DUEL_CHOOSE_GAMBLE_CARD =>[
                 "name" => "duelChooseGambleCard",
@@ -2288,7 +2489,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
-                        "01135" => States::DUEL_CHOOSE_GAMBLE_CARD,
+                        "01135" => States::DUEL_GAMBLE_REVEALED,
                         "reaction" => States::DUEL_CHOOSE_GAMBLE_CARD_REACTIONS,
                         "pay" => States::DUEL_CHOOSE_GAMBLE_CARD_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS,
@@ -2709,6 +2910,8 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "01177" => States::DUSK_PHASE_BEGIN_01177,
+                "02024" => States::DUSK_PHASE_BEGIN_02024,
+                "02053" => States::DUSK_PHASE_BEGIN_02053,
                 "reaction" => States::DUSK_PHASE_BEGIN_REACTIONS,
                 "pay" => States::DUSK_PHASE_BEGIN_PAY_FOR_REACTION,
                 "endOfEvents" => States::DUSK_PHASE_CLEANUP,

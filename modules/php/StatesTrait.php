@@ -557,6 +557,9 @@ trait StatesTrait
             $this->theah->eventCheck($engageEvent);
             $this->theah->queueEvent($engageEvent);
 
+            $this->theah->runEvents($skipTransitions = true);
+            $this->theah->buildCity();
+
             $this->globals->set(GAME::PASS_COUNT, 0);
         }
         
@@ -580,14 +583,83 @@ trait StatesTrait
         $performer = $this->theah->getCharacterById($id);
         if ($performer->Engaged || $performer->hasTrait("Mercenary"))
         {
-            //Discount might have special abilities above parleying
             [$discount, $explanations] = $this->theah->getParleyDiscount($performer, false);
             $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
             $this->globals->set(Game::DISCOUNT, $discount);
+            $this->globals->set(GAME::PERFORMER_PARLEYED, false);
             $this->gamestate->nextState("notParleyable");
         }
         else
             $this->gamestate->nextState("parleyable");
+    }
+
+    public function stRecruitComputeDiscount()
+    {
+        $this->theah->buildCity();
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $performer = $this->theah->getCharacterById($performerId);
+        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
+
+        [$discount, $explanations] = $this->theah->getParleyDiscount($performer, $performerParleyed);
+
+        if ($discount != 0)
+            $this->notify->player($performer->ControllerId, "message",
+                clienttranslate('Private: Explanations for discount:<br>${explanations}'),
+                ["explanations" => $explanations]);
+
+        $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+
+        $this->gamestate->nextState("");
+    }
+
+    public function stRecruitUndoEngage()
+    {
+        $this->theah->buildCity();
+        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+
+        if ($performerParleyed && $performerId)
+        {
+            $performer = $this->theah->getCharacterById($performerId);
+            if ($performer && $performer->Engaged)
+            {
+                $playerId = $performer->ControllerId;
+                $engardeEvent = EventFactory::createCardEngardedEvent($playerId, $performer->Id);
+                $this->theah->queueEvent($engardeEvent);
+                $this->theah->runEvents($skipTransitions = true);
+            }
+        }
+
+        $this->globals->set(GAME::PERFORMER_PARLEYED, false);
+        $this->gamestate->nextState("");
+    }
+
+    public function stRecruitUndoEngageToMerc()
+    {
+        $this->theah->buildCity();
+        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+
+        if ($performerParleyed && $performerId)
+        {
+            $performer = $this->theah->getCharacterById($performerId);
+            if ($performer && $performer->Engaged)
+            {
+                $playerId = $performer->ControllerId;
+                $engardeEvent = EventFactory::createCardEngardedEvent($playerId, $performer->Id);
+                $this->theah->queueEvent($engardeEvent);
+                $this->theah->runEvents($skipTransitions = true);
+                $this->theah->buildCity();
+            }
+        }
+
+        $performer = $this->theah->getCharacterById($performerId);
+        [$discount, $explanations] = $this->theah->getParleyDiscount($performer, $performerParleyed);
+        $this->globals->set(Game::DISCOUNT, $discount);
+        $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
+
+        $this->gamestate->nextState("");
     }
 
     public function stTechniqueAvailable()
@@ -644,7 +716,7 @@ trait StatesTrait
         $this->theah->eventCheck($challengeEvent);
         $this->theah->queueEvent($challengeEvent);
 
-        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE)
+        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE || $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE)
         {
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
             $this->theah->queueEvent($engageEvent);
@@ -690,7 +762,14 @@ trait StatesTrait
             $engageEvent = EventFactory::createCardEngagedEvent($equipped->ControllerId, $equipped->Id, $owner->Id);
             $this->theah->queueEvent($engageEvent);
         }
-        
+
+        if ($challengeType == Game::UNSANCTIONED_DUEL_CHALLENGE_TYPE)
+        {
+            $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $sourceId);
+            $this->theah->queueEvent($engageEvent);
+        }
+
         //Set the location of the challenge
         $this->globals->set(GAME::CHOSEN_LOCATION, $performer->Location);
 
@@ -721,8 +800,13 @@ trait StatesTrait
             }
         }
 
+        $accepted = $this->globals->get(GAME::CHALLENGE_ACCEPTED, false);
         $cancelled = $target->ControllerId == 0 || $this->globals->get(Game::CHALLENGE_CANCELLED, false);
-        if ($cancelled)
+        if ($accepted)
+        {
+            $this->gamestate->nextState("accepted");
+        }
+        else if ($cancelled)
         {
             $challengerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
             $challenger = $this->theah->getCardById($challengerId);
@@ -998,15 +1082,16 @@ trait StatesTrait
             $sql = "SELECT actor_id, ending_challenger_threat, ending_defender_threat, challenger_threat_is_lethal, defender_threat_is_lethal FROM duel_round WHERE duel_id = {$duelId} AND round = " . ($round - 1);
             $result = $this->getObjectListFromDB($sql)[0];
             $lastActorId = $result['actor_id'];
+            $challengerThreat = $result['ending_challenger_threat'];
+            $challengerThreatIsLethal = $result['challenger_threat_is_lethal'];
+            $defenderThreat = $result['ending_defender_threat'];
+            $defenderThreatIsLethal = $result['defender_threat_is_lethal'];
+
             if ($lastActorId == $challengerId)
             {
                 $actorId = $defenderId;
                 $actor = $defender;
                 $playerId = $defendingPlayerId;
-                $challengerThreat = 0;
-                $challengerThreatIsLethal = 0;
-                $defenderThreat = $result['ending_defender_threat'];
-                $defenderThreatIsLethal = $result['defender_threat_is_lethal'];
                 $wounds = $defenderThreat;
             }
             else
@@ -1014,12 +1099,24 @@ trait StatesTrait
                 $actorId = $challengerId;
                 $actor = $challenger;
                 $playerId = $challengingPlayerId;
-                $challengerThreat = $result['ending_challenger_threat'];
-                $challengerThreatIsLethal = $result['challenger_threat_is_lethal'];
-                $defenderThreat = 0;
-                $defenderThreatIsLethal = 0;
                 $wounds = $challengerThreat;
             }
+        }
+
+        $pendingChallengerThreat = $this->globals->get(Game::PENDING_CHALLENGER_THREAT, 0);
+        $pendingDefenderThreat = $this->globals->get(Game::PENDING_DEFENDER_THREAT, 0);
+        if ($pendingChallengerThreat > 0 || $pendingDefenderThreat > 0)
+        {
+            $challengerThreat += $pendingChallengerThreat;
+            $defenderThreat += $pendingDefenderThreat;
+
+            if ($actorId == $challengerId)
+                $wounds += $pendingChallengerThreat;
+            else
+                $wounds += $pendingDefenderThreat;
+
+            $this->globals->delete(Game::PENDING_CHALLENGER_THREAT);
+            $this->globals->delete(Game::PENDING_DEFENDER_THREAT);
         }
 
         $serialized = addslashes(serialize($actor));
@@ -1223,12 +1320,32 @@ trait StatesTrait
         elseif ($rollTheBonesActivated)
         {
             $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
+            $this->theah->buildCity();
+            $actor = $this->theah->getDuelRoundActor();
+            $gambleCheck = EventFactory::createDuelAttemptGambleEvent($actor->Id);
+            $this->theah->eventCheck($gambleCheck);
             $this->gamestate->nextState("rollTheBones");
         }
         else
         {
             $this->gamestate->nextState("noMoreCombatCards");
         }
+    }
+
+    public function stDuelGambleRevealed(): void
+    {
+        $this->theah->buildCity();
+        $actor = $this->theah->getDuelRoundActor();
+        $playerId = $actor->ControllerId;
+        $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
+        $deckCards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
+        $revealedCardIds = array_map(fn($c) => (int)$c['id'], $deckCards);
+
+        $event = EventFactory::createDuelGambleCardsRevealedEvent($actor->Id, $playerId, $revealedCardIds);
+        $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState("processEvents");
     }
 
     public function stDuelEndOfRound(): void
@@ -1274,7 +1391,11 @@ trait StatesTrait
         {
             $combatStatUsed = $this->globals->get(GAME::CHALLENGE_STAT);
 
-            $stat = $adversary->ModifiedCombat;
+            $stat = match ($combatStatUsed) {
+                GAME::STAT_FINESSE => $adversary->ModifiedFinesse,
+                GAME::STAT_INFLUENCE => $adversary->ModifiedInfluence,
+                default => $adversary->ModifiedCombat,
+            };
             $reason = "<p>$threat " . $this->translate("Threat was left over in their Pool.");
 
             if ($lethal == 1)
@@ -1288,15 +1409,12 @@ trait StatesTrait
                 switch ($combatStatUsed)
                 {
                     case GAME::STAT_COMBAT:
-                        $stat = $adversary->ModifiedCombat;
                         $reason .= "<p>" . $this->translate("Stat Used for Duel is Combat.");
                         break;
                     case GAME::STAT_FINESSE:
-                        $stat = $adversary->ModifiedFinesse;
                         $reason .= "<p>" . $this->translate("Stat Used for Duel is Finesse.");
                         break;
                     case GAME::STAT_INFLUENCE:
-                        $stat = $adversary->ModifiedInfluence;
                         $reason .= "<p>" . $this->translate("Stat Used for Duel is Influence.");
                         break;
                 }
@@ -1382,7 +1500,10 @@ trait StatesTrait
         $endingChallengerThreat = $values['ending_challenger_threat'];
         $endingDefenderThreat = $values['ending_defender_threat'];
 
-        if ($endingChallengerThreat == 0 && $endingDefenderThreat == 0)
+        $hasPendingThreat = $this->globals->get(Game::PENDING_CHALLENGER_THREAT, 0) > 0
+            || $this->globals->get(Game::PENDING_DEFENDER_THREAT, 0) > 0;
+
+        if ($endingChallengerThreat == 0 && $endingDefenderThreat == 0 && !$hasPendingThreat)
         {
             $this->notifyAllPlayers("message", clienttranslate('No Threat remains in either player pool.'), []);
             
@@ -1432,6 +1553,8 @@ trait StatesTrait
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
         $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
         $this->globals->delete(Game::ABNORMAL_FLOW);
+        $this->globals->delete(Game::PENDING_CHALLENGER_THREAT);
+        $this->globals->delete(Game::PENDING_DEFENDER_THREAT);
 
         $sql = "SELECT challenging_player_id, defending_player_id, challenger_id, defender_id FROM duel where duel_id = $duelId";
         $result = $this->getObjectListFromDB($sql)[0];

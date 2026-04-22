@@ -19,6 +19,8 @@ class Technique_01011 extends Technique
     { 
         parent::handleEvent($event);
 
+        // EventTechniqueCanceled handler not needed
+
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
             $actor = $event->theah->getCharacterById($event->actorId);

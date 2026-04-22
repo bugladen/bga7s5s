@@ -44,6 +44,8 @@ class Action_01046b extends AttachmentAction
             $darkGift = $this->getOwningCard($event->theah);
             $attachedTo = $this->getOwningCharacter($event->theah);
 
+            $this->announceAction($event->theah->game);
+
             $engageEvent = EventFactory::createCardEngagedEvent($darkGift->ControllerId, $darkGift->Id, $darkGift->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
 
