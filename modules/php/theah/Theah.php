@@ -1520,10 +1520,8 @@ class Theah
     {
         $duelId = $this->game->globals->get(Game::DUEL_ID);
         $round = $this->game->globals->get(Game::DUEL_ROUND);
-        $sql = "SELECT sum(wounds_taken) as wounds FROM duel_round WHERE duel_id = $duelId AND round <> $round AND actor_id = $participantId";
-        $result = $this->db->getUniqueValue($sql);
-        
-        return $result;
+        $sql = "SELECT COALESCE(sum(wounds_taken), 0) as wounds FROM duel_round WHERE duel_id = $duelId AND round <> $round AND actor_id = $participantId";
+        return (int) $this->db->getUniqueValue($sql);
     }
 
     public function attachmentsAvailableFromOpponentDiscardPile(int $opponentId, Character $performer, int $wealthAdjustment = 0): array
