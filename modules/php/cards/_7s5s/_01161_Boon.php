@@ -21,6 +21,7 @@ class _01161_Boon extends Attachment implements IRiskAttachment
         $this->CombatModifier = 1;
         $this->FinesseModifier = 1;
         $this->InfluenceModifier = 1;
+        $this->FakeAttachment = true;
         
         $this->Traits = [
             clienttranslate('Sorcery'),

@@ -23,15 +23,16 @@ class State_highDramaPhase01113 extends GameState
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
             descriptionMyTurn: clienttranslate('Robbery') . clienttranslate(': ${you} must choose an opponent to steal from:'),
             transitions: [
-                "" => States::HIGH_DRAMA_PLAYER_TURN_01113_2,
+                "playerChosen" => States::HIGH_DRAMA_PLAYER_TURN_01113_2,
+                "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
         );
     }
-    
+
     public function getArgs(): array
     {
         return $this->game->argsForState();
-    } 
+    }
 
     #[PossibleAction]
     public function actFromCardWithId(string $id): void
@@ -39,9 +40,15 @@ class State_highDramaPhase01113 extends GameState
         $this->game->actFromCardWithId($id);
     }
 
+    #[PossibleAction]
+    public function actFromCardPass(): void
+    {
+        $this->game->actFromCardPass();
+    }
+
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->nextState();
+        $this->game->gamestate->nextState("pass");
     }
 
 }

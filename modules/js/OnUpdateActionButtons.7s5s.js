@@ -160,13 +160,16 @@
     
             'planningPhaseResolveSchemes_01152': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                this.statusBar.addActionButton(_('Pass'), () => this.onPass(), { id: 'actPass', color: 'alert' });
+                if (args.args.canMoveRenown) {
+                    this.statusBar.addActionButton(_('Move a Renown Instead'), () => this.onPass(), { id: 'actPass', color: 'alert' });
+                }
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     
             'planningPhaseResolveSchemes_01152_2': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
+                dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     
             'planningPhaseResolveSchemes_01152_3': () => {
@@ -586,6 +589,9 @@
                 args.args.opponents.forEach((opponent) => {
                     this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
                 });
+                if (args.args.opponents.length === 0) {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
             'highDramaPhase01113_2': () => {
                 this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });

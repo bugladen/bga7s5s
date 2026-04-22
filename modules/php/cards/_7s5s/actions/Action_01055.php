@@ -188,9 +188,10 @@ class Action_01055 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $game->notify->all("message", clienttranslate('${player_name} chose to move ${target_inject_code} to ${location_name}.'), [
-                "i18n" => ["location_name"],
+            $game->notify->all("message", clienttranslate('${player_name} chose to have ${performer_inject_code} move ${target_inject_code} to ${location_name}.'), [
+                "i18n" => ["location_name", "performer_inject_code"],
                 "player_name" => $game->getPlayerNameById($performer->ControllerId),
+                "performer_inject_code" => $performer->getInjectCode(),
                 "target_inject_code" => $target->getInjectCode(),
                 "location_name" => $location
             ]);

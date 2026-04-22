@@ -24,7 +24,7 @@ class State_highDramaPhase01167_3 extends GameState
             descriptionMyTurn: clienttranslate('Liberating Goods') . clienttranslate(': ${you} must choose a Performer to Equip chosen Attachment: '),
             transitions: [
                 "back" => States::HIGH_DRAMA_PLAYER_TURN_01167_2,
-                "performerChosen" => States::HIGH_DRAMA_PLAYER_TURN_01167_4,
+                "performerChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,

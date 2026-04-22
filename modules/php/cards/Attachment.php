@@ -31,6 +31,7 @@ abstract class Attachment extends Card implements IWealthCost
     public int $AttachedToId;
 
     public bool $ShowStatModifiers = true;
+    public bool $FakeAttachment = false;
     
     public function __construct()
     {
@@ -44,6 +45,7 @@ abstract class Attachment extends Card implements IWealthCost
         $this->InfluenceModifier = 0;
         $this->AttachedToId = 0;
         $this->ShowStatModifiers = true;
+        $this->FakeAttachment = false;
     }
 
     public function getPropertyArray(Game $game): array
@@ -60,6 +62,7 @@ abstract class Attachment extends Card implements IWealthCost
         $properties['type'] = 'Attachment';
         $properties['attachedToId'] = $this->AttachedToId;
         $properties['showStatModifiers'] = $this->ShowStatModifiers;
+        $properties['fakeAttachment'] = $this->FakeAttachment;
 
         return $properties;
     }

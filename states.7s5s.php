@@ -317,10 +317,10 @@ $machinestates += [
         "description" => clienttranslate('Until Morale Improves') . clienttranslate(': ${actplayer} may choose a City Location to place a Renown onto.'),
         "descriptionmyturn" => clienttranslate('Until Morale Improves') . clienttranslate(': ${you} may choose a City Location to place a Renown onto: '),
         "type" => "activeplayer",
-        "args" => "argsEmpty",
+        "args" => "argsForState",
         "possibleactions" => [
             "actFromCardWithLocations",
-            "actPassWithPass"
+            "actFromCardPass"
         ],
         "transitions" => [
             "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2,
@@ -335,7 +335,7 @@ $machinestates += [
             "args" => "argsEmpty",
             "possibleactions" => [
                 "actFromCardWithLocations",
-                "actPassWithPass"
+                "actFromCardPass"
             ],
             "transitions" => [
                 "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,

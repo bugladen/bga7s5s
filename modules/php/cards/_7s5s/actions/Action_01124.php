@@ -66,7 +66,7 @@ class Action_01124 extends CharacterAction implements ISorcererAbility, IAbility
             $args['performerId'] = $owner->Id;
             
             $cards = $game->theah->risksAvailableFromDiscardPile($owner);
-            $cards = array_filter($cards, fn($card) => $card->hasTrait("Sorcery"));
+            $cards = array_values(array_filter($cards, fn($card) => $card->hasTrait("Sorcery")));
             $availableActions = [];
             foreach ($cards as $card)
             {

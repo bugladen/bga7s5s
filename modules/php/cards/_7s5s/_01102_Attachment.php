@@ -21,6 +21,7 @@ class _01102_Attachment extends Attachment implements IRiskAttachment, IHasActio
         $this->Name = clienttranslate("Unfortunate");
         $this->Image = "01102.jpg";
         $this->FinesseModifier = -1;
+        $this->FakeAttachment = true;
         
         $this->Traits = [
             clienttranslate('Hubris'),
