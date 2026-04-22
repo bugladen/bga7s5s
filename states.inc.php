@@ -981,6 +981,7 @@ $machinestates = [
                 "02034_3" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
                 "02028" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "02049" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "02061" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,

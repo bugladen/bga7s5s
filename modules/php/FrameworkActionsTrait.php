@@ -1207,7 +1207,12 @@ trait FrameworkActionsTrait
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
         if ($challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE)
         {
-            throw new \BgaUserException(clienttranslate("Épée Sanglante: Refusing a Challenge is not allowed."));
+            throw new UserException(clienttranslate("Épée Sanglante: Refusing a Challenge is not allowed."));
+        }
+
+        if ($challengeType == Game::UNSANCTIONED_DUEL_CHALLENGE_TYPE)
+        {
+            throw new UserException(clienttranslate("Unsanctioned Duel: Refusing a Challenge is not allowed."));
         }
 
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));

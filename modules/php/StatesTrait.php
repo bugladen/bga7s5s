@@ -762,7 +762,14 @@ trait StatesTrait
             $engageEvent = EventFactory::createCardEngagedEvent($equipped->ControllerId, $equipped->Id, $owner->Id);
             $this->theah->queueEvent($engageEvent);
         }
-        
+
+        if ($challengeType == Game::UNSANCTIONED_DUEL_CHALLENGE_TYPE)
+        {
+            $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $sourceId);
+            $this->theah->queueEvent($engageEvent);
+        }
+
         //Set the location of the challenge
         $this->globals->set(GAME::CHOSEN_LOCATION, $performer->Location);
 

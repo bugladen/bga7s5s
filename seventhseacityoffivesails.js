@@ -129,6 +129,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.IRON_AND_VELVET_CHALLENGE_TYPE = 11;
             this.ANDRIANA_DONDOLOS_CHALLENGE_TYPE = 12;
             this.WILHELM_DUNST_CHALLENGE_TYPE = 13;
+            this.UNSANCTIONED_DUEL_CHALLENGE_TYPE = 17;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 500;
