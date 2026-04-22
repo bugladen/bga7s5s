@@ -40,7 +40,7 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
         if ($owner instanceof IWealthCost)
         {
             $selfWealth = $owner->hasTrait("Wealth") ? 2 : 1;
-            $wealthAdjustment = -($selfWealth + $owner->WealthCost);
+            $wealthAdjustment = -($selfWealth + $owner->getWealthCost());
         }
 
         foreach ($players as $opponentId => $opponent)

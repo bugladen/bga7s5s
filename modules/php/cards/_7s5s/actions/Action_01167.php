@@ -35,8 +35,11 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
         // When this action triggers, the Risk card leaves the hand (plus any cards paying its WealthCost).
         // Subtract that wealth so we don't count it toward affording the attachment.
         $owner = $this->getOwningCard($theah);
-        $selfWealth = $owner->hasTrait("Wealth") ? 2 : 1;
-        $wealthAdjustment = -($selfWealth + $owner->WealthCost);
+        if ($owner instanceof IWealthCost)
+        {
+            $selfWealth = $owner->hasTrait("Wealth") ? 2 : 1;
+            $wealthAdjustment = -($selfWealth + $owner->getWealthCost());
+        }
 
         $players = $theah->game->loadPlayersBasicInfos();
         foreach ($players as $opponentId => $opponent)
