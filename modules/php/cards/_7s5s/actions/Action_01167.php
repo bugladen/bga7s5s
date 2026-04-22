@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
@@ -31,6 +32,12 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
 
         $performers = $theah->getCharactersInCityByPlayerId($playerId);
 
+        // When this action triggers, the Risk card leaves the hand (plus any cards paying its WealthCost).
+        // Subtract that wealth so we don't count it toward affording the attachment.
+        $owner = $this->getOwningCard($theah);
+        $selfWealth = $owner->hasTrait("Wealth") ? 2 : 1;
+        $wealthAdjustment = -($selfWealth + $owner->WealthCost);
+
         $players = $theah->game->loadPlayersBasicInfos();
         foreach ($players as $opponentId => $opponent)
         {
@@ -41,14 +48,14 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
 
             foreach ($performers as $performer)
             {
-                $availableAttachments = $theah->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer);
+                $availableAttachments = $theah->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer, $wealthAdjustment);
                 $availableAttachments = array_values(array_filter($availableAttachments, fn($attachment) => ! $attachment->hasTrait('Unique')));
 
                 if (count($availableAttachments) > 0)
                 {
                     return true;
                 }
-            }           
+            }
 
         }
 
@@ -199,7 +206,7 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
             $players = $game->loadPlayersBasicInfos();
             if ( ! isset($players[$id]))
             {
-                throw new \BgaUserException($game->translate("Invalid opponent"));
+                throw new UserException($game->translate("Invalid opponent"));
             }
 
             $owner = $this->getOwningCard($game->theah);
@@ -218,7 +225,7 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
 
             if ( ! $hasAttachments)
             {
-                throw new \BgaUserException($game->translate("No attachments available from this opponent's discard pile"));
+                throw new UserException($game->translate("No attachments available from this opponent's discard pile"));
             }
 
             $game->globals->set(Game::CHOSEN_OPPONENT, $id);
@@ -230,7 +237,7 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
             $attachment = $game->theah->getCardById($id);
             if ($attachment == null)
             {
-                throw new \BgaUserException($game->translate("Card not found"));
+                throw new UserException($game->translate("Card not found"));
             }
 
             $opponentId = $game->globals->get(Game::CHOSEN_OPPONENT);
@@ -238,12 +245,12 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
             $discardName = $game->getPlayerDiscardDeckName($opponentId);
             if ($attachment->Location != $discardName)
             {
-                throw new \BgaUserException(sprintf($game->translate("Attachment is not in %s's Discard Pile"), $opponentName));
+                throw new UserException(sprintf($game->translate("Attachment is not in %s's Discard Pile"), $opponentName));
             }
 
             if ($attachment->hasTrait("Unique"))
             {
-                throw new \BgaUserException($game->translate("You cannot recover a unique attachment"));
+                throw new UserException($game->translate("You cannot recover a unique attachment"));
             }
 
             $game->globals->set(Game::CHOSEN_CARD, $id);
@@ -256,13 +263,13 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
             $performer = $game->theah->getCharacterById($id);
             if ($performer == null)
             {
-                throw new \BgaUserException($game->translate("Performer not found"));
+                throw new UserException($game->translate("Performer not found"));
             }
 
             $owner = $this->getOwningCard($game->theah);
             if ($performer->ControllerId != $owner->ControllerId)
             {
-                throw new \BgaUserException($game->translate("You do not control this performer"));
+                throw new UserException($game->translate("You do not control this performer"));
             }
 
             $game->globals->set(Game::CHOSEN_PERFORMER, $id);
@@ -297,7 +304,7 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
             $discardName = $game->getPlayerDiscardDeckName($opponentId);
             if ($attachment->Location != $discardName)
             {
-                throw new \BgaUserException(sprintf($game->translate("Attachment is not in %s's Discard Pile"), $opponentName));
+                throw new UserException(sprintf($game->translate("Attachment is not in %s's Discard Pile"), $opponentName));
             }
 
             if ($attachment instanceof Attachment)
@@ -312,17 +319,17 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
                 if ($card == null)
-                    throw new \BgaUserException(sprintf($game->translate("Card %d not found."), $cardId));
+                    throw new UserException(sprintf($game->translate("Card %d not found."), $cardId));
     
                 //If $card has wealth in its traits, add it to the total wealth
                 $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
             }
             if ($totalWealth != $cost) {
-                throw new \BgaUserException(sprintf($game->translate("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+                throw new UserException(sprintf($game->translate("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
             }
 
             $game->notify->all('message', clienttranslate('${player_name} has chosen to Equip ${card_inject_code} from <strong>${opponentName}</strong>\'s Discard Pile.'), [
-                'player_name' => $game->getActivePlayerName(),
+                'player_name' => $game->getPlayerNameById($owner->ControllerId),
                 'card_inject_code' => $attachment->getInjectCode(),
                 'opponentName' => $opponentName,
             ]);
