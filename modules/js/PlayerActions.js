@@ -521,8 +521,8 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01016_2'       : 'actPassWithPass',
             'planningPhaseResolveSchemes_01125'         : 'actFromCardPass',
             'planningPhaseResolveSchemes_01125_2'       : 'actFromCardPass',
-            'planningPhaseResolveSchemes_01152'         : 'actPassWithPass',
-            'planningPhaseResolveSchemes_01152_2'       : 'actPassWithPass',
+            'planningPhaseResolveSchemes_01152'         : 'actFromCardPass',
+            'planningPhaseResolveSchemes_01152_2'       : 'actFromCardPass',
             'highDramaChallengeActionActivateTechnique' : 'actHighDramaChallengeActionActivateTechnique_Pass',
             'duskPhaseBegin01177'                       : 'actPassWithPass',
         };

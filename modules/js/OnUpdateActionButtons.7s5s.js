@@ -160,7 +160,9 @@
     
             'planningPhaseResolveSchemes_01152': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
-                this.statusBar.addActionButton(_('Pass'), () => this.onPass(), { id: 'actPass', color: 'alert' });
+                if (args.args.canMoveRenown) {
+                    this.statusBar.addActionButton(_('Move a Renown Instead'), () => this.onPass(), { id: 'actPass', color: 'alert' });
+                }
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     

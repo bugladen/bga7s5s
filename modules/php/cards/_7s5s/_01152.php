@@ -69,12 +69,53 @@ class _01152 extends Scheme implements IHasActions
     {
         $args = parent::argsFromCard($game, $state, $stateName, $internalId);
         
+        if ($state === States::PLANNING_PHASE_RESOLVE_SCHEMES_01152)
+        {
+            $hasRenown = false;
+            foreach ($game->theah->getCityLocations() as $location) {
+                if ($location->Renown > 0) {
+                    $hasRenown = true;
+                    break;
+                }
+            }
+            $args["canMoveRenown"] = $hasRenown;
+        }
+
         if ($state === States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3)
         {
             $args["location"] = $game->globals->get(GAME::CHOSEN_LOCATION);
         }
 
         return $args;
+    }
+
+    public function actFromCardPass(Game $game, int $state, string $stateName, string $internalId): void
+    {
+        parent::actFromCardPass($game, $state, $stateName, $internalId);
+
+        if ($state === States::PLANNING_PHASE_RESOLVE_SCHEMES_01152)
+        {
+            foreach ($game->theah->getCityLocations() as $location) {
+                if ($location->Renown > 0) {
+                    parent::actFromCardPass($game, $state, $stateName, $internalId);
+                    $game->gamestate->nextState("pass");
+                    return;
+                }
+            }
+
+            throw new UserException($game->translate("There are no Renown on any locations to move. You must place a Renown."));
+        }
+
+        if ($state === States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2)
+        {
+            foreach ($game->theah->getCityLocations() as $location) {
+                if ($location->Renown > 0) {
+                    throw new UserException($game->translate("There are locations with Renown to move."));
+                }
+            }
+
+            $game->gamestate->nextState("pass");
+        }
     }
 
     public function actFromCardWithIds(Game $game, int $state, string $stateName, string $internalId, array $ids): void
