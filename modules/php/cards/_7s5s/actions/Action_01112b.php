@@ -2,7 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityEventCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatDependsOnNotBeingFirstPlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -60,7 +62,7 @@ class Action_01112b extends RiskAction implements IAbilityThatDependsOnNotBeingF
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01112)
         {
             $cards = $game->theah->getAllCards();
-            $cards = array_values(array_filter($cards, fn($card) => $game->theah->cardInCity($card) && ! $card->isControlled() && $card instanceof ICityDeckCard));
+            $cards = array_values(array_filter($cards, fn($card) => $game->theah->cardInCity($card) && ! $card->isControlled() && $card instanceof ICityDeckCard && ! $card instanceof CityEventCard));
             $args["ids"] = array_map(fn($card) => $card->Id, $cards);
         }
 
@@ -76,22 +78,27 @@ class Action_01112b extends RiskAction implements IAbilityThatDependsOnNotBeingF
             $card = $game->theah->getCardById($id);
             if ($card == null)
             {   
-                throw new \BgaUserException($game->translate("Invalid card id"));
+                throw new UserException($game->translate("Invalid card id"));
             }
 
             if (! $card instanceof ICityDeckCard)
             {
-                throw new \BgaUserException($game->translate("Card is not a City Card"));
+                throw new UserException($game->translate("Card is not a City Card"));
+            }
+
+            if ($card instanceof CityEventCard)
+            {
+                throw new UserException($game->translate("City Event Card cannot be discarded"));
             }
 
             if ($card->isControlled())
             {
-                throw new \BgaUserException($game->translate("Card is controlled"));
+                throw new UserException($game->translate("Card is controlled"));
             }
 
             if (! $game->theah->cardInCity($card))
             {
-                throw new \BgaUserException($game->translate("Card is not in the city"));
+                throw new UserException($game->translate("Card is not in the city"));
             }
 
             $owner = $this->getOwningCard($game->theah);
