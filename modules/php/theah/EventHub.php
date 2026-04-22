@@ -1974,14 +1974,10 @@ trait EventHub
                 {
                     $payDiscountEvent = EventFactory::createCalculatePayDiscountEvent($event->playerId, $event->cardId, $event->payStateType, $event->internalId);
                     $payDiscountEvent->priority = $event->priority;
-                    if ($event->wasStacked ?? false)
-                    {
-                        $theah->stackEvent($payDiscountEvent);
-                    }
-                    else
-                    {
-                        $theah->queueEvent($payDiscountEvent);
-                    }
+                    
+                    // Always stack so the discount is calculated before any subsequent
+                    // TransitionEvent that moves the player into the pay state.
+                    $theah->stackEvent($payDiscountEvent);
                 };
                 $handler($this, $event);
                 break;

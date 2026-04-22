@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
@@ -1503,9 +1504,9 @@ class Theah
         return $result;
     }
 
-    public function attachmentsAvailableFromOpponentDiscardPile(int $opponentId, Character $performer): array
+    public function attachmentsAvailableFromOpponentDiscardPile(int $opponentId, Character $performer, int $wealthAdjustment = 0): array
     {
-        $handWealth = $this->game->handWealthCount($performer->ControllerId);
+        $handWealth = $this->game->handWealthCount($performer->ControllerId) + $wealthAdjustment;
 
         $discardPileName = $this->game->getPlayerDiscardDeckName($opponentId);
         $cards = $this->getCardObjectsAtLocation($discardPileName);
@@ -1586,7 +1587,7 @@ class Theah
             if ($card instanceof IHasReactions)
                 $reaction = $card->getReactionById($internalId);
             else
-                throw new \BgaUserException(sprintf($this->game->translate("Card %d - %s does not have reactions"), $cardId, $card->Name));
+                throw new UserException(sprintf($this->game->translate("Card %d - %s does not have reactions"), $cardId, $card->Name));
             
             [$discount, $explanations] = $this->getReactionFromHandDiscount($reaction);
         }

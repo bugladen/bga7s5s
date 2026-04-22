@@ -2,8 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -33,6 +35,14 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
         $owner = $this->getOwningCard($theah);
         $performers = $theah->getCharactersInCityByPlayerId($owner->ControllerId);
 
+        // When this action triggers, the Risk card leaves the hand (plus any cards paying its WealthCost).
+        // Subtract that wealth so we don't count it toward affording the attachment.
+        if ($owner instanceof IWealthCost)
+        {
+            $selfWealth = $owner->hasTrait("Wealth") ? 2 : 1;
+            $wealthAdjustment = -($selfWealth + $owner->WealthCost);
+        }
+
         foreach ($players as $opponentId => $opponent)
         {
             if ($opponentId == $playerId)
@@ -47,12 +57,12 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
                     continue;
                 }
 
-                $availableAttachments = $theah->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer);
+                $availableAttachments = $theah->attachmentsAvailableFromOpponentDiscardPile($opponentId, $performer, $wealthAdjustment);
                 if (count($availableAttachments) > 0)
                 {
                     return true;
                 }
-            }           
+            }
 
         }
         return false;
@@ -74,6 +84,21 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01113", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+    }
+
+    public function actFromActionPass(Game $game, int $state): void
+    {
+        parent::actFromActionPass($game, $state);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01113)
+        {
+            $owner = $this->getOwningCard($game->theah);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
+            $game->gamestate->nextState("pass");
         }
     }
 
@@ -143,7 +168,7 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
             $players = $game->loadPlayersBasicInfos();
             if ( ! isset($players[$id]))
             {
-                throw new \BgaUserException($game->translate("Invalid opponent"));
+                throw new UserException($game->translate("Invalid opponent"));
             }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
@@ -151,17 +176,17 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
 
             if (! $performer->hasTrait("Pirate"))
             {
-                throw new \BgaUserException($game->translate("Performer is not a Pirate"));
+                throw new UserException($game->translate("Performer is not a Pirate"));
             }
 
             $availableAttachments = $game->theah->attachmentsAvailableFromOpponentDiscardPile($id, $performer);
             if (count($availableAttachments) == 0)
             {
-                throw new \BgaUserException($game->translate("No attachments available from this opponent's discard pile"));
+                throw new UserException($game->translate("No attachments available from this opponent's discard pile"));
             }
 
             $game->globals->set(Game::CHOSEN_OPPONENT, $id);
-            $game->gamestate->nextState();
+            $game->gamestate->nextState("playerChosen");
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01113_2)
@@ -169,7 +194,7 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
             $attachment = $game->theah->getAttachmentById($id);
             if ($attachment == null)
             {
-                throw new \BgaUserException($game->translate("Card not found"));
+                throw new UserException($game->translate("Card not found"));
             }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
@@ -181,13 +206,13 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
 
             if ($attachment->ControllerId != $opponentId)
             {
-                throw new \BgaUserException($game->translate("Card is not controlled by the Opponent."));
+                throw new UserException($game->translate("Card is not controlled by the Opponent."));
             }
 
             $discardPileName = $game->getPlayerDiscardDeckName($opponentId);
             if ($attachment->Location != $discardPileName)
             {
-                throw new \BgaUserException($game->translate("Card is not in the Opponent's Discard Pile"));
+                throw new UserException($game->translate("Card is not in the Opponent's Discard Pile"));
             }
 
             [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $attachment);
@@ -195,18 +220,18 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
             $handWealth = $game->handWealthCount($performer->ControllerId);
             if ($handWealth < $cost)
             {
-                throw new \BgaUserException(sprintf($game->translate("You do not have enough Wealth (%d) to pay for the Attachment (%d with a discount of %d)."), $handWealth, $cost, $discount));
+                throw new UserException(sprintf($game->translate("You do not have enough Wealth (%d) to pay for the Attachment (%d with a discount of %d)."), $handWealth, $cost, $discount));
             }
 
             [$hasRestrictions, $restrictionExplanation] = $game->hasEquipRestrictions($performer, $attachment);
             if ($hasRestrictions)
             {
-                throw new \BgaUserException($restrictionExplanation);
+                throw new UserException($restrictionExplanation);
             }
 
             if (! $attachment->canAttachTo($performer))
             {
-                throw new \BgaUserException($game->translate("Attachment cannot be attached to the Performer."));
+                throw new UserException($game->translate("Attachment cannot be attached to the Performer."));
             }
 
             $attachment->ControllerId = $performer->ControllerId;
@@ -254,13 +279,13 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
                 if ($card == null)
-                    throw new \BgaUserException(sprintf($game->translate("Card #%d not found."), $cardId));
+                    throw new UserException(sprintf($game->translate("Card #%d not found."), $cardId));
     
                 //If $card has wealth in its traits, add it to the total wealth
                 $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
             }
             if ($totalWealth != $cost) {
-                throw new \BgaUserException(sprintf($game->translate("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+                throw new UserException(sprintf($game->translate("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
             }
     
             //Move the cards used to pay to the player's discard pile
