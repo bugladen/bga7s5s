@@ -167,6 +167,7 @@
             'planningPhaseResolveSchemes_01152_2': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
+                dojo.addClass('actCityLocationsSelected', 'disabled');
             },
     
             'planningPhaseResolveSchemes_01152_3': () => {
