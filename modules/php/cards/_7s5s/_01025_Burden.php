@@ -26,6 +26,7 @@ class _01025_Burden extends Attachment implements IRiskAttachment
         ];
 
         $this->ShowStatModifiers = false;
+        $this->FakeAttachment = true;
     }
 
     public function handleEvent(Event $event)
