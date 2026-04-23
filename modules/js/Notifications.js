@@ -1960,16 +1960,19 @@ return declare('seventhseacityoffivesails.notifications', null, {
         else
         {
             var element = $(`duel_round_${args.round}_${args.mode}`);
-            if (element.innerHTML == 'Not Chosen')
+            if (element)
             {
-                element.innerHTML = '';
-            }
-
-            //Make sure there is no duplicate
-            const effectName = `${args.cardName}: ${args.effectName}`;
-            if (! element.innerHTML.includes(effectName))
-            {
-                element.innerHTML += `<p>${effectName}</p>`;
+                if (element.innerHTML == 'Not Chosen')
+                {
+                    element.innerHTML = '';
+                }
+    
+                //Make sure there is no duplicate
+                const effectName = `${args.cardName}: ${args.effectName}`;
+                if (! element.innerHTML.includes(effectName))
+                {
+                    element.innerHTML += `<p>${effectName}</p>`;
+                }
             }
         }
 
