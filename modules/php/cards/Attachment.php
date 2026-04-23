@@ -9,7 +9,7 @@ abstract class Attachment extends Card implements IWealthCost
 {
     use WealthCostTrait;
 
-    public string $Title;
+    public string $Title = "";
 
     public int $ResolveModifier;
     public int $CombatModifier;
