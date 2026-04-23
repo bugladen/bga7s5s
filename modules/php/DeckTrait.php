@@ -244,7 +244,8 @@ trait DeckTrait
 
     public function createCardInLocation(string $className, string $location, int $ownerId, int $controllerId): Card
     {
-        $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$className}', $controllerId, '$location', $controllerId)";
+        $slashedLocation = addslashes($location);
+        $sql = "INSERT INTO card (card_type, card_type_arg, card_location, card_location_arg) VALUES ('{$className}', $controllerId, '{$slashedLocation}', $controllerId)";
         $this->DbQuery($sql);
         $id = $this->DbGetLastId();
         
