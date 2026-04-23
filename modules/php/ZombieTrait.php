@@ -297,9 +297,7 @@ trait ZombieTrait
 
                 // Planning Phase
                 case "planningPhase":
-                    // Default action: Mark as planned (auto-pick first available)
-                    $this->actDayPlanned(0, 0);
-                    // $this->gamestate->setPlayerNonMultiactive($playerId, 'dayPlanned');
+                    $this->gamestate->setPlayerNonMultiactive($playerId, 'dayPlanned');
                     break;
 
                 // Acknowledgment States
