@@ -172,13 +172,16 @@ trait EventHub
                     $modifiedFinesse = $performer->ModifiedFinesse;
                     $modifiedInfluence = $performer->ModifiedInfluence;
 
-                    if ($attachment instanceof Attachment) {                        
+                    if ($attachment instanceof Attachment) {
                         $attachment->ControllerId = $event->playerId;
                         $attachment->AttachedToId = $performer->Id;
                         $attachment->Location = $performer->Location;
                         $attachment->IsUpdated = true;
                     }
-                    
+
+                    $deck = $theah->game->getGameDeckObject();
+                    $deck->moveCard($attachment->Id, $performer->Location, $event->playerId);
+
                     // Notify players of attachment equipped
                     if ($event->messageHidden)
                     {
@@ -197,7 +200,6 @@ trait EventHub
                         }    
                     }
 
-                    $deck = $theah->game->getGameDeckObject();
                     $theah->game->notify->all("attachmentEquipped", $message, [
                         "player_id" => $event->playerId,
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),

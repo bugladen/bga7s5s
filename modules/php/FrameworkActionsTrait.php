@@ -691,7 +691,6 @@ trait FrameworkActionsTrait
             $this->theah->queueEvent($event);
         }
 
-        $this->cards->moveCard($attachment->Id, $performer->Location, $attachment->ControllerId);
         $this->theah->queueEvent($equipAttachmentEvent);
 
         $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);

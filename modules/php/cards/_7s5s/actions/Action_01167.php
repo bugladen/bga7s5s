@@ -355,9 +355,6 @@ class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
                 $game->theah->queueEvent($event);
             }
     
-            $deck = $game->getGameDeckObject();
-            $deck->moveCard($attachment->Id, $performer->Location, $attachment->ControllerId);
-
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
     
