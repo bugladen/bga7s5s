@@ -818,6 +818,8 @@ trait StatesTrait
             $defender->removeCondition(GAME::DUEL_DEFENDER);
             $this->theah->game->updateCardObjectInDb($defender);
 
+            $this->globals->set(Game::PASS_COUNT, 0);
+
             $this->notifyAllPlayers("challengeCancelled", clienttranslate('Challenge was cancelled.'), [
                 "challengerId" => $challengerId,
                 "defenderId" => $defenderId,
