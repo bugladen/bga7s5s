@@ -7,12 +7,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01182 extends CardReaction
 {
-    public int $TargetCharacterId = 0;
+    public array $TargetCharacterIds = [];
 
     public function __construct()
     {
@@ -23,7 +23,8 @@ class Reaction_01182 extends CardReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to Wound Character leaving Eko\'s Location: ');
+        $character = $theah->getCharacterById($this->TargetCharacterIds[0]);
+        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} may choose to Wound %s leaving Eko\'s Location: '), $character->Name);
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -39,7 +40,7 @@ class Reaction_01182 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCardMoved && $this->isAvailable())
+        if ($event instanceof EventCardMoving && $this->isAvailable())
         {
             $ekko = $this->getOwningCharacter($event->theah);
             if ($ekko->isControlled())
@@ -51,7 +52,7 @@ class Reaction_01182 extends CardReaction
                     $ekko->ControllerId != $card->ControllerId && 
                     $ekko->Location == $event->fromLocation)
                 {
-                    $this->TargetCharacterId = $event->cardId;
+                    $this->TargetCharacterIds[] = $event->cardId;
                     $ekko->IsUpdated = true;
                     $transition = EventFactory::createReactionTransitionEvent($ekko->ControllerId, $ekko->Id, $this->Id);
                     $event->queueEvent($transition);
@@ -66,13 +67,23 @@ class Reaction_01182 extends CardReaction
 
         if ($reactionId == 'woundCharacter')
         {
+            $targetId = array_shift($this->TargetCharacterIds);
+            $this->TargetCharacterIds = [];
+
             $ekko = $this->getOwningCard($game->theah);
-            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($this->TargetCharacterId, $ekko->Id, 1, $ekko->getInjectCode(), $this->Id);
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($targetId, $ekko->Id, 1, $ekko->getInjectCode(), $this->Id);
             $game->theah->queueEvent($woundEvent);
-            
-            $this->TargetCharacterId = 0;
+
+            $game->theah->deleteTransitionEvents($this->Id);
             $ekko->IsUpdated = true;
             $this->setUsed($game->theah, true);
+        }
+
+        if ($reactionId == 'pass')
+        {
+            array_shift($this->TargetCharacterIds);
+            $ekko = $this->getOwningCard($game->theah);
+            $ekko->IsUpdated = true;
         }
 
         $game->gamestate->nextState("done");        
