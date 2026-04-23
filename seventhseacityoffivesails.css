@@ -137,8 +137,7 @@ body {
 }
 
 ._7sfs-deck-picker-banner-image {
-    filter: brightness(0.8);
-    background-image: url('img/starter.deck.banner.jpg');
+    background-image: url('img/deckpicker/deck.picker.banner.jpg');
     background-size: 875px 500px;
     background-position: -170px 0px;
     width: 700px;
@@ -151,13 +150,13 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 75%;
-    height: 75%;
-    background-image: url('img/tac.jpg');
+    width: 60%;
+    height: 60%;
+    background-image: url('img/deckpicker/tac.jpg');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    transform: translate(calc(-50% - 200px), -50%) rotate(-20deg);
+    transform: translate(calc(-50% - 230px), -50%) rotate(-20deg);
     pointer-events: none;
 }
 
