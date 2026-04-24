@@ -850,8 +850,7 @@ class Theah
         if ($leaderId) 
         {
             $leader = $this->getCardById($leaderId);
-            $playerLockerName = $this->game->getPlayerLockerName($playerId);
-            if ($leader instanceof Leader && $leader->Location != $playerLockerName) 
+            if ($leader instanceof Leader) 
             {
                 return $leader;
             }

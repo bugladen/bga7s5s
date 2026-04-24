@@ -55,7 +55,9 @@ class _01202 extends CityAttachment implements IHasReactions
         if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $leader = $event->theah->getLeaderByPlayerId($event->playerId);
-            if (! $leader)
+            $playerLockerName = $event->theah->game->getPlayerLockerName($event->playerId);
+
+            if (! $leader || $leader->Location == $playerLockerName)
             {
                 throw new UserException($event->theah->game->translate("You must equip this card to your Leader, and you have no Leader in play."));
             }
@@ -67,8 +69,9 @@ class _01202 extends CityAttachment implements IHasReactions
         // This only attaches to the leader
         $character = $theah->getCharacterById($originalTargetId);        
         $leader = $theah->getLeaderByPlayerId($character->ControllerId);
+        $playerLockerName = $theah->game->getPlayerLockerName($character->ControllerId);
 
-        if (! $leader)
+        if (! $leader || $leader->Location == $playerLockerName)
         {
             throw new UserException($theah->game->translate("You must equip this card to your Leader, and you have no Leader in play."));
         }
