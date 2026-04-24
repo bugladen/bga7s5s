@@ -17,7 +17,7 @@ class _01063 extends Character
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Bastian Girard");
+        $this->Name = clienttranslate("Bastien Girard");
         $this->Image = "01063.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;

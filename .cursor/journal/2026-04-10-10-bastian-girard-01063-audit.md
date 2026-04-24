@@ -1,4 +1,4 @@
-# Bastian Girard (01063) Audit
+# Bastien Girard (01063) Audit
 
 ## Card Text
 > "Your characters at Bastien's location gain 'Technique: Swap this character with a Musketeer at this location.'"
