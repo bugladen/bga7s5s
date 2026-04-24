@@ -41,6 +41,7 @@ class _01063 extends Character
         $this->resetCard();
 
         $this->Techniques = [
+            new Technique_01063Swap(),
             new Technique_01063(),
         ];
 
@@ -54,16 +55,11 @@ class _01063 extends Character
         {
             $character = $event->theah->getCharacterById($event->characterId);
             if ($character->Id != $this->Id &&
-                $character->ControllerId == $this->ControllerId && 
-                $character->Location == $this->Location && 
-                $character->Location != Game::LOCATION_PLAYER_HOME &&
-                $character instanceof IHasTechniques)
+                $character->ControllerId == $this->ControllerId &&
+                $character->Location == $this->Location &&
+                $character->Location != Game::LOCATION_PLAYER_HOME)
             {
-                $technique = new Technique_01063Swap();
-                $technique->setId("Technique_01063Swap");
-                $technique->setOwnerId($character->Id);
-                $character->addTechnique($technique, $event->theah->game);
-                $character->IsUpdated = true;
+                $this->addSwapTechnique($character, $event->theah->game);
             }
         }
 
@@ -82,15 +78,7 @@ class _01063 extends Character
 
                     foreach ($characters as $character)
                     {
-                        if ($character instanceof IHasTechniques)
-                        {
-                            $technique = $character->getTechniqueByClassId("Technique_01063Swap");
-                            if ($technique)
-                            {
-                                $character->removeTechnique($technique, $event->theah->game);
-                                $character->IsUpdated = true;
-                            }
-                        }
+                        $this->removeSwapTechnique($character, $event->theah->game);
                     }
                 }
 
@@ -103,14 +91,7 @@ class _01063 extends Character
                         $character->ControllerId == $this->ControllerId);
                     foreach ($characters as $character)
                     {
-                        $technique = new Technique_01063Swap();
-                        $technique->setId("Technique_01063Swap");
-                        $technique->setOwnerId($character->Id);
-                        if ($character instanceof IHasTechniques)
-                        {
-                            $character->addTechnique($technique, $event->theah->game);
-                            $character->IsUpdated = true;
-                        }
+                        $this->addSwapTechnique($character, $event->theah->game);
                     }
                 }
             }
@@ -118,29 +99,53 @@ class _01063 extends Character
             else if ($event->toLocation == $this->Location && $event->toLocation != Game::LOCATION_PLAYER_HOME)
             {
                 $character = $event->theah->getCardById($event->cardId);
-                if ($character->ControllerId == $this->ControllerId && $character instanceof IHasTechniques)
+                if ($character->ControllerId == $this->ControllerId)
                 {
-                    $technique = new Technique_01063Swap();
-                    $technique->setId("Technique_01063Swap");
-                    $technique->setOwnerId($character->Id);
-                    $character->addTechnique($technique, $event->theah->game);
-                    $character->IsUpdated = true;
+                    $this->addSwapTechnique($character, $event->theah->game);
                 }
             }
             //Handle the case where character is moved from Bastien's location.
             else if ($event->fromLocation == $this->Location && $event->fromLocation != Game::LOCATION_PLAYER_HOME)
             {
                 $character = $event->theah->getCardById($event->cardId);
-                if ($character->ControllerId == $this->ControllerId && $character instanceof IHasTechniques)
+                if ($character->ControllerId == $this->ControllerId)
                 {
-                    $technique = $character->getTechniqueByClassId("Technique_01063Swap");
-                    if ($technique)
-                    {
-                        $character->removeTechnique($technique, $event->theah->game);
-                        $character->IsUpdated = true;
-                    }
+                    $this->removeSwapTechnique($character, $event->theah->game);
                 }
             }
-        }        
+        }
+    }
+
+    private function addSwapTechnique(Character $character, Game $game): void
+    {
+        if (!($character instanceof IHasTechniques)) return;
+
+        $game->notify->all('message', clienttranslate('${owner_inject_code} grants a technique to ${character_inject_code}.'), [
+            'owner_inject_code' => $this->getInjectCode(),
+            'character_inject_code' => $character->getInjectCode(),
+        ]);
+
+        $technique = new Technique_01063Swap();
+        $technique->setId("Technique_01063Swap");
+        $technique->setOwnerId($character->Id);
+        $character->addTechnique($technique, $game);
+        $character->IsUpdated = true;
+    }
+
+    private function removeSwapTechnique(Character $character, Game $game): void
+    {
+        if (!($character instanceof IHasTechniques)) return;
+
+        $technique = $character->getTechniqueByClassId("Technique_01063Swap");
+        if ($technique)
+        {
+            $game->notify->all('message', clienttranslate('${owner_inject_code} revokes a technique from ${character_inject_code}.'), [
+                'owner_inject_code' => $this->getInjectCode(),
+                'character_inject_code' => $character->getInjectCode(),
+            ]);
+
+            $character->removeTechnique($technique, $game);
+            $character->IsUpdated = true;
+        }
     }
 }
