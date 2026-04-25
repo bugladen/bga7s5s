@@ -37,7 +37,7 @@ class Action_01036 extends CharacterAction implements IAbilityThatTargetsCharact
             if ($character->ControllerId != $daniella->ControllerId) return false;
             if (!$character->hasTrait("Mercenary", $daniella)) return false;
             if ($character instanceof _01178) return $character->canChallenge();
-            return $character->canChallenge() && !$character->Engaged;
+            return $character->canChallenge();
         });
         if (count($mercenaries) == 0)
             return false;
@@ -57,7 +57,7 @@ class Action_01036 extends CharacterAction implements IAbilityThatTargetsCharact
             if ($performer->ControllerId != $daniella->ControllerId) return false;
             if (!$performer->hasTrait("Mercenary", $daniella)) return false;
             if ($performer instanceof _01178) return $performer->canChallenge();
-            return $performer->canChallenge() && !$performer->Engaged;
+            return $performer->canChallenge();
         });
 
         return $performers;
