@@ -407,6 +407,7 @@ onUpdateActionButtons: function( stateName, args )
     
     this.onUpdateActionButtons_7s5s( stateName, args );        
     this.onUpdateActionButtons_tac( stateName, args );
+    this.onUpdateActionButtons_faf( stateName, args );
 }
 
 })

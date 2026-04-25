@@ -429,6 +429,9 @@ trait UtilitiesTrait
             case '02':
                 $set = "tac";
                 break;
+            case '03':
+                $set = "faf";
+                break;
             default:
                 $set = "_7s5s";
         }
