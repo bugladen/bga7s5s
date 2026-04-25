@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -30,15 +31,34 @@ class Action_01104 extends RiskCityAction
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
         $characters = array_filter($characters, fn($character) => !$character->Engaged);
 
-        return count($characters) > 0;
+        foreach ($characters as $character)
+        {
+            $opponents = $theah->getOpposingCharactersAtLocation($character->Location, $playerId);
+            if (count($opponents) > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $characters = parent::getPerformersForAction($playerId, $theah);
         $characters = array_values(array_filter($characters, fn($character) => !$character->Engaged));
-        
-        return $characters;
+
+        $validPerformers = [];
+        foreach ($characters as $character)
+        {
+            $opponents = $theah->getOpposingCharactersAtLocation($character->Location, $character->ControllerId);
+            if (count($opponents) > 0)
+            {
+                $validPerformers[] = $character;
+            }
+        }
+
+        return $validPerformers;
     }
 
     public function handleEvent(Event $event)
@@ -79,7 +99,7 @@ class Action_01104 extends RiskCityAction
             $character = $game->theah->getCharacterById($id);
             if ($character == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
@@ -87,12 +107,12 @@ class Action_01104 extends RiskCityAction
 
             if ($character->ControllerId == $performer->ControllerId)
             {
-                throw new \BgaUserException($game->translate("Character cannot be owned by you"));
+                throw new UserException($game->translate("Character cannot be owned by you"));
             }
 
             if ($character->Location != $performer->Location)
             {
-                throw new \BgaUserException($game->translate("Character is not at the same location as the performer"));
+                throw new UserException($game->translate("Character is not at the same location as the performer"));
             }
 
             $owner = $this->getOwningCard($game->theah);
