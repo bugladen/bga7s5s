@@ -820,6 +820,9 @@ trait StatesTrait
 
             $this->globals->set(Game::PASS_COUNT, 0);
 
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($challenger->ControllerId);
+            $this->theah->queueEvent($actionResolvedEvent);
+
             $this->notifyAllPlayers("challengeCancelled", clienttranslate('Challenge was cancelled.'), [
                 "challengerId" => $challengerId,
                 "defenderId" => $defenderId,
