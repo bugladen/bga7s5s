@@ -27,7 +27,10 @@
       "Bash(php -l modules/php/States/tac/State_planningPhaseResolveSchemes02052.php)",
       "Bash(php:*)",
       "Bash(where php:*)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(xargs -I {} grep -l \"queueEvent\\\\|EventFactory\" {})",
+      "Bash(xargs -I {} basename {})",
+      "Bash(xargs -I {} grep -l \"eventCheck\" {})"
     ]
   }
 }
