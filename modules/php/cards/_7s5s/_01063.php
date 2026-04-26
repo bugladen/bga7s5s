@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01063Sw
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 
 class _01063 extends Character
@@ -60,6 +61,22 @@ class _01063 extends Character
                 $character->Location != Game::LOCATION_PLAYER_HOME)
             {
                 $this->addSwapTechnique($character, $event->theah->game);
+            }
+        }
+
+        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
+        {
+            if ($this->Location != Game::LOCATION_PLAYER_HOME)
+            {
+                $characters = $event->theah->getCharactersAtLocation($this->Location);
+                $characters = array_filter($characters, fn($character) =>
+                    $character->Id != $this->Id &&
+                    $character->ControllerId == $this->ControllerId);
+
+                foreach ($characters as $character)
+                {
+                    $this->removeSwapTechnique($character, $event->theah->game);
+                }
             }
         }
 
