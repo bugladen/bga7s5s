@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 
 class _02022 extends Character
@@ -78,6 +79,31 @@ class _02022 extends Character
                 $technique->setOwnerId($character->Id);
                 $character->addTechnique($technique, $event->theah->game);
                 $character->IsUpdated = true;
+            }
+        }
+
+        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
+        {
+            if ($this->Location != Game::LOCATION_PLAYER_HOME)
+            {
+                $characters = $event->theah->getCharactersAtLocation($this->Location);
+                $characters = array_filter($characters, fn($character) =>
+                    $character->Id != $this->Id &&
+                    $character->ControllerId == $this->ControllerId &&
+                    $character->hasTrait("Musketeer"));
+
+                foreach ($characters as $character)
+                {
+                    if ($character instanceof IHasTechniques)
+                    {
+                        $technique = $character->getTechniqueByClassId("Technique_02022");
+                        if ($technique)
+                        {
+                            $character->removeTechnique($technique, $event->theah->game);
+                            $character->IsUpdated = true;
+                        }
+                    }
+                }
             }
         }
 
