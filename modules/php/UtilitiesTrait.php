@@ -422,19 +422,12 @@ trait UtilitiesTrait
         //Pull the first two characters of the card id to get the set
         $set = substr($cardClass, 0, 2);
 
-        switch ($set) {
-            case '01':
-                $set = "_7s5s";
-                break;
-            case '02':
-                $set = "tac";
-                break;
-            case '03':
-                $set = "faf";
-                break;
-            default:
-                $set = "_7s5s";
-        }
+        $set = match ($set) {
+            '01' => "_7s5s",
+            '02' => "tac",
+            '03' => "faf",
+            default => "_7s5s",
+        };
 
         return "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$cardClass";
     }
