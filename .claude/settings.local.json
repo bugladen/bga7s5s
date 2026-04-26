@@ -30,7 +30,11 @@
       "Bash(xargs cat:*)",
       "Bash(xargs -I {} grep -l \"queueEvent\\\\|EventFactory\" {})",
       "Bash(xargs -I {} basename {})",
-      "Bash(xargs -I {} grep -l \"eventCheck\" {})"
+      "Bash(xargs -I {} grep -l \"eventCheck\" {})",
+      "Bash(sed -n '546,550p' /c/code/7s5s/modules/js/OnUpdateActionButtons.7s5s.js)",
+      "Bash(sed -n '675,682p' /c/code/7s5s/modules/js/OnUpdateActionButtons.7s5s.js)",
+      "Bash(sed -n '363,371p' /c/code/7s5s/modules/js/OnUpdateActionButtons.7s5s.js)",
+      "Bash(sed -n '388,391p' /c/code/7s5s/modules/js/OnUpdateActionButtons.7s5s.js)"
     ]
   }
 }
