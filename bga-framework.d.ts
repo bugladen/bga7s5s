@@ -275,6 +275,12 @@ declare class Players<P extends Player = Player> {
   getCurrentPlayerId(): number;
 
   /**
+   * Return the no of the player who is looking at the game. The player may not be part of the game (i.e. spectator)
+   * @returns {number | null} the current player no
+   */
+  getCurrentPlayerNo(): number | null;
+
+  /**
    * Return the current player data stored in gamedatas.players.
    * Can be undefined, if the player isn't at this table (spectator).
    * 
@@ -311,6 +317,12 @@ declare class Players<P extends Player = Player> {
   getActivePlayerId(): number | null;
 
   /**
+   * Return the no of the active player, or null if we are not in an ACTIVE_PLAYER type state.
+   * @returns {number | null} the active player no
+   */
+  getActivePlayerNo(): number | null;
+
+  /**
    * Return the active player, or null if we are not in an ACTIVE_PLAYER type state.
    * 
    * @returns {P | null} the active player
@@ -318,12 +330,25 @@ declare class Players<P extends Player = Player> {
   getActivePlayer(): P | null;
 
   /**
+   * @deprecated use getPlayerById.
+   */
+  getPlayer(playerId: number) : P | undefined;
+
+  /**
    * Return the player data stored in gamedatas.players.
    * Can be undefined, if the player isn't at this table (spectator).
    * 
-   * @returns {P | undefined} the player
+   * @returns {Object | undefined} the player
    */
-  getPlayer(playerId: number) : P | undefined;
+  getPlayerById(playerId: number) : P | undefined;
+
+  /**
+   * Return the player data stored in gamedatas.players.
+   * Can be undefined, if the player isn't at this table (spectator).
+   * 
+   * @returns {Object | undefined} the player
+   */
+  getPlayerByNo(playerNo: number) : P | undefined;
 
   /**
    * Return the HTML code for a player name, colored and with optional background.
@@ -351,6 +376,18 @@ declare class Players<P extends Player = Player> {
    * @returns the avatar url
    */
   getPlayerAvatarUrl(playerId: number, size?: number): string;
+
+  /**
+   * Return the no of the player, by id
+   * @returns {number | null} the player no, or null if the player id is not a player on this table
+   */
+  getPlayerNoById(playerId: number): number | null;
+
+  /**
+   * Return the id of the player, by no
+   * @returns {number} the player id
+   */
+  getPlayerIdByNo(playerNo: number): number;
 }
 
 declare class Actions {
