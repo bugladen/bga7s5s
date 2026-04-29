@@ -27,3 +27,17 @@ WHY image-only fallback was kept on the non-text path: City events have no `cont
 
 - I'm assuming city event cards expose `actions`/`reactions`/etc. on their JS payload the same way schemes do — that comes from `IHasActions`/`IHasReactions` on the PHP side via `getPropertyArray`. Most city events probably don't have these (events are usually triggered effects, not persistent cards with available abilities), so the abilities section will just be omitted in practice. No harm if absent.
 - Didn't verify in-browser. Deployment is SFTP-only, so this needs a manual smoke test by the user: hover a city event with text-tooltips preference enabled, confirm the table renders with the card text.
+
+## Follow-up: City Card # row
+
+User asked to add a `City Card #` row directly under `Card #` in every city card type's text tooltip. The relevant types are CityCharacter, CityAttachment, and CityEventCard — these are the only `ICityDeckCard` implementations, which is also the only place `cityCardNumber` gets attached to the JS card payload (via `addCityProperties` in `CityDeckCardTrait`).
+
+Added a conditional spread to the rows array of the three corresponding tooltip functions:
+
+```js
+...(card.cityCardNumber ? [row(_('City Card #'), card.cityCardNumber)] : []),
+```
+
+WHY a spread instead of a separate `if (...) rows.push(...)` block: keeps the row order obvious by position in the array, doesn't fragment the initial declaration into a four-step build. Empty array spread is a no-op for non-city cards, so this is safe to leave in place even on cards that aren't city deck cards (Scheme/Risk) — though I only added it where it's actually meaningful.
+
+WHY conditional rather than always rendering: schemes and risks aren't `ICityDeckCard`, so `cityCardNumber` is undefined on them. If a future change makes some scheme or risk a city card, the row will appear automatically without further edits.

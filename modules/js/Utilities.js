@@ -520,6 +520,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Type'), _(card.type)),
             row(_('Set'), this.getSetDisplayName(card.expansionName)),
             row(_('Card #'), card.cardNumber ?? ''),
+            ...(card.cityCardNumber ? [row(_('City&nbsp;Card&nbsp;#'), card.cityCardNumber)] : []),
         ];
 
         if (card.wealthCost != null) {
@@ -614,6 +615,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Type'), _(card.type)),
             row(_('Set'), this.getSetDisplayName(card.expansionName)),
             row(_('Card #'), card.cardNumber ?? ''),
+            ...(card.cityCardNumber ? [row(_('City&nbsp;Card&nbsp;#'), card.cityCardNumber)] : []),
             row(_('Cost'), card.wealthCost ?? ''),
         ];
 
@@ -666,6 +668,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Type'), _(card.type)),
             row(_('Set'), this.getSetDisplayName(card.expansionName)),
             row(_('Card&nbsp;#'), card.cardNumber ?? ''),
+            ...(card.cityCardNumber ? [row(_('City&nbsp;Card&nbsp;#'), card.cityCardNumber)] : []),
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true),
         ];
