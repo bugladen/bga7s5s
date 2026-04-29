@@ -1531,10 +1531,48 @@ trait FrameworkActionsTrait
         $actorId = $result['actor_id'];
         $adversaryId = $this->theah->getDuelOpponentId($actorId);
 
+        $explanations = $this->globals->get(Game::GAMBLE_REVEAL_EXPLANATIONS, '');
+
+        if ($gambleType == Game::GAMBLE_TYPE_ROLL_THE_DICE)
+        {
+            // WHY: For Roll the Bones (01114) the chosen card is NOT played as a
+            // combat card — its combat values are added to 01114 (in stApplyCombatCardStats)
+            // and the card itself is sunk along with the other revealed cards. So we
+            // skip CombatCardAnnouncedEvent, do not move it to the dueling line, and
+            // never offer its maneuvers.
+            $this->cards->insertCardOnExtremePosition($card->Id, $deckName, false);
+            $card->Location = $deckName;
+            $this->updateCardObjectInDb($card);
+
+            $rollTheBonesCardId = $this->globals->get(Game::ROLL_THE_BONES_CARD_ID, 0);
+            $rollTheBonesCard = $rollTheBonesCardId > 0 ? $this->theah->getCardById($rollTheBonesCardId) : null;
+            $this->notifyAllPlayers("message", clienttranslate('${player_name} adds the combat values of ${card_inject_code} to ${roll_inject_code} and sinks it.'), [
+                "i18n" => ["player_name"],
+                "player_name" => $this->getPlayerNameById($playerId),
+                "card_inject_code" => $card->getInjectCode(),
+                "roll_inject_code" => $rollTheBonesCard !== null ? $rollTheBonesCard->getInjectCode() : "Roll the Bones",
+            ]);
+
+            $event = $this->theah->createEvent(Events::DuelPlayerGambled);
+            if ($event instanceof EventDuelPlayerGambled)
+            {
+                $event->playerId = $playerId;
+                $event->actorId = $actorId;
+                $event->adversaryId = $adversaryId;
+                $event->chosenCardId = $id;
+                $event->revealCount = $count;
+                $event->explanations = $explanations;
+            }
+            $this->theah->eventCheck($event);
+            $this->theah->queueEvent($event);
+
+            $this->gamestate->nextState("noManeuver");
+            return;
+        }
+
         $event = EventFactory::createCombatCardAnnouncedEvent($playerId, $card->Id);
         $this->theah->queueEvent($event);
 
-        $explanations = $this->globals->get(Game::GAMBLE_REVEAL_EXPLANATIONS, '');
         $event = $this->theah->createEvent(Events::DuelPlayerGambled);
         if ($event instanceof EventDuelPlayerGambled)
         {
@@ -1546,7 +1584,7 @@ trait FrameworkActionsTrait
             $event->explanations = $explanations;
         }
         $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);        
+        $this->theah->queueEvent($event);
 
         $card->Location = Game::LOCATION_DUELING_LINE;
         $this->updateCardObjectInDb($card);

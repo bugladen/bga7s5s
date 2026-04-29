@@ -14,6 +14,7 @@ class EventDuelCalculateCombatCardStats extends Event
     private(set) int $thrust;
     public bool $dashedThrust;
     public bool $gambled;
+    public bool $statsAddedToExistingCombatCard;
     public Array $explanations;
 
     public function __construct()
@@ -31,6 +32,7 @@ class EventDuelCalculateCombatCardStats extends Event
         $this->thrust = 0;
         $this->dashedThrust = false;
         $this->gambled = false;
+        $this->statsAddedToExistingCombatCard = false;
         $this->explanations = [];
         $this->runEventHubAfterCards = true;
     }

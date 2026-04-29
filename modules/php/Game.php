@@ -194,6 +194,7 @@ class Game extends \Bga\GameFramework\Table
     final const PENDING_DEFENDER_THREAT = "pendingDefenderThreat";
 
     final const ROLL_THE_BONES_ACTIVATED = "rollTheBonesActivated";
+    final const ROLL_THE_BONES_CARD_ID = "rollTheBonesCardId";
     final const GAMBLE_TYPE = "gambleType";
     final const GAMBLE_TYPE_NORMAL = 0;
     final const GAMBLE_TYPE_ROLL_THE_DICE = 1;

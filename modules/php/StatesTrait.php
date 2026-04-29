@@ -1227,18 +1227,33 @@ trait StatesTrait
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
         $card = $this->getCardObjectFromDb($cardId);
 
-        $sql = "INSERT INTO duel_round_combat_card (duel_id, round, combat_card_id) VALUES ($duelId, $round, $cardId)";
-        $this->DbQuery($sql);
+        // WHY: When Roll the Bones (01114) is the active combat card, the gambled
+        // chosen card's combat values are added to 01114 instead of being played.
+        // We attribute the stats to 01114's combat card row (so reactions targeting
+        // a combat card find 01114), skip inserting a second duel_round_combat_card
+        // entry, and skip the maneuver queueing path.
+        $rollTheBonesCardId = $this->globals->get(Game::ROLL_THE_BONES_CARD_ID, 0);
+        $isRollTheBonesGambleStats = $rollTheBonesCardId > 0
+            && $cardId != $rollTheBonesCardId
+            && $this->globals->get(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_NORMAL) == Game::GAMBLE_TYPE_ROLL_THE_DICE;
+
+        if (!$isRollTheBonesGambleStats)
+        {
+            $sql = "INSERT INTO duel_round_combat_card (duel_id, round, combat_card_id) VALUES ($duelId, $round, $cardId)";
+            $this->DbQuery($sql);
+        }
 
         $sql = "SELECT gambled from duel_round where duel_id = $duelId AND round = $round";
         $gambled = $this->getUniqueValueFromDB($sql);
+
+        $combatCardId = $isRollTheBonesGambleStats ? $rollTheBonesCardId : $cardId;
 
         $event = $this->theah->createEvent(Events::DuelCalculateCombatCardStats);
         if ($event instanceof EventDuelCalculateCombatCardStats)
         {
             $event->actorId = $actorId;
             $event->adversaryId = $adversaryId;
-            $event->combatCardId = $cardId;
+            $event->combatCardId = $combatCardId;
             $event->addRiposte($card->Riposte);
             $event->dashedRiposte = $card->DashedRiposte;
             $event->addParry($card->Parry);
@@ -1246,16 +1261,25 @@ trait StatesTrait
             $event->addThrust($card->Thrust);
             $event->dashedThrust = $card->DashedThrust;
             $event->gambled = $gambled == 1;
+            $event->statsAddedToExistingCombatCard = $isRollTheBonesGambleStats;
         }
         $this->theah->queueEvent($event);
 
-        $maneuverId = $this->globals->get(Game::DUEL_MANUEVER_ID, null);
-        if ($maneuverId != null)
+        if (!$isRollTheBonesGambleStats)
         {
-            $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "useManeuver");
-            $this->theah->queueEvent($transitionEvent);
+            $maneuverId = $this->globals->get(Game::DUEL_MANUEVER_ID, null);
+            if ($maneuverId != null)
+            {
+                $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "useManeuver");
+                $this->theah->queueEvent($transitionEvent);
+            }
         }
-        
+        else
+        {
+            $this->globals->delete(Game::ROLL_THE_BONES_CARD_ID);
+            $this->globals->set(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_NORMAL);
+        }
+
         $this->gamestate->nextState();
     }
 
@@ -1447,6 +1471,7 @@ trait StatesTrait
         $this->globals->delete(Game::DUEL_MANUEVER_ID);
         $this->globals->delete(Game::GAMBLE_TYPE);
         $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
+        $this->globals->delete(Game::ROLL_THE_BONES_CARD_ID);
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
         $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
 
@@ -1555,6 +1580,7 @@ trait StatesTrait
         $this->globals->delete(Game::DUEL_GAMBLED);
         $this->globals->delete(Game::GAMBLE_TYPE);
         $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
+        $this->globals->delete(Game::ROLL_THE_BONES_CARD_ID);
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
         $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
         $this->globals->delete(Game::ABNORMAL_FLOW);

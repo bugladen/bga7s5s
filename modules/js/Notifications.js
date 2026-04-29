@@ -1930,32 +1930,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         if (args.mode == 'combat')
         {
-            const combatCard = args.combatCard;
-            const divId = `duel_round_${args.round}_combat`;
-            if ($(divId).innerHTML == 'Not Chosen')
+            if (!args.statsAddedToExistingCombatCard)
             {
-                $(divId).innerHTML = '';
-            }
+                const combatCard = args.combatCard;
+                const divId = `duel_round_${args.round}_combat`;
+                if ($(divId).innerHTML == 'Not Chosen')
+                {
+                    $(divId).innerHTML = '';
+                }
 
-            dojo.place( this.format_block('jstpl_row_combat_card', { 
-                round: args.round,
-                id: combatCard.id,
-                image: this.getCardImageUrlRoot(combatCard.image) + combatCard.image 
-            }),  divId, 'last');
+                dojo.place( this.format_block('jstpl_row_combat_card', {
+                    round: args.round,
+                    id: combatCard.id,
+                    image: this.getCardImageUrlRoot(combatCard.image) + combatCard.image
+                }),  divId, 'last');
 
-            const cardDivId = `duel_round_${args.round}_combat_card_${combatCard.id}`;
-            this.addTippyTooltip(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(combatCard.image) + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
-    
-            if (args.gambled)
-            {
-                dojo.addClass(cardDivId, '_7sfs-engaged');
-                dojo.addClass(cardDivId, '_7sfs-duel-row-combat-card-gambled');
+                const cardDivId = `duel_round_${args.round}_combat_card_${combatCard.id}`;
+                this.addTippyTooltip(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(combatCard.image) + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
+
+                if (args.gambled)
+                {
+                    dojo.addClass(cardDivId, '_7sfs-engaged');
+                    dojo.addClass(cardDivId, '_7sfs-duel-row-combat-card-gambled');
+                }
+                else if (this.player_id == combatCard.controllerId)
+                {
+                    this.factionHand.removeCard(combatCard);
+                }
+                $(`${combatCard.controllerId}-score-hand-count`).innerHTML = args.handCount;
             }
-            else if (this.player_id == combatCard.controllerId)
-            {
-                this.factionHand.removeCard(combatCard);
-            }
-            $(`${combatCard.controllerId}-score-hand-count`).innerHTML = args.handCount;
         }
         else
         {
@@ -1966,7 +1969,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
                 {
                     element.innerHTML = '';
                 }
-    
+
                 //Make sure there is no duplicate
                 const effectName = `${args.cardName}: ${args.effectName}`;
                 if (! element.innerHTML.includes(effectName))
