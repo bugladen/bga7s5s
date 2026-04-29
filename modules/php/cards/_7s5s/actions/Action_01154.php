@@ -72,7 +72,6 @@ class Action_01154 extends AttachmentAction implements ISorcererAbility, IAbilit
                 foreach ($actions as $action)
                 {
                     $performers = $action->getPerformersForAction($owner->ControllerId, $game->theah);
-                    $performers = array_values(array_filter($performers, fn($performer) => $performer->Id == $owner->Id));
                     if (count($performers) > 0)
                     {
                         $availableActions[] = $action->getPropertyArray($game);
