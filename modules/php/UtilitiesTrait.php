@@ -916,5 +916,16 @@ trait UtilitiesTrait
         $this->globals->set(Game::EVENT_BATCH_ID, $batchId);
         return $batchId;
     }
-
+    
+    private function queryStandardTables() 
+    {
+        // Query the standard global table.
+        $this->DbQuery("SELECT global_id, global_value FROM global WHERE 1 ORDER BY global_id FOR UPDATE");
+        // Query the standard player table.
+        $this->DbQuery("SELECT player_id id, player_score score FROM player WHERE 1 ORDER BY player_id FOR UPDATE");
+        // Query the playermultiactive  table. DO NOT USE THIS is you don't use $this->bIndependantMultiactiveTable=true
+        // $this->DbQuery("SELECT ma_player_id player_id, ma_is_multiactive player_is_multiactive FROM playermultiactive ORDER BY player_id FOR UPDATE");
+  
+        // TODO should the stats table be queried as well?
+     }
 }
