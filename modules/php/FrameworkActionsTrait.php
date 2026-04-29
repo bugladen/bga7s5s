@@ -202,7 +202,7 @@ trait FrameworkActionsTrait
         }
         if ( ! $character instanceof CityCharacter)
         {
-            throw new \BgaUserException(clienttranslate("Character is not a City Character."));
+            throw new UserException(clienttranslate("Character is not a City Character."));
         }
 
         $discount = $this->globals->get(Game::DISCOUNT, 0); 
@@ -221,17 +221,20 @@ trait FrameworkActionsTrait
         
         //Total up the wealth of the cards to see if player paid correctly
         $totalWealth = 0;
+        $hasWealthCard = false;
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
 
             if ($card == null)
-                throw new \BgaUserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
+                throw new UserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
+            $isWealth = $card->hasTrait("Wealth");
+            if ($isWealth) $hasWealthCard = true;
+            $totalWealth += $isWealth ? 2 : 1;
         }
-        if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(clienttranslate("Cost of Mercenary is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+        if (!$this->isValidWealthPayment($totalWealth, $cost, $hasWealthCard)) {
+            throw new UserException(sprintf(clienttranslate("Cost of Mercenary is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         $playerId = $this->getActivePlayerId();
@@ -628,16 +631,19 @@ trait FrameworkActionsTrait
         
         //Total up the wealth of the cards to see if player paid correctly
         $totalWealth = 0;
+        $hasWealthCard = false;
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
             if ($card == null)
-                throw new \BgaUserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
+                throw new UserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
 
                 //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
+            $isWealth = $card->hasTrait("Wealth");
+            if ($isWealth) $hasWealthCard = true;
+            $totalWealth += $isWealth ? 2 : 1;
         }
-        if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(clienttranslate("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+        if (!$this->isValidWealthPayment($totalWealth, $cost, $hasWealthCard)) {
+            throw new UserException(sprintf(clienttranslate("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         $playerId = $this->getActivePlayerId();
@@ -911,22 +917,25 @@ trait FrameworkActionsTrait
         
         //Total up the wealth of the cards to see if player paid correctly
         $totalWealth = 0;
+        $hasWealthCard = false;
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
             if ($card == null)
-                throw new \BgaUserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
+                throw new UserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
 
             //Edge case: Bravos cannot be paid for with a Thug card
             if ($risk instanceof _01024 && $card->hasTrait('Thug'))
             {
-                throw new \BgaUserException(clienttranslate("A Thug cannot be used to pay for Bravos."));
+                throw new UserException(clienttranslate("A Thug cannot be used to pay for Bravos."));
             }
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
+            $isWealth = $card->hasTrait("Wealth");
+            if ($isWealth) $hasWealthCard = true;
+            $totalWealth += $isWealth ? 2 : 1;
         }
-        if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(clienttranslate("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+        if (!$this->isValidWealthPayment($totalWealth, $cost, $hasWealthCard)) {
+            throw new UserException(sprintf(clienttranslate("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         //Move the cards used to pay to the player's discard pile
@@ -1031,16 +1040,19 @@ trait FrameworkActionsTrait
         
         //Total up the wealth of the cards to see if player paid correctly
         $totalWealth = 0;
+        $hasWealthCard = false;
         foreach ($cardIds as $cardId) {
             $card = $this->getCardObjectFromDb($cardId);
             if ($card == null)
-                throw new \BgaUserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
+                throw new UserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
+            $isWealth = $card->hasTrait("Wealth");
+            if ($isWealth) $hasWealthCard = true;
+            $totalWealth += $isWealth ? 2 : 1;
         }
-        if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(clienttranslate("Cost of Brute is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+        if (!$this->isValidWealthPayment($totalWealth, $cost, $hasWealthCard)) {
+            throw new UserException(sprintf(clienttranslate("Cost of Brute is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         $playerId = $this->getActivePlayerId();
@@ -1443,17 +1455,20 @@ trait FrameworkActionsTrait
         
         //Total up the wealth of the cards to see if player paid correctly
         $totalWealth = 0;
+        $hasWealthCard = false;
         foreach ($cardIds as $cardId) {
             $payCard = $this->getCardObjectFromDb($cardId);
 
             if ($payCard == null)
-                throw new \BgaUserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
+                throw new UserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += $payCard->hasTrait("Wealth") ? 2 : 1;
+            $isWealth = $payCard->hasTrait("Wealth");
+            if ($isWealth) $hasWealthCard = true;
+            $totalWealth += $isWealth ? 2 : 1;
         }
-        if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(clienttranslate("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+        if (!$this->isValidWealthPayment($totalWealth, $cost, $hasWealthCard)) {
+            throw new UserException(sprintf(clienttranslate("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
         $this->notifyAllPlayers("message", clienttranslate('${player_name} is playing ${card_inject_code} as their Combat Card.'), [
@@ -1920,26 +1935,29 @@ trait FrameworkActionsTrait
 
         //Total up the wealth of the cards to see if player paid correctly
         $totalWealth = 0;
-        foreach ($cardIds as $cardId) 
+        $hasWealthCard = false;
+        foreach ($cardIds as $cardId)
         {
             if (in_array($cardId, $invalidPayCardIds))
             {
                 $card = $this->getCardObjectFromDb($cardId);
-                throw new \BgaUserException(sprintf(clienttranslate("%s is not valid to pay for the reaction."), $card->Name));
+                throw new UserException(sprintf(clienttranslate("%s is not valid to pay for the reaction."), $card->Name));
             }
 
             $payCard = $this->getCardObjectFromDb($cardId);
 
             if ($payCard == null)
-                throw new \BgaUserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
+                throw new UserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
 
             //If $card has wealth in its traits, add it to the total wealth
-            $totalWealth += $payCard->hasTrait("Wealth") ? 2 : 1;
+            $isWealth = $payCard->hasTrait("Wealth");
+            if ($isWealth) $hasWealthCard = true;
+            $totalWealth += $isWealth ? 2 : 1;
         }
 
-        if ($totalWealth != $cost) {
-            throw new \BgaUserException(sprintf(clienttranslate("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
-        }        
+        if (!$this->isValidWealthPayment($totalWealth, $cost, $hasWealthCard)) {
+            throw new UserException(sprintf(clienttranslate("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+        }
 
         //Move the cards used to pay to the player's discard pile
         foreach ($cardIds as $cardId) {

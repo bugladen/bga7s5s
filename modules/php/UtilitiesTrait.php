@@ -931,5 +931,15 @@ trait UtilitiesTrait
         // $this->DbQuery("SELECT ma_player_id player_id, ma_is_multiactive player_is_multiactive FROM playermultiactive ORDER BY player_id FOR UPDATE");
   
         // TODO should the stats table be queried as well?
-     }
+    }
+
+    // WHY: Wealth-trait cards may overpay a cost by 1 (e.g. a single Wealth card
+    // covers a 1-cost). Plain cards must still total exactly to the cost.
+    public function isValidWealthPayment(int $totalWealth, int $cost, bool $hasWealthCard): bool
+    {
+        if ($totalWealth == $cost) return true;
+        if ($hasWealthCard && $totalWealth == $cost + 1) return true;
+        return false;
+    }
+
 }

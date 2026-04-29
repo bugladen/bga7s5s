@@ -276,15 +276,18 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
     
             //Total up the wealth of the cards to see if player paid correctly
             $totalWealth = 0;
+            $hasWealthCard = false;
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
                 if ($card == null)
                     throw new UserException(sprintf($game->translate("Card #%d not found."), $cardId));
-    
+
                 //If $card has wealth in its traits, add it to the total wealth
-                $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
+                $isWealth = $card->hasTrait("Wealth");
+                if ($isWealth) $hasWealthCard = true;
+                $totalWealth += $isWealth ? 2 : 1;
             }
-            if ($totalWealth != $cost) {
+            if (!$game->isValidWealthPayment($totalWealth, $cost, $hasWealthCard)) {
                 throw new UserException(sprintf($game->translate("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
             }
     
