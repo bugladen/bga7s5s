@@ -1437,34 +1437,46 @@ return declare('seventhseacityoffivesails.notifications', null, {
         dojo.removeClass(`${args.playerId}-score-seal-first-player`, '_7sfs-first-player-hidden');
         dojo.addClass(`${args.playerId}-score-seal-first-player`, '_7sfs-first-player-score');
 
+        // Hide turn-order badge on the new first player; restore it on everyone else (>2 player games only).
+        // Refresh each badge value from args.turnOrders so the rotation is reflected.
+        const turnOrderBadgesToPulse = [];
+        if (Object.keys(this.gamedatas.players).length > 2) {
+            for (const pid in this.gamedatas.players) {
+                if (args.turnOrders && args.turnOrders[pid] !== undefined) {
+                    const badge = $(`${pid}-score-turn-order`);
+                    if (badge) badge.innerHTML = args.turnOrders[pid];
+                    this.gamedatas.players[pid].turn_order = args.turnOrders[pid];
+                }
+                const isNewFirst = pid == args.playerId;
+                dojo.style(`${pid}-score-turn-order`, 'display', isNewFirst ? 'none' : 'inline-block');
+                if (!isNewFirst) {
+                    turnOrderBadgesToPulse.push($(`${pid}-score-turn-order`));
+                }
+            }
+        }
+
         // Pulse the first player elements
         const homeElement = $(`${args.playerId}-first-player`);
         const scoreElement = $(`${args.playerId}-score-seal-first-player`);
-        
+
         const animations = [];
-        if (homeElement && this.animationManager && this.animationManager.animationsActive()) {
-            animations.push(
-                homeElement.animate([
-                    { transform: 'scale(1)' },
-                    { transform: 'scale(1.3)' },
-                    { transform: 'scale(1)' }
-                ], {
-                    duration: 400,
-                    easing: 'ease-in-out'
-                }).finished
-            );
+        const pulseKeyframes = [
+            { transform: 'scale(1)' },
+            { transform: 'scale(1.3)' },
+            { transform: 'scale(1)' }
+        ];
+        const pulseOptions = { duration: 400, easing: 'ease-in-out' };
+        const animationsActive = this.animationManager && this.animationManager.animationsActive();
+        if (homeElement && animationsActive) {
+            animations.push(homeElement.animate(pulseKeyframes, pulseOptions).finished);
         }
-        if (scoreElement && this.animationManager && this.animationManager.animationsActive()) {
-            animations.push(
-                scoreElement.animate([
-                    { transform: 'scale(1)' },
-                    { transform: 'scale(1.3)' },
-                    { transform: 'scale(1)' }
-                ], {
-                    duration: 400,
-                    easing: 'ease-in-out'
-                }).finished
-            );
+        if (scoreElement && animationsActive) {
+            animations.push(scoreElement.animate(pulseKeyframes, pulseOptions).finished);
+        }
+        if (animationsActive) {
+            for (const badge of turnOrderBadgesToPulse) {
+                if (badge) animations.push(badge.animate(pulseKeyframes, pulseOptions).finished);
+            }
         }
         
         if (animations.length > 0) {

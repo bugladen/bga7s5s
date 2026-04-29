@@ -517,13 +517,17 @@ trait UtilitiesTrait
     function setNewPlayerOrder($firstPlayerId)
     {
         $playerNumber = 1;
+        $turnOrders = [];
         $this->DbQuery("UPDATE player SET turn_order = $playerNumber WHERE player_id = $firstPlayerId");
+        $turnOrders[$firstPlayerId] = $playerNumber;
         $nextPlayerId = $this->getPlayerAfter($firstPlayerId);
         while ($firstPlayerId != $nextPlayerId) {
             $playerNumber++;
             $this->DbQuery("UPDATE player SET turn_order = $playerNumber WHERE player_id = $nextPlayerId");
+            $turnOrders[$nextPlayerId] = $playerNumber;
             $nextPlayerId = $this->getPlayerAfter($nextPlayerId);
         }
+        return $turnOrders;
     }
 
     function setPlayerReknown($playerId, $reknown) 

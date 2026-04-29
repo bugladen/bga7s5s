@@ -313,7 +313,7 @@ class Game extends \Bga\GameFramework\Table
         // WARNING: We must only return information visible by the current player.
         $currentPlayerId = $this->getCurrentPlayerId();
 
-        $players = $this->getCollectionFromDb("SELECT player_id, player_score score, leader_card_id FROM player");
+        $players = $this->getCollectionFromDb("SELECT player_id, player_score score, leader_card_id, turn_order FROM player");
         
         // Add the leader card into the player array
         foreach ($players as $player_id => $player) 

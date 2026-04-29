@@ -711,6 +711,20 @@ body {
     line-height: 27px;
 }
 
+._7sfs-score-turn-order {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 1px solid black;
+    border-radius: 50%;
+    background-color: lightgray;
+    color: black;
+    text-align: center;
+    font-size: 14pt;
+    line-height: 20px;
+    vertical-align: bottom;
+}
+
 ._7sfs-seal-home {
     display: inline-block;
     background-image: url('img/boardResources.png');

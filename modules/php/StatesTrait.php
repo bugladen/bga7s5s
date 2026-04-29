@@ -254,13 +254,14 @@ trait StatesTrait
         if (! $tiedInitiative || count($players) == 1) {
             $this->globals->set(Game::FIRST_PLAYER, $highPlayerId);
             $this->globals->set(Game::CURRENT_PLAYER, $highPlayerId);
-            $this->setNewPlayerOrder($highPlayerId);
+            $turnOrders = $this->setNewPlayerOrder($highPlayerId);
 
             // Notify all players of the first player.
             $this->notifyAllPlayers("firstPlayer", clienttranslate('${player_name} has the highest initiative of ${initiative} and will be set as <span style="font-weight:bold; color:red">First Player</span>.'), [
                 'player_name' => $players[$highPlayerId]['player_name'],
                 'initiative' => $highInitiative,
-                'playerId' => $highPlayerId
+                'playerId' => $highPlayerId,
+                'turnOrders' => $turnOrders,
             ]);
 
             $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
@@ -280,13 +281,14 @@ trait StatesTrait
 
             $this->globals->set(Game::FIRST_PLAYER, $nextPlayerId);
             $this->globals->set(Game::CURRENT_PLAYER, $nextPlayerId);
-            $this->setNewPlayerOrder($nextPlayerId);
+            $turnOrders = $this->setNewPlayerOrder($nextPlayerId);
 
             // Notify all players of the first player.
             $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as <span style="font-weight:bold; color:red">First Player</span>.'), [
                 'player_name' => $players[$nextPlayerId]['player_name'],
                 'initiative' => $highInitiative,
                 'playerId' => $nextPlayerId,
+                'turnOrders' => $turnOrders,
             ]);
 
             $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
@@ -303,13 +305,14 @@ trait StatesTrait
         $firstPlayerId = key($slice);
         $this->globals->set(Game::FIRST_PLAYER, $firstPlayerId);
         $this->globals->set(Game::CURRENT_PLAYER, $firstPlayerId);
-        $this->setNewPlayerOrder($firstPlayerId);
+        $turnOrders = $this->setNewPlayerOrder($firstPlayerId);
 
         // Notify all players of the first player.
         $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, and no previous First Player, ${player_name} has been chosen randomly as the <span style="font-weight:bold; color:red">First Player</span>.'), [
             'player_name' => $players[$firstPlayerId]['player_name'],
             'initiative' => $highInitiative,
-            'playerId' => $firstPlayerId
+            'playerId' => $firstPlayerId,
+            'turnOrders' => $turnOrders,
         ]);
  
         $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
