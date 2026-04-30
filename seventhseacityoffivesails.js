@@ -147,6 +147,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.INDOMITABLE_WILL_CONDITION = 'Indomitable Will Condition';
             this.CONTEMPT_AND_HATRED_CONDITION = 'Influence Reduced by Contempt and Hatred';
             this.SOLINE_EL_GATO_CONDITION = 'Finesse Modified by Soline el Gato';
+            this.EPEE_SANGLANTE_CONDITION = 'Influence Modified by Épée Sanglante';
             this.CHALLENGER = 'Challenger';
             this.DEFENDER = 'Defender';
 

@@ -183,6 +183,13 @@ class _01071 extends Scheme implements IHasActions
 
         $theah->eventCheck($modifiedEvent);
         $theah->queueEvent($modifiedEvent);
+
+        $character->addCondition(Game::EPEE_SANGLANTE_CONDITION);
+        $theah->game->updateCardObjectInDb($character);
+
+        $theah->game->notify->all("epeeSanglanteConditionStarted", '', [
+            "cardId" => $character->Id,
+        ]);
     }
 
     private function removeInfluence(Theah $theah, int $playerId, Character $character)
@@ -202,5 +209,12 @@ class _01071 extends Scheme implements IHasActions
 
         $theah->eventCheck($modifiedEvent);
         $theah->queueEvent($modifiedEvent);
+
+        $character->removeCondition(Game::EPEE_SANGLANTE_CONDITION);
+        $theah->game->updateCardObjectInDb($character);
+
+        $theah->game->notify->all("epeeSanglanteConditionEnded", '', [
+            "cardId" => $character->Id,
+        ]);
     }
 }
