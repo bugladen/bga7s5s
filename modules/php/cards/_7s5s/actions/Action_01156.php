@@ -75,6 +75,7 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCharac
             $performer = $this->getOwningCharacter($game->theah);
             $args['performerId'] = $performer->Id;
 
+            $charactersIds = [];
             $adjacentLocations = $game->theah->getAdjacentCityLocations($performer->Location, $includeHome = false);
             foreach ($adjacentLocations as $adjacentLocation)
             {
@@ -132,12 +133,12 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCharac
 
             if ($card->ControllerId != $performer->ControllerId)
             {
-                throw new \BgaUserException($game->translate("You do not control this card"));
+                throw new UserException($game->translate("You do not control this card"));
             }
 
             if ($card->Location != Game::LOCATION_HAND)
             {
-                throw new \BgaUserException($game->translate("Card not in your hand"));
+                throw new UserException($game->translate("Card not in your hand"));
             }
 
             $deck = $game->getGameDeckObject();
@@ -216,7 +217,7 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCharac
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01156_3)
         {
             $targetId = $game->globals->get(Game::CHOSEN_TARGET);
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $this->getOwningCharacter($game->theah);
             $target = $game->theah->getCharacterById($targetId);
             $musket = $this->getOwningCard($game->theah);
 
@@ -234,7 +235,7 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCharac
                 $game->theah->queueEvent($woundEvent);
             }
 
-            $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($musket->ControllerId, $musket->Id, $this->Id, $performerId, $target->Id, $target->Location);
+            $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($musket->ControllerId, $musket->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
             $game->theah->queueEvent($rangedAbilityPlayedEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($musket->ControllerId);
