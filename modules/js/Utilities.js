@@ -270,10 +270,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 } else if (cardData.type === 'Event') {
                     this.createTextTooltipForEvent(cardData, frontDiv.id);
                 } else {
-                    this.addTippyTooltip(frontDiv.id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+                    this.addTippyTooltip(frontDiv.id, this.buildImageTooltipHtml(card), this.STOCK_CARD_TOOLTIP_DELAY);
                 }
             } else {
-                this.addTippyTooltip(frontDiv.id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+                this.addTippyTooltip(frontDiv.id, this.buildImageTooltipHtml(card), this.STOCK_CARD_TOOLTIP_DELAY);
             }
         }
     },
@@ -475,9 +475,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
 
         if (!card.controllerId) {
-            this.addTippyTooltip(`${card.divId}_image`, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.CARD_TOOLTIP_DELAY);
+            this.addTippyTooltip(`${card.divId}_image`, this.buildImageTooltipHtml(card), this.CARD_TOOLTIP_DELAY);
             return;
         }
+
+        const conditions = card.conditions ?? [];
+        const conditionsHtml = conditions.length
+            ? `<div class="_7sfs-card-info-text" style="background-color:#a00; color:white">${_('Conditions:')} ${conditions.map(c => _(c)).join(', ')}</div>`
+            : '';
 
         const traits = card.traits?.join(', ') ?? '';
         const abilityStyle = (available) => `background-color: gold; color: black;${available ? '' : ' text-decoration: line-through;'}`;
@@ -486,6 +491,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             <img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />
             <div class="_7sfs-card-info">
                 <div class="_7sfs-card-info-text" style="background-color:white; color:black">Traits: ${traits}</div>
+                ${conditionsHtml}
                 ${card.actions?.map((action) => `<div class="_7sfs-card-info-text" style="${abilityStyle(action.available)}">${_('Action:')} ${_(action.shortName)}</div>`).join('') ?? ''}
                 ${card.reactions?.map((reaction) => `<div class="_7sfs-card-info-text" style="${abilityStyle(reaction.available)}">${_('Reaction:')} ${_(reaction.shortName)}</div>`).join('') ?? ''}
                 ${card.maneuvers?.map((maneuver) => `<div class="_7sfs-card-info-text" style="${abilityStyle(maneuver.available)}">${_('Maneuver:')} ${_(maneuver.shortName)}</div>`).join('') ?? ''}
@@ -494,6 +500,81 @@ return declare('seventhseacityoffivesails.utilities', null, {
         </div>
         `;
         this.addTippyTooltip(`${card.divId}_image`, html, this.CARD_TOOLTIP_DELAY);
+    },
+
+    /**
+     * Returns a tooltip table row showing the card's current conditions, or '' if none.
+     * Used by all text-tooltip builders so conditions appear consistently.
+     */
+    conditionsRow: function(card, row) {
+        const conditions = card.conditions ?? [];
+        if (!conditions.length) return '';
+        return row(_('Conditions'), conditions.map(c => _(c)).join('<br>'), true);
+    },
+
+    /**
+     * Returns an image-tooltip block (img + optional conditions overlay).
+     * Used by every fallback that shows a card image instead of a text table.
+     */
+    buildImageTooltipHtml: function(card) {
+        const conditions = card.conditions ?? [];
+        const img = `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`;
+        if (!conditions.length) return img;
+        const conditionsHtml = `<div class="_7sfs-card-info-text" style="background-color:#a00; color:white">${_('Conditions:')} ${conditions.map(c => _(c)).join(', ')}</div>`;
+        return `<div style="position:relative;">${img}<div class="_7sfs-card-info">${conditionsHtml}</div></div>`;
+    },
+
+    /**
+     * Rebuilds the hover tooltip for a card at whatever element it currently lives in
+     * (in-play character/attachment/etc, approach deck stock, or faction hand bga-cards).
+     * Call this after mutating card.conditions so the tooltip reflects the new state.
+     *
+     * WHY: tooltips are attached to different element ids depending on placement
+     * (`${divId}_image` for in-play, the stock div for approach deck, `${cardElement.id}_front`
+     * for faction hand). One helper keeps notification handlers from having to know which.
+     */
+    refreshTooltipForCard: function(card) {
+        if (!card) return;
+
+        // In-play (createCharacterCard / createAttachmentCard / createSchemeCard / createEventCard / createCard)
+        if (card.divId && document.getElementById(`${card.divId}_image`)) {
+            this.createTooltipForCard(card);
+            return;
+        }
+
+        // Faction hand (bga-cards CardManager)
+        if (this.factionHand && typeof this.factionHand.getCardElement === 'function') {
+            const cardElement = this.factionHand.getCardElement(card);
+            if (cardElement) {
+                const frontDiv = cardElement.querySelector('.bga-cards_card-side.front');
+                if (frontDiv && frontDiv.id) {
+                    this._applyTooltipToNode(card, frontDiv.id, this.STOCK_CARD_TOOLTIP_DELAY);
+                    return;
+                }
+            }
+        }
+
+        // Approach deck (legacy ebg.stock)
+        if (this.approachDeck && typeof this.approachDeck.getItemDivId === 'function') {
+            try {
+                const divId = this.approachDeck.getItemDivId(card.id);
+                if (divId && document.getElementById(divId)) {
+                    this._applyTooltipToNode(card, divId, this.STOCK_CARD_TOOLTIP_DELAY);
+                    return;
+                }
+            } catch (e) { /* not in approach deck */ }
+        }
+    },
+
+    _applyTooltipToNode: function(card, nodeId, delay) {
+        if (this.getGameUserPreference(this.USER_PREFERENCES_CARD_HOVER_TYPE) == 2) {
+            if (card.type === 'Character') return this.createTextTooltipForCharacter(card, nodeId);
+            if (card.type === 'Scheme') return this.createTextTooltipForScheme(card, nodeId);
+            if (card.type === 'Attachment') return this.createTextTooltipForAttachment(card, nodeId);
+            if (card.type === 'Risk') return this.createTextTooltipForRisk(card, nodeId);
+            if (card.type === 'Event') return this.createTextTooltipForEvent(card, nodeId);
+        }
+        this.addTippyTooltip(nodeId, this.buildImageTooltipHtml(card), delay);
     },
 
     getSetDisplayName: function(expansionName) {
@@ -545,6 +626,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Text'), _(card.text), true)
         );
 
+        const conditionsRowHtml = this.conditionsRow(card, row);
+        if (conditionsRowHtml) rows.push(conditionsRowHtml);
+
         if (card.controllerId && card.location !== 'Approach' && card.location !== 'hand') {
             const hasAbilities = card.actions?.length || card.reactions?.length || card.techniques?.length;
             if (hasAbilities) rows.push('<tr><td colspan="2"><hr></td></tr>');
@@ -580,6 +664,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Panache&nbsp;Modifier'), card.panacheModifier),
             row(_('Text'), _(card.text), true),
         ];
+
+        const conditionsRowHtml = this.conditionsRow(card, row);
+        if (conditionsRowHtml) rows.push(conditionsRowHtml);
 
         if (card.controllerId && card.location !== 'Approach') {
             const hasAbilities = card.actions?.length || card.reactions?.length || card.techniques?.length;
@@ -635,6 +722,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Text'), _(card.text), true),
         );
 
+        const conditionsRowHtml = this.conditionsRow(card, row);
+        if (conditionsRowHtml) rows.push(conditionsRowHtml);
+
         if (card.controllerId && card.location !== 'hand') {
             const hasAbilities = card.actions?.length || card.reactions?.length || card.maneuvers?.length || card.techniques?.length;
             if (hasAbilities) rows.push('<tr><td colspan="2"><hr></td></tr>');
@@ -672,6 +762,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true),
         ];
+
+        const conditionsRowHtml = this.conditionsRow(card, row);
+        if (conditionsRowHtml) rows.push(conditionsRowHtml);
 
         const hasAbilities = card.actions?.length || card.reactions?.length || card.maneuvers?.length || card.techniques?.length;
         if (hasAbilities) rows.push('<tr><td colspan="2"><hr></td></tr>');
@@ -713,6 +806,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true),
         ];
+
+        const conditionsRowHtml = this.conditionsRow(card, row);
+        if (conditionsRowHtml) rows.push(conditionsRowHtml);
 
         const html = `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`;
         this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
@@ -1187,7 +1283,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 return;
             }
         }
-        this.addTippyTooltip( cardDiv.id, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`, this.STOCK_CARD_TOOLTIP_DELAY);
+        this.addTippyTooltip( cardDiv.id, this.buildImageTooltipHtml(card), this.STOCK_CARD_TOOLTIP_DELAY);
     },
 
     isCardInCity: function( cardId )
