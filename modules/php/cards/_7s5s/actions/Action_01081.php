@@ -34,6 +34,10 @@ class Action_01081 extends RiskCityAction implements IAbilityThatTargetsCharacte
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
         foreach ($characters as $character)
         {
+            if (! $character->Engaged)
+            {
+                continue;
+            }
             $charactersAtLocation = $theah->getCharactersAtLocation($character->Location);
             $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => $character->ControllerId != $playerId && $character->Engaged);
             if (count($charactersAtLocation) > 0)
@@ -48,7 +52,16 @@ class Action_01081 extends RiskCityAction implements IAbilityThatTargetsCharacte
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_values(array_filter($performers, fn($performer) => $performer->Engaged));
+        $performers = array_values(array_filter($performers, function($performer) use ($theah, $playerId) 
+        {
+            if (! $performer->Engaged)
+            {
+                return false;
+            }
+            $charactersAtLocation = $theah->getCharactersAtLocation($performer->Location);
+            $opposing = array_filter($charactersAtLocation, fn($character) => $character->ControllerId != $playerId && $character->Engaged);
+            return count($opposing) > 0;
+        }));
         return $performers;
     }
 
