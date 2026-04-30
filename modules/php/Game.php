@@ -74,7 +74,7 @@ class Game extends \Bga\GameFramework\Table
     final const INVALID_PAY_CARD_IDS = "invalidPayCardIds";
     final const WHEN_REVEALED_REMAINING_CARDS = "whenRevealedRemainingCards";
 
-    //Conditions\
+    //Conditions
     final const HELPED_BY_PENYA = "Helped By Penya";
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";
     final const CRYSTAL_EYE_TARGET = "Crystal Eye Target";
@@ -84,6 +84,7 @@ class Game extends \Bga\GameFramework\Table
     final const CARMELLA_ABILITY_USED = "Carmella Ability Used";
     final const INDOMITABLE_WILL_CONDITION = "Indomitable Will Condition";
     final const UNDER_COVER_OF_THE_NIGHT = "Under Cover of the Night";
+    final const CONTEMPT_AND_HATRED_CONDITION = "Influence Reduced by Contempt and Hatred";
 
     //Equip global variables
     final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';

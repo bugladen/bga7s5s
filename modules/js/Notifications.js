@@ -76,6 +76,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['carmellaAbilityRemoved', 1],
             ['indomitableWillConditionStarted', 500],
             ['indomitableWillConditionEnded', 500],
+            ['contemptAndHatredConditionStarted', 1],
+            ['contemptAndHatredConditionEnded', 1],
             ['maneuverUsed', 1],
             ['newDay', 1000],
             ['newDuelRound', 500],
@@ -1658,6 +1660,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
             const id = `${args.cardId}_indomitable_will_condition`;
             dojo.destroy(id);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_contemptAndHatredConditionStarted: function( notif )
+    {
+        debug( 'notif_contemptAndHatredConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.CONTEMPT_AND_HATRED_CONDITION))
+                card.conditions.push(this.CONTEMPT_AND_HATRED_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_contemptAndHatredConditionEnded: function( notif )
+    {
+        debug( 'notif_contemptAndHatredConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.CONTEMPT_AND_HATRED_CONDITION);
             this.refreshTooltipForCard(card);
         }
     },

@@ -145,6 +145,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.MARYAM_BENU_PLEROMA_ABILITY_USED = 'Maryam Benu Pleroma Ability Used';
             this.CARMELLA_ABILITY_USED = 'Carmella Ability Used';
             this.INDOMITABLE_WILL_CONDITION = 'Indomitable Will Condition';
+            this.CONTEMPT_AND_HATRED_CONDITION = 'Influence Reduced by Contempt and Hatred';
             this.CHALLENGER = 'Challenger';
             this.DEFENDER = 'Defender';
 
