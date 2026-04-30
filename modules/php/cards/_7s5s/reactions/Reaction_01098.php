@@ -47,7 +47,7 @@ class Reaction_01098 extends CardReaction
             $game = $event->theah->game;
             $card = $game->getCardObjectFromDb($event->cardId);
             $owner = $this->getOwningCard($event->theah);
-            if ($card->hasCondition(Game::CATS_EMBARGO_TARGET) && $card->ControllerId != $owner->ControllerId)
+            if (($card->hasCondition(Game::CATS_EMBARGO_TARGET) || $card->hasCondition(Game::OLD_CATS_EMBARGO_TARGET)) && $card->ControllerId != $owner->ControllerId)
             {
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);
@@ -58,7 +58,7 @@ class Reaction_01098 extends CardReaction
         {
             $owner = $this->getOwningCard($event->theah);
             $attachment = $event->theah->getAttachmentById($event->attachmentId);
-            if ($attachment->hasCondition(Game::CATS_EMBARGO_TARGET) && $event->playerId != $owner->ControllerId)
+            if (($attachment->hasCondition(Game::CATS_EMBARGO_TARGET) || $attachment->hasCondition(Game::OLD_CATS_EMBARGO_TARGET)) && $event->playerId != $owner->ControllerId)
             {
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);
@@ -70,7 +70,7 @@ class Reaction_01098 extends CardReaction
             $game = $event->theah->game;
             $card = $game->getCardObjectFromDb($event->cardId);
             $owner = $this->getOwningCard($event->theah);
-            if ($card->hasCondition(Game::CATS_EMBARGO_TARGET) && $event->playerId != $owner->ControllerId)
+            if (($card->hasCondition(Game::CATS_EMBARGO_TARGET) || $card->hasCondition(Game::OLD_CATS_EMBARGO_TARGET)) && $event->playerId != $owner->ControllerId)
             {
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);
@@ -82,7 +82,7 @@ class Reaction_01098 extends CardReaction
             $game = $event->theah->game;
             $card = $game->getCardObjectFromDb($event->characterId);
             $owner = $this->getOwningCard($event->theah);
-            if ($card->hasCondition(Game::CATS_EMBARGO_TARGET) && $event->playerId != $owner->ControllerId)
+            if (($card->hasCondition(Game::CATS_EMBARGO_TARGET) || $card->hasCondition(Game::OLD_CATS_EMBARGO_TARGET)) && $event->playerId != $owner->ControllerId)
             {
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);
@@ -94,7 +94,7 @@ class Reaction_01098 extends CardReaction
             $game = $event->theah->game;
             $card = $game->getCardObjectFromDb($event->cardId);
             $owner = $this->getOwningCard($event->theah);
-            if ($card->hasCondition(Game::CATS_EMBARGO_TARGET) && $event->playerId != $owner->ControllerId)
+            if (($card->hasCondition(Game::CATS_EMBARGO_TARGET) || $card->hasCondition(Game::OLD_CATS_EMBARGO_TARGET)) && $event->playerId != $owner->ControllerId)
             {
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);

@@ -339,7 +339,7 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.applyFactionHandCardStyle(card);
             
             // Check for special conditions
-            if (card.conditions.includes(this.CATS_EMBARGO_TARGET)) {
+            if (card.conditions.includes(this.CATS_EMBARGO_TARGET) || card.conditions.includes(this.OLD_CATS_EMBARGO_TARGET)) {
                 const cardElement = this.factionHand.getCardElement(card);
                 if (cardElement) {
                     const id = `${card.id}_cats_embargo_target`;
