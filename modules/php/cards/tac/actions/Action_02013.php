@@ -73,7 +73,7 @@ class Action_02013 extends CharacterAction
 
             $characters = $game->theah->getCharactersAtLocation($owner->Location);
             $characters = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($owner->ControllerId));
-            $args['ids'] = array_map(fn($character) => $character->Id, $characters);
+            $args['ids'] = array_map(fn($character) => $character->Id, array_values($characters));
         }
 
         return $args;
