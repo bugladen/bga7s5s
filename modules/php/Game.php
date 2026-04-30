@@ -85,6 +85,7 @@ class Game extends \Bga\GameFramework\Table
     final const INDOMITABLE_WILL_CONDITION = "Indomitable Will Condition";
     final const UNDER_COVER_OF_THE_NIGHT = "Under Cover of the Night";
     final const CONTEMPT_AND_HATRED_CONDITION = "Influence Reduced by Contempt and Hatred";
+    final const SOLINE_EL_GATO_CONDITION = "Finesse Modified by Soline el Gato";
 
     //Equip global variables
     final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';

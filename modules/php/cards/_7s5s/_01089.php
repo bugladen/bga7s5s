@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
@@ -60,12 +61,26 @@ class _01089 extends Leader implements IHasReactions
     {
         $event = EventFactory::createCharacterFinesseModifedEvent($this->ControllerId, $character->Id, $character->ModifiedFinesse, $character->ModifiedFinesse + 1, $this->getInjectCode());
         $theah->queueEvent($event);
+
+        $character->removeCondition(Game::SOLINE_EL_GATO_CONDITION);
+        $theah->game->updateCardObjectInDb($character);
+
+        $theah->game->notify->all("solineElGatoConditionEnded", '', [
+            "cardId" => $character->Id,
+        ]);
     }
 
     private function lowerFinesse(Character $character, Theah $theah)
     {
         $event = EventFactory::createCharacterFinesseModifedEvent($this->ControllerId, $character->Id, $character->ModifiedFinesse, $character->ModifiedFinesse - 1, $this->getInjectCode());
         $theah->queueEvent($event);
+
+        $character->addCondition(Game::SOLINE_EL_GATO_CONDITION);
+        $theah->game->updateCardObjectInDb($character);
+
+        $theah->game->notify->all("solineElGatoConditionStarted", '', [
+            "cardId" => $character->Id,
+        ]);
     }
 
     public function handleEvent(Event $event)

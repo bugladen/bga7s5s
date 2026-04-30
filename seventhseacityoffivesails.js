@@ -146,6 +146,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.CARMELLA_ABILITY_USED = 'Carmella Ability Used';
             this.INDOMITABLE_WILL_CONDITION = 'Indomitable Will Condition';
             this.CONTEMPT_AND_HATRED_CONDITION = 'Influence Reduced by Contempt and Hatred';
+            this.SOLINE_EL_GATO_CONDITION = 'Finesse Modified by Soline el Gato';
             this.CHALLENGER = 'Challenger';
             this.DEFENDER = 'Defender';
 

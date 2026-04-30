@@ -78,6 +78,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['indomitableWillConditionEnded', 500],
             ['contemptAndHatredConditionStarted', 1],
             ['contemptAndHatredConditionEnded', 1],
+            ['solineElGatoConditionStarted', 1],
+            ['solineElGatoConditionEnded', 1],
             ['maneuverUsed', 1],
             ['newDay', 1000],
             ['newDuelRound', 500],
@@ -1689,6 +1691,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card)
         {
             card.conditions = card.conditions.filter(condition => condition !== this.CONTEMPT_AND_HATRED_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_solineElGatoConditionStarted: function( notif )
+    {
+        debug( 'notif_solineElGatoConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.SOLINE_EL_GATO_CONDITION))
+                card.conditions.push(this.SOLINE_EL_GATO_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_solineElGatoConditionEnded: function( notif )
+    {
+        debug( 'notif_solineElGatoConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.SOLINE_EL_GATO_CONDITION);
             this.refreshTooltipForCard(card);
         }
     },
