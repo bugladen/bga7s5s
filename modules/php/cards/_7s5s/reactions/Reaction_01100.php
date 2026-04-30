@@ -51,7 +51,6 @@ class Reaction_01100 extends AttachmentReaction
             if ($challenger->ControllerId == $owner->ControllerId && $challenger->Location == $owner->Location)
             {
                 $this->AdversaryId = $event->targetId;
-                $this->IsActivated = true;
                 $owner->IsUpdated = true;
 
                 $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
@@ -60,7 +59,6 @@ class Reaction_01100 extends AttachmentReaction
             else if ($target->ControllerId == $owner->ControllerId && $target->Location == $owner->Location)
             {
                 $this->AdversaryId = $event->challengerId;
-                $this->IsActivated = true;
                 $owner->IsUpdated = true;
 
                 $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
@@ -77,7 +75,6 @@ class Reaction_01100 extends AttachmentReaction
             if ($challenger->ControllerId == $owner->ControllerId && $challenger->Location == $owner->Location)
             {
                 $this->AdversaryId = $event->newTargetId;
-                $this->IsActivated = true;
                 $owner->IsUpdated = true;
 
                 $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
@@ -86,12 +83,11 @@ class Reaction_01100 extends AttachmentReaction
             else if ($target->ControllerId == $owner->ControllerId && $target->Location == $owner->Location)
             {
                 $this->AdversaryId = $challengerId;
-                $this->IsActivated = true;
                 $owner->IsUpdated = true;
 
                 $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($reactionEvent);
-            }            
+            }
         }
 
         if ($event instanceof EventDuelEnd)
@@ -115,6 +111,8 @@ class Reaction_01100 extends AttachmentReaction
 
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
+
+            $this->setUsed($game->theah, true);
         }
 
         $game->gamestate->nextState("done");
