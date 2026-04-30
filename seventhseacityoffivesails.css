@@ -1771,9 +1771,16 @@ body {
     line-height: 1.4;
 }
 
+/* Lock image-tooltip width to the card image width so condition text
+   wraps within the card silhouette instead of stretching the tooltip. */
+.tippy-box[data-theme~='7sfs']:has(._7sfs-card-tooltip-img) {
+    max-width: 400px !important;
+    width: 400px;
+}
+
 .tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-img {
-    width: auto;
-    max-width: 400px;
+    width: 100%;
+    max-width: 100%;
     height: auto;
     border-radius: 6px;
     display: block;
@@ -1793,8 +1800,9 @@ body {
 
 /* Mobile Tippy tooltip adjustments */
 @media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
-    .tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-img {
-        max-width: 248px;
+    .tippy-box[data-theme~='7sfs']:has(._7sfs-card-tooltip-img) {
+        max-width: 248px !important;
+        width: 248px;
     }
 }
 
