@@ -326,7 +326,7 @@ namespace Bga\GameFramework {
          * @param callable $fn The decorator function. Expected signature: `function(string $message, array $args): array`
          * @return void
          */
-        public function addDecorator(callable $fn) {
+        public function addDecorator(callable $fn): void {
            //
         }
 
@@ -352,6 +352,12 @@ namespace Bga\GameFramework {
         public function all(string $notifName, string | NotificationMessage $message = '', array $args = []): void {
             //
         }
+
+        /**
+         * If called, all _private informations sent to the front will be merged to the args (if not called, they will stay into args._private).
+         * If you want to only merge some _private, add `_merge_private => true` to the relevant args instead.
+         */
+        public function alwaysMergePrivate(): void {}
     }
 
     abstract class Logs {
@@ -713,8 +719,7 @@ namespace Bga\GameFramework {
         /**
          * You can call this method to make any player active.
          *
-         * NOTE: you CANNOT use this method in an "activeplayer" or "multipleactiveplayer" state. You must use a "game"
-         * type game state for this.
+         * NOTE: you must transition to a state in the action triggering this call, so the change of active player is notified to the front.
          * 
          * @param int $playerId the new active player.
          */
@@ -1368,8 +1373,7 @@ namespace Bga\GameFramework {
         /**
          * Make the next player active in the natural player order.
          *
-         * NOTE: You **cannot** use this method in an `activeplayer` or `multipleactiveplayer` state. You must use a
-         * `game` type game state for this.
+         * NOTE: you must transition to a state in the action triggering this call, so the change of active player is notified to the front.
          *
          * @return int the new active player id
          */
@@ -1685,6 +1689,16 @@ namespace Bga\GameFramework {
         final public function getPlayerNoById(int $player_id): int|string
         {
             return '0';
+        }
+
+        /**
+         * Get the player id by player no.
+         * 
+         * @param int $playerNo the player no 
+         * @return int the player id
+         */
+        public function getPlayerIdByNo(int $playerNo): int {
+            return 1;
         }
 
         /**
@@ -2087,8 +2101,7 @@ namespace Bga\GameFramework {
         /**
          * Make the previous player active (in the natural player order).
          *
-         * NOTE: You **cannot** use this method in an `activeplayer` or `multipleactiveplayer` state. You must use a
-         * `game` type game state for this.
+         * NOTE: you must transition to a state in the action triggering this call, so the change of active player is notified to the front.
          *
          * @return int the new active player id
          */
@@ -2617,7 +2630,16 @@ namespace Bga\GameFramework\Components {
 
 }
 
-namespace Bga\GameFramework\Components\Counters {        
+namespace Bga\GameFramework\Components\Counters { 
+
+    enum CounterVisibility: string
+    {
+        CASE VISIBLE = 'visible';
+        CASE SELF = 'self';
+        case HIDDEN = 'hidden';
+    }
+
+
     /**
      * Factory to create counters.
      */
@@ -2628,9 +2650,10 @@ namespace Bga\GameFramework\Components\Counters {
          * @param string $name the name of the counter, used to link it to the JS counter
          * @param ?int $min the minimum value of the counter (null = no minimum)
          * @param ?int $max the maximum value of the counter (null = no maximum)
+         * @param CounterVisibility $visibility define the visibility of the counter
          * @return PlayerCounter a new PlayerCounter object
          */
-        public function createPlayerCounter(string $name, ?int $min = 0, ?int $max = null): PlayerCounter {
+        public function createPlayerCounter(string $name, ?int $min = 0, ?int $max = null, CounterVisibility $visibility = CounterVisibility::VISIBLE,): PlayerCounter {
             return new class extends PlayerCounter {}();
         }
 
@@ -2647,11 +2670,11 @@ namespace Bga\GameFramework\Components\Counters {
         }
     }
 
-    abstract class OutOfRangeCounterException extends \BgaSystemException
+    abstract class OutOfRangeCounterException extends \Bga\GameFramework\SystemException
     {
     }
     
-    abstract class UnknownPlayerException extends \BgaSystemException
+    abstract class UnknownPlayerException extends \Bga\GameFramework\SystemException
     {
     }
 
@@ -2660,11 +2683,38 @@ namespace Bga\GameFramework\Components\Counters {
      */
     abstract class PlayerCounter {
         /**
+         * Return if the counter is visible by anyone.
+         */
+        public function isVisible(): bool {
+            return false;
+        }
+
+        /**
+         * Return if the counter is invisible.
+         */
+        public function isHidden(): bool {
+            return false;
+        }
+
+        /**
+         * Return if the counter is visible by the current player only.
+         */
+        public function isSelf(): bool {
+            return false;
+        }
+
+        /**
+         * Set the counter visibility.
+         */
+        public function setVisibility(CounterVisibility $visibility): void {
+        }
+
+        /**
          * Initialize the DB elements. Must be called during game `setupNewGame`.
          * 
          * @param int $initialValue, if different than 0
          */
-        public function initDb(array $playerIds, int $initialValue = 0) {
+        public function initDb(array $playerIds, int $initialValue = 0): void {
         }
 
         /**
@@ -2753,8 +2803,9 @@ namespace Bga\GameFramework\Components\Counters {
          * 
          * @param array $result the object to update.
          * @param ?string $fieldName the field name to set in $result["players"], if different than the counter name.
+         * @param ?int $currentPlayerId the current player id, needed if the counter has self visibility
          */
-        public function fillResult(array &$result, ?string $fieldName = null) {
+        public function fillResult(array &$result, ?string $fieldName = null, ?int $currentPlayerId = null) {
         }
     }
 

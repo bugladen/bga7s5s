@@ -13,6 +13,7 @@
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\GameFramework\Actions\Debug;
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
@@ -87,7 +88,7 @@ trait DebugTrait
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
-            throw new \BgaUserException(clienttranslate("Card not found"));
+            throw new UserException(clienttranslate("Card not found"));
 
         $recruitCharacterEvent = $this->theah->createEvent(Events::CharacterRecruited);
         if ($recruitCharacterEvent instanceof EventCharacterRecruited) {
@@ -105,7 +106,7 @@ trait DebugTrait
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
-            throw new \BgaUserException(clienttranslate("Card not found"));
+            throw new UserException(clienttranslate("Card not found"));
 
         $event = EventFactory::createCardEngagedEvent($playerId, $cardId);
         $this->theah->queueEvent($event);
@@ -117,7 +118,7 @@ trait DebugTrait
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
-            throw new \BgaUserException(clienttranslate("Card not found"));
+            throw new UserException(clienttranslate("Card not found"));
 
         $event = EventFactory::createCardEngardedEvent($playerId, $cardId);
         $this->theah->queueEvent($event);
@@ -130,7 +131,7 @@ trait DebugTrait
         $this->theah->buildCity();
         $card = $this->theah->getCardById($cardId);
         if ($card == null)
-            throw new \BgaUserException(clienttranslate("Card not found"));
+            throw new UserException(clienttranslate("Card not found"));
 
         $card->Reknown = $reknown;
         $this->updateCardObjectInDb($card);
@@ -255,12 +256,13 @@ trait DebugTrait
     public function debug_SetFirstPlayer(int $playerId)
     {
         $this->globals->set(Game::FIRST_PLAYER, $playerId);
-        $this->setNewPlayerOrder($playerId);
+        $turnOrders = $this->setNewPlayerOrder($playerId);
 
         // Notify all players of the first player.
         $this->notifyAllPlayers("firstPlayer", clienttranslate('DEBUG: ${player_name} is now the First Player.'), [
             'player_name' => $this->getPlayerNameById($playerId),
-            'playerId' => $playerId
+            'playerId' => $playerId,
+            'turnOrders' => $turnOrders,
         ]);    
         $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
         $this->theah->queueEvent($event);

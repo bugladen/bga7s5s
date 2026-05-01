@@ -13,7 +13,7 @@ class Action_01094 extends CharacterAction
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate("Engarde Aníbal");
+        $this->Name = clienttranslate("En garde Aníbal");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -29,8 +29,17 @@ class Action_01094 extends CharacterAction
             return false;
         }
 
+        // WHY: An Engaged character can sit at Player Home (e.g., moved home
+        // while still flagged Engaged). getCityLocation() throws on non-city
+        // locations, and the card text ("location has no Renown") only makes
+        // sense for city locations anyway.
+        if (!$theah->cardInCity($owner))
+        {
+            return false;
+        }
+
         $location = $theah->getCityLocation($owner->Location);
-        
+
         return $location->Renown == 0;
     }
 

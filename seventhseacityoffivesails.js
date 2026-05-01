@@ -146,10 +146,14 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             //Card conditions
             this.ADVERSARY_OF_YEVGENI = 'Adversary of Yevgeni';
             this.CRYSTAL_EYE_TARGET = 'Crystal Eye Target';
-            this.CATS_EMBARGO_TARGET = 'Cats Embargo Target';
+            this.CATS_EMBARGO_TARGET = "Cat's Embargo Target";
+            this.OLD_CATS_EMBARGO_TARGET = 'Cats Embargo Target';
             this.MARYAM_BENU_PLEROMA_ABILITY_USED = 'Maryam Benu Pleroma Ability Used';
             this.CARMELLA_ABILITY_USED = 'Carmella Ability Used';
             this.INDOMITABLE_WILL_CONDITION = 'Indomitable Will Condition';
+            this.CONTEMPT_AND_HATRED_CONDITION = 'Influence Reduced by Contempt and Hatred';
+            this.SOLINE_EL_GATO_CONDITION = 'Finesse Modified by Soline el Gato';
+            this.EPEE_SANGLANTE_CONDITION = 'Influence Modified by Épée Sanglante';
             this.CHALLENGER = 'Challenger';
             this.DEFENDER = 'Defender';
 

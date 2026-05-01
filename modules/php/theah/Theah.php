@@ -316,9 +316,9 @@ class Theah
             }
         }
 
-        if (! $skipTransitions) {
-            $this->game->gamestate->nextState('endOfEvents');
-        }
+        if ($skipTransitions) return;
+
+        $this->game->gamestate->nextState('endOfEvents');
     }
 
     function getAdjacentCityLocations(string $location, bool $includeHome = true): array

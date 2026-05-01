@@ -71,6 +71,7 @@
             <div id="\${id}-score-crewcap" class="_7sfs-crew-cap _7sfs-score-crew-cap">\${crewcap}</div>
             <div id="\${id}-score-panache" class="_7sfs-panache _7sfs-score-panache">\${panache}</div>
             <div id="\${id}-score-hand-count" class="_7sfs-hand-count">\${handCount}</div>
+            <div id="\${id}-score-turn-order" class="_7sfs-score-turn-order">\${turnOrder}</div>
             <div id="\${id}-score-seal-first-player" class="_7sfs-first-player-hidden"></div>
             <div id="\${id}-score-seal"></div>
         </div>

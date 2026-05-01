@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CardAbilityTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
@@ -50,5 +51,18 @@ abstract class CardReaction extends Reaction implements ICardAbility
     public function doCost(Game $game): void {}
 
     public function doEffect(Game $game): void {}
+
+    public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
+    {
+        parent::performReaction($game, $state, $internalId, $reactionId);
+
+        if ($reactionId != 'pass' && $reactionId != 'decline')
+        {
+            $owner = $this->getOwningCard($game->theah);
+            $event = EventFactory::createReactionActivatedEvent($owner->ControllerId, $owner->Id, $reactionId);
+            $event->priority = Event::HIGHEST_PRIORITY;
+            $game->theah->stackEvent($event);
+        }
+    }
   
 }

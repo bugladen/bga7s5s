@@ -12,30 +12,31 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Maneuver_01114 extends Maneuver
 {
-    private bool $IsActivated;
-    
     public function __construct()
     {
         parent::__construct();
 
         $this->Name = clienttranslate("Gamble For Free");
-        $this->IsActivated = false;
     }
 
     public function getNumberOfGambleCardsToReveal(Theah $theah, Character $actor, Array &$explanations): int
     {
         $count = parent::getNumberOfGambleCardsToReveal($theah, $actor, $explanations);
-        if ($this->IsActivated)
+        $game = $theah->game;
+        if ($game->globals->get(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_NORMAL) == Game::GAMBLE_TYPE_ROLL_THE_DICE)
         {
-            $actor = $theah->getDuelRoundActor();
-            if ($actor->hasTrait("Scoundrel"))
+            $owner = $this->getOwningCard($theah);
+            if ($owner !== null && $game->globals->get(Game::ROLL_THE_BONES_CARD_ID, 0) == $owner->Id)
             {
-                $count += 1;
-                $owner = $this->getOwningCard($theah);
-                $explanations[] = sprintf($theah->game->translate("%s: +1 because Actor is a Scoundrel."), $owner->getInjectCode());
+                $duelActor = $theah->getDuelRoundActor();
+                if ($duelActor->hasTrait("Scoundrel"))
+                {
+                    $count += 1;
+                    $explanations[] = sprintf($game->translate("%s: +1 because Actor is a Scoundrel."), $owner->getInjectCode());
+                }
             }
         }
-        return $count;    
+        return $count;
     }
 
     public function handleEvent(Event $event)
@@ -44,7 +45,17 @@ class Maneuver_01114 extends Maneuver
 
         if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
         {
-            $this->IsActivated = false;
+            // WHY: Defensive cleanup. deleteManeuverEvents normally removes the
+            // queued EventResolveManeuver before cancel fires, so the globals
+            // below are never set — but if the ordering changes we don't want
+            // the ROLL_THE_DICE flags to leak into a normal gamble.
+            $game = $event->theah->game;
+            if ($game->globals->get(Game::ROLL_THE_BONES_CARD_ID, 0) == $this->OwnerId)
+            {
+                $game->globals->delete(Game::ROLL_THE_BONES_CARD_ID);
+                $game->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
+                $game->globals->set(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_NORMAL);
+            }
             $owner = $this->getOwningCard($event->theah);
             $owner->IsUpdated = true;
         }
@@ -53,18 +64,25 @@ class Maneuver_01114 extends Maneuver
         {
             $game = $event->theah->game;
             $actor = $event->theah->getDuelRoundActor();
-            $this->IsActivated = true;
+            $owner = $this->getOwningCard($event->theah);
+
+            // WHY: Set GAMBLE_TYPE and ROLL_THE_BONES_CARD_ID before computing the
+            // reveal count so getNumberOfGambleCardsToReveal can detect the active
+            // Roll the Bones gamble via globals instead of an instance flag (which
+            // would persist across rounds and silently leak the +1 Scoundrel bonus).
+            $game->globals->set(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_ROLL_THE_DICE);
+            $game->globals->set(Game::ROLL_THE_BONES_CARD_ID, $owner->Id);
+            $game->globals->set(Game::ROLL_THE_BONES_ACTIVATED, true);
+
             [$cardCount, $explanations] = $event->theah->getNumberOfGambleCardsToReveal($actor);
 
             if ($explanations != '')
                 $game->notify->player($actor->ControllerId, "message", clienttranslate('Private: Explanations for modification of number of gamble cards to reveal:<br>${explanations}'), [
                     "explanations" => $explanations,
                 ]);
-    
-            $game->globals->set(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_ROLL_THE_DICE);
+
             $game->globals->set(Game::GAMBLE_REVEAL_COUNT, $cardCount);
             $game->globals->set(Game::GAMBLE_REVEAL_EXPLANATIONS, $explanations);
-            $game->globals->set(Game::ROLL_THE_BONES_ACTIVATED, true);
         }
     }
 

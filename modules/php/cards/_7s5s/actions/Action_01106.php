@@ -62,6 +62,15 @@ class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
                         $actions = $card->getActions();
                         foreach ($actions as $action)
                         {
+                            // WHY: Skip self-typed actions to avoid unbounded recursion.
+                            // Action_01106::isAvailableToPlayer iterates opponents' discards
+                            // and asks each Risk action if it is available; if that action
+                            // is itself an Action_01106 it would re-enter this same loop
+                            // with the same arguments and never terminate.
+                            if ($action instanceof self)
+                            {
+                                continue;
+                            }
                             [$discount, $explanations] = $theah->getActionFromHandDiscount(null, $action);
                             $cost = $card->WealthCost - $discount;
                             if ($adjustedWealth >= $cost && $action->isAvailableToPlayer($playerId, $theah, $overrideInHandCheck = true))
@@ -133,12 +142,16 @@ class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
                         $cardActions = $card->getActions();
                         foreach ($cardActions as $action)
                         {
+                            if ($action instanceof self)
+                            {
+                                continue;
+                            }
                             [$discount, $explanations] = $game->theah->getActionFromHandDiscount(null, $action);
                             $cost = $card->WealthCost - $discount;
                             if ($handWealth >= $cost && $action->isAvailableToPlayer($owner->ControllerId, $game->theah, $overrideInHandCheck = true))
                             {
                                 $actions[] = $action->getPropertyArray($game);
-                            }   
+                            }
                         }
                     }
                 }

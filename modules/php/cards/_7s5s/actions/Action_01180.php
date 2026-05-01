@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
@@ -267,16 +268,19 @@ class Action_01180 extends CharacterAction
     
             //Total up the wealth of the cards to see if player paid correctly
             $totalWealth = 0;
+            $hasWealthCard = false;
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
                 if ($card == null)
-                    throw new \BgaUserException(sprintf($game->translate("Card %d not found."), $cardId));
-    
+                    throw new UserException(sprintf($game->translate("Card %d not found."), $cardId));
+
                 //If $card has wealth in its traits, add it to the total wealth
-                $totalWealth += $card->hasTrait("Wealth") ? 2 : 1;
+                $isWealth = $card->hasTrait("Wealth");
+                if ($isWealth) $hasWealthCard = true;
+                $totalWealth += $isWealth ? 2 : 1;
             }
-            if ($totalWealth != $cost) {
-                throw new \BgaUserException(sprintf($game->translate("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
+            if (!$game->isValidWealthPayment($totalWealth, $cost, $hasWealthCard)) {
+                throw new UserException(sprintf($game->translate("Cost of Attachment is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
             }
     
             $playerId = $game->getActivePlayerId();

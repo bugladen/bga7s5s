@@ -96,11 +96,18 @@ return declare('seventhseacityoffivesails.setup', null, {
                 panache: player.leader?.modifiedPanache ?? '',
                 handCount: player.handCount,
                 faction: player.leader?.faction.toLowerCase() ?? '',
+                turnOrder: player.turn_order ?? '',
             });
             this.addTippyTooltip( `${playerId}-score-reknown`, `<div class='_7sfs-basic-tooltip'>${_('Current Renown')}</div>` );
             this.addTippyTooltip( `${playerId}-score-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Cap')}</div>` );
             this.addTippyTooltip( `${playerId}-score-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
             this.addTippyTooltip( `${playerId}-score-hand-count`, `<div class='_7sfs-basic-tooltip'>${_('Number of cards in Faction Hand')}</div>` );
+
+            if (Object.keys(gamedatas.players).length > 2) {
+                this.addTippyTooltip( `${playerId}-score-turn-order`, `<div class='_7sfs-basic-tooltip'>${_('Player Turn Order')}</div>` );
+            } else {
+                dojo.style(`${playerId}-score-turn-order`, 'display', 'none');
+            }
 
             //Display only if we are out of the faction choosing phase
             if (gamedatas.homeCards.length > 0) {
@@ -168,6 +175,10 @@ return declare('seventhseacityoffivesails.setup', null, {
 
             this.addTippyTooltipToClass('_7sfs-first-player-home', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
             this.addTippyTooltipToClass('_7sfs-first-player-score', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
+
+            if (Object.keys(gamedatas.players).length > 2) {
+                dojo.style(`${gamedatas.firstPlayer}-score-turn-order`, 'display', 'none');
+            }
         }
 
         // Set up Ole's inn
@@ -328,7 +339,7 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.applyFactionHandCardStyle(card);
             
             // Check for special conditions
-            if (card.conditions.includes(this.CATS_EMBARGO_TARGET)) {
+            if (card.conditions.includes(this.CATS_EMBARGO_TARGET) || card.conditions.includes(this.OLD_CATS_EMBARGO_TARGET)) {
                 const cardElement = this.factionHand.getCardElement(card);
                 if (cardElement) {
                     const id = `${card.id}_cats_embargo_target`;

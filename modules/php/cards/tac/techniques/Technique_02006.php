@@ -49,6 +49,8 @@ class Technique_02006 extends Technique
     {
         parent::handleEvent($event);
 
+        // EventTechniqueCanceled handler not needed
+
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
@@ -75,7 +77,7 @@ class Technique_02006 extends Technique
 
             $charactersAtLocation = $game->theah->getCharactersAtLocationByPlayerId($actor->Location, $actor->ControllerId);
             $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => $character->Id != $actor->Id);
-            $args["ids"] = array_map(fn($character) => $character->Id, $charactersAtLocation);
+            $args["ids"] = array_map(fn($character) => $character->Id, array_values($charactersAtLocation));
         }
 
         return $args;

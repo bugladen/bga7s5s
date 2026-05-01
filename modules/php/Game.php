@@ -74,15 +74,19 @@ class Game extends \Bga\GameFramework\Table
     final const INVALID_PAY_CARD_IDS = "invalidPayCardIds";
     final const WHEN_REVEALED_REMAINING_CARDS = "whenRevealedRemainingCards";
 
-    //Conditions\
+    //Conditions
     final const HELPED_BY_PENYA = "Helped By Penya";
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";
     final const CRYSTAL_EYE_TARGET = "Crystal Eye Target";
-    final const CATS_EMBARGO_TARGET = "Cats Embargo Target";
+    final const CATS_EMBARGO_TARGET = "Cat's Embargo Target";
+    final const OLD_CATS_EMBARGO_TARGET = "Cats Embargo Target";
     final const MARYAM_BENU_PLEROMA_ABILITY_USED = "Maryam Benu Pleroma Ability Used";
     final const CARMELLA_ABILITY_USED = "Carmella Ability Used";
     final const INDOMITABLE_WILL_CONDITION = "Indomitable Will Condition";
     final const UNDER_COVER_OF_THE_NIGHT = "Under Cover of the Night";
+    final const CONTEMPT_AND_HATRED_CONDITION = "Influence Reduced by Contempt and Hatred";
+    final const SOLINE_EL_GATO_CONDITION = "Finesse Modified by Soline el Gato";
+    final const EPEE_SANGLANTE_CONDITION = "Influence Modified by Épée Sanglante";
 
     //Equip global variables
     final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';
@@ -194,6 +198,7 @@ class Game extends \Bga\GameFramework\Table
     final const PENDING_DEFENDER_THREAT = "pendingDefenderThreat";
 
     final const ROLL_THE_BONES_ACTIVATED = "rollTheBonesActivated";
+    final const ROLL_THE_BONES_CARD_ID = "rollTheBonesCardId";
     final const GAMBLE_TYPE = "gambleType";
     final const GAMBLE_TYPE_NORMAL = 0;
     final const GAMBLE_TYPE_ROLL_THE_DICE = 1;
@@ -312,7 +317,7 @@ class Game extends \Bga\GameFramework\Table
         // WARNING: We must only return information visible by the current player.
         $currentPlayerId = $this->getCurrentPlayerId();
 
-        $players = $this->getCollectionFromDb("SELECT player_id, player_score score, leader_card_id FROM player");
+        $players = $this->getCollectionFromDb("SELECT player_id, player_score score, leader_card_id, turn_order FROM player");
         
         // Add the leader card into the player array
         foreach ($players as $player_id => $player) 

@@ -254,13 +254,14 @@ trait StatesTrait
         if (! $tiedInitiative || count($players) == 1) {
             $this->globals->set(Game::FIRST_PLAYER, $highPlayerId);
             $this->globals->set(Game::CURRENT_PLAYER, $highPlayerId);
-            $this->setNewPlayerOrder($highPlayerId);
+            $turnOrders = $this->setNewPlayerOrder($highPlayerId);
 
             // Notify all players of the first player.
             $this->notifyAllPlayers("firstPlayer", clienttranslate('${player_name} has the highest initiative of ${initiative} and will be set as <span style="font-weight:bold; color:red">First Player</span>.'), [
                 'player_name' => $players[$highPlayerId]['player_name'],
                 'initiative' => $highInitiative,
-                'playerId' => $highPlayerId
+                'playerId' => $highPlayerId,
+                'turnOrders' => $turnOrders,
             ]);
 
             $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
@@ -280,13 +281,14 @@ trait StatesTrait
 
             $this->globals->set(Game::FIRST_PLAYER, $nextPlayerId);
             $this->globals->set(Game::CURRENT_PLAYER, $nextPlayerId);
-            $this->setNewPlayerOrder($nextPlayerId);
+            $turnOrders = $this->setNewPlayerOrder($nextPlayerId);
 
             // Notify all players of the first player.
             $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as <span style="font-weight:bold; color:red">First Player</span>.'), [
                 'player_name' => $players[$nextPlayerId]['player_name'],
                 'initiative' => $highInitiative,
                 'playerId' => $nextPlayerId,
+                'turnOrders' => $turnOrders,
             ]);
 
             $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
@@ -303,13 +305,14 @@ trait StatesTrait
         $firstPlayerId = key($slice);
         $this->globals->set(Game::FIRST_PLAYER, $firstPlayerId);
         $this->globals->set(Game::CURRENT_PLAYER, $firstPlayerId);
-        $this->setNewPlayerOrder($firstPlayerId);
+        $turnOrders = $this->setNewPlayerOrder($firstPlayerId);
 
         // Notify all players of the first player.
         $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, and no previous First Player, ${player_name} has been chosen randomly as the <span style="font-weight:bold; color:red">First Player</span>.'), [
             'player_name' => $players[$firstPlayerId]['player_name'],
             'initiative' => $highInitiative,
-            'playerId' => $firstPlayerId
+            'playerId' => $firstPlayerId,
+            'turnOrders' => $turnOrders,
         ]);
  
         $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
@@ -1227,18 +1230,33 @@ trait StatesTrait
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
         $card = $this->getCardObjectFromDb($cardId);
 
-        $sql = "INSERT INTO duel_round_combat_card (duel_id, round, combat_card_id) VALUES ($duelId, $round, $cardId)";
-        $this->DbQuery($sql);
+        // WHY: When Roll the Bones (01114) is the active combat card, the gambled
+        // chosen card's combat values are added to 01114 instead of being played.
+        // We attribute the stats to 01114's combat card row (so reactions targeting
+        // a combat card find 01114), skip inserting a second duel_round_combat_card
+        // entry, and skip the maneuver queueing path.
+        $rollTheBonesCardId = $this->globals->get(Game::ROLL_THE_BONES_CARD_ID, 0);
+        $isRollTheBonesGambleStats = $rollTheBonesCardId > 0
+            && $cardId != $rollTheBonesCardId
+            && $this->globals->get(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_NORMAL) == Game::GAMBLE_TYPE_ROLL_THE_DICE;
+
+        if (!$isRollTheBonesGambleStats)
+        {
+            $sql = "INSERT INTO duel_round_combat_card (duel_id, round, combat_card_id) VALUES ($duelId, $round, $cardId)";
+            $this->DbQuery($sql);
+        }
 
         $sql = "SELECT gambled from duel_round where duel_id = $duelId AND round = $round";
         $gambled = $this->getUniqueValueFromDB($sql);
+
+        $combatCardId = $isRollTheBonesGambleStats ? $rollTheBonesCardId : $cardId;
 
         $event = $this->theah->createEvent(Events::DuelCalculateCombatCardStats);
         if ($event instanceof EventDuelCalculateCombatCardStats)
         {
             $event->actorId = $actorId;
             $event->adversaryId = $adversaryId;
-            $event->combatCardId = $cardId;
+            $event->combatCardId = $combatCardId;
             $event->addRiposte($card->Riposte);
             $event->dashedRiposte = $card->DashedRiposte;
             $event->addParry($card->Parry);
@@ -1246,16 +1264,25 @@ trait StatesTrait
             $event->addThrust($card->Thrust);
             $event->dashedThrust = $card->DashedThrust;
             $event->gambled = $gambled == 1;
+            $event->statsAddedToExistingCombatCard = $isRollTheBonesGambleStats;
         }
         $this->theah->queueEvent($event);
 
-        $maneuverId = $this->globals->get(Game::DUEL_MANUEVER_ID, null);
-        if ($maneuverId != null)
+        if (!$isRollTheBonesGambleStats)
         {
-            $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "useManeuver");
-            $this->theah->queueEvent($transitionEvent);
+            $maneuverId = $this->globals->get(Game::DUEL_MANUEVER_ID, null);
+            if ($maneuverId != null)
+            {
+                $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "useManeuver");
+                $this->theah->queueEvent($transitionEvent);
+            }
         }
-        
+        else
+        {
+            $this->globals->delete(Game::ROLL_THE_BONES_CARD_ID);
+            $this->globals->set(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_NORMAL);
+        }
+
         $this->gamestate->nextState();
     }
 
@@ -1447,6 +1474,7 @@ trait StatesTrait
         $this->globals->delete(Game::DUEL_MANUEVER_ID);
         $this->globals->delete(Game::GAMBLE_TYPE);
         $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
+        $this->globals->delete(Game::ROLL_THE_BONES_CARD_ID);
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
         $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
 
@@ -1555,6 +1583,7 @@ trait StatesTrait
         $this->globals->delete(Game::DUEL_GAMBLED);
         $this->globals->delete(Game::GAMBLE_TYPE);
         $this->globals->delete(Game::ROLL_THE_BONES_ACTIVATED);
+        $this->globals->delete(Game::ROLL_THE_BONES_CARD_ID);
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
         $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
         $this->globals->delete(Game::ABNORMAL_FLOW);

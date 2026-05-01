@@ -275,14 +275,17 @@ onEnteringState: function( stateName, args )
                 }
     
                 const costDiv = cardElement ? $(`${cardElement.id}_wealth_cost`) : null;
-                const cost = parseInt(costDiv.innerHTML);
-                let discountedCost = cost - args.args._private.discount;
-                discountedCost = discountedCost < 0 ? 0 : discountedCost;
-                if (discountedCost !== cost)
+                if (costDiv) 
                 {
-                    this.clientStateArgs.discountedCost = discountedCost;
-                    costDiv.innerHTML = parseInt(discountedCost);
-                    dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                    const cost = parseInt(costDiv.innerHTML);
+                    let discountedCost = cost - args.args._private.discount;
+                    discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                    if (discountedCost !== cost)
+                    {
+                        this.clientStateArgs.discountedCost = discountedCost;
+                        costDiv.innerHTML = parseInt(discountedCost);
+                        dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                    }
                 }
     
                 $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);

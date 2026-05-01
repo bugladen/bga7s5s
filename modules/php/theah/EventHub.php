@@ -1776,7 +1776,10 @@ trait EventHub
                         $effects .= sprintf($theah->game->translate("<p>%s Threat will remain at %d. %s"), $defender->getInjectCode(), $results["endingDefenderThreatBefore"], $defenderThreatIsLethalText);
 
                     $deck = $theah->game->getGameDeckObject();
-                    $theah->game->notify->all("updateRoundWithCombatStats", clienttranslate('Duel Update: ${player_name} has played ${card_inject_code} as their Combat Card. ${effects}'), [
+                    $message = $event->statsAddedToExistingCombatCard
+                        ? clienttranslate('Duel Update: combat values added to ${card_inject_code}. ${effects}')
+                        : clienttranslate('Duel Update: ${player_name} has played ${card_inject_code} as their Combat Card. ${effects}');
+                    $theah->game->notify->all("updateRoundWithCombatStats", $message, [
                         'i18n' => ['effect_name', 'effects'],
                         "round" => $round,
                         "mode" => "combat",
@@ -1790,6 +1793,7 @@ trait EventHub
                         "parry" => $results["parry"],
                         "thrust" => $results["thrust"],
                         "gambled" => $event->gambled,
+                        "statsAddedToExistingCombatCard" => $event->statsAddedToExistingCombatCard,
                         "endingChallengerThreatBefore"  => $results["endingChallengerThreatBefore"],
                         "endingDefenderThreatBefore"  => $results["endingDefenderThreatBefore"],
                         "endingChallengerThreatAfter"  => $results["endingChallengerThreatAfter"],

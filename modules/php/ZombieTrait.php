@@ -156,9 +156,7 @@ trait ZombieTrait
                 case "highDramaPhase01152a": // Until Morale Improves
                 case "highDramaPhase01152b": // Until Morale Improves
                 case "highDramaPhase01156": // Matchlock Musket discard
-                case "highDramaPhase01156_2": // Matchlock Musket target
-                case "highDramaPhase01156_3": // Matchlock Musket choice
-        
+
                     $this->actBack();
                     break;
 
@@ -176,6 +174,8 @@ trait ZombieTrait
                 case "highDramaPhase01034": // Wrath of the Don
                 case "highDramaPhase01034_2": // Wrath of the Don target
                 case "highDramaPhase01049_2": // Polished Flintlock engage
+                case "highDramaPhase01156_2": // Matchlock Musket target
+                case "highDramaPhase01156_3": // Matchlock Musket choice
                 case "highDramaPhase01056_2": // Move Along choice
                 case "highDramaPhase01072_2": // Réputation Méritée city card
                 case "highDramaPhase01081": // Gallant Deeds

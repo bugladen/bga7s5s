@@ -59,14 +59,21 @@ class _01143 extends Scheme implements IHasActions
             foreach ($mercenaries as $mercenary)
             {
                 $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
-                    $this->ControllerId, 
-                    $mercenary->Id, 
-                    $mercenary->ModifiedInfluence, 
+                    $this->ControllerId,
+                    $mercenary->Id,
+                    $mercenary->ModifiedInfluence,
                     $mercenary->ModifiedInfluence - 1,
                     $this->getInjectCode()
                 );
-        
-                $event->theah->queueEvent($modifiedEvent);      
+
+                $event->theah->queueEvent($modifiedEvent);
+
+                $mercenary->addCondition(Game::CONTEMPT_AND_HATRED_CONDITION);
+                $event->theah->game->updateCardObjectInDb($mercenary);
+
+                $event->theah->game->notify->all("contemptAndHatredConditionStarted", '', [
+                    "cardId" => $mercenary->Id,
+                ]);
             }
 
             $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  Renown will be added to The City Forum.
@@ -92,14 +99,21 @@ class _01143 extends Scheme implements IHasActions
             foreach ($mercenaries as $mercenary)
             {
                 $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
-                    $this->ControllerId, 
-                    $mercenary->Id, 
-                    $mercenary->ModifiedInfluence, 
+                    $this->ControllerId,
+                    $mercenary->Id,
+                    $mercenary->ModifiedInfluence,
                     $mercenary->ModifiedInfluence + 1,
                     $this->getInjectCode()
                 );
-        
-                $event->theah->queueEvent($modifiedEvent);      
+
+                $event->theah->queueEvent($modifiedEvent);
+
+                $mercenary->removeCondition(Game::CONTEMPT_AND_HATRED_CONDITION);
+                $event->theah->game->updateCardObjectInDb($mercenary);
+
+                $event->theah->game->notify->all("contemptAndHatredConditionEnded", '', [
+                    "cardId" => $mercenary->Id,
+                ]);
             }
         }
 
@@ -117,6 +131,13 @@ class _01143 extends Scheme implements IHasActions
                 );
 
                 $event->theah->queueEvent($modifiedEvent);
+
+                $character->addCondition(Game::CONTEMPT_AND_HATRED_CONDITION);
+                $event->theah->game->updateCardObjectInDb($character);
+
+                $event->theah->game->notify->all("contemptAndHatredConditionStarted", '', [
+                    "cardId" => $character->Id,
+                ]);
             }
         }
     }

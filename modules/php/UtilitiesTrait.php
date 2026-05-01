@@ -513,13 +513,17 @@ trait UtilitiesTrait
     function setNewPlayerOrder($firstPlayerId)
     {
         $playerNumber = 1;
+        $turnOrders = [];
         $this->DbQuery("UPDATE player SET turn_order = $playerNumber WHERE player_id = $firstPlayerId");
+        $turnOrders[$firstPlayerId] = $playerNumber;
         $nextPlayerId = $this->getPlayerAfter($firstPlayerId);
         while ($firstPlayerId != $nextPlayerId) {
             $playerNumber++;
             $this->DbQuery("UPDATE player SET turn_order = $playerNumber WHERE player_id = $nextPlayerId");
+            $turnOrders[$nextPlayerId] = $playerNumber;
             $nextPlayerId = $this->getPlayerAfter($nextPlayerId);
         }
+        return $turnOrders;
     }
 
     function setPlayerReknown($playerId, $reknown) 
@@ -911,6 +915,27 @@ trait UtilitiesTrait
         $batchId = $this->globals->get(Game::EVENT_BATCH_ID, 0) + 1;
         $this->globals->set(Game::EVENT_BATCH_ID, $batchId);
         return $batchId;
+    }
+    
+    private function queryStandardTables() 
+    {
+        // Query the standard global table.
+        $this->DbQuery("SELECT global_id, global_value FROM global WHERE 1 ORDER BY global_id FOR UPDATE");
+        // Query the standard player table.
+        $this->DbQuery("SELECT player_id id, player_score score FROM player WHERE 1 ORDER BY player_id FOR UPDATE");
+        // Query the playermultiactive  table. DO NOT USE THIS is you don't use $this->bIndependantMultiactiveTable=true
+        // $this->DbQuery("SELECT ma_player_id player_id, ma_is_multiactive player_is_multiactive FROM playermultiactive ORDER BY player_id FOR UPDATE");
+  
+        // TODO should the stats table be queried as well?
+    }
+
+    // WHY: Wealth-trait cards may overpay a cost by 1 (e.g. a single Wealth card
+    // covers a 1-cost). Plain cards must still total exactly to the cost.
+    public function isValidWealthPayment(int $totalWealth, int $cost, bool $hasWealthCard): bool
+    {
+        if ($totalWealth == $cost) return true;
+        if ($hasWealthCard && $totalWealth == $cost + 1) return true;
+        return false;
     }
 
 }

@@ -97,6 +97,7 @@ class _01098 extends Scheme implements IHasReactions
             foreach ($cards as $card) {
                 $card = $game->getCardObjectFromDb($card['id']);
                 $card->removeCondition(Game::CATS_EMBARGO_TARGET);
+                $card->removeCondition(Game::OLD_CATS_EMBARGO_TARGET);
                 $game->updateCardObjectInDb($card);
                 $game->theah->addCardToWorld($card);
     

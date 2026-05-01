@@ -46,6 +46,8 @@ class Action_01159 extends RiskAction
 
         if ($action->Id == $this->Id)
         {
+            if ($performer == null) return $discount;
+
             $leader = $theah->getLeaderByPlayerId($performer->ControllerId);
             if ($leader->hasTrait('Diplomat') || $leader->hasTrait('Hero'))
             {
