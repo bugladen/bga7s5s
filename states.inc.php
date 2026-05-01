@@ -984,13 +984,13 @@ $machinestates = [
                 "02061" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "03cd01" => States::HIGH_DRAMA_PLAYER_TURN_03CD01,
                 "03cd01_2" => States::HIGH_DRAMA_PLAYER_TURN_03CD01_2,
+                "03cd03" => States::HIGH_DRAMA_PLAYER_TURN_03CD03,
+                "03cd03_2" => States::HIGH_DRAMA_PLAYER_TURN_03CD03_2,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
                 "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
                 "pay" => States::HIGH_DRAMA_PLAYER_TURN_PAY_FOR_REACTION,
-                "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
-                "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "endOfEvents" => States::NEXT_PLAYER,
                 "endOfGame" => States::END_GAME
                 ]

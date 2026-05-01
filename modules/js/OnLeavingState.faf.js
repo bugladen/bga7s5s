@@ -40,6 +40,19 @@
                 }
             },
 
+            'highDramaPhase03cd03_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.showApproachDeckAtBottom();
+                    this.approachDeck.setSelectionMode(0);
+
+                    const items = this.approachDeck.getAllItems();
+                    items.forEach((item) => {
+                        const div = this.approachDeck.getItemDivId(item.id);
+                        dojo.removeClass(div, '_7sfs-unselectable');
+                    });
+                }
+            },
+
         }
 
         if ( methods[stateName] )

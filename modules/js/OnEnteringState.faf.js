@@ -46,6 +46,38 @@
                 }
             },
 
+            'highDramaPhase03cd03': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[args.args.args.cardId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.addClass(image, '_7sfs-chosen');
+                    }
+                }
+            },
+
+            'highDramaPhase03cd03_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[args.args.args.cardId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.addClass(image, '_7sfs-chosen');
+                    }
+
+                    this.showApproachDeckAtTop();
+                    this.approachDeck.setSelectionMode(1);
+
+                    const musterIds = args.args.args.musterIds || [];
+                    items = this.approachDeck.getAllItems();
+                    items.forEach((item) => {
+                        if (!musterIds.includes(parseInt(item.id))) {
+                            const div = this.approachDeck.getItemDivId(item.id);
+                            dojo.addClass(div, '_7sfs-unselectable');
+                        }
+                    });
+                }
+            },
+
         }
 
         if ( methods[stateName] )

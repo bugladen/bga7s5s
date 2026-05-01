@@ -156,16 +156,17 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const actions = {
             'highDramaPhase01072_2'   : 'actFromCardWithId',
+            'highDramaPhase03cd03_2'  : 'actFromCardWithId',
         };
 
         const action = actions[this.gamedatas.gamestate.name];
 
         let errors = false;
-        this.bgaPerformAction(action, { 
+        this.bgaPerformAction(action, {
             'id' : card.id
         }).catch(() =>  {
             errors = true;
-        }).then(() =>  {                
+        }).then(() =>  {
             if (!errors) this.approachDeck.removeFromStockById(card.id);
         });
     },

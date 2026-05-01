@@ -27,6 +27,19 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'highDramaPhase03cd03': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                args.args.players.forEach((player) => {
+                    this.addActionButton(`actChoosePlayer-${player.id}`, player.name, () => this.bgaPerformAction('actFromCardWithId', {id: player.id}));
+                });
+            },
+
+            'highDramaPhase03cd03_2': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Muster'), () => this.onMusterCardSelected());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+                this.addActionButton(`actNone`, _('Decline'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
+            },
+
         }
 
         if ( methods[stateName] )
