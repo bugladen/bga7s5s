@@ -50,6 +50,11 @@ class State_DeckAssignment extends GameState
                     $sql = "UPDATE player SET deck_source = '$deck_json' WHERE player_id='$playerId'";
                     $this->game->DbQuery($sql);
 
+                    $deck_name = is_array($deck) ? ($deck['name'] ?? '') : ($deck->name ?? '');
+                    $this->game->notify->player($playerId, 'message', clienttranslate('Private: Deck ${deck_name} is restored for the tournament.'), [
+                        'deck_name' => $deck_name,
+                    ]);
+
                     unset($playersNeedingDeck[$playerId]);
                 }
             }
