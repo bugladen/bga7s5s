@@ -1661,6 +1661,16 @@
                 }
             },
 
+            'duelApplyCombatCardStats_01085': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },            
+
             'duelEndOfRound_01031': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCards(this.clientStateArgs.ids);

@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01085;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
@@ -89,22 +90,22 @@ class _01085 extends Risk implements IHasActions
             $sorcerer = $game->theah->getCharacterById($id);
             if ( ! $sorcerer)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
             if ($sorcerer->ControllerId != $this->ControllerId)
             {
-                throw new \BgaUserException($game->translate("Character is not owned by you"));
+                throw new UserException($game->translate("Character is not owned by you"));
             }
 
             if ( ! $sorcerer->HasTrait("Sorcerer"))
             {
-                throw new \BgaUserException($game->translate("Character is not a Sorcerer"));
+                throw new UserException($game->translate("Character is not a Sorcerer"));
             }
 
             $game->notify->all("message", clienttranslate('${player_name} chose ${sorcerer_name} as their Porté Travel Sorcerer.'), [
                 'i18n' => ['sorcerer_name'],
-                "player_name" => $game->getActivePlayerName(),
+                "player_name" => $game->getPlayerNameById($this->ControllerId),
                 "sorcerer_name" => $sorcerer->Name,
             ]);
 
@@ -123,10 +124,7 @@ class _01085 extends Risk implements IHasActions
             $challengerThreat = $game->theah->getCurrentDuelThreat($challengerId);
             $defenderThreat = $game->theah->getCurrentDuelThreat($defenderId);
 
-            $modifiedChallengerThreat = $actor->Id == $challengerId ? $challengerThreat * -1 : $challengerThreat;
-            $modifiedDefenderThreat = $actor->Id == $defenderId ? $defenderThreat * -1 : $defenderThreat;
-
-            $event = EventFactory::createThreatModifiedEvent($modifiedChallengerThreat, $modifiedDefenderThreat);
+            $event = EventFactory::createThreatModifiedEvent(-$challengerThreat, -$defenderThreat);
             $game->theah->queueEvent($event);
             
             $game->gamestate->nextState();
