@@ -30,7 +30,8 @@
       "Bash(xargs cat:*)",
       "Bash(xargs -I {} grep -l \"queueEvent\\\\|EventFactory\" {})",
       "Bash(xargs -I {} basename {})",
-      "Bash(xargs -I {} grep -l \"eventCheck\" {})"
+      "Bash(xargs -I {} grep -l \"eventCheck\" {})",
+      "WebFetch(domain:en.doc.boardgamearena.com)"
     ]
   }
 }

@@ -33,7 +33,7 @@ $machinestates = [
         "descriptionmyturn" => clienttranslate('Quick buttons for Available Starter Decks:'),
         "type" => "multipleactiveplayer",
         "args" => "argAvailableDecks",
-        "action" => "stMultiPlayerInit",
+        "action" => "stPickDecksInit",
         "possibleactions" => [
             "actPickDeck", 
         ],

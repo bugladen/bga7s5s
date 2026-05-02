@@ -50,6 +50,26 @@ trait StatesTrait
         $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
     }
 
+    public function stPickDecksInit() 
+    {
+        $this->gamestate->setAllPlayersMultiactive();
+
+        // In a tournament, players who already have a stored deck were
+        // restored in DeckAssignment and don't need to pick again.
+        if ($this->bga->tournament->isTournament())
+        {
+            $players = $this->loadPlayersBasicInfos();
+            foreach ($players as $playerId => $player)
+            {
+                $deck = $this->bga->tournament->retrievePlayerGameData($playerId, 'deck_source');
+                if ($deck)
+                {
+                    $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked');
+                }
+            }
+        }
+    }
+
     public function stSetCurrentPlayer() 
     {
         $currentPlayerId = $this->globals->get(Game::CURRENT_PLAYER);
