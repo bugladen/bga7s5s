@@ -11,6 +11,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01056 extends RiskCityAction implements IAbilityThatTargetsCharacters
@@ -75,6 +77,10 @@ class Action_01056 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, '01056', $this->Id);
             $event->theah->queueEvent($transition);
+
+            // createActionResolvedEvent() is queued by stChallengeActionCheckCancelled — both
+            // when the defender moves home (cancelled path) and when the challenge resolves
+            // (accept/reject path). Risk-from-hand cleanup is handled by FrameworkActionsTrait.
         }
     }
 
@@ -144,6 +150,28 @@ class Action_01056 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
 
             $owner = $this->getOwningCard($game->theah);
+
+            // Fire the challenge-issued event BEFORE the defender's move-home choice so
+            // reactions to "When X issues a challenge" trigger even when the defender opts
+            // to move home (per card text: the challenge is issued, then optionally cancelled).
+            $game->globals->set(Game::CHALLENGE_TYPE, Game::MOVE_ALONG_CHALLENGE_TYPE);
+            $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+            $game->globals->set(Game::CHALLENGE_CANCELLED, false);
+            $game->globals->set(Game::CHOSEN_LOCATION, $performer->Location);
+
+            $challengeEvent = $game->theah->createEvent(Events::ChallengeIssued);
+            if ($challengeEvent instanceof EventChallengeIssued)
+            {
+                $challengeEvent->playerId = $performer->ControllerId;
+                $challengeEvent->challengerId = $performer->Id;
+                $challengeEvent->defenderId = $target->Id;
+                $challengeEvent->activatedTechniqueId = '';
+                $challengeEvent->sourceId = $owner->Id;
+                $challengeEvent->abilityId = $this->Id;
+            }
+            $game->theah->eventCheck($challengeEvent);
+            $game->theah->queueEvent($challengeEvent);
+
             $transition = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, '01056_2', $this->Id);
             $game->theah->queueEvent($transition);
 
@@ -156,7 +184,9 @@ class Action_01056 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $target = $game->theah->getCharacterById($targetId);
             $owner = $this->getOwningCard($game->theah);
 
-            // Move Home
+            // Move Home — cancel the challenge via the standard cancellation path.
+            // CHECK_CANCELLED removes duel conditions, resets pass count, queues
+            // ActionResolvedEvent, and notifies the cancellation.
             if ($id == 1)
             {
                 $game->notify->all("message", clienttranslate('${player_name} chose to move ${target_inject_code} home.'), [
@@ -167,30 +197,22 @@ class Action_01056 extends RiskCityAction implements IAbilityThatTargetsCharacte
                 $moveEvent = EventFactory::createCardMovingEvent($target->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = true, $owner->Id, $this->Id);
                 $game->theah->queueEvent($moveEvent);
 
-                $this->resetPlayerPassCount($game);
-                $this->setUsed($game->theah, true);
-
-                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-                $game->theah->queueEvent($actionResolvedEvent);
-
+                $game->globals->set(Game::CHALLENGE_CANCELLED, true);
             }
 
-            // Continue with Challenge
+            // Continue with Challenge — defender will Accept/Reject/Intervene next.
             if ($id == 2)
             {
-                $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-                $performer = $game->theah->getCharacterById($performerId);
-
                 $game->notify->all("message", clienttranslate('${player_name} chose to continue with Challenge.'), [
                     'player_name' => $game->getPlayerNameById($target->ControllerId),
                 ]);
-
-                $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
-                $game->globals->set(Game::CHALLENGE_TYPE, Game::MOVE_ALONG_CHALLENGE_TYPE);
-
-                $transition = EventFactory::createTransitionEvent($performer->ControllerId, $owner->Id, '01056_3', $this->Id);
-                $game->theah->queueEvent($transition);
             }
+
+            // Both branches route through CHECK_CANCELLED, which dispatches based on
+            // CHALLENGE_CANCELLED: "cancelled" → NEXT_PLAYER (cleanup) or "notCancelled"
+            // → ACCEPT_CHALLENGE (defender's response).
+            $transition = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, '01056_3', $this->Id);
+            $game->theah->queueEvent($transition);
 
             $game->gamestate->nextState();
         }
