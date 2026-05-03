@@ -222,6 +222,23 @@ trait DeckTrait
         return $this->cards->getCardsOnTop($nbr, $location);
     }
 
+    public function getCardsOnBottomOfPlayerFactionDeck($playerId, int $nbr): Array
+    {
+        $location = $this->getPlayerFactionDeckName($playerId);
+
+        // Ensure enough cards exist; reuse top helper to trigger a discard reshuffle if needed
+        $count = $this->cards->countCardsInLocation($location);
+        if ($count < $nbr)
+        {
+            $this->getCardsOnTopOfPlayerFactionDeck($playerId, $nbr);
+        }
+
+        // Lower card_location_arg = bottom
+        $allCards = $this->cards->getCardsInLocation($location, null, "card_location_arg");
+        $allCards = array_values($allCards);
+        return array_slice($allCards, 0, $nbr);
+    }
+
     public function shufflePlayerDiscardIntoPlayerFactionDeck($playerId)
     {
         $location = $this->getPlayerFactionDeckName($playerId);

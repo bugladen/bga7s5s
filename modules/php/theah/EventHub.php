@@ -49,6 +49,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechnique
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelGambleCardsRevealed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGambleSetup;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseBegin;
@@ -1837,6 +1838,9 @@ trait EventHub
                     ]);            
                 };
                 $handler($this, $event);
+                break;
+
+            case $event instanceof EventGambleSetup:
                 break;
 
             case $event instanceof EventDuelGambleCardsRevealed:

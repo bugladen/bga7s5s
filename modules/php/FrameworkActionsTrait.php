@@ -1505,25 +1505,42 @@ trait FrameworkActionsTrait
 
         $deckCard = $this->cards->getCard($id);
         if ($deckCard == null) {
-            throw new \BgaUserException(clienttranslate("Card not found."));
+            throw new UserException(clienttranslate("Card not found."));
         }
 
         $card = $this->getCardObjectFromDb($id);
         if ($card->Location != $deckName) {
-            throw new \BgaUserException(clienttranslate("Card is not in your faction deck."));
+            throw new UserException(clienttranslate("Card is not in your faction deck."));
         }
 
         $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
-        $cards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
+        $fromBottom = $this->globals->get(Game::GAMBLE_REVEAL_FROM_BOTTOM, false);
+        $cards = $fromBottom
+            ? $this->getCardsOnBottomOfPlayerFactionDeck($playerId, $count)
+            : $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
         if (!in_array($id, array_column($cards, 'id'))) {
-            throw new \BgaUserException(clienttranslate("Chosen card is not in the top $count cards of your faction deck."));
+            $where = $fromBottom ? "bottom" : "top";
+            throw new UserException(clienttranslate("Chosen card is not in the $where $count cards of your faction deck."));
         }
 
-        //Sink the cards that are not chosen
+        // Sink the cards that are not chosen.
+        // WHY: When revealing from the bottom (Devil Jonah's Bones), unchosen cards
+        // sink to the top of the deck instead of the bottom.
         $cards = array_filter($cards, fn($card) => $card['id'] != $id);
-        foreach ($cards as $notChosenCard) 
+        foreach ($cards as $notChosenCard)
         {
-            $this->cards->insertCardOnExtremePosition($notChosenCard['id'], $deckName, false);
+            $this->cards->insertCardOnExtremePosition($notChosenCard['id'], $deckName, $fromBottom);
+        }
+
+        if (count($cards) > 0)
+        {
+            $message = $fromBottom
+                ? clienttranslate('${player_name} sinks ${count} unchosen card(s) to the top of their faction deck.')
+                : clienttranslate('${player_name} sinks ${count} unchosen card(s) to the bottom of their faction deck.');
+            $this->notify->all("message", $message, [
+                "player_name" => $this->getPlayerNameById($playerId),
+                "count" => count($cards),
+            ]);
         }
 
         $this->globals->set(Game::CHOSEN_CARD, $id);

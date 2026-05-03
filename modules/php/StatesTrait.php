@@ -1364,13 +1364,28 @@ trait StatesTrait
         }
     }
 
+    public function stDuelGambleSetup(): void
+    {
+        $this->theah->buildCity();
+        $actor = $this->theah->getDuelRoundActor();
+
+        $event = EventFactory::createGambleSetupEvent($actor->Id, $actor->ControllerId);
+        $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState("processEvents");
+    }
+
     public function stDuelGambleRevealed(): void
     {
         $this->theah->buildCity();
         $actor = $this->theah->getDuelRoundActor();
         $playerId = $actor->ControllerId;
         $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
-        $deckCards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
+        $fromBottom = $this->globals->get(Game::GAMBLE_REVEAL_FROM_BOTTOM, false);
+        $deckCards = $fromBottom
+            ? $this->getCardsOnBottomOfPlayerFactionDeck($playerId, $count)
+            : $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
         $revealedCardIds = array_map(fn($c) => (int)$c['id'], $deckCards);
 
         $event = EventFactory::createDuelGambleCardsRevealedEvent($actor->Id, $playerId, $revealedCardIds);
@@ -1477,6 +1492,7 @@ trait StatesTrait
         $this->globals->delete(Game::ROLL_THE_BONES_CARD_ID);
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
         $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
+        $this->globals->delete(Game::GAMBLE_REVEAL_FROM_BOTTOM);
 
         $this->gamestate->nextState();
     }
@@ -1586,6 +1602,7 @@ trait StatesTrait
         $this->globals->delete(Game::ROLL_THE_BONES_CARD_ID);
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
         $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
+        $this->globals->delete(Game::GAMBLE_REVEAL_FROM_BOTTOM);
         $this->globals->delete(Game::ABNORMAL_FLOW);
         $this->globals->delete(Game::PENDING_CHALLENGER_THREAT);
         $this->globals->delete(Game::PENDING_DEFENDER_THREAT);

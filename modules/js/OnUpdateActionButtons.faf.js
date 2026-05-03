@@ -40,6 +40,11 @@
                 this.addActionButton(`actNone`, _('Decline'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
             },
 
+            'duelGambleSetup_03cd05': () => {
+                this.addActionButton(`btnTop`, _('Reveal from Top'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`btnBottom`, _('Reveal from Bottom'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
+
         }
 
         if ( methods[stateName] )

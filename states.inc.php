@@ -2095,7 +2095,7 @@ $machinestates = [
             "transitions" => [
                 "combatCardChosen" => States::DUEL_COMBAT_CARD_EVENTS,
                 "chooseTechnique" => States::DUEL_CHOOSE_TECHNIQUE,
-                "chooseGambleCard" => States::DUEL_GAMBLE_REVEALED,
+                "chooseGambleCard" => States::DUEL_GAMBLE_SETUP,
                 "doneWithRound" => States::DUEL_END_OF_ROUND,
             ]
         ],
@@ -2104,7 +2104,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "01135" => States::DUEL_GAMBLE_REVEALED,
+                    "01135" => States::DUEL_GAMBLE_SETUP,
                     "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "reaction" => States::DUEL_COMBAT_CARD_REACTIONS,
@@ -2417,10 +2417,59 @@ $machinestates = [
                 "transitions" => [
                     "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
-                    "rollTheBones" => States::DUEL_GAMBLE_REVEALED,
+                    "rollTheBones" => States::DUEL_GAMBLE_SETUP,
                     "noMoreCombatCards" => States::DUEL_CHOOSE_ACTION
                 ]
             ],
+
+            States::DUEL_GAMBLE_SETUP => [
+                "name" => "duelGambleSetup",
+                "type" => "game",
+                "action" => "stDuelGambleSetup",
+                "transitions" => [
+                    "processEvents" => States::DUEL_GAMBLE_SETUP_EVENTS,
+                ]
+            ],
+                States::DUEL_GAMBLE_SETUP_EVENTS => [
+                    "name" => "duelGambleSetupEvents",
+                    "type" => "game",
+                    "action" => "stRunEvents",
+                    "transitions" => [
+                        "03cd05" => States::DUEL_GAMBLE_SETUP_03CD05,
+                        "reaction" => States::DUEL_GAMBLE_SETUP_REACTIONS,
+                        "pay" => States::DUEL_GAMBLE_SETUP_PAY_FOR_REACTION,
+                        "endOfEvents" => States::DUEL_GAMBLE_REVEALED,
+                        "endOfGame" => States::END_GAME
+                    ]
+                ],
+                States::DUEL_GAMBLE_SETUP_REACTIONS => [
+                    "name" => "playerReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsForStatePrivate",
+                    "possibleactions" => [
+                        "actReactionForState",
+                    ],
+                    "transitions" => [
+                        "done" => States::DUEL_GAMBLE_SETUP_EVENTS,
+                    ]
+                ],
+                States::DUEL_GAMBLE_SETUP_PAY_FOR_REACTION => [
+                    "name" => "playerPayForReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsForStatePrivate",
+                    "possibleactions" => [
+                        "actBack",
+                        "actPayForReaction",
+                    ],
+                    "transitions" => [
+                        "back" => States::DUEL_GAMBLE_SETUP_REACTIONS,
+                        "paid" => States::DUEL_GAMBLE_SETUP_EVENTS,
+                    ]
+                ],
 
             States::DUEL_GAMBLE_REVEALED => [
                 "name" => "duelGambleRevealed",
@@ -2491,7 +2540,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
-                        "01135" => States::DUEL_GAMBLE_REVEALED,
+                        "01135" => States::DUEL_GAMBLE_SETUP,
                         "reaction" => States::DUEL_CHOOSE_GAMBLE_CARD_REACTIONS,
                         "pay" => States::DUEL_CHOOSE_GAMBLE_CARD_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS,

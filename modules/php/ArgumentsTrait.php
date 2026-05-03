@@ -772,7 +772,10 @@ trait ArgumentsTrait
     {
         $playerId = $this->getActivePlayerId();
         $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
-        $deckCards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
+        $fromBottom = $this->globals->get(Game::GAMBLE_REVEAL_FROM_BOTTOM, false);
+        $deckCards = $fromBottom
+            ? $this->getCardsOnBottomOfPlayerFactionDeck($playerId, $count)
+            : $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
         $cards = [];
         foreach ($deckCards as $deckCard) {
             $card = $this->getCardObjectFromDb($deckCard['id']);

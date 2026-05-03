@@ -193,6 +193,7 @@ class Game extends \Bga\GameFramework\Table
     final const DUEL_MANUEVER_ID = "duelManeuverId";
     final const GAMBLE_REVEAL_COUNT = "gambleRevealCount";
     final const GAMBLE_REVEAL_EXPLANATIONS = "gambleRevealExplanations";
+    final const GAMBLE_REVEAL_FROM_BOTTOM = "gambleRevealFromBottom";
 
     final const PENDING_CHALLENGER_THREAT = "pendingChallengerThreat";
     final const PENDING_DEFENDER_THREAT = "pendingDefenderThreat";
