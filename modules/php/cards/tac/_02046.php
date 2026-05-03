@@ -81,7 +81,7 @@ class _02046 extends Scheme
 
     private function isHighDramaPhase(Event $event): bool
     {
-        $stateId = $event->theah->game->gamestate->state_id();
+        $stateId = $event->theah->game->gamestate->getCurrentMainStateId();
         $prefix = (int)substr((string)$stateId, 0, 2);
         return $prefix >= 30 && $prefix < 70;
     }

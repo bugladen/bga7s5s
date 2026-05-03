@@ -33,7 +33,7 @@ $machinestates = [
         "descriptionmyturn" => clienttranslate('Quick buttons for Available Starter Decks:'),
         "type" => "multipleactiveplayer",
         "args" => "argAvailableDecks",
-        "action" => "stMultiPlayerInit",
+        "action" => "stPickDecksInit",
         "possibleactions" => [
             "actPickDeck", 
         ],
@@ -876,7 +876,7 @@ $machinestates = [
                 "01055" => States::HIGH_DRAMA_PLAYER_TURN_01055,
                 "01056" => States::HIGH_DRAMA_PLAYER_TURN_01056,
                 "01056_2" => States::HIGH_DRAMA_PLAYER_TURN_01056_2,
-                "01056_3" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "01056_3" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED,
                 "01058" => States::HIGH_DRAMA_PLAYER_TURN_01058,
                 "01059" => States::HIGH_DRAMA_PLAYER_TURN_01059,
                 "01060" => States::HIGH_DRAMA_PLAYER_TURN_01060,

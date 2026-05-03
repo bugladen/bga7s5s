@@ -137,13 +137,23 @@ trait FrameworkActionsTrait
         }
         else
         {
-            throw new \BgaUserException(sprintf(clienttranslate("%s is not a valid deck type."), $deck_type));
+            throw new UserException(sprintf(clienttranslate("%s is not a valid deck type."), $deck_type));
         }
 
         if ($valid)
         {
             $sql = "UPDATE player SET deck_source = '$deck_json' WHERE player_id='$playerId'";
             $this->DbQuery($sql);
+
+            if ($this->bga->tournament->isTournament())
+            {
+                // WHY: pass the decoded $deck object, not $deck_json. The framework
+                // JSON-encodes on store and JSON-decodes on retrieve, so passing an
+                // already-encoded (and addslashes'd) string would round-trip back as
+                // a string instead of the deck structure.
+                $this->bga->tournament->storePlayerGameData($playerId, 'deck_source', $deck);
+                $this->notify->player($playerId, 'message', clienttranslate('Private: Your deck has been stored for the tournament.  You will use this deck for the duration of the tournament.'), []);
+            }
     
             $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked'); // deactivate player; if none left, transition to 'deckPicked' state
         }

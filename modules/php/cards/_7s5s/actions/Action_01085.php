@@ -107,6 +107,11 @@ class Action_01085 extends RiskAction implements ISorcererAbility, IAbilityThatT
             return [false, $game->translate("Character cannot be the same as the performer")];
         }
 
+        if ($character->ControllerId != $performer->ControllerId)
+        {
+            return [false, $game->translate("Character is not controlled by you")];
+        }
+
         if ($character->Location == $performer->Location)
         {
             return [false, $game->translate("Character is already at the performer's location")];

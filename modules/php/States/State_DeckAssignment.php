@@ -29,19 +29,52 @@ class State_DeckAssignment extends GameState
         );
     }
 
-    function onEnteringState(int $activePlayerId) 
+    function onEnteringState(int $activePlayerId)
     {
+        $isTournament = $this->game->bga->tournament->isTournament();
+        $players = $this->game->loadPlayersBasicInfos();
+
+        // Restore any decks already stored for this tournament. Track which
+        // players still need a deck so the manual/random branches can handle them.
+        $playersNeedingDeck = $players;
+        if ($isTournament)
+        {
+            foreach ($players as $playerId => $player)
+            {
+                $deck = $this->game->bga->tournament->retrievePlayerGameData($playerId, 'deck_source');
+                if ($deck)
+                {
+                    // WHY: framework decodes JSON on retrieve, so $deck is already
+                    // the structured deck. Re-encode for the SQL column.
+                    $deck_json = addslashes(json_encode($deck));
+                    $sql = "UPDATE player SET deck_source = '$deck_json' WHERE player_id='$playerId'";
+                    $this->game->DbQuery($sql);
+
+                    $deck_name = is_array($deck) ? ($deck['name'] ?? '') : ($deck->name ?? '');
+                    $this->game->notify->player($playerId, 'message', clienttranslate('Private: Deck ${deck_name} is restored for the tournament.'), [
+                        'deck_name' => $deck_name,
+                    ]);
+
+                    unset($playersNeedingDeck[$playerId]);
+                }
+            }
+
+            if (empty($playersNeedingDeck))
+            {
+                return "buildTable";
+            }
+        }
+
         $playerDeckChoice = $this->tableOptions->get(Game::OPTIONS_PLAYER_DECKS);
-        
-        if ($playerDeckChoice === Game::OPTIONS_PLAYER_DECKS_MANUAL) 
+
+        if ($playerDeckChoice === Game::OPTIONS_PLAYER_DECKS_MANUAL)
         {
             return "pickDecks";
         }
 
         $starter_decks = json_decode(StarterDecks::$decksJson);
 
-        $players = $this->game->loadPlayersBasicInfos();
-        foreach ($players as $playerId => $player) 
+        foreach ($playersNeedingDeck as $playerId => $player)
         {
             $random_index = array_rand($starter_decks->decks);
             $chosen_deck = $starter_decks->decks[$random_index];
@@ -54,6 +87,12 @@ class State_DeckAssignment extends GameState
 
             $sql = "UPDATE player SET deck_source = '$deck_json' WHERE player_id='$playerId'";
             $this->game->DbQuery($sql);
+
+            // Lock the random assignment in for the rest of the tournament.
+            if ($isTournament)
+            {
+                $this->game->bga->tournament->storePlayerGameData($playerId, 'deck_source', $chosen_deck);
+            }
 
             //Remove the deck from the array
             $starter_decks->decks = array_filter($starter_decks->decks, fn($deck) => $deck->id !== $chosen_deck->id);
