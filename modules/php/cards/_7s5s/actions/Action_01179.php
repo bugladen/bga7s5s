@@ -88,9 +88,7 @@ class Action_01179 extends EventCityAction
 
             $playerId = $performer->ControllerId;
             $this->playersUsed[] = $playerId;
-    
-            $this->announceAction($event->theah->game);
-    
+
             $owner = $this->getOwningCard($event->theah);
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performerId, $owner->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
@@ -104,10 +102,10 @@ class Action_01179 extends EventCityAction
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
             $event->theah->queueEvent($actionResolvedEvent);
 
-            $this->resetPlayerPassCount($event->theah->game);
-            // $this->setUsed() not called because special use cases
-
             $this->notifyUsedList($event->theah->game, $owner->Id);
+
+            //This should never be used
+            $this->setUsed($event->theah, false);
         }
     }
 

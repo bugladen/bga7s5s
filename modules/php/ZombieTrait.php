@@ -164,6 +164,9 @@ trait ZombieTrait
                 case "highDramaPhase01068": // Léontine Giroux character
                 case "highDramaPhase01069": // Maxime De Lafayette character
                 case "highDramaPhase01156": // Matchlock Musket discard
+                case "highDramaPhase01185": // Risky Undertaking
+                case "highDramaPhase01189a": // Move reknown from
+                case "highDramaPhase01189b": // Move reknown to
                         $this->gamestate->nextState("zombie");
                     break;
 
@@ -201,9 +204,6 @@ trait ZombieTrait
                 case "highDramaPhase01180_2": // Kaj Kousei
                 case "highDramaPhase01180_4": // Kaj Kousei performer
                 case "highDramaPhase01180_5": // Kaj Kousei payment
-                case "highDramaPhase01185": // Risky Undertaking
-                case "highDramaPhase01189a": // Move reknown from
-                case "highDramaPhase01189b": // Move reknown to
                 case "highDramaPhase01192": // Gustavo
                 case "highDramaPhase01192_2": // Gustavo
                 case "highDramaPhase01192_3": // Gustavo risk choice

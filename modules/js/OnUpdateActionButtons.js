@@ -141,8 +141,8 @@ onUpdateActionButtons: function( stateName, args )
     },
 
         'highDramaInPlayActionConfirm'  : () => {
-            this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
             this.addActionButton(`actConfirm`, _('Confirm'), () => this.bgaPerformAction('actHighDramaInPlayActionConfirm', {}));
+            this.statusBar.addActionButton('Cancel', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
         },
 
         'highDramaInPlayActionChoosePerformer'  : () => {
