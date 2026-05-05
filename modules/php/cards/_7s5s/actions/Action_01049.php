@@ -142,10 +142,6 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
    
             }
 
-            //Custom announce above $this->announceAction() not needed
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-
             $game->gamestate->nextState("characterChosen");
         }
 

@@ -59,10 +59,6 @@ class Action_01191 extends AttachmentAction implements IRangedAbility
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);
-
-            //Custom announce above $this->announceAction() not needed
-            $this->resetPlayerPassCount($event->theah->game);
-            // $this->setUsed() not called because this card is destroyed
         }
     }
 }

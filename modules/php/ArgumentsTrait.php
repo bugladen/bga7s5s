@@ -377,6 +377,24 @@ trait ArgumentsTrait
 
     }
 
+    public function argsHighDramaInPlayActionConfirm(): array
+    {
+        $this->theah->buildCity();
+
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION);
+        $action = $this->theah->getInPlayActionById($actionId);
+
+        $owner = null;
+        if ($action instanceof CardAction)
+            $owner = $action->getOwningCard($this->theah);
+
+        return [
+            "i18n" => ["actionName"],
+            "actionName" => $action?->Name,
+            "actionCardId" => $owner?->Id,
+        ];
+    }
+
     public function argsHighDramaInPlayActionChoosePerformer(): array
     {
         $playerId = (int)$this->getActivePlayerId();

@@ -51,10 +51,6 @@ class Action_01094 extends CharacterAction
         {
             $owner = $this->getOwningCharacter($event->theah);
 
-            $this->announceAction($event->theah->game);
-            $this->resetPlayerPassCount($event->theah->game);
-            $this->setUsed($event->theah, true);
-            
             $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
             $event->theah->queueEvent($engardeEvent);
 

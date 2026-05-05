@@ -135,10 +135,6 @@ class Action_01124 extends CharacterAction implements ISorcererAbility, IAbility
 
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
-        
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
 
             $sorceryEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
             $game->theah->queueEvent($sorceryEvent);

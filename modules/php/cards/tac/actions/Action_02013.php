@@ -135,10 +135,6 @@ class Action_02013 extends CharacterAction
             $this->doCost($game);
             $this->doEffect($game);
 
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-
             //createActionResolvedEvent not needed because the challenge will issue it
 
             $game->gamestate->nextState();

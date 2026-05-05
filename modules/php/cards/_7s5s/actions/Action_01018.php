@@ -42,9 +42,6 @@ class Action_01018 extends CharacterAction
             $owner = $this->getOwningCharacter($event->theah);
 
             $game = $event->theah->game;
-            $this->announceAction($game);
-            $this->resetPlayerPassCount($game);
-            // $this->setUsed not called because card is destroyed
 
             $owner->unEquipAllAttachments($game->theah);
             $event = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());

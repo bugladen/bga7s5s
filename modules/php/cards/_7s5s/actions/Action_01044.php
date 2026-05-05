@@ -216,9 +216,6 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
                 $game->theah->queueEvent($actionResolvedEvent);
 
-                $this->setUsed($game->theah, true);
-                $this->resetPlayerPassCount($game);
-                $this->announceAction($game);
             }
 
             //Chooses to send the character home
@@ -241,9 +238,6 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
                 $game->theah->queueEvent($actionResolvedEvent);
 
-                $this->setUsed($game->theah, true);
-                $this->announceAction($game);
-                $this->resetPlayerPassCount($game);
             }
 
             $game->gamestate->nextState("manipulationChosen");

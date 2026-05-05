@@ -22,7 +22,7 @@ class State_highDramaPhase02001 extends GameState
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
             descriptionMyTurn: clienttranslate('Andriana Dondolo') . clienttranslate(': ${you} must choose a Sorcery card to discard: '),
             transitions: [
-                "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+                "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_02001_2,
             ],
         );
@@ -34,12 +34,6 @@ class State_highDramaPhase02001 extends GameState
     } 
 
     #[PossibleAction]
-    public function actBack(): void
-    {
-        $this->game->actBack();
-    }
-
-    #[PossibleAction]
     public function actFromCardWithId(string $id): void
     {
         $this->game->actFromCardWithId($id);
@@ -47,7 +41,7 @@ class State_highDramaPhase02001 extends GameState
 
     public function zombie(int $playerId): void
     {
-        $this->game->actBack();
+        $this->game->gamestate->nextState("zombie");
     }
 
 }

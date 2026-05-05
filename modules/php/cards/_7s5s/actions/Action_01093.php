@@ -114,10 +114,6 @@ class Action_01093 extends CharacterAction implements IAbilityThatDependsOnNotBe
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $this->resetPlayerPassCount($game);
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-
             $game->gamestate->nextState("locationChosen");
         }
     }

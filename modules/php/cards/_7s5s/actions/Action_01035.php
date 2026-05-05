@@ -55,8 +55,6 @@ class Action_01035 extends CharacterAction
             $event->theah->eventCheck($engageEvent);
             $event->queueEvent($engageEvent);
 
-            $this->announceAction($game);
-
             $mercenary = $game->revealFirstCardTypeFromCityDeck($playerId, "Mercenary", $kaspar->Id);
 
             if ($mercenary)
@@ -80,9 +78,6 @@ class Action_01035 extends CharacterAction
 
             $revealEvent = EventFactory::createTransitionEvent($playerId, $kaspar->Id, "01035", $this->Id);
             $event->queueEvent($revealEvent);
-
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($event->theah, true);
         }
     }
 

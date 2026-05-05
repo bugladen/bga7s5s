@@ -55,8 +55,6 @@ class Action_01075 extends AttachmentAction
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE);
 
-            $this->announceAction($game);
-
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $attachment->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
 
@@ -66,9 +64,6 @@ class Action_01075 extends AttachmentAction
 
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "pressureLocation", $this->Id);
             $event->theah->queueEvent($transitionEvent);
-
-            $this->setUsed($event->theah, true);
-            $this->resetPlayerPassCount($game);
         }
 
         if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)

@@ -103,10 +103,6 @@ class Action_01020 extends CharacterAction implements IAbilityThatTargetsCharact
                 throw new UserException($errorMessage);
             }
 
-            $this->announceAction($game);
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($game->theah, true);
-
             $owner->unEquipAllAttachments($game->theah);
             $event = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());
             $game->theah->queueEvent($event);

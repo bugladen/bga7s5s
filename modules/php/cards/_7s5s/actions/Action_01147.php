@@ -80,8 +80,6 @@ class Action_01147 extends SchemeCityAction implements IAbilityThatTargetsCards
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
-            $this->announceAction($game);
-
             $game->globals->set(Game::CHOSEN_CARD, $attachment->Id);
             [$discount, $explanations] = $game->theah->getEquipDiscount($performer, $attachment);
             if ($discount != 0)
@@ -94,8 +92,6 @@ class Action_01147 extends SchemeCityAction implements IAbilityThatTargetsCards
             $game->globals->set(Game::EQUIP_TYPE, Game::LETS_HAGGLE_EQUIP_TYPE);
             
             //createActionResolvedEvent() not needed because this passes off to attachmentEquipped
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($game->theah, true);
 
             $game->gamestate->nextState("attachmentSelected");
         }

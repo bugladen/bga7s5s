@@ -61,10 +61,6 @@ class Action_01206 extends AttachmentAction
 
             $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $performer->Id, "pressureLocation", $this->Id);
             $event->theah->queueEvent($transitionEvent);
-
-            $this->announceAction($event->theah->game);
-            $this->resetPlayerPassCount($event->theah->game);
-            $this->setUsed($event->theah, true);
         }
 
         if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)

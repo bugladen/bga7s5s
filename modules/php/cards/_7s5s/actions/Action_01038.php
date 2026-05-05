@@ -51,8 +51,6 @@ class Action_01038 extends CharacterAction
                 $names[] = $card->getInjectCode();
             }
 
-            $this->announceAction($event->theah->game);
-
             $otto = $this->getOwningCharacter($event->theah);
             $event->theah->game->notify->all('message', clienttranslate('${player_name} uses Otto Streit\'s Action to reveal Attachments from their deck. ${found} Attachment(s) have been revealed. 
             <p>Cards Revealed: ${names}'), [
@@ -63,9 +61,6 @@ class Action_01038 extends CharacterAction
                 'found' => $found,
                 'names' => implode(', ', $names)
             ]);
-
-            $this->setUsed($event->theah, true);
-            $this->resetPlayerPassCount($event->theah->game);
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01038", $this->Id);
             $event->theah->queueEvent($transition);

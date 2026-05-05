@@ -125,10 +125,6 @@ class Action_01149 extends SchemeCityAction
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-
             $game->gamestate->nextState("locationChosen");
         }
     }

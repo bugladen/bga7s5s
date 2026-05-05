@@ -23,7 +23,7 @@ class State_highDramaPhase02002 extends GameState
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
             descriptionMyTurn: clienttranslate('Elisabetta Bonora') . clienttranslate(': ${you} must choose a player to manipulate the top cards in their Faction Deck: '),
             transitions: [
-                "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+                "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 "playerChosen" => States::HIGH_DRAMA_PLAYER_TURN_02002_2,
             ],
         );
@@ -35,12 +35,6 @@ class State_highDramaPhase02002 extends GameState
     } 
 
     #[PossibleAction]
-    public function actBack(): void
-    {
-        $this->game->actBack();
-    }
-
-    #[PossibleAction]
     public function actFromCardWithId(string $id): void
     {
         $this->game->actFromCardWithId($id);
@@ -48,7 +42,7 @@ class State_highDramaPhase02002 extends GameState
 
     public function zombie(int $playerId): void
     {
-        $this->actBack();
+        $this->game->gamestate->nextState("zombie");
     }
 
 }

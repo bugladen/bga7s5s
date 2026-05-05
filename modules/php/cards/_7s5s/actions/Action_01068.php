@@ -171,10 +171,6 @@ class Action_01068 extends CharacterAction implements ISorcererAbility, IAbility
             $characterId = $game->globals->get(Game::CHOSEN_CARD);
             $character = $game->theah->getCharacterById($characterId);
 
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-
             $sorcererEvent = EventFactory::createSorcererAbilityStartEvent($leontine->ControllerId, $leontine->Id, $this->Id, $leontine->Id, $character->Id, $leontine->Location);
             $game->theah->queueEvent($sorcererEvent);
 

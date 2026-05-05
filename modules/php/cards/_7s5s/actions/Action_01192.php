@@ -47,8 +47,6 @@ class Action_01192 extends CharacterAction
             $gustavo = $this->getOwningCharacter($event->theah);
             $count = $gustavo->ModifiedInfluence;
 
-            $this->announceAction($event->theah->game);
-
             //Announce the Risks that are revealed
             $deckCards = $event->theah->game->getCardsOnTopOfPlayerFactionDeck($gustavo->ControllerId, $count);
             $names = [];
@@ -72,9 +70,6 @@ class Action_01192 extends CharacterAction
             ]);
 
             $event->theah->game->globals->set(Game::MULTI_STATE_INITIATING_PLAYER, $gustavo->ControllerId);
-
-            $this->setUsed($event->theah, true);
-            $this->resetPlayerPassCount($event->theah->game);
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01192", $this->Id);
             $event->theah->queueEvent($transition);

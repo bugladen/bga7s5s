@@ -78,10 +78,6 @@ class Action_01158 extends AttachmentAction
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $this->resetPlayerPassCount($game);
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-
             $game->gamestate->nextState("cardChosen");                
         }        
     }

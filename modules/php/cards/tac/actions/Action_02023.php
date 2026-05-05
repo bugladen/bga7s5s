@@ -184,10 +184,6 @@ class Action_02023 extends CharacterAction
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $this->resetPlayerPassCount($game);
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-
             $game->gamestate->nextState("locationChosen");
         }
     }

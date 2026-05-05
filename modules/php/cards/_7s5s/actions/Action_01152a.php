@@ -31,7 +31,17 @@ class Action_01152a extends SchemeCityAction implements IAbilityThatTargetsChara
         }
 
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        return count($characters) > 0;
+        $availableCharacters = [];
+        foreach ($characters as $character)
+        {
+            $atLocation = $theah->getCharactersAtLocation($character->Location);
+            $targets = array_filter($atLocation, fn($c) => $c->Engaged);
+            if (count($targets) > 0)
+            {
+                $availableCharacters[] = $character;
+            }
+        }
+        return count($availableCharacters) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
@@ -120,11 +130,6 @@ class Action_01152a extends SchemeCityAction implements IAbilityThatTargetsChara
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
-
-            $this->announceAction($game);
-
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
 
             $game->gamestate->nextState("targetChosen");
         }        

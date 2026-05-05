@@ -63,8 +63,6 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01008", $this->Id);
             $event->theah->queueEvent($transition);
 
-            $this->setUsed($event->theah, true);
-            $this->resetPlayerPassCount($game);    
         }
     }
 
@@ -99,8 +97,6 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
             $location = $game->getPlayerFactionDeckName($owner->ControllerId);
             $cardInfo = $deck->getCardOnTop($location);
             $card = $game->getCardObjectFromDb($cardInfo['id']);
-
-            $this->announceAction($game);
 
             $game->notify->all("message", clienttranslate('${player_name} has revealed ${card_inject_code}.'), [
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),

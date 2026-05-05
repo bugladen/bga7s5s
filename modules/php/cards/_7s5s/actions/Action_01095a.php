@@ -38,10 +38,6 @@ class Action_01095a extends CharacterAction
             $claimEvent = EventFactory::createLocationClaimedEvent($owner->ControllerId, $owner->Id, Game::LOCATION_CITY_DOCKS);
             $event->theah->queueEvent($claimEvent);
 
-            $this->announceAction($event->theah->game);
-            $this->resetPlayerPassCount($event->theah->game);
-            $this->setUsed($event->theah, true);
-
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);
         }

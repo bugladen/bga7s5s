@@ -126,10 +126,6 @@ class Action_01117 extends CharacterAction
                 throw new UserException(sprintf($game->translate("That location has been chosen already to move Renown to. Choose a different location."), $game->translate($location->Name)));
             }
 
-            $this->announceAction($game);
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($game->theah, true);
-
             $reknownRemovedEvent = EventFactory::createReknownRemovedFromLocationEvent($ekaterina->ControllerId, $ekaterina->Location, 1, $ekaterina->getInjectCode());
             $game->theah->queueEvent($reknownRemovedEvent);
 

@@ -54,9 +54,7 @@ class Action_01090 extends CharacterAction
                 $game->notify->all("overrideAsNotFirstPlayer", clienttranslate('${owner_inject_code}: ${player_name} activated Reaction and will resolve their next ability as if they were not the First Player.'), [
                     "owner_inject_code" => $owner->getInjectCode(),
                     "player_name" => $game->getActivePlayerName(),
-                ]);            
-
-                $this->setUsed($event->theah, true);
+                ]);
             }
         }
     }

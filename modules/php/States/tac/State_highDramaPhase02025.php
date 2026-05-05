@@ -22,7 +22,7 @@ class State_highDramaPhase02025 extends GameState
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
             descriptionMyTurn: clienttranslate('Tea and Cakes') . clienttranslate(': ${you} must choose an opposing character with equal or lower Influence: '),
             transitions: [
-                "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+                "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_02025_2,
             ],
             updateGameProgression: false,
@@ -36,12 +36,6 @@ class State_highDramaPhase02025 extends GameState
     } 
 
     #[PossibleAction]
-    public function actBack(): void
-    {
-        $this->game->actBack();
-    }
-
-    #[PossibleAction]
     public function actFromCardWithId(string $id): void
     {
         $this->game->actFromCardWithId($id);
@@ -49,7 +43,7 @@ class State_highDramaPhase02025 extends GameState
 
     public function zombie(int $playerId): void
     {
-        $this->game->actBack();
+        $this->game->gamestate->nextState("zombie");
     }
 
 }

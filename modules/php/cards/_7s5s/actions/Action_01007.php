@@ -99,10 +99,6 @@ class Action_01007 extends CharacterAction
             $reknownAddedEvent = EventFactory::createReknownAddedToLocationEvent($owner->ControllerId, $owner->Location, 1, $owner->getInjectCode(), $isMove = true);
             $game->theah->queueEvent($reknownAddedEvent);
 
-            $this->announceAction($game);
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($game->theah, true);
-
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 

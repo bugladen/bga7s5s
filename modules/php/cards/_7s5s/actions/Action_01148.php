@@ -130,9 +130,6 @@ class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCharac
 
 
             $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-            $this->announceAction($game);
 
             $game->gamestate->nextState("mercenaryChosen");
         }

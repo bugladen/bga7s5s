@@ -94,10 +94,6 @@ class Action_02045 extends SchemeCityAction implements ISorcererAbility
 
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "pressureLocation", $this->Id);
             $event->theah->queueEvent($transitionEvent);
-
-            $this->announceAction($game);
-            $this->setUsed($event->theah, true);
-            $this->resetPlayerPassCount($game);
         }
 
         if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)

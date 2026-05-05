@@ -62,8 +62,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $game->setGlobalFlag(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE);
 
-            $this->announceAction($game);
-
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
             $engageEvent = EventFactory::createCardEngagedEvent($scheme->ControllerId, $performerId, $scheme->Id, $this->Id);
@@ -75,9 +73,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
             $transitionEvent = EventFactory::createTransitionEvent($scheme->ControllerId, $scheme->Id, "pressureLocation", $this->Id);
             $event->theah->queueEvent($transitionEvent);
-
-            $this->setUsed($event->theah, true);
-            $this->resetPlayerPassCount($game);
         }
 
         if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)

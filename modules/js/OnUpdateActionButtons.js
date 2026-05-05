@@ -134,14 +134,18 @@ onUpdateActionButtons: function( stateName, args )
 
         'highDramaInPlayActionChooseAction'  : () => {
             this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
-            args._private.actions.forEach((action, index) => { 
+            args._private.actions.forEach((action, index) => {
                 this.addActionButton(
-                    `btnChooseAction_${action.id}`, action.name, () => this.bgaPerformAction('actHighDramaInPlayActionChosen', { actionId: action.id})) 
+                    `btnChooseAction_${action.id}`, action.name, () => this.bgaPerformAction('actHighDramaInPlayActionChosen', { actionId: action.id}))
             });
     },
 
-        'highDramaInPlayActionChoosePerformer'  : () => {
+        'highDramaInPlayActionConfirm'  : () => {
             this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+            this.addActionButton(`actConfirm`, _('Confirm'), () => this.bgaPerformAction('actHighDramaInPlayActionConfirm', {}));
+        },
+
+        'highDramaInPlayActionChoosePerformer'  : () => {
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
