@@ -134,12 +134,7 @@ class Action_01189a extends EventCityAction
     
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
-    
-            $this->announceAction($game);
 
-            $this->resetPlayerPassCount($game);
-            // $this->setUsed() not called because this card is destroyed
-    
             $game->gamestate->nextState("locationChosen");
         }
     }

@@ -123,7 +123,8 @@ class Action_01011 extends CharacterAction
             $transition = EventFactory::createTransitionEvent($servo->ControllerId, $servo->Id, "01011_2", $this->Id);
             $game->theah->queueEvent($transition);
 
-            // createActionResolvedEvent not needed here because it will be taken care of by the frameworkchallenge action
+            //Always available to use
+            $this->setUsed($game->theah, false);
 
             $game->gamestate->nextState("opposingCharacterChosen");
         }

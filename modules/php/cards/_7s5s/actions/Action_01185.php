@@ -96,8 +96,6 @@ class Action_01185 extends EventCityAction
                 }
             }
 
-            $this->announceAction($game);
-            
             foreach ($ids as $cardId) {
                 $card = $game->getCardObjectFromDb($cardId);
                 $event = EventFactory::createCardDiscardedFromHandEvent($playerId, $card->Id, $riskyUndertaking->Id, $asPayment = true);
@@ -117,9 +115,6 @@ class Action_01185 extends EventCityAction
             $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("cardsDiscarded");
-
-            $this->resetPlayerPassCount($game);
-            // $this->setUsed() not called because this card is discarded
         }
     }
 
