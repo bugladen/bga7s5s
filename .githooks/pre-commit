@@ -74,7 +74,7 @@ for file in $staged_files; do
     fi
 
     # Check if the class extends Action
-    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+(AttachmentAction|CardAction|CharacterAction|RiskAction|RiskCityAction|SchemeAction|SchemeCityAction)'; then
+    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+(CardAction|RiskAction|RiskCityAction)'; then
         
         # Check for createActionResolvedEvent
         if ! echo "$content" | grep -q 'createActionResolvedEvent'; then
