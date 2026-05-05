@@ -120,10 +120,6 @@ class Action_01092 extends CharacterAction implements IAbilityThatTargetsCharact
                 throw new UserException($errorMessage);
             }
 
-            $this->announceAction($game);
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($game->theah, true);
-
             $moveEvent = EventFactory::createCardMovingEvent($makepeace->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $makepeace->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 

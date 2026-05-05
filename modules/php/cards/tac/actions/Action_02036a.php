@@ -127,8 +127,6 @@ class Action_02036a extends SchemeCityAction
             $owner = $this->getOwningCard($game->theah);
             $game->globals->set(Game::CHOSEN_TARGET, $id);
 
-            $this->announceAction($game);
-
             $transition = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "02036_2", $this->Id);
             $game->theah->queueEvent($transition);
 
@@ -159,9 +157,6 @@ class Action_02036a extends SchemeCityAction
             $discard = EventFactory::createCardDiscardedFromHandEvent($activeId, $id, $owner->Id);
             $game->theah->eventCheck($discard);
             $game->theah->queueEvent($discard);
-
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($schemeOwnerId);
             $game->theah->queueEvent($actionResolvedEvent);
@@ -195,9 +190,6 @@ class Action_02036a extends SchemeCityAction
         $move = EventFactory::createCardMovingEvent($schemeOwnerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
         $game->theah->eventCheck($move);
         $game->theah->queueEvent($move);
-
-        $this->setUsed($game->theah, true);
-        $this->resetPlayerPassCount($game);
 
         $actionResolvedEvent = EventFactory::createActionResolvedEvent($schemeOwnerId);
         $game->theah->queueEvent($actionResolvedEvent);

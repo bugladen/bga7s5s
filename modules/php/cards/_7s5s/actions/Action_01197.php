@@ -201,10 +201,6 @@ class Action_01197 extends CharacterAction
                 throw new \BgaUserException($game->translate("Target character cannot be the same as the source character."));
             }
 
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-
             $fromCharacter = $game->theah->getCharacterById($fromCharacterId);
             $chosenCharacter = $game->theah->getCharacterById($id);
 

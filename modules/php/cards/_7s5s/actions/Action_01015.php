@@ -140,10 +140,6 @@ class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-            $this->announceAction($game);
-            
             $game->gamestate->nextState("characterChosen");
         }
     }

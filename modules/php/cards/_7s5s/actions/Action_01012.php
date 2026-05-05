@@ -102,11 +102,7 @@ class Action_01012 extends CharacterAction implements ISorcererAbility, IAbility
             }
 
             $performer = $this->getOwningCharacter($game->theah);
-            
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-            
+
             $owner = $this->getOwningCharacter($game->theah);
             $game->notify->all("message", clienttranslate('${owner_inject_code}: ${target_inject_code} is the target.'), [
                 "owner_inject_code" => $owner->getInjectCode(),

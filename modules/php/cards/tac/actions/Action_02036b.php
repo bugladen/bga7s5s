@@ -69,8 +69,6 @@ class Action_02036b extends SchemeCityAction
                 return;
             }
 
-            $this->announceAction($game);
-
             $move = EventFactory::createCardMovingEvent(
                 $owner->ControllerId,
                 $performer->Id,
@@ -82,9 +80,6 @@ class Action_02036b extends SchemeCityAction
             );
             $event->theah->eventCheck($move);
             $event->theah->queueEvent($move);
-
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($event->theah, true);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);

@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Pre-commit hook to validate PHP files for required method calls
-# 
+#
 # Checks:
 # 1. Classes implementing ISorcererAbility must call createSorcererAbilityStartEvent
 # 2. Classes implementing ISorcererAbility must call createSorcererAbilityPlayedEvent
-# 3. Classes extending CharacterAction must call createActionResolvedEvent
+# 3. Classes extending action base classes must call createActionResolvedEvent
 # 4. Classes extending CardReaction or AttachmentReaction must call $this->setUsed()
 # 5. Classes calling createAttachmentEquippedEvent must call getRequiredAttachTargetId
 # 6. Classes must not implement both IAbilityThatTargetsCharacters and IAbilityThatTargetsCards
@@ -80,31 +80,6 @@ for file in $staged_files; do
         if ! echo "$content" | grep -q 'createActionResolvedEvent'; then
             echo -e "${RED}ERROR:${NC} $file"
             echo -e "  Class extends Action but does not call ${YELLOW}createActionResolvedEvent()${NC}"
-            errors_found=1
-        fi
-    fi
-
-    # Check if the class extends CharacterAction or AttachmentAction or SchemeAction or SchemeCityAction
-    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+(CharacterAction|AttachmentAction|SchemeAction|SchemeCityAction)'; then
-        
-        # Check for $this->setUsed()
-        if ! echo "$content" | grep -q '\$this->setUsed('; then
-            echo -e "${RED}ERROR:${NC} $file"
-            echo -e "  Class extends CharacterAction/AttachmentAction but does not call ${YELLOW}\$this->setUsed()${NC}"
-            errors_found=1
-        fi
-
-        # Check for $this->resetPlayerPassCount()
-        if ! echo "$content" | grep -q '\$this->resetPlayerPassCount('; then
-            echo -e "${RED}ERROR:${NC} $file"
-            echo -e "  Class extends CharacterAction/AttachmentAction but does not call ${YELLOW}\$this->resetPlayerPassCount()${NC}"
-            errors_found=1
-        fi
-
-        # Check for $this->announceAction()
-        if ! echo "$content" | grep -q '\$this->announceAction('; then
-            echo -e "${RED}ERROR:${NC} $file"
-            echo -e "  Class extends CharacterAction/AttachmentAction but does not call ${YELLOW}\$this->announceAction()${NC}"
             errors_found=1
         fi
     fi

@@ -64,14 +64,11 @@ class Action_01180 extends CharacterAction
                 'owner_inject_code' => $kaj->getInjectCode(),
             ]);
 
-            $this->setUsed($event->theah, true);
             $event->theah->game->notify->all('message', clienttranslate('${action_inject_code}: ${count} Artifacts found in the top 4 cards of the City Deck. (${names})'), [
                 'action_inject_code' => $kaj->getInjectCode(),
                 'count' => $count,
                 'names' => implode(', ', $names)
             ]);
-
-            $this->resetPlayerPassCount($event->theah->game);
 
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01180", $this->Id);
@@ -285,7 +282,6 @@ class Action_01180 extends CharacterAction
     
             $playerId = $game->getActivePlayerId();
     
-            // This announcement is used in lieu of $this->announceAction()
             $game->notify->all('message', clienttranslate('${player_name} has chosen to Equip ${card_inject_code} from the top 4 cards of the City Deck.'), [
                 'player_name' => $game->getActivePlayerName(),
                 'card_inject_code' => $attachment->getInjectCode(),

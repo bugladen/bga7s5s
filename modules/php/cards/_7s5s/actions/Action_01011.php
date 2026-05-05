@@ -116,7 +116,6 @@ class Action_01011 extends CharacterAction
             $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
 
             $servo = $this->getOwningCharacter($game->theah);
-            $this->announceAction($game);
 
             $moveEvent = EventFactory::createCardMovingEvent($servo->ControllerId, $servo->Id, $servo->Location, $target->Location, $engage = false, $servo->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
@@ -124,8 +123,6 @@ class Action_01011 extends CharacterAction
             $transition = EventFactory::createTransitionEvent($servo->ControllerId, $servo->Id, "01011_2", $this->Id);
             $game->theah->queueEvent($transition);
 
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
             // createActionResolvedEvent not needed here because it will be taken care of by the frameworkchallenge action
 
             $game->gamestate->nextState("opposingCharacterChosen");

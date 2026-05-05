@@ -23,7 +23,7 @@ class State_highDramaPhase02023 extends GameState
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
             descriptionMyTurn: clienttranslate('Sir Jack Harding') . clienttranslate(': ${you} must choose an opposing non-Leader character to move: '),
             transitions: [
-                "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+                "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_02023_2,
             ],
             updateGameProgression: false,
@@ -37,12 +37,6 @@ class State_highDramaPhase02023 extends GameState
     } 
 
     #[PossibleAction]
-    public function actBack(): void
-    {
-        $this->game->actBack();
-    }
-
-    #[PossibleAction]
     public function actFromCardWithId(string $id): void
     {
         $this->game->actFromCardWithId($id);
@@ -50,7 +44,7 @@ class State_highDramaPhase02023 extends GameState
 
     public function zombie(int $playerId): void
     {
-        $this->game->actBack();
+        $this->game->gamestate->nextState("zombie");
     }
 
 }

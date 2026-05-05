@@ -63,6 +63,14 @@ abstract class LocationAction extends Action
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
+            $game = $event->theah->game;
+            $game->notify->all("message", clienttranslate('${player_name} announced the [${action}] Action.'), [
+                'i18n' => ['action'],
+                'player_name' => $game->getPlayerNameById($game->getActivePlayerId()),
+                'action' => $this->Name,
+            ]);
+    
+
             $activatedEvent = EventFactory::createActionActivatedEvent(
                 $event->playerId,
                 0,

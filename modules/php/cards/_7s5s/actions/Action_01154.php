@@ -133,10 +133,6 @@ class Action_01154 extends AttachmentAction implements ISorcererAbility, IAbilit
             $game->globals->set(Game::CHOSEN_ACTION, $actionId);
             $game->globals->set(Game::CHOSEN_CARD, $riskCard->Id);
 
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-
             $sorceryEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
             $game->theah->queueEvent($sorceryEvent);
 

@@ -113,6 +113,7 @@ trait ZombieTrait
                 case "highDramaRecruitActionChooseMercenary":
                 case "highDramaRecruitActionPayForMercenary":
                 case "highDramaInPlayActionChooseAction":
+                case "highDramaInPlayActionConfirm":
                 case "highDramaInPlayActionChoosePerformer":
                 case "highDramaInHandActionChooseAction":
                 case "highDramaInHandActionChoosePerformer":
@@ -128,13 +129,10 @@ trait ZombieTrait
 
                 // High Drama Player Turn Event States (Card-Specific)
                 case "highDramaPhase01011": // Servo Scarpa
-                case "highDramaPhase01012": // Sibella Scarpa
-                case "highDramaPhase01020": // Dante
+                case "highDramaPhase01015": // The Great Game
                 case "highDramaPhase01044": // Armed and Marshaled
                 case "highDramaPhase01044_2": // Armed and Marshaled target
                 case "highDramaPhase01044_3": // Armed and Marshaled manipulation
-                case "highDramaPhase01046a": // Dark Gift location
-                case "highDramaPhase01049": // Polished Flintlock
                 case "highDramaPhase01055": // Last Word character
                 case "highDramaPhase01055_2": // Last Word location
                 case "highDramaPhase01056": // Move Along
@@ -143,27 +141,33 @@ trait ZombieTrait
                 case "highDramaPhase01060": // Stratege location
                 case "highDramaPhase01060_2": // Stratege performers
                 case "highDramaPhase01060_3": // Stratege destination
-                case "highDramaPhase01068": // Léontine Giroux character
                 case "highDramaPhase01068_2": // Léontine Giroux location
-                case "highDramaPhase01069": // Maxime De Lafayette character
                 case "highDramaPhase01069_2": // Maxime De Lafayette discard
                 case "highDramaPhase01072_3": // Réputation Méritée muster
                 case "highDramaPhase01076": // Blood Mark location
-                case "highDramaPhase01076_2": // Blood Mark character        
+                case "highDramaPhase01076_2": // Blood Mark character
                 case "highDramaPhase01147": // Let's Haggle
                 case "highDramaPhase01148": // Marooned
                 case "highDramaPhase01149": // Midnight Shipment
                 case "highDramaPhase01152a": // Until Morale Improves
                 case "highDramaPhase01152b": // Until Morale Improves
-                case "highDramaPhase01156": // Matchlock Musket discard
 
                     $this->actBack();
                     break;
 
-                case "highDramaPhase01008_4": // Cesca Del Rosso
-                case "highDramaPhase01015": // The Great Game
+                case "highDramaPhase01012": // Sibella Scarpa
                 case "highDramaPhase01017": // Alcee
                 case "highDramaPhase01019": // Buratino
+                case "highDramaPhase01020": // Dante
+                case "highDramaPhase01046a": // Dark Gift location
+                case "highDramaPhase01049": // Polished Flintlock
+                case "highDramaPhase01068": // Léontine Giroux character
+                case "highDramaPhase01069": // Maxime De Lafayette character
+                case "highDramaPhase01156": // Matchlock Musket discard
+                        $this->gamestate->nextState("zombie");
+                    break;
+
+                case "highDramaPhase01008_4": // Cesca Del Rosso
                 case "highDramaPhase01024": // Bravos
                 case "highDramaPhase01025": // Fate's Burden
                 case "highDramaPhase01026": // For the Family

@@ -149,10 +149,6 @@ class Action_01069 extends CharacterAction implements ISorcererAbility, IAbility
                 throw new \BgaUserException($game->translate("You cannot recover a unique attachment"));
             }
 
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-
             // Get the card discarded from the previous step
             $discardedCardId = $game->globals->get(Game::CHOSEN_CARD);
             $discardedCard = $game->getCardObjectFromDb($discardedCardId);

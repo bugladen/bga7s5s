@@ -21,7 +21,7 @@ class State_highDramaPhase02034 extends GameState
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
             descriptionMyTurn: clienttranslate('Torvo Espada') . clienttranslate(': ${you} must choose an opposing character with 2 [Combat] or more: '),
             transitions: [
-                'back' => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+                'zombie' => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 'targetChosen' => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
@@ -35,12 +35,6 @@ class State_highDramaPhase02034 extends GameState
     }
 
     #[PossibleAction]
-    public function actBack(): void
-    {
-        $this->game->actBack();
-    }
-
-    #[PossibleAction]
     public function actFromCardWithId(string $id): void
     {
         $this->game->actFromCardWithId($id);
@@ -48,6 +42,6 @@ class State_highDramaPhase02034 extends GameState
 
     public function zombie(int $playerId): void
     {
-        $this->game->actBack();
+        $this->game->gamestate->nextState("zombie");
     }
 }

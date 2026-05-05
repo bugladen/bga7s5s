@@ -796,40 +796,44 @@ trait FrameworkActionsTrait
         if ($action instanceof CharacterAction)
             $this->globals->set(GAME::CHOSEN_PERFORMER, $action->OwnerId);
 
-        if ($action->RequiresPerformerSelected)
-        {
-            $this->gamestate->nextState("requiresPerformerSelected");
-        }
-        else
-        {
-            $id = Game::THEAH_ID;
-            if ($action instanceof CardAction)
-                $id = $action->OwnerId;
+        $this->gamestate->nextState("actionChosen");
+    }
 
-            $event = EventFactory::createActionTriggeredEvent($player_id, $id, $id, $actionId);
-            $this->theah->eventCheck($event);
-            $this->theah->queueEvent($event);
-    
-            $this->gamestate->nextState("inPlayActionChosen");
+    public function actHighDramaInPlayActionConfirm()
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
+        $action = $this->theah->getInPlayActionById($actionId);
+
+        if ($action == null) {
+            throw new UserException(clienttranslate("Action not found."));
         }
+
+        if ( ! $action->isAvailabletoPlayer($playerId, $this->theah)) {
+            throw new UserException(clienttranslate("Action is not available to player."));
+        }
+
+        $sourceId = Game::THEAH_ID;
+        if ($action instanceof CardAction)
+            $sourceId = $action->OwnerId;
+
+        $action->announceAction($this);
+
+        $this->gamestate->nextState("confirmed");
     }
 
     public function actHighDramaInPlayActionPerformerChosen(int $id)
     {
         $this->theah->buildCity();
-        $playerId = (int)$this->getActivePlayerId();
         $performer = $this->getCardObjectFromDb($id);
-
-        $actionId = $this->globals->get(GAME::CHOSEN_ACTION, '');
-        $action = $this->theah->getInPlayActionById($actionId);
-        $sourceId = $action->OwnerId;
+        if ($performer == null) 
+        {
+            throw new UserException(clienttranslate("Performer not found."));
+        }
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
-
-        $event = EventFactory::createActionTriggeredEvent($playerId, $performer->Id, $sourceId, $actionId);
-        $this->theah->eventCheck($event);
-        $this->theah->queueEvent($event);
-
         $this->gamestate->nextState("inPlayActionPerformerChosen");
     }
 

@@ -149,10 +149,6 @@ class Action_01097 extends CharacterAction implements IAbilityThatTargetsCharact
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $this->announceAction($game);
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($game->theah, true);
-            
             $game->gamestate->nextState("characterChosen");
         }
     }

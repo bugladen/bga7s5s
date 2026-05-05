@@ -448,12 +448,11 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Sibella Scarpa') . clienttranslate(': ${you} must choose an opposing character to wound: '),
         "type" => "activeplayer",
         "args" => "argsForState",
-        "possibleactions" => [  
-            "actBack",
+        "possibleactions" => [
             "actFromCardWithId"
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "opposingCharacterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
@@ -481,11 +480,10 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actBack",
             "actFromCardWithId",
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
         ]
     ],
@@ -497,11 +495,10 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actBack",
             "actFromCardWithId",
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
         ]
     ],
@@ -513,11 +510,10 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actBack",
             "actFromCardWithId",
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
         ]
     ],
@@ -801,11 +797,10 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actBack",
             "actFromCardWithLocations"
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
@@ -817,11 +812,10 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actBack",
             "actFromCardWithId"
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
@@ -979,11 +973,10 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actBack",
             "actFromCardWithId"
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_01068_2
         ]
     ],
@@ -1010,11 +1003,10 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actBack",
             "actFromCardWithId"
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_01069_2
         ]
     ],
@@ -1219,8 +1211,8 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithLocations",
-            "actBack"
+            "actBack",
+            "actFromCardWithLocations"
         ],
         "transitions" => [
             "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
@@ -1235,8 +1227,8 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithId",
-            "actBack"
+            "actBack",
+            "actFromCardWithId"
         ],
         "transitions" => [
             "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
@@ -1250,8 +1242,8 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithId",
-            "actBack"
+            "actBack",
+            "actFromCardWithId"
         ],
         "transitions" => [
             "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
@@ -1267,12 +1259,11 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithId",
-            "actBack"
+            "actFromCardWithId"
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
-            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_01156_2
+            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_01156_2,
+            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
         ]
     ],
     States::HIGH_DRAMA_PLAYER_TURN_01156_2 => [
@@ -1479,11 +1470,10 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithId",
-            "actBack"
+            "actFromCardWithId"
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "attachmentChosen" => States::HIGH_DRAMA_PLAYER_TURN_01194_2
         ]
     ],
@@ -1511,11 +1501,10 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithId",
-            "actBack"
+            "actFromCardWithId"
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
+            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_01197_2
         ]
     ],
@@ -1588,12 +1577,11 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "type" => "activeplayer",
         "args" => "argsForState",
         "possibleactions" => [
-            "actFromCardWithId",
-            "actBack"
+            "actFromCardWithId"
         ],
         "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
-            "victimChosen" => States::HIGH_DRAMA_PLAYER_TURN_01205_2            
+            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            "victimChosen" => States::HIGH_DRAMA_PLAYER_TURN_01205_2
         ]
     ],
 

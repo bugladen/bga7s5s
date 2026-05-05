@@ -77,10 +77,7 @@ class Action_01071 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01071", $this->Id);
             $event->theah->queueEvent($transition);
 
-            // $this->resetPlayerPassCount() is called in stSetupChallenge
-            // $this->setUsed() is called in stSetupChallenge        
             // createActionResolvedEvent() is called when the challenge is resolved
-            // $this->announceAction() is called in stSetupChallenge
         }
 
         if ($event instanceof EventCharacterWounded)

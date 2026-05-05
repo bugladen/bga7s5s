@@ -104,10 +104,6 @@ class Action_02002 extends CharacterAction implements ISorcererAbility, IAbility
                 $cards[] = $card->getPropertyArray($game);
             }
 
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-            $this->announceAction($game);
-
             $game->globals->set(Game::CHOSEN_CARD, json_encode($cards));
 
             $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);

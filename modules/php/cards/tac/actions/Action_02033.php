@@ -113,10 +113,6 @@ class Action_02033 extends CharacterAction
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($rosa->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $this->resetPlayerPassCount($game);
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-
             $game->gamestate->nextState('cardChosen');
         }
     }

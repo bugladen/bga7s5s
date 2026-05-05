@@ -83,6 +83,33 @@ trait StatesTrait
         $this->theah->runEvents();
     }
 
+    public function stHighDramaInPlayActionDispatch()
+    {
+        $this->theah->buildCity();
+        $playerId = (int)$this->getActivePlayerId();
+
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
+        $action = $this->theah->getInPlayActionById($actionId);
+
+        $sourceId = Game::THEAH_ID;
+        if ($action instanceof CardAction)
+            $sourceId = $action->OwnerId;
+
+        $event = EventFactory::createActionTriggeredEvent($playerId, $sourceId, $sourceId, $actionId);
+        $this->theah->queueEvent($event);
+
+        $action->setUsed($this->theah, true);
+        $action->resetPlayerPassCount($this->theah->game);
+
+        if ($action !== null && $action->RequiresPerformerSelected)
+        {
+            $this->gamestate->nextState("requiresPerformerSelected");
+            return;
+        }
+
+        $this->gamestate->nextState("inPlayActionChosen");
+    }
+
     public function stBuildDecks() {
         $this->buildDecks();
         $this->gamestate->nextState("");

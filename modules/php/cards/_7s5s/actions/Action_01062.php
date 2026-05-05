@@ -71,17 +71,12 @@ class Action_01062 extends CharacterAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
 
-            $this->announceAction($game);
-
             $moveEvent = EventFactory::createCardMovingEvent($event->playerId, $performer->Id, $performer->Location, $odette->Location, $engage = false, $sourceId = $odette->Id, $this->Id);
             $event->theah->eventCheck($moveEvent);
             $event->theah->queueEvent($moveEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);
-
-            $this->setUsed($event->theah, true);
-            $this->resetPlayerPassCount($game);
         }
     }
 }

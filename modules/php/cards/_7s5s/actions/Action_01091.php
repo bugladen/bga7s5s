@@ -124,10 +124,6 @@ class Action_01091 extends CharacterAction implements IAbilityThatTargetsCharact
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
                 $game->theah->queueEvent($actionResolvedEvent);
 
-                $this->setUsed($game->theah, true);
-                $this->announceAction($game);
-                $this->resetPlayerPassCount($game);
-
                 $game->gamestate->nextState("characterChosen");
             }
             else if (count($ids) == 2)
@@ -156,10 +152,6 @@ class Action_01091 extends CharacterAction implements IAbilityThatTargetsCharact
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $owner->Id, false, false, false);
             $game->theah->queueEvent($discardEvent);
 
-            $this->announceAction($game);
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($game->theah, true);
-            
             $ids = $game->globals->get(Game::CHOSEN_TARGET);
             foreach ($ids as $id)
             {

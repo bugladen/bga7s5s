@@ -183,10 +183,6 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
             $transitionEvent = EventFactory::createTransitionEvent($andriana->ControllerId, $andriana->Id, "02001_2", $this->Id);
             $game->theah->queueEvent($transitionEvent);
 
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-
             //createActionResolvedEvent not needed because the challenge will issue it
 
             $game->gamestate->nextState("characterChosen");

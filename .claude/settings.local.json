@@ -31,7 +31,9 @@
       "Bash(xargs -I {} grep -l \"queueEvent\\\\|EventFactory\" {})",
       "Bash(xargs -I {} basename {})",
       "Bash(xargs -I {} grep -l \"eventCheck\" {})",
-      "WebFetch(domain:en.doc.boardgamearena.com)"
+      "WebFetch(domain:en.doc.boardgamearena.com)",
+      "Bash(awk '/HIGH_DRAMA_PLAYER_TURN___TRACKED_VAR__ =>/,/\\\\],/' /c/code/7s5s/states.7s5s.php)",
+      "Bash(awk '/HIGH_DRAMA_PLAYER_TURN___TRACKED_VAR__ =>/,/^    \\\\],/' /c/code/7s5s/states.7s5s.php)"
     ]
   }
 }

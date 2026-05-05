@@ -92,10 +92,6 @@ class Action_02047 extends AttachmentAction implements IAbilityThatTargetsCards
             $isArtifact = $attachment->hasTrait("Artifact");
             $owningAttachment = $this->getOwningAttachment($game->theah);
 
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-
             $lockerEvent = EventFactory::createCardSentToLockerEvent($owner->ControllerId, $attachment->Id);
             $game->theah->queueEvent($lockerEvent);
 

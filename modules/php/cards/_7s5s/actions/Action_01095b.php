@@ -66,10 +66,6 @@ class Action_01095b extends CharacterAction
                 $event->theah->queueEvent($challengeEvent);
             }
 
-            $this->announceAction($game);
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($event->theah, true);
-
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($patricia->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);
         }

@@ -102,8 +102,6 @@ class Action_02034 extends CharacterAction
 
             $game->globals->set(Game::CHOSEN_CARD, $target->Id);
 
-            $this->announceAction($game);
-
             $transitionEvent = EventFactory::createTransitionEvent($target->ControllerId, $torvo->Id, '02034_2', $this->Id);
             $game->theah->queueEvent($transitionEvent);
 
@@ -134,9 +132,6 @@ class Action_02034 extends CharacterAction
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($torvo->ControllerId);
                 $game->theah->queueEvent($actionResolvedEvent);
 
-                $this->setUsed($game->theah, true);
-                $this->resetPlayerPassCount($game);
-    
                 $game->gamestate->nextState('');
                 return;
             }
@@ -145,9 +140,6 @@ class Action_02034 extends CharacterAction
             $game->globals->set(Game::CHOSEN_TARGET, $torvo->Id);
             $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
             $game->globals->set(Game::CHALLENGE_TYPE, Game::TORVO_ESPADA_CHALLENGE_TYPE);
-
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
 
             $transitionEvent = EventFactory::createTransitionEvent($target->ControllerId, $torvo->Id, '02034_3', $this->Id);
             $game->theah->queueEvent($transitionEvent);

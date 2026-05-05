@@ -95,10 +95,7 @@ class Action_01036 extends CharacterAction implements IAbilityThatTargetsCharact
             $transitionEvent = EventFactory::createTransitionEvent($daniella->ControllerId, $daniella->Id, "01036", $this->Id);
             $event->theah->queueEvent($transitionEvent);
 
-            // $this->resetPlayerPassCount() is called in stSetupChallenge
-            // $this->setUsed() is called in stSetupChallenge        
             //createActionResolvedEvent() is called when the challenge is resolved
-            // $this->announceAction() is called in stSetupChallenge
         }
     }
 

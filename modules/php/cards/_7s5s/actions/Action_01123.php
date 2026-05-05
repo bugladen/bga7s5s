@@ -135,10 +135,6 @@ class Action_01123 extends CharacterAction implements IAbilityThatTargetsCharact
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01123_2", $this->Id);
             $game->theah->queueEvent($transition);
 
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-
             // createActionResolvedEvent() not needed because this action starts a challenge
 
             $game->gamestate->nextState("opponentChosen");

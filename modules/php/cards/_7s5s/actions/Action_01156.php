@@ -208,9 +208,6 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCharac
                 $game->theah->queueEvent($transition);
             }
 
-            //Custom announce above $this->announceAction() not needed
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
             $game->gamestate->nextState();
         }
 

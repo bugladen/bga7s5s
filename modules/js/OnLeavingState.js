@@ -130,6 +130,17 @@ onLeavingState: function( stateName )
             }                
         },
 
+        'highDramaInPlayActionConfirm' : () => {
+            if (this.isCurrentPlayerActive())
+            {
+                const card = this.cardProperties[this.clientStateArgs.actionCardId];
+                if (card) {
+                    const image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+                }
+            }
+        },
+
         'highDramaInPlayActionChoosePerformer' : () => {
             if (this.isCurrentPlayerActive()) 
             {
