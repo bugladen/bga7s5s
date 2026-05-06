@@ -9,7 +9,7 @@ class StarterDecks
             "decks": [
                 {
                     "id": "SDCastille",
-                    "name": "Castille Starter",
+                    "name": "Core Castille Starter",
                     "faction": "Castille",
                     "leader": "01089",
                     "approach_deck": [ "01098", "01099", "01148", "01149", "01150", "01091", "01092", "01093", "01094", "01097" ],
@@ -44,7 +44,7 @@ class StarterDecks
                 },
                 {
                     "id": "SDEisen",
-                    "name": "Eisen Starter",
+                    "name": "Core Eisen Starter",
                     "faction": "Eisen",
                     "leader": "01035",
                     "approach_deck": [ "01044", "01045", "01146", "01147", "01150", "01043", "01036", "01038", "01039", "01042" ],
@@ -75,7 +75,7 @@ class StarterDecks
                 },
                 {
                     "id": "SDMontaigne",
-                    "name": "Montaigne Starter",
+                    "name": "Core Montaigne Starter",
                     "faction": "Montaigne",
                     "leader": "01062",
                     "approach_deck": [ "01071", "01072", "01146", "01147", "01149", "01063", "01065", "01067", "01068", "01069" ],
@@ -105,7 +105,7 @@ class StarterDecks
                 },
                 {
                     "id": "SDUssura",
-                    "name": "Ussura Starter",
+                    "name": "Core Ussura Starter",
                     "faction": "Ussura",
                     "leader": "01116",
                     "approach_deck": [ "01125", "01126", "01144", "01150", "01145", "01123", "01124", "01118", "01122", "01120" ],
@@ -138,7 +138,7 @@ class StarterDecks
                 },
                 {
                     "id": "SDVodacce",
-                    "name": "Vodacce Starter",
+                    "name": "Core Vodacce Starter",
                     "faction": "Vodacce",
                     "leader": "01006",
                     "approach_deck": [ "01015", "01016", "01143", "01148", "01152", "01011", "01012", "01013", "01008", "01009" ],
