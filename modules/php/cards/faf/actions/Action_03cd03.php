@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\EventCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsPlayers;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -75,8 +76,6 @@ class Action_03cd03 extends EventCityAction implements IAbilityThatTargetsPlayer
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_03CD03)
         {
-            $this->announceAction($game);
-
             $this->handleTargetChosen($game, $id);
             return;
         }
@@ -100,7 +99,6 @@ class Action_03cd03 extends EventCityAction implements IAbilityThatTargetsPlayer
         $location = $owner->Location;
 
         $game->globals->set(Game::CHOSEN_TARGET, $targetPlayerId);
-        $this->resetPlayerPassCount($game);
 
         $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} has targeted ${target_name}.'), [
             "owner_inject_code" => $owner->getInjectCode(),
@@ -186,7 +184,7 @@ class Action_03cd03 extends EventCityAction implements IAbilityThatTargetsPlayer
         $game->gamestate->nextState("musterResolved");
     }
 
-    private function queueDiscardAndResolve(Game $game, $owner, string $location): void
+    private function queueDiscardAndResolve(Game $game, Card $owner, string $location): void
     {
         $triggererId = (int)$game->globals->get(Game::CURRENT_PLAYER);
 

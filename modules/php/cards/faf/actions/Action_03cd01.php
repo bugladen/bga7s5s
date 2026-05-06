@@ -52,13 +52,10 @@ class Action_03cd01 extends CharacterAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $game = $event->theah->game;
             $owner = $this->getOwningCharacter($event->theah);
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "03cd01", $this->Id);
             $event->theah->queueEvent($transition);
-
-            $this->announceAction($game);
         }
     }
 
@@ -142,12 +139,9 @@ class Action_03cd01 extends CharacterAction
                 throw new UserException(sprintf($game->translate("Location is not adjacent to %s."), $owner->Location));
             }
 
-            // Commit: engage Penya (cost), mark used, reset pass count
+            // Commit: engage Penya (cost)
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engageEvent);
-
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
 
             // Move companion to location
             $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $companion->Id, $companion->Location, $location, $engage = false, $owner->Id, $this->Id);
