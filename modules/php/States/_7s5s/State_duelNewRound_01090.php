@@ -20,7 +20,7 @@ class State_duelNewRound_01090 extends GameState
             name: "duelNewRound_01090",
 
             description: clienttranslate('Lorenzo de Zepeda') . clienttranslate(': ${actplayer} is choosing Options.'),
-            descriptionMyTurn: clienttranslate('Lorenzo de Zepeda') . clienttranslate(': ${you} must choose: Discard a card to play the revealed card as your Combat Card, or take a Wound: '),
+            descriptionMyTurn: clienttranslate('Lorenzo de Zepeda') . clienttranslate(': ${you} must choose: Discard a card from your Faction Hand to play the top card of your Deck as your Combat Card, or take a Wound: '),
             transitions: [
                 "" => States::DUEL_NEW_ROUND_EVENTS,
             ],

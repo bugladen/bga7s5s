@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
@@ -78,6 +79,14 @@ class Technique_01090 extends Technique
             $owner->IsUpdated = true;
         }
 
+        if ($event instanceof EventDuelEnd)
+        {
+            $this->RevealedCardId = 0;
+            $this->CardPlayerId = 0;
+            $owner = $this->getOwningCharacter($event->theah);
+            $owner->IsUpdated = true;
+        }
+
         if ($event instanceof EventDuelNewRound && $this->CardPlayerId > 0)
         {
             $adversary = $event->theah->getDuelRoundActor();
@@ -138,10 +147,33 @@ class Technique_01090 extends Technique
                 $game->theah->queueEvent($discardEvent);
 
                 $card = $game->getCardObjectFromDb($this->RevealedCardId);
+
+                // Move from faction deck into hand, then on to the dueling line
+                // (mirrors the normal combat-card flow in actChooseCombatCard).
+                // Done with direct DB ops so we can chain both moves synchronously
+                // — using EventCardAddedToHand here would fire after the dueling-line
+                // move and put the card back into the hand.
+                $card->Location = Game::LOCATION_HAND;
+                $deck->moveCard($card->Id, Game::LOCATION_HAND, $actor->ControllerId);
+                $game->updateCardObjectInDb($card);
+                $game->theah->addCardToWorld($card);
+
+                $game->notify->all("cardAddedToHand", clienttranslate('${player_name} added ${card_inject_code} to their Faction Hand.'), [
+                    "player_id" => $actor->ControllerId,
+                    "player_name" => $game->getPlayerNameById($actor->ControllerId),
+                    "card_inject_code" => $card->getInjectCode(),
+                    "card" => $card->getPropertyArray($game),
+                    "handCount" => count($deck->getPlayerHand($actor->ControllerId)),
+                ]);
+
                 $game->globals->set(Game::CHOSEN_CARD, $card->Id);
 
                 $event = EventFactory::createCombatCardAnnouncedEvent($actor->ControllerId, $owner->Id);
                 $game->theah->queueEvent($event);
+
+                $card->Location = Game::LOCATION_DUELING_LINE;
+                $deck->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $actor->ControllerId);
+                $game->updateCardObjectInDb($card);
 
                 $transition = EventFactory::createTransitionEvent($actor->ControllerId, $owner->Id, "01090_2", $this->Id);
                 $game->theah->queueEvent($transition);
