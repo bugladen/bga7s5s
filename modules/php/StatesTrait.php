@@ -1450,20 +1450,23 @@ trait StatesTrait
         //Any threat remaining for the actor is applied
         $threat = 0;
         $field = "";
+        $lethalField = "";
         $lethal = 0;
         if ($actorId == $challengerId)
         {
             $threat = $values['ending_challenger_threat'];
             $lethal = $values['challenger_threat_is_lethal'];
             $field = "ending_challenger_threat";
+            $lethalField = "challenger_threat_is_lethal";
         }
         else
         {
             $threat = $values['ending_defender_threat'];
             $lethal = $values['defender_threat_is_lethal'];
             $field = "ending_defender_threat";
+            $lethalField = "defender_threat_is_lethal";
         }
-        $sql = "UPDATE duel_round SET $field = 0 WHERE duel_id = $duelId AND round = $round";
+        $sql = "UPDATE duel_round SET $field = 0, $lethalField = 0 WHERE duel_id = $duelId AND round = $round";
         $this->DbQuery($sql);
 
         if ($threat > 0)
