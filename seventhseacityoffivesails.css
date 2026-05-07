@@ -42,7 +42,7 @@ body {
 
 ._7sfs-deck-picker-modal {
     width: 700px;
-    height: 600px;
+    height: 690px;
     background: #fff;
     border-radius: 8px;
     overflow: hidden;
@@ -156,7 +156,7 @@ body {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    transform: translate(calc(-50% - 230px), -50%) rotate(-20deg);
+    transform: translate(calc(-50% - 220px), -50%) rotate(-20deg);
     pointer-events: none;
 }
 

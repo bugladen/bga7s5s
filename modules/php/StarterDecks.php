@@ -9,7 +9,8 @@ class StarterDecks
             "decks": [
                 {
                     "id": "SDCastille",
-                    "name": "Core Castille Starter",
+                    "name": "Castille Starter",
+                    "set": "Core",
                     "faction": "Castille",
                     "leader": "01089",
                     "approach_deck": [ "01098", "01099", "01148", "01149", "01150", "01091", "01092", "01093", "01094", "01097" ],
@@ -44,7 +45,8 @@ class StarterDecks
                 },
                 {
                     "id": "SDEisen",
-                    "name": "Core Eisen Starter",
+                    "name": "Eisen Starter",
+                    "set": "Core",
                     "faction": "Eisen",
                     "leader": "01035",
                     "approach_deck": [ "01044", "01045", "01146", "01147", "01150", "01043", "01036", "01038", "01039", "01042" ],
@@ -75,7 +77,8 @@ class StarterDecks
                 },
                 {
                     "id": "SDMontaigne",
-                    "name": "Core Montaigne Starter",
+                    "name": "Montaigne Starter",
+                    "set": "Core",
                     "faction": "Montaigne",
                     "leader": "01062",
                     "approach_deck": [ "01071", "01072", "01146", "01147", "01149", "01063", "01065", "01067", "01068", "01069" ],
@@ -105,7 +108,8 @@ class StarterDecks
                 },
                 {
                     "id": "SDUssura",
-                    "name": "Core Ussura Starter",
+                    "name": "Ussura Starter",
+                    "set": "Core",
                     "faction": "Ussura",
                     "leader": "01116",
                     "approach_deck": [ "01125", "01126", "01144", "01150", "01145", "01123", "01124", "01118", "01122", "01120" ],
@@ -138,7 +142,8 @@ class StarterDecks
                 },
                 {
                     "id": "SDVodacce",
-                    "name": "Core Vodacce Starter",
+                    "name": "Vodacce Starter",
+                    "set": "Core",
                     "faction": "Vodacce",
                     "leader": "01006",
                     "approach_deck": [ "01015", "01016", "01143", "01148", "01152", "01011", "01012", "01013", "01008", "01009" ],
@@ -167,6 +172,547 @@ class StarterDecks
                         { "id": "01171", "count": 2 },
                         { "id": "01172", "count": 2 },
                         { "id": "01174", "count": 1 }
+                    ]
+                },
+                {
+                    "id": "SDCastilleTaC",
+                    "name": "7S5S Tooth & Claw Team Castille Deck List",
+                    "set": "TaC",
+                    "faction": "Castille",
+                    "leader": "01089",
+                    "approach_deck": [
+                        "01091",
+                        "01092",
+                        "01093",
+                        "02033",
+                        "01096",
+                        "02035",
+                        "01099",
+                        "01148",
+                        "02053",
+                        "01098"
+                    ],
+                    "faction_deck": [
+                        {
+                        "id": "01103",
+                        "count": 1
+                        },
+                        {
+                        "id": "01159",
+                        "count": 2
+                        },
+                        {
+                        "id": "01104",
+                        "count": 2
+                        },
+                        {
+                        "id": "01112",
+                        "count": 2
+                        },
+                        {
+                        "id": "01162",
+                        "count": 2
+                        },
+                        {
+                        "id": "01105",
+                        "count": 2
+                        },
+                        {
+                        "id": "01101",
+                        "count": 2
+                        },
+                        {
+                        "id": "02038",
+                        "count": 2
+                        },
+                        {
+                        "id": "01164",
+                        "count": 2
+                        },
+                        {
+                        "id": "01155",
+                        "count": 2
+                        },
+                        {
+                        "id": "01108",
+                        "count": 2
+                        },
+                        {
+                        "id": "02037",
+                        "count": 1
+                        },
+                        {
+                        "id": "01109",
+                        "count": 2
+                        },
+                        {
+                        "id": "01170",
+                        "count": 2
+                        },
+                        {
+                        "id": "01111",
+                        "count": 2
+                        },
+                        {
+                        "id": "01113",
+                        "count": 2
+                        },
+                        {
+                        "id": "01114",
+                        "count": 2
+                        },
+                        {
+                        "id": "01174",
+                        "count": 2
+                        },
+                        {
+                        "id": "02040",
+                        "count": 1
+                        },
+                        {
+                        "id": "01100",
+                        "count": 1
+                        },
+                        {
+                        "id": "01176",
+                        "count": 2
+                        },
+                        {
+                        "id": "02041",
+                        "count": 2
+                        }
+                    ]
+                },
+                {
+                    "id": "SDMontaigneTaC",
+                    "name": "7S5S Tooth & Claw Team Montaigne Deck List",
+                    "set": "TaC",
+                    "faction": "Montaigne",
+                    "leader": "01062",
+                    "approach_deck": [
+                        "01066",
+                        "01067",
+                        "01068",
+                        "02022",
+                        "01069",
+                        "01072",
+                        "01071",
+                        "01148",
+                        "01152",
+                        "02053"
+                    ],
+                    "faction_deck": [
+                        {
+                        "id": "01160",
+                        "count": 2
+                        },
+                        {
+                        "id": "01076",
+                        "count": 2
+                        },
+                        {
+                        "id": "01077",
+                        "count": 2
+                        },
+                        {
+                        "id": "01073",
+                        "count": 2
+                        },
+                        {
+                        "id": "01162",
+                        "count": 2
+                        },
+                        {
+                        "id": "02026",
+                        "count": 1
+                        },
+                        {
+                        "id": "02055",
+                        "count": 1
+                        },
+                        {
+                        "id": "01078",
+                        "count": 2
+                        },
+                        {
+                        "id": "01081",
+                        "count": 2
+                        },
+                        {
+                        "id": "01165",
+                        "count": 2
+                        },
+                        {
+                        "id": "01083",
+                        "count": 2
+                        },
+                        {
+                        "id": "02056",
+                        "count": 2
+                        },
+                        {
+                        "id": "01074",
+                        "count": 2
+                        },
+                        {
+                        "id": "01085",
+                        "count": 1
+                        },
+                        {
+                        "id": "01172",
+                        "count": 2
+                        },
+                        {
+                        "id": "01173",
+                        "count": 2
+                        },
+                        {
+                        "id": "01075",
+                        "count": 1
+                        },
+                        {
+                        "id": "01158",
+                        "count": 2
+                        },
+                        {
+                        "id": "02061",
+                        "count": 2
+                        },
+                        {
+                        "id": "01087",
+                        "count": 2
+                        },
+                        {
+                        "id": "01088",
+                        "count": 2
+                        },
+                        {
+                        "id": "01084",
+                        "count": 2
+                        }
+                    ]
+                },
+                {
+                    "id": "SDEisenTaC",
+                    "name": "7S5S Tooth & Claw Team Eisen Deck List",
+                    "set": "TaC",
+                    "faction": "Eisen",
+                    "leader": "01035",
+                    "approach_deck": [
+                        "02011",
+                        "01039",
+                        "01042",
+                        "02012",
+                        "02013",
+                        "01147",
+                        "01146",
+                        "01044",
+                        "01149",
+                        "02014"
+                    ],
+                    "faction_deck": [
+                        {
+                        "id": "01159",
+                        "count": 2
+                        },
+                        {
+                        "id": "01160",
+                        "count": 2
+                        },
+                        {
+                        "id": "02016",
+                        "count": 1
+                        },
+                        {
+                        "id": "01046",
+                        "count": 1
+                        },
+                        {
+                        "id": "02018",
+                        "count": 2
+                        },
+                        {
+                        "id": "01052",
+                        "count": 2
+                        },
+                        {
+                        "id": "01054",
+                        "count": 2
+                        },
+                        {
+                        "id": "01048",
+                        "count": 2
+                        },
+                        {
+                        "id": "01055",
+                        "count": 2
+                        },
+                        {
+                        "id": "01156",
+                        "count": 2
+                        },
+                        {
+                        "id": "01170",
+                        "count": 2
+                        },
+                        {
+                        "id": "01049",
+                        "count": 2
+                        },
+                        {
+                        "id": "01058",
+                        "count": 2
+                        },
+                        {
+                        "id": "01059",
+                        "count": 2
+                        },
+                        {
+                        "id": "02060",
+                        "count": 2
+                        },
+                        {
+                        "id": "01060",
+                        "count": 2
+                        },
+                        {
+                        "id": "01157",
+                        "count": 2
+                        },
+                        {
+                        "id": "01158",
+                        "count": 2
+                        },
+                        {
+                        "id": "01050",
+                        "count": 2
+                        },
+                        {
+                        "id": "01061",
+                        "count": 2
+                        },
+                        {
+                        "id": "02020",
+                        "count": 2
+                        }
+                    ]
+                },
+                {
+                    "id": "SDUssuraTaC",
+                    "name": "7S5S Tooth & Claw Team Ussura Deck List",
+                    "set": "TaC",
+                    "faction": "Ussura",
+                    "leader": "01116",
+                    "approach_deck": [
+                        "01117",
+                        "01118",
+                        "02042",
+                        "02043",
+                        "01121",
+                        "01144",
+                        "01126",
+                        "01151",
+                        "02053",
+                        "02046"
+                    ],
+                    "faction_deck": [
+                        {
+                        "id": "01159",
+                        "count": 2
+                        },
+                        {
+                        "id": "01153",
+                        "count": 1
+                        },
+                        {
+                        "id": "01162",
+                        "count": 2
+                        },
+                        {
+                        "id": "01127",
+                        "count": 1
+                        },
+                        {
+                        "id": "01131",
+                        "count": 2
+                        },
+                        {
+                        "id": "02049",
+                        "count": 2
+                        },
+                        {
+                        "id": "01134",
+                        "count": 2
+                        },
+                        {
+                        "id": "01128",
+                        "count": 2
+                        },
+                        {
+                        "id": "01135",
+                        "count": 2
+                        },
+                        {
+                        "id": "01136",
+                        "count": 2
+                        },
+                        {
+                        "id": "01130",
+                        "count": 2
+                        },
+                        {
+                        "id": "01137",
+                        "count": 2
+                        },
+                        {
+                        "id": "01172",
+                        "count": 2
+                        },
+                        {
+                        "id": "01138",
+                        "count": 2
+                        },
+                        {
+                        "id": "01139",
+                        "count": 1
+                        },
+                        {
+                        "id": "01140",
+                        "count": 2
+                        },
+                        {
+                        "id": "02047",
+                        "count": 1
+                        },
+                        {
+                        "id": "01157",
+                        "count": 2
+                        },
+                        {
+                        "id": "01176",
+                        "count": 2
+                        },
+                        {
+                        "id": "02051",
+                        "count": 2
+                        },
+                        {
+                        "id": "01154",
+                        "count": 2
+                        },
+                        {
+                        "id": "01141",
+                        "count": 2
+                        }
+                    ]
+                },
+                {
+                    "id": "SDVodacceTaC",
+                    "name": "7S5S Tooth & Claw Team Vodacce Deck List",
+                    "set": "TaC",
+                    "faction": "Vodacce",
+                    "leader": "01006",
+                    "approach_deck": [
+                        "01009",
+                        "02002",
+                        "01012",
+                        "02003",
+                        "01014",
+                        "02004",
+                        "01015",
+                        "01148",
+                        "01016",
+                        "01151"
+                    ],
+                    "faction_deck": [
+                        {
+                        "id": "01017",
+                        "count": 1
+                        },
+                        {
+                        "id": "02007",
+                        "count": 2
+                        },
+                        {
+                        "id": "01018",
+                        "count": 1
+                        },
+                        {
+                        "id": "01019",
+                        "count": 1
+                        },
+                        {
+                        "id": "01020",
+                        "count": 1
+                        },
+                        {
+                        "id": "01024",
+                        "count": 2
+                        },
+                        {
+                        "id": "01162",
+                        "count": 2
+                        },
+                        {
+                        "id": "01154",
+                        "count": 2
+                        },
+                        {
+                        "id": "01164",
+                        "count": 2
+                        },
+                        {
+                        "id": "01166",
+                        "count": 2
+                        },
+                        {
+                        "id": "01169",
+                        "count": 2
+                        },
+                        {
+                        "id": "01027",
+                        "count": 2
+                        },
+                        {
+                        "id": "01170",
+                        "count": 2
+                        },
+                        {
+                        "id": "01028",
+                        "count": 2
+                        },
+                        {
+                        "id": "01172",
+                        "count": 2
+                        },
+                        {
+                        "id": "01029",
+                        "count": 2
+                        },
+                        {
+                        "id": "02059",
+                        "count": 2
+                        },
+                        {
+                        "id": "01173",
+                        "count": 2
+                        },
+                        {
+                        "id": "01174",
+                        "count": 2
+                        },
+                        {
+                        "id": "01032",
+                        "count": 2
+                        },
+                        {
+                        "id": "01158",
+                        "count": 2
+                        },
+                        {
+                        "id": "01033",
+                        "count": 2
+                        }
                     ]
                 }
             ]

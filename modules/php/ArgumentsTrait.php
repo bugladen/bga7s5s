@@ -38,12 +38,13 @@ trait ArgumentsTrait
     public function argAvailableDecks(): array
     {
         $starter_decks = json_decode(StarterDecks::$decksJson);
+        $starter_decks = array_filter($starter_decks->decks, fn($deck) => $deck->set == "Core");
         $decks = array_map(function($deck) {
             return [
                 "id" => $deck->id,
                 "name" => $deck->name
             ];
-        }, $starter_decks->decks);
+        }, $starter_decks);
 
         $playerCount = $this->getPlayersNumber();
         $opponent_message = $playerCount === 2
