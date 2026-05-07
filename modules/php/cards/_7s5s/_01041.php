@@ -65,6 +65,14 @@ class _01041 extends Character implements IHasActions
 
     public function getOpposingSorcererCount(Theah $theah, string $location): int
     {
+        // WHY: LOCATION_PLAYER_HOME is a single shared string for every player's home,
+        // so getCharactersAtLocation aggregates home characters across all players.
+        // Rosine's passive only applies in the city, so treat home as having no opposing
+        // sorcerers regardless of who is there.
+        if ($location == Game::LOCATION_PLAYER_HOME)
+        {
+            return 0;
+        }
         $sorcerers = $theah->getCharactersAtLocation($location);
         $sorcerers = array_filter($sorcerers, fn($character) => $character->hasTrait("Sorcerer") && $character->isNotControlledByPlayer($this->ControllerId));
         return count($sorcerers);
@@ -84,6 +92,15 @@ class _01041 extends Character implements IHasActions
             {
                 $this->updateInfluence($event->theah, -1);
             }
+        }
+
+        // WHY: Once Rosine is at home, her passive is inactive. The remaining handlers
+        // compare $this->Location with event locations; because LOCATION_PLAYER_HOME is
+        // shared, those equality checks would falsely match opposing characters at other
+        // players' homes (notably during dusk when everyone routes to "Player Home").
+        if ($this->Location == Game::LOCATION_PLAYER_HOME)
+        {
+            return;
         }
 
         if ($event instanceof EventCardMoved && $event->cardId != $this->Id && $event->toLocation == $this->Location)
