@@ -41,10 +41,13 @@ class Maneuver_01110 extends Maneuver
     {
         parent::handleEvent($event);
 
+        // EventManeuverCanceled handler not needed
+
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
-            $adversaryId = $event->theah->getDuelOpponentId($owner->ControllerId);
+            $actor = $event->theah->getDuelRoundActor();
+            $adversaryId = $event->theah->getDuelOpponentId($actor->Id);
 
             $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $event->theah->queueEvent($woundEvent);
@@ -65,30 +68,30 @@ class Maneuver_01110 extends Maneuver
 
         if ($state == States::DUEL_RESOLVE_MANEUVER_01110)
         {
+            $owner = $this->getOwningCard($game->theah);
+            $actor = $game->theah->getDuelRoundActor();
+            $adversaryId = $game->theah->getDuelOpponentId($actor->Id);
+            $adversary = $game->theah->getCharacterById($adversaryId);
+
             if ($id == 1)
             {
-                $owner = $this->getOwningCard($game->theah);
-                $adversaryId = $game->theah->getDuelOpponentId($owner->ControllerId);
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
                 $game->notify->all("message", clienttranslate('${player_name} has chosen to take another wound.'), [
-                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                    "player_name" => $game->getPlayerNameById($adversary->ControllerId),
                 ]);
             }
 
             if ($id == 2)
             {
-                $owner = $this->getOwningCard($game->theah);
-                $adversaryId = $game->theah->getDuelOpponentId($owner->ControllerId);
-                $adversary = $game->theah->getCharacterById($adversaryId);
                 $location = $adversary->Location;
 
                 $locationEvent = EventFactory::createLocationBecomesUncontrolledEvent($owner->ControllerId, $location);
                 $game->theah->queueEvent($locationEvent);
 
                 $game->notify->all("message", clienttranslate('${player_name} has chosen to make ${location_name} uncontrolled.'), [
-                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                    "player_name" => $game->getPlayerNameById($adversary->ControllerId),
                     "location_name" => $location,
                 ]);
             }
