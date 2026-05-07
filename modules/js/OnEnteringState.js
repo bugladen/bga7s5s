@@ -647,7 +647,10 @@ onEnteringState: function( stateName, args )
                         }
                         else {
                             const card = this.factionHand.getCards().find(c => c.id === args.args._private.cardId);
-                            if (card) this.factionHand.selectCard(card);
+                            if (card) {
+                                this.factionHand.setSelectionMode('single', [card]);
+                                this.factionHand.selectCard(card);
+                            }
                         }
                 }, 500);
             }
