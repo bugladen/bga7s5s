@@ -987,8 +987,6 @@ $machinestates = [
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
                 "reaction" => States::HIGH_DRAMA_PLAYER_TURN_REACTIONS,
                 "pay" => States::HIGH_DRAMA_PLAYER_TURN_PAY_FOR_REACTION,
-                "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
-                "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "endOfEvents" => States::NEXT_PLAYER,
                 "endOfGame" => States::END_GAME
                 ]
@@ -2300,6 +2298,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "01135" => States::DUEL_GAMBLE_REVEALED,
                         "reaction" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_REACTIONS,
                         "pay" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD,
