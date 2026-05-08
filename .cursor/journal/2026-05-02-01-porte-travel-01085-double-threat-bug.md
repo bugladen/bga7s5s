@@ -38,8 +38,6 @@ $event = EventFactory::createThreatModifiedEvent(-$challengerThreat, -$defenderT
 
 WHY: `updateRoundThreats` applies values as deltas, so the negative of the current value is what zeroes a column. Both columns get zeroed, capturing both the actor's incoming threat and any threat they pushed onto the adversary.
 
-Also removed four `var_dump` debug calls the user had added while diagnosing.
-
 ## What I'd flag for future sessions
 - The `createThreatModifiedEvent` API is delta-based but reads ambiguous — it would be easy to write similar bugs in any future card that "sets" threat. Worth being suspicious of any code that reads `getCurrentDuelThreat` and then passes that value into `createThreatModifiedEvent`.
 - Maneuver_01082.php also uses `createThreatModifiedEvent` — quick scan looked OK (it uses computed `*Added` deltas, not absolute reads), but worth re-checking if a similar bug surfaces.

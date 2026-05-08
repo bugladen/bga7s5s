@@ -66,10 +66,6 @@ class Action_02014 extends CardAction
 
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "pressureLocation", $this->Id);
             $event->theah->queueEvent($transitionEvent);
-
-            $this->announceAction($game);
-            $this->setUsed($event->theah, true);
-            $this->resetPlayerPassCount($game);
         }
 
         if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)

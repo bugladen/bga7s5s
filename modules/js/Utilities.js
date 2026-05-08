@@ -154,24 +154,43 @@ return declare('seventhseacityoffivesails.utilities', null, {
     deckPickerShowTab: function(tabIndex) {
         const tabs = document.querySelectorAll('._7sfs-deck-picker-tab-content');
         tabs.forEach((tab, i) => {
-          tab.classList.toggle('_7sfs-deck-picker-active', i === tabIndex);
+            tab.classList.toggle('_7sfs-deck-picker-active', i === tabIndex);
 
-          //If tableIndex matches get the deck name from the data-deck-name attribute
-          if (tabIndex === i) {
-            const deckName = tab.getAttribute('data-deck-name');
-            this.selectedDeck = deckName;
-            var btnDeckSelect = document.getElementById('btnDeckSelect');
-            btnDeckSelect.disabled = false;
-            btnDeckSelect.classList.add('_7sfs-deck-picker-confirm-ready');
-        }
+            //If tableIndex matches get the deck name from the data-deck-name attribute
+            if (tabIndex === i) 
+            {
+                const deckName = tab.getAttribute('data-deck-name');
+                this.selectedDeck = deckName;
+                var btnDeckSelect = document.getElementById('btnDeckSelect');
+                btnDeckSelect.disabled = false;
+                btnDeckSelect.classList.add('_7sfs-deck-picker-confirm-ready');
+            }
         });
 
         const buttons = document.querySelectorAll('.deck-picker-button');
         buttons.forEach((btn, i) => {
-          btn.classList.toggle('_7sfs-deck-picker-tab-selected', i === tabIndex - 1);
+          btn.classList.toggle('_7sfs-deck-picker-tab-selected', i === tabIndex - this.deckPickerGroup - 1);
         });
 
+        // If the tabIndex is 0, disable the deck select button
+        if (tabIndex === 0) 
+        {
+            var btnDeckSelect = document.getElementById('btnDeckSelect');
+            btnDeckSelect.disabled = true;
+            btnDeckSelect.classList.remove('_7sfs-deck-picker-confirm-ready');
+        }
+
         this.selectedDeck = tabIndex;
+    },
+
+    deckPickerGroupShowTab: function(groupIndex) {
+        this.deckPickerGroup = 5 * (groupIndex - 1);
+        this.deckPickerShowTab(0);
+
+        const buttons = document.querySelectorAll('.deck-picker-group-button');
+        buttons.forEach((btn, i) => {
+          btn.classList.toggle('_7sfs-deck-picker-tab-selected', i === groupIndex - 1);
+        });
     },
 
     deckPickerDeckSelected: function() {

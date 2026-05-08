@@ -527,6 +527,9 @@ trait EventHub
                     $deck->moveCard($event->cardId, $discardPileName);
 
                     $card = $theah->getCardById($event->cardId);
+                    $ownerId = $card->OwnerId;
+                    $controllerId = $card->ControllerId;
+
                     if ($card instanceof Character)
                     {
                         //Character has been destroyed, so recreate it because it has no memory of past state
@@ -537,6 +540,8 @@ trait EventHub
                         $theah->addCardToWorld($card);
                     }
                     $card->Location = $discardPileName;
+                    $card->ControllerId = $controllerId;
+                    $card->OwnerId = $ownerId;
                     $card->Engaged = false;
                     $card->IsUpdated = true;
 
@@ -1979,6 +1984,8 @@ trait EventHub
                 $handler = function ($theah, EventCharacterDestroyed $event)
                 {
                     $character = $theah->getCardById($event->characterId);
+                    $ownerId = $character->OwnerId;
+                    $controllerId = $character->ControllerId;
                     $locker = $theah->game->getPlayerLockerName($character->ControllerId);
                     $location = $locker;
 
@@ -2018,6 +2025,8 @@ trait EventHub
                     $pos = strrpos($fullClassname, '\\');
                     $className = substr($fullClassname, $pos + 2);
                     $character = $theah->game->instantiateCard($className, $event->characterId);            
+                    $character->ControllerId = $controllerId;
+                    $character->OwnerId = $ownerId;
                     $character->Location = $location;
                     $character->IsUpdated = true;
                     $theah->addCardToWorld($character);

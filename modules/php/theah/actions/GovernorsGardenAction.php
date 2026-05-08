@@ -41,17 +41,10 @@ class GovernorsGardenAction extends LocationAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $this->game->notify->all('message', clienttranslate('${player_name} performed Governor\'s Garden action to draw a card'), [
-                'player_name' => $event->theah->game->getPlayerNameById($event->playerId)
-            ]);
-
             $drawEvent = EventFactory::createCardDrawnEvent($event->playerId, $event->theah->game->translate("Governor's Garden: Draw a card"));
             $event->theah->queueEvent($drawEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($event->playerId);
             $event->theah->queueEvent($actionResolvedEvent);
-
-            $this->setPlayerUsed($event->playerId);
-            $this->resetPlayerPassCount($this->game);
         }
     }}

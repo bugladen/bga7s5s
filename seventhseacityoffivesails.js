@@ -171,6 +171,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             //Connect handlers for the city locations
             this.connects = [];
 
+            this.deckPickerGroup = 0;
             this.inDuel = false;
             this.duelRound = 0;
 

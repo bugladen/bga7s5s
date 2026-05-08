@@ -95,8 +95,6 @@ class Action_01078 extends RiskAction implements IAbilityThatTargetsCharacters
             $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $owner->Id, "01078", $this->Id);
             $event->theah->queueEvent($transitionEvent);
 
-            //resetPlayerPassCount is called in stSetupChallenge
-            // $this->setUsed() is called in stSetupChallenge
             // createActionResolvedEvent() is called when the challenge is resolved
         }
     }

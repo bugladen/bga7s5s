@@ -14,7 +14,7 @@ class Action_01090 extends CharacterAction
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate("Pre-Activate Reaction");
+        $this->Name = clienttranslate("Pre-Activate Reaction (Continuous)");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -55,6 +55,9 @@ class Action_01090 extends CharacterAction
                     "owner_inject_code" => $owner->getInjectCode(),
                     "player_name" => $game->getActivePlayerName(),
                 ]);
+
+                //Always available to use
+                $this->setUsed($event->theah, false);
             }
         }
     }

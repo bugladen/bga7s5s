@@ -22,27 +22,52 @@
 
                 <div class="_7sfs-deck-picker-tab-content" data-deck-name="Castille" id="SDCastille">
                 <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-castille"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${castille_description}</div>
+                <div class="_7sfs-deck-picker-tab-text">\${castille_description_core}</div>
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-content" data-deck-name="Eisen" id="SDEisen">
                 <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-eisen"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${eisen_description}</div>
+                <div class="_7sfs-deck-picker-tab-text">\${eisen_description_core}</div>
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-content" data-deck-name="Montaigne" id="SDMontaigne">
                 <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-montaigne"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${montaigne_description}</div>
+                <div class="_7sfs-deck-picker-tab-text">\${montaigne_description_core}</div>
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-content" data-deck-name="Ussura" id="SDUssura">
                 <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-ussura"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${ussura_description}</div>
+                <div class="_7sfs-deck-picker-tab-text">\${ussura_description_core}</div>
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-content" data-deck-name="Vodacce" id="SDVodacce">
                 <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-vodacce"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${vodacce_description}</div>
+                <div class="_7sfs-deck-picker-tab-text">\${vodacce_description_core}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Castille" id="SDCastilleTaC">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-castille"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${castille_description_tac}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Eisen" id="SDEisenTaC">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-eisen"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${eisen_description_tac}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Montaigne" id="SDMontaigneTaC">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-montaigne"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${montaigne_description_tac}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Ussura" id="SDUssuraTaC">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-ussura"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${ussura_description_tac}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Vodacce" id="SDVodacceTaC">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-vodacce"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${vodacce_description_tac}</div>
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-content" id="Custom">
@@ -51,14 +76,20 @@
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-buttons">
-                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(1)">Castille</button>
-                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(2)">Eisen</button>
-                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(3)">Montaigne</button>
-                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(4)">Ussura</button>
-                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(5)">Vodacce</button>
+                <button class="deck-picker-group-button _7sfs-deck-picker-tab-selected" onclick="gameui.deckPickerGroupShowTab(1)">Core Set</button>
+                <button class="deck-picker-group-button" onclick="gameui.deckPickerGroupShowTab(2)">Tooth & Claw Set</button>
                 </div>
+
                 <div class="_7sfs-deck-picker-tab-buttons">
-                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(6)">Custom</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 1)">Castille</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 2)">Eisen</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 3)">Montaigne</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 4)">Ussura</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 5)">Vodacce</button>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-buttons">
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(11)">Custom Deck Code</button>
                 <button id="btnDeckSelect" class="deck-picker-button" disabled onclick="gameui.deckPickerDeckSelected()">\${select_description}</button>
                 </div>
             </div>

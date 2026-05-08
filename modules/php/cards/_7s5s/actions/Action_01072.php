@@ -53,8 +53,6 @@ class Action_01072 extends CardAction
             $game = $event->theah->game;
             $leader = $event->theah->getLeaderByPlayerId($event->playerId);
 
-            $this->announceAction($game);
-
             $scheme = $this->getOwningCard($event->theah);
 
             $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $leader->Id, $scheme->Id, $this->Id);
@@ -213,9 +211,6 @@ class Action_01072 extends CardAction
                 $event = EventFactory::createCharacterMusteredEvent($playerId, $musterCard->Id, $leader->Location);
                 $game->theah->queueEvent($event);
             }
-
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
             $game->theah->queueEvent($actionResolvedEvent);

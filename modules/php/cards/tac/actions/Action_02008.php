@@ -189,8 +189,6 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $this->resetPlayerPassCount($game);
-
             $game->gamestate->nextState();
         }
     }

@@ -159,9 +159,6 @@ class Action_01163 extends RiskAction
             $playEvent = EventFactory::createCardMusteredEvent($owner->ControllerId, $cloneCard->Id, $location);
             $game->theah->queueEvent($playEvent);
 
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($game->theah, true);
-
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 

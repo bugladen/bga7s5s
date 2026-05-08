@@ -1662,7 +1662,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         {
             card.conditions = card.conditions.filter(condition => condition !== this.INDOMITABLE_WILL_CONDITION);
 
-            const id = `${args.cardId}_indomitable_will_condition`;
+            const id = `${card.divId}_indomitable_will_condition`;
             dojo.destroy(id);
             this.refreshTooltipForCard(card);
         }

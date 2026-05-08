@@ -61,23 +61,6 @@ abstract class LocationAction extends Action
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
-        {
-            $game = $event->theah->game;
-            $game->notify->all("message", clienttranslate('${player_name} announced the [${action}] Action.'), [
-                'i18n' => ['action'],
-                'player_name' => $game->getPlayerNameById($game->getActivePlayerId()),
-                'action' => $this->Name,
-            ]);
-    
-
-            $activatedEvent = EventFactory::createActionActivatedEvent(
-                $event->playerId,
-                0,
-                $this->Id
-            );
-            $event->theah->queueEvent($activatedEvent);
-        }
 
         if ($event instanceof EventDuskEndOfDay)
         {
@@ -93,6 +76,22 @@ abstract class LocationAction extends Action
     }
 
     
+    public function announceAction(Game $game): void
+    {
+        $game->notify->all("message", clienttranslate('${player_name} announced the [${action}] Action.'), [
+            'i18n' => ['action'],
+            'player_name' => $game->getPlayerNameById($game->getActivePlayerId()),
+            'action' => $this->Name,
+        ]);
+
+        $activatedEvent = EventFactory::createActionActivatedEvent(
+            (int)$game->getActivePlayerId(),
+            0,
+            $this->Id
+        );
+        $game->theah->queueEvent($activatedEvent);
+    }
+
     public function getPropertyArray(Game $game): array
     {
         return [

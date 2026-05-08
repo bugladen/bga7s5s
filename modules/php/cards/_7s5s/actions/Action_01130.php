@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -126,10 +127,6 @@ class Action_01130 extends RiskAction
             $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performerId, $performer->Location);
             $event->theah->queueEvent($claimEvent);
 
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);
 
@@ -161,6 +158,11 @@ class Action_01130 extends RiskAction
             {
                 $this->setConditionEnded($event->theah->game);
             }
+       }
+
+       if ($event instanceof EventDuskEndOfDay && $this->IsActive)
+       {
+            $this->setConditionEnded($event->theah->game);
        }
     }
 }

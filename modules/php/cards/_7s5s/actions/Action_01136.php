@@ -84,8 +84,6 @@ class Action_01136 extends RiskCityAction
             $event->theah->queueEvent($healEvent);
 
             $game = $event->theah->game;
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($game->theah, true);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);

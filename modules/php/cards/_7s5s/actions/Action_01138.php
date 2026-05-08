@@ -162,9 +162,6 @@ class Action_01138 extends RiskAction implements IAbilityThatTargetsCharacters
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
-                $this->setUsed($game->theah, true);
-                $this->resetPlayerPassCount($game);
-
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
                 $game->theah->queueEvent($actionResolvedEvent);
 
@@ -210,9 +207,6 @@ class Action_01138 extends RiskAction implements IAbilityThatTargetsCharacters
                 $game->theah->queueEvent($woundEvent);
 
             }
-
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);

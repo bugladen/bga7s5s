@@ -420,6 +420,14 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.addTooltipsToLog();
         });
 
+        this.bga.images.preloadImages([
+            'cards/deckpicker/006.jpg', 
+            'cards/deckpicker/035.jpg', 
+            'cards/deckpicker/062.jpg', 
+            'cards/deckpicker/089.jpg', 
+            'cards/deckpicker/116.jpg'
+        ]);
+
         debug( "Ending game setup" );
     },
 })
