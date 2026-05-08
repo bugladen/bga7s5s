@@ -51,10 +51,6 @@ class Action_02018 extends RiskAction
             $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
 
-            $this->setUsed($event->theah, true);
-            $this->announceAction($event->theah->game);
-            $this->resetPlayerPassCount($event->theah->game);
-
             $characters = $event->theah->getCharactersAtLocation($performer->Location);
             foreach ($characters as $character)
             {

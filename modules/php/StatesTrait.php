@@ -98,9 +98,6 @@ trait StatesTrait
         $event = EventFactory::createActionTriggeredEvent($playerId, $sourceId, $sourceId, $actionId);
         $this->theah->queueEvent($event);
 
-        $action->setUsed($this->theah, true);
-        $action->resetPlayerPassCount($this->theah->game);
-
         if ($action !== null && $action->RequiresPerformerSelected)
         {
             $this->gamestate->nextState("requiresPerformerSelected");
@@ -776,31 +773,10 @@ trait StatesTrait
     public function stSetupChallenge()
     {
         $this->theah->buildCity();
-        $playerId = $this->globals->get(GAME::CURRENT_PLAYER);
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
 
-        $types = [
-            Game::TRISKELION_CHALLENGE_TYPE,
-            Game::CAVALIER_HAT_CHALLENGE_TYPE,
-            Game::EPEE_SANGLANTE_CHALLENGE_TYPE,
-            Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE,
-            Game::DANIELA_DEITRICH_CHALLENGE_TYPE,
-        ];
-
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
-
-        if (in_array($challengeType, $types))
-        {
-            $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
-            $action = $this->theah->getInPlayActionById($actionId);
-            if ($action instanceof CardAction)
-            {
-                $action->SetUsed($this->theah, true);
-                $action->announceAction($this);
-                $action->resetPlayerPassCount($this);
-            }
-        }
 
         if ($challengeType == Game::CAVALIER_HAT_CHALLENGE_TYPE || $challengeType == Game::TRISKELION_CHALLENGE_TYPE)
         {

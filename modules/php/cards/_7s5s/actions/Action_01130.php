@@ -127,10 +127,6 @@ class Action_01130 extends RiskAction
             $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performerId, $performer->Location);
             $event->theah->queueEvent($claimEvent);
 
-            $this->announceAction($game);
-            $this->setUsed($game->theah, true);
-            $this->resetPlayerPassCount($game);
-
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);
 

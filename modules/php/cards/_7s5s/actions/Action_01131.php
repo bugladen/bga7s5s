@@ -80,9 +80,6 @@ class Action_01131 extends RiskAction implements IAbilityThatTargetsCharacters
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($event->playerId);
             $event->theah->queueEvent($actionResolvedEvent);
-
-            $this->announceAction($game);
-            $this->resetPlayerPassCount($game);
         }
     }
 

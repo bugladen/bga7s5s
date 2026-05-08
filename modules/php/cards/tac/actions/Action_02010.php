@@ -243,9 +243,6 @@ class Action_02010 extends RiskCityAction implements ISorcererAbility, IAbilityT
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($game->theah, true);
-
             $game->gamestate->nextState("woundsChosen");
         }
     }

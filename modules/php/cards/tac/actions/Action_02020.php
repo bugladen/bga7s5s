@@ -212,10 +212,6 @@ class Action_02020 extends RiskAction
             $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "02020_2", $this->Id);
             $game->theah->queueEvent($transitionEvent);
 
-            $this->setUsed($game->theah, true);
-            $this->announceAction($game);
-            $this->resetPlayerPassCount($game);
-
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 

@@ -110,8 +110,6 @@ class Action_01175 extends CardAction implements IAbilityThatTargetsCharacters
                 throw new UserException(sprintf($game->translate("Performer has only %d wound(s), but %d cards are being discarded."), $performer->Wounds, $wounds));
             }
 
-            $this->announceAction($game);
-
             foreach ($ids as $id)
             {
                 $discardEvent = EventFactory::createCardDiscardedFromHandEvent($owner->ControllerId, $id, $owner->Id);
@@ -120,9 +118,6 @@ class Action_01175 extends CardAction implements IAbilityThatTargetsCharacters
 
             $healEvent = EventFactory::createCharacterBeingHealedEvent($performerId, $owner->Id, $wounds, $owner->getInjectCode(), $this->Id);
             $game->theah->queueEvent($healEvent);
-
-            $this->resetPlayerPassCount($game);
-            $this->setUsed($game->theah, true);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);

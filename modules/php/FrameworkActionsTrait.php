@@ -15,11 +15,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CancelReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\LocationAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
@@ -664,12 +664,6 @@ trait FrameworkActionsTrait
             $smuggledItemId = $this->globals->get(Game::SMUGGLED_ITEM_ATTACHMENT_ID);
             $smuggledItem = $this->theah->getCardById($smuggledItemId);
 
-            //Get the action that caused the equip
-            $actionId = $this->globals->get(GAME::CHOSEN_ACTION);
-            $action = $this->theah->getInPlayActionById($actionId);            
-            $action->announceAction($this);
-            $action->setUsed($this->theah, true);
-
             $smuggledUnattachedEvent = EventFactory::createAttachmentUnequippedEvent($playerId, $performer->Id, $smuggledItem->Id);
             $this->theah->eventCheck($smuggledUnattachedEvent);
             $this->theah->queueEvent($smuggledUnattachedEvent);
@@ -815,11 +809,18 @@ trait FrameworkActionsTrait
             throw new UserException(clienttranslate("Action is not available to player."));
         }
 
-        $sourceId = Game::THEAH_ID;
         if ($action instanceof CardAction)
-            $sourceId = $action->OwnerId;
+        {
+            $action->announceAction($this);
+            $action->setUsed($this->theah, true);
+        }
+        else if ($action instanceof LocationAction)
+        {
+            $action->announceAction($this);
+            $action->setPlayerUsed($playerId);
+        }
 
-        $action->announceAction($this);
+        $action->resetPlayerPassCount($this);
 
         $this->gamestate->nextState("confirmed");
     }
@@ -964,6 +965,8 @@ trait FrameworkActionsTrait
         $this->updateCardObjectInDb($risk);
 
         $action->announceAction($this);
+        $action->resetPlayerPassCount($this);
+        $action->setUsed($this->theah, true);
 
         if ($discount != 0)
         {

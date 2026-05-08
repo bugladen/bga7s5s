@@ -94,9 +94,6 @@ class Action_02007 extends RiskCityAction
             }
             else
             {
-                $this->resetPlayerPassCount($game);
-                // $this->setUsed not called because card is discarded
-
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
                 $event->theah->queueEvent($actionResolvedEvent);
             }
@@ -149,9 +146,6 @@ class Action_02007 extends RiskCityAction
 
             $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($performer->ControllerId, $card->Id, $performer->Location, $owner->Id, $asEffect = true);
             $game->theah->queueEvent($discardEvent);
-
-            $this->resetPlayerPassCount($game);
-            // $this->setUsed not called because card is discarded
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
