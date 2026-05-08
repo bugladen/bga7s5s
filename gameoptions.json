@@ -17,14 +17,19 @@
                 "description": "Each player will choose a Starter Deck manually or provide a deck code. Mirror matches are possible."
             },
             "1": {
-                "name": "Assigned Random Unique Starter Deck",
-                "description": "A random unique Core Starter Deck will assigned to each player by the server.  No mirror matches are possible."
+                "name": "Assigned Random Unique Core Starter Deck",
+                "description": "A random unique Core Starter Deck will be assigned to each player by the server.  No mirror matches are possible."
                 
+            },
+            "2": {
+                "name": "Assigned Random Unique Tooth & Claw Starter Deck",
+                "description": "A random unique Tooth & Claw Starter Deck will be assigned to each player by the server.  No mirror matches are possible."                
             }
         },
         "startcondition": {
             "0": [],
-            "1": []
+            "1": [],
+            "2": []
         }    
     }
 }

@@ -74,6 +74,15 @@ class State_DeckAssignment extends GameState
 
         $starter_decks = json_decode(StarterDecks::$decksJson);
 
+        if ($playerDeckChoice === Game::OPTIONS_PLAYER_DECKS_RANDOM_CORE)
+        {
+            $starter_decks->decks = array_filter($starter_decks->decks, fn($deck) => ($deck->set ?? null) === "Core");
+        }
+        else if ($playerDeckChoice === Game::OPTIONS_PLAYER_DECKS_RANDOM_TOOTH_AND_CLAW)
+        {
+            $starter_decks->decks = array_filter($starter_decks->decks, fn($deck) => ($deck->set ?? null) === "TaC");
+        }
+
         foreach ($playersNeedingDeck as $playerId => $player)
         {
             $random_index = array_rand($starter_decks->decks);
