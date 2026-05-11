@@ -15,6 +15,7 @@ abstract class LocationAction extends Action
 {
     public string $Id;
     public string $Name;
+    public string $LocationName;
     protected array $playersUsed = [];
     protected Game $game;
     protected string $globalVariableName;
@@ -66,6 +67,7 @@ abstract class LocationAction extends Action
         {
             $this->playersUsed = [];
             $this->game->globals->set($this->globalVariableName, $this->playersUsed);
+            $this->notifyUsedList($this->game);
         }
     }
 
@@ -73,6 +75,29 @@ abstract class LocationAction extends Action
     {
         $this->playersUsed[] = $playerId;
         $this->game->globals->set($this->globalVariableName, $this->playersUsed);
+        $this->notifyUsedList($this->game);
+    }
+
+    public function getUsedListData(Game $game): array
+    {
+        $list = [];
+        foreach ($this->playersUsed as $playerId) {
+            $list[] = [
+                'playerId' => $playerId,
+                'playerName' => $game->getPlayerNameById($playerId),
+                'playerColor' => $game->getPlayerColorById($playerId),
+            ];
+        }
+        return $list;
+    }
+
+    protected function notifyUsedList(Game $game): void
+    {
+        $game->notify->all("locationActionUsedListUpdated", '', [
+            'actionId' => $this->Id,
+            'locationName' => $this->LocationName,
+            'usedList' => $this->getUsedListData($game),
+        ]);
     }
 
     

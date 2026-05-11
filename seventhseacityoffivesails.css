@@ -1112,6 +1112,14 @@ body {
     white-space: nowrap;
 }
 
+._7sfs-location-action-used-list {
+    pointer-events: none;
+}
+
+._7sfs-location-action-used-list span {
+    pointer-events: auto;
+}
+
 ._7sfs-attachment-container {
     position:relative;
     margin-left: calc(var(--attachment-count) * 15px);

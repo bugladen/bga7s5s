@@ -16,6 +16,7 @@ class OlesInnAction extends LocationAction
 
         $this->Id = 'OlesInn';
         $this->Name = "Ole's Inn: Draw a card";
+        $this->LocationName = Game::LOCATION_CITY_OLES_INN;
         $this->globalVariableName = Game::PLAYERS_THAT_USED_OLES_INN;
     }
 
