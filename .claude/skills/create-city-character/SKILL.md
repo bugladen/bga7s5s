@@ -10,8 +10,9 @@ City characters are city-deck cards that are **playable Characters** (not events
 Canonical references:
 - `modules/php/cards/faf/_03cd01.php` (Penya) — Negotiable, dashed stats, `canIntervene` ban, paired City Forced, City Action with multi-step state classes.
 - `modules/php/cards/faf/_03cd10.php` (Julius Caligari) — Negotiable, multi-step button-based Reaction (letter → trait → opposing target → conditional wound) demonstrating the `EventCharacterRecruited` / `EventCardMoved` trigger pair and the `TraitNames` consumer pattern.
+- `modules/php/cards/faf/_03cd18.php` (Kalla and Adelheide) — Negotiable, **branching "Choose one"** post-recruit Reaction with two effect paths (search deck for attachment vs. move + destroy opposing attachment). Demonstrates per-option validity gates at the choice stage, dedupe-by-Name when listing deck cards, and the "no `< Back` once events commit" rule.
 
-When in doubt, mirror one of those two rather than invent.
+When in doubt, mirror one of those three rather than invent.
 
 > **Sibling skills:**
 > - `create-city-event-card` — for stubs that `extends CityEventCard`.
@@ -632,6 +633,37 @@ public function performReaction(Game $game, int $state, string $internalId, stri
 
 **Final stage MUST queue any resulting events** (wounds, moves, etc.) via `EventFactory` + `$game->theah->queueEvent(...)`. The reaction returning doesn't auto-trigger anything.
 
+### `< Back` is only valid before events commit
+
+Offering `< Back` is fine when the previous stage was a pure-choice stage (the player picked something but no events were queued — e.g., "pick a letter," "pick a trait," "pick option A vs B"). It is **not** safe once a stage has queued effect events (a move, an unequip, a wound). Going back would imply un-applying those events, which the engine doesn't support.
+
+Kalla's `moveB → destroyB` transition queues an `EventCardMoving` before requeuing the reaction transition. By the time `destroyB` renders buttons, the move has committed — so `destroyB` omits the `< Back` button entirely. The player's only escapes from `destroyB` are picking a target or `Decline`.
+
+Rule of thumb: if `performReaction` for stage N queues any event other than the reaction transition itself, stage N+1 should not offer `< Back`.
+
+### Branching "Choose one" intro stage
+
+For text like "Choose one: <i>Either</i> X <i>or</i> Y," model the first stage as a one-of-two picker that branches into separate downstream stages:
+
+```php
+// Stages: '' → choose → searchA | moveB → destroyB
+case 'choose':
+    if ($this->hasAttachmentInDeck($game, $owner->ControllerId))
+    {
+        $array[] = $this->createButtonProperty($game, $game->translate('Search deck for an attachment'), 'optionA');
+    }
+    if ($this->hasMoveAndDestroyTarget($theah, $owner))
+    {
+        $array[] = $this->createButtonProperty($game, $game->translate('Move and destroy an opposing attachment'), 'optionB');
+    }
+    break;
+```
+
+Two things to get right:
+
+1. **Per-option validity at the choose stage.** Gate each option's button on its own "is there a legal target for this branch" check. If one option has no legal target, omit its button — don't dump the player into a downstream stage with nothing to pick. (This is the same valid-target gate idea as the trigger-time gate, applied per-branch.)
+2. **Trigger only if at least one option is viable.** In `handleEvent`, the OR of all the per-option gates is the trigger-time "should this reaction even fire" check. If none of the branches can do anything, don't queue the reaction transition.
+
 ### Multi-step state belongs on the Reaction, not on the card
 
 Private fields on the Reaction class (`$stage`, `$chosenX`) persist across actions because the framework serializes the parent card (including its `Reactions[]` array) to the DB after each action. Don't try to store cross-step state on the card itself — the Reaction is the natural owner.
@@ -690,6 +722,70 @@ if ($count > 0)
 **Decide whether a card has a Trait:** `$card->hasTrait($traitName)`. The check is `in_array($trait, $this->ModifiedTraits)`. `clienttranslate()` is a no-op at runtime, so English Trait strings compare directly against the `clienttranslate()`-wrapped values stored on each card.
 
 **"Name a Trait" abilities:** the canonical Trait list is `TraitNames::$TraitsJson` (`modules/php/Traits.php`). Parse with `json_decode(TraitNames::$TraitsJson, true)['traits']`. If a card you're implementing has a Trait not in that JSON, add it in alphabetical order — `TraitNames` is the source of truth for trait pickers.
+
+**Search your deck for a card matching a filter** (pattern from `Action_02045` and `Reaction_03cd18`):
+
+```php
+$deckName = $game->getPlayerFactionDeckName($playerId);
+$deck     = $game->getGameDeckObject()->getCardsInLocation($deckName);
+$matches  = [];
+foreach ($deck as $deckCard)
+{
+    $card = $game->getCardObjectFromDb($deckCard['id']);
+    if ($card instanceof Attachment /* or $card->hasTrait('X') */)
+    {
+        $matches[] = $card;
+    }
+}
+// ... let the player pick $card from $matches ...
+
+$removeEvent = EventFactory::createCardRemovedFromPlayerFactionDeckEvent($playerId, $card->Id);
+$game->theah->eventCheck($removeEvent);
+$addEvent = EventFactory::createCardAddedToHandEvent($playerId, $card->Id);
+$game->theah->eventCheck($addEvent);
+$game->theah->queueEvent($removeEvent);
+$game->theah->queueEvent($addEvent);
+
+// If the card text says "(Shuffle your deck...)" — required:
+$game->getGameDeckObject()->shuffle($deckName);
+$game->notify->all("message", clienttranslate('${player_name} shuffles their deck.'), [
+    "player_name" => $game->getPlayerNameById($playerId),
+]);
+```
+
+**Dedupe by Name when listing cards from a hidden zone for a button picker.** A faction deck commonly holds multiple copies of the same card. Showing every copy as a separate button is noise — the copies are functionally indistinguishable. Dedupe by Name and emit one button per unique name; the underlying card id can be any of the copies, since whichever one resolves goes to hand identically:
+
+```php
+$seen = [];
+foreach ($this->getAttachmentsInDeck($game, $owner->ControllerId) as $card)
+{
+    if (isset($seen[$card->Name]))
+    {
+        continue;
+    }
+    $seen[$card->Name] = true;
+    $array[] = $this->createButtonProperty($game, $card->Name, "searchA-{$card->Id}");
+}
+```
+
+(This applies to deck/hand pickers; it does NOT apply to in-play card pickers where each copy has distinct state — wounds, attachments, location, controller.)
+
+**Destroy a non-city attachment in play** (pattern from `Action_01174` and `Reaction_03cd18`):
+
+```php
+$unequipEvent = EventFactory::createAttachmentUnequippedEvent(
+    $attachment->ControllerId, $attachment->AttachedToId, $attachment->Id
+);
+$game->theah->eventCheck($unequipEvent);
+$game->theah->queueEvent($unequipEvent);
+
+$discardEvent = EventFactory::createCardDiscardedFromPlayEvent(
+    $attachment->OwnerId, $attachment->Id, $attachment->Location, $owner->Id, $asEffect = true
+);
+$game->theah->queueEvent($discardEvent);
+```
+
+Two events, in this order: unequip from the character, then discard from play. The `$asEffect = true` flag marks this as effect-driven destruction (as opposed to a pay/discard cost). For city attachments, route to `createCardAddedToCityDiscardPileEvent` instead — see `Character::unEquipAllAttachments`.
 
 ### Pre-commit hook
 
@@ -806,6 +902,7 @@ The Card class itself (the `_03cdNN extends CityCharacter` file) has no hook-man
 - `$theah->getCharactersAtLocationByPlayerId(string $location, int $playerId, bool $includeUncontrolled = false): array` — friendly characters at a city location.
 - `$theah->getOpposingCharactersAtLocation(string $location, int $playerId): array` — opposing = different controller AND same location. Use this whenever card text says "opposing," never roll your own `ControllerId !=` filter.
 - `$theah->getAdjacentCityLocations(string $location, bool $includeHome = true): array` — adjacency for move actions.
+- `array_keys($theah->getCityLocations())` — enumerate the **active** city-location names. Respects the player-count rules that exclude Ole's Inn and Governor's Garden in smaller games. Use this for "move to any location" pickers instead of hardcoding the five constants.
 - `$game->getCardsOnTopOfCityDeck($n)` — returns raw card_info rows (NOT card objects). Cast `id` to int when passing to event factories.
 - `$game->getGameDeckObject()->getCardsInLocation(string $location, int $playerId)` — raw card_info rows in a location; cast `id` to int and pass to `$game->getCardObjectFromDb($id)` to get the card object. Required for "reveal random card from hand" patterns.
 - `$game->getGameDeckObject()->shuffle(Game::LOCATION_CITY_DECK)` — shuffle the city deck after sending a card into it.
@@ -826,7 +923,11 @@ The Card class itself (the `_03cdNN extends CityCharacter` file) has no hook-man
 | `modules/php/cards/faf/_03cd10.php` (Julius Caligari) | **Canonical CityCharacter Reaction.** Negotiable + `IHasReactions`/`ReactionTrait` wiring. |
 | `modules/php/cards/faf/reactions/Reaction_03cd10.php` | Multi-step button-based reaction (letter → trait → opposing-character target). `EventCharacterRecruited` + `EventCardMoved` triggers, valid-target precondition gate, the `EventCardMoved.runEventHubAfterCards = true` gotcha, `TraitNames::$TraitsJson` consumption, `getOpposingCharactersAtLocation`, random reveal from hand, conditional wound. |
 | `modules/php/cards/_7s5s/reactions/Reaction_01014.php` (Vittoria) | Multi-step reaction on a non-City Character — same button-cycling pattern, broader event coverage (engage / engard / move / wound / heal / challenge). |
+| `modules/php/cards/faf/_03cd18.php` (Kalla and Adelheide) | CityCharacter with branching post-recruit Reaction. |
+| `modules/php/cards/faf/reactions/Reaction_03cd18.php` | Branching "Choose one" reaction: choose → searchA \| moveB → destroyB. Demonstrates per-option validity gates at the choose stage, dedupe-by-Name in the deck picker, "no `< Back` once events commit" (destroyB omits it because moveB queued an `EventCardMoving`), the search-deck recipe with mandated shuffle, and the unequip+discard destroy recipe. |
 | `modules/php/cards/_7s5s/_01098.php` (Cat's Embargo) | "Reveal a random card from a hand" reference implementation. |
+| `modules/php/cards/tac/actions/Action_02045.php` (Path to Poluchatel) | "Search your deck for a card matching a Trait, reveal it, add to hand, shuffle" reference (Scheme City Action, but the search recipe applies anywhere). |
+| `modules/php/cards/_7s5s/actions/Action_01174.php` | "Destroy a non-Unique attachment in play" reference — the canonical unequip + discard sequence. |
 | `modules/php/Traits.php` | `TraitNames::$TraitsJson` — canonical Trait list for "Name a Trait" pickers. Add new Traits in alphabetical order. |
 | `modules/php/cards/CityCharacter.php` | Base class. Read for the `Negotiable` field and inheritance chain. |
 | `modules/php/cards/Character.php` | Parent. `canIntervene` / `canChallenge` defaults and wound/heal handling live here. |

@@ -141,8 +141,12 @@ class _03cdNN extends CityEventCard implements IHasActions
 ### 2. Action class — `modules/php/cards/<expansion>/actions/Action_03cdNN.php`
 
 Pick the base class carefully:
-- `EventCityAction` — one-shot event-card actions that get **discarded after use**. Used by Chance Meeting `_03cd03`. The action does not "engage" a character; its eligibility is gated by friendly-character-at-location.
+- `EventCityAction` — event-card actions. Eligibility is gated by "friendly character at this location." Two flavors:
+  - **One-shot** (card is discarded after use) — Chance Meeting `_03cd03`. The action does not engage; the action handler queues `createCardAddedToCityDiscardPileEvent` once the effect resolves.
+  - **Multi-use** (card stays in play, each player can take it once per Day) — Siren's Scream `_01179`, Crabs in a Bucket `_03cd13`. The card stays; per-player usage is tracked in a private `$playersUsed` array on the Action. Call `$this->setUsed($theah, false)` defensively at the end of the handler and DO NOT queue a discard. See "Per-player once-per-Day City Action" sub-pattern below.
 - `CharacterAction` — actions performed by a specific character (the event card's owner-character if it's a CityCharacter, not a pure event). Penya `_03cd01` uses this because Penya is a CityCharacter, not a CityEventCard. Generally not used for pure event cards.
+
+**`RequiresPerformerSelected = true` and `EventCityAction`** — when set on an `EventCityAction`, the framework runs its built-in performer-selection UI **before** firing `EventActionTriggered`. The chosen performer's id is in `Game::CHOSEN_PERFORMER` when your `handleEvent` runs, so you can engage it without needing a state for the performer pick. Override `getPerformersForAction` to filter out engaged characters (or whatever the text requires).
 
 `setUsed()`, `announceAction()`, and `resetPlayerPassCount()` are **NOT called** from `CharacterAction/AttachmentAction/SchemeAction/SchemeCityAction` subclasses — central code in `actHighDramaInPlayActionConfirm` / `stHighDramaInPlayActionDispatch` handles them. Per CLAUDE.md.
 
@@ -275,6 +279,8 @@ When the card text says "in order of Initiative, each player may X," **do not us
 
 The hook in `.githooks/pre-commit` requires `createActionResolvedEvent()` for any `extends Attachment/Card/Character/Risk/RiskCity/Scheme/SchemeCityAction`. It does *not* require `setUsed` / `resetPlayerPassCount` / `announceAction` on these subclasses — those are explicitly forbidden by the comment in CLAUDE.md (run centrally).
 
+**`EventCityAction` and the hook:** the hook's regex matches the *literal* parent name on the `extends` line — so `extends EventCityAction` is NOT matched by the `(CardAction|RiskAction|RiskCityAction)` check, even though `EventCityAction` extends `CardAction`. The `createActionResolvedEvent` requirement is therefore not enforced for `EventCityAction` subclasses, but you should still call it — the framework expects an action-resolved event to advance state.
+
 ## Pattern C — City Reaction
 
 1. On the card class:
@@ -344,6 +350,55 @@ If your state reuses the client-side `onMusterCardSelected` flow, **extend the a
 
 Store the chosen target as `Game::CHOSEN_TARGET` (a shared global). Mirror the 02002 Elisabetta pattern in `OnUpdateActionButtons.faf.js`: render one button per non-self player. Clear `CHOSEN_TARGET` in your discard step and as a defensive reset in `stNextPlayer`.
 
+**Server-side filtering of eligible targets.** When the card text gates targets ("target a player with more Renown than you", "target a player who controls fewer characters than you"), compute the eligible list in `getArgsFromAction` and send only those players to the client — don't send everyone and filter in JS. This also lets you reuse the same eligibility helper from `isAvailableToPlayer` to suppress the City Action button entirely when no valid target exists. See `Action_03cd13::getEligibleTargetPlayerIds()` for the canonical shape.
+
+### Per-player once-per-Day City Action (card stays in play)
+
+When the City Action does NOT discard the card and each player can take it once per Day (Siren's Scream `_01179`, Crabs in a Bucket `_03cd13`):
+
+1. **Private `$playersUsed` array on the Action class** — holds player ids that have used the ability this Day. NOT on the card class (the base `CityEventCard::playersThatUsedMeToday` is private to the card and not accessible from Actions). Action_01179 / Action_03cd13 both define their own.
+2. **`isAvailableToPlayer`** — return `false` if `in_array($playerId, $this->playersUsed)`.
+3. **`eventCheck`** — re-validate `EventActionTriggered && actionId == $this->Id`, throw `UserException` if `playersUsed` contains the player. Defense in depth against race conditions / stale clients.
+4. **In the action's `handleEvent`** after the effect resolves: `$this->playersUsed[] = $playerId;` then `$this->notifyUsedList($game, $owner->Id)` and `$this->setUsed($event->theah, false)` (defensive — keeps the framework from marking the card consumed).
+5. **Reset on dusk**: `if ($event instanceof EventDuskEndOfDay) { $this->playersUsed = []; $card->IsUpdated = true; $this->notifyUsedList($game, $card->Id); }` — sends a notify with an empty list so clients clear the per-card UI.
+6. **Do NOT queue `createCardAddedToCityDiscardPileEvent`** — the card stays.
+
+Critical: per-player tracking is the *only* gate. The card's `Used` flag is global ("any player has used it") and would lock everyone out after the first use.
+
+### Display per-player usage on the card element
+
+The Siren's Scream / Crabs in a Bucket UI: a small list of player-colored names overlaid on the city card image, showing who has used the City Action this Day. Reuse the existing `_7sfs-card-player-list` CSS class — no new styles needed. Pattern (copy from `_01179` end-to-end):
+
+1. **Action class** — `public function getUsedListData(Game $game): array` returning `[{playerId, playerName, playerColor}, ...]`. `private function notifyUsedList(Game $game, int $cardId)` emits a `xxxUsedListUpdated` notification with `{cardId, usedList}`.
+2. **Card class** — `public function getXxxUsedListData(Game $game): array` that delegates: `return $this->Actions[0]->getUsedListData($game);`. Thin delegate so `Game::getAllDatas` can fetch it without poking the Action directly.
+3. **`Game.php::getAllDatas`** — add a branch in the `foreach ($this->theah->getAllCards() as $card)` loop:
+   ```php
+   if ($card instanceof cards\<expansion>\<class> && $this->theah->cardInCity($card)) {
+       $result["xxxUsedList"] = ['cardId' => $card->Id, 'usedList' => $card->getXxxUsedListData($this)];
+   }
+   ```
+   Initialize `$result["xxxUsedList"] = null;` before the loop.
+4. **`modules/js/Templates.js`** — `window.jstpl_xxx_used_list = \`<div id="xxx-used-list" class="_7sfs-card-player-list"></div>\`;`.
+5. **`modules/js/Utilities.js`** — `displayXxxUsedList(cardId, usedList)` and `removeXxxUsedList()` mirroring `displaySirensScreamUsedList`. The display function `dojo.place`s the template inside `${card.divId}_image`, then iterates `usedList` creating colored `<span>` children.
+6. **`modules/js/Notifications.js`** — register channel `['xxxUsedListUpdated', 1]` (priority 1 = instant UI update) and add `notif_xxxUsedListUpdated` handler that calls `displayXxxUsedList`.
+7. **`modules/js/Setup.js`** — `if (gamedatas.xxxUsedList && gamedatas.xxxUsedList.usedList.length > 0) { this.displayXxxUsedList(...) }` for page-refresh.
+
+Gotcha: the Action class is the natural owner of the data because `handleEvent` already has `$event->theah->game` for emitting notifies. The card-class delegate exists purely so `getAllDatas` can find the right Action without reflection.
+
+### Highlight the chosen performer in a target-picker state
+
+For a target-player state that follows performer selection (e.g. Crabs in a Bucket), add `performerId` to the state args and highlight it in the JS so the player sees which character they're about to engage:
+
+1. **Action `getArgsFromAction`**: `$args["performerId"] = (int)$game->globals->get(Game::CHOSEN_PERFORMER);`
+2. **`OnEnteringState.faf.js`**: `this.highlightCharacterChosen(args.args.args.performerId)`, and stash `this.clientStateArgs.performerId = performerId` for the leave handler.
+3. **`OnLeavingState.faf.js`**: `this.unhighlightCharacterChosen(this.clientStateArgs.performerId)`.
+
+These helpers (`highlightCharacterChosen` / `unhighlightCharacterChosen`) are the same ones `highDramaPhase03cd01` uses.
+
+### `_7sfs-chosen` cleanup for cards that aren't discarded
+
+`03cd03` adds `_7sfs-chosen` to the city card image on enter but **has no leave handler** — that's only fine because the card is discarded immediately after the action resolves, so the DOM element vanishes. For a multi-use City Action where the card stays in play (e.g. `03cd13`), you MUST add a leave handler that removes `_7sfs-chosen`, otherwise the highlight persists into subsequent High Drama turns. Stash the cardId on `clientStateArgs` during enter so leave can find the element after `gamedatas` has moved on.
+
 ### "At the end of High Drama" Forced trigger
 
 `EventHighDramaPhaseEnd` exists and is dispatched centrally by `StatesTrait` at high drama end. Listen for it directly in `handleEvent`:
@@ -391,6 +446,8 @@ The hub's `locationUncontrolled` notify doesn't say *why*, so emit a card-attrib
 | `modules/php/cards/faf/_03cd05.php` + `State_duelGambleSetup_03cd05.php` | CityAttachment, not CityEventCard, but shows: Forced wound on equip via `handleEvent`, a custom state inserted into core flow (DUEL_GAMBLE_SETUP), state-class file pattern. |
 | `modules/php/cards/faf/_03cd08.php` | Minimal Forced pressure-flag card. Reuses `Game::CLAUDE_PRESSURE_TYPE` rather than minting a new flag. |
 | `modules/php/cards/faf/_03cd12.php` | Pure Forced CityEventCard listening to `EventHighDramaPhaseEnd`. Demonstrates the "each player equal X" check via `loadPlayersBasicInfos` + `array_unique`, and queues `createLocationBecomesUncontrolledEvent` to flip a location uncontrolled. |
+| `modules/php/cards/faf/_03cd13.php` + `actions/Action_03cd13.php` + `State_highDramaPhase03cd13.php` | CityEventCard with both a Forced (per-player conditional draw on reveal) and a multi-use City Action (engage + claim). Canonical example of: server-filtered target picker, per-player once-per-Day tracking via `playersUsed` (card stays in play), used-list display on the card, performer highlight in the target-picker state. |
+| `modules/php/cards/_7s5s/_01179.php` + `actions/Action_01179.php` | Original multi-use City Action / used-list display pattern (Siren's Scream). The `_03cd13` pattern is a direct descendant. Reference for the `setUsed(false)` defensive call and the `EventDuskEndOfDay` clear-and-renotify. |
 | `modules/php/cards/_7s5s/_01184.php` + `reactions/Reaction_01184.php` | City Reaction template (sets the same `CLAUDE_PRESSURE_TYPE` flag opt-in instead of Forced). |
 | `modules/php/cards/_7s5s/_01006.php` | Forced pressure bonus (`CONSTANZO_PRESSURE_TYPE`) — alternate flag/branch pattern. |
 | `modules/php/UtilitiesTrait.php::pressureLocation()` | Where pressure flags are consumed. Add a branch here if minting a new pressure type. |
