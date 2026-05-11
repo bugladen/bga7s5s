@@ -14,6 +14,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\GameFramework\Components\Deck;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\LocationAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Game extends \Bga\GameFramework\Table
@@ -367,6 +368,17 @@ class Game extends \Bga\GameFramework\Table
             if ($card instanceof cards\_7s5s\_01150) {
                 $result["forumInterveneList"] = $card->getInterveneListData($this);
                 break;
+            }
+        }
+
+        $result["locationActionUsedLists"] = [];
+        foreach ($this->theah->getActions() as $action) {
+            if ($action instanceof LocationAction) {
+                $result["locationActionUsedLists"][] = [
+                    'actionId' => $action->Id,
+                    'locationName' => $action->LocationName,
+                    'usedList' => $action->getUsedListData($this),
+                ];
             }
         }
 

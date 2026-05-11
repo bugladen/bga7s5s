@@ -1820,6 +1820,37 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
+    displayLocationActionUsedList: function(actionId, locationName, usedList) {
+        this.removeLocationActionUsedList(actionId);
+
+        if (!usedList || usedList.length === 0) {
+            return;
+        }
+
+        const imageElement = this.getCityLocationElement(locationName);
+        if (!imageElement) return;
+
+        dojo.place(this.format_block('jstpl_location_action_used_list', { actionId }), imageElement, 'last');
+
+        const container = $(`location-action-used-list-${actionId}`);
+        usedList.forEach((entry) => {
+            const spanId = `location-action-used-list-${actionId}-player-${entry.playerId}`;
+            dojo.create('span', {
+                id: spanId,
+                innerHTML: entry.playerName,
+                style: `color:#${entry.playerColor}`,
+            }, container);
+            this.addTippyTooltip(spanId, `<div class='_7sfs-basic-tooltip'>${_('This player has taken the action for this location to Draw a Card')}</div>`);
+        });
+    },
+
+    removeLocationActionUsedList: function(actionId) {
+        const existing = $(`location-action-used-list-${actionId}`);
+        if (existing) {
+            dojo.destroy(existing);
+        }
+    },
+
     displayCatsEmbargoCardName: function(cardId, embargoedCardName) {
         this.removeCatsEmbargoCardName();
 

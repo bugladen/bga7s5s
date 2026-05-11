@@ -16,6 +16,7 @@ class GovernorsGardenAction extends LocationAction
 
         $this->Id = 'GovernorsGarden';
         $this->Name = "Governor's Garden: Draw a card";
+        $this->LocationName = Game::LOCATION_CITY_GOVERNORS_GARDEN;
         $this->globalVariableName = Game::PLAYERS_THAT_USED_GOVERNORS_GARDEN;
     }
 

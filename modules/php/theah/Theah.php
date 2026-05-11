@@ -80,6 +80,11 @@ class Theah
         return $this->db;
     }
 
+    public function getActions(): array
+    {
+        return $this->Actions;
+    }
+
     public function buildCity()
     {
         if ($this->cityBuilt) return;

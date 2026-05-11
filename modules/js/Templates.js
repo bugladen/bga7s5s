@@ -245,6 +245,10 @@
         <div id="sirens-scream-used-list" class="_7sfs-card-player-list"></div>
         `;
 
+        window.jstpl_location_action_used_list = `
+        <div id="location-action-used-list-\${actionId}" class="_7sfs-card-player-list _7sfs-location-action-used-list"></div>
+        `;
+
         window.jstpl_cats_embargo_card_name = `
         <div id="cats-embargo-card-name" class="_7sfs-card-player-list"></div>
         `;
