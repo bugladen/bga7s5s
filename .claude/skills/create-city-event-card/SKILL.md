@@ -344,6 +344,44 @@ If your state reuses the client-side `onMusterCardSelected` flow, **extend the a
 
 Store the chosen target as `Game::CHOSEN_TARGET` (a shared global). Mirror the 02002 Elisabetta pattern in `OnUpdateActionButtons.faf.js`: render one button per non-self player. Clear `CHOSEN_TARGET` in your discard step and as a defensive reset in `stNextPlayer`.
 
+### "At the end of High Drama" Forced trigger
+
+`EventHighDramaPhaseEnd` exists and is dispatched centrally by `StatesTrait` at high drama end. Listen for it directly in `handleEvent`:
+
+```php
+if ($event instanceof EventHighDramaPhaseEnd && $event->theah->cardInCity($this))
+{
+    // ...
+}
+```
+
+Reference cards: `_03cd12` (Equal Claim, makes location uncontrolled), `_7s5s/_01025_Burden` (removes itself at end of high drama). Note `_01025_Burden` is an Attachment, not a CityEventCard, but the trigger plumbing is identical.
+
+Do **not** invent a custom "end of high drama" hook or piggyback on `EventDuskEndOfDay` / `EventPhaseHighDrama` — they fire at the wrong granularity.
+
+### "Each player has equal X" check
+
+Iterate `$theah->game->loadPlayersBasicInfos()` (returns `[playerId => playerRow]`), build a flat array of per-player counts, then `count(array_unique($counts)) === 1`. Treats zero-zero as equal, which matches the literal text of cards like Equal Claim.
+
+```php
+$counts = [];
+foreach ($theah->game->loadPlayersBasicInfos() as $playerId => $_)
+{
+    $counts[] = count($theah->getCharactersAtLocationByPlayerId($this->Location, $playerId));
+}
+if (count(array_unique($counts)) !== 1) return;
+```
+
+### Making a city location uncontrolled
+
+Queue `EventFactory::createLocationBecomesUncontrolledEvent($playerId, $location)`. The hub handler in `EventHub.php` (≈ line 953) takes care of `setControllerForLocation`, the `Controller = 0` mutation on the in-memory `CityLocation`, and the `locationUncontrolled` notify. Do not call `setControllerForLocation` directly from a card.
+
+The `$playerId` arg is the **current controller losing control**, not the triggerer (mirrors `Action_01130` / `Action_01112a`). For a Forced card, pull it from `$theah->getCityLocation($this->Location)->Controller`.
+
+Gate the queue on `$location->isControlled()` — queuing the event when the location is already uncontrolled is wasted work and emits a confusing notify.
+
+The hub's `locationUncontrolled` notify doesn't say *why*, so emit a card-attributed `${card_inject_code}: ...` notify on the card before queuing the event so the log reads top-down (see `_03cd08` for the convention).
+
 ## Reference Implementations
 
 | Card | What it demonstrates |
@@ -352,6 +390,7 @@ Store the chosen target as `Game::CHOSEN_TARGET` (a shared global). Mirror the 0
 | `modules/php/cards/faf/_03cd03.php` + `actions/Action_03cd03.php` + 2 state files | Pure CityEventCard with an `EventCityAction`. Demonstrates multi-player sequential loop in initiative order via queued EventTransitions, discard-deferred-until-loop-ends, `CURRENT_PLAYER` for actionResolved. |
 | `modules/php/cards/faf/_03cd05.php` + `State_duelGambleSetup_03cd05.php` | CityAttachment, not CityEventCard, but shows: Forced wound on equip via `handleEvent`, a custom state inserted into core flow (DUEL_GAMBLE_SETUP), state-class file pattern. |
 | `modules/php/cards/faf/_03cd08.php` | Minimal Forced pressure-flag card. Reuses `Game::CLAUDE_PRESSURE_TYPE` rather than minting a new flag. |
+| `modules/php/cards/faf/_03cd12.php` | Pure Forced CityEventCard listening to `EventHighDramaPhaseEnd`. Demonstrates the "each player equal X" check via `loadPlayersBasicInfos` + `array_unique`, and queues `createLocationBecomesUncontrolledEvent` to flip a location uncontrolled. |
 | `modules/php/cards/_7s5s/_01184.php` + `reactions/Reaction_01184.php` | City Reaction template (sets the same `CLAUDE_PRESSURE_TYPE` flag opt-in instead of Forced). |
 | `modules/php/cards/_7s5s/_01006.php` | Forced pressure bonus (`CONSTANZO_PRESSURE_TYPE`) — alternate flag/branch pattern. |
 | `modules/php/UtilitiesTrait.php::pressureLocation()` | Where pressure flags are consumed. Add a branch here if minting a new pressure type. |
