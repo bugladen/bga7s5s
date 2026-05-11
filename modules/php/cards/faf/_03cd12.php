@@ -22,7 +22,7 @@ class _03cd12 extends CityEventCard
         $this->CityCardNumber = 12;
 
         $this->Traits = [
-            clienttranslate('Beaureacracy'),
+            clienttranslate('Bureaucracy'),
             clienttranslate('Squabble'),
             clienttranslate('Compromise')
         ];
