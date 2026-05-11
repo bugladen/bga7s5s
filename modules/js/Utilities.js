@@ -1821,6 +1821,39 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
+    displayCrabsInABucketUsedList: function(cardId, usedList) {
+        this.removeCrabsInABucketUsedList();
+
+        if (!usedList || usedList.length === 0) {
+            return;
+        }
+
+        const card = this.cardProperties[cardId];
+        if (!card || !card.divId) return;
+
+        const imageElement = $(`${card.divId}_image`);
+        if (!imageElement) return;
+
+        dojo.place(this.format_block('jstpl_crabs_in_a_bucket_used_list', {}), imageElement, 'last');
+
+        const container = $('crabs-in-a-bucket-used-list');
+        usedList.forEach((entry) => {
+            dojo.create('span', {
+                innerHTML: entry.playerName,
+                style: `color:#${entry.playerColor}`,
+            }, container);
+        });
+
+        this.addTippyTooltip('crabs-in-a-bucket-used-list', `<div class='_7sfs-basic-tooltip'>${_("Crabs in a Bucket - Players who have used this Action this Day")}</div>`);
+    },
+
+    removeCrabsInABucketUsedList: function() {
+        const existing = $('crabs-in-a-bucket-used-list');
+        if (existing) {
+            dojo.destroy(existing);
+        }
+    },
+
     displayLocationActionUsedList: function(actionId, locationName, usedList) {
         this.removeLocationActionUsedList(actionId);
 

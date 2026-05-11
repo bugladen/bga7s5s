@@ -32,6 +32,12 @@
                 });
             },
 
+            'highDramaPhase03cd13': () => {
+                args.args.players.forEach((player) => {
+                    this.addActionButton(`actChoosePlayer-${player.id}`, player.name, () => this.bgaPerformAction('actFromCardWithId', {id: player.id}));
+                });
+            },
+
             'highDramaPhase03cd03_2': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Muster'), () => this.onMusterCardSelected());
                 dojo.addClass('actChooseCardSelected', 'disabled');

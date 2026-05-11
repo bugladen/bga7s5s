@@ -68,6 +68,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['locationClaimed', 500],
             ['parleyInterveneListUpdated', 1],
             ['sirensScreamUsedListUpdated', 1],
+            ['crabsInABucketUsedListUpdated', 1],
             ['locationActionUsedListUpdated', 1],
             ['catsEmbargoUpdated', 1],
             ['locationUncontrolled', 500],
@@ -2351,6 +2352,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         this.displaySirensScreamUsedList(args.cardId, args.usedList);
+    },
+
+    notif_crabsInABucketUsedListUpdated: function( notif )
+    {
+        debug( 'notif_crabsInABucketUsedListUpdated' );
+        debug( notif );
+
+        const args = notif.args;
+        this.displayCrabsInABucketUsedList(args.cardId, args.usedList);
     },
 
     notif_locationActionUsedListUpdated: function( notif )

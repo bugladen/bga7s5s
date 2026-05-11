@@ -7,7 +7,11 @@ description: Implement or finish a City Character (modules/php/cards/<expansion>
 
 City characters are city-deck cards that are **playable Characters** (not events, not attachments) — they sit at a city location until a player musters them, then they enter play as a Character with stats, traits, and abilities. They combine the `Character` lineage (stats, wounds, attachments, techniques) with the `CityDeckCardTrait` lineage (`CityCardNumber`, lives in the city deck, can be shuffled back in).
 
-The canonical reference is `modules/php/cards/faf/_03cd01.php` (Penya). At time of writing it is the **only** CityCharacter in the codebase, so most patterns below are drawn from a single example — when in doubt, mirror Penya rather than invent.
+Canonical references:
+- `modules/php/cards/faf/_03cd01.php` (Penya) — Negotiable, dashed stats, `canIntervene` ban, paired City Forced, City Action with multi-step state classes.
+- `modules/php/cards/faf/_03cd10.php` (Julius Caligari) — Negotiable, multi-step button-based Reaction (letter → trait → opposing target → conditional wound) demonstrating the `EventCharacterRecruited` / `EventCardMoved` trigger pair and the `TraitNames` consumer pattern.
+
+When in doubt, mirror one of those two rather than invent.
 
 > **Sibling skills:**
 > - `create-city-event-card` — for stubs that `extends CityEventCard`.
@@ -98,7 +102,7 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **`<b>Forced:</b>`** (not City) — auto-triggers while in play | Same as City Forced but without the `cardInCity` gate. Gate on whatever the text scopes ("while engaged," "while at this location," etc.). |
 | **`<b>City Action:</b>`** — player spends an action while the character sits in the city | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_03cdNN.php` extending `CharacterAction` (NOT `EventCityAction` — see "Action base class" below). State class(es) + JS wiring per the City Action flow. |
 | **`<b>Action:</b>`** (not City) — player spends an action with the character once in play | Same as City Action — `CharacterAction` is the right base class either way. The eligibility check (in city vs in play) is what differs and goes in `isAvailableToPlayer`. |
-| **`<b>City Reaction:</b>` or `<b>Reaction:</b>`** | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_03cdNN.php` extending `CardReaction`. |
+| **`<b>City Reaction:</b>` or `<b>Reaction:</b>`** | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_03cdNN.php` extending `CardReaction`. See "Pattern D — Reaction on a CityCharacter." For "City Reaction" gate triggers on `$event->theah->cardInCity($owner)`. Button-based reactions need **no** new state class, **no** `states.inc.php` edits, **no** JS wiring. |
 | **`<b>Technique:</b>` / `<b>Maneuver:</b>`** | The Character lineage already brings `TechniqueTrait`. Add `IHasManeuvers` + `ManeuverTrait` for maneuvers. Implement under `cards/<expansion>/techniques/` or `cards/<expansion>/maneuvers/`. |
 
 ## Pattern A — Hard ban via `canIntervene` / `canChallenge` + `eventCheck`
@@ -446,15 +450,261 @@ $game->gamestate->nextState("locationChosen");   // edge name from this state's 
 
 Required by the pre-commit hook (`createActionResolvedEvent`) and required to actually advance out of the state.
 
-## Pattern D — Reactions, Techniques, Maneuvers
+## Pattern D — Reaction on a CityCharacter
 
-These follow the standard Character patterns — nothing CityCharacter-specific. Quick pointers:
+Reactions live in `modules/php/cards/<expansion>/reactions/Reaction_03cdNN.php` extending `CardReaction`. The canonical example for a CityCharacter Reaction is **Julius Caligari `_03cd10`** (multi-step trait/target picker via reaction buttons). For a Reaction on a non-City Character the broader canonical example is `Reaction_01014` (Vittoria) — same pattern, just without the city gates.
 
-- **Reaction** — Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_03cdNN.php` extending `CardReaction`. Pre-commit hook requires `$this->setUsed(...)` AND `$this->isAvailable()` to appear in the class.
-- **Technique** — `IHasTechniques` is already on `Character` via `TechniqueTrait`. Just add the technique class under `cards/<expansion>/techniques/` and push it into `$this->Techniques` in the constructor.
+### Card class wiring
+
+```php
+class _03cdNN extends CityCharacter implements IHasReactions
+{
+    use ReactionTrait;
+
+    public function __construct()
+    {
+        parent::__construct();
+        // ... stats, traits, Negotiable, Text, resetCard() ...
+
+        $this->Reactions = [ new Reaction_03cdNN() ];
+    }
+}
+```
+
+If `reactions/` doesn't yet exist under your expansion directory, create it. The namespace is `Bga\Games\SeventhSeaCityOfFiveSails\cards\<expansion>\reactions`.
+
+### Reaction class skeleton
+
+```php
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\<expansion>\reactions;
+
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+
+class Reaction_03cdNN extends CardReaction
+{
+    // Multi-step state lives on private fields. They survive across performReaction
+    // invocations because the framework serializes Reactions[] along with the card.
+    private string $stage = '';            // '' (idle), 'pickX', 'pickY', ...
+    private string $chosenX = '';
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->Name = clienttranslate("Short button label");
+    }
+
+    public function getReactionDescription(Theah $theah): string { /* ... branch on $stage ... */ }
+    public function getReactionButtonProperties(Theah $theah): array { /* ... branch on $stage ... */ }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+        // ... see "Triggers and gates" below ...
+    }
+
+    public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
+    {
+        parent::performReaction($game, $state, $internalId, $reactionId);
+        // ... advance $stage, re-queue, or resolve and setUsed ...
+        $game->gamestate->nextState("done");
+    }
+}
+```
+
+### Triggers and gates
+
+The trigger lives in `handleEvent`. Two non-negotiable guards:
+
+1. **`$this->isAvailable()`** — the inherited `CardReaction::handleEvent` resets `Used = false` on `EventDuskEndOfDay`. Gate every branch on `isAvailable()` so the reaction doesn't double-fire within a day.
+2. **Identity check** — the event must concern `$owner` itself (`$event->cardId == $owner->Id`, `$event->characterId == $owner->Id`, etc.). Without this, the reaction fires for events that happen to anybody.
+
+Often-needed additional gates for CityCharacter reactions:
+
+- **City scope** (when card says "City Reaction" or "moves to a City location"): `$event->theah->cardInCity($owner)` for events where `$owner->Location` is current, or `$event->theah->locationInCity($event->toLocation)` for `EventCardMoved` (see gotcha below).
+- **Valid-target precondition** — if the effect REQUIRES a target (e.g., "target an opposing character"), check that at least one valid target exists BEFORE queuing the reaction transition. Otherwise the player gets a useless prompt they can only Decline. For "opposing", use `Theah::getOpposingCharactersAtLocation($location, $playerId)` (count > 0).
+- **"Opposing" semantics** — opposing means BOTH different controller AND same location. Use `getOpposingCharactersAtLocation`, not a hand-rolled `ControllerId !=` filter. (Skill-level memory; if a card text says "opposing" anywhere, this applies.)
+
+```php
+public function handleEvent(Event $event)
+{
+    parent::handleEvent($event);
+
+    // "After <Name> is recruited": EventCharacterRecruited fires AFTER the hub sets
+    // ControllerId (runEventHubAfterCards defaults to false), so $owner->ControllerId
+    // is already the new controller. Recruitment does NOT change Location.
+    if ($event instanceof EventCharacterRecruited && $this->isAvailable())
+    {
+        $owner = $this->getOwningCharacter($event->theah);
+        if ($event->characterId == $owner->Id
+            && $event->theah->cardInCity($owner)
+            && $this->hasValidTarget($event->theah, $owner, $owner->Location))
+        {
+            $this->beginReaction($event);
+        }
+    }
+
+    // "After <Name> moves to a City location": EventCardMoved has
+    // runEventHubAfterCards = true, so $owner->Location is the OLD location here.
+    // Use $event->toLocation for all post-move position checks.
+    if ($event instanceof EventCardMoved && $this->isAvailable())
+    {
+        $owner = $this->getOwningCharacter($event->theah);
+        if ($event->cardId == $owner->Id
+            && $event->theah->locationInCity($event->toLocation)
+            && $this->hasValidTarget($event->theah, $owner, $event->toLocation))
+        {
+            $this->beginReaction($event);
+        }
+    }
+}
+
+private function beginReaction(Event $event): void
+{
+    $owner = $this->getOwningCharacter($event->theah);
+    $this->stage = 'firstStep';
+    $owner->IsUpdated = true;
+    $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+    $event->theah->queueEvent($transition);
+}
+```
+
+### The `EventCardMoved` `runEventHubAfterCards` gotcha
+
+`EventCardMoved.runEventHubAfterCards = true`. The hub handler (`EventHub.php:633`) writes `$card->Location = $event->toLocation`, but that handler runs AFTER cards' `handleEvent`. So inside your `handleEvent`:
+
+- ✗ `$owner->Location` — still the OLD location.
+- ✓ `$event->toLocation` — the destination.
+
+For any helper called from `handleEvent` for a move event, pass the location explicitly instead of reading it off the card.
+
+By the time `getReactionButtonProperties` / `performReaction` runs (after the player enters the `playerReaction` state), the move has fully committed and `$owner->Location` is correct. The pitfall is only inside `handleEvent`.
+
+### Multi-step button flow
+
+A reaction with N sequential player choices is N "stages". Each stage:
+
+1. `getReactionButtonProperties` returns the buttons for that stage (plus `< Back` if appropriate, plus `Decline`).
+2. Player clicks → `performReaction` runs with the chosen `$reactionId`.
+3. `performReaction` advances `$this->stage`, then re-queues a `ReactionTransitionEvent` and calls `$game->gamestate->nextState("done")` to re-enter `playerReaction` with the new buttons.
+
+```php
+private function requeue(Game $game, int $playerId, int $sourceId): void
+{
+    $transition = EventFactory::createReactionTransitionEvent($playerId, $sourceId, $this->Id);
+    $game->theah->queueEvent($transition);
+}
+
+public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
+{
+    parent::performReaction($game, $state, $internalId, $reactionId);
+    $owner = $this->getOwningCharacter($game->theah);
+
+    if ($reactionId === 'decline')
+    {
+        $this->resetStage();
+        $this->setUsed($game->theah, true);
+        $owner->IsUpdated = true;
+        $game->gamestate->nextState("done");
+        return;
+    }
+
+    if ($reactionId === 'back')
+    {
+        if ($this->stage === 'second') { $this->stage = 'first'; /* clear later state */ }
+        $owner->IsUpdated = true;
+        $this->requeue($game, $owner->ControllerId, $owner->Id);
+        $game->gamestate->nextState("done");
+        return;
+    }
+
+    if (str_starts_with($reactionId, 'first-')) { /* set $chosen, advance stage, requeue */ }
+    if (str_starts_with($reactionId, 'final-')) { /* resolve effect, setUsed(true) */ }
+
+    $game->gamestate->nextState("done");
+}
+```
+
+**Final stage MUST call `$this->setUsed($game->theah, true)`** — this is what writes the "used today" flag and emits the reaction-used notification. The pre-commit hook also enforces that the literal `$this->setUsed(` appears in the file.
+
+**Final stage MUST queue any resulting events** (wounds, moves, etc.) via `EventFactory` + `$game->theah->queueEvent(...)`. The reaction returning doesn't auto-trigger anything.
+
+### Multi-step state belongs on the Reaction, not on the card
+
+Private fields on the Reaction class (`$stage`, `$chosenX`) persist across actions because the framework serializes the parent card (including its `Reactions[]` array) to the DB after each action. Don't try to store cross-step state on the card itself — the Reaction is the natural owner.
+
+### What does NOT need wiring for a button-based reaction
+
+- **No new state classes.** The framework's `playerReaction` state is reused with different button output per stage.
+- **No `states.inc.php` edits.** The `ReactionTransitionEvent` routes to `playerReaction` automatically.
+- **No `OnEnteringState.<expansion>.js` / `OnUpdateActionButtons.<expansion>.js` entries.** Buttons render from `getReactionButtonProperties` server-side.
+- **No `PlayerActions.js` map entries.**
+
+If a reaction needs richer UI than buttons (e.g., highlighting cards on the board for selection), at that point promote it to a real state class with full wiring — but YAGNI until then.
+
+### Common effect patterns inside `performReaction`
+
+**Wound a target character:**
+
+```php
+$wound = EventFactory::createCharacterBeingWoundedEvent(
+    $target->Id,
+    $owner->Id,           // sourceId — the reaction's owning character
+    1,                    // wounds count
+    $owner->getInjectCode(),
+    $this->Id             // abilityId — the reaction's own id
+);
+$game->theah->queueEvent($wound);
+```
+
+`createCharacterBeingWoundedEvent` is the standard wounding entrypoint; the engine turns it into actual wounds and gives other cards a chance to react/prevent.
+
+**Reveal random card(s) from a player's hand** (pattern from `_01098` and `Reaction_03cd10`):
+
+```php
+$deck = $game->getGameDeckObject();
+$hand = array_values($deck->getCardsInLocation(Game::LOCATION_HAND, $playerId));
+$count = min($n, count($hand));
+if ($count > 0)
+{
+    $keys = (array)array_rand($hand, $count);   // (array) cast normalizes the count==1 case
+    foreach ($keys as $key)
+    {
+        $card = $game->getCardObjectFromDb($hand[$key]['id']);
+        $game->theah->addCardToWorld($card);    // required for the inject code to render
+        $game->notify->all("message",
+            clienttranslate('${card_inject_code} reveals ${picked_card} from <strong>${player_name}</strong>\'s hand.'),
+            [
+                "card_inject_code" => $owner->getInjectCode(),
+                "picked_card"      => $card->getInjectCode(),
+                "card"             => $card->getPropertyArray($game),
+                "player_name"      => $game->getPlayerNameById($playerId),
+            ]);
+    }
+}
+```
+
+**Decide whether a card has a Trait:** `$card->hasTrait($traitName)`. The check is `in_array($trait, $this->ModifiedTraits)`. `clienttranslate()` is a no-op at runtime, so English Trait strings compare directly against the `clienttranslate()`-wrapped values stored on each card.
+
+**"Name a Trait" abilities:** the canonical Trait list is `TraitNames::$TraitsJson` (`modules/php/Traits.php`). Parse with `json_decode(TraitNames::$TraitsJson, true)['traits']`. If a card you're implementing has a Trait not in that JSON, add it in alphabetical order — `TraitNames` is the source of truth for trait pickers.
+
+### Pre-commit hook
+
+For any class extending `CardReaction`:
+- `$this->setUsed(` must appear at least once in the file (typically on every terminal path — decline, final-stage resolution).
+- `$this->isAvailable(` must appear at least once (typically as a guard at the top of each `handleEvent` branch).
+
+The hook is a literal string match. Calls don't need to be reachable — but they should be, or the reaction is broken.
+
+## Pattern E — Techniques and Maneuvers
+
+These follow the standard Character patterns — nothing CityCharacter-specific:
+
+- **Technique** — `IHasTechniques` is already on `Character` via `TechniqueTrait`. Add the technique class under `cards/<expansion>/techniques/` and push it into `$this->Techniques` in the constructor.
 - **Maneuver** — Implement `IHasManeuvers`, `use ManeuverTrait`, push into `$this->Maneuvers`.
-
-For a Reaction whose trigger is "while in the city," gate the body on `cardInCity($this)` — same as the Forced pattern.
 
 ## JS Wiring (required, easy to forget)
 
@@ -551,12 +801,16 @@ The Card class itself (the `_03cdNN extends CityCharacter` file) has no hook-man
 
 ## Cross-Cutting Helpers
 
-- `$theah->cardInCity($card): bool` — true when the card sits in the city deck. Gate every City Forced / City Action body on this.
+- `$theah->cardInCity($card): bool` — true when the card sits in the city deck. Gate every City Forced / City Action / City Reaction body on this. Note: inside an `EventCardMoved` handler, the card's `Location` field has NOT been updated yet (the hub handler runs after cards) — use `$theah->locationInCity($event->toLocation)` instead.
+- `$theah->locationInCity(string $location): bool` — true for any of the 5 city locations. The right gate when you only have a location string in hand (e.g., `$event->toLocation`).
 - `$theah->getCharactersAtLocationByPlayerId(string $location, int $playerId, bool $includeUncontrolled = false): array` — friendly characters at a city location.
+- `$theah->getOpposingCharactersAtLocation(string $location, int $playerId): array` — opposing = different controller AND same location. Use this whenever card text says "opposing," never roll your own `ControllerId !=` filter.
 - `$theah->getAdjacentCityLocations(string $location, bool $includeHome = true): array` — adjacency for move actions.
 - `$game->getCardsOnTopOfCityDeck($n)` — returns raw card_info rows (NOT card objects). Cast `id` to int when passing to event factories.
+- `$game->getGameDeckObject()->getCardsInLocation(string $location, int $playerId)` — raw card_info rows in a location; cast `id` to int and pass to `$game->getCardObjectFromDb($id)` to get the card object. Required for "reveal random card from hand" patterns.
 - `$game->getGameDeckObject()->shuffle(Game::LOCATION_CITY_DECK)` — shuffle the city deck after sending a card into it.
 - `$this->getInjectCode()` — inline-styled card name for notifications (`${card_inject_code}` placeholder).
+- `TraitNames::$TraitsJson` (in `modules/php/Traits.php`) — canonical full Trait list for "Name a Trait" abilities. JSON-encoded `{"traits": [...]}`. If a card has a Trait that's missing, add it in alphabetical order.
 
 ## Reference Implementations
 
@@ -569,6 +823,11 @@ The Card class itself (the `_03cdNN extends CityCharacter` file) has no hook-man
 | `modules/js/OnEnteringState.faf.js` | UI setup for both Penya steps. |
 | `modules/js/OnUpdateActionButtons.faf.js` | Action buttons for both Penya steps. |
 | `modules/php/cards/_7s5s/_01186.php` (Maryam) | Comparison for `EventCharacterBeingWounded` + `canceled = true` pattern, with a source filter Penya intentionally omits. |
+| `modules/php/cards/faf/_03cd10.php` (Julius Caligari) | **Canonical CityCharacter Reaction.** Negotiable + `IHasReactions`/`ReactionTrait` wiring. |
+| `modules/php/cards/faf/reactions/Reaction_03cd10.php` | Multi-step button-based reaction (letter → trait → opposing-character target). `EventCharacterRecruited` + `EventCardMoved` triggers, valid-target precondition gate, the `EventCardMoved.runEventHubAfterCards = true` gotcha, `TraitNames::$TraitsJson` consumption, `getOpposingCharactersAtLocation`, random reveal from hand, conditional wound. |
+| `modules/php/cards/_7s5s/reactions/Reaction_01014.php` (Vittoria) | Multi-step reaction on a non-City Character — same button-cycling pattern, broader event coverage (engage / engard / move / wound / heal / challenge). |
+| `modules/php/cards/_7s5s/_01098.php` (Cat's Embargo) | "Reveal a random card from a hand" reference implementation. |
+| `modules/php/Traits.php` | `TraitNames::$TraitsJson` — canonical Trait list for "Name a Trait" pickers. Add new Traits in alphabetical order. |
 | `modules/php/cards/CityCharacter.php` | Base class. Read for the `Negotiable` field and inheritance chain. |
 | `modules/php/cards/Character.php` | Parent. `canIntervene` / `canChallenge` defaults and wound/heal handling live here. |
 | `modules/php/theah/Theah.php::interventionCheck` (~line 1651) | Where `canIntervene` is consumed by the engine. |
@@ -579,5 +838,7 @@ The Card class itself (the `_03cdNN extends CityCharacter` file) has no hook-man
 2. Every new state class needs all three: the class file in `modules/php/States/<expansion>/`, the constant in `States.php`, and the transition entry in `states.inc.php`'s `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`.
 3. Every new state needs JS wiring in `OnEnteringState.<expansion>.js` AND `OnUpdateActionButtons.<expansion>.js`. Add `OnLeavingState.<expansion>.js` reset if you set selection modes or styling. Add to `PlayerActions.js` if you reuse a client action.
 4. If you minted a new global, clear it in the matching cleanup state (or defensively at turn boundaries).
-5. Mentally run pre-commit hook checks on every file you touched. Especially: `createActionResolvedEvent` in the action, no `setUsed`/`resetPlayerPassCount`/`announceAction` in the `CharacterAction` subclass.
-6. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice (`BeingWounded` vs `Wounded`, `DuelStarted` vs `ChallengeIssued`), why `cardInCity` is the right scope gate, why `engage=false` on the move events, why `eventCheck` exists alongside `canIntervene`. Read the Penya journal (`2026-04-26-01-penya-03cd01-implementation.md`) first — it encodes the hard-won knowledge about event ordering inside `handleEvent` and the duel-mid-trigger edge case.
+5. Mentally run pre-commit hook checks on every file you touched. Especially: `createActionResolvedEvent` in the action, no `setUsed`/`resetPlayerPassCount`/`announceAction` in the `CharacterAction` subclass, `$this->setUsed(` and `$this->isAvailable(` literal strings present in every `CardReaction` subclass.
+6. For each Reaction you added, walk the `handleEvent` triggers and confirm all required gates are in place: `isAvailable()`, identity check (`$event->cardId == $owner->Id` etc.), city-scope gate (`cardInCity($owner)` or `locationInCity($event->toLocation)` per the gotcha), and a valid-target precondition if the effect needs a target. Missing the valid-target gate leaves the player with a useless "Decline" prompt.
+7. If a Reaction reads location from inside a move-event branch, confirm you used `$event->toLocation` and NOT `$owner->Location` (the `EventCardMoved.runEventHubAfterCards = true` gotcha).
+8. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice (`BeingWounded` vs `Wounded`, `DuelStarted` vs `ChallengeIssued`, `CardMoved` vs `CardMoving`), why `cardInCity` is the right scope gate, why `engage=false` on the move events, why `eventCheck` exists alongside `canIntervene`, why a button-based reaction was chosen over state classes (or vice versa). Read the Penya journal (`2026-04-26-01-penya-03cd01-implementation.md`) and the Julius journal (`2026-05-11-03-julius-caligari-03cd10-implementation.md`) first — between them they encode most of the hard-won knowledge about event ordering, the duel-mid-trigger edge case, and multi-step reaction design.

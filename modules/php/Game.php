@@ -384,12 +384,19 @@ class Game extends \Bga\GameFramework\Table
         }
 
         $result["sirensScreamUsedList"] = null;
+        $result["crabsInABucketUsedList"] = null;
         $result["catsEmbargoData"] = null;
         foreach ($this->theah->getAllCards() as $card) {
             if ($card instanceof cards\_7s5s\_01179 && $this->theah->cardInCity($card)) {
                 $result["sirensScreamUsedList"] = [
                     'cardId' => $card->Id,
                     'usedList' => $card->getSirensScreamUsedListData($this),
+                ];
+            }
+            if ($card instanceof cards\faf\_03cd13 && $this->theah->cardInCity($card)) {
+                $result["crabsInABucketUsedList"] = [
+                    'cardId' => $card->Id,
+                    'usedList' => $card->getCrabsInABucketUsedListData($this),
                 ];
             }
             if ($card instanceof cards\_7s5s\_01098 && $card->Location == Game::LOCATION_PLAYER_HOME) {

@@ -40,6 +40,22 @@
                 }
             },
 
+            'highDramaPhase03cd13': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const cardId = this.clientStateArgs && this.clientStateArgs.crabsCardId;
+                    const card = cardId ? this.cardProperties[cardId] : null;
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        if (image) dojo.removeClass(image, '_7sfs-chosen');
+                    }
+
+                    const performerId = this.clientStateArgs && this.clientStateArgs.performerId;
+                    if (performerId) {
+                        this.unhighlightCharacterChosen(performerId);
+                    }
+                }
+            },
+
             'highDramaPhase03cd03_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.showApproachDeckAtBottom();

@@ -56,6 +56,23 @@
                 }
             },
 
+            'highDramaPhase03cd13': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[args.args.args.cardId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.addClass(image, '_7sfs-chosen');
+                        this.clientStateArgs.crabsCardId = args.args.args.cardId;
+                    }
+
+                    const performerId = args.args.args.performerId;
+                    if (performerId) {
+                        this.highlightCharacterChosen(performerId);
+                        this.clientStateArgs.performerId = performerId;
+                    }
+                }
+            },
+
             'highDramaPhase03cd03_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     card = this.cardProperties[args.args.args.cardId];
