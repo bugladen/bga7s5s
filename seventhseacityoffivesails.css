@@ -1387,6 +1387,11 @@ body {
         min-height: auto !important;
         overflow: visible !important;
     }
+
+    #factionHand-placeholder {
+        border: 3px solid gold;
+        border-radius: 8px;
+    }
     
     ._7sfs-hand-placeholder ._7sfs-hand-label,
     ._7sfs-hand-placeholder._7sfs-hand-floating ._7sfs-hand-label {
