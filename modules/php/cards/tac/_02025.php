@@ -32,7 +32,7 @@ class _02025 extends Scheme implements IHasActions
         $this->PanacheModifier = -1;
 
         $this->Traits = [
-            clienttranslate('Beaureacracy'),
+            clienttranslate('Bureaucracy'),
             clienttranslate('Bargain'),
         ];
 
