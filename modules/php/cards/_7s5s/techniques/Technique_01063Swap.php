@@ -53,6 +53,17 @@ class Technique_01063Swap extends Technique
         {
             //If not in a duel, this will only happen during a duel challenge, so player is the challenger
             $game = $event->theah->game;
+
+            // WHY: GENERATE_THREAT runs on rejection too (to wound the target via
+            // CHALLENGER_THREAT). Without this guard the swap re-adds DUEL_CHALLENGER
+            // to the swap target after EventChallengeRejected has already cleaned up
+            // the original challenger, leaving the condition stuck on a character that
+            // never enters a duel.
+            if (! $game->globals->get(Game::CHALLENGE_ACCEPTED, false))
+            {
+                return;
+            }
+
             $owner = $this->getOwningCharacter($game->theah);
             $newChallenger = $game->theah->getCharacterById($this->swapId);
 
