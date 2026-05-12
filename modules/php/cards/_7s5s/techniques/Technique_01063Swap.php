@@ -54,6 +54,15 @@ class Technique_01063Swap extends Technique
             //If not in a duel, this will only happen during a duel challenge, so player is the challenger
             $game = $event->theah->game;
 
+            $newChallenger = $game->theah->getCharacterById($this->swapId);
+            $game->globals->set(Game::CHOSEN_PERFORMER, $newChallenger->Id);
+
+            // WHY: Redirect the event's actor to the swapped character so that
+            // Character::handleEvent (which adds the actor's stat to adversaryThreat
+            // when actorId matches) and the EventHub threat notification both use
+            // the new challenger instead of the original challenger.
+            $event->actorId = $newChallenger->Id;
+
             // WHY: GENERATE_THREAT runs on rejection too (to wound the target via
             // CHALLENGER_THREAT). Without this guard the swap re-adds DUEL_CHALLENGER
             // to the swap target after EventChallengeRejected has already cleaned up
@@ -65,7 +74,6 @@ class Technique_01063Swap extends Technique
             }
 
             $owner = $this->getOwningCharacter($game->theah);
-            $newChallenger = $game->theah->getCharacterById($this->swapId);
 
             //Reset the conditions for challenger
             $owner->removeCondition(Game::DUEL_CHALLENGER);
@@ -73,8 +81,6 @@ class Technique_01063Swap extends Technique
 
             $newChallenger->addCondition(Game::DUEL_CHALLENGER);
             $newChallenger->IsUpdated = true;
-
-            $game->globals->set(Game::CHOSEN_PERFORMER, $newChallenger->Id);
 
             $challengerSwappedEvent = EventFactory::createChallengerSwappedEvent($owner->ControllerId, $owner->Id, $newChallenger->Id);
             $game->theah->queueEvent($challengerSwappedEvent);
