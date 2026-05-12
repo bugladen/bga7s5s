@@ -54,9 +54,10 @@ Read the card's `Text` and classify each clause before writing any code:
 |---|---|
 | **`<b>Forced:</b>` / `<b>City Forced:</b>`** — auto-triggers, no choice | Override `handleEvent` directly on the card class. No Action/Reaction/State files needed. |
 | **`<b>City Action:</b>`** — player spends an action | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_03cdNN.php`. State class(es) + JS wiring if it needs interactive steps. |
-| **`<b>City Reaction:</b>`** — player chooses to trigger in response to an event | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_03cdNN.php`. |
+| **`<b>City Reaction:</b>`** — player chooses to trigger in response to an event while the card is in a city location | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_03cdNN.php`. |
+| **`<b>Reaction:</b>`** (no "City" prefix) — player chooses to trigger while the card is in their **Home** | Same `IHasReactions` + `ReactionTrait` + `reactions/Reaction_03cdNN.php` plumbing as City Reaction. The only difference is the `handleEvent` location guard: check `$owner->Location == Game::LOCATION_PLAYER_HOME` instead of `cardInCity($owner)`. See `_03cd20` (Early Morning Arrangements) — first CityEventCard precedent for a Home-located reaction. Requires the card to actually be able to *land* in a player's Home, which is its own sub-pattern (below). |
 
-A single card can combine these (e.g. Penya `_03cd01` has both a City Forced and a City Action).
+A single card can combine these (e.g. Penya `_03cd01` has both a City Forced and a City Action; `_03cd20` has a Reaction at end of Planning while in Home AND a City Action that puts itself into Home).
 
 ## Pattern A — Forced Ability
 
@@ -281,7 +282,7 @@ The hook in `.githooks/pre-commit` requires `createActionResolvedEvent()` for an
 
 **`EventCityAction` and the hook:** the hook's regex matches the *literal* parent name on the `extends` line — so `extends EventCityAction` is NOT matched by the `(CardAction|RiskAction|RiskCityAction)` check, even though `EventCityAction` extends `CardAction`. The `createActionResolvedEvent` requirement is therefore not enforced for `EventCityAction` subclasses, but you should still call it — the framework expects an action-resolved event to advance state.
 
-## Pattern C — City Reaction
+## Pattern C — City Reaction (and "Reaction while in Home")
 
 1. On the card class:
 
@@ -300,9 +301,17 @@ class _03cdNN extends CityEventCard implements IHasReactions
 }
 ```
 
-2. Create `modules/php/cards/<expansion>/reactions/Reaction_03cdNN.php` extending `CardReaction`. Use `_7s5s/reactions/Reaction_01184.php` as the template — implement `getReactionDescription`, `getReactionButtonProperties`, `handleEvent` (detect the trigger, queue a `ReactionTransitionEvent`), and `performReaction` (apply effect, call `$this->setUsed($game->theah, true)`, then `$game->gamestate->nextState("done")`).
+2. Create `modules/php/cards/<expansion>/reactions/Reaction_03cdNN.php` extending `CardReaction`. Implement `getReactionDescription`, `getReactionButtonProperties`, `handleEvent` (detect the trigger, queue a `ReactionTransitionEvent`), and `performReaction` (apply effect, call `$this->setUsed($game->theah, true)`, then `$game->gamestate->nextState("done")`).
 3. Pre-commit hook requires `$this->setUsed(...)` AND `$this->isAvailable()` to appear somewhere in the reaction class.
 4. `CardReaction`'s base `setUsed` is reset at dusk automatically.
+
+### Pick the right reaction shape
+
+- **Single-stage opt-in** (one decision, then resolve): `_7s5s/reactions/Reaction_01184.php` (Claude — opt in to a pressure-type flag) is the simplest template.
+- **Multi-stage button-based** (sequential picks: target, then option, then sub-target): use a private `$stage` field (string enum) plus per-stage state fields (e.g. `$chosenLocation`, `$chosenCharacterId`). Each `performReaction` advances the stage and re-queues `createReactionTransitionEvent($playerId, $cardId, $this->Id)` so the framework re-enters `playerReaction` with a fresh `getReactionButtonProperties` payload. Mark `$owner->IsUpdated = true` after each stage flip so the private fields persist across action handlers. References: `_03cd10` (Julius — letter → trait → target), `_03cd18` (Kalla — option A vs B branches), `_03cd20` (Early Morning Arrangements — character → adjacent city). Provide a `< Back` button on intermediate stages and a `Decline` button on every stage (Decline always wins — set used and exit).
+- **In-Home reaction** (text reads `<b>Reaction:</b>` without "City"): same shape as a City Reaction; only the `handleEvent` guard differs (`$owner->Location == Game::LOCATION_PLAYER_HOME` instead of `cardInCity($owner)`). See `_03cd20` and the "CityEventCard living in a player's Home" sub-pattern below.
+
+A multi-stage CardReaction does NOT need new GameState classes, `states.inc.php` edits, or per-state JS files — the framework's built-in `playerReaction` state hosts all stages. Only promote to dedicated State classes if a stage needs richer UI (board highlighting, multi-select, dragging) that can't be expressed as a flat button list.
 
 ## Pre-Commit Hook Gotchas (from `.githooks/pre-commit`)
 
@@ -437,6 +446,100 @@ Gate the queue on `$location->isControlled()` — queuing the event when the loc
 
 The hub's `locationUncontrolled` notify doesn't say *why*, so emit a card-attributed `${card_inject_code}: ...` notify on the card before queuing the event so the log reads top-down (see `_03cd08` for the convention).
 
+### CityEventCard living in a player's Home
+
+Some cards (e.g. `_03cd20` Early Morning Arrangements) move themselves from a city location into a specific player's Home as part of an effect, then become reactive while sitting there. The default `CityEventCard` data model fully supports this (`Location` is just a string, `ControllerId` is just an int), but three things have to line up or the card vanishes from the UI.
+
+1. **`ControllerId` must be set to the target player BEFORE queueing the move event.** `EventCardMoved`'s handler calls `$deck->moveCard($card->Id, $event->toLocation, $card->ControllerId)` — the third arg becomes `card_location_arg` in the DB. For `LOCATION_PLAYER_HOME` that's the player id. Pattern:
+   ```php
+   $owner->ControllerId = $playerId;
+   $owner->IsUpdated = true;   // re-serializes the card after the event loop tick
+   $moveEvent = EventFactory::createCardMovingEvent(
+       $playerId, $owner->Id, $owner->Location,
+       Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id
+   );
+   $theah->queueEvent($moveEvent);
+   ```
+   `$theah->getCardById()` returns the same cached object inside the handler, so the freshly-set `ControllerId` is visible when `deck->moveCard` runs.
+
+2. **The `cardMoved` client notify carries `controllerId`** (added to `EventHub.php`'s `EventCardMoved` handler). `notif_cardMoved` writes it back to `card.controllerId` before recomputing the destination, so `createCardId(card, PLAYER_HOME)` returns `${playerId}-${id}` and `getTargetElementForLocation(PLAYER_HOME, playerId)` resolves to that player's `home-anchor`. If you're moving a CityEventCard to home and the UI silently lands it under the wrong player (or nowhere), the controllerId-on-notify wire is the first thing to check.
+
+3. **No JS template changes are needed.** `Utilities.js::createCard` already dispatches `card.type === 'Event'` to `createEventCard`, which places `jstpl_card_event` "before" the home-anchor endcap. `Setup.js`'s home-cards loop hits the same path on refresh because `getCardPropertiesAtLocation(LOCATION_PLAYER_HOME)` returns the card with the right `controllerId` and the filter at the top of the loop picks it up.
+
+**Triggering "Reaction:" abilities while in Home.** The card's `Reaction` class checks `$owner->Location == Game::LOCATION_PLAYER_HOME` inside `handleEvent` and queues a `ReactionTransitionEvent` from there — exactly the same shape as a City Reaction but with a different location guard. `EventPhasePlanningEnd`, `EventDuskPhaseEnd`, etc. are the natural phase triggers. See `_03cd20` Reaction.
+
+**Adjacency from Home is "all city locations".** `Theah::getAdjacentCityLocations(Game::LOCATION_PLAYER_HOME, $includeHome = false)` returns every city location available at the current player count (DOCKS / FORUM / BAZAAR / + OLES_INN at 3p / + GARDEN at 4p). When a card-in-Home effect says "move to an adjacent City location," that's the full city — not a restricted subset. Don't hand-write a different adjacency table.
+
+**Going back out — discard from Home.** `createCardAddedToCityDiscardPileEvent($owner->ControllerId, $owner->Id, $owner->Location, $owner->Id, true)` works regardless of whether `$owner->Location` is a city or `LOCATION_PLAYER_HOME`. The hub handler clears `ControllerId` and `Engaged`, sets `Location = LOCATION_CITY_DISCARD`, and the `cardAddedToCityDiscardPile` notify destroys the DOM element — so the home-anchor cleans up automatically.
+
+### Pressure-this-location City Action (with a stat)
+
+For text like "**City Action:** Pressure this location with [Finesse/Combat/Influence/Resolve] • If successful, …", the action is an `EventCityAction` with `RequiresPerformerSelected = true` and no custom state. The pressure result flows back through the framework's `HIGH_DRAMA_PRESSURE_LOCATION` state and your `handleEvent` listens for the result.
+
+Recipe (lifted from `Action_02014` / `Action_02035` / `Action_03cd20`):
+
+```php
+class Action_03cdNN extends EventCityAction
+{
+    public function __construct() {
+        parent::__construct();
+        $this->Name = clienttranslate("…short description…");
+        $this->RequiresPerformerSelected = true;
+    }
+
+    public function getPerformersForAction(int $playerId, Theah $theah): array {
+        $performers = parent::getPerformersForAction($playerId, $theah);   // friendly chars at this location
+        return array_values(array_filter($performers, fn($p) => !$p->Engaged));
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool {
+        if (!parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck)) return false;
+        return count($this->getPerformersForAction($playerId, $theah)) > 0;
+    }
+
+    public function handleEvent(Event $event) {
+        parent::handleEvent($event);
+
+        if ($event instanceof EventActionTriggered && $event->actionId == $this->Id) {
+            $owner = $this->getOwningCard($event->theah);
+            $game  = $event->theah->game;
+
+            $game->globals->set(Game::PRESSURING_PLAYER, $event->playerId);
+            $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
+            $game->globals->set(Game::PRESSURE_STAT, Game::STAT_FINESSE);    // pick the stat
+
+            $performer = $game->theah->getCharacterById((int)$game->globals->get(Game::CHOSEN_PERFORMER));
+            $pressureStats = $game->theah->getPressureStats($performer, $performer->Location, Game::STAT_FINESSE);
+
+            $event->theah->queueEvent(
+                EventFactory::createPressureOccuringEvent($event->playerId, $performer->Id, $performer->Location, $pressureStats)
+            );
+            $event->theah->queueEvent(
+                EventFactory::createTransitionEvent($event->playerId, $owner->Id, "pressureLocation", $this->Id)
+            );
+        }
+
+        if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id) {
+            if ($event->success) {
+                // …apply success effect…
+            }
+            $event->theah->queueEvent(EventFactory::createActionResolvedEvent($event->playerId));
+        }
+    }
+}
+```
+
+Key points:
+
+- The `"pressureLocation"` transition key is **already** registered globally in `states.inc.php` (under `HIGH_DRAMA_PLAYER_TURN_EVENTS`). You do NOT need to add it — and you do NOT need a custom state class for the pressure itself.
+- Pass `$this->Id` as the transition's `$internalId`. The framework propagates it through the pressure flow and you get it back on `EventLocationPressureResult` as `$event->abilityId`. That's how you distinguish your card's pressure from somebody else's during the same High Drama turn.
+- Set `PRESSURE_TYPE = NORMAL_PRESSURE_TYPE` (a fresh `set`, not `OR`) unless the card *also* changes how pressure is counted. Only call `setGlobalFlag(PRESSURE_TYPE, …)` if your card has a Forced clause like "count only en-garde characters" (see `_03cd08`, `_01184`).
+- `getPressureStats($performer, $location, $stat)` is the canonical way to compute the stat array passed to `createPressureOccuringEvent`. Don't hand-roll it.
+- `createActionResolvedEvent` always fires (success or failure) so the engine advances out of the action.
+- Pressure engages the performer as part of resolution — that's why `getPerformersForAction` filters out engaged characters. Don't manually queue `createCardEngagedEvent`.
+
+For the "If successful, add a city card to this location" follow-up, queue `createCityCardAddedToLocationEvent((int)$topCard['id'], $location)` using `getCardsOnTopOfCityDeck(1)` (see Penya `_03cd01::triggerForcedAbility` for the exact shape).
+
 ## Reference Implementations
 
 | Card | What it demonstrates |
@@ -447,6 +550,7 @@ The hub's `locationUncontrolled` notify doesn't say *why*, so emit a card-attrib
 | `modules/php/cards/faf/_03cd08.php` | Minimal Forced pressure-flag card. Reuses `Game::CLAUDE_PRESSURE_TYPE` rather than minting a new flag. |
 | `modules/php/cards/faf/_03cd12.php` | Pure Forced CityEventCard listening to `EventHighDramaPhaseEnd`. Demonstrates the "each player equal X" check via `loadPlayersBasicInfos` + `array_unique`, and queues `createLocationBecomesUncontrolledEvent` to flip a location uncontrolled. |
 | `modules/php/cards/faf/_03cd13.php` + `actions/Action_03cd13.php` + `State_highDramaPhase03cd13.php` | CityEventCard with both a Forced (per-player conditional draw on reveal) and a multi-use City Action (engage + claim). Canonical example of: server-filtered target picker, per-player once-per-Day tracking via `playersUsed` (card stays in play), used-list display on the card, performer highlight in the target-picker state. |
+| `modules/php/cards/faf/_03cd20.php` + `actions/Action_03cd20.php` + `reactions/Reaction_03cd20.php` | CityEventCard with a **Reaction-while-in-Home** (`EventPhasePlanningEnd`, multi-stage button-based picker — character → adjacent city → discard) AND a **Pressure-with-Finesse City Action** that puts the card back in the active player's Home on success. Only CityEventCard precedent for living in a player's Home. Demonstrates the `ControllerId`-update-then-move-to-home recipe, the `cardMoved` notify's `controllerId` field (added in this card's PR), and the multi-stage `CardReaction` with private `$stage` field. |
 | `modules/php/cards/_7s5s/_01179.php` + `actions/Action_01179.php` | Original multi-use City Action / used-list display pattern (Siren's Scream). The `_03cd13` pattern is a direct descendant. Reference for the `setUsed(false)` defensive call and the `EventDuskEndOfDay` clear-and-renotify. |
 | `modules/php/cards/_7s5s/_01184.php` + `reactions/Reaction_01184.php` | City Reaction template (sets the same `CLAUDE_PRESSURE_TYPE` flag opt-in instead of Forced). |
 | `modules/php/cards/_7s5s/_01006.php` | Forced pressure bonus (`CONSTANZO_PRESSURE_TYPE`) — alternate flag/branch pattern. |

@@ -871,9 +871,12 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const card = this.cardProperties[args.cardId];
         const oldDivId = card.divId;
         const oldElement = $(oldDivId);
-        
+
         card.engaged = args.engage;
         card.location = args.toLocation;
+        if (args.controllerId !== undefined) {
+            card.controllerId = args.controllerId;
+        }
 
         // Get the destination target (returns string ID, need to convert to DOM element)
         const cardId = this.createCardId(card, args.toLocation);

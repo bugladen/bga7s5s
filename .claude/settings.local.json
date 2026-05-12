@@ -36,7 +36,8 @@
       "Bash(sed -n '546,550p' /c/code/7s5s/modules/js/OnUpdateActionButtons.7s5s.js)",
       "Bash(sed -n '675,682p' /c/code/7s5s/modules/js/OnUpdateActionButtons.7s5s.js)",
       "Bash(sed -n '363,371p' /c/code/7s5s/modules/js/OnUpdateActionButtons.7s5s.js)",
-      "Bash(sed -n '388,391p' /c/code/7s5s/modules/js/OnUpdateActionButtons.7s5s.js)"
+      "Bash(sed -n '388,391p' /c/code/7s5s/modules/js/OnUpdateActionButtons.7s5s.js)",
+      "Bash(echo \"exit_code: $?\")"
     ]
   }
 }

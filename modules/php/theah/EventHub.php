@@ -678,6 +678,7 @@ trait EventHub
                         "toLocation" => $event->toLocation,
                         "engage" => $card->Engaged,
                         "source_inject_code" => $sourceCode,
+                        "controllerId" => $card->ControllerId,
                     ]);
                 };
                 $handler($this, $event);    
