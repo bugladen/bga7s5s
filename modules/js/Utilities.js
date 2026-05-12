@@ -1565,8 +1565,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 this.addTippyTooltip(cardDivId, `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(combatCard.image) + combatCard.image}" />`, this.CARD_TOOLTIP_DELAY);
                 if (row.gambled)
                 {
-                    dojo.addClass(divId, '_7sfs-engaged');
-                    dojo.addClass(divId, '_7sfs-duel-row-combat-card-gambled');
+                    dojo.addClass(cardDivId, '_7sfs-engaged');
+                    dojo.addClass(cardDivId, '_7sfs-duel-row-combat-card-gambled');
                 }
 
                 if (! combatCard.dashedRiposte)
