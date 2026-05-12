@@ -29,7 +29,7 @@ class _01124_RiskClone extends Risk implements IHasActions
         {
             //Remove the clone from the discard pile and hide it
             $game = $event->theah->game;
-            $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($event->ownerId, $this->Id);
+            $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($event->ownerId, $this->Id, $messageHidden = true);
             $event->theah->queueEvent($removeEvent);
             $deck = $game->getGameDeckObject();
             $deck->moveCard($this->Id, Game::LOCATION_PERMANENTLY_HIDDEN);
