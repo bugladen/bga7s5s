@@ -1189,8 +1189,17 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }),  `${divId}_image`, 'last');
         }
 
-        if (attachment.engaged) 
+        if (attachment.engaged)
             dojo.addClass(`${divId}_image`, '_7sfs-engaged');
+
+        if (attachment.conditions?.includes(this.SILVER_SPINE_ABILITY_USED)) {
+            const id = `${divId}_silver_spine_ability_used`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: '_7sfs-silver-spine-ability-used-chip',
+            }),  `${divId}_image`, 'last');
+            this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Silver Spine's once-per-Day ability has been used")}</div>` );
+        }
 
         this.createTooltipForCard(attachment);
     },

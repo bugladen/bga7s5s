@@ -84,6 +84,7 @@ class Game extends \Bga\GameFramework\Table
     final const OLD_CATS_EMBARGO_TARGET = "Cats Embargo Target";
     final const MARYAM_BENU_PLEROMA_ABILITY_USED = "Maryam Benu Pleroma Ability Used";
     final const CARMELLA_ABILITY_USED = "Carmella Ability Used";
+    final const SILVER_SPINE_ABILITY_USED = "Silver Spine Ability Used";
     final const INDOMITABLE_WILL_CONDITION = "Indomitable Will Condition";
     final const UNDER_COVER_OF_THE_NIGHT = "Under Cover of the Night";
     final const CONTEMPT_AND_HATRED_CONDITION = "Influence Reduced by Contempt and Hatred";
@@ -513,7 +514,7 @@ class Game extends \Bga\GameFramework\Table
         $this->doZombieTurn($state, $active_player);
     }
 
-    public function translate($text) 
+    public function translate(string $text): string 
     {
         return clienttranslate($text);
     }

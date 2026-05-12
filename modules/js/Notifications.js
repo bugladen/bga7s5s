@@ -76,6 +76,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['maryamBenuPleromaAbilityRemoved', 500],
             ['carmellaAbilityUsed', 1],
             ['carmellaAbilityRemoved', 1],
+            ['silverSpineAbilityUsed', 500],
+            ['silverSpineAbilityRemoved', 500],
             ['indomitableWillConditionStarted', 500],
             ['indomitableWillConditionEnded', 500],
             ['contemptAndHatredConditionStarted', 1],
@@ -1591,6 +1593,51 @@ return declare('seventhseacityoffivesails.notifications', null, {
             card.conditions = card.conditions.filter(condition => condition !== this.MARYAM_BENU_PLEROMA_ABILITY_USED);
 
             const id = `${args.cardId}_maryam_benu_pleroma_ability_used`;
+            dojo.destroy(id);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_silverSpineAbilityUsed: function( notif )
+    {
+        debug( 'notif_silverSpineAbilityUsed' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions.push(this.SILVER_SPINE_ABILITY_USED);
+
+            const imageElement = dojo.query('._7sfs-card', card.divId)[0];
+            const id = `${card.divId}_silver_spine_ability_used`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: '_7sfs-silver-spine-ability-used-chip',
+            }),  imageElement, 'last');
+
+            this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Silver Spine's once-per-Day ability has been used")}</div>` );
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_silverSpineAbilityRemoved: function( notif )
+    {
+        debug( 'notif_silverSpineAbilityRemoved' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.SILVER_SPINE_ABILITY_USED);
+
+            // WHY card.divId, not args.cardId: the chip was placed with id
+            // `${card.divId}_silver_spine_ability_used`. card.divId is the full
+            // DOM id (e.g. `${controllerId}-${cardId}`), not the bare card id —
+            // using args.cardId here silently no-ops because the element doesn't
+            // exist under that id.
+            const id = `${card.divId}_silver_spine_ability_used`;
             dojo.destroy(id);
             this.refreshTooltipForCard(card);
         }

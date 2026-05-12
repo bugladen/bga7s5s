@@ -150,6 +150,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.OLD_CATS_EMBARGO_TARGET = 'Cats Embargo Target';
             this.MARYAM_BENU_PLEROMA_ABILITY_USED = 'Maryam Benu Pleroma Ability Used';
             this.CARMELLA_ABILITY_USED = 'Carmella Ability Used';
+            this.SILVER_SPINE_ABILITY_USED = 'Silver Spine Ability Used';
             this.INDOMITABLE_WILL_CONDITION = 'Indomitable Will Condition';
             this.CONTEMPT_AND_HATRED_CONDITION = 'Influence Reduced by Contempt and Hatred';
             this.SOLINE_EL_GATO_CONDITION = 'Finesse Modified by Soline el Gato';
