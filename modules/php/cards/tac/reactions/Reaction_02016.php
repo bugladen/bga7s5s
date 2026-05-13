@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\AttachmentReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -15,7 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_02016 extends CardReaction
+class Reaction_02016 extends AttachmentReaction
 {
     private ?EventCardEngaged $engagedEvent = null;
     private ?EventCardEngarded $engardedEvent = null;
@@ -61,6 +61,11 @@ class Reaction_02016 extends CardReaction
 
     private function shouldReactToEvent(Theah $theah, int $sourceId, string $abilityId, ?int $targetCharacterId = null): bool
     {
+        if (! $this->ownerIsAttached($theah))
+        {
+            return false;
+        }
+
         $source = $theah->getCardById($sourceId);
         if ($source)
         {
@@ -166,11 +171,6 @@ class Reaction_02016 extends CardReaction
         if ($event instanceof EventCardMoving && $this->isAvailable() && !$event->canceled)
         {
             $owner = $this->getOwningAttachment($event->theah);
-            if ($owner && ! $owner->isAttached())
-            {
-                return;
-            }
-
             if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->cardId))
             {
                 if ($this->skipNextEvent)
@@ -241,6 +241,12 @@ class Reaction_02016 extends CardReaction
         if ($event instanceof EventChallengeIssued && $this->isAvailable() && !$event->canceled)
         {
             $owner = $this->getOwningAttachment($event->theah);
+
+            if (! $this->ownerIsAttached($event->theah))
+            {
+                return false;
+            }
+
             $owningCharacter = $this->getOwningCharacter($event->theah);
             $challenger = $event->theah->getCharacterById($event->challengerId);
             $defender = $event->theah->getCharacterById($event->defenderId);
