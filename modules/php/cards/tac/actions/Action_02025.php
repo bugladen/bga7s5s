@@ -4,6 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -11,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_02025 extends SchemeCityAction
+class Action_02025 extends SchemeCityAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -19,6 +21,29 @@ class Action_02025 extends SchemeCityAction
 
         $this->RequiresPerformerSelected = true;
         $this->Name = clienttranslate('Diplomat City Action: Move opposing character, performer, and Renown');
+    }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("You cannot choose your own character")];
+        }
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        if ($character->Influence > $performer->Influence)
+        {
+            return [false, $game->translate("Target character has higher Influence than the performer")];
+        }
+
+        return [true, ""];
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -112,22 +137,10 @@ class Action_02025 extends SchemeCityAction
                 throw new UserException($game->translate("Character not found"));
             }
 
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-
-            if ($character->ControllerId == $performer->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new UserException($game->translate("You cannot choose your own character"));
-            }
-
-            if ($character->Location != $performer->Location)
-            {
-                throw new UserException($game->translate("Character is not at the same location as the performer"));
-            }
-
-            if ($character->Influence > $performer->Influence)
-            {
-                throw new UserException($game->translate("Target character has higher Influence than the performer"));
+                throw new UserException($errorMessage);
             }
 
             $game->globals->set(Game::CHOSEN_TARGET, $id);
@@ -162,19 +175,25 @@ class Action_02025 extends SchemeCityAction
             $sourceLocation = $performer->Location;
             $owner = $this->getOwningCard($game->theah);
 
+            $batchId = $game->getNextEventBatchId();
+
             $moveTarget = EventFactory::createCardMovingEvent($performer->ControllerId, $character->Id, $character->Location, $location, $engage = false, $owner->Id, $this->Id);
+            $moveTarget->batchId = $batchId;
             $game->theah->queueEvent($moveTarget);
 
             $movePerformer = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $location, $engage = false, $owner->Id, $this->Id);
+            $movePerformer->batchId = $batchId;
             $game->theah->queueEvent($movePerformer);
 
             $sourceLocationObj = $game->theah->getCityLocation($sourceLocation);
             if ($sourceLocationObj->Renown > 0)
             {
                 $removeRenown = EventFactory::createReknownRemovedFromLocationEvent($performer->ControllerId, $sourceLocation, 1, $owner->getInjectCode());
+                $removeRenown->batchId = $batchId;
                 $game->theah->queueEvent($removeRenown);
 
                 $addRenown = EventFactory::createReknownAddedToLocationEvent($performer->ControllerId, $location, 1, $owner->getInjectCode(), $isMove = true);
+                $addRenown->batchId = $batchId;
                 $game->theah->queueEvent($addRenown);
             }
 
