@@ -22,11 +22,13 @@ class _03001 extends Leader implements IHasActions, IHasReactions
     {
         parent::__construct();
         $this->Name = clienttranslate("Cesca del Rosso");
+        $this->Title = clienttranslate("Donna Sinistra");
         $this->Image = "03001.jpg";
         $this->ExpansionName = "faf";
         $this->ExpansionNumber = 3;
         $this->CardNumber = 1;
-        $this->Title = clienttranslate("Donna Sinistra");
+        
+        $this->initializeFaction("Vodacce");
 
         $this->Resolve = 7;
         $this->Combat = 1;

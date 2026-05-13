@@ -1652,7 +1652,7 @@ class Theah
     {
         $target = $this->getCardById($this->game->globals->get(GAME::CHOSEN_TARGET));
         if ($target->Location != $character->Location) {
-            throw new \BgaUserException($this->game->translate("Character is not at the same location"));
+            throw new UserException($this->game->translate("Character is not at the same location"));
         }    
 
         //Special case for Carmella Vanessa Slavaggi, Mourad, and Rena Klingenhalter (with ready Weapon)
@@ -1660,28 +1660,32 @@ class Theah
         {
             if (! $character->canIntervene())
             {
-                throw new \BgaUserException($this->game->translate("Character cannot Intervene."));
+                throw new UserException($this->game->translate("Character cannot Intervene."));
             }
         }
         else
         {
             if (! $character->canIntervene() || $character->Engaged)
             {
-                throw new \BgaUserException($this->game->translate("Character cannot Intervene."));
+                throw new UserException($this->game->translate("Character cannot Intervene."));
             }
         }
 
         $challengeType = $this->game->globals->get(Game::CHALLENGE_TYPE);
         if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE && ! $character instanceof Leader) {
-            throw new \BgaUserException($this->game->translate("Legendary Reputation: Only Leaders can Intervene"));
+            throw new UserException($this->game->translate("Legendary Reputation: Only Leaders can Intervene"));
         }
         else if ($challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE)
         {
-            throw new \BgaUserException($this->game->translate("Valeri Mikhailov: No Characters can Intervene."));
+            throw new UserException($this->game->translate("Valeri Mikhailov: No Characters can Intervene."));
         }
         else if ($challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE)
         {
             throw new UserException($this->game->translate("Torvo Espada: No characters can intervene in this challenge."));
+        }
+        else if ($challengeType == Game::AJA_CHALLENGE_TYPE && $character->ModifiedFinesse < 3)
+        {
+            throw new UserException($this->game->translate("Aja: Only characters with 3 Finesse or more may intervene in this challenge."));
         }
     }
 }

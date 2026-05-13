@@ -178,6 +178,7 @@ class Game extends \Bga\GameFramework\Table
     final const TORVO_ESPADA_CHALLENGE_TYPE = 15;
     final const JUSTICE_SERVED_COLD_CHALLENGE_TYPE = 16;
     final const UNSANCTIONED_DUEL_CHALLENGE_TYPE = 17;
+    final const AJA_CHALLENGE_TYPE = 18;
 
     //Duel global variables
     //Duel Names

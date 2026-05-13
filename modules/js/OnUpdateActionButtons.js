@@ -281,6 +281,8 @@ onUpdateActionButtons: function( stateName, args )
             this.addActionButton(`actChooseCardSelected`, _('Intervene'), () => this.onChooseInPlayCardConfirmed());
             if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE || args.challengeType == this.UNSANCTIONED_DUEL_CHALLENGE_TYPE)
                 dojo.addClass('btnRefuse', 'disabled');
+            if (args.challengeType == this.AJA_CHALLENGE_TYPE && args.defenderFinesse < 3)
+                dojo.addClass('btnRefuse', 'disabled');
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 

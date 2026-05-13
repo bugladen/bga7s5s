@@ -13,6 +13,7 @@ Canonical references:
 - `modules/php/cards/_7s5s/_01089.php` (Soline el Gato) — `Leader` with a passive duel-stat hook (`EventDuelStarted` / `EventDefenderSwapped` / `EventChallengerSwapped`) and a button-based City Reaction.
 - `modules/php/cards/_7s5s/_01116.php` (Yevgeni) — `Leader` with a passive `EventDuelCalculateCombatCardStats` hook and two paired Reactions.
 - `modules/php/cards/faf/_03001.php` (Cesca del Rosso) — `Leader` with an `EventPhaseDawnEnding` draw effect, a button-based City Reaction triggered by `EventSorcererAbilityPlayed`, and a two-step City Action (CharacterAction with state classes).
+- `modules/php/cards/faf/_03002.php` (Aja) — `Character` with a City Action that **issues a Combat challenge with a custom challenge type** (intervention/refusal restricted by Finesse) and a **Gambling Technique** that grants Lethal in-duel.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -168,9 +169,11 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"At/During <phase>"** broadly | One of the phase events: `EventNewDay`, `EventPhaseDawnBeginning`, `EventPhaseDawnEnding`, `EventDuskEndOfDay`, `EventPressureOccuring`, `EventDuelStarted`, etc. See "Phase / lifecycle events" below. |
 | **"<Stat> increases by N"** / **"<Stat> is reduced by N"** | Queue `createCharacter<Stat>ModifiedEvent` (e.g., `createCharacterInfluenceModifiedEvent`). See `_01007` Aldo for renown-driven Influence modification. |
 | **`<b>Action:</b>`** / **`<b>City Action:</b>`** | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php` extending `CharacterAction`. State class(es) + JS wiring per Pattern C. **"City Action" only differs by the `cardInCity` gate** in `isAvailableToPlayer`. |
+| **"Issue a [stat] challenge to target …"** (any flavor) | CharacterAction that sets `CHOSEN_PERFORMER`/`CHOSEN_TARGET`/`CHALLENGE_STAT`/`CHALLENGE_TYPE` and queues a transition into the challenge sub-state machine. See Pattern F. |
 | **`<b>Reaction:</b>`** / **`<b>City Reaction:</b>`** | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_NNNNN.php` extending `CardReaction`. Button-based reactions need **no** state class, **no** `states.inc.php` edits, **no** JS wiring. See Pattern D. |
 | **`<b>Sorcerer …</b>`** (Sorcerer Action / Sorcerer Reaction) | The Action/Reaction class additionally `implements ISorcererAbility`. **Must** call `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces). See `Action_01076` and `Reaction_02001`. |
-| **`<b>Technique:</b>` / `<b>Maneuver:</b>`** | The Character lineage already brings `TechniqueTrait`. Add `IHasManeuvers` + `ManeuverTrait` for maneuvers. Implement under `cards/<expansion>/techniques/` or `cards/<expansion>/maneuvers/`. |
+| **`<b>Technique:</b>` / `<b>Maneuver:</b>`** | The Character lineage already brings `TechniqueTrait`. Add `IHasManeuvers` + `ManeuverTrait` for maneuvers. Implement under `cards/<expansion>/techniques/` or `cards/<expansion>/maneuvers/`. See Pattern E. |
+| **`<b>Gambling Technique:</b>`** | Same as Technique, but `isAvailableToPlayer` additionally gates on `Game::DUEL_GAMBLED` (actor gambled for their combat card this round). See Pattern E. |
 
 ## Pattern A — Passive ability via `handleEvent`
 
@@ -329,6 +332,28 @@ When you call `EventFactory::createTransitionEvent($playerId, $cardId, $transiti
 
 The only existing card that legitimately uses a `<card>_2` transition-event name is `Action_03cd03` (Chance Meeting), which rotates through opponents by queueing transitions directly into the muster state. If your card doesn't have a similar "queue into a later state from outside the normal flow" pattern, don't add the `_2` entry. (`"03cd01_2"` is in the file too — but it's dead code; lifted by copy-paste and never actually consulted.)
 
+**Exception: "issue a challenge" actions DO need a `<card>_2` entry.** See Pattern F — those actions cross from player-turn states into the challenge sub-state machine via `createTransitionEvent("<card>_2", ...)`, so the lookup table is actually consulted.
+
+### Named transitions, and the `""` (empty) transition rule
+
+A state's `transitions` array maps a transition name (the argument you pass to `nextState(...)`) to a destination state. **An empty-string transition `"" => ...` is only valid when it's the ONLY transition out of the state.** With multiple transitions, name each one:
+
+```php
+// CORRECT — multiple named transitions
+transitions: [
+    "zombie"       => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+    "targetChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+],
+
+// WRONG — mixing "" with another named transition errors out
+transitions: [
+    ""       => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+    "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+],
+```
+
+When the zombie path is the only escape hatch besides the success path (typical for picker states), give both a name. Wilhelm's `State_highDramaPhase02013_2` gets away with the single-`""` form because it doesn't declare a separate zombie transition — its `zombie()` method calls `nextState()` (empty), which lands on `""`. If you want a distinct zombie path, you must name both.
+
 ### Action examples
 
 | File | Demonstrates |
@@ -354,6 +379,123 @@ $game->theah->queueEvent($woundEvent);
 ```
 
 Heal first, wound second. Both go through the standard event pipeline so other cards can react (Maryam's wound cancel, Silver Spine's risk-target cancel, etc.) — don't try to mutate `$character->Wounds` directly.
+
+## Pattern F — Issuing a Challenge from a City Action
+
+For text like **"Engage <self> • Issue a <Stat> challenge to target opposing character"** (Aja, Wilhelm Dunst, Torvo Espada). The CharacterAction sets a handful of globals, then transitions into the standard challenge sub-state machine, which handles intervention, refusal, technique activation, and threat resolution. The hard part is wiring the new flow without re-implementing any of the challenge machinery.
+
+References: `Action_02013` (Wilhelm Dünst), `Action_02034` (Torvo Espada), `Action_03002` (Aja).
+
+### Action skeleton
+
+```php
+class Action_NNNNN extends CharacterAction implements IAbilityThatTargetsCharacters
+{
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
+    {
+        if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck)) return false;
+
+        $owner = $this->getOwningCharacter($theah);
+        if (! $theah->cardInCity($owner)) return false;          // City Action
+        if (! $owner->canChallenge() || $owner->Engaged) return false;  // engagement is the cost
+
+        return count($theah->getOpposingCharactersAtLocation($owner->Location, $owner->ControllerId)) > 0;
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+        if ($event instanceof EventActionTriggered && $event->actionId == $this->Id) {
+            $owner = $this->getOwningCharacter($event->theah);
+            $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "NNNNN", $this->Id);
+            $event->theah->queueEvent($transition);
+        }
+    }
+
+    public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
+    {
+        parent::actFromActionWithId($game, $state, $stateName, $id);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_NNNNN) {
+            $target = $game->theah->getCharacterById($id);
+            [$isValid, $err] = $this->isValidTargetForAbility($game, $target);
+            if (! $isValid) throw new UserException($err);
+
+            $owner = $this->getOwningCharacter($game->theah);
+
+            $game->globals->set(Game::CHOSEN_PERFORMER, $owner->Id);
+            $game->globals->set(Game::CHOSEN_TARGET,    $target->Id);
+            $game->globals->set(Game::CHALLENGE_STAT,   Game::STAT_COMBAT);  // or STAT_FINESSE / STAT_INFLUENCE
+            $game->globals->set(Game::CHALLENGE_TYPE,   Game::NORMAL_CHALLENGE_TYPE);  // or your new type
+
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN_2", $this->Id);
+            $game->theah->queueEvent($transition);
+
+            $game->gamestate->nextState("targetChosen");
+        }
+    }
+}
+```
+
+### State + states.inc.php wiring
+
+- State class `State_highDramaPhaseNNNNN` is a standard target-picker (`StateType::ACTIVE_PLAYER`). Both `"zombie"` and `"targetChosen"` (or any named transition you use) point to `HIGH_DRAMA_PLAYER_TURN_EVENTS`:
+  ```php
+  transitions: [
+      "zombie"       => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+      "targetChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+  ],
+  ```
+- `states.inc.php` needs **two** entries (this is the exception to the "don't add `_2`" rule):
+  ```php
+  "NNNNN"   => States::HIGH_DRAMA_PLAYER_TURN_NNNNN,
+  "NNNNN_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+  ```
+
+WHY this flow shape:
+- The action queues a `createTransitionEvent("NNNNN_2")` AND calls `nextState("targetChosen")` to `HIGH_DRAMA_PLAYER_TURN_EVENTS`.
+- The events dispatcher in `EVENTS` flushes queued events; the transition event then routes via the `states.inc.php` lookup to `HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE`.
+- This is necessary because the challenge sub-state machine relies on queued events firing first (e.g., `EventCardEngaged` from `stIssueChallenge`'s auto-engage). Bypassing the EVENTS dispatch with a direct `nextState(...)` to TECHNIQUE_AVAILABLE would leave events stuck in the queue.
+
+### No `createActionResolvedEvent` in the action
+
+The challenge resolution flow fires `createActionResolvedEvent` itself — either in `stChallengeActionCheckCancelled` (cancelled path) or in the threat-resolution path. Don't call it from your action. Mirror the `// createActionResolvedEvent is queued by the challenge resolution flow.` comment from `Action_01083`.
+
+### Engage-as-cost is automatic — when
+
+`StatesTrait::stIssueChallenge` auto-engages the performer for challenges of type `NORMAL`, `SERVO_SCARPA`, `TORVO_ESPADA`, and `AJA_CHALLENGE_TYPE` (the auto-engage list). If your "Issue a Challenge" card's cost is "Engage <self>" and the printed effect doesn't add anything weird to the cost, register the new challenge type in that list and omit a manual engage event. If your card has a different cost shape (e.g., engage a Weapon attachment instead), register a separate handler — see `Action_02013`'s `doCost` for the "discard a card" variant.
+
+### Adding a NEW challenge type
+
+A new `*_CHALLENGE_TYPE` constant is justified only when the card imposes restrictions or behaviors that diverge from `NORMAL_CHALLENGE_TYPE` — e.g., Aja's "only Finesse ≥ 3 may intervene or refuse." Touch these files in lockstep:
+
+| File | What goes there |
+|---|---|
+| `modules/php/Game.php` | `final const NEW_CHALLENGE_TYPE = N;` (next int after the highest existing). |
+| `seventhseacityoffivesails.js` | `this.NEW_CHALLENGE_TYPE = N;` — same int. Client checks reference `this.NEW_CHALLENGE_TYPE`. |
+| `modules/php/StatesTrait.php::stIssueChallenge` | Add the new type to the auto-engage `if` list (if cost is "Engage performer"). |
+| `modules/php/theah/Theah.php::interventionCheck` | Add an `else if` branch that throws `UserException` when the would-be intervener fails the card's restriction. Server-side enforcement. |
+| `modules/php/ArgumentsTrait.php::argsHighDramaChallengeActionAcceptChallenge` | Post-filter `$charactersCanIntervene` so disallowed characters never appear in the picker. Add any extra args (e.g., `defenderFinesse`) the client needs to gate UI. |
+| `modules/php/FrameworkActionsTrait.php::actHighDramaChallengeActionReject` | Throw `UserException` if the card forbids refusal under its conditions. |
+| `modules/js/OnUpdateActionButtons.js::highDramaChallengeActionAcceptChallenge` | Add a `dojo.addClass('btnRefuse', 'disabled')` branch for the new type — mirror the existing `EPEE_SANGLANTE` / `UNSANCTIONED_DUEL` block. Use the server-supplied args (e.g., `args.defenderFinesse`) to compute the condition. |
+
+The intervention-restriction story specifically:
+- The args function filters the *visible* intervener list (UX).
+- `interventionCheck` enforces the same rule on the server (security).
+- For refusal, `actHighDramaChallengeActionReject` enforces server-side; the JS disable is UX. Always both.
+
+### IAbilityThatTargetsCharacters
+
+Always implement this interface on a challenge-issuing action — challenge target *is* a targeted character, so other cards' "before being targeted" hooks need to see it. Implement `isValidTargetForAbility(Game $game, Character $character): array` returning `[bool, string]`.
+
+### Examples
+
+| File | Demonstrates |
+|---|---|
+| `Action_02013` (Wilhelm Dünst) | "Discard a Card. Issue a Challenge." — discard-as-cost, then standard issue-challenge transition. Two-step state machine; reference for `doCost`/`doEffect` separation. |
+| `Action_02034` (Torvo Espada) | Three-step "offer challenge → accept/decline → issue" flow with the `TORVO_ESPADA_CHALLENGE_TYPE` (no interventions allowed). |
+| `Action_03002` (Aja) | Single-step picker → standard challenge flow with `AJA_CHALLENGE_TYPE` (Finesse ≥ 3 to intervene/refuse). Canonical reference for a NEW challenge type with restrictions. |
+| `Action_01083` (Legendary Reputation) | RiskCityAction variant — sets `LEGENDARY_REPUTATION_CHALLENGE_TYPE` (only Leaders may intervene). |
 
 ## Pattern D — Reaction / City Reaction (CardReaction)
 
@@ -425,7 +567,89 @@ The pre-commit hook enforces this.
 
 ## Pattern E — Techniques and Maneuvers
 
-Same as in `create-city-character`. The Character lineage already brings `TechniqueTrait`. Add `IHasManeuvers` + `ManeuverTrait` for maneuvers. Implement under `cards/<expansion>/techniques/` or `cards/<expansion>/maneuvers/`.
+The Character lineage already brings `TechniqueTrait`. Add `IHasManeuvers` + `ManeuverTrait` for maneuvers. Implement under `cards/<expansion>/techniques/` or `cards/<expansion>/maneuvers/`. The base `create-city-character` skill has the general shape; the notes below are duel-specific patterns that come up often.
+
+### In-duel availability gate
+
+Most Character techniques are duel-only — they're activated during a duel round by the actor. Gate `isAvailableToPlayer`:
+
+```php
+public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+{
+    if (! parent::isAvailableToPlayer($playerId, $theah)) return false;
+    if (! $theah->game->globals->get(Game::IN_DUEL, false)) return false;
+
+    $owner = $this->getOwningCharacter($theah);
+    $actor = $theah->getDuelRoundActor();
+    if ($actor === null || $actor->Id !== $owner->Id) return false;
+
+    // ... card-specific preconditions (adversary state, equipped weapons, etc.)
+    return true;
+}
+```
+
+Helpers worth knowing:
+- `$theah->getDuelRoundActor(): ?Character` — the participant whose turn it is this round.
+- `$theah->getDuelRoundOpponent(): ?Character` — the other participant. Returns the *last-known* state when the opponent is in discard/locker (e.g., already destroyed).
+- `$theah->getDuelChallengerId() / getDuelDefenderId() / getDuelOpponentId($actorId)` — id-only accessors.
+- `Game::IN_DUEL` global — true between duel start and end.
+- `Game::DUEL_GAMBLED` global — true after the actor locks in a combat card via gamble; cleared at end of round.
+
+### Gambling Technique gate
+
+"**Gambling Technique:** …" — only available if the actor has gambled for their combat card this round. Add one extra check on top of the in-duel gate:
+
+```php
+if (! $theah->game->globals->get(Game::DUEL_GAMBLED, false)) return false;
+```
+
+WHY use the global (and not query `duel_round.gambled` directly): the global is set in `FrameworkActionsTrait::actChooseGambleCard` at the moment the gambled combat card is locked in, and cleared in `stDoneRound`. It's the cheapest authoritative answer to "has the actor gambled this round." `isAvailableToPlayer` runs on a hot path (every time the action menu refreshes), so the SQL alternative is wasteful.
+
+Reference: `Technique_03002` (Aja).
+
+### Gain Lethal — in-duel vs city-challenge
+
+There are two completely different "Gain Lethal" pipelines depending on context. Don't conflate them.
+
+| Event | When it fires | Use case |
+|---|---|---|
+| `EventGenerateChallengeThreat` | City-action challenge resolution (no duel; single threat roll) | Techniques granting Lethal during a non-duel challenge. Set `$event->adversaryThreatIsLethal = true` directly on the event. |
+| `EventDuelCalculateTechniqueValues` | Per-technique calculation phase during a duel round | Techniques granting Lethal during a duel. Queue `EventFactory::createGainLethalEvent($event->actorId, $event->theah)` — this internally creates a `ThreatModified` event that marks the adversary's threat lethal regardless of which side the actor is. |
+
+```php
+public function handleEvent(Event $event)
+{
+    parent::handleEvent($event);
+
+    if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
+    {
+        $lethalEvent = EventFactory::createGainLethalEvent($event->actorId, $event->theah);
+        $event->theah->queueEvent($lethalEvent);
+    }
+}
+```
+
+A technique can handle BOTH events if it's usable in both contexts (see `Technique_01049` and the generic `Technique_GainLethal` helper). A Gambling Technique is duel-only, so only `EventDuelCalculateTechniqueValues` matters — gambling is exclusively a duel-round mechanic.
+
+`createGainLethalEvent($actorId, $theah)` reads as: "the actor's strike against the adversary is now lethal." The naming inside the produced event (`challengerThreatIsLethal` / `defenderThreatIsLethal`) describes whose threat is lethal — i.e., the threat dealt TO that role. The factory figures out the sign for you; just pass the actor's id.
+
+References: `Technique_GainLethal` (generic two-pipeline helper), `Technique_01049` (in-duel + city-context), `Technique_03002` (Aja, in-duel only via Gambling Technique gate).
+
+### Duel-flow events worth knowing
+
+| Event | When it fires |
+|---|---|
+| `EventDuelStarted` / `EventDuelEnd` | Duel boundaries. |
+| `EventNewDuelRound` / `EventDuelEndOfRound` | Round boundaries. |
+| `EventDuelAttemptGamble` | Pre-check fired when the actor clicks Gamble. Throw via `eventCheck` to block gambling (Mysta's Technique_02037 pattern). |
+| `EventDuelGambleCardsRevealed` | After cards are revealed during gambling. Carries `revealedCardIds`. |
+| `EventDuelPlayerGambled` | After the actor selects a card from the gambled reveal — combat card locked in, `DUEL_GAMBLED = true`. |
+| `EventTechniqueActivated` | A technique was just activated (the base `Technique::handleEvent` flips `Used` on this for the matching technique). |
+| `EventResolveTechnique` | Resolve-time event for a technique. Used to spawn the technique's "side effects" (queue further events, transition into a state). |
+| `EventDuelCalculateTechniqueValues` | Per-technique value calculation. Use this to inject Lethal, modify riposte/parry/thrust, etc. |
+| `EventDuelCalculateCombatCardStats` | Per-combat-card stat calculation (Yevgeni's pattern). |
+| `EventGenerateChallengeThreat` | City-action challenge threat generation (no duel). |
+| `EventChallengerSwapped` / `EventDefenderSwapped` | The challenge had its participant changed mid-stream. Re-evaluate any modifier you applied. |
 
 ## JS Wiring (required for new state classes)
 
@@ -486,6 +710,14 @@ The card class itself (`_NNNNN extends Character` / `extends Leader`) has no hoo
 - `$this->getInjectCode()` — inline-styled card name for notifications (`${card_inject_code}` placeholder).
 - `$this->hasTrait(string $trait): bool` — check a trait against `$this->ModifiedTraits`. English trait strings compare directly against `clienttranslate()`-wrapped values.
 
+Duel-specific (used in Pattern E and the in-duel branch of any ability):
+- `$theah->getDuelRoundActor(): ?Character` / `getDuelRoundOpponent(): ?Character` — current round participants.
+- `$theah->getDuelChallengerId(): ?int` / `getDuelDefenderId(): int` / `getDuelOpponentId(int $actorId): int` — id-only accessors.
+- `$theah->getCombatCardsForCurrentRound(): array` — combat cards played in the current round.
+- `$theah->getCurrentDuelThreat(int $characterId): int` — running threat against a participant.
+- `EventFactory::createGainLethalEvent(int $actorId, Theah $theah)` — produces a `ThreatModified` event marking the adversary's threat lethal.
+- `Game::IN_DUEL` / `Game::DUEL_GAMBLED` globals — round-scoped, see Pattern E.
+
 ## Reference Implementations
 
 | File | What it demonstrates |
@@ -498,6 +730,12 @@ The card class itself (`_NNNNN extends Character` / `extends Leader`) has no hoo
 | `modules/php/cards/faf/_03001.php` (Cesca del Rosso) | **Leader with End-of-Dawn draw + button-based City Reaction + two-step City Action.** `EventPhaseDawnEnding` + `characterIsInDiscardOrLocker` gate, `EventSorcererAbilityPlayed` reaction with source/performer identity check, two-step CharacterAction with the move-wound (heal + wound) recipe. |
 | `modules/php/cards/faf/reactions/Reaction_03001.php` | Button-per-opposing-character target picker; `IAbilityThatTargetsCharacters`; `isNotControlledByPlayer` + location filter for "opposing"; `setUsed`/`isAvailable` discipline. |
 | `modules/php/cards/faf/actions/Action_03001.php` | Two-step CharacterAction; `cardInCity` gate; `IAbilityThatTargetsCharacters` interface for target hooks; `isValidTargetForAbility` double-checked at step 2; heal+wound recipe; `createActionResolvedEvent` at terminal state. |
+| `modules/php/cards/faf/_03002.php` (Aja) | **Character that issues a Combat challenge + Gambling Technique.** Pattern F (issue-a-challenge) with a new `AJA_CHALLENGE_TYPE` whose intervention/refusal are gated by Finesse ≥ 3 — touches all six challenge-type integration points. Pattern E "Gambling Technique" gate via `Game::DUEL_GAMBLED` + `getDuelRoundActor`. |
+| `modules/php/cards/faf/actions/Action_03002.php` | Pattern F skeleton: opposing-target picker → set CHOSEN_PERFORMER/TARGET/CHALLENGE_STAT/CHALLENGE_TYPE → `createTransitionEvent("03002_2")` + `nextState("targetChosen")` to `HIGH_DRAMA_PLAYER_TURN_EVENTS`. |
+| `modules/php/cards/faf/techniques/Technique_03002.php` | Gambling Technique with adversary-wounded precondition. `EventDuelCalculateTechniqueValues` + `createGainLethalEvent` in-duel pipeline. |
+| `modules/php/cards/tac/actions/Action_02013.php` (Wilhelm Dünst) | Pattern F with a discard-as-cost step plus the standard challenge transition. Reference for `doCost` / `doEffect` separation when the cost isn't just engagement. |
+| `modules/php/cards/_7s5s/techniques/Technique_GainLethal.php` | Generic two-pipeline Gain Lethal helper — handles both `EventGenerateChallengeThreat` (city) and `EventDuelCalculateTechniqueValues` (duel). |
+| `modules/php/cards/_7s5s/techniques/Technique_01049.php` | Engagement-as-cost Gain Lethal technique; handles both pipelines, demonstrates `IRangedAbility` integration. |
 | `modules/php/cards/_7s5s/actions/Action_01008.php` | Multi-state Sorcerer City Action with branching (`_2`, `_3`, `_4`). Reference for `ISorcererAbility` + sorcerer-start/played event discipline. |
 | `modules/php/cards/_7s5s/actions/Action_01076.php` | Sorcerer Action with `RequiresPerformerSelected = true` and location + character pick. |
 | `modules/php/cards/_7s5s/reactions/Reaction_01118.php` (Elina) | Button-based Reaction triggered by `EventSorcererAbilityPlayed`; the canonical "sourceId OR performerId OR targeted-at-my-location" idiom. |
@@ -518,4 +756,7 @@ The card class itself (`_NNNNN extends Character` / `extends Leader`) has no hoo
 9. Mentally run pre-commit hook checks on every file you touched. Especially: `createActionResolvedEvent` in the action, no `setUsed`/`resetPlayerPassCount`/`announceAction` in the `CharacterAction` subclass, `$this->setUsed(` and `$this->isAvailable(` literal strings present in every `CardReaction` subclass, and `createSorcererAbilityStartEvent`/`createSorcererAbilityPlayedEvent` if implementing `ISorcererAbility`.
 10. For each Reaction you added, walk the `handleEvent` triggers and confirm all required gates are in place: `isAvailable()`, identity check (`$event->sourceId/performerId/cardId == $owner->Id` etc.), scope gate (`cardInCity($owner)` for City Reactions), and a valid-target precondition if the effect needs a target. Missing the valid-target gate leaves the player with a useless "Decline" prompt.
 11. For phase-event listeners on Leaders, confirm a `! characterIsInDiscardOrLocker($this)` guard — a destroyed Leader still has a `ControllerId` set, so `isControlled()` alone is insufficient.
-12. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`) first — it captures the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding decisions in detail.
+12. **For "issue a challenge" actions (Pattern F):** confirm all six challenge-integration files are touched if you minted a new challenge type — `Game.php`, `seventhseacityoffivesails.js`, `StatesTrait::stIssueChallenge` (auto-engage list), `Theah::interventionCheck`, `ArgumentsTrait::argsHighDramaChallengeActionAcceptChallenge`, `FrameworkActionsTrait::actHighDramaChallengeActionReject`, plus `OnUpdateActionButtons.js::highDramaChallengeActionAcceptChallenge` for the Refuse button UI. The PHP int and the JS int MUST match. Confirm `states.inc.php` has BOTH `"NNNNN"` (picker entry) and `"NNNNN_2"` (post-pick → `HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE`).
+13. **For picker states with multiple exits**, name every transition (`"targetChosen"`, `"zombie"`, etc.). The empty-string `""` transition is only legal when it's the SOLE transition out of the state.
+14. **For in-duel techniques (Pattern E)**, confirm `Game::IN_DUEL` and (for Gambling Techniques) `Game::DUEL_GAMBLED` gates are in `isAvailableToPlayer`, plus the actor-identity check via `getDuelRoundActor()`. For Gain Lethal effects, use `EventDuelCalculateTechniqueValues` + `createGainLethalEvent` for the in-duel pipeline; only also handle `EventGenerateChallengeThreat` if the technique is meant to fire outside duels too.
+15. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`) and the Aja journal (`2026-05-13-02-aja-03002-implementation.md`) first — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type decisions in detail.

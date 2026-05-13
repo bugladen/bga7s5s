@@ -1246,6 +1246,11 @@ trait FrameworkActionsTrait
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
 
+        if ($challengeType == Game::AJA_CHALLENGE_TYPE && $target->ModifiedFinesse < 3)
+        {
+            throw new UserException(clienttranslate("Aja: Only characters with 3 Finesse or more may refuse this challenge."));
+        }
+
         $event = EventFactory::createChallengeRejectedEvent($performer->Id, $target->Id);
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);

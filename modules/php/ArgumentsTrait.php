@@ -638,16 +638,23 @@ trait ArgumentsTrait
             {
                 if (! $character->canIntervene() || $character->Engaged) continue;
             }
-            
+
             $charactersCanIntervene[] = $character;
+        }
+
+        $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
+        if ($challengeType == Game::AJA_CHALLENGE_TYPE)
+        {
+            $charactersCanIntervene = array_filter($charactersCanIntervene, fn($character) => $character->ModifiedFinesse >= 3);
         }
 
         return [
             "performerId" => $performerId,
             "targetId" => $targetId,
-            "ids" => array_map(fn($character) => $character->Id, $charactersCanIntervene),
-            "challengeType" => $this->globals->get(Game::CHALLENGE_TYPE),
-            "defenderThreat" => $defenderThreat
+            "ids" => array_values(array_map(fn($character) => $character->Id, $charactersCanIntervene)),
+            "challengeType" => $challengeType,
+            "defenderThreat" => $defenderThreat,
+            "defenderFinesse" => $target->ModifiedFinesse,
         ];
 
     }
