@@ -4,6 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -11,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_02036a extends SchemeCityAction
+class Action_02036a extends SchemeCityAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -19,6 +21,34 @@ class Action_02036a extends SchemeCityAction
 
         $this->RequiresPerformerSelected = true;
         $this->Name = clienttranslate('Move opposing non-Pirate Home unless their controller discards');
+    }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+        if ($performer === null) {
+            return [false, $game->translate("Character not found")];
+        }
+
+        if ($character->ControllerId == $performer->ControllerId) {
+            return [false, $game->translate("You cannot choose your own character")];
+        }
+
+        if ($character->Location != $performer->Location) {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        if ($character->hasTrait("Pirate")) {
+            return [false, $game->translate("You cannot choose a Pirate")];
+        }
+
+        $allowed = array_map(fn ($c) => $c->Id, $this->eligibleTargetsAtLocation($game->theah, $performer->ControllerId, $performer->Location));
+        if (! in_array($character->Id, $allowed, true)) {
+            return [false, $game->translate("Invalid character choice")];
+        }
+
+        return [true, ""];
     }
 
     /**
@@ -101,27 +131,9 @@ class Action_02036a extends SchemeCityAction
                 throw new UserException($game->translate("Character not found"));
             }
 
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-            if ($performer === null) {
-                throw new UserException($game->translate("Character not found"));
-            }
-
-            if ($character->ControllerId == $performer->ControllerId) {
-                throw new UserException($game->translate("You cannot choose your own character"));
-            }
-
-            if ($character->Location != $performer->Location) {
-                throw new UserException($game->translate("Character is not at the same location as the performer"));
-            }
-
-            if ($character->hasTrait("Pirate")) {
-                throw new UserException($game->translate("You cannot choose a Pirate"));
-            }
-
-            $allowed = array_map(fn ($c) => $c->Id, $this->eligibleTargetsAtLocation($game->theah, $performer->ControllerId, $performer->Location));
-            if (! in_array($id, $allowed, true)) {
-                throw new UserException($game->translate("Invalid character choice"));
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid) {
+                throw new UserException($errorMessage);
             }
 
             $owner = $this->getOwningCard($game->theah);
