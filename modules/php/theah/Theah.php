@@ -1292,6 +1292,11 @@ class Theah
         return count($bruteCards) > 0;
     }
 
+    public function deleteEventBatch(int $batchId)
+    {
+        $this->db->deleteEventBatch($batchId);
+    }
+
     public function deleteManeuverEvents(string $maneuverId)
     {
         $this->db->deleteManeuverEvents($maneuverId);

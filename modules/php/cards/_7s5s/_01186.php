@@ -11,9 +11,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 
@@ -63,7 +63,7 @@ class _01186 extends CityCharacter
         //Handle each event from a Risk source that would target her and cancel them before they are processed.
         //Mark ImperviousnessUsedToday as true so that it cannot be used again until the next day.
         if ( ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED) && 
-            (($event instanceof EventCardMoved && $event->cardId == $this->Id && $event->sourceId != 0) ||
+            (($event instanceof EventCardMoving && $event->cardId == $this->Id && $event->sourceId != 0) ||
             ($event instanceof EventCardEngaged && $event->cardId == $this->Id && $event->sourceId != 0))
         )
         {
@@ -71,6 +71,12 @@ class _01186 extends CityCharacter
             if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
             {
                 $this->addMaryamCondition($event->theah->game);
+
+                $batchId = $event->batchId;
+                if ($batchId)
+                {
+                    $event->theah->deleteEventBatch($batchId);
+                }
 
                 $event->canceled = true;
                 return;
@@ -84,6 +90,12 @@ class _01186 extends CityCharacter
             {
                 $this->addMaryamCondition($event->theah->game);
 
+                $batchId = $event->batchId;
+                if ($batchId)
+                {
+                    $event->theah->deleteEventBatch($batchId);
+                }
+
                 $event->canceled = true;
                 return;
             }
@@ -95,6 +107,12 @@ class _01186 extends CityCharacter
             if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
             {
                 $this->addMaryamCondition($event->theah->game);
+
+                $batchId = $event->batchId;
+                if ($batchId)
+                {
+                    $event->theah->deleteEventBatch($batchId);
+                }
 
                 $event->canceled = true;
                 return;
@@ -124,6 +142,12 @@ class _01186 extends CityCharacter
                     $event->queueEvent($discardEvent);
                 }
 
+                $batchId = $event->batchId;
+                if ($batchId)
+                {
+                    $event->theah->deleteEventBatch($batchId);
+                }
+
                 $event->canceled = true;
                 return;
             }
@@ -143,7 +167,7 @@ class _01186 extends CityCharacter
     public function addMaryamCondition(Game $game)
     {
         $this->addCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED);
-        $game->notify->all("maryamBenuPleromaAbilityUsed", clienttranslate('Maryam has used her Imperviousness to block the ability targeting her.'), [
+        $game->notify->all("maryamBenuPleromaAbilityUsed", clienttranslate('Maryam has used her Imperviousness to cancel the ability targeting her.'), [
             "cardId" => $this->Id,
         ]);
     }
