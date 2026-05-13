@@ -4,6 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -11,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_02020 extends RiskAction
+class Action_02020 extends RiskAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -19,6 +21,34 @@ class Action_02020 extends RiskAction
 
         $this->Name = clienttranslate("Manipulate a Non-Leader Character");
         $this->RequiresPerformerSelected = true;
+    }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        if ($character->hasTrait("Leader"))
+        {
+            return [false, $game->translate("Character is a Leader")];
+        }
+
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("Character is the same controller as the performer")];
+        }
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        if ($character->Engaged)
+        {
+            return [false, $game->translate("Character is already engaged")];
+        }
+
+        return [true, ""];
     }
 
     private function getPerformers(int $playerId, Theah $theah): array
@@ -144,27 +174,10 @@ class Action_02020 extends RiskAction
                 throw new UserException($game->translate("Character not found"));
             }
 
-            if ($character->hasTrait("Leader"))
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new UserException($game->translate("Character is a Leader"));
-            }
-
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-
-            if ($character->ControllerId == $performer->ControllerId)
-            {
-                throw new UserException($game->translate("Character is the same controller as the performer"));
-            }
-
-            if ($character->Location != $performer->Location)
-            {
-                throw new UserException($game->translate("Character is not at the same location as the performer"));
-            }
-
-            if ($character->Engaged)
-            {
-                throw new UserException($game->translate("Character is already engaged"));
+                throw new UserException($errorMessage);
             }
 
             $game->globals->set(Game::CHOSEN_CARD, $character->Id);
