@@ -140,6 +140,12 @@ class _01089 extends Leader implements IHasReactions
 
         if ($event instanceof EventChallengerSwapped)
         {
+            $inDuel = $event->theah->game->globals->get(Game::IN_DUEL, false);
+            if (!$inDuel)
+            {
+                return;
+            }
+
             $defenderId = $event->theah->getDuelOpponentId($event->newChallengerId);
             $defender = $event->theah->getCharacterById($defenderId);
 
