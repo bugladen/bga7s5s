@@ -101,6 +101,12 @@ class Reaction_02048 extends RiskReaction
                     $this->discardAttachment($event, $event->playerId, $event->attachmentId);
                 }
                 $event->canceled = true;
+
+                if ($event->batchId)
+                {
+                    $event->theah->deleteEventBatch($event->batchId);
+                }
+
                 return;
             }
         }
@@ -131,6 +137,12 @@ class Reaction_02048 extends RiskReaction
                     $this->engagedEvent = clone $event;
                     unset($this->engagedEvent->theah);
                     $event->canceled = true;
+
+                    if ($event->batchId)
+                    {
+                        $event->theah->deleteEventBatch($event->batchId);
+                    }
+
                     $this->triggerReaction($event, $event->cardId);
                 }
             }
@@ -149,6 +161,12 @@ class Reaction_02048 extends RiskReaction
                     $this->movedEvent = clone $event;
                     unset($this->movedEvent->theah);
                     $event->canceled = true;
+
+                    if ($event->batchId)
+                    {
+                        $event->theah->deleteEventBatch($event->batchId);
+                    }
+
                     $this->triggerReaction($event, $event->cardId);
                 }
             }
@@ -167,6 +185,12 @@ class Reaction_02048 extends RiskReaction
                     $this->woundedEvent = clone $event;
                     unset($this->woundedEvent->theah);
                     $event->canceled = true;
+
+                    if ($event->batchId)
+                    {
+                        $event->theah->deleteEventBatch($event->batchId);
+                    }
+
                     $this->triggerReaction($event, $event->characterId);
                 }
             }
@@ -185,6 +209,12 @@ class Reaction_02048 extends RiskReaction
                     $this->challengeEvent = clone $event;
                     unset($this->challengeEvent->theah);
                     $event->canceled = true;
+
+                    if ($event->batchId)
+                    {
+                        $event->theah->deleteEventBatch($event->batchId);
+                    }
+
                     $this->triggerReaction($event, $event->defenderId);
                 }
             }
@@ -203,6 +233,12 @@ class Reaction_02048 extends RiskReaction
                     $this->attachmentEquippingEvent = clone $event;
                     unset($this->attachmentEquippingEvent->theah);
                     $event->canceled = true;
+
+                    if ($event->batchId)
+                    {
+                        $event->theah->deleteEventBatch($event->batchId);
+                    }
+
                     $this->triggerReaction($event, $event->characterId);
                 }
             }
