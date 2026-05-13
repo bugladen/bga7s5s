@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -12,13 +13,28 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_02034 extends CharacterAction
+class Action_02034 extends CharacterAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
         parent::__construct();
 
         $this->Name = clienttranslate('Offer a Combat Challenge to Torvo');
+    }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $torvo = $this->getOwningCharacter($game->theah);
+
+        $allowed = $this->getSelectableOpponentCharacterIds($game->theah, $torvo);
+        
+        if (! in_array($character->Id, $allowed, true)) {
+            return [false, $game->translate('Invalid character choice')];
+        }
+
+        return [true, ""];
     }
 
     private function getSelectableOpponentCharacterIds(Theah $theah, Character $torvo): array
@@ -83,25 +99,21 @@ class Action_02034 extends CharacterAction
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_02034) {
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $torvo = $game->theah->getCharacterById($performerId);
-            if ($torvo === null) {
-                throw new UserException($game->translate('Character not found'));
-            }
-
-            $allowed = $this->getSelectableOpponentCharacterIds($game->theah, $torvo);
-            if (! in_array($id, $allowed, true)) {
-                throw new UserException($game->translate('Invalid character choice'));
-            }
-
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_02034) 
+        {
             $target = $game->theah->getCharacterById($id);
             if ($target === null) {
                 throw new UserException($game->translate('Character not found'));
             }
 
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $target);
+            if (! $isValid) {
+                throw new UserException($errorMessage);
+            }
+
             $game->globals->set(Game::CHOSEN_CARD, $target->Id);
 
+            $torvo = $this->getOwningCharacter($game->theah);
             $transitionEvent = EventFactory::createTransitionEvent($target->ControllerId, $torvo->Id, '02034_2', $this->Id);
             $game->theah->queueEvent($transitionEvent);
 
