@@ -25,7 +25,7 @@ class _01008 extends Character implements IHasActions, IHasReactions, IHasTechni
     {
         parent::__construct();
 
-        $this->Name = "Cesca Del Rosso";
+        $this->Name = "Cesca del Rosso";
         $this->Image = "01008.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
