@@ -284,6 +284,8 @@ class States
             const HIGH_DRAMA_PLAYER_TURN_01200_2 = 4012002;
         const HIGH_DRAMA_PLAYER_TURN_01205 = 401205;
             const HIGH_DRAMA_PLAYER_TURN_01205_2 = 4012052;
+
+        // Expansion 2: Tooth & Claw
         const HIGH_DRAMA_PLAYER_TURN_02001 = 402001;
             const HIGH_DRAMA_PLAYER_TURN_02001_2 = 4020012;
         const HIGH_DRAMA_PLAYER_TURN_02002 = 402002;
@@ -315,12 +317,14 @@ class States
         const HIGH_DRAMA_PLAYER_TURN_02047 = 402047;
         const HIGH_DRAMA_PLAYER_TURN_02051 = 402051;
 
-        // Expansion 3: Fate and Fortune
+        // Expansion 3: Fate & Fortune
         const HIGH_DRAMA_PLAYER_TURN_03CD01 = 4030001;
             const HIGH_DRAMA_PLAYER_TURN_03CD01_2 = 40300012;
         const HIGH_DRAMA_PLAYER_TURN_03CD03 = 4030003;
             const HIGH_DRAMA_PLAYER_TURN_03CD03_2 = 40300032;
         const HIGH_DRAMA_PLAYER_TURN_03CD13 = 4030013;
+        const HIGH_DRAMA_PLAYER_TURN_03001 = 403001;
+            const HIGH_DRAMA_PLAYER_TURN_03001_2 = 4030012;
     const HIGH_DRAMA_PLAYER_TURN_EVENTS = 400;
         const HIGH_DRAMA_PLAYER_TURN_REACTIONS = 401;
         const HIGH_DRAMA_PLAYER_TURN_PAY_FOR_REACTION = 402;
