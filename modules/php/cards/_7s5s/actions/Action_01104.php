@@ -117,10 +117,14 @@ class Action_01104 extends RiskCityAction
 
             $owner = $this->getOwningCard($game->theah);
 
+            $batchId = $game->getNextEventBatchId();
+
             $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, true, $owner->Id, $this->Id);
+            $moveEvent->batchId = $batchId;
             $game->theah->queueEvent($moveEvent);
 
             $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $performer->Id, $performer->Location, Game::LOCATION_PLAYER_HOME, true, $owner->Id, $this->Id);
+            $moveEvent->batchId = $batchId;
             $game->theah->queueEvent($moveEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
