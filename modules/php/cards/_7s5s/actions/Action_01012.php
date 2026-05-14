@@ -112,22 +112,16 @@ class Action_01012 extends CharacterAction implements ISorcererAbility, IAbility
             $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $performer->Id, 1, $performer->getInjectCode());
             $game->theah->queueEvent($event);
 
-            $batchId = $game->getNextEventBatchId();
-
             $event = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
-            $event->batchId = $batchId;
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createCharacterBeingWoundedEvent($target->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
-            $event->batchId = $batchId;
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
-            $event->batchId = $batchId;
             $game->theah->queueEvent($event);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $actionResolvedEvent->batchId = $batchId;
             $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("opposingCharacterChosen");

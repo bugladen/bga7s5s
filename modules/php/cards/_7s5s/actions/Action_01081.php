@@ -142,10 +142,14 @@ class Action_01081 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCardById($performerId);
 
-            $event = EventFactory::createCardEngardedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
-            $game->theah->queueEvent($event);
+            $batchId = $game->getNextEventBatchId();
 
             $event = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $event->batchId = $batchId;
+            $game->theah->queueEvent($event);
+
+            $event = EventFactory::createCardEngardedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
+            $event->batchId = $batchId;
             $game->theah->queueEvent($event);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);

@@ -154,12 +154,16 @@ class Action_01138 extends RiskAction implements IAbilityThatTargetsCharacters
             {
                 $owner = $this->getOwningCard($game->theah);
 
+                $batchId = $game->getNextEventBatchId();
+
                 //Move Performer to Target's Location
                 $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id, $this->Id);
+                $moveEvent->batchId = $batchId;
                 $game->theah->queueEvent($moveEvent);
 
                 //Wound Target
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent->batchId = $batchId;
                 $game->theah->queueEvent($woundEvent);
 
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
@@ -184,19 +188,24 @@ class Action_01138 extends RiskAction implements IAbilityThatTargetsCharacters
 
             $owner = $this->getOwningCard($game->theah);
 
+            $batchId = $game->getNextEventBatchId();
+
             //Move Performer to Target's Location
             $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id, $this->Id);
+            $moveEvent->batchId = $batchId;
             $game->theah->queueEvent($moveEvent);
 
             //Choose to Engage
             if ($id == 1)
             {
                 //Engage Performer
-                $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $performer->Id, $this->Id);
+                $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
+                $event->batchId = $batchId;
                 $game->theah->queueEvent($event);
 
                 //Move Target HOME
                 $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = false, $owner->Id, $this->Id);
+                $moveEvent->batchId = $batchId;
                 $game->theah->queueEvent($moveEvent);
             }
             //Choose to Do Not Engage
@@ -204,6 +213,7 @@ class Action_01138 extends RiskAction implements IAbilityThatTargetsCharacters
             {
                 //Wound Target
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent->batchId = $batchId;
                 $game->theah->queueEvent($woundEvent);
 
             }

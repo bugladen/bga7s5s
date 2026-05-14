@@ -4,6 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -11,13 +13,36 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_02023 extends CharacterAction
+class Action_02023 extends CharacterAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
         parent::__construct();
 
         $this->Name = clienttranslate('Move target opposing non-Leader to an adjacent City location with less Renown');
+    }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+
+        if ($character->ControllerId == $performer->ControllerId)
+        {
+            return [false, $game->translate("You cannot choose your own character")];
+        }
+
+        if ($character->Location != $performer->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the performer")];
+        }
+
+        if ($character->hasTrait("Leader"))
+        {
+            return [false, $game->translate("You cannot choose a Leader")];
+        }
+
+        return [true, ""];
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -122,22 +147,10 @@ class Action_02023 extends CharacterAction
                 throw new UserException($game->translate("Character not found"));
             }
 
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-
-            if ($character->ControllerId == $performer->ControllerId)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new UserException($game->translate("You cannot choose your own character"));
-            }
-
-            if ($character->Location != $performer->Location)
-            {
-                throw new UserException($game->translate("Character is not at the same location as the performer"));
-            }
-
-            if ($character->hasTrait("Leader"))
-            {
-                throw new UserException($game->translate("You cannot choose a Leader"));
+                throw new UserException($errorMessage);
             }
 
             $game->globals->set(Game::CHOSEN_TARGET, $id);

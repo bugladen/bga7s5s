@@ -152,11 +152,14 @@ class Action_01091 extends CharacterAction implements IAbilityThatTargetsCharact
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $owner->Id, false, false, false);
             $game->theah->queueEvent($discardEvent);
 
+            $batchId = $game->getNextEventBatchId();
+
             $ids = $game->globals->get(Game::CHOSEN_TARGET);
             foreach ($ids as $id)
             {
                 $character = $game->theah->getCharacterById($id);
                 $event = EventFactory::createCharacterBeingHealedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $event->batchId = $batchId;
                 $game->theah->queueEvent($event);
             }
 

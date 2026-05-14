@@ -4,6 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -12,7 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_02013 extends CharacterAction
+class Action_02013 extends CharacterAction implements IAbilityThatTargetsCharacters
 {
     public ?int $TargetedCharacterId = null;
 
@@ -21,6 +23,22 @@ class Action_02013 extends CharacterAction
         parent::__construct();
 
         $this->Name = clienttranslate("Discard a Card. Issue a Challenge.");
+    }
+
+    public function isValidTargetForAbility(Game $game, Character $character): array
+    {
+        $wilhelm = $this->getOwningCard($game->theah);
+        if ($character->Location != $wilhelm->Location)
+        {
+            return [false, $game->translate("Character is not at the same location as the Performer")];
+        }
+
+        if ($character->ControllerId == $wilhelm->ControllerId)
+        {
+            return [false, $game->translate("You cannot challenge yourself")];
+        }
+
+        return [true, ""];
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -118,16 +136,10 @@ class Action_02013 extends CharacterAction
                 throw new UserException($game->translate("Card not found"));
             }
 
-            $wilhelm = $this->getOwningCard($game->theah);
-
-            if ($character->Location != $wilhelm->Location)
+            [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $character);
+            if (! $isValid)
             {
-                throw new UserException($game->translate("Character is not at the same location as the Performer"));
-            }
-
-            if ($character->ControllerId == $wilhelm->ControllerId)
-            {
-                throw new UserException($game->translate("You cannot challenge yourself"));
+                throw new UserException($errorMessage);
             }
 
             $game->globals->set(Game::CHOSEN_TARGET, $character->Id);

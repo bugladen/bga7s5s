@@ -3,15 +3,18 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatDependsOnNotBeingFirstPlayer;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_01090 extends RiskReaction
+class Reaction_01090 extends CardReaction
 {
     public function __construct()
     {
@@ -37,11 +40,51 @@ class Reaction_01090 extends RiskReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventActionTriggered && $this->isAvailable())
+        if ($event instanceof EventActionActivated && $this->isAvailable())
         {
             $card = $event->theah->getCardById($event->sourceId);
             $ability = $card->getAbilityById($event->actionId);
-            if ($ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner->ControllerId == $event->playerId && $ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
+            {
+                $owner = $this->getOwningCard($event->theah);
+                $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $event->theah->stackEvent($transitionEvent);
+            }
+        }
+
+        if ($event instanceof EventReactionActivated && $this->isAvailable())
+        {
+            $card = $event->theah->getCardById($event->sourceId);
+            $ability = $card->getAbilityById($event->reactionId);
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner->ControllerId == $event->playerId && $ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
+            {
+                $owner = $this->getOwningCard($event->theah);
+                $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $event->theah->stackEvent($transitionEvent);
+            }
+        }
+
+        if ($event instanceof EventTechniqueActivated && $this->isAvailable())
+        {
+            $card = $event->theah->getCardById($event->ownerId);
+            $ability = $card->getAbilityById($event->techniqueId);
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner->ControllerId == $event->playerId && $ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
+            {
+                $owner = $this->getOwningCard($event->theah);
+                $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $event->theah->stackEvent($transitionEvent);
+            }
+        }
+
+        if ($event instanceof EventManeuverActivated && $this->isAvailable())
+        {
+            $card = $event->theah->getCardById($event->ownerId);
+            $ability = $card->getAbilityById($event->maneuverId);
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner->ControllerId == $event->playerId && $ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
             {
                 $owner = $this->getOwningCard($event->theah);
                 $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
@@ -74,6 +117,8 @@ class Reaction_01090 extends RiskReaction
                 "reaction_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getActivePlayerName(),
             ]);
+
+            $this->setUsed($game->theah, true);
         }
 
         $game->gamestate->nextState("done");

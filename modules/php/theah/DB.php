@@ -58,6 +58,13 @@ class DB
         return $event;
     }
 
+    public function deleteEventBatch(int $batchId)
+    {
+        $sql = "DELETE FROM events 
+                WHERE event_serialized LIKE '%batchId\";i:{$batchId}%'";
+        $this->executeSql($sql);
+    }
+
     public function deleteManeuverEvents(string $maneuverId)
     {
         $sql = "DELETE FROM events 

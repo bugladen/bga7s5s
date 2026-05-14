@@ -168,19 +168,14 @@ class Action_01085 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $game->updateCardObjectInDb($porteTravel);
             $game->theah->addCardToWorld($porteTravel);
 
-            $batchId = $game->getNextEventBatchId();
-
             $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $porteTravel->Id, 1, $porteTravel->getInjectCode(), $this->Id);
-            $event->batchId = $batchId;
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createSorcererAbilityStartEvent($porteTravel->ControllerId, $porteTravel->Id, $this->Id, $performer->Id, $this->LastTargetId, $this->LastTargetLocation);
-            $event->batchId = $batchId;
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, $engage = false, $porteTravel->Id, $this->Id);
-            $event->batchId = $batchId;
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
             

@@ -71,6 +71,7 @@ class Action_01123 extends CharacterAction implements IAbilityThatTargetsCharact
             $args['performerId'] = $owner->Id;
             
             $adjacentLocations = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
+            $charactersIds = [];
             foreach ($adjacentLocations as $adjacentLocation)
             {
                 $opposingCharacters = $game->theah->getCharactersAtLocation($adjacentLocation);

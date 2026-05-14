@@ -148,6 +148,11 @@ class Reaction_01032 extends RiskReaction
 
                         $event->canceled = true;
 
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
+
                         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->queueEvent($reactionTransitionEvent);
                     }
@@ -159,6 +164,11 @@ class Reaction_01032 extends RiskReaction
                         $owner->IsUpdated = true;                        
 
                         $event->canceled = true;
+
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
 
                         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->queueEvent($reactionTransitionEvent);
@@ -192,6 +202,11 @@ class Reaction_01032 extends RiskReaction
 
                         $event->canceled = true;
 
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
+
                         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->queueEvent($reactionTransitionEvent);
                     }
@@ -203,6 +218,11 @@ class Reaction_01032 extends RiskReaction
                         $owner->IsUpdated = true;                        
 
                         $event->canceled = true;
+
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
 
                         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->queueEvent($reactionTransitionEvent);
@@ -236,6 +256,11 @@ class Reaction_01032 extends RiskReaction
 
                         $event->canceled = true;
 
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
+
                         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->queueEvent($reactionTransitionEvent);
                     }
@@ -247,6 +272,11 @@ class Reaction_01032 extends RiskReaction
                         $owner->IsUpdated = true;                        
 
                         $event->canceled = true;
+
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
 
                         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->queueEvent($reactionTransitionEvent);
@@ -280,6 +310,11 @@ class Reaction_01032 extends RiskReaction
 
                         $event->canceled = true;
 
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
+
                         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->queueEvent($reactionTransitionEvent);
                     }
@@ -291,6 +326,11 @@ class Reaction_01032 extends RiskReaction
                         $owner->IsUpdated = true;                        
 
                         $event->canceled = true;
+
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
 
                         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->queueEvent($reactionTransitionEvent);
@@ -324,6 +364,11 @@ class Reaction_01032 extends RiskReaction
 
                         $event->canceled = true;
 
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
+
                         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->queueEvent($reactionTransitionEvent);
                     }
@@ -335,6 +380,11 @@ class Reaction_01032 extends RiskReaction
                         $owner->IsUpdated = true;                        
 
                         $event->canceled = true;
+
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
 
                         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->queueEvent($reactionTransitionEvent);
@@ -369,6 +419,11 @@ class Reaction_01032 extends RiskReaction
 
                         $event->canceled = true;
 
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
+
                         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->queueEvent($reactionTransitionEvent);
                     }
@@ -380,6 +435,11 @@ class Reaction_01032 extends RiskReaction
                         $owner->IsUpdated = true;                        
 
                         $event->canceled = true;
+
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
 
                         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->queueEvent($reactionTransitionEvent);

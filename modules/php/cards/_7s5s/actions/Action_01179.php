@@ -50,6 +50,12 @@ class Action_01179 extends EventCityAction
             return false;
         }
 
+        // Must have at least one unengaged performer at the location
+        if (count($this->getPerformersForAction($playerId, $theah)) == 0)
+        {
+            return false;
+        }
+
         return true;
     }
 
