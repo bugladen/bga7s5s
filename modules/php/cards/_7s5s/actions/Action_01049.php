@@ -171,11 +171,15 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
                     'character_inject_code' => $targetCharacter->getInjectCode(),
                 ]);
 
+                $batchId = $game->getNextEventBatchId();
+
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($targetCharacter->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent->batchId = $batchId;
                 $game->theah->queueEvent($woundEvent);
 
                 $engageId = $this->originalAttachmentId ?? $owner->Id;
                 $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $engageId, $owner->Id, $this->Id);
+                $engageEvent->batchId = $batchId;
                 $game->theah->queueEvent($engageEvent);
             }
 

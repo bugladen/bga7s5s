@@ -120,12 +120,17 @@ class Action_01041 extends CharacterAction implements IAbilityThatTargetsCharact
             }
 
             $owner = $this->getOwningCard($game->theah);
+
+            $batchId = $game->getNextEventBatchId();
+
             $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $engageEvent->batchId = $batchId;
             $game->theah->queueEvent($engageEvent);
 
             if ($character->hasTrait("Sorcerer"))
             {
                 $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
+                $moveEvent->batchId = $batchId;
                 $game->theah->queueEvent($moveEvent);
             }
 

@@ -152,16 +152,22 @@ class Action_01205 extends CharacterAction implements IAbilityThatTargetsCharact
                 throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to Location %s."), $location->Name, $giacinto->Location));
             }
 
+            $batchId = $game->getNextEventBatchId();
+
             $giacintoEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Id, $this->Id);
+            $giacintoEngageEvent->batchId = $batchId;
             $game->theah->eventCheck($giacintoEngageEvent);
 
             $victimEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $victim->Id, $giacinto->Id, $this->Id);
+            $victimEngageEvent->batchId = $batchId;
             $game->theah->eventCheck($victimEngageEvent);
 
             $giacintoMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Location, $location->Name, false, $giacinto->Id, $this->Id);
+            $giacintoMoveEvent->batchId = $batchId;
             $game->theah->eventCheck($giacintoMoveEvent);
 
             $victimMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $victim->Id, $victim->Location, $location->Name, true, $giacinto->Id, $this->Id);
+            $victimMoveEvent->batchId = $batchId;
             $game->theah->eventCheck($victimMoveEvent);
 
             $game->theah->queueEvent($giacintoEngageEvent);
