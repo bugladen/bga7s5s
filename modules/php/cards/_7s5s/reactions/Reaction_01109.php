@@ -4,7 +4,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01169;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CancelReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -15,7 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_01109 extends CancelReaction
+class Reaction_01109 extends RiskReaction implements ICancelReaction
 {
     private int $RiskId;
     private string $ManeuverId = '';

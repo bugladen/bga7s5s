@@ -3,7 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CancelReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -11,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityStart;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_01053 extends CancelReaction
+class Reaction_01053 extends RiskReaction implements ICancelReaction
 {
     private int $SourceId = 0;
     private int $TargetId = 0;
@@ -53,23 +54,26 @@ class Reaction_01053 extends CancelReaction
         if ($event instanceof EventSorcererAbilityStart && $this->isAvailable())
         {
             $owner = $this->getOwningCard($event->theah);
-            $source = $event->theah->getCardById($event->sourceId);
-            $ability = $source->getAbilityById($event->abilityId);
-            if ($event->targetId != 0)
+            if ($owner->Location == Game::LOCATION_HAND)
             {
-                $target = $event->theah->getCardById($event->targetId);
-            
-                if ($ability instanceof IAbilityThatTargetsCards && $target->Location != Game::LOCATION_PLAYER_HOME)
+                $source = $event->theah->getCardById($event->sourceId);
+                $ability = $source->getAbilityById($event->abilityId);
+                if ($event->targetId != 0)
                 {
-                    $performers = $event->theah->getCharactersAtLocationbyPlayerId($target->Location, $owner->ControllerId);
-                    if (count($performers) > 0)
+                    $target = $event->theah->getCardById($event->targetId);
+                
+                    if ($ability instanceof IAbilityThatTargetsCards && $target->Location != Game::LOCATION_PLAYER_HOME)
                     {
-                        $this->TargetId = $event->targetId;
-                        $this->SourceId = $event->sourceId;
-                        $owner->IsUpdated = true;
-    
-                        $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->stackEvent($transition);
+                        $performers = $event->theah->getCharactersAtLocationbyPlayerId($target->Location, $owner->ControllerId);
+                        if (count($performers) > 0)
+                        {
+                            $this->TargetId = $event->targetId;
+                            $this->SourceId = $event->sourceId;
+                            $owner->IsUpdated = true;
+        
+                            $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                            $event->theah->stackEvent($transition);
+                        }
                     }
                 }
             }
