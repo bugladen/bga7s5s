@@ -320,7 +320,7 @@ A multi-stage CardReaction does NOT need new GameState classes, `states.inc.php`
 | `implements ISorcererAbility` | `createSorcererAbilityStartEvent()` AND `createSorcererAbilityPlayedEvent()` |
 | `extends Attachment/Card/Character/Risk/RiskCity/Scheme/SchemeCityAction` | `createActionResolvedEvent()` |
 | `extends CardReaction/AttachmentReaction` | `$this->setUsed()` AND `$this->isAvailable()` |
-| `extends RiskReaction/CancelReaction` | Check `Location == Game::LOCATION_HAND` |
+| `extends RiskReaction` | Check `Location == Game::LOCATION_HAND` |
 | Calls `createAttachmentEquippedEvent()` | Must also call `getRequiredAttachTargetId()` |
 | **Forbidden** | Implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards` on one class |
 | **Forbidden in subclasses** | `setUsed`/`resetPlayerPassCount`/`announceAction` in `CharacterAction/AttachmentAction/SchemeAction/SchemeCityAction` |

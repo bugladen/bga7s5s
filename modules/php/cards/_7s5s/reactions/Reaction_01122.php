@@ -2,16 +2,17 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityStart;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_01122 extends CardReaction
+class Reaction_01122 extends CancelReaction
 {
     private int $SourceId = 0;
+    private ?int $BatchId = null;
 
     public function __construct()
     {
@@ -44,6 +45,7 @@ class Reaction_01122 extends CardReaction
             if ($owner->Id == $event->targetId)
             {
                 $this->SourceId = $event->sourceId;
+                $this->BatchId = $event->batchId;
                 $owner->IsUpdated = true;
                 $reactionTransition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->stackEvent($reactionTransition);
@@ -61,10 +63,18 @@ class Reaction_01122 extends CardReaction
             $game->theah->deleteEventsTargetingCard($owner->Id);
             $game->theah->deleteTransitionEventsBySourceId($this->SourceId);
 
+            if ($this->BatchId)
+            {
+                $game->theah->deleteEventBatch($this->BatchId);
+            }
+
             $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to cancel the Sorcery or Sorcerer Ability targeting him.'), [
                 "player_name" => $game->getActivePlayerName(),
                 "reaction_inject_code" => $owner->getInjectCode(),
             ]);
+
+            $this->SourceId = 0;
+            $this->BatchId = null;
 
             $this->setUsed($game->theah, true);
         }
