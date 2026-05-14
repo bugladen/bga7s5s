@@ -18,7 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CancelReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\LocationAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
@@ -1988,7 +1988,7 @@ trait FrameworkActionsTrait
         $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0, $asPayment = false, $asPlayed = true);
         $this->theah->queueEvent($event);
 
-        if ($reaction instanceof CancelReaction)
+        if ($reaction instanceof ICancelReaction)
         {
             $riskReactionTriggered = EventFactory::createRiskReactionTriggeredEvent($playerId,  $card->Id, $internalId, $reactionId);
             $this->theah->stackEvent($riskReactionTriggered);

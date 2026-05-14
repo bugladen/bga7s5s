@@ -152,13 +152,13 @@ for file in $staged_files; do
         fi
     fi
 
-    # Check if the class extends RiskReaction or CancelReaction
-    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+(RiskReaction|CancelReaction)'; then
+    # Check if the class extends RiskReaction
+    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+(RiskReaction)'; then
         
         # Make sure the reaction is only available in the hand
         if ! echo "$content" | grep -q 'Location == Game::LOCATION_HAND'; then
             echo -e "${RED}ERROR:${NC} $file"
-            echo -e "  Class extends RiskReaction/CancelReaction but does not check if the reaction is only available in the hand"
+            echo -e "  Class extends RiskReaction but does not check if the reaction is only available in the hand"
             errors_found=1
         fi
     fi

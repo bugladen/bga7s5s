@@ -59,7 +59,7 @@ The `.githooks/pre-commit` hook enforces these on staged PHP files:
 | `implements ISorcererAbility` | `createSorcererAbilityStartEvent()` AND `createSorcererAbilityPlayedEvent()` |
 | `extends AttachmentAction/CardAction/CharacterAction/RiskAction/RiskCityAction/SchemeAction/SchemeCityAction` | `createActionResolvedEvent()` |
 | `extends CardReaction/AttachmentReaction` | `$this->setUsed()` AND `$this->isAvailable()` |
-| `extends RiskReaction/CancelReaction` | Check `Location == Game::LOCATION_HAND` |
+| `extends RiskReaction` | Check `Location == Game::LOCATION_HAND` |
 | Calls `createAttachmentEquippedEvent()` | Must also call `getRequiredAttachTargetId()` |
 | **Forbidden**: implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards` on the same class |
 
