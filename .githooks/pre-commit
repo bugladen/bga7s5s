@@ -12,6 +12,7 @@
 # 7. Classes implementing IRangedAbility must call createRangedAbilityPlayedEvent
 # 8. Classes extending Maneuver must handle EventManeuverCanceled
 # 9. Classes extending Technique must handle EventTechniqueCanceled
+# 10. Classes extending AttachmentReaction must call $this->ownerIsAttached()
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -136,6 +137,17 @@ for file in $staged_files; do
             echo -e "  Class extends Technique but does not handle ${YELLOW}EventTechniqueCanceled${NC}"
             echo -e "  Add: if (\$event instanceof EventTechniqueCanceled && \$event->techniqueId == \$this->Id)"
             echo -e "  Or add a comment: // EventTechniqueCanceled handler not needed"
+            errors_found=1
+        fi
+    fi
+
+    # Check if the class extends AttachmentReaction
+    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+AttachmentReaction'; then
+
+        # Check for $this->ownerIsAttached()
+        if ! echo "$content" | grep -q '\$this->ownerIsAttached('; then
+            echo -e "${RED}ERROR:${NC} $file"
+            echo -e "  Class extends AttachmentReaction but does not call ${YELLOW}\$this->ownerIsAttached()${NC}"
             errors_found=1
         fi
     fi
