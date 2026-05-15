@@ -170,7 +170,10 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"<Stat> increases by N"** / **"<Stat> is reduced by N"** | Queue `createCharacter<Stat>ModifiedEvent` (e.g., `createCharacterInfluenceModifiedEvent`). See `_01007` Aldo for renown-driven Influence modification. |
 | **`<b>Action:</b>`** / **`<b>City Action:</b>`** | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php` extending `CharacterAction`. State class(es) + JS wiring per Pattern C. **"City Action" only differs by the `cardInCity` gate** in `isAvailableToPlayer`. |
 | **"Issue a [stat] challenge to target …"** (any flavor) | CharacterAction that sets `CHOSEN_PERFORMER`/`CHOSEN_TARGET`/`CHALLENGE_STAT`/`CHALLENGE_TYPE` and queues a transition into the challenge sub-state machine. See Pattern F. |
+| **"Your <Trait> at this location issues a challenge"** (performer ≠ owner) | Two-step Pattern F: step 1 picks the *performer*, step 2 picks the target at the *performer's* location. If text doesn't print "Engage [self]", emit the engage event conditionally in step 2 and keep the new challenge type OUT of the auto-engage list. See Pattern F's "Performer ≠ action owner" subsection. Reference: `Action_03003`. |
 | **`<b>Reaction:</b>`** / **`<b>City Reaction:</b>`** | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_NNNNN.php` extending `CardReaction`. Button-based reactions need **no** state class, **no** `states.inc.php` edits, **no** JS wiring. See Pattern D. |
+| **"Reaction: … at -N cost"** / **"… pay N Wealth"** | Pattern D Reaction with **in-reaction click-to-pay** wealth tracking. Don't use `PAY_STATE_PLAY_BRUTE` — it's tied to the player-turn state cycle. See Pattern D's "Reactions that need to pay a wealth cost" subsection. Reference: `Reaction_03003`. |
+| **"Reaction: Put a different X into play from your hand or discard pile"** | Pattern D Reaction. Filter eligibles separately from `LOCATION_HAND` and `getPlayerDiscardDeckName(...)`, exclude the just-destroyed card by id. `createCharacterMusteredEvent` does the actual move; `createCardRemovedFromPlayerDiscardPileEvent` is notification-only (fire it before the muster so JS clients sync correctly). Reference: `Reaction_03003`, `Action_01024` (Bravos). |
 | **`<b>Sorcerer …</b>`** (Sorcerer Action / Sorcerer Reaction) | The Action/Reaction class additionally `implements ISorcererAbility`. **Must** call `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces). See `Action_01076` and `Reaction_02001`. |
 | **`<b>Technique:</b>` / `<b>Maneuver:</b>`** | The Character lineage already brings `TechniqueTrait`. Add `IHasManeuvers` + `ManeuverTrait` for maneuvers. Implement under `cards/<expansion>/techniques/` or `cards/<expansion>/maneuvers/`. See Pattern E. |
 | **`<b>Gambling Technique:</b>`** | Same as Technique, but `isAvailableToPlayer` additionally gates on `Game::DUEL_GAMBLED` (actor gambled for their combat card this round). See Pattern E. |
@@ -465,6 +468,35 @@ The challenge resolution flow fires `createActionResolvedEvent` itself — eithe
 
 `StatesTrait::stIssueChallenge` auto-engages the performer for challenges of type `NORMAL`, `SERVO_SCARPA`, `TORVO_ESPADA`, and `AJA_CHALLENGE_TYPE` (the auto-engage list). If your "Issue a Challenge" card's cost is "Engage <self>" and the printed effect doesn't add anything weird to the cost, register the new challenge type in that list and omit a manual engage event. If your card has a different cost shape (e.g., engage a Weapon attachment instead), register a separate handler — see `Action_02013`'s `doCost` for the "discard a card" variant.
 
+**Do NOT add your challenge type to the auto-engage list if engaged characters are eligible performers.** If the card text doesn't print "Engage [self]" as a cost (e.g., Don Constanzo's "Your **Thug** at this location issues a **Combat** challenge"), an already-engaged Thug is a valid performer — the rules don't bar it from issuing. Auto-engaging an already-engaged card re-emits `EventCardEngaged`, and downstream reactions (e.g., Vittoria's `Reaction_01014` "instead of me" swap) treat that as a *fresh* engagement and misfire. Instead:
+
+1. Skip the auto-engage list entirely for your new type.
+2. In the action's terminal step, emit the engage event yourself, **conditionally**:
+   ```php
+   if (! $performer->Engaged)
+   {
+       $engageEvent = EventFactory::createCardEngagedEvent(
+           $performer->ControllerId, $performer->Id, $owner->Id, $this->Id
+       );
+       $game->theah->queueEvent($engageEvent);
+   }
+   ```
+
+The `eligibility filter` follows the same logic. Aja and Servo's actions check `! $self->Engaged` because their text *does* print "Engage [self]"; Don Constanzo's `getAvailableThugs` does NOT check `! Engaged` because his doesn't. Read the printed cost and match.
+
+### Performer ≠ action owner
+
+The default Pattern F assumes the action's owner is also the challenge performer. But some cards (e.g., Don Constanzo `_03003`: "Your **Thug** at this location issues a **Combat** challenge") have the owner *select* the performer separately. Adjust:
+
+- **Two-step state machine.** Step 1 picks the performer (e.g., a Thug at the owner's location). Step 2 picks the target at the *performer's* location. State IDs follow the usual `4` + cardId scheme with `_2` suffix.
+- **`CHOSEN_PERFORMER` is the picked performer's id, not the owner's.** Set it in step 1's act handler; reference it in step 2's `getArgsFromAction` so the target picker filters opposing characters at the performer's location (not the owner's — they're usually equal but stay correct if the performer was at a different valid location).
+- **`isValidTargetForAbility(Game, Character)` reads `CHOSEN_PERFORMER` to find the controller and location** for the validity check, since `getOwningCharacter` returns the action owner (Don), not the performer (the Thug).
+- **Conditional engage in step 2** (see previous section). The performer is the Thug; engage only if `! Engaged`.
+
+Reference: `Action_03003` (Don Constanzo).
+
+Note that `canChallenge()` on the base `Character` class only checks `isControlled()` — it does NOT check `Engaged`. If your eligibility filter needs both, add `! $c->Engaged` explicitly. Characters that override `canChallenge` (e.g., Sigurd Ulfsen `_01190` permanent ban, Carmella `_01178` "engaged once" rule) handle their own engagement logic.
+
 ### Adding a NEW challenge type
 
 A new `*_CHALLENGE_TYPE` constant is justified only when the card imposes restrictions or behaviors that diverge from `NORMAL_CHALLENGE_TYPE` — e.g., Aja's "only Finesse ≥ 3 may intervene or refuse." Touch these files in lockstep:
@@ -495,6 +527,7 @@ Always implement this interface on a challenge-issuing action — challenge targ
 | `Action_02013` (Wilhelm Dünst) | "Discard a Card. Issue a Challenge." — discard-as-cost, then standard issue-challenge transition. Two-step state machine; reference for `doCost`/`doEffect` separation. |
 | `Action_02034` (Torvo Espada) | Three-step "offer challenge → accept/decline → issue" flow with the `TORVO_ESPADA_CHALLENGE_TYPE` (no interventions allowed). |
 | `Action_03002` (Aja) | Single-step picker → standard challenge flow with `AJA_CHALLENGE_TYPE` (Finesse ≥ 3 to intervene/refuse). Canonical reference for a NEW challenge type with restrictions. |
+| `Action_03003` (Don Constanzo) | Two-step "pick your Thug → pick target". Performer is the chosen Thug, not the owner. New challenge type `DON_CONSTANZO_CHALLENGE_TYPE` deliberately kept OUT of the auto-engage list; action emits a conditional engage event in step 2 so already-engaged Thugs remain eligible. |
 | `Action_01083` (Legendary Reputation) | RiskCityAction variant — sets `LEGENDARY_REPUTATION_CHALLENGE_TYPE` (only Leaders may intervene). |
 
 ## Pattern D — Reaction / City Reaction (CardReaction)
@@ -553,17 +586,57 @@ When `implements ISorcererAbility`, you MUST also call both:
 
 The pre-commit hook enforces this.
 
+### "Put into play from hand or discard"
+
+For Reactions whose effect is "put a card into play" (e.g., Don Constanzo's "Put a different **Thug** into play at your **Home** from your hand or discard pile"):
+
+- **Source filtering.** For hand: `$theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId)`. For discard pile: `$theah->getCardObjectsAtLocation($game->getPlayerDiscardDeckName($owner->ControllerId), $owner->ControllerId)`. Both per-player.
+- **The muster event does the move.** `EventFactory::createCharacterMusteredEvent($playerId, $cardId, $location)` is the only event needed for the actual location change — its handler calls `$deck->moveCard(...)` on the game deck which physically moves the card.
+- **`createCardRemovedFromPlayerDiscardPileEvent` is notification-only** in the default code path — it sends a `cardRemovedFromPlayerDiscardPile` notification (and only physically moves the card if `permanentlyHide=true`). The actual remove-from-discard happens implicitly when `createCharacterMusteredEvent`'s `$deck->moveCard` runs. So:
+  - Fire `createCardRemovedFromPlayerDiscardPileEvent` BEFORE the muster event so JS clients (which filter `player.discard` on that notification) update their state in the right order.
+  - Don't expect it to move the card; that's the muster event's job.
+  - Reference: `Action_01024` (Bravos) follows this exact ordering for Thug-from-discard mustering.
+
+### Reactions that need to pay a wealth cost — click-to-pay
+
+For Reactions where the effect costs Wealth (e.g., Don Constanzo's "at -1 cost"), the framework's `PAY_STATE_PLAY_BRUTE` / `actPayForBrute` is usually NOT a fit because:
+
+- Its success transition is hard-coded to `HIGH_DRAMA_PLAYER_TURN_EVENTS`, but reactions can fire outside high drama (dawn cleanup, pressure, duel cleanup) and must return to whatever state cycle invoked them.
+- It requires the paid-for card to be in `LOCATION_HAND`. Reactions like "from hand or discard pile" don't fit.
+
+Instead, do the payment **inside the Reaction class** using the standard `playerReaction` loop. Pattern:
+
+1. **Reaction-instance state** for the running payment:
+   ```php
+   private array $paidCardIds = [];       // cards selected so far
+   private int $paidWealth = 0;           // running wealth sum
+   private bool $paidHasWealthCard = false; // true if any selected card has the "Wealth" trait
+   ```
+   Plus a `$stage` field (e.g., `'pick'` → `'pay'`).
+2. **`getReactionButtonProperties` during the `'pay'` stage** lists every card in hand as a button (`Pay with <name> (+N Wealth)`), excluding cards already in `$paidCardIds` and excluding the card being put into play (when it's the hand-source one). Always include `< Back` and `Decline`.
+3. **Each click runs `handlePay`**: validate the card, append to `paidCardIds`, increment `paidWealth` by `$card->hasTrait("Wealth") ? 2 : 1`, set `paidHasWealthCard` if applicable.
+4. **`isPaymentComplete($cost)` mirrors `UtilitiesTrait::isValidWealthPayment`** — exact match OR `paidWealth == cost + 1 && paidHasWealthCard` (the "overpay by 1 using a Wealth card" rule).
+5. **Filter button list to valid-next-clicks** via a `wouldClickProduceValidPayment` helper. Suppress buttons that would put paid beyond `cost + 1` or beyond `cost` without using a Wealth card.
+6. **Queue discards atomically at finalize**, not per-click. WHY: `Decline` becomes a clean rollback (no cards were ever queued for discard), AND downstream reactions to `EventCardDiscardedFromHand` don't see partial-payment intermediate states.
+7. **Always set `$owner->IsUpdated = true`** on every reaction-instance state mutation so the framework persists the running totals across reaction-loop iterations.
+8. **Skip the `'pay'` stage entirely when `cost == 0`** — go straight to finalize.
+
+Reference: `Reaction_03003` (Don Constanzo) — the canonical implementation of this pattern.
+
 ### Reaction examples
 
 | File | Demonstrates |
 |---|---|
 | `Reaction_01006` | `IRiskReaction`-shaped pre-end-of-day cleanup ("Reaction: Before the end of the Day"). |
 | `Reaction_01008` | "Cesca Scarpa copies the Sorcerer ability just played" — listens on `EventSorcererAbilityPlayed`, branches on the ability instance to copy actions/cards/etc. The original kitchen-sink Sorcerer-after-Sorcerer reaction. |
+| `Reaction_01013` | Canonical "after my Red Hand is destroyed" Reaction — `EventCharacterDestroyed` trigger + button-based draw choice. Reference for the trait/controller/location identity gates. |
+| `Reaction_01014` (Vittoria) | "Instead of me" target swap on `EventCardEngaged`/`EventChallengeIssued`/etc. ⚠ Re-emitting `EventCardEngaged` on an already-engaged character will trip this. Pattern F users beware. |
 | `Reaction_01089` | Soline el Gato's "after an Action resolves" — `EventActionResolved` + button-per-adjacent-location. |
 | `Reaction_01116a`, `Reaction_01116b` | Yevgeni's paired Reactions on a single Leader. |
 | `Reaction_01118` | Elina's "after a Sorcerer ability targets a character at her location, move Renown to her location" — `sourceId == owner` OR `performerId == owner` pattern. |
 | `Reaction_02001` | Andriana — Sorcerer Reaction (so implements `ISorcererAbility`); button-prompts to wound a non-Sorcerer. |
 | `Reaction_03001` | Cesca del Rosso's "after Cesca performs a Sorcerer ability, wound an opposing character" — button-per-opposing-character target picker, with a Pass button. |
+| `Reaction_03003` (Don Constanzo) | Multi-stage Reaction with hand/discard source selection, **incremental click-to-pay wealth handling** rolled inside the reaction (no PAY_STATE_PLAY_BRUTE coupling), and muster-at-Home. Canonical reference for cost-bearing Reactions and "put into play from hand or discard pile." |
 
 ## Pattern E — Techniques and Maneuvers
 
@@ -733,6 +806,9 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 | `modules/php/cards/faf/_03002.php` (Aja) | **Character that issues a Combat challenge + Gambling Technique.** Pattern F (issue-a-challenge) with a new `AJA_CHALLENGE_TYPE` whose intervention/refusal are gated by Finesse ≥ 3 — touches all six challenge-type integration points. Pattern E "Gambling Technique" gate via `Game::DUEL_GAMBLED` + `getDuelRoundActor`. |
 | `modules/php/cards/faf/actions/Action_03002.php` | Pattern F skeleton: opposing-target picker → set CHOSEN_PERFORMER/TARGET/CHALLENGE_STAT/CHALLENGE_TYPE → `createTransitionEvent("03002_2")` + `nextState("targetChosen")` to `HIGH_DRAMA_PLAYER_TURN_EVENTS`. |
 | `modules/php/cards/faf/techniques/Technique_03002.php` | Gambling Technique with adversary-wounded precondition. `EventDuelCalculateTechniqueValues` + `createGainLethalEvent` in-duel pipeline. |
+| `modules/php/cards/faf/_03003.php` (Don Constanzo Scarpa, Fearsome Father) | **Character with a Pattern F variant where performer ≠ owner + a cost-bearing City Reaction.** City Action picks one of the controller's Thugs at Don's location and has *that* Thug issue the challenge — new `DON_CONSTANZO_CHALLENGE_TYPE` deliberately omitted from auto-engage list so already-engaged Thugs are eligible. City Reaction triggers on `EventCharacterDestroyed` for Thugs and offers a multi-stage "pick from hand/discard → click-to-pay Wealth → muster at Home" flow. |
+| `modules/php/cards/faf/actions/Action_03003.php` | Two-step Pattern F where the performer is selected by the player. Step 1 picks the Thug, sets `CHOSEN_PERFORMER` to the Thug's id. Step 2 picks the opposing target at the performer's location, conditionally engages the Thug (`if (! $performer->Engaged)`), then `createTransitionEvent("03003_2")` into the challenge sub-state. |
+| `modules/php/cards/faf/reactions/Reaction_03003.php` | Multi-stage Reaction (`'pick'` → `'pay'` → finalize). Source filtering from hand AND discard with the destroyed-Thug exclusion. **In-reaction click-to-pay** with running `$paidWealth`/`$paidHasWealthCard` state, `wouldClickProduceValidPayment` button filter, atomic discards at finalize. Mirrors `UtilitiesTrait::isValidWealthPayment` semantics (exact match OR overpay-by-1-with-Wealth). |
 | `modules/php/cards/tac/actions/Action_02013.php` (Wilhelm Dünst) | Pattern F with a discard-as-cost step plus the standard challenge transition. Reference for `doCost` / `doEffect` separation when the cost isn't just engagement. |
 | `modules/php/cards/_7s5s/techniques/Technique_GainLethal.php` | Generic two-pipeline Gain Lethal helper — handles both `EventGenerateChallengeThreat` (city) and `EventDuelCalculateTechniqueValues` (duel). |
 | `modules/php/cards/_7s5s/techniques/Technique_01049.php` | Engagement-as-cost Gain Lethal technique; handles both pipelines, demonstrates `IRangedAbility` integration. |
@@ -756,7 +832,9 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 9. Mentally run pre-commit hook checks on every file you touched. Especially: `createActionResolvedEvent` in the action, no `setUsed`/`resetPlayerPassCount`/`announceAction` in the `CharacterAction` subclass, `$this->setUsed(` and `$this->isAvailable(` literal strings present in every `CardReaction` subclass, and `createSorcererAbilityStartEvent`/`createSorcererAbilityPlayedEvent` if implementing `ISorcererAbility`.
 10. For each Reaction you added, walk the `handleEvent` triggers and confirm all required gates are in place: `isAvailable()`, identity check (`$event->sourceId/performerId/cardId == $owner->Id` etc.), scope gate (`cardInCity($owner)` for City Reactions), and a valid-target precondition if the effect needs a target. Missing the valid-target gate leaves the player with a useless "Decline" prompt.
 11. For phase-event listeners on Leaders, confirm a `! characterIsInDiscardOrLocker($this)` guard — a destroyed Leader still has a `ControllerId` set, so `isControlled()` alone is insufficient.
-12. **For "issue a challenge" actions (Pattern F):** confirm all six challenge-integration files are touched if you minted a new challenge type — `Game.php`, `seventhseacityoffivesails.js`, `StatesTrait::stIssueChallenge` (auto-engage list), `Theah::interventionCheck`, `ArgumentsTrait::argsHighDramaChallengeActionAcceptChallenge`, `FrameworkActionsTrait::actHighDramaChallengeActionReject`, plus `OnUpdateActionButtons.js::highDramaChallengeActionAcceptChallenge` for the Refuse button UI. The PHP int and the JS int MUST match. Confirm `states.inc.php` has BOTH `"NNNNN"` (picker entry) and `"NNNNN_2"` (post-pick → `HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE`).
+12. **For "issue a challenge" actions (Pattern F):** confirm all six challenge-integration files are touched if you minted a new challenge type — `Game.php`, `seventhseacityoffivesails.js`, `StatesTrait::stIssueChallenge` (auto-engage list), `Theah::interventionCheck`, `ArgumentsTrait::argsHighDramaChallengeActionAcceptChallenge`, `FrameworkActionsTrait::actHighDramaChallengeActionReject`, plus `OnUpdateActionButtons.js::highDramaChallengeActionAcceptChallenge` for the Refuse button UI. The PHP int and the JS int MUST match. Confirm `states.inc.php` has BOTH `"NNNNN"` (picker entry) and `"NNNNN_2"` (post-pick → `HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE`). **Engagement audit:** if the card text doesn't print "Engage [self]" as a cost, keep the new type OUT of the auto-engage list, allow `Engaged` performers in `isAvailableToPlayer`, and emit `createCardEngagedEvent` conditionally in the action's terminal step (`if (! $performer->Engaged)`). Re-emitting the engage event on an already-engaged character will trip Vittoria-style `Reaction_01014` "instead of me" swaps.
 13. **For picker states with multiple exits**, name every transition (`"targetChosen"`, `"zombie"`, etc.). The empty-string `""` transition is only legal when it's the SOLE transition out of the state.
 14. **For in-duel techniques (Pattern E)**, confirm `Game::IN_DUEL` and (for Gambling Techniques) `Game::DUEL_GAMBLED` gates are in `isAvailableToPlayer`, plus the actor-identity check via `getDuelRoundActor()`. For Gain Lethal effects, use `EventDuelCalculateTechniqueValues` + `createGainLethalEvent` for the in-duel pipeline; only also handle `EventGenerateChallengeThreat` if the technique is meant to fire outside duels too.
-15. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`) and the Aja journal (`2026-05-13-02-aja-03002-implementation.md`) first — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type decisions in detail.
+15. **For cost-bearing Reactions (e.g., "at -N cost", "pay N Wealth"):** roll the payment tracking inside the Reaction class using running `$paidCardIds`/`$paidWealth`/`$paidHasWealthCard` state. Do NOT route through `PAY_STATE_PLAY_BRUTE` — it's tied to the player-turn state cycle and won't return correctly from reactions fired in dawn/dusk/duel contexts. See Pattern D's "Reactions that need to pay a wealth cost" subsection and `Reaction_03003`. Mirror `UtilitiesTrait::isValidWealthPayment` semantics (exact OR `cost+1`-with-Wealth-card). Queue discards atomically at finalize, not per-click, so `Decline` is a clean rollback.
+16. **For "Put into play from hand or discard" Reactions:** `createCharacterMusteredEvent` does the actual move. `createCardRemovedFromPlayerDiscardPileEvent` is notification-only and exists so JS clients can sync their `player.discard` array — fire it BEFORE the muster event when the card is from discard. Pattern reference: `Action_01024` (Bravos), `Reaction_03003`.
+17. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), and the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard decisions in detail.
