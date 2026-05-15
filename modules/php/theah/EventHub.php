@@ -502,7 +502,7 @@ trait EventHub
                     // Notify players that card has been discarded from hand
                     $message = '${player_name} discarded ${card_inject_code}.';
                     if ($event->AsPlayed)
-                        $message = '${player_name} played ${card_inject_code}.';
+                        $message = '';
                     if ($event->AsPayment)
                         $message = '${player_name} discarded ${card_inject_code} as payment.';
 
