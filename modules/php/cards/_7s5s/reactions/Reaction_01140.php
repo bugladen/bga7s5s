@@ -41,6 +41,23 @@ class Reaction_01140 extends RiskReaction implements ICancelReaction
         return $array;
     }
 
+    public function revertCancellation(Theah $theah): void
+    {
+        if ($this->eventCardMoving === null)
+        {
+            return;
+        }
+
+        $theah->queueEvent($this->eventCardMoving);
+        $this->eventCardMoving = null;
+
+        $owner = $this->getOwningCard($theah);
+        if ($owner !== null)
+        {
+            $owner->IsUpdated = true;
+        }
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);

@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01140;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01169;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
@@ -30,13 +31,28 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose to cancel the Risk just played: ');
+        $base = parent::getReactionDescription($theah);
+        $risk = $theah->getCardById($this->RiskId);
+        if ($risk !== null)
+        {
+            return $base . sprintf($theah->game->translate('${you} may choose to cancel %s: '), $theah->game->translate($risk->Name));
+        }
+        return $base . $theah->game->translate('${you} may choose to cancel the Risk just played: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Cancel Risk'), 'cancel');
+        $risk = $theah->getCardById($this->RiskId);
+        if ($risk !== null)
+        {
+            $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Cancel %s'), $theah->game->translate($risk->Name)), 'cancel');
+        }
+        else
+        {
+            $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Cancel Risk'), 'cancel');
+        }
+        
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Decline'), 'decline');
 
         return $array;
@@ -121,6 +137,18 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
             if ($risk instanceof _01169)
             {
                 $risk->cancelEscape();
+            }
+
+            //Edge case: Stubborn — restore the movement that Stubborn had cancelled
+            if ($risk instanceof _01140)
+            {
+                foreach ($risk->getReactions() as $reaction)
+                {
+                    if ($reaction instanceof Reaction_01140)
+                    {
+                        $reaction->revertCancellation($game->theah);
+                    }
+                }
             }
 
             //Delete any cancel Risk ActionTriggered or RiskReactionTriggered events
