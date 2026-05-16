@@ -1200,11 +1200,13 @@ trait EventHub
 
             case $event instanceof EventReknownRemovedFromLocation:
 
-                //Update the reknown for the location in the database
-                $reknown = $this->game->getRenownForLocation($event->location) - $event->amount;
+                // WHY: Clamp at 0. Matches EventReknownRemovedFromCard. Prevents bugs where
+                // multiple opponents queue removes against the same location (e.g. _01150
+                // Parley Gone Wrong) from driving Renown negative.
+                $reknown = max(0, $this->game->getRenownForLocation($event->location) - $event->amount);
                 $this->game->setReknownForLocation($event->location, $reknown);
 
-                $this->cityLocations[$event->location]->Renown -= $event->amount;
+                $this->cityLocations[$event->location]->Renown = $reknown;
 
                 // Notify players that the player has lost reknown
                 $this->game->notify->all("reknownRemovedFromLocation", clienttranslate('${amount} Renown REMOVED from ${location} ${source}.'), [
