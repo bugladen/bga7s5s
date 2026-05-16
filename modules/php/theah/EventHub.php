@@ -503,7 +503,7 @@ trait EventHub
                     // Notify players that card has been discarded from hand
                     $message = '${player_name} discarded ${card_inject_code}.';
                     if ($event->AsPlayed)
-                        $message = '${player_name} played ${card_inject_code}.';
+                        $message = '';
                     if ($event->AsPayment)
                         $message = '${player_name} discarded ${card_inject_code} as payment.';
 
@@ -1202,11 +1202,13 @@ trait EventHub
 
             case $event instanceof EventReknownRemovedFromLocation:
 
-                //Update the reknown for the location in the database
-                $reknown = $this->game->getRenownForLocation($event->location) - $event->amount;
+                // WHY: Clamp at 0. Matches EventReknownRemovedFromCard. Prevents bugs where
+                // multiple opponents queue removes against the same location (e.g. _01150
+                // Parley Gone Wrong) from driving Renown negative.
+                $reknown = max(0, $this->game->getRenownForLocation($event->location) - $event->amount);
                 $this->game->setReknownForLocation($event->location, $reknown);
 
-                $this->cityLocations[$event->location]->Renown -= $event->amount;
+                $this->cityLocations[$event->location]->Renown = $reknown;
 
                 // Notify players that the player has lost reknown
                 $this->game->notify->all("reknownRemovedFromLocation", clienttranslate('${amount} Renown REMOVED from ${location} ${source}.'), [

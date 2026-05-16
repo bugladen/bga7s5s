@@ -968,6 +968,12 @@ trait FrameworkActionsTrait
         $action->resetPlayerPassCount($this);
         $action->setUsed($this->theah, true);
 
+        $this->notify->all("message", clienttranslate('${player_name} played ${card_inject_code}.'), [
+            "i18n" => ["card_inject_code"],
+            "player_name" => $this->getPlayerNameById($playerId),
+            "card_inject_code" => $risk->getInjectCode(),
+        ]);
+
         if ($discount != 0)
         {
             $message = clienttranslate('This was played at a cost of ${cost} Wealth (discount of ${discount}).');
@@ -1951,12 +1957,12 @@ trait FrameworkActionsTrait
         }
 
         if ($sourceId === null) {
-            throw new \BgaUserException(clienttranslate("Unable to process reaction. Please try again or refresh the page."));
+            throw new UserException(clienttranslate("Unable to process reaction. Please try again or refresh the page."));
         }
 
         $card = $this->theah->getCardById($sourceId);
         if ($card === null) {
-            throw new \BgaUserException(clienttranslate("Card not found. Please try again or refresh the page."));
+            throw new UserException(clienttranslate("Card not found. Please try again or refresh the page."));
         }
 
         $reaction = $card->getReactionById($internalId);
@@ -2010,6 +2016,12 @@ trait FrameworkActionsTrait
         $event = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $sourceId = 0, $asPayment = false, $asPlayed = true);
         $this->theah->queueEvent($event);
 
+        $this->notify->all("message", clienttranslate('${player_name} played ${card_inject_code}.'), [
+            "i18n" => ["card_inject_code"],
+            "player_name" => $this->getPlayerNameById($playerId),
+            "card_inject_code" => $card->getInjectCode(),
+        ]);
+
         if ($reaction instanceof ICancelReaction)
         {
             $riskReactionTriggered = EventFactory::createRiskReactionTriggeredEvent($playerId,  $card->Id, $internalId, $reactionId);
@@ -2020,7 +2032,6 @@ trait FrameworkActionsTrait
         }
         else
         {
-
             $riskPlayed = EventFactory::createRiskPlayedEvent($playerId, $card->Id);    
             $this->theah->queueEvent($riskPlayed);
     

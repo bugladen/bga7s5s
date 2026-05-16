@@ -180,7 +180,6 @@ class Action_01154 extends AttachmentAction implements ISorcererAbility, IAbilit
             $newAction = clone $action;
             if ($newAction instanceof ICardAbility)
             {
-                $newAction->setId($card->Id);
                 $newAction->setOwnerId($card->Id);
             }
             if ($card instanceof IHasActions)

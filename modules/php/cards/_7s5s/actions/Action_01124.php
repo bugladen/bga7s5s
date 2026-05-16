@@ -183,7 +183,6 @@ class Action_01124 extends CharacterAction implements ISorcererAbility, IAbility
             $newAction = clone $action;
             if ($newAction instanceof ICardAbility)
             {
-                $newAction->setId($card->Id);
                 $newAction->setOwnerId($card->Id);
             }
             if ($card instanceof IHasActions)

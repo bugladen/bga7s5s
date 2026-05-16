@@ -127,17 +127,22 @@ class _01150 extends Scheme
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01150)
         {
-            $playerName = $game->getActivePlayerName();
+            $playerName = $game->getPlayerNameById($game->getActivePlayerId());
 
             $location = $ids[0];
     
             $playerId = $game->getActivePlayerId();
+            // WHY: HIGH_PRIORITY so this opponent's remove/add fires before the next opponent's
+            // queued MEDIUM_PRIORITY transition. Otherwise every opponent sees pre-resolution renown
+            // and can pick the same already-depleted location, driving it negative.
             $removeEvent = EventFactory::createReknownRemovedFromLocationEvent($playerId, $location, 1, $playerName);
+            $removeEvent->priority = Event::HIGH_PRIORITY;
             $game->theah->eventCheck($removeEvent);
-    
+
             $addEvent = EventFactory::createReknownAddedToLocationEvent($playerId, Game::LOCATION_CITY_FORUM, 1, $playerName, $isMove = true);
+            $addEvent->priority = Event::HIGH_PRIORITY;
             $game->theah->eventCheck($addEvent);
-    
+
             $game->theah->queueEvent($removeEvent);
             $game->theah->queueEvent($addEvent);
     

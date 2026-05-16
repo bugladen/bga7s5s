@@ -220,7 +220,6 @@ class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
             $newAction = clone $action;
             if ($newAction instanceof ICardAbility)
             {
-                $newAction->setId($card->Id);
                 $newAction->setOwnerId($card->Id);
             }
             if ($card instanceof IHasActions)
