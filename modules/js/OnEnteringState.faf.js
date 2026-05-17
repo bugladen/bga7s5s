@@ -157,6 +157,25 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_03005': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    $('choose_container_name').innerHTML = _('Your Discard Pile');
+
+                    const player = this.gamedatas.players[this.getActivePlayerId()];
+                    player.discard.forEach((card) => {
+                        if (card.traits && (card.traits.includes('Gang') || card.traits.includes('Crime') || card.traits.includes('Villainous'))) {
+                            this.addCardToDeck(this.chooseList, card);
+                        }
+                    });
+                    this.chooseList.setSelectionMode(1);
+
+                    if (this.chooseList.count() > 0)
+                        dojo.addClass('actPass', 'disabled');
+                }
+            },
+
         }
 
         if ( methods[stateName] )

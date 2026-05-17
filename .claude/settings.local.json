@@ -37,7 +37,10 @@
       "Bash(sed -n '675,682p' /c/code/7s5s/modules/js/OnUpdateActionButtons.7s5s.js)",
       "Bash(sed -n '363,371p' /c/code/7s5s/modules/js/OnUpdateActionButtons.7s5s.js)",
       "Bash(sed -n '388,391p' /c/code/7s5s/modules/js/OnUpdateActionButtons.7s5s.js)",
-      "Bash(echo \"exit_code: $?\")"
+      "Bash(echo \"exit_code: $?\")",
+      "Bash(node -c modules/js/OnEnteringState.faf.js)",
+      "Bash(node -c modules/js/OnUpdateActionButtons.faf.js)",
+      "Bash(node -c modules/js/OnLeavingState.faf.js)"
     ]
   }
 }

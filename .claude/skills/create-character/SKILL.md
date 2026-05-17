@@ -14,6 +14,7 @@ Canonical references:
 - `modules/php/cards/_7s5s/_01116.php` (Yevgeni) — `Leader` with a passive `EventDuelCalculateCombatCardStats` hook and two paired Reactions.
 - `modules/php/cards/faf/_03001.php` (Cesca del Rosso) — `Leader` with an `EventPhaseDawnEnding` draw effect, a button-based City Reaction triggered by `EventSorcererAbilityPlayed`, and a two-step City Action (CharacterAction with state classes).
 - `modules/php/cards/faf/_03002.php` (Aja) — `Character` with a City Action that **issues a Combat challenge with a custom challenge type** (intervention/refusal restricted by Finesse) and a **Gambling Technique** that grants Lethal in-duel.
+- `modules/php/cards/faf/_03004.php` (Elena Agnelli) — `Character` with a **dynamic-recompute Finesse bonus tied to her dueling line** (+1 Finesse per Sorcery in her dueling line) and a **Technique gated on her combat card having the Sorcery trait** that adds +1 Parry and wounds the adversary.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -168,6 +169,7 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"At the end of Dawn"** / **"At the beginning of Dawn"** | `handleEvent` on `EventPhaseDawnEnding` / `EventPhaseDawnBeginning`. See Pattern A below. |
 | **"At/During <phase>"** broadly | One of the phase events: `EventNewDay`, `EventPhaseDawnBeginning`, `EventPhaseDawnEnding`, `EventDuskEndOfDay`, `EventPressureOccuring`, `EventDuelStarted`, etc. See "Phase / lifecycle events" below. |
 | **"<Stat> increases by N"** / **"<Stat> is reduced by N"** | Queue `createCharacter<Stat>ModifiedEvent` (e.g., `createCharacterInfluenceModifiedEvent`). See `_01007` Aldo for renown-driven Influence modification. |
+| **"<Owner> has +N[Stat] for each X in her dueling line"** (or any duel-line-derived count) | Pattern A passive with a running `$<Stat>Bonus` field on the card. Recompute at `EventDuelEndOfRound` (the only clean boundary — there is no event fired when a card enters the dueling line; `cards->moveCard` is called directly). Reset at `EventDuelEnd` *before* the line is cleared. Gate on the owner being a duel participant (the dueling line is per-player, not per-character). See Pattern A "Dynamic stat bonuses tied to the dueling line" below. Reference: `_03004` Elena. |
 | **`<b>Action:</b>`** / **`<b>City Action:</b>`** | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php` extending `CharacterAction`. State class(es) + JS wiring per Pattern C. **"City Action" only differs by the `cardInCity` gate** in `isAvailableToPlayer`. |
 | **"Issue a [stat] challenge to target …"** (any flavor) | CharacterAction that sets `CHOSEN_PERFORMER`/`CHOSEN_TARGET`/`CHALLENGE_STAT`/`CHALLENGE_TYPE` and queues a transition into the challenge sub-state machine. See Pattern F. |
 | **"Your <Trait> at this location issues a challenge"** (performer ≠ owner) | Two-step Pattern F: step 1 picks the *performer*, step 2 picks the target at the *performer's* location. If text doesn't print "Engage [self]", emit the engage event conditionally in step 2 and keep the new challenge type OUT of the auto-engage list. See Pattern F's "Performer ≠ action owner" subsection. Reference: `Action_03003`. |
@@ -258,6 +260,95 @@ The factories are:
 
 When the predicate that drives the modifier changes (a character moves into/out of the affected location, a duel ends), queue the inverse event to undo it. See `_01089` Soline el Gato — `lowerFinesse` on `EventDuelStarted`, `raiseFinesse` on `EventDuelEnd` / opposite swap. Track which character was affected on `$this->AffectedCharacterId` and set `$this->IsUpdated = true` so the change persists.
 
+### Dynamic stat bonuses tied to the dueling line
+
+For text like "Elena has +1[Finesse] for each **Sorcery** in her dueling line" — the bonus changes round-to-round as cards enter the dueling line. There is no event fired when a card enters `LOCATION_DUELING_LINE` (`FrameworkActionsTrait::actDuelActionChooseCombatCard` and the maneuver paths call `$this->cards->moveCard(...)` directly, bypassing the `EventCardMoved` path). So we recompute at duel-round boundaries instead.
+
+Pattern (mirror `_03004` Elena):
+
+```php
+public int $FinesseBonus = 0;   // running state — survives across reaction-loop iterations via IsUpdated
+
+public function handleEvent(Event $event)
+{
+    parent::handleEvent($event);
+    if ($this->ControllerId == 0) return;
+
+    if ($event instanceof EventDuelEndOfRound)
+    {
+        $this->recomputeFinesseBonus($event->theah);
+    }
+
+    if ($event instanceof EventDuelEnd)
+    {
+        // Subtract the running bonus directly; do NOT recount.
+        // EventDuelEnd fires BEFORE the dueling-line cards are discarded
+        // in stDuelEnd, so a recount would still see Sorcery cards.
+        $this->applyFinesseDelta(0, $event->theah);
+    }
+}
+
+private function recomputeFinesseBonus(Theah $theah): void
+{
+    // "Her dueling line" — LOCATION_DUELING_LINE is keyed per-player_id,
+    // not per character. If a different one of this player's characters is
+    // the duelist, the cards in the line belong to *them*, not the owner.
+    $challengerId = $theah->getDuelChallengerId();
+    $defenderId   = $theah->getDuelDefenderId();
+    if ($this->Id != $challengerId && $this->Id != $defenderId)
+    {
+        $this->applyFinesseDelta(0, $theah);
+        return;
+    }
+
+    $cards = $theah->getCardObjectsAtLocation(Game::LOCATION_DUELING_LINE, $this->ControllerId);
+    $count = 0;
+    foreach ($cards as $card)
+    {
+        if ($card->hasTrait("Sorcery"))  // or whatever trait the card text names
+        {
+            $count++;
+        }
+    }
+    $this->applyFinesseDelta($count, $theah);
+}
+
+private function applyFinesseDelta(int $newBonus, Theah $theah): void
+{
+    $delta = $newBonus - $this->FinesseBonus;
+    if ($delta == 0) return;
+
+    $finesseEvent = EventFactory::createCharacterFinesseModifedEvent(
+        $this->ControllerId, $this->Id,
+        $this->ModifiedFinesse, $this->ModifiedFinesse + $delta,
+        $this->getInjectCode()
+    );
+    $theah->queueEvent($finesseEvent);
+
+    $this->FinesseBonus = $newBonus;
+    $this->IsUpdated = true;
+}
+```
+
+WHY recompute at `EventDuelEndOfRound` (not on every event):
+
+- It is the cleanest boundary: both players' combat cards have resolved into the dueling line, and the *next* round's gambling hasn't fired yet. Gamble capacity is `ModifiedFinesse - gamblesCount` (see `FrameworkActionsTrait::actChooseGambleCard`) — recomputing here means the bonus is correct *before the next round's gambling*, which is when Finesse matters in a duel.
+- Recomputing on a calc event (e.g. `EventDuelCalculateCombatCardStats`) is wrong because that event doesn't expose Finesse — it exposes parry/riposte/thrust on the combat card. The card text modifies *Finesse* itself; both consumers (gamble capacity and any other card reading `ModifiedFinesse`) must see the updated stat.
+
+WHY reset at `EventDuelEnd` via `applyFinesseDelta(0, ...)` and NOT a recount:
+
+- `StatesTrait::stDuelEnd` queues `EventDuelEnd` BEFORE queueing the `CardDiscardedFromHand` events that empty the dueling line. So at `EventDuelEnd` handling time, the dueling line still contains the round's Sorcery cards — a naive recount would re-apply the bonus instead of clearing it. Directly applying `delta = 0 - currentBonus` (the inverse-event approach) is correct.
+
+WHY gate on the owner being a duel participant:
+
+- `LOCATION_DUELING_LINE` is keyed per player_id in the deck table, not per character. If Elena's player has a *different* character dueling (e.g. Aja), Aja's combat cards land in the *same per-player dueling line* — a naive recount would credit Elena with cards she didn't play. Card text says "her dueling line", so gate on `$this->Id == challengerId || $this->Id == defenderId`.
+
+Edge cases (Elena journal `2026-05-16-01-elena-agnelli-03004-implementation.md` flags these explicitly — re-read it before you implement a similar effect):
+
+- **Card pulled from the dueling line mid-round.** The recount catches it at end-of-round; if anything pulls it earlier (rare), the bonus stays inflated for the rest of the current round. Acceptable — no event lets us hook arbitrary departures from the line.
+- **Owner swapped into / out of an in-progress duel.** Not handled by the basic pattern. The next `EventDuelEndOfRound` recomputes from the player's line, which may already contain cards played by a prior duelist. Flag for QA if the text is sensitive to this; usually unimportant.
+- **Owner destroyed mid-duel.** `EventDuelEnd` still fires and resets the bonus. `ModifiedFinesse` on a discarded card doesn't affect anything else, so no special handling needed.
+
 ### Phase / lifecycle events worth knowing
 
 | Event | When it fires | Typical use |
@@ -267,7 +358,8 @@ When the predicate that drives the modifier changes (a character moves into/out 
 | `EventPhaseDawnEnding` | Dawn ends (fired by `StatesTrait::stDawnEnding`) | "At the end of Dawn …" |
 | `EventDuskEndOfDay` | End of Day | Reset per-day Used flags (base classes handle this for Actions/Reactions automatically) |
 | `EventPressureOccuring` | A pressure is happening at a location | "When pressuring …", `_01006` Don Constanzo |
-| `EventDuelStarted` / `EventDuelEnd` | Duel boundaries | Passive duel stat modifiers, `_01089` |
+| `EventDuelStarted` / `EventDuelEnd` | Duel boundaries | Passive duel stat modifiers, `_01089`. **`EventDuelEnd` fires BEFORE the dueling line is cleared** in `stDuelEnd` (the discard events are queued AFTER it), so a recount-based dueling-line effect must reset via direct inverse-event, not via re-reading the line. |
+| `EventDuelEndOfRound` | A duel round just ended; both combat cards are in the dueling line; the next round hasn't begun | Recompute "for each X in my dueling line" running bonuses *before* the next round's gambling. `_03004` Elena. |
 | `EventDuelCalculateCombatCardStats` | Combat card stats are being computed for a duel | "+X to combat card stats", `_01116` Yevgeni |
 | `EventChallengerSwapped` / `EventDefenderSwapped` | A challenge had its participant changed | Re-evaluate any duel-time modifier you applied, `_01089` |
 | `EventTableSetup` | Game setup | Initial decisions like "during setup, reveal X from your deck", `_01006` |
@@ -708,6 +800,39 @@ A technique can handle BOTH events if it's usable in both contexts (see `Techniq
 
 References: `Technique_GainLethal` (generic two-pipeline helper), `Technique_01049` (in-duel + city-context), `Technique_03002` (Aja, in-duel only via Gambling Technique gate).
 
+### `EventDuelCalculateTechniqueValues` field shape
+
+Unlike `EventDuelCalculateCombatCardStats` (which exposes `addRiposte`/`addParry`/`addThrust`/`removeRiposte`/etc. methods and respects `dashedX` flags), `EventDuelCalculateTechniqueValues` has plain int fields `$riposte`/`$parry`/`$thrust` you mutate directly:
+
+```php
+if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
+{
+    $event->parry  += 1;
+    $event->thrust -= 1;
+    $event->explanations[] = sprintf($event->theah->game->translate("%s: Technique [%s] adds +1 Parry."), $owner->getInjectCode(), $this->Name);
+}
+```
+
+Reference: `Technique_01050` (–1 Thrust + wound), `Technique_03004` Elena (+1 Parry + wound). You can queue follow-on events (e.g., `createCharacterBeingWoundedEvent`, `createGainLethalEvent`) from inside the same calc handler — the queued events fire after the calc resolves.
+
+### "If <owner>'s combat card is a <trait>" gate
+
+For techniques gated on the actor's combat card having a particular trait (`_03004` Elena's "if combat card is a Sorcery"):
+
+```php
+$combatCards = $theah->getCombatCardsForCurrentRound();
+foreach ($combatCards as $card)
+{
+    if ($card->ControllerId == $owner->ControllerId && $card->hasTrait("Sorcery"))
+    {
+        return true;
+    }
+}
+return false;
+```
+
+`getCombatCardsForCurrentRound()` returns BOTH players' combat cards. Filter by `$card->ControllerId == $owner->ControllerId` to isolate the actor's own combat card. (Since the technique already gates on `actor->Id == owner->Id`, this is the actor's own combat card.) Cesca Scarpa's `Technique_02003` is similar but cares about *any* Sorcery played in the round, so it skips the ControllerId filter — match the card text literally.
+
 ### Duel-flow events worth knowing
 
 | Event | When it fires |
@@ -809,6 +934,8 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 | `modules/php/cards/faf/_03003.php` (Don Constanzo Scarpa, Fearsome Father) | **Character with a Pattern F variant where performer ≠ owner + a cost-bearing City Reaction.** City Action picks one of the controller's Thugs at Don's location and has *that* Thug issue the challenge — new `DON_CONSTANZO_CHALLENGE_TYPE` deliberately omitted from auto-engage list so already-engaged Thugs are eligible. City Reaction triggers on `EventCharacterDestroyed` for Thugs and offers a multi-stage "pick from hand/discard → click-to-pay Wealth → muster at Home" flow. |
 | `modules/php/cards/faf/actions/Action_03003.php` | Two-step Pattern F where the performer is selected by the player. Step 1 picks the Thug, sets `CHOSEN_PERFORMER` to the Thug's id. Step 2 picks the opposing target at the performer's location, conditionally engages the Thug (`if (! $performer->Engaged)`), then `createTransitionEvent("03003_2")` into the challenge sub-state. |
 | `modules/php/cards/faf/reactions/Reaction_03003.php` | Multi-stage Reaction (`'pick'` → `'pay'` → finalize). Source filtering from hand AND discard with the destroyed-Thug exclusion. **In-reaction click-to-pay** with running `$paidWealth`/`$paidHasWealthCard` state, `wouldClickProduceValidPayment` button filter, atomic discards at finalize. Mirrors `UtilitiesTrait::isValidWealthPayment` semantics (exact match OR overpay-by-1-with-Wealth). |
+| `modules/php/cards/faf/_03004.php` (Elena Agnelli) | **Character with a dynamic-recompute dueling-line Finesse bonus + a trait-gated Technique.** Pattern A passive with a `$FinesseBonus` running field recomputed at `EventDuelEndOfRound` from `getCardObjectsAtLocation(LOCATION_DUELING_LINE, controllerId)`, reset via inverse-delta at `EventDuelEnd` (which fires BEFORE the line is cleared). Gates on the owner being a duel participant (the dueling line is per-player, not per-character). |
+| `modules/php/cards/faf/techniques/Technique_03004.php` | Trait-gated Technique: in-duel + actor-is-owner + actor's own combat card has the Sorcery trait (via `getCombatCardsForCurrentRound()` filtered by `ControllerId`). `EventDuelCalculateTechniqueValues` handler mutates `$event->parry` directly (plain int field — no `addParry` method on this event) AND queues a `createCharacterBeingWoundedEvent` for the adversary in the same calc handler. |
 | `modules/php/cards/tac/actions/Action_02013.php` (Wilhelm Dünst) | Pattern F with a discard-as-cost step plus the standard challenge transition. Reference for `doCost` / `doEffect` separation when the cost isn't just engagement. |
 | `modules/php/cards/_7s5s/techniques/Technique_GainLethal.php` | Generic two-pipeline Gain Lethal helper — handles both `EventGenerateChallengeThreat` (city) and `EventDuelCalculateTechniqueValues` (duel). |
 | `modules/php/cards/_7s5s/techniques/Technique_01049.php` | Engagement-as-cost Gain Lethal technique; handles both pipelines, demonstrates `IRangedAbility` integration. |
@@ -837,4 +964,5 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 14. **For in-duel techniques (Pattern E)**, confirm `Game::IN_DUEL` and (for Gambling Techniques) `Game::DUEL_GAMBLED` gates are in `isAvailableToPlayer`, plus the actor-identity check via `getDuelRoundActor()`. For Gain Lethal effects, use `EventDuelCalculateTechniqueValues` + `createGainLethalEvent` for the in-duel pipeline; only also handle `EventGenerateChallengeThreat` if the technique is meant to fire outside duels too.
 15. **For cost-bearing Reactions (e.g., "at -N cost", "pay N Wealth"):** roll the payment tracking inside the Reaction class using running `$paidCardIds`/`$paidWealth`/`$paidHasWealthCard` state. Do NOT route through `PAY_STATE_PLAY_BRUTE` — it's tied to the player-turn state cycle and won't return correctly from reactions fired in dawn/dusk/duel contexts. See Pattern D's "Reactions that need to pay a wealth cost" subsection and `Reaction_03003`. Mirror `UtilitiesTrait::isValidWealthPayment` semantics (exact OR `cost+1`-with-Wealth-card). Queue discards atomically at finalize, not per-click, so `Decline` is a clean rollback.
 16. **For "Put into play from hand or discard" Reactions:** `createCharacterMusteredEvent` does the actual move. `createCardRemovedFromPlayerDiscardPileEvent` is notification-only and exists so JS clients can sync their `player.discard` array — fire it BEFORE the muster event when the card is from discard. Pattern reference: `Action_01024` (Bravos), `Reaction_03003`.
-17. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), and the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard decisions in detail.
+17. **For dueling-line-derived running bonuses** ("+N[Stat] for each X in my dueling line"): there is no event fired when a card enters the dueling line (`cards->moveCard` is called directly, bypassing `EventCardMoved`). Recompute the running bonus at `EventDuelEndOfRound` from `getCardObjectsAtLocation(LOCATION_DUELING_LINE, controllerId)`. Reset at `EventDuelEnd` via direct inverse-delta (NOT a recount — `stDuelEnd` queues `EventDuelEnd` BEFORE the line-clearing discard events, so the line still contains the round's cards). Gate the recount on the owner being a duel participant (the line is per-player, not per-character). Pattern reference: `_03004` Elena and Pattern A's "Dynamic stat bonuses tied to the dueling line" subsection.
+18. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), and the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute decisions in detail.

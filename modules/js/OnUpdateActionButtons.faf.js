@@ -74,6 +74,12 @@
                 this.addActionButton(`btnBottom`, _('Reveal from Bottom'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
 
+            'planningPhaseResolveSchemes_03005': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
         }
 
         if ( methods[stateName] )
