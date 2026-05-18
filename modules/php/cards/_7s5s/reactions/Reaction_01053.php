@@ -3,11 +3,14 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityStart;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -62,7 +65,7 @@ class Reaction_01053 extends RiskReaction implements ICancelReaction
                 {
                     $target = $event->theah->getCardById($event->targetId);
                 
-                    if ($ability instanceof IAbilityThatTargetsCards && $target->Location != Game::LOCATION_PLAYER_HOME)
+                    if (($ability instanceof IAbilityThatTargetsCards || $ability instanceof IAbilityThatTargetsCharacters) && $target->Location != Game::LOCATION_PLAYER_HOME)
                     {
                         $performers = $event->theah->getCharactersAtLocationbyPlayerId($target->Location, $owner->ControllerId);
                         if (count($performers) > 0)
@@ -71,6 +74,34 @@ class Reaction_01053 extends RiskReaction implements ICancelReaction
                             $this->SourceId = $event->sourceId;
                             $owner->IsUpdated = true;
         
+                            $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                            $event->theah->stackEvent($transition);
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($event instanceof EventCharacterTargeted && $this->isAvailable())
+        {
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner->Location == Game::LOCATION_HAND)
+            {
+                $source = $event->theah->getCardById($event->sourceId);
+                $ability = $source ? $source->getAbilityById($event->abilityId) : null;
+                if ($event->targetId != 0 && $ability instanceof ISorcererAbility)
+                {
+                    //Hexenjagd text says "Sorcerer ability targets a card"; characters are cards, so character-targeting Sorceries trigger here. The existing EventSorcererAbilityStart branch only catches IAbilityThatTargetsCards (mutually exclusive with IAbilityThatTargetsCharacters per CLAUDE.md).
+                    $target = $event->theah->getCardById($event->targetId);
+                    if ($target && $target->Location != Game::LOCATION_PLAYER_HOME)
+                    {
+                        $performers = $event->theah->getCharactersAtLocationbyPlayerId($target->Location, $owner->ControllerId);
+                        if (count($performers) > 0)
+                        {
+                            $this->TargetId = $event->targetId;
+                            $this->SourceId = $event->sourceId;
+                            $owner->IsUpdated = true;
+
                             $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                             $event->theah->stackEvent($transition);
                         }

@@ -14,6 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
@@ -32,6 +33,7 @@ class Reaction_02048 extends RiskReaction
     private ?EventCharacterBeingWounded $woundedEvent = null;
     private ?EventChallengeIssued $challengeEvent = null;
     private ?EventAttachmentEquipping $attachmentEquippingEvent = null;
+    private ?EventCharacterTargeted $characterTargetedEvent = null;
 
     public function __construct()
     {
@@ -94,7 +96,8 @@ class Reaction_02048 extends RiskReaction
                 ($event instanceof EventCardMoved && $event->sourceId == $this->RiskSourceId) ||
                 ($event instanceof EventCharacterBeingWounded && $event->sourceId == $this->RiskSourceId) ||
                 ($event instanceof EventChallengeIssued && $event->sourceId == $this->RiskSourceId) ||
-                ($event instanceof EventAttachmentEquipping && $event->sourceId == $this->RiskSourceId))
+                ($event instanceof EventAttachmentEquipping && $event->sourceId == $this->RiskSourceId) ||
+                ($event instanceof EventCharacterTargeted && $event->sourceId == $this->RiskSourceId))
             {
                 if ($event instanceof EventAttachmentEquipping)
                 {
@@ -116,12 +119,36 @@ class Reaction_02048 extends RiskReaction
         if ($this->skipNextEvent &&
             ($event instanceof EventCardEngaged || $event instanceof EventCardMoved ||
              $event instanceof EventCharacterBeingWounded || $event instanceof EventChallengeIssued ||
-             $event instanceof EventAttachmentEquipping))
+             $event instanceof EventAttachmentEquipping || $event instanceof EventCharacterTargeted))
         {
             $this->skipNextEvent = false;
             $owner = $this->getOwningCard($event->theah);
             $owner->IsUpdated = true;
             return;
+        }
+
+        if ($event instanceof EventCharacterTargeted && !$event->canceled && $this->isAvailable())
+        {
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner->Location == Game::LOCATION_HAND)
+            {
+                $target = $event->theah->getCharacterById($event->targetId);
+                if ($target && $target->ControllerId == $owner->ControllerId
+                    && $this->isFromOpponentRiskThatTargetsCharacters($event, $event->sourceId, $owner->ControllerId))
+                {
+                    $this->RiskSourceId = $event->sourceId;
+                    $this->characterTargetedEvent = clone $event;
+                    unset($this->characterTargetedEvent->theah);
+                    $event->canceled = true;
+
+                    if ($event->batchId)
+                    {
+                        $event->theah->deleteEventBatch($event->batchId);
+                    }
+
+                    $this->triggerReaction($event, $event->targetId);
+                }
+            }
         }
 
         if ($event instanceof EventCardEngaged && !$event->canceled && $this->isAvailable())
@@ -341,6 +368,7 @@ class Reaction_02048 extends RiskReaction
         $this->woundedEvent = null;
         $this->challengeEvent = null;
         $this->attachmentEquippingEvent = null;
+        $this->characterTargetedEvent = null;
     }
 
     private function reEmitSavedEvent(Game $game): void
@@ -373,6 +401,12 @@ class Reaction_02048 extends RiskReaction
         {
             $game->theah->queueEvent($this->attachmentEquippingEvent);
             $this->attachmentEquippingEvent = null;
+        }
+
+        if ($this->characterTargetedEvent)
+        {
+            $game->theah->queueEvent($this->characterTargetedEvent);
+            $this->characterTargetedEvent = null;
         }
     }
 

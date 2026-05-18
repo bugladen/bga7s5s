@@ -44,6 +44,7 @@ class Theah
 
     private Array $Reactions;
     private Array $Actions;
+    private ?array $zombiePlayerIds = null;
 
     use EventHub;
 
@@ -188,10 +189,29 @@ class Theah
     {
         $this->buildCity();
         foreach ($this->cards as $card) {
+            // WHY: A zombie player's cards must not react to events — the zombie
+            // handler can't make the interactive choices their reactions/abilities
+            // would require, so we skip event checks for cards they control.
+            if ($card->ControllerId !== 0 && $this->isPlayerZombie($card->ControllerId)) {
+                continue;
+            }
             $event->theah = $this;
             $card->eventCheck($event);
             unset($event->theah);
         }
+    }
+
+    public function isPlayerZombie(int $playerId): bool
+    {
+        if ($this->zombiePlayerIds === null) {
+            $this->zombiePlayerIds = [];
+            foreach ($this->game->loadPlayersBasicInfos() as $pid => $player) {
+                if (!empty($player['player_zombie'])) {
+                    $this->zombiePlayerIds[(int)$pid] = true;
+                }
+            }
+        }
+        return isset($this->zombiePlayerIds[$playerId]);
     }
 
     public function queueEvent(Event $event)
@@ -232,8 +252,14 @@ class Theah
                 $this->handleEvent($event);
 
             //Run the event for all cards in play, including hands
-            foreach ($this->cards as $card) 
+            foreach ($this->cards as $card) {
+                // WHY: Skip zombie-controlled cards — their reactions would
+                // queue interactive states the zombie handler can't resolve.
+                if ($card->ControllerId !== 0 && $this->isPlayerZombie($card->ControllerId)) {
+                    continue;
+                }
                 $card->handleEvent($event);
+            }
 
             //Run the event for theah actions
             foreach ($this->Actions as $action) 

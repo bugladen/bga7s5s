@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_02016 extends AttachmentReaction
@@ -23,6 +24,7 @@ class Reaction_02016 extends AttachmentReaction
     private ?EventCharacterBeingWounded $characterWoundedEvent = null;
     private ?EventCharacterBeingHealed $characterHealedEvent = null;
     private ?EventChallengeIssued $challengeIssuedEvent = null;
+    private ?EventCharacterTargeted $characterTargetedEvent = null;
     private bool $isChallenger = false;
     private ?string $savedAbilityId = null;
     private ?int $savedSourceId = null;
@@ -215,6 +217,29 @@ class Reaction_02016 extends AttachmentReaction
             }
         }
 
+        if ($event instanceof EventCharacterTargeted && $this->isAvailable() && !$event->canceled)
+        {
+            $owner = $this->getOwningAttachment($event->theah);
+            if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->targetId))
+            {
+                if ($this->skipNextEvent)
+                {
+                    $this->skipNextEvent = false;
+                    $owner->IsUpdated = true;
+                    return;
+                }
+
+                $this->characterTargetedEvent = clone $event;
+                unset($this->characterTargetedEvent->theah);
+                $this->targetCharacterId = $event->targetId;
+                $owner->IsUpdated = true;
+                $event->canceled = true;
+
+                $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $event->theah->queueEvent($reactionTransitionEvent);
+            }
+        }
+
         if ($event instanceof EventCharacterBeingHealed && $this->isAvailable() && !$event->canceled)
         {
             $owner = $this->getOwningAttachment($event->theah);
@@ -318,6 +343,13 @@ class Reaction_02016 extends AttachmentReaction
             $this->characterHealedEvent = null;
         }
 
+        if ($this->characterTargetedEvent)
+        {
+            $this->characterTargetedEvent->targetId = $characterId;
+            $game->theah->queueEvent($this->characterTargetedEvent);
+            $this->characterTargetedEvent = null;
+        }
+
         if ($this->challengeIssuedEvent)
         {
             if ($this->isChallenger)
@@ -366,6 +398,7 @@ class Reaction_02016 extends AttachmentReaction
         $this->cardMovingEvent = null;
         $this->characterWoundedEvent = null;
         $this->characterHealedEvent = null;
+        $this->characterTargetedEvent = null;
         $this->isChallenger = false;
         $this->challengeIssuedEvent = null;
         $game->globals->set(Game::CHALLENGE_CANCELLED, true);

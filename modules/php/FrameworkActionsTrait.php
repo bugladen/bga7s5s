@@ -1175,10 +1175,16 @@ trait FrameworkActionsTrait
             throw new UserException(clienttranslate("Character not found."));
         }
 
-        [$isValid, $errorMessage] = $action->isValidTargetForAbility($this, $character);
-        if (!$isValid)
+        $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
+        // For Defending Honor the ability's target is the enemy performer chosen in the first step,
+        // not the friendly being challenged here. Skip the ability-target check in that case.
+        if ($challengeType != Game::DEFENDING_HONOR_CHALLENGE_TYPE)
         {
-            throw new UserException($errorMessage);
+            [$isValid, $errorMessage] = $action->isValidTargetForAbility($this, $character);
+            if (!$isValid)
+            {
+                throw new UserException($errorMessage);
+            }
         }
 
         $this->globals->set(GAME::CHOSEN_TARGET, $character->Id);

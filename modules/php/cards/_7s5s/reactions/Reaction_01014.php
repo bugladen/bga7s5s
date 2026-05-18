@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01014 extends CardReaction
@@ -23,6 +24,7 @@ class Reaction_01014 extends CardReaction
     private ?EventCharacterBeingWounded $characterWoundedEvent = null;
     private ?EventCharacterBeingHealed $characterHealedEvent = null;
     private ?EventChallengeIssued $challengeIssuedEvent = null;
+    private ?EventCharacterTargeted $characterTargetedEvent = null;
     private bool $isChallenger = false;
     private ?string $savedAbilityId = null;
     private ?int $savedSourceId = null;
@@ -360,6 +362,46 @@ class Reaction_01014 extends CardReaction
             }
         }
 
+        if ($event instanceof EventCharacterTargeted && $this->isAvailable() && !$event->canceled)
+        {
+            $owner = $this->getOwningCharacter($event->theah);
+            if ($owner->Id == $event->targetId && $owner->ControllerId != $event->playerId &&
+                $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
+            {
+                if ($this->skipNextEvent)
+                {
+                    $this->skipNextEvent = false;
+                    $owner->IsUpdated = true;
+                    return;
+                }
+
+                if ($this->thugsInHand($event->theah))
+                {
+                    $this->characterTargetedEvent = clone $event;
+                    unset($this->characterTargetedEvent->theah);
+                    $this->inHandThug = true;
+                    $owner->IsUpdated = true;
+
+                    $event->canceled = true;
+
+                    $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->queueEvent($reactionTransitionEvent);
+                }
+                else if ($this->thugsInPlay($event->theah))
+                {
+                    $this->characterTargetedEvent = clone $event;
+                    unset($this->characterTargetedEvent->theah);
+                    $this->inPlayThug = true;
+                    $owner->IsUpdated = true;
+
+                    $event->canceled = true;
+
+                    $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->queueEvent($reactionTransitionEvent);
+                }
+            }
+        }
+
         if ($event instanceof EventChallengeIssued && $this->isAvailable() && !$event->canceled)
         {
             $owner = $this->getOwningCharacter($event->theah);
@@ -448,6 +490,13 @@ class Reaction_01014 extends CardReaction
             $this->characterHealedEvent = null;
         }
 
+        if ($this->characterTargetedEvent)
+        {
+            $this->characterTargetedEvent->targetId = $characterId;
+            $game->theah->queueEvent($this->characterTargetedEvent);
+            $this->characterTargetedEvent = null;
+        }
+
         if ($this->challengeIssuedEvent)
         {
             if ($this->isChallenger)
@@ -473,6 +522,7 @@ class Reaction_01014 extends CardReaction
         $this->cardMovingEvent = null;
         $this->characterWoundedEvent = null;
         $this->characterHealedEvent = null;
+        $this->characterTargetedEvent = null;
         $this->isChallenger = false;
         $this->challengeIssuedEvent = null;
         $game->globals->set(Game::CHALLENGE_CANCELLED, true);
