@@ -520,7 +520,25 @@ Reference: `Reaction_03005` (claim a location after Red Hand's challenge refused
 
 ### Capturing context onto the reaction
 
-The triggering event has only a snapshot of args (`$event->challengerId`, etc.). If the reaction needs context that isn't on the event (the location of the challenge, the destroyed character's name, etc.), capture it into a `private` property on the reaction at trigger time, **then clear it** in `performReaction`. `$owner->IsUpdated = true` persists the property to DB. See `Reaction_02004::$location` and `Reaction_03005::$location` for the pattern.
+The triggering event has only a snapshot of args (`$event->challengerId`, etc.). If the reaction needs context that isn't on the event (the location of the challenge, the destroyed character's name, etc.), capture it into a `private` property on the reaction at trigger time, **then clear it** in `performReaction` (or `resetStage` for multi-stage reactions). `$owner->IsUpdated = true` persists the property to DB. See `Reaction_02004::$location` and `Reaction_03005::$location` for the pattern.
+
+**Surface captured context in the prompt.** The reaction-button screen is the player's first chance to see *why* they're being prompted — bake the relevant context into `getReactionDescription` so they can make an informed pass/play call. Resolve the captured id to a name and `sprintf` it in:
+
+```php
+public function getReactionDescription(Theah $theah): string
+{
+    $base = parent::getReactionDescription($theah);
+    $target = $this->targetCharacterId > 0
+        ? $theah->getCharacterById($this->targetCharacterId)
+        : null;
+    $name = $target ? $target->Name : $theah->game->translate('your character');
+    return $base . sprintf($theah->game->translate(
+        '${you} may force the opponent to sink two cards after they targeted %s: '
+    ), $name);
+}
+```
+
+Always defensively null-check (`$target ? ... : translate('your character')`) — the captured id might point at a character that's since been destroyed/recruited away by the time the prompt renders. Reference: `Reaction_03006::$targetCharacterId` in the `'offer'` description.
 
 ### Pre-commit hook compliance
 
