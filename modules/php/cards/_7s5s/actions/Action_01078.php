@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01078 extends RiskAction implements IAbilityThatTargetsCharacters
@@ -63,20 +64,31 @@ class Action_01078 extends RiskAction implements IAbilityThatTargetsCharacters
 
     public function isValidTargetForAbility(Game $game, Character $character): array
     {
-        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-        $performer = $game->theah->getCharacterById($performerId);
+        $owner = $this->getOwningCard($game->theah);
+        $playerId = $owner->ControllerId;
+        $theah = $game->theah;
 
-        if ($character->ControllerId == $performer->ControllerId)
+        if ( ! $character->isNotControlledByPlayer($playerId))
         {
-            return [false, $game->translate("You cannot challenge a character that is controlled by you.")];
+            return [false, $game->translate("Target must be an enemy character.")];
         }
 
-        if ($character->Location != $performer->Location)
+        if ( ! $theah->cardInCity($character))
         {
-            return [false, $game->translate("Character is not at the same location as the performer")];
+            return [false, $game->translate("Target must be in the city.")];
         }
 
-        var_dump($character->Name);
+        if ( ! $character->canChallenge())
+        {
+            return [false, $game->translate("Target cannot challenge.")];
+        }
+
+        $opposingFriendlies = $theah->getCharactersAtLocation($character->Location);
+        $opposingFriendlies = array_filter($opposingFriendlies, fn($friendly) => $friendly->ControllerId == $playerId);
+        if (count($opposingFriendlies) == 0)
+        {
+            return [false, $game->translate("Target has no friendly characters opposing them.")];
+        }
 
         return [true, ""];
     }
@@ -101,6 +113,16 @@ class Action_01078 extends RiskAction implements IAbilityThatTargetsCharacters
             $event->theah->queueEvent($transitionEvent);
 
             // createActionResolvedEvent() is called when the challenge is resolved
+        }
+
+        // For this Action, the ability's target IS the performer (the enemy character who will
+        // issue the challenge). If a reaction (e.g. Vittoria) redirects the target, the
+        // re-queued EventCharacterTargeted carries the new targetId — keep CHOSEN_PERFORMER
+        // in sync so the downstream challenge state uses the right performer/location.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $game = $event->theah->game;
+            $game->globals->set(Game::CHOSEN_PERFORMER, $event->targetId);
         }
     }
 }
