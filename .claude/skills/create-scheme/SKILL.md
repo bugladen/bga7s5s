@@ -81,9 +81,12 @@ Read each clause of the printed Text and classify it before writing code. The cl
 | **"When this scheme is revealed, …"** | Pattern B — When-Revealed effect. Override `hasWhenRevealedEffect()` to `true` AND handle `EventCardWhenRevealedEffect` in `handleEvent`. The When-Revealed fires *before* the resolve (and before other schemes' resolves), per card text. |
 | **"Put a card from your discard into your hand"** / **"Search your discard for X"** | Pattern A resolve with a transition to a discard-pick state. New state class + JS wiring (chooseList). Reference: `_01044`, `_03005`. |
 | **"Add a Renown to a city location"** (player choice) | Pattern A resolve with a transition to a location-pick state. JS uses `makeCityLocationSelectable` / `onCityLocationsSelected`. Reference: `_01071`, `_01072`, `_02046`. |
+| **"Add a Renown to two different locations"** | Single-state two-location pick — use the framework helper `actCityLocationsForReknownSelected` and set `numberOfCityLocationsSelectable = 2` in JS. The helper iterates the JSON array and queues one Renown event per location. JS enforces distinctness. Reference: `_01098` (Cat's Embargo), `_03006` (Premonition). |
 | **"Then, each opponent does X"** | Pattern C — multi-player sequential loop. Queue per-opponent reaction transitions during your own resolve. Reference: `_01151`. |
 | **`<b>City Action:</b>`** / **`<b>Action:</b>`** | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php` extending the right action base (`SchemeCityAction` if it's a City Action on a scheme — see action-base table below). The Action lives next to the scheme, not on the scheme class itself. |
-| **`<b>City Reaction:</b>` / `<b>Reaction:</b>`** | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_NNNNN.php` extending `CardReaction`. Pre-commit hook enforces `setUsed`/`isAvailable` literal calls. Reference: `_02004` (City Reaction), `_03005` (Reaction). |
+| **`<b>City Reaction:</b>` / `<b>Reaction:</b>`** | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_NNNNN.php` extending `CardReaction`. Pre-commit hook enforces `setUsed`/`isAvailable` literal calls. Reference: `_02004` (City Reaction), `_03005` (Reaction), `_03006` (multi-stage Reaction). |
+| **`<b>Strega Reaction:</b>`** / **`<b>Mercenary City Action:</b>`** / **`<b>Diplomat …:</b>`** / **`<b>Musketeer …:</b>`** | Trait-prefixed keywords are **mechanical performer-trait gates**, NOT Sorcerer abilities. The chosen performer must have that trait (enforce via `hasTrait("Strega")` etc.). Do NOT `implement ISorcererAbility` for these. Reference: `_03006` (Premonition's Strega Reaction enforces the gate via `findStregaPerformerAtLocation`). |
+| **`<b>Sorcerer City Action:</b>` / `<b>Sorcerer Reaction:</b>`** | Mechanical "Sorcerer" keyword — class additionally `implements ISorcererAbility`, must emit `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces both literal calls). Can stack with trait gates: "Sorcerer Strega …" is both. Reference: `Reaction_02001` (Andriana). |
 | **`<b>Forced:</b>`** | Override `handleEvent` directly on the scheme class. No Action/Reaction/State files. Reference: `_02052`'s Forced clause (`EventCharacterDestroyed` at Bazaar during duel). |
 
 A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action.
@@ -527,6 +530,143 @@ The triggering event has only a snapshot of args (`$event->challengerId`, etc.).
 
 `createLocationClaimedEvent($playerId, ?int $performerId, string $location)` — `performerId` is `null` when the claim isn't tied to a specific performer (e.g., scheme-driven claims). Compare `Action_03cd13.php` which passes the performer for an Action-driven claim. Don't invent a "fake performer" — `null` is correct.
 
+### Multi-stage reactions (button-driven, no sub-state)
+
+Use this when the Reaction needs several player clicks in sequence (e.g. offer → pick target → confirm), or when the *player who clicks* changes between steps. Pattern source: `Reaction_03cd10` (Julius Caligari), `Reaction_03006` (Premonition).
+
+Anatomy:
+
+- A `private string $stage` field (e.g. `''` idle, `'offer'`, `'pick1'`, `'pick2'`, etc.) plus any per-stage context (`$opponentId`, `$performerId`, …). Persist with `$owner->IsUpdated = true`.
+- `getReactionDescription` switches on `$stage` to return the right prompt text.
+- `getReactionButtonProperties` switches on `$stage` to render different button sets (e.g. **Force Sink** / **Pass** for `'offer'`; one `card-{id}` button per hand card for `'pick1'`/`'pick2'`).
+- `performReaction` parses the click via `str_starts_with($reactionId, 'card-')` etc., applies the effect, advances `$stage`, then **queues another `createReactionTransitionEvent` for the player whose turn comes next** and calls `nextState("done")`. The framework re-enters `playerReaction` with the updated active player + button set.
+- `setUsed($theah, true)` only fires when the multi-stage flow is fully resolved (in `finalize` / the last stage).
+
+Example skeleton:
+
+```php
+public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
+{
+    parent::performReaction($game, $state, $internalId, $reactionId);
+    $owner = $this->getOwningCard($game->theah);
+
+    if ($this->stage === 'offer') {
+        if ($reactionId === 'sink') {
+            // advance to pick1, queue reaction transition (often for a different player)
+            $this->stage = 'pick1';
+            $owner->IsUpdated = true;
+            $transition = EventFactory::createReactionTransitionEvent($this->opponentId, $owner->Id, $this->Id);
+            $game->theah->queueEvent($transition);
+            $game->gamestate->nextState("done");
+            return;
+        }
+        $this->resetStage(); $owner->IsUpdated = true;
+        $game->gamestate->nextState("done");
+        return;
+    }
+
+    if ($this->stage === 'pick1' || $this->stage === 'pick2') {
+        if (str_starts_with($reactionId, 'card-')) {
+            $cardId = (int)substr($reactionId, strlen('card-'));
+            $this->doOneSink($game, $owner, $cardId);
+            $this->cardsSunk++;
+            if ($this->cardsSunk < 2 && $this->hasMoreToPick($game)) {
+                $this->stage = 'pick2';
+                $owner->IsUpdated = true;
+                $transition = EventFactory::createReactionTransitionEvent($this->opponentId, $owner->Id, $this->Id);
+                $game->theah->queueEvent($transition);
+                $game->gamestate->nextState("done");
+                return;
+            }
+            $this->finalize($game, $owner);  // sets Used, resets stage
+        }
+    }
+    $game->gamestate->nextState("done");
+}
+```
+
+### Cross-player Reactions (opponent performs part of the resolution)
+
+When a Reaction's effect requires the **opposing** player to make a choice (e.g. "they must sink two cards from their hand"), **do not** route through a dedicated GameState sub-state. Reactions can fire from any phase (Planning, High Drama, Dawn, Duels), and a sub-state mapped under one phase's `*_EVENTS` transitions table only works in that one phase.
+
+Instead, queue a `createReactionTransitionEvent($opponentId, $owner->Id, $this->Id)` with the opponent's playerId. The framework makes them the active player in the `playerReaction` state, where the reaction's `getReactionButtonProperties` (driven by `$stage`) renders the appropriate hand-picker buttons for them. `playerReaction` exists alongside every events state, so this works phase-independently.
+
+Why not `createTransitionEvent($opponentId, ...)` (the `_02025` "Tea and Cakes" pattern)? That works only when the reaction fires from a single, predictable events state (`_02025` only resolves during `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS`). For reactions with broad firing surfaces, the reaction-button pattern is the portable choice.
+
+Reference: `_03006` (Premonition — scheme owner clicks Force Sink, then opponent gets buttons for each hand card to sink in `pick1`/`pick2`).
+
+### Listening for "ability that targets a character"
+
+If the trigger is "when your character is targeted by an opposing ability …", you need to react to any ability that `instanceof IAbilityThatTargetsCharacters`. There is no single event for this; abilities propagate via several effect events. Listen to the **full set**:
+
+- `EventSorcererAbilityPlayed`, `EventRangedAbilityPlayed` (both expose `$targetId`/`$targetLocation` directly)
+- `EventCardEngaged`, `EventCardEngarded` (target via `$cardId`)
+- `EventCardMoving` (target via `$cardId`)
+- `EventCharacterBeingWounded`, `EventCharacterBeingHealed` (target via `$characterId`)
+- `EventChallengeIssued` (target via `$defenderId`)
+
+Inside each branch, look up the source ability:
+
+```php
+private function sourceAbilityTargetsCharacters(Theah $theah, int $sourceId, string $abilityId): bool
+{
+    if ($abilityId === '') return false;
+
+    $source = $theah->getCardById($sourceId);
+    if ($source !== null) {
+        $ability = $source->getAbilityById($abilityId);
+        if ($ability instanceof IAbilityThatTargetsCharacters) return true;
+    }
+
+    // Fallback for BasicChallengeAction which fires with sourceId = 0.
+    $action = $theah->getInPlayActionById($abilityId);
+    return $action instanceof IAbilityThatTargetsCharacters;
+}
+```
+
+Both the `getCardById->getAbilityById` AND `getInPlayActionById` lookups are needed — the basic challenge action fires with `sourceId = 0`, so the card lookup returns null and you need the action-by-id fallback. See `Reaction_01014` (Vittoria), `Reaction_01032` (Unyielding Loyalty), `Reaction_03006` for the full pattern.
+
+Wrap the whole `handleEvent` body with an `if (! $this->isAvailable()) return;` near the top. The once-per-day reset handles "one ability fires multiple effect events" — the reaction only triggers on the first event; after the player resolves, `setUsed` blocks further events from the same ability.
+
+### "Your performer's location" on a scheme
+
+Schemes don't have a fixed performer like character actions do. When the printed text says "your performer's location" (e.g. Premonition's "your character at your performer's location"), interpret it as: **the scheme controller picks/identifies a character to act as the performer**, and that character's location is "your performer's location".
+
+For a trait-prefixed reaction ("Strega Reaction" etc.), the performer must have the gating trait. Pattern:
+
+```php
+private function findStregaPerformerAtLocation(Theah $theah, int $controllerId, string $location): ?Character
+{
+    foreach ($theah->getCharactersAtLocation($location) as $character) {
+        if ($character->ControllerId == $controllerId && $character->hasTrait("Strega")) {
+            return $character;
+        }
+    }
+    return null;
+}
+```
+
+Capture the performer's id onto the reaction at trigger time (e.g. `$this->performerId = $performer->Id`) so `performReaction` can attribute events to that character. Reference: Cross-of-Martyrs audit (`2026-03-17-04`) — Eddie's correction: "the 'performer' is the character the player CHOOSES to perform the reaction."
+
+### "If able" loop termination
+
+When the effect demands N items from a finite pool ("sink two cards", "discard three", etc.), structure the loop so it terminates gracefully when the pool is exhausted — the rules implicitly read "if able". Pattern:
+
+```php
+private function advanceToNextPick(Game $game, Card $owner): bool
+{
+    $hand = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $this->opponentId);
+    if (count($hand) == 0) return false;          // pool exhausted — finalize
+    $this->stage = ($this->cardsSunk == 0) ? 'pick1' : 'pick2';
+    $owner->IsUpdated = true;
+    $game->theah->queueEvent(EventFactory::createReactionTransitionEvent(
+        $this->opponentId, $owner->Id, $this->Id));
+    return true;
+}
+```
+
+Caller treats `false` as "finalize early" and skips remaining picks. Reference: `Reaction_03006::advanceToNextPick`.
+
 ## Actions on Schemes
 
 When a scheme has a City Action / Action / Leader City Action / Risk City Action, the action lives in a separate file `actions/Action_NNNNN.php` extending the appropriate base class:
@@ -576,6 +716,8 @@ Full implementation lives at `modules/php/cards/faf/_03005.php`, `modules/php/ca
 - **State ID convention:** `26<NNNNN>` for scheme resolve states. Don't engineer around hypothetical CD-card collisions — `2603005` is the right ID for scheme `_03005`, even though `_03cd05` exists. (Memory feedback.)
 - **"Opposing"** means BOTH different controller AND same location.
 - **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order.
+- **Typed PHP parameters required.** Every function/method signature must declare a type for every parameter — no bare `$foo`. Use concrete types (`Card $owner`, `Character $performer`, `Game $game`, `Theah $theah`, `Event $event`, `int $cardId`, `string $reactionId`). Add the `use` import.
+- **"Strega" / "Mercenary" / "Diplomat" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait("Strega")` on the chosen performer. They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack ("Sorcerer Strega Reaction" is both).
 
 ## Cross-Cutting Helpers
 
@@ -612,7 +754,9 @@ Event factories you'll likely need:
 | `modules/php/cards/tac/_02046.php` (Winter's Wind) | **New GameState-class pattern** for the resolve sub-state. Location picker. |
 | `modules/php/cards/tac/_02052.php` (Gutter Full of Roses) | **New GameState-class pattern** with a move-renown source pick. Plus a Forced ability on `EventCharacterDestroyed`. |
 | `modules/php/cards/faf/_03005.php` (No Mercy) | **Renown adds + trait-filtered discard pick + Reaction.** New GameState-class pattern. Reaction on `EventChallengeRejected` with captured location and `createLocationClaimedEvent`. |
+| `modules/php/cards/faf/_03006.php` (Premonition) | **Two-different-locations resolve via `actCityLocationsForReknownSelected` + multi-stage Strega Reaction.** Single state with `numberOfCityLocationsSelectable = 2`. Reaction is a trait-prefixed gate (Strega), NOT a Sorcerer ability. Multi-stage `$stage` flow: `'offer'` → `'pick1'` → `'pick2'` with cross-player `createReactionTransitionEvent` swapping active player from owner to triggering opponent. Listens to the full `IAbilityThatTargetsCharacters` event set. |
 | `modules/php/cards/faf/reactions/Reaction_03005.php` | Scheme reaction with `$location` capture, button-based Claim/Pass, `setUsed`/`isAvailable` discipline. |
+| `modules/php/cards/faf/reactions/Reaction_03006.php` | Multi-stage button-driven Reaction with `$stage` field, cross-player reaction transitions (opponent becomes active for hand-picking), `IAbilityThatTargetsCharacters` multi-event listening with `sourceId=0` BasicChallengeAction fallback. |
 | `modules/php/cards/tac/reactions/Reaction_02004.php` | Scheme reaction with adjacent-character target picker; captures the pressured location. |
 | `modules/php/States/faf/State_planningPhaseResolveSchemes03005.php` | Reference for the new GameState-class shape, `#[PossibleAction]` methods, and inline `zombie()`. |
 
@@ -625,9 +769,15 @@ Event factories you'll likely need:
 5. JS triple: `OnEnteringState.<expansion>.js` (chooser setup) + `OnUpdateActionButtons.<expansion>.js` (Confirm + Pass) + `OnLeavingState.<expansion>.js` (cleanup).
 6. Scheme reactions live through High Drama via `Theah::buildCity()` populating `$this->cards` from discard piles. Don't add "is the scheme still in play" guards.
 7. Capture event-time context onto the reaction as a `private` property; clear it in `performReaction`. Use `$owner->IsUpdated = true` to persist.
-8. Pre-commit hook checks on every file:
-   - **Reaction subclass:** `$this->setUsed(` AND `$this->isAvailable(` literal strings present.
-   - **SchemeCityAction subclass:** `createActionResolvedEvent()` called.
-   - **`implements ISorcererAbility`:** both `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` called.
-   - No class implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards`.
-9. Lint touched PHP files (`php -l`) before committing.
+8. **Parse keyword(s) literally** before picking interfaces:
+   - "Sorcerer …" → `implements ISorcererAbility` + emit start/played events.
+   - "Strega …" / "Mercenary …" / "Diplomat …" / etc. → performer-trait gate (`hasTrait("Strega")` check on the chosen performer). NOT a Sorcerer ability.
+   - Both can stack.
+9. **Cross-player reactions** (opponent must do part of the resolve): use multi-stage `$stage` + `createReactionTransitionEvent($opponentId, ...)`. Do NOT create a dedicated sub-state — reactions can fire from any phase and a sub-state is only reachable from its phase's `*_EVENTS` transitions.
+10. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
+11. Pre-commit hook checks on every file:
+    - **Reaction subclass:** `$this->setUsed(` AND `$this->isAvailable(` literal strings present.
+    - **SchemeCityAction subclass:** `createActionResolvedEvent()` called.
+    - **`implements ISorcererAbility`:** both `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` called.
+    - No class implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards`.
+12. Lint touched PHP files (`php -l`) before committing.
