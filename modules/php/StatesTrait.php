@@ -1861,8 +1861,6 @@ trait StatesTrait
             if ($day < 5)
             {
                 $this->notifyAllPlayers("message", clienttranslate('Multiple players have achieved an ECONOMIC VICTORY by gaining 7 or more Renown. Another day will be played.'), []);
-                $this->gamestate->nextState("endOfGame");
-                return;
             }
         }
 

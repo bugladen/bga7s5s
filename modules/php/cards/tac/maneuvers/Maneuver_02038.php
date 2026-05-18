@@ -74,14 +74,13 @@ class Maneuver_02038 extends Maneuver
         if ($state == States::DUEL_RESOLVE_MANEUVER_02038)
         {
             $owner = $this->getOwningCard($game->theah);
-            $adversaryId = $game->theah->getDuelOpponentId($owner->ControllerId);
+            $adversary = $game->theah->getDuelRoundOpponent();
 
             if ($id == 1)
             {
-                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
-                $adversary = $game->theah->getCharacterById($adversaryId);
                 $game->notify->all("message", clienttranslate('${player_name} has chosen to suffer a wound.'), [
                     "player_name" => $game->getPlayerNameById($adversary->ControllerId),
                 ]);
@@ -92,7 +91,7 @@ class Maneuver_02038 extends Maneuver
                 $drawEvent = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
                 $game->theah->queueEvent($drawEvent);
 
-                $adversary = $game->theah->getCharacterById($adversaryId);
+                $adversary = $game->theah->getCharacterById($adversary->Id);
                 $game->notify->all("message", clienttranslate('${player_name} has chosen to let their opponent draw a card.'), [
                     "player_name" => $game->getPlayerNameById($adversary->ControllerId),
                 ]);
