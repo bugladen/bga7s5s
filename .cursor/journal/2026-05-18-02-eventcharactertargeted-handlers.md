@@ -63,6 +63,21 @@ reason.
   IAbilityThatTargetsCharacters ability, not just sorceries). Same
   Location-not-Home + has-performers-at-location gating as the
   existing branch.
+- `cards/faf/reactions/Reaction_03006.php` — Premonition (Strega
+  Reaction). **Missed in the initial audit and only caught when the
+  user asked.** Card text reads "When your character at your
+  performer's location is **targeted** by an opponent…" — the most
+  literal fit for EventCharacterTargeted of any handler so far.
+  Existing `sourceAbilityTargetsCharacters()` helper gates on
+  `IAbilityThatTargetsCharacters`, and the dispatcher already had
+  branches for `EventSorcererAbilityPlayed`,
+  `EventRangedAbilityPlayed`, `EventCardEngaged/Engarded`,
+  `EventCardMoving`, `EventCharacterBeingWounded/Healed`, and
+  `EventChallengeIssued`. Added an `EventCharacterTargeted` branch
+  immediately after the SorcererAbility/RangedAbility branch that
+  routes `$event->targetId` through `maybeTrigger()` (with a
+  `$event->canceled` short-circuit since EventCharacterTargeted is an
+  in-flight event, unlike the *Played events).
 - `cards/faf/_03cd21.php` — Silver Spine (City Attachment).
   **Missed in the initial IRiskThatTargetsCharacters audit and only
   caught when the user asked.** Same shape as Maryam: cancel the
@@ -122,6 +137,26 @@ check in a helper (e.g., Silver Spine's `isOpponentRiskTargetingCharacters`)
 were apparently missed by my first scoped grep, even though the text
 was present. Re-run unscoped and verify by counting matches against
 the implementer list.
+
+## Verified audit: IAbilityThatTargetsCharacters reactors
+
+Re-audited after Premonition (Reaction_03006) was missed:
+
+- `cards/_7s5s/reactions/Reaction_01008.php` (Cesca) — wired
+- `cards/_7s5s/reactions/Reaction_01014.php` (Vittoria) — wired
+- `cards/_7s5s/reactions/Reaction_01032.php` (Red Hand) — wired
+- `cards/_7s5s/reactions/Reaction_01053.php` (Hexenjagd) — wired
+- `cards/tac/reactions/Reaction_02016.php` (Diplomatic Impunity) — wired
+- `cards/faf/reactions/Reaction_03006.php` (Premonition) — wired
+
+Plus `Reaction_01122.php` (Torsten Vakt) which doesn't check the
+interface itself but cancels Sorcery/Sorcerer abilities targeting him
+— added an `EventCharacterTargeted` branch gated on `ISorcererAbility`
+to future-proof.
+
+Same lesson as the Risk audit: a sub-agent's enumeration is not
+authoritative. Always re-grep the canonical pattern unscoped before
+declaring an audit complete.
 
 **Considered and skipped (with reasoning):**
 - `Reaction_01008.php` (Cesca) — initially skipped on the reasoning

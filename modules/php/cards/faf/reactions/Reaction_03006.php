@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRangedAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -26,6 +27,7 @@ class Reaction_03006 extends CardReaction
     private string $stage = '';
     private int $opponentId = 0;
     private int $performerId = 0;
+    private int $targetCharacterId = 0;
     private int $cardsSunk = 0;
 
     public function __construct()
@@ -41,7 +43,9 @@ class Reaction_03006 extends CardReaction
         switch ($this->stage)
         {
             case 'offer':
-                return $base . $theah->game->translate('${you} may force the opposing player to sink two cards from their hand: ');
+                $target = $this->targetCharacterId > 0 ? $theah->getCharacterById($this->targetCharacterId) : null;
+                $targetName = $target ? $target->Name : $theah->game->translate('your character');
+                return $base . sprintf($theah->game->translate('${you} may force the opposing player to sink two cards from their hand after they targeted %s: '), $targetName);
             case 'pick1':
             case 'pick2':
                 return $base . $theah->game->translate('${you} must choose a card from your hand to sink: ');
@@ -91,6 +95,16 @@ class Reaction_03006 extends CardReaction
         if ($event instanceof EventSorcererAbilityPlayed || $event instanceof EventRangedAbilityPlayed)
         {
             if ($event->targetId == 0)
+            {
+                return;
+            }
+            $this->maybeTrigger($event, (int)$event->sourceId, (string)$event->abilityId, (int)$event->targetId);
+            return;
+        }
+
+        if ($event instanceof EventCharacterTargeted)
+        {
+            if ($event->canceled || $event->targetId == 0)
             {
                 return;
             }
@@ -185,6 +199,7 @@ class Reaction_03006 extends CardReaction
         $this->stage = 'offer';
         $this->opponentId = $opposingPlayerId;
         $this->performerId = $performer->Id;
+        $this->targetCharacterId = $target->Id;
         $this->cardsSunk = 0;
         $owner->IsUpdated = true;
 
@@ -353,6 +368,7 @@ class Reaction_03006 extends CardReaction
         $this->stage = '';
         $this->opponentId = 0;
         $this->performerId = 0;
+        $this->targetCharacterId = 0;
         $this->cardsSunk = 0;
     }
 }
