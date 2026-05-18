@@ -60,6 +60,7 @@ class Events
     const ChallengeRejected = 'EventChallengeRejected';
     const ChallengerSwapped = 'EventChallengerSwapped';
     const CharacterIntervened = 'EventCharacterIntervened';
+    const CharacterTargeted = 'EventCharacterTargeted';
     const DefenderSwapped = 'EventDefenderSwapped';
     const GenerateChallengeThreat = 'EventGenerateChallengeThreat';
     const ThreatModified = 'EventThreatModified';

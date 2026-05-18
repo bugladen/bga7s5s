@@ -76,6 +76,8 @@ class Action_01078 extends RiskAction implements IAbilityThatTargetsCharacters
             return [false, $game->translate("Character is not at the same location as the performer")];
         }
 
+        var_dump($character->Name);
+
         return [true, ""];
     }
 
@@ -91,6 +93,9 @@ class Action_01078 extends RiskAction implements IAbilityThatTargetsCharacters
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
             $game->globals->set(Game::CHALLENGE_TYPE, Game::DEFENDING_HONOR_CHALLENGE_TYPE);
+
+            $eventCharacterTargeted = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $performer->Id, $owner->Id, $this->Id);
+            $event->theah->queueEvent($eventCharacterTargeted);
 
             $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $owner->Id, "01078", $this->Id);
             $event->theah->queueEvent($transitionEvent);

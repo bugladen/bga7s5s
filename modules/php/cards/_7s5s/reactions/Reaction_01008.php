@@ -19,6 +19,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
@@ -27,6 +28,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02010;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -86,6 +88,33 @@ class Reaction_01008 extends CardReaction
                 $cesca->IsUpdated = true;
                 $reactionEvent = EventFactory::createReactionTransitionEvent($cesca->ControllerId, $cesca->Id, $this->Id);
                 $event->theah->queueEvent($reactionEvent);
+            }
+        }
+
+        if ($event instanceof EventCharacterTargeted && $this->isAvailable())
+        {
+            $cesca = $this->getOwningCharacter($event->theah);
+            $source = $event->theah->getCardById($event->sourceId);
+            if ($source)
+            {
+                $ability = $source->getAbilityById($event->abilityId);
+
+                //EventCharacterTargeted only fires for IAbilityThatTargetsCharacters; restrict here to Sorcerer abilities since this reaction only copies Sorcerer abilities.
+                if ($ability instanceof ISorcererAbility)
+                {
+                    $target = $event->targetId != 0 ? $event->theah->getCardById($event->targetId) : null;
+                    $targetedCharacterAtHerLocation = $target && $target->Location == $cesca->Location;
+
+                    //"performer == cesca" path is not detectable here (EventCharacterTargeted has no performerId); it remains handled by EventSorcererAbilityPlayed above.
+                    if ($source->Id == $cesca->Id || $targetedCharacterAtHerLocation)
+                    {
+                        $this->sourceId = $event->sourceId;
+                        $this->sourceAbilityId = $event->abilityId;
+                        $cesca->IsUpdated = true;
+                        $reactionEvent = EventFactory::createReactionTransitionEvent($cesca->ControllerId, $cesca->Id, $this->Id);
+                        $event->theah->queueEvent($reactionEvent);
+                    }
+                }
             }
         }
 

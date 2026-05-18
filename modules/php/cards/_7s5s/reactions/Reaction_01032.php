@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -25,6 +26,7 @@ class Reaction_01032 extends RiskReaction
     private ?EventCharacterBeingWounded $characterWoundedEvent = null;
     private ?EventCharacterBeingHealed $characterHealedEvent = null;
     private ?EventChallengeIssued $challengeIssuedEvent = null;
+    private ?EventCharacterTargeted $characterTargetedEvent = null;
 
     private bool $inPlayRedHand = false;
     private bool $inHandThug = false;
@@ -393,6 +395,60 @@ class Reaction_01032 extends RiskReaction
             }
         }
 
+        if ($event instanceof EventCharacterTargeted && $this->isAvailable() && !$event->canceled)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner->Location == Game::LOCATION_HAND)
+            {
+                $character = $event->theah->getCharacterById($event->targetId);
+                if ($owner->ControllerId == $character->ControllerId &&
+                    $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
+                {
+                    if ($this->skipNextEvent)
+                    {
+                        $this->skipNextEvent = false;
+                        $owner->IsUpdated = true;
+                        return;
+                    }
+
+                    if ($this->redHandsInPlay($event->theah))
+                    {
+                        $this->characterTargetedEvent = clone $event;
+                        unset($this->characterTargetedEvent->theah);
+                        $this->inPlayRedHand = true;
+                        $owner->IsUpdated = true;
+
+                        $event->canceled = true;
+
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
+
+                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                        $event->theah->queueEvent($reactionTransitionEvent);
+                    }
+                    else if ($this->thugsInHand($event->theah))
+                    {
+                        $this->characterTargetedEvent = clone $event;
+                        unset($this->characterTargetedEvent->theah);
+                        $this->inHandThug = true;
+                        $owner->IsUpdated = true;
+
+                        $event->canceled = true;
+
+                        if ($event->batchId)
+                        {
+                            $event->theah->deleteEventBatch($event->batchId);
+                        }
+
+                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                        $event->theah->queueEvent($reactionTransitionEvent);
+                    }
+                }
+            }
+        }
+
         if ($event instanceof EventChallengeIssued && $this->isAvailable() && !$event->canceled)
         {
             $owner = $this->getOwningCard($event->theah);
@@ -506,6 +562,7 @@ class Reaction_01032 extends RiskReaction
         $this->cardMovingEvent = null;
         $this->characterWoundedEvent = null;
         $this->characterHealedEvent = null;
+        $this->characterTargetedEvent = null;
 
         if ($this->challengeIssuedEvent != null)
         {
@@ -544,6 +601,12 @@ class Reaction_01032 extends RiskReaction
         {
             $game->theah->queueEvent($this->characterHealedEvent);
             $this->characterHealedEvent = null;
+        }
+
+        if ($this->characterTargetedEvent)
+        {
+            $game->theah->queueEvent($this->characterTargetedEvent);
+            $this->characterTargetedEvent = null;
         }
 
         if ($this->challengeIssuedEvent)

@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 
 class _01186 extends CityCharacter
@@ -66,6 +67,24 @@ class _01186 extends CityCharacter
             (($event instanceof EventCardMoving && $event->cardId == $this->Id && $event->sourceId != 0) ||
             ($event instanceof EventCardEngaged && $event->cardId == $this->Id && $event->sourceId != 0))
         )
+        {
+            $source = $event->theah->getCardById($event->sourceId);
+            if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
+            {
+                $this->addMaryamCondition($event->theah->game);
+
+                $batchId = $event->batchId;
+                if ($batchId)
+                {
+                    $event->theah->deleteEventBatch($batchId);
+                }
+
+                $event->canceled = true;
+                return;
+            }
+        }
+
+        if ( ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED) && $event instanceof EventCharacterTargeted && $event->targetId == $this->Id && $event->sourceId != 0)
         {
             $source = $event->theah->getCardById($event->sourceId);
             if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)

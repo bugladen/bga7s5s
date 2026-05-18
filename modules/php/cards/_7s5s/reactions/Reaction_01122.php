@@ -2,11 +2,13 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityStart;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -50,6 +52,25 @@ class Reaction_01122 extends CardReaction implements ICancelReaction
                 $owner->IsUpdated = true;
                 $reactionTransition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->stackEvent($reactionTransition);
+            }
+        }
+
+        if ($event instanceof EventCharacterTargeted && $this->isAvailable())
+        {
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner->Id == $event->targetId)
+            {
+                $source = $event->theah->getCardById($event->sourceId);
+                $ability = $source ? $source->getAbilityById($event->abilityId) : null;
+                //Card text says "Sorcery or Sorcerer Ability"; EventCharacterTargeted fires for any IAbilityThatTargetsCharacters, so gate on ISorcererAbility here.
+                if ($ability instanceof ISorcererAbility)
+                {
+                    $this->SourceId = $event->sourceId;
+                    $this->BatchId = $event->batchId;
+                    $owner->IsUpdated = true;
+                    $reactionTransition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->stackEvent($reactionTransition);
+                }
             }
         }
     }

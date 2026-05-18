@@ -57,6 +57,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModi
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterLostBrute;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
@@ -654,6 +655,20 @@ class EventFactory
             $event->playerId = $playerId;
             $event->oldTargetId = $oldTargetId;
             $event->newTargetId = $newTargetId;
+        }
+
+        return $event;
+    }
+
+    public static function createCharacterTargetedEvent(int $playerId, int $targetId, int $sourceId, string $abilityId): EventCharacterTargeted
+    {
+        $event = self::createEvent(Events::CharacterTargeted);
+        if ($event instanceof EventCharacterTargeted)
+        {
+            $event->playerId = $playerId;
+            $event->targetId = $targetId;
+            $event->sourceId = $sourceId;
+            $event->abilityId = $abilityId;
         }
 
         return $event;
