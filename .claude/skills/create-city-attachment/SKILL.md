@@ -433,7 +433,8 @@ public function handleEvent(Event $event)
         }
     }
     // ... repeat for EventChallengeIssued (defenderId), EventCharacterBeingWounded (characterId),
-    //     EventAttachmentEquipping (characterId — with manual discard, see below).
+    //     EventCharacterTargeted (targetId), and EventAttachmentEquipping (characterId — with
+    //     manual discard, see below).
 
     parent::handleEvent($event);
 

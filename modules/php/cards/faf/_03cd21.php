@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 
 class _03cd21 extends CityAttachment
@@ -53,6 +54,17 @@ class _03cd21 extends CityAttachment
             (($event instanceof EventCardMoved && $event->cardId == $this->AttachedToId && $event->sourceId != 0) ||
             ($event instanceof EventCardEngaged && $event->cardId == $this->AttachedToId && $event->sourceId != 0))
         )
+        {
+            if ($this->isOpponentRiskTargetingCharacters($event, $event->sourceId))
+            {
+                $this->markAbilityUsed($event->theah->game);
+                $event->canceled = true;
+                return;
+            }
+        }
+
+        if ($this->isAttached() && ! $this->hasCondition(Game::SILVER_SPINE_ABILITY_USED) &&
+            $event instanceof EventCharacterTargeted && $event->targetId == $this->AttachedToId && $event->sourceId != 0)
         {
             if ($this->isOpponentRiskTargetingCharacters($event, $event->sourceId))
             {

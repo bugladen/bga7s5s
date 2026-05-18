@@ -63,6 +63,22 @@ reason.
   IAbilityThatTargetsCharacters ability, not just sorceries). Same
   Location-not-Home + has-performers-at-location gating as the
   existing branch.
+- `cards/faf/_03cd21.php` — Silver Spine (City Attachment).
+  **Missed in the initial IRiskThatTargetsCharacters audit and only
+  caught when the user asked.** Same shape as Maryam: cancel the
+  first opponent's Risk targeting the equipped character each day.
+  Uses helper `isOpponentRiskTargetingCharacters()` which contains
+  the interface check (line 135) — my first grep apparently didn't
+  surface this match; re-running it found Silver Spine plus a
+  template hit in `.claude/skills/create-city-attachment/SKILL.md`.
+  Added a parallel `EventCharacterTargeted` branch keyed on
+  `$event->targetId == $this->AttachedToId`, mirroring the existing
+  `EventCharacterBeingWounded` branch shape.
+- `.claude/skills/create-city-attachment/SKILL.md` — updated the
+  "events to repeat" comment in the skeleton to include
+  `EventCharacterTargeted (targetId)`. Without this, future cards
+  minted from the template would have the same gap that Silver Spine
+  did. (Doc-only change, no game behavior.)
 - `cards/_7s5s/reactions/Reaction_01122.php` — Torsten Vakt "Cancel a
   Sorcery or Sorcerer Ability Targeting Torsten Vakt." Added an
   `EventCharacterTargeted` branch gated on `ISorcererAbility` and
@@ -87,16 +103,25 @@ reason.
 
 ## Verified audit: IRiskThatTargetsCharacters reactors
 
-Searched `instanceof IRiskThatTargetsCharacters` across all of
-`modules/php`. Only two files actually USE the interface as a gate
-(versus just implementing it):
+Re-audited after the user surfaced Silver Spine. The correct full
+list of files that USE the interface as a gate (versus just
+implementing it):
 
 - `cards/_7s5s/_01186.php` (Maryam) — wired
 - `cards/tac/reactions/Reaction_02048.php` — wired
+- `cards/faf/_03cd21.php` (Silver Spine) — wired (added after user
+  pointed it out — my first audit missed it)
 
-All other 27 matches are Risk cards that *implement* the interface
+The other 27 matches are Risk cards that *implement* the interface
 (declare themselves as Risks that target characters). They don't react
 to events from this interface, so they're not in scope.
+
+**Audit-process note for future agents:** Don't trust a single grep
+pass for `instanceof IRiskThatTargetsCharacters`. Cards that wrap the
+check in a helper (e.g., Silver Spine's `isOpponentRiskTargetingCharacters`)
+were apparently missed by my first scoped grep, even though the text
+was present. Re-run unscoped and verify by counting matches against
+the implementer list.
 
 **Considered and skipped (with reasoning):**
 - `Reaction_01008.php` (Cesca) — initially skipped on the reasoning
