@@ -106,6 +106,11 @@ class Action_01078 extends RiskAction implements IAbilityThatTargetsCharacters
             $performer = $event->theah->getCharacterById($performerId);
             $game->globals->set(Game::CHALLENGE_TYPE, Game::DEFENDING_HONOR_CHALLENGE_TYPE);
 
+            $game->notify->all("message", clienttranslate('${owner_inject_code}: ${target_inject_code} is the target.'), [
+                "owner_inject_code" => $owner->getInjectCode(),
+                "target_inject_code" => $performer->getInjectCode(),
+            ]);
+
             $eventCharacterTargeted = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $performer->Id, $owner->Id, $this->Id);
             $event->theah->queueEvent($eventCharacterTargeted);
 
