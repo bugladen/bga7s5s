@@ -15,6 +15,17 @@
     {
         const methods = {
 
+            'planningPhaseResolveSchemes_03005': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'planningPhaseResolveSchemes_03006': () => {
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'highDramaPhase03cd01': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
@@ -72,12 +83,6 @@
             'duelGambleSetup_03cd05': () => {
                 this.addActionButton(`btnTop`, _('Reveal from Top'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
                 this.addActionButton(`btnBottom`, _('Reveal from Bottom'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
-            },
-
-            'planningPhaseResolveSchemes_03005': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
-                dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
         }

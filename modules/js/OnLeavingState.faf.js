@@ -17,6 +17,16 @@
 
         const methods = {
 
+            'planningPhaseResolveSchemes_03005': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+
+            'planningPhaseResolveSchemes_03006': () => {
+                this.resetCityLocations();
+            },
+
             'highDramaPhase03cd01': () => {
                 if (this.isCurrentPlayerActive())
                 {
@@ -121,12 +131,6 @@
                         dojo.removeClass(div, '_7sfs-unselectable');
                     });
                 }
-            },
-
-            'planningPhaseResolveSchemes_03005': () => {
-                dojo.addClass('choose_container', 'hidden');
-                dojo.addClass('chooseList', 'hidden');
-                this.chooseList.removeAll();
             },
 
         }
