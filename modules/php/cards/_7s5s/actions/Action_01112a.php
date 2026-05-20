@@ -26,9 +26,7 @@ class Action_01112a extends RiskCityAction
             return false;
         }
 
-        $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $characters = array_values(array_filter($characters, fn($character) => ! $character->Engaged));
-        if (count($characters) == 0)
+        if (count($this->getEligiblePerformers($playerId, $theah)) == 0)
         {
             return false;
         }
@@ -41,8 +39,17 @@ class Action_01112a extends RiskCityAction
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
+        return $this->getEligiblePerformers($playerId, $theah);
+    }
+
+    private function getEligiblePerformers(int $playerId, Theah $theah): array
+    {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_values(array_filter($performers, fn($character) => ! $character->Engaged));
+        $performers = array_values(array_filter(
+            $performers,
+            fn($character) => ! $character->Engaged
+                && $theah->canLocationBecomeUncontrolledBy($playerId, $character->Location)
+        ));
 
         return $performers;
     }
@@ -61,8 +68,18 @@ class Action_01112a extends RiskCityAction
             $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
             $event->theah->queueEvent($engageEvent);
 
-            $uncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent($performer->ControllerId, $performer->Location);
-            $event->theah->queueEvent($uncontrolledEvent);
+            if ($event->theah->canLocationBecomeUncontrolledBy($performer->ControllerId, $performer->Location))
+            {
+                $uncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent($performer->ControllerId, $performer->Location);
+                $event->theah->queueEvent($uncontrolledEvent);
+            }
+            else
+            {
+                $game->notify->all("message", clienttranslate('${location} cannot become uncontrolled.'), [
+                    'i18n' => ['location'],
+                    'location' => $performer->Location,
+                ]);
+            }
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);

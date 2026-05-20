@@ -420,6 +420,18 @@ trait UtilitiesTrait
         return "CanBeClaimed_" . $location;
     }
 
+    function getCanBecomeUncontrolledForLocation(string $location): bool {
+        return $this->globals->get($this->getCanBecomeUncontrolledLocationName(addslashes($location))) ?? true;
+    }
+
+    function setCanBecomeUncontrolledForLocation(string $location, bool $canBecomeUncontrolled): void {
+        $this->globals->set($this->getCanBecomeUncontrolledLocationName(addslashes($location)), $canBecomeUncontrolled);
+    }
+
+    function getCanBecomeUncontrolledLocationName(string $location): string {
+        return "CanBecomeUncontrolled_" . $location;
+    }
+
     function incrementPlayerReknown($player_id, $inc) {
         $count = $this->getPlayerReknown($player_id);
         if ($inc != 0) {

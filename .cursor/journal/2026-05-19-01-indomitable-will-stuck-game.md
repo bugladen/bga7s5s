@@ -58,6 +58,21 @@ Policy: anywhere `EventFactory::createLocationClaimedEvent` is queued, wrap it i
 - `modules/php/theah/EventHub.php` — basic-claim emit now guarded by the flag; removed the explicit `eventCheck` that originally caused stuck-game
 - All other `createLocationClaimedEvent` emitters listed above
 
+## Follow-up (2026-05-20): Parallel CanBecomeUncontrolled flag
+
+Indomitable Will also prevents the location from becoming uncontrolled (e.g., another player using Action_01086 "Make Location Uncontrolled" against the Indomitable Will'd location should fail). Added a parallel flag using the same pattern:
+
+- `CityLocation->CanBecomeUncontrolled: bool` (default true), persisted via `getCanBecomeUncontrolledForLocation` / `setCanBecomeUncontrolledForLocation`
+- `Theah::canLocationBecomeUncontrolledBy(int $playerId, string $location): bool`
+- Action_01130 toggles both flags together: false on activation, true on `setConditionEnded`. The reset to true happens BEFORE queueing the (legitimate) uncontrolled event so the new guard at that emit site lets it through.
+- All emitters of `createLocationBecomesUncontrolledEvent` now guard with `canLocationBecomeUncontrolledBy` and emit `"${location} cannot become uncontrolled."` when blocked: Action_01086, Action_01112a, Maneuver_01110.
+- The stopgap (renamed `backfillIndomitableWillFlags`) now writes both flags from `INDOMITABLE_WILL_CONDITION`.
+
+### Why this pattern instead of handleEvent-cancel
+Considered Action_01130 cancelling via `handleEvent` on `EventLocationBecomesUncontrolled` (setting `$event->canceled = true`). Rejected because:
+1. `EventLocationBecomesUncontrolled` defaults to `runEventHubAfterCards = false`, so the EventHub uncontrols the location BEFORE Action_01130's handler runs. Flipping that flag would change timing for every other listener (e.g., `_01120` removing its influence bonus) — blast radius beyond Indomitable Will.
+2. The emit-site / location-flag pattern is what we already established for `CanBeClaimed`. Keeping the two rules parallel is easier to reason about than mixing two cancellation paradigms in the same card.
+
 ## Open Questions / Future Work
 - `Game.playerCanBasicClaim` doesn't factor in claimability. A player whose only performers are at blocked locations would still see the "Claim Action" button, then get the `BgaUserException` at performer-chosen. Minor UX leak; acceptable for now.
 - `DebugTrait::debug_ClaimLocation` still calls `eventCheck` explicitly before queueing. Harmless (the Indomitable Will check no longer throws from eventCheck), but inconsistent with the new emit-site guard pattern. Left as-is since it's debug-only.

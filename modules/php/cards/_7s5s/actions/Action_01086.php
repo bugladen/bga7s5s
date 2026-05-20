@@ -26,33 +26,7 @@ class Action_01086 extends RiskAction
             return false;
         }
 
-        $availableLocations = [];
-        $locations = $theah->getCityLocations();
-        foreach ($locations as $location)
-        {
-            if ($location->Controller == 0)
-            {
-                continue;
-            }
-
-            $characters = $theah->getCharactersAtLocation($location->Name);
-            if (count($characters) == 0)
-            {
-                $availableLocations[] = $location->Name;
-            }
-            else
-            {
-                $totalCharacterCount = count($characters);
-                $characters = array_filter($characters, fn($character) => $character->hasTrait("Mercenary"));
-                $mercenaryCount = count($characters);
-                if ($mercenaryCount == $totalCharacterCount)
-                {
-                    $availableLocations[] = $location->Name;
-                }
-            }
-        }
-
-        return count($availableLocations) > 0;
+        return count($this->getEligibleLocations($theah, $playerId)) > 0;
     }
 
     public function handleEvent(Event $event)
@@ -72,36 +46,44 @@ class Action_01086 extends RiskAction
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01086)
         {
-            $availableLocations = [];
-            $locations = $game->theah->getCityLocations();
-            foreach ($locations as $location)
-            {
-                if ($location->Controller == 0)
-                {
-                    continue;
-                }
-    
-                $characters = $game->theah->getCharactersAtLocation($location->Name);
-                if (count($characters) == 0)
-                {
-                    $availableLocations[] = $location->Name;
-                }
-                else
-                {
-                    $totalCharacterCount = count($characters);
-                    $characters = array_filter($characters, fn($character) => $character->hasTrait("Mercenary"));
-                    $mercenaryCount = count($characters);
-                    if ($mercenaryCount == $totalCharacterCount)
-                    {
-                        $availableLocations[] = $location->Name;
-                    }
-                }
-            }
-
-            $args['locationIds'] = $availableLocations;
+            $args['locationIds'] = $this->getEligibleLocations($game->theah, (int)$game->getActivePlayerId());
         }
 
         return $args;
+    }
+
+    private function getEligibleLocations(Theah $theah, int $playerId): array
+    {
+        $availableLocations = [];
+        foreach ($theah->getCityLocations() as $location)
+        {
+            if ($location->Controller == 0)
+            {
+                continue;
+            }
+
+            if ( ! $theah->canLocationBecomeUncontrolledBy($playerId, $location->Name))
+            {
+                continue;
+            }
+
+            $characters = $theah->getCharactersAtLocation($location->Name);
+            if (count($characters) == 0)
+            {
+                $availableLocations[] = $location->Name;
+            }
+            else
+            {
+                $totalCharacterCount = count($characters);
+                $mercenaryCount = count(array_filter($characters, fn($character) => $character->hasTrait("Mercenary")));
+                if ($mercenaryCount == $totalCharacterCount)
+                {
+                    $availableLocations[] = $location->Name;
+                }
+            }
+        }
+
+        return $availableLocations;
     }
 
     public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void
@@ -112,8 +94,19 @@ class Action_01086 extends RiskAction
         {
             $location = $ids[0];
             $owner = $this->getOwningCard($game->theah);
-            $event = EventFactory::createLocationBecomesUncontrolledEvent($owner->ControllerId, $location);
-            $game->theah->queueEvent($event);
+
+            if ($game->theah->canLocationBecomeUncontrolledBy($owner->ControllerId, $location))
+            {
+                $event = EventFactory::createLocationBecomesUncontrolledEvent($owner->ControllerId, $location);
+                $game->theah->queueEvent($event);
+            }
+            else
+            {
+                $game->notify->all("message", clienttranslate('${location} cannot become uncontrolled.'), [
+                    'i18n' => ['location'],
+                    'location' => $location,
+                ]);
+            }
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
