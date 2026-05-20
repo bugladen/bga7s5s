@@ -32,18 +32,22 @@ class Action_01103a extends RiskCityAction
             return false;
         }
 
-        $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $characters = array_filter($characters, fn($character) => $character->hasTrait("Pirate"));
-
-        return count($characters) > 0;
+        return count($this->getEligiblePerformers($playerId, $theah)) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
+        return $this->getEligiblePerformers($playerId, $theah);
+    }
+
+    private function getEligiblePerformers(int $playerId, Theah $theah): array
+    {
         $characters = parent::getPerformersForAction($playerId, $theah);
-        $characters = array_values(array_filter($characters, fn($character) => $character->hasTrait("Pirate")));
-        
-        return $characters;
+        return array_values(array_filter(
+            $characters,
+            fn($character) => $character->hasTrait("Pirate")
+                && $theah->canLocationBeClaimedBy($playerId, $character->Location)
+        ));
     }
 
     public function handleEvent(Event $event)
