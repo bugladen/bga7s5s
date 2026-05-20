@@ -250,6 +250,14 @@ trait DebugTrait
         $this->theah->getCityLocation($location)->CanBeClaimed = $canBeClaimed;
     }
 
+    #[Debug(reload: true)]
+    public function debug_SetLocationCanBecomeUncontrolled(string $location, bool $canBeUncontrolled)
+    {
+        $this->theah->buildCity();
+        $this->setCanBecomeUncontrolledForLocation($location, $canBeUncontrolled);
+        $this->theah->getCityLocation($location)->CanBecomeUncontrolled = $canBeUncontrolled;
+    }
+
     public function debug_EmptyHand(int $playerId)
     {
         $hand = $this->cards->getCardsInLocation(Game::LOCATION_HAND, $playerId);

@@ -82,6 +82,9 @@ class Action_01130 extends RiskAction
         ]);
 
         $game->setCanBeClaimedForLocation($this->ControlledLocation, true);
+        // WHY: Clear CanBecomeUncontrolled before queueing the uncontrolled event so the
+        // emit-site guard below (and any future ones) lets THIS legitimate uncontrol pass.
+        $game->setCanBecomeUncontrolledForLocation($this->ControlledLocation, true);
 
         $locationUncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent($character->ControllerId, $this->ControlledLocation);
         $game->theah->queueEvent($locationUncontrolledEvent);
@@ -130,6 +133,7 @@ class Action_01130 extends RiskAction
             $event->theah->queueEvent($claimEvent);
 
             $game->setCanBeClaimedForLocation($performer->Location, false);
+            $game->setCanBecomeUncontrolledForLocation($performer->Location, false);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);

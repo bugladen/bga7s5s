@@ -129,16 +129,16 @@ class Theah
             $this->cards += $this->db->getCardObjectsAtLocation($discardDeckName);
         }
 
-        $this->backfillCanBeClaimedFromIndomitableWill();
+        $this->backfillIndomitableWillFlags();
 
         $this->cityBuilt = true;
     }
 
     // STOPGAP: Games that had a character with INDOMITABLE_WILL_CONDITION before the
-    // CityLocation->CanBeClaimed flag existed won't have the flag written. Recompute it
-    // here so the protection survives the upgrade. Idempotent, cheap; remove once any
-    // in-flight games predating this change have completed.
-    private function backfillCanBeClaimedFromIndomitableWill(): void
+    // CityLocation->CanBeClaimed / CanBecomeUncontrolled flags existed won't have the
+    // flags written. Recompute them here so the protections survive the upgrade.
+    // Idempotent, cheap; remove once any in-flight games predating this change have completed.
+    private function backfillIndomitableWillFlags(): void
     {
         foreach ($this->cards as $card) {
             if ( ! $card instanceof Character) continue;
@@ -149,6 +149,10 @@ class Theah
             if ($cityLocation->CanBeClaimed) {
                 $cityLocation->CanBeClaimed = false;
                 $this->game->setCanBeClaimedForLocation($card->Location, false);
+            }
+            if ($cityLocation->CanBecomeUncontrolled) {
+                $cityLocation->CanBecomeUncontrolled = false;
+                $this->game->setCanBecomeUncontrolledForLocation($card->Location, false);
             }
         }
     }
@@ -177,6 +181,7 @@ class Theah
         $location->Renown = $this->game->getRenownForLocation($name);
         $location->Controller = $this->game->getControllerForLocation($name);
         $location->CanBeClaimed = $this->game->getCanBeClaimedForLocation($name);
+        $location->CanBecomeUncontrolled = $this->game->getCanBecomeUncontrolledForLocation($name);
         return $location;
     }
 
@@ -1255,6 +1260,14 @@ class Theah
     public function canLocationBeClaimedBy(int $playerId, string $location): bool
     {
         return $this->getCityLocation($location)->CanBeClaimed;
+    }
+
+    // WHY: Central rule for "can this location be uncontrolled right now". Parallel to
+    // canLocationBeClaimedBy — Indomitable Will (Action_01130) also prevents un-control,
+    // and toggles CanBecomeUncontrolled on the location. $playerId reserved for future use.
+    public function canLocationBecomeUncontrolledBy(int $playerId, string $location): bool
+    {
+        return $this->getCityLocation($location)->CanBecomeUncontrolled;
     }
 
     public function playerCanBasicClaim($playerId): bool

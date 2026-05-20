@@ -87,13 +87,23 @@ class Maneuver_01110 extends Maneuver
             {
                 $location = $adversary->Location;
 
-                $locationEvent = EventFactory::createLocationBecomesUncontrolledEvent($owner->ControllerId, $location);
-                $game->theah->queueEvent($locationEvent);
+                if ($game->theah->canLocationBecomeUncontrolledBy($owner->ControllerId, $location))
+                {
+                    $locationEvent = EventFactory::createLocationBecomesUncontrolledEvent($owner->ControllerId, $location);
+                    $game->theah->queueEvent($locationEvent);
 
-                $game->notify->all("message", clienttranslate('${player_name} has chosen to make ${location_name} uncontrolled.'), [
-                    "player_name" => $game->getPlayerNameById($adversary->ControllerId),
-                    "location_name" => $location,
-                ]);
+                    $game->notify->all("message", clienttranslate('${player_name} has chosen to make ${location_name} uncontrolled.'), [
+                        "player_name" => $game->getPlayerNameById($adversary->ControllerId),
+                        "location_name" => $location,
+                    ]);
+                }
+                else
+                {
+                    $game->notify->all("message", clienttranslate('${location} cannot become uncontrolled.'), [
+                        'i18n' => ['location'],
+                        'location' => $location,
+                    ]);
+                }
             }
 
         }

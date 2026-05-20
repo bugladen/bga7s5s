@@ -8,6 +8,7 @@ class CityLocation
     public int $Renown;
     public int $Controller;
     public bool $CanBeClaimed = true;
+    public bool $CanBecomeUncontrolled = true;
 
     public function __construct(string $name)
     {
@@ -15,6 +16,7 @@ class CityLocation
         $this->Renown = 0;
         $this->Controller = 0;
         $this->CanBeClaimed = true;
+        $this->CanBecomeUncontrolled = true;
     }
 
     public function isControlled(): bool
