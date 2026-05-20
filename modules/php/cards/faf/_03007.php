@@ -19,6 +19,7 @@ class _03007 extends FactionAttachment implements IHasReactions
     {
         parent::__construct();
         $this->Name = clienttranslate("Matushka's Shears");
+        $this->Title = clienttranslate("Severing the Strand");
         $this->Image = "03007.jpg";
         $this->ExpansionName = "faf";
         $this->ExpansionNumber = 3;
