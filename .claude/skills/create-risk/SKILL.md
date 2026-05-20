@@ -16,6 +16,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/_7s5s/_01061.php` (Well-Equipped) — **Risk with a simple Action and a Maneuver** that conditionally draws a card based on equipped Weapon attachments.
 - `modules/php/cards/faf/_03008.php` (Arrogant) — **Risk with a City Action (Influence-gated Combat challenge) and a Gambling Maneuver.** Uses `Game::NORMAL_CHALLENGE_TYPE`; Influence gate enforced via `IAbilityThatTargetsCharacters::isValidTargetForAbility`.
 - `modules/php/cards/faf/_03009.php` (Follow the Thread) — **Sorcerer Strega Action that moves the performer to an adjacent location filtered by destination contents + Strega Maneuver (-1 Thrust, wound adversary).** Exemplar for "Action:" (not "City Action:") with `parent::getPerformersForAction` (home + city performers), `actFromCardWithLocations` location-chooser sub-state, and the `-1 thrust + wound` maneuver shape.
+- `modules/php/cards/faf/_03010.php` (Manipulative) — **Strega Reaction with multi-stage cross-player choice on top of the standard RiskReaction pay state.** Triggers on both `EventApproachCharacterPlayed` and `EventCharacterMustered` (filtered by `$event->fromLocation == LOCATION_APPROACH`). After the framework pays the Risk (discarded from hand), `EventRiskReactionTriggered` chains into a second `createReactionTransitionEvent` to the opposing player, who picks "return + muster different" vs "take the wound". Exemplar for "wound them unless their controller does X" on a RiskReaction (vs the SchemeCityAction shape in `_02036` Crimson Roger).
 
 When in doubt, mirror one of those rather than invent.
 
@@ -402,10 +403,11 @@ class Reaction_NNNNN extends RiskReaction
     {
         parent::handleEvent($event);
 
-        $owner = $this->getOwningCard($event->theah);
-        if ($owner->Location != Game::LOCATION_HAND) return;   // required by pre-commit hook
-
         if (! $this->isAvailable()) return;
+
+        $owner = $this->getOwningCard($event->theah);
+        if ($owner === null) return;
+        if (! ($owner->Location == Game::LOCATION_HAND)) return;   // required by pre-commit hook
 
         if ($event instanceof ...) {
             // ... queue reaction transition
@@ -423,10 +425,47 @@ class Reaction_NNNNN extends RiskReaction
 ```
 
 Pre-commit hook requirements on RiskReaction:
-- Literal `Location == Game::LOCATION_HAND` somewhere in the file.
+- Literal `Location == Game::LOCATION_HAND` somewhere in the file (substring `grep` — `!=` does **not** satisfy it; structure your in-hand guard with the `==` form, e.g. `if (! ($owner->Location == Game::LOCATION_HAND)) return;`).
 - Literal `$this->setUsed(` and `$this->isAvailable(` somewhere in the file.
 
-References: `Reaction_01080` (Iron Reply-style — adds Parry during opposing maneuver), `Reaction_01140`, `Reaction_01088`.
+References: `Reaction_01080` (Iron Reply-style — adds Parry during opposing maneuver), `Reaction_01140`, `Reaction_01088`, `Reaction_02048` (Pressure-to-cancel — multi-event family, saved-event re-emit on decline), `Reaction_03010` (cross-player choice flow after pay — see Pattern D.1).
+
+### Pattern D.1 — Multi-stage cross-player RiskReaction with pay
+
+When the Risk Reaction's effect itself involves another player choosing something (e.g., "Wound them unless their controller does X"), the standard RiskReaction shape (pay → `EventRiskReactionTriggered` → resolve inline) isn't enough. The pattern that works in-codebase, modeled after `Reaction_03010` (Manipulative):
+
+1. **Internal `$stage` field** on the reaction (`''` / `'choice'` / `'pickN'` …) plus `$targetId` / `$opposingPlayerId` captured at trigger time. `getReactionButtonProperties()` and `getReactionDescription()` switch on `$stage`.
+2. **`handleEvent` on the trigger event** → save target + opposing player ids, set `$stage = ''`, queue `createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id)` (offer to owner).
+3. **`performReaction` with `$stage === ''`:**
+   - `'use'` → queue `createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id)` + `createReactionPayTransitionEvent(...)`. The framework discards the Risk and fires `EventRiskReactionTriggered` after the pay.
+   - `'pass'` → reset saved state (don't `setUsed` — the Risk stays in hand for future triggers).
+4. **`handleEvent` on `EventRiskReactionTriggered && $event->internalId == $this->Id`** → set `$stage = 'choice'` and queue `createReactionTransitionEvent($this->opposingPlayerId, $owner->Id, $this->Id)`. The opposing player becomes the active player in `playerReaction`; the reaction's `getReactionButtonProperties()` (driven by `$stage='choice'`) renders the opponent's options. **If the choice is moot (e.g., opponent can't legally pick "return"), apply the wound/effect immediately + `finalize()` instead of transitioning.**
+5. **`performReaction` with `$stage === 'choice'`** → branch on `$reactionId` → either apply the wound immediately + `finalize()`, or advance to `$stage = 'pickN'` and queue another reaction transition to the same opposing player.
+6. **`finalize()`** → call `$this->setUsed($theah, true)` + reset stage / saved ids. The Risk is already in discard from the pay step.
+
+Key gotchas:
+- After the pay step, `$owner->Location` is `LOCATION_<DISCARD>`, **not** `LOCATION_HAND`. The in-hand guard in your `EventApproachCharacterPlayed` / trigger branch correctly skips re-triggering on subsequent triggers; the `EventRiskReactionTriggered` branch doesn't need it (and shouldn't have it).
+- `createReactionTransitionEvent($opponentId, …)` still works after the Risk is in discard — the reaction object lives on `$theah->cards` (the discarded Risk is still in the cards map) and the `playerReaction` state machinery is owner-card-agnostic.
+- `isAvailable()` returns `!Used`. Don't `setUsed(true)` until `finalize()`, or the mid-flow `playerReaction` state won't be able to render its `$stage`-dependent buttons cleanly.
+- Cross-stage notifications: emit the "you used the Reaction" message from your `EventRiskReactionTriggered` handler (after pay) rather than from the offer-stage `performReaction`, so the announce-order matches the actual cost being paid.
+
+### Trigger event distinction: `EventApproachCharacterPlayed` vs `EventCharacterMustered`
+
+These do **not** overlap:
+- `EventApproachCharacterPlayed` fires only during the Approach Phase (`StatesTrait::stApproachPhase`). It is the canonical "approach character played from the approach deck to home."
+- `EventCharacterMustered` fires only from card effects that muster a character (Chance Meeting `_03cd03`, Réputation Méritée `_01072`, Bravos `_01024`, Don Constanzo's Reaction `_03003`, etc.). It is **not** fired during the Approach Phase.
+
+If your trigger phrasing is "after a character is mustered from an Approach deck," you need **both events**. For `EventCharacterMustered`, filter on `$event->fromLocation == Game::LOCATION_APPROACH` (the field is populated by `EventHub`'s central handler before the move, so by the time card handlers see the event the field reflects the pre-move source). Don't try to read `$character->Location` for the source — `runEventHubAfterCards = false` means the hub has already moved the character to the destination by the time your handler runs.
+
+### `EventCharacterPutIntoApproachDeck` semantics
+
+This is the framework op for sending a character back to their owner's Approach deck (canonical use: `Reaction_01202` Object of Wonder; also `Reaction_03010` Manipulative). The hub handler:
+- Moves the card to `LOCATION_APPROACH`.
+- **Resets in-play state**: `Wounds`, `WoundsHealedIncoming`, `IsDying`, `Engaged` are all zeroed. A card in the Approach deck has no memory of its prior life.
+- **Sends `cardRemovedFromPlay`** when the character was in play (city or `LOCATION_PLAYER_HOME`) at the moment of put-back, so other players' clients animate the leave.
+- Sends a private `approachCardsReceived` to the owning player so their approach-deck UI syncs.
+
+You generally don't need to queue a separate `createCardRemovedFromPlayEvent` or manually zero state — the hub does it. Just queue `createCharacterPutIntoApproachDeckEvent($ownerId, $characterId)` and any follow-on events (e.g., `createCharacterMusteredEvent` for a swap).
 
 ## Pattern E — Passive on the Risk class
 
@@ -583,6 +622,7 @@ Event factories you'll likely need:
 | `modules/php/cards/faf/_03008.php` (Arrogant) | **Risk with Influence-gated City Action Combat challenge AND a Gambling Maneuver.** `NORMAL_CHALLENGE_TYPE` (no custom intervention rules); Influence comparison in `isValidTargetForAbility`. Gambling Maneuver gated on `DUEL_GAMBLED` plus actor>adversary Influence. |
 | `modules/php/cards/faf/_03009.php` (Follow the Thread) | **Sorcerer Strega Action (not City Action) that moves the performer to an adjacent location filtered by destination contents (enemy character OR available Mercenary) + Strega Maneuver (-1 Thrust, wound adversary).** Uses `parent::getPerformersForAction` so home performers are eligible. Pairs with `State_highDramaPhase03009` (GameState class with `"locationChosen"` named transition). |
 | `modules/php/cards/_7s5s/_01059.php` (Regroup) | **Simple "Move your performer to an adjacent City location" City Action.** The canonical move-to-adjacent template — uses legacy array-format state `highDramaPhase01059` (`""` default transition). |
+| `modules/php/cards/faf/_03010.php` (Manipulative) | **RiskReaction with multi-stage cross-player choice on top of the pay state (Pattern D.1).** Triggers on both `EventApproachCharacterPlayed` AND `EventCharacterMustered` (filtered by `$event->fromLocation == LOCATION_APPROACH`). After pay → `EventRiskReactionTriggered` chains a second `createReactionTransitionEvent` to the opposing player for the return-vs-wound choice. `$stage` field drives `getReactionButtonProperties()`. Reset of in-play state on return-to-Approach is handled centrally by the EventHub `EventCharacterPutIntoApproachDeck` handler. |
 
 ## When You Finish
 
@@ -601,7 +641,7 @@ Event factories you'll likely need:
 9. Pre-commit hook checks on every file:
    - **RiskCityAction / RiskAction subclass:** `createActionResolvedEvent` literal string present (real call or comment).
    - **Maneuver subclass:** `EventManeuverCanceled` handler OR the literal comment `// EventManeuverCanceled handler not needed`.
-   - **RiskReaction subclass:** `Location == Game::LOCATION_HAND` guard AND `$this->setUsed(` AND `$this->isAvailable(` literal strings.
+   - **RiskReaction subclass:** `Location == Game::LOCATION_HAND` guard AND `$this->setUsed(` AND `$this->isAvailable(` literal strings. The hook's `grep` is exact-substring on `==` — `Location != Game::LOCATION_HAND` does NOT satisfy it. Use the negated `==` form: `if (! ($owner->Location == Game::LOCATION_HAND)) return;`.
    - **`implements ISorcererAbility`:** both `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` called.
    - No class implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards`.
 10. Lint touched PHP files (`php -l`) before committing.

@@ -854,6 +854,14 @@ trait EventHub
                 case $event instanceof EventCharacterMustered:
                     $handler = function (Theah $theah, EventCharacterMustered $event)
                     {
+                        //Capture the muster source location before the move so card handlers
+                        //(which run after this central handler) can branch on it.
+                        $character = $theah->getCardById($event->characterId);
+                        if ($character !== null && $event->fromLocation === '')
+                        {
+                            $event->fromLocation = $character->Location;
+                        }
+
                         //Update the character's location in the DB
                         $deck = $theah->game->getGameDeckObject();
                         $deck->moveCard($event->characterId, $event->location, $event->playerId);
@@ -1340,6 +1348,9 @@ trait EventHub
             case $event instanceof EventCharacterPutIntoApproachDeck:
                 $handler = function ($theah, EventCharacterPutIntoApproachDeck $event)
                 {
+                    $character = $theah->getCharacterById($event->characterId);
+                    $wasInPlay = $character !== null && ($theah->cardInCity($character) || $character->Location == Game::LOCATION_PLAYER_HOME);
+
                     $deck = $theah->game->getGameDeckObject($event->playerId);
                     $deck->moveCard($event->characterId, Game::LOCATION_APPROACH, $event->playerId);
 
@@ -1347,19 +1358,33 @@ trait EventHub
                     $character->Location = Game::LOCATION_APPROACH;
                     $character->OwnerId = $event->playerId;
                     $character->ControllerId = $event->playerId;
+                    //Reset in-play state — a card in the Approach deck has no memory of its prior life
+                    $character->Wounds = 0;
+                    $character->WoundsHealedIncoming = 0;
+                    $character->IsDying = false;
+                    $character->Engaged = false;
                     $character->IsUpdated = true;
                     $theah->addCardToWorld($character);
+
+                    if ($wasInPlay)
+                    {
+                        $theah->game->notify->all("cardRemovedFromPlay", clienttranslate('${card_inject_code} removed from play.'), [
+                            "card_inject_code" => $character->getInjectCode(),
+                            "cardId" => $character->Id,
+                            "toLocation" => Game::LOCATION_APPROACH,
+                        ]);
+                    }
 
                     $theah->game->notify->all("message", clienttranslate('${character_inject_code} has been put into ${player_name}\'s Approach Deck.'), [
                         "character_inject_code" => $character->getInjectCode(),
                         "player_name" => $theah->game->getPlayerNameById($event->playerId)
                     ]);
 
-                    $theah->game->notify->player($event->playerId, "approachCardsReceived", 
+                    $theah->game->notify->player($event->playerId, "approachCardsReceived",
                         clienttranslate(''), [
                             "cards" => [$character->getPropertyArray($theah->game)]
                         ]);
-        
+
                 };
                 $handler($this, $event);
                 break;
