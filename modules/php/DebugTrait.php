@@ -231,7 +231,7 @@ trait DebugTrait
         $this->theah->runEvents($skipTransitions = true);
     }
 
-    #[Debug(reload: true)] 
+    #[Debug(reload: true)]
     public function debug_ClaimLocation(string $location, int $playerId)
     {
         $this->setControllerForLocation($location, $playerId);
@@ -240,6 +240,14 @@ trait DebugTrait
         $this->theah->eventCheck($claimEvent);
         $this->theah->queueEvent($claimEvent);
         $this->theah->runEvents($skipTransitions = true);
+    }
+
+    #[Debug(reload: true)]
+    public function debug_SetLocationCanBeClaimed(string $location, bool $canBeClaimed)
+    {
+        $this->theah->buildCity();
+        $this->setCanBeClaimedForLocation($location, $canBeClaimed);
+        $this->theah->getCityLocation($location)->CanBeClaimed = $canBeClaimed;
     }
 
     public function debug_EmptyHand(int $playerId)

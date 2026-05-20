@@ -729,18 +729,18 @@ trait FrameworkActionsTrait
 
         $performer = $this->theah->getCharacterById($id);
         if ($performer->Engaged) {
-            throw new \BgaUserException(clienttranslate("Performer cannot Claim because it is engaged."));
+            throw new UserException(clienttranslate("Performer cannot Claim because it is engaged."));
         }
 
         if ($performer->DashedInfluence) {
-            throw new \BgaUserException(clienttranslate("Performer cannot Claim because it has a Dashed Influence."));
+            throw new UserException(clienttranslate("Performer cannot Claim because it has a Dashed Influence."));
         }
 
         $charactersInCity = $this->theah->getCharactersInCityByPlayerId($activePlayerId);
         $characterIds = array_map(fn($character) => $character->Id, $charactersInCity);
 
         if (!in_array($id, $characterIds)) {
-            throw new \BgaUserException(clienttranslate("Performer is not in the City."));
+            throw new UserException(clienttranslate("Performer is not in the City."));
         }
 
         $this->globals->set(Game::PRESSURING_PLAYER, $activePlayerId);

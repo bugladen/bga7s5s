@@ -408,6 +408,18 @@ trait UtilitiesTrait
         return "Control_" . $location;
     }
 
+    function getCanBeClaimedForLocation(string $location): bool {
+        return $this->globals->get($this->getCanBeClaimedLocationName(addslashes($location))) ?? true;
+    }
+
+    function setCanBeClaimedForLocation(string $location, bool $canBeClaimed): void {
+        $this->globals->set($this->getCanBeClaimedLocationName(addslashes($location)), $canBeClaimed);
+    }
+
+    function getCanBeClaimedLocationName(string $location): string {
+        return "CanBeClaimed_" . $location;
+    }
+
     function incrementPlayerReknown($player_id, $inc) {
         $count = $this->getPlayerReknown($player_id);
         if ($inc != 0) {

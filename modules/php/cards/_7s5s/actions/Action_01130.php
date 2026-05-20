@@ -11,7 +11,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01130 extends RiskAction
@@ -38,10 +37,7 @@ class Action_01130 extends RiskAction
         $performers = $theah->getCharactersInCityByPlayerId($playerId);
         foreach ($performers as $performer)
         {
-            $characters = $theah->getCharactersAtLocation($performer->Location);
-            $characters = array_filter($characters, fn($character) => $character->ControllerId == $playerId);
-            $location = $theah->getCityLocation($performer->Location);
-            if (count($characters) == 1 && ! $location->isControlled())
+            if ($this->isViablePerformer($playerId, $theah, $performer))
             {
                 return true;
             }
@@ -56,16 +52,23 @@ class Action_01130 extends RiskAction
         $availablePerformers = [];
         foreach ($performers as $performer)
         {
-            $characters = $theah->getCharactersAtLocation($performer->Location);
-            $characters = array_filter($characters, fn($character) => $character->ControllerId == $playerId);
-            $location = $theah->getCityLocation($performer->Location);
-            if (count($characters) == 1 && ! $location->isControlled())
+            if ($this->isViablePerformer($playerId, $theah, $performer))
             {
                 $availablePerformers[] = $performer;
             }
         }
 
         return $availablePerformers;
+    }
+
+    private function isViablePerformer(int $playerId, Theah $theah, $performer): bool
+    {
+        $characters = $theah->getCharactersAtLocation($performer->Location);
+        $characters = array_filter($characters, fn($character) => $character->ControllerId == $playerId);
+        $location = $theah->getCityLocation($performer->Location);
+        return count($characters) == 1
+            && ! $location->isControlled()
+            && $theah->canLocationBeClaimedBy($playerId, $performer->Location);
     }
 
     private function setConditionEnded(Game $game)
@@ -78,6 +81,8 @@ class Action_01130 extends RiskAction
             "cardId" => $this->ControllingCharacterId,
         ]);
 
+        $game->setCanBeClaimedForLocation($this->ControlledLocation, true);
+
         $locationUncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent($character->ControllerId, $this->ControlledLocation);
         $game->theah->queueEvent($locationUncontrolledEvent);
 
@@ -87,23 +92,6 @@ class Action_01130 extends RiskAction
         $owner = $this->getOwningCard($game->theah);
         $owner->IsUpdated = true;
 
-    }
-
-    public function eventCheck(Event $event)
-    {
-        parent::eventCheck($event);
-
-        if ($event instanceof EventLocationClaimed && $this->IsActive)
-        {
-            $owner = $this->getOwningCard($event->theah);
-            if ($event->playerId != $owner->ControllerId && $event->location == $this->ControlledLocation)
-            {
-                $game = $event->theah->game;    
-                $owner = $this->getOwningCard($event->theah);
-                $character = $event->theah->getCharacterById($this->ControllingCharacterId);
-                throw new \BgaUserException(sprintf($game->translate("%s: %s is still at the location. Location cannot be claimed."), $owner->Name, $character->Name));
-            }
-        }
     }
 
     public function handleEvent(Event $event)
@@ -116,6 +104,18 @@ class Action_01130 extends RiskAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
 
+            if ( ! $event->theah->canLocationBeClaimedBy($performer->ControllerId, $performer->Location))
+            {
+                $game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
+                    'i18n' => ['location'],
+                    'location' => $performer->Location,
+                ]);
+
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+                $event->theah->queueEvent($actionResolvedEvent);
+                return;
+            }
+
             $this->IsActive = true;
             $this->ControllingCharacterId = $performer->Id;
             $this->ControlledLocation = $performer->Location;
@@ -124,8 +124,12 @@ class Action_01130 extends RiskAction
 
             $performer->addCondition(Game::INDOMITABLE_WILL_CONDITION);
 
+            // WHY: Queue Yevgeni's own claim BEFORE flipping CanBeClaimed off, otherwise the
+            // claim emit-site guard added to all claim sources would skip Yevgeni's claim too.
             $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performerId, $performer->Location);
             $event->theah->queueEvent($claimEvent);
+
+            $game->setCanBeClaimedForLocation($performer->Location, false);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);

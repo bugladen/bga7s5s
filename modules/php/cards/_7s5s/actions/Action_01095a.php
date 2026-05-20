@@ -35,8 +35,18 @@ class Action_01095a extends CharacterAction
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $owner = $this->getOwningCharacter($event->theah);
-            $claimEvent = EventFactory::createLocationClaimedEvent($owner->ControllerId, $owner->Id, Game::LOCATION_CITY_DOCKS);
-            $event->theah->queueEvent($claimEvent);
+            if ($event->theah->canLocationBeClaimedBy($owner->ControllerId, Game::LOCATION_CITY_DOCKS))
+            {
+                $claimEvent = EventFactory::createLocationClaimedEvent($owner->ControllerId, $owner->Id, Game::LOCATION_CITY_DOCKS);
+                $event->theah->queueEvent($claimEvent);
+            }
+            else
+            {
+                $event->theah->game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
+                    'i18n' => ['location'],
+                    'location' => Game::LOCATION_CITY_DOCKS,
+                ]);
+            }
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);

@@ -68,10 +68,20 @@ class Maneuver_01107 extends Maneuver
 
         if ($event instanceof EventCharacterDestroyed && $this->WillDieFromWound && $this->AdversaryId == $event->characterId)
         {
-            $actor = $event->theah->getDuelRoundActor();            
+            $actor = $event->theah->getDuelRoundActor();
 
-            $claimEvent = EventFactory::createLocationClaimedEvent($actor->ControllerId, $actor->Id, $this->AdversaryLocation);
-            $event->theah->queueEvent($claimEvent);
+            if ($event->theah->canLocationBeClaimedBy($actor->ControllerId, $this->AdversaryLocation))
+            {
+                $claimEvent = EventFactory::createLocationClaimedEvent($actor->ControllerId, $actor->Id, $this->AdversaryLocation);
+                $event->theah->queueEvent($claimEvent);
+            }
+            else
+            {
+                $event->theah->game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
+                    'i18n' => ['location'],
+                    'location' => $this->AdversaryLocation,
+                ]);
+            }
         }
 
         if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
