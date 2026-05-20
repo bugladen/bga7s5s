@@ -67,6 +67,11 @@ class Reaction_03005 extends CardReaction
                 return;
             }
 
+            if (! $event->theah->canLocationBeClaimedBy($owner->ControllerId, $challenger->Location))
+            {
+                return;
+            }
+
             $this->location = $challenger->Location;
             $owner->IsUpdated = true;
 
@@ -83,18 +88,28 @@ class Reaction_03005 extends CardReaction
 
         if ($reactionId == 'claim' && $this->location != '')
         {
-            $claimEvent = EventFactory::createLocationClaimedEvent($owner->ControllerId, null, $this->location);
-            $game->theah->eventCheck($claimEvent);
-            $game->theah->queueEvent($claimEvent);
+            if ($game->theah->canLocationBeClaimedBy($owner->ControllerId, $this->location))
+            {
+                $claimEvent = EventFactory::createLocationClaimedEvent($owner->ControllerId, null, $this->location);
+                $game->theah->queueEvent($claimEvent);
 
-            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to Claim ${location_name}.'), [
-                "i18n" => ["location_name"],
-                "reaction_inject_code" => $owner->getInjectCode(),
-                "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                "location_name" => $this->location,
-            ]);
+                $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to Claim ${location_name}.'), [
+                    "i18n" => ["location_name"],
+                    "reaction_inject_code" => $owner->getInjectCode(),
+                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                    "location_name" => $this->location,
+                ]);
 
-            $this->setUsed($game->theah, true);
+                $this->setUsed($game->theah, true);
+            }
+            else
+            {
+                $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${location_name} cannot be claimed.'), [
+                    "i18n" => ["location_name"],
+                    "reaction_inject_code" => $owner->getInjectCode(),
+                    "location_name" => $this->location,
+                ]);
+            }
         }
 
         $this->location = '';
