@@ -164,8 +164,18 @@ class Action_03cd13 extends EventCityAction implements IAbilityThatTargetsPlayer
         $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performerId, $owner->Id, $this->Id);
         $game->theah->queueEvent($engageEvent);
 
-        $claimEvent = EventFactory::createLocationClaimedEvent($playerId, $performerId, $location);
-        $game->theah->queueEvent($claimEvent);
+        if ($game->theah->canLocationBeClaimedBy($playerId, $location))
+        {
+            $claimEvent = EventFactory::createLocationClaimedEvent($playerId, $performerId, $location);
+            $game->theah->queueEvent($claimEvent);
+        }
+        else
+        {
+            $game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
+                'i18n' => ['location'],
+                'location' => $location,
+            ]);
+        }
 
         $this->playersUsed[] = $playerId;
         $this->notifyUsedList($game, $owner->Id);
