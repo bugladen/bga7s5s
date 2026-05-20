@@ -1051,9 +1051,18 @@ trait EventHub
                     {
                         if ($event->success)
                         {
-                            $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $event->performerId, $event->location);
-                            $theah->eventCheck($claimEvent);
-                            $theah->queueEvent($claimEvent);
+                            if ($theah->canLocationBeClaimedBy($event->playerId, $event->location))
+                            {
+                                $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $event->performerId, $event->location);
+                                $theah->queueEvent($claimEvent);
+                            }
+                            else
+                            {
+                                $theah->game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
+                                    'i18n' => ['location'],
+                                    'location' => $event->location,
+                                ]);
+                            }
                         }
 
                         $actionResolvedEvent = EventFactory::createActionResolvedEvent($event->playerId);

@@ -82,8 +82,18 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
             if ($event->success)
             {
-                $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $performer->Location);
-                $event->theah->queueEvent($claimEvent);            
+                if ($event->theah->canLocationBeClaimedBy($performer->ControllerId, $performer->Location))
+                {
+                    $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $performer->Location);
+                    $event->theah->queueEvent($claimEvent);
+                }
+                else
+                {
+                    $event->theah->game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
+                        'i18n' => ['location'],
+                        'location' => $performer->Location,
+                    ]);
+                }
             }
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);

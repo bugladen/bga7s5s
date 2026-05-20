@@ -1,32 +1,64 @@
-# Indomitable Will + Reaction_01184 → Game Stuck
+# Indomitable Will + Reaction_01184 → Game Stuck (and follow-on refactor)
 
-## Symptom
-A character has `INDOMITABLE_WILL_CONDITION` (set by `Action_01130`, Yevgeni). Another player initiates a basic Claim Action against that location. `Reaction_01184` (Claude de la Roche) triggers on the `EventPressureOccuring`. No matter which option the reaction-player picks (`specialCount` or `pass`), the game gets stuck with:
+## Original Symptom
+A character has `INDOMITABLE_WILL_CONDITION` (set by `Action_01130`, Yevgeni). Another player initiates a basic Claim Action against that location. `Reaction_01184` (Claude de la Roche) triggers on `EventPressureOccuring`. No matter which option the reaction-player picks, the game gets stuck with:
 
 > Indomitable Will: Yevgeni is still at the location. Location cannot be claimed.
 
 ## Root Cause
 `Action_01130::eventCheck()` only checked `EventLocationClaimed`. In the basic-claim flow:
 
-1. `actHighDramaClaimActionPerformerChosen` (FrameworkActionsTrait.php:725) creates `EventPressureOccuring` and calls `eventCheck` on it (line 753). Action_01130 didn't listen for this event, so nothing threw.
-2. State transitions into `stHighDramaPressureLocation`. Pressure resolves. `Reaction_01184` is queued and the player picks an option.
-3. After the reaction's `nextState("done")`, event processing resumes. The `EventLocationPressureResult` handler in `EventHub.php:1043` creates the `EventLocationClaimed` and calls `$theah->eventCheck($claimEvent)` directly (line 1055) — NOT via `queueEvent` which has a try/catch.
-4. Action_01130's eventCheck for `EventLocationClaimed` throws `BgaUserException` — but this is during *server-side event processing*, not a player action. The exception escapes up through the state machine. Client never gets a clean error; game state is half-transitioned.
+1. `actHighDramaClaimActionPerformerChosen` (FrameworkActionsTrait.php) creates `EventPressureOccuring` and calls `eventCheck` on it. Action_01130 didn't listen for this event, so nothing threw.
+2. State transitions into `stHighDramaPressureLocation`. Pressure resolves. `Reaction_01184` queues, the player picks an option.
+3. After the reaction's `nextState("done")`, event processing resumes. The `EventLocationPressureResult` handler in `EventHub.php` creates the `EventLocationClaimed` and called `$theah->eventCheck($claimEvent)` directly — NOT via `queueEvent` which has the try/catch.
+4. Action_01130's eventCheck for `EventLocationClaimed` threw `BgaUserException` — but this is during *server-side event processing*, not a player action. The exception escaped up through the state machine, leaving the game half-transitioned.
 
-The user's reaction choice had already mutated state (`setUsed(true)`, globals set for `CLAUDE_PRESSURE_TYPE`), so retrying is not safe either.
+## Final Design (after iteration with the user)
 
-## Fix
-Added an `EventPressureOccuring` arm to `Action_01130::eventCheck()`. It throws the same `BgaUserException` *only when* `IS_BASIC_CLAIM_ACTION` is true (i.e. this is the basic claim) AND location/player match the indomitable-will conditions.
+Rather than encoding the "Indomitable Will blocks claim" rule inside Action_01130's eventCheck (which is card-specific and the wrong layer), we made claimability a property of the CityLocation itself:
 
-**Why this works:** The first `eventCheck` for the basic claim happens at line 753 of FrameworkActionsTrait.php — inside the player input handler `actHighDramaClaimActionPerformerChosen`. BGA catches `BgaUserException` from player input handlers and surfaces it as a clean error, leaving the game state untouched. No reactions get queued because we throw before `queueEvent`.
+### `CityLocation->CanBeClaimed: bool`
+New property on the location. Default `true`. Persisted in globals via `Game::getCanBeClaimedForLocation` / `setCanBeClaimedForLocation` (same pattern as `Renown` and `Controller`). Hydrated in `Theah::buildCityLocation`.
 
-**Why not just remove the EventLocationClaimed check / EventHub line 1055 eventCheck:**
-- The existing `EventLocationClaimed` check is also a safety net for non-basic claim paths (Action_01206, Maneuver_01107, Reaction_01080, Action_01143, Action_01141, Action_01030, Action_01103a, Action_01095a, Action_02029, Action_01028, Action_01075 all queue claim events directly via `queueEvent`, which has its own try/catch). So that path silently aborts the claim and emits a notification — acceptable behavior.
-- Line 1055 of EventHub is the only "leaky" path. Rather than restructure event-processing exception handling, the targeted fix is to catch the basic-claim case earlier where `BgaUserException` *is* appropriate.
+### `Theah::canLocationBeClaimedBy(int $playerId, string $location): bool`
+Central rule. Just reads the flag off the CityLocation. `$playerId` parameter is reserved for future per-player exemption rules; currently unused but kept on the signature so callers don't have to change later.
+
+### Action_01130 toggles the flag
+- On `EventActionTriggered`: queue the claim event first, *then* call `setCanBeClaimedForLocation($location, false)`. Order matters — flip the flag after queueing Yevgeni's own claim so the emit-site guard added to all claim sources (see below) doesn't skip it.
+- In `setConditionEnded`: set the flag back to `true`.
+
+### Every claim-emit site now guards with `canLocationBeClaimedBy`
+Policy: anywhere `EventFactory::createLocationClaimedEvent` is queued, wrap it in `if ($theah->canLocationBeClaimedBy(...))`. Modified:
+
+| File | Site |
+|---|---|
+| `FrameworkActionsTrait.php` | `actHighDramaClaimActionPerformerChosen` throws `BgaUserException` upfront (player input handler — clean rejection) |
+| `EventHub.php` | EventLocationPressureResult handler (basic-claim emit) — also dropped the now-unnecessary explicit `eventCheck` call that originally caused the stuck-game |
+| `Action_01030.php`, `Action_01075.php`, `Action_01095a.php`, `Action_01103a.php`, `Action_01141.php`, `Action_01143.php`, `Action_01206.php`, `Action_01028.php`, `Action_02029.php` | guard around the `queueEvent($claimEvent)` |
+| `Maneuver_01107.php`, `Reaction_01080.php` | same guard |
+| `Action_01206.php` | also gates in `isAvailableToPlayer` so the button hides when the location can't be claimed (so Captain's Coat doesn't engage / pressure for nothing) |
+
+### Removed
+- `Action_01130::eventCheck` for `EventLocationClaimed` / `EventPressureOccuring`. The rule lives in the flag now, checked at emit sites.
+- `Action_01130::throwIfLocationCannotBeClaimedBy` (static helper).
+- `Theah::getLocationClaimBlocker`.
+
+## Why this design
+
+- **Card-specific rules don't belong in eventCheck throws.** Throwing `BgaUserException` is only safe inside player-input handlers. Anywhere it might run during event processing, the game can stick. Guards at emit sites avoid the issue entirely — they don't emit the event, no throw needed.
+- **Adding a new "this location can't be claimed" effect later just toggles the flag.** No new eventCheck across N actions, no new audit of emit sites.
+- **The default (`true`) means existing code keeps working** even if someone forgets a guard — they just lose the ability to be blocked for that path, which is the same as today's behavior.
 
 ## Files Touched
-- `modules/php/cards/_7s5s/actions/Action_01130.php` — added EventPressureOccuring use + arm in eventCheck
+- `modules/php/theah/CityLocation.php` — `CanBeClaimed` property
+- `modules/php/UtilitiesTrait.php` — `getCanBeClaimedForLocation` / `setCanBeClaimedForLocation` / `getCanBeClaimedLocationName`
+- `modules/php/theah/Theah.php` — `canLocationBeClaimedBy` replaced; `buildCityLocations` extracted to `buildCityLocation`; removed `getLocationClaimBlocker`
+- `modules/php/cards/_7s5s/actions/Action_01130.php` — toggles flag instead of throwing from eventCheck
+- `modules/php/FrameworkActionsTrait.php` — basic claim throws upfront
+- `modules/php/theah/EventHub.php` — basic-claim emit now guarded by the flag; removed the explicit `eventCheck` that originally caused stuck-game
+- All other `createLocationClaimedEvent` emitters listed above
 
-## Possible Future Cleanup (NOT done here)
-- The direct `eventCheck` on EventHub.php:1055 is risky in general — any eventCheck that throws during server-side event processing will stuck the game. Could be wrapped in try/catch (like `queueEvent` does) so claims blocked by future cards "just don't happen" rather than aborting the whole turn. Leaving alone for now because it might be intentional in some other path I haven't audited.
-- A symmetric concern: many other cards' `eventCheck` methods throw `BgaUserException`. Audit which can be triggered during event processing vs. player input only.
+## Open Questions / Future Work
+- `Game.playerCanBasicClaim` doesn't factor in claimability. A player whose only performers are at blocked locations would still see the "Claim Action" button, then get the `BgaUserException` at performer-chosen. Minor UX leak; acceptable for now.
+- `DebugTrait::debug_ClaimLocation` still calls `eventCheck` explicitly before queueing. Harmless (the Indomitable Will check no longer throws from eventCheck), but inconsistent with the new emit-site guard pattern. Left as-is since it's debug-only.
+- Other cards' `eventCheck` methods may still throw `BgaUserException` in ways that can surface during event processing. Worth a broader audit using the same logic this fix established.

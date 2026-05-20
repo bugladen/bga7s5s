@@ -62,9 +62,18 @@ class Action_01030 extends RiskAction implements ISorcererAbility, IAbilityThatT
         {
             if ($event->success)
             {
-                
-                $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $event->performerId, $event->location);
-                $event->theah->queueEvent($claimEvent);            
+                if ($event->theah->canLocationBeClaimedBy($event->playerId, $event->location))
+                {
+                    $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $event->performerId, $event->location);
+                    $event->theah->queueEvent($claimEvent);
+                }
+                else
+                {
+                    $event->theah->game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
+                        'i18n' => ['location'],
+                        'location' => $event->location,
+                    ]);
+                }
             }
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($event->playerId);

@@ -123,13 +123,34 @@ class Theah
         $this->cards += $this->db->getCardObjectsAtLocation(Game::LOCATION_HAND);
 
         $playerIds = $this->db->getPlayerIds();
-        foreach ($playerIds as $playerId) 
+        foreach ($playerIds as $playerId)
         {
             $discardDeckName = $this->game->getPlayerDiscardDeckName($playerId["id"]);
             $this->cards += $this->db->getCardObjectsAtLocation($discardDeckName);
         }
 
+        $this->backfillCanBeClaimedFromIndomitableWill();
+
         $this->cityBuilt = true;
+    }
+
+    // STOPGAP: Games that had a character with INDOMITABLE_WILL_CONDITION before the
+    // CityLocation->CanBeClaimed flag existed won't have the flag written. Recompute it
+    // here so the protection survives the upgrade. Idempotent, cheap; remove once any
+    // in-flight games predating this change have completed.
+    private function backfillCanBeClaimedFromIndomitableWill(): void
+    {
+        foreach ($this->cards as $card) {
+            if ( ! $card instanceof Character) continue;
+            if ( ! $card->hasCondition(Game::INDOMITABLE_WILL_CONDITION)) continue;
+            if ( ! array_key_exists($card->Location, $this->cityLocations)) continue;
+
+            $cityLocation = $this->cityLocations[$card->Location];
+            if ($cityLocation->CanBeClaimed) {
+                $cityLocation->CanBeClaimed = false;
+                $this->game->setCanBeClaimedForLocation($card->Location, false);
+            }
+        }
     }
 
     private function buildCityLocations()
@@ -137,34 +158,26 @@ class Theah
         $players = $this->game->loadPlayersBasicInfos();
         $game = $this->game;
 
-        $location = new CityLocation(Game::LOCATION_CITY_DOCKS);
-        $location->Renown = $game->getRenownForLocation(Game::LOCATION_CITY_DOCKS);
-        $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_DOCKS);
-        $this->cityLocations[Game::LOCATION_CITY_DOCKS] = $location;
-
-        $location = new CityLocation(Game::LOCATION_CITY_FORUM);
-        $location->Renown = $game->getRenownForLocation(Game::LOCATION_CITY_FORUM);
-        $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_FORUM);
-        $this->cityLocations[Game::LOCATION_CITY_FORUM] = $location;
-
-        $location = new CityLocation(Game::LOCATION_CITY_BAZAAR);
-        $location->Renown = $game->getRenownForLocation(Game::LOCATION_CITY_BAZAAR);
-        $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_BAZAAR);
-        $this->cityLocations[Game::LOCATION_CITY_BAZAAR] = $location;
+        $this->cityLocations[Game::LOCATION_CITY_DOCKS] = $this->buildCityLocation(Game::LOCATION_CITY_DOCKS);
+        $this->cityLocations[Game::LOCATION_CITY_FORUM] = $this->buildCityLocation(Game::LOCATION_CITY_FORUM);
+        $this->cityLocations[Game::LOCATION_CITY_BAZAAR] = $this->buildCityLocation(Game::LOCATION_CITY_BAZAAR);
 
         if (count($players) > 2) {
-            $location = new CityLocation(Game::LOCATION_CITY_OLES_INN);
-            $location->Renown = $game->getRenownForLocation(Game::LOCATION_CITY_OLES_INN);
-            $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_OLES_INN);
-            $this->cityLocations[Game::LOCATION_CITY_OLES_INN] = $location;
+            $this->cityLocations[Game::LOCATION_CITY_OLES_INN] = $this->buildCityLocation(Game::LOCATION_CITY_OLES_INN);
         }
 
         if (count($players) > 3) {
-            $location = new CityLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
-            $location->Renown = $game->getRenownForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
-            $location->Controller = $game->getControllerForLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
-            $this->cityLocations[Game::LOCATION_CITY_GOVERNORS_GARDEN] = $location;
+            $this->cityLocations[Game::LOCATION_CITY_GOVERNORS_GARDEN] = $this->buildCityLocation(Game::LOCATION_CITY_GOVERNORS_GARDEN);
         }
+    }
+
+    private function buildCityLocation(string $name): CityLocation
+    {
+        $location = new CityLocation($name);
+        $location->Renown = $this->game->getRenownForLocation($name);
+        $location->Controller = $this->game->getControllerForLocation($name);
+        $location->CanBeClaimed = $this->game->getCanBeClaimedForLocation($name);
+        return $location;
     }
 
     public function createEvent(string $eventName) : Event
@@ -1233,6 +1246,15 @@ class Theah
         }
         
         return count($charactersThatCanChallenge) > 0;
+    }
+
+    // WHY: Central rule for "can a player claim this location right now". Looks only at the
+    // CityLocation->CanBeClaimed flag — cards that want to forbid a claim (e.g. Action_01130
+    // / Indomitable Will) toggle the flag rather than encoding their own card-specific check
+    // in this method. $playerId is currently unused but reserved for future per-player rules.
+    public function canLocationBeClaimedBy(int $playerId, string $location): bool
+    {
+        return $this->getCityLocation($location)->CanBeClaimed;
     }
 
     public function playerCanBasicClaim($playerId): bool

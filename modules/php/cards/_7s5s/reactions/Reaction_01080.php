@@ -124,8 +124,18 @@ class Reaction_01080 extends RiskReaction
         if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id && $event->success)
         {
             $performer = $event->theah->getCharacterById($this->DuelOpponentId);
-            $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $this->DuelLocation);
-            $event->theah->queueEvent($claimEvent);
+            if ($event->theah->canLocationBeClaimedBy($performer->ControllerId, $this->DuelLocation))
+            {
+                $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performer->Id, $this->DuelLocation);
+                $event->theah->queueEvent($claimEvent);
+            }
+            else
+            {
+                $event->theah->game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
+                    'i18n' => ['location'],
+                    'location' => $this->DuelLocation,
+                ]);
+            }
         }
 
         if ($event instanceof EventPlayerTurnEnd && ($this->DuelOpponentId != 0 || $this->DuelLocation != ''))

@@ -56,8 +56,18 @@ class Action_01103a extends RiskCityAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
 
-            $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $performerId, $performer->Location);
-            $event->theah->queueEvent($claimEvent);
+            if ($event->theah->canLocationBeClaimedBy($event->playerId, $performer->Location))
+            {
+                $claimEvent = EventFactory::createLocationClaimedEvent($event->playerId, $performerId, $performer->Location);
+                $event->theah->queueEvent($claimEvent);
+            }
+            else
+            {
+                $event->theah->game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
+                    'i18n' => ['location'],
+                    'location' => $performer->Location,
+                ]);
+            }
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);
