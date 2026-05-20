@@ -32,30 +32,15 @@ class Action_02029 extends RiskAction
             return false;
         }
 
-        $diplomats = $theah->getCharactersInCityByPlayerId($playerId);
-        $diplomats = array_filter($diplomats, fn($c) => $c->hasTrait("Diplomat"));
-
-        $checkedLocations = [];
-        foreach ($diplomats as $diplomat)
-        {
-            if (in_array($diplomat->Location, $checkedLocations))
-            {
-                continue;
-            }
-            $checkedLocations[] = $diplomat->Location;
-
-            $diplomatsAtLocation = $this->getDiplomatsAtLocation($diplomat->Location, $playerId, $theah);
-            $location = $theah->getCityLocation($diplomat->Location);
-            if (count($diplomatsAtLocation) > $location->Renown)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return count($this->getEligiblePerformers($playerId, $theah)) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
+    {
+        return $this->getEligiblePerformers($playerId, $theah);
+    }
+
+    private function getEligiblePerformers(int $playerId, Theah $theah): array
     {
         $diplomats = $theah->getCharactersInCityByPlayerId($playerId);
         $diplomats = array_filter($diplomats, fn($c) => $c->hasTrait("Diplomat"));
@@ -65,7 +50,8 @@ class Action_02029 extends RiskAction
         {
             $diplomatsAtLocation = $this->getDiplomatsAtLocation($diplomat->Location, $playerId, $theah);
             $location = $theah->getCityLocation($diplomat->Location);
-            if (count($diplomatsAtLocation) > $location->Renown)
+            if (count($diplomatsAtLocation) > $location->Renown
+                && $theah->canLocationBeClaimedBy($playerId, $diplomat->Location))
             {
                 $performers[] = $diplomat;
             }

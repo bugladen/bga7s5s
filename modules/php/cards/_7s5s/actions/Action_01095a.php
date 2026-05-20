@@ -25,7 +25,8 @@ class Action_01095a extends CharacterAction
         }
 
         $owner = $this->getOwningCharacter($theah);
-        return $owner->Location == Game::LOCATION_CITY_DOCKS;
+        return $owner->Location == Game::LOCATION_CITY_DOCKS
+            && $theah->canLocationBeClaimedBy($owner->ControllerId, Game::LOCATION_CITY_DOCKS);
     }
 
     public function handleEvent(Event $event)
