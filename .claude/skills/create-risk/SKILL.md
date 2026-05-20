@@ -15,6 +15,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/_7s5s/_01115.php` (Taunt) — **Risk with both a City Action and a Maneuver.** Action moves an adjacent opposing character; Maneuver gates on `actor->ModifiedFinesse > adversary->ModifiedFinesse` and queues a transition for the adversary's controller to pick a hand card to discard.
 - `modules/php/cards/_7s5s/_01061.php` (Well-Equipped) — **Risk with a simple Action and a Maneuver** that conditionally draws a card based on equipped Weapon attachments.
 - `modules/php/cards/faf/_03008.php` (Arrogant) — **Risk with a City Action (Influence-gated Combat challenge) and a Gambling Maneuver.** Uses `Game::NORMAL_CHALLENGE_TYPE`; Influence gate enforced via `IAbilityThatTargetsCharacters::isValidTargetForAbility`.
+- `modules/php/cards/faf/_03009.php` (Follow the Thread) — **Sorcerer Strega Action that moves the performer to an adjacent location filtered by destination contents + Strega Maneuver (-1 Thrust, wound adversary).** Exemplar for "Action:" (not "City Action:") with `parent::getPerformersForAction` (home + city performers), `actFromCardWithLocations` location-chooser sub-state, and the `-1 thrust + wound` maneuver shape.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -98,7 +99,7 @@ Read each clause of the printed Text and classify it before writing code.
 | Card phrase | Pattern |
 |---|---|
 | **`<b>City Action:</b>`** | Pattern A — `RiskCityAction`. The Action lives in `cards/<expansion>/actions/Action_NNNNN.php`. Performer must be in the city (framework helper). |
-| **`<b>Action:</b>`** | Pattern B — `RiskAction`. Defaults to requiring the Risk in hand (`Card::Location == LOCATION_HAND`); override `overrideInHandCheck` only when the card text implies otherwise. |
+| **`<b>Action:</b>`** (no "City") | Pattern B — `RiskAction`. Defaults to requiring the Risk in hand (`Card::Location == LOCATION_HAND`); override `overrideInHandCheck` only when the card text implies otherwise. **Performer pool is home + city** — do NOT filter to city characters even when the effect implies city (e.g. "move to an adjacent location"). The keyword "City" in the heading is mechanical: if absent, home performers are eligible too. |
 | **`<b>Maneuver:</b>`** / **`<b>Duelist Maneuver:</b>`** / **`<b>Gambling Maneuver:</b>`** | Pattern C — `Maneuver` subclass in `cards/<expansion>/maneuvers/Maneuver_NNNNN.php`. Trait-prefixed Maneuvers add an `isAvailable` gate (`hasTrait` or `DUEL_GAMBLED`). |
 | **`<b>Reaction:</b>`** | Pattern D — `RiskReaction`. Pre-commit hook requires hand-only guard (`Location == Game::LOCATION_HAND`) + `setUsed`/`isAvailable` literal calls. |
 | **"While [adversary/condition] …"** (combat-card cost or stat modifier on the Risk itself) | Pattern E — passive on the Risk class. Override `eventCheck` / `handleEvent` directly. See `Maneuver_01084::getManeuverFromCombatCardDiscount` for an in-Maneuver passive (combat-card cost discount). |
@@ -239,9 +240,22 @@ class Action_NNNNN extends RiskAction
 }
 ```
 
-The base `RiskAction::isAvailableToPlayer` enforces "Risk is in hand" unless `$overrideInHandCheck` is true. `RiskAction::getPerformersForAction` adds the player's characters in play to the performer pool.
+The base `RiskAction::isAvailableToPlayer` enforces "Risk is in hand" unless `$overrideInHandCheck` is true. `RiskAction::getPerformersForAction` adds the player's characters in play to the performer pool — **including characters at the player's Home, not just city characters.** When overriding `getPerformersForAction`, start from `parent::getPerformersForAction(...)` and layer trait/state predicates on top; do NOT swap it out for `getCharactersInCityByPlayerId(...)` just because the effect implies city. A character at home has adjacent city locations and can still perform a "Move to adjacent location" Action.
 
-References: `Action_01061` (Well-Equipped's en-garde-equipped-performer Action).
+References: `Action_01061` (Well-Equipped's en-garde-equipped-performer Action), `Action_03009` (Sorcerer Strega Action that moves the performer to an adjacent location).
+
+### Pattern B.1 — "Move your performer to an adjacent location where …"
+
+A common Risk Action shape: the player picks an *adjacent location* meeting some predicate (enemy character at it, available Mercenary at it, claimed by an opponent, etc.). See `Action_03009`. Wire it as:
+
+1. **Filter performers** by trait gates (`Sorcerer`/`Strega`/etc.) and by "has ≥1 valid destination" — `parent::getPerformersForAction(...)` first, then `array_filter`.
+2. **`handleEvent` on `EventActionTriggered`:** queue a `createTransitionEvent(..., "NNNNN", $this->Id)` to a card-specific location-chooser sub-state.
+3. **`getArgsFromAction`:** in the sub-state, expose `performerId` + `locationIds` (the valid adjacent destinations).
+4. **`actFromActionWithIds($ids)`:** `$ids[0]` is the chosen location string (BGA dispatches `actFromCardWithLocations` → `actFromActionWithIds`). Validate it's in the valid list, then queue `createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $location, $engage = false, $owner->Id, $this->Id)` + `createActionResolvedEvent(...)`. If Sorcerer, bracket with `createSorcererAbilityStartEvent` / `createSorcererAbilityPlayedEvent`.
+5. **`$theah->getAdjacentCityLocations($performer->Location, $includeHome = false)`** is the right helper; pass `$includeHome = false` unless the rules text explicitly admits Home as a destination.
+6. **`getCharactersAtLocation($location, $includeUncontrolled = true)`** when "available Mercenary" or other uncontrolled-character predicates are part of the destination filter. The default `$includeUncontrolled = false` will silently drop the available mercenaries.
+7. **"Available Mercenary"** = `! $character->isControlled() && $character->hasTrait("Mercenary")`.
+8. **"Enemy character"** = controlled by an opposing player: `$character->isControlled() && $character->ControllerId != $performer->ControllerId`. Don't conflate with "opposing" (which also requires same location).
 
 ## Pattern C — Maneuver
 
@@ -339,7 +353,32 @@ $event->explanations[] = sprintf(
 
 The calc event can fire multiple times during a single round (recalc on engage state changes etc.) — so put **one-shot** side effects (draw a card, wound, transition) in `EventResolveManeuver`, which fires once.
 
-References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw).
+References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve).
+
+### "-X [Stat] • Wound the adversary" pattern
+
+A common maneuver shape. Two-phase wiring:
+
+```php
+if ($event instanceof EventDuelCalculateManeuverValues && $event->maneuverId == $this->Id)
+{
+    $owner = $this->getOwningCard($event->theah);
+    $event->thrust -= 1;   // or riposte / parry
+    $event->explanations[] = sprintf($event->theah->game->translate("%s subtracts 1 Thrust."), $owner->getInjectCode());
+}
+
+if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
+{
+    $owner = $this->getOwningCard($event->theah);
+    $adversary = $event->theah->getDuelRoundOpponent();
+
+    $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+    $event->theah->eventCheck($woundEvent);
+    $event->theah->queueEvent($woundEvent);
+}
+```
+
+Note the `eventCheck($woundEvent)` call before `queueEvent` — gives prevention/redirection effects a chance to fire. Reference: `Maneuver_03009`, `Maneuver_01055` (Ranged variant), `Technique_01050` (Technique variant of the same shape).
 
 ### Cross-player maneuver sub-state (adversary picks something)
 
@@ -422,6 +461,56 @@ If your Action transitions to a custom sub-state for a non-challenge effect, add
 
 For Pattern C Maneuvers that transition to a sub-state (e.g., `Maneuver_01115`), add an entry under the duel's resolve-maneuver transition map and define the state. Mirror `Maneuver_01115`'s wiring.
 
+### GameState class vs legacy array state
+
+Two formats coexist for sub-state definitions:
+
+- **Legacy array** in `states.7s5s.php` (e.g., `States::HIGH_DRAMA_PLAYER_TURN_01059`). Supports `""` as the default unnamed transition; the Action calls `$game->gamestate->nextState()` (no arg).
+- **GameState class** in `modules/php/States/<expansion>/State_highDramaPhase<NNNNN>.php` (e.g., `State_highDramaPhase03009`, `State_highDramaPhase03cd01_2`). Uses **named transitions** in the `transitions:` array (e.g., `"locationChosen" => HIGH_DRAMA_PLAYER_TURN_EVENTS`); the Action must call `$game->gamestate->nextState("locationChosen")` to match the named key. Don't use `""` as a transition key on GameState classes.
+
+For new card work, prefer the GameState class format. Model after `State_highDramaPhase03009` for a single-step location-chooser, or `State_highDramaPhase03cd01_2` for one with an `actBack` to a previous sub-state.
+
+```php
+class State_highDramaPhase<NNNNN> extends GameState
+{
+    function __construct(protected Game $game)
+    {
+        parent::__construct($game,
+            id: States::HIGH_DRAMA_PLAYER_TURN_<NNNNN>,
+            type: StateType::ACTIVE_PLAYER,
+            name: "highDramaPhase<NNNNN>",
+            description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
+            descriptionMyTurn: clienttranslate('<Card Name>') . clienttranslate(': ${you} must choose ...:'),
+            transitions: [
+                "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            ],
+            updateGameProgression: false,
+            initialPrivate: null,
+        );
+    }
+
+    public function getArgs(): array { return $this->game->argsForState(); }
+
+    #[PossibleAction]
+    public function actFromCardWithLocations(string $locations): void { $this->game->actFromCardWithLocations($locations); }
+
+    public function zombie(int $playerId): void { $this->game->gamestate->nextState("zombie"); }
+}
+```
+
+`actFromCardWithLocations` (string-encoded JSON array of location names) dispatches into the framework, which calls your Action's `actFromActionWithIds(Game $game, int $state, string $stateName, array $ids)` with `$ids[0]` being the chosen location string.
+
+## JS State Hooks
+
+When you add a card-specific sub-state, you usually need three matching JS handlers. For the **`modules/js/On*.faf.js`** files (mirrored for `_7s5s` and `tac`):
+
+- **`OnEnteringState.faf.js`** — under the `methods` map, add `'highDramaPhase<NNNNN>': () => { ... }`. Highlight the performer, make valid targets selectable, stash chosen ids into `this.clientStateArgs` for cleanup.
+- **`OnUpdateActionButtons.faf.js`** — add a confirm button. For location chooser: `this.addActionButton('actCityLocationsSelected', _('Confirm Location'), () => this.onCityLocationsSelected());` + `dojo.addClass('actCityLocationsSelected', 'disabled');`. For card chooser: `actChooseCardSelected` + `onChooseInPlayCardConfirmed`.
+- **`OnLeavingState.faf.js`** — undo highlights / `resetCityLocations()` / clear `this.clientStateArgs`.
+
+Pattern reference for the trio: `highDramaPhase03cd01_2` (Penya — location chooser with both performer and target highlight) and `highDramaPhase03009` (single-performer + location-chooser).
+
 ## Pre-Commit Hook Compliance
 
 The `.githooks/pre-commit` hook checks staged PHP files. Risk-related rules:
@@ -492,6 +581,8 @@ Event factories you'll likely need:
 | `modules/php/cards/_7s5s/_01115.php` (Taunt) | **Risk with City Action and Maneuver, IRiskThatTargetsCharacters.** Maneuver gates on Finesse comparison and transitions to adversary-controller hand-pick sub-state. |
 | `modules/php/cards/_7s5s/_01061.php` (Well-Equipped) | **Risk with Action and Maneuver.** Maneuver conditionally draws based on equipped Weapon attachments. |
 | `modules/php/cards/faf/_03008.php` (Arrogant) | **Risk with Influence-gated City Action Combat challenge AND a Gambling Maneuver.** `NORMAL_CHALLENGE_TYPE` (no custom intervention rules); Influence comparison in `isValidTargetForAbility`. Gambling Maneuver gated on `DUEL_GAMBLED` plus actor>adversary Influence. |
+| `modules/php/cards/faf/_03009.php` (Follow the Thread) | **Sorcerer Strega Action (not City Action) that moves the performer to an adjacent location filtered by destination contents (enemy character OR available Mercenary) + Strega Maneuver (-1 Thrust, wound adversary).** Uses `parent::getPerformersForAction` so home performers are eligible. Pairs with `State_highDramaPhase03009` (GameState class with `"locationChosen"` named transition). |
+| `modules/php/cards/_7s5s/_01059.php` (Regroup) | **Simple "Move your performer to an adjacent City location" City Action.** The canonical move-to-adjacent template — uses legacy array-format state `highDramaPhase01059` (`""` default transition). |
 
 ## When You Finish
 
@@ -504,6 +595,7 @@ Event factories you'll likely need:
    - "Sorcerer …" → `implements ISorcererAbility` + emit start/played events.
    - "Strega …" / "Mercenary …" / "Diplomat …" / "Duelist …" / "Gambling …" → performer-trait or duel-state gate. NOT a Sorcerer ability.
    - Both can stack.
+   - **"City Action:" vs "Action:"** — only the "City" prefix restricts performers to city characters. A plain "Action:" admits home performers too, even when the effect *implies* city movement. Don't pre-filter to `getCharactersInCityByPlayerId(...)`; start from `parent::getPerformersForAction(...)`.
 7. **Use Modified stats** (`ModifiedInfluence`, `ModifiedFinesse`, …) for in-duel and in-city comparisons.
 8. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
 9. Pre-commit hook checks on every file:
@@ -513,3 +605,5 @@ Event factories you'll likely need:
    - **`implements ISorcererAbility`:** both `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` called.
    - No class implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards`.
 10. Lint touched PHP files (`php -l`) before committing.
+11. **For card-specific sub-states (GameState class):** the Action's `nextState(...)` argument must match a *named* transition key (e.g., `"locationChosen"`); the empty `""` default works only for legacy array-format states in `states.7s5s.php`.
+12. **For card-specific sub-states:** also add `OnEnteringState`/`OnUpdateActionButtons`/`OnLeavingState` handlers in the matching expansion's JS file (e.g., `modules/js/On*.faf.js`).

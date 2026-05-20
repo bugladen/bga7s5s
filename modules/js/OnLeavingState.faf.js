@@ -104,6 +104,19 @@
                 }
             },
 
+            'highDramaPhase03009': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+
+                    const card = this.cardProperties[this.clientStateArgs.performerId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.removeClass(image, '_7sfs-chosen');
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase03cd13': () => {
                 if (this.isCurrentPlayerActive()) {
                     const cardId = this.clientStateArgs && this.clientStateArgs.crabsCardId;

@@ -74,6 +74,11 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase03009': () => {
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'highDramaPhase03cd03_2': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Muster'), () => this.onMusterCardSelected());
                 dojo.addClass('actChooseCardSelected', 'disabled');
