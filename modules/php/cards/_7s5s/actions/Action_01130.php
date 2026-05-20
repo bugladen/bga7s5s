@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01130 extends RiskAction
@@ -98,10 +99,28 @@ class Action_01130 extends RiskAction
             $owner = $this->getOwningCard($event->theah);
             if ($event->playerId != $owner->ControllerId && $event->location == $this->ControlledLocation)
             {
-                $game = $event->theah->game;    
+                $game = $event->theah->game;
                 $owner = $this->getOwningCard($event->theah);
                 $character = $event->theah->getCharacterById($this->ControllingCharacterId);
                 throw new \BgaUserException(sprintf($game->translate("%s: %s is still at the location. Location cannot be claimed."), $owner->Name, $character->Name));
+            }
+        }
+
+        // WHY: Catch the basic Claim Action at initiation (before reactions to the pressure are queued).
+        // Throwing later — when the EventLocationClaimed is checked inside the EventLocationPressureResult
+        // handler — happens mid-event-processing and leaves the game stuck after the player has already
+        // resolved any pressure-time reactions (e.g. Reaction_01184).
+        if ($event instanceof EventPressureOccuring && $this->IsActive)
+        {
+            $game = $event->theah->game;
+            if ($game->globals->get(Game::IS_BASIC_CLAIM_ACTION, false))
+            {
+                $owner = $this->getOwningCard($event->theah);
+                if ($event->playerId != $owner->ControllerId && $event->location == $this->ControlledLocation)
+                {
+                    $character = $event->theah->getCharacterById($this->ControllingCharacterId);
+                    throw new \BgaUserException(sprintf($game->translate("%s: %s is still at the location. Location cannot be claimed."), $owner->Name, $character->Name));
+                }
             }
         }
     }
