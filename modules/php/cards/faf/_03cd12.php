@@ -58,14 +58,25 @@ class _03cd12 extends CityEventCard
                 return;
             }
 
-            $theah->game->notify->all("message", clienttranslate('${card_inject_code}: each player has an equal number of characters at ${location_name}. The location becomes uncontrolled.'), [
-                'i18n' => ['location_name'],
-                'card_inject_code' => $this->getInjectCode(),
-                'location_name' => $this->Location,
-            ]);
+            if ($theah->canLocationBecomeUncontrolledBy($location->Controller, $this->Location))
+            {
+                $theah->game->notify->all("message", clienttranslate('${card_inject_code}: each player has an equal number of characters at ${location_name}. The location becomes uncontrolled.'), [
+                    'i18n' => ['location_name'],
+                    'card_inject_code' => $this->getInjectCode(),
+                    'location_name' => $this->Location,
+                ]);
 
-            $uncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent($location->Controller, $this->Location);
-            $theah->queueEvent($uncontrolledEvent);
+                $uncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent($location->Controller, $this->Location);
+                $theah->queueEvent($uncontrolledEvent);
+            }
+            else
+            {
+                $theah->game->notify->all("message", clienttranslate('${card_inject_code}: ${location_name} cannot become uncontrolled.'), [
+                    'i18n' => ['location_name'],
+                    'card_inject_code' => $this->getInjectCode(),
+                    'location_name' => $this->Location,
+                ]);
+            }
         }
     }
 }
