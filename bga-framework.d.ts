@@ -496,12 +496,28 @@ declare class PlayerPanels {
   getElement(playerId: number): HTMLDivElement;
 
   /**
+   * Return the div on the player board where the dev can add counters and other game specific indicators.
+   *
+   * @param {number} playerNo the player no
+   * @returns the div element for game specific content on player panels
+   */
+  getElementByNo(playerNo: number): HTMLDivElement;
+
+  /**
    * Return the score counter of a player.
    *
    * @param {number} playerId the player id
    * @returns the score counter
    */
   getScoreCounter(playerId: number): Counter;
+
+  /**
+   * Return the score counter of a player.
+   *
+   * @param {number} playerNo the player no
+   * @returns the score counter
+   */
+  getScoreCounterByNo(playerNo: number): Counter;
 
   /**
    * Add a player panel for an automata.
