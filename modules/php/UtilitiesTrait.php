@@ -67,15 +67,21 @@ trait UtilitiesTrait
      */
     public function safeUnserialize(string $data): mixed
     {
-        // First, try normal unserialize
-        $result = @unserialize($data);
-        if ($result !== false) {
-            return $result;
+        // First, try normal unserialize.
+        // WHY: gameinfos.inc.php sets 'exception_on_warning' => true, which makes BGA's
+        // error handler convert unserialize() warnings into ErrorExceptions, bypassing @.
+        // We must catch the exception to allow the repair logic below to run.
+        $originalErrorMsg = 'unknown error';
+        try {
+            $result = @unserialize($data);
+            if ($result !== false) {
+                return $result;
+            }
+            $originalError = error_get_last();
+            $originalErrorMsg = $originalError ? $originalError['message'] : 'unknown error';
+        } catch (\ErrorException $e) {
+            $originalErrorMsg = $e->getMessage();
         }
-
-        // Capture the original error
-        $originalError = error_get_last();
-        $originalErrorMsg = $originalError ? $originalError['message'] : 'unknown error';
 
         // Count fixes applied for debugging
         $fixCount = 0;
@@ -130,14 +136,17 @@ trait UtilitiesTrait
             throw new \Exception("Failed to fix serialized data (pass 2): regex error. PCRE error code: " . preg_last_error());
         }
 
-        $result = @unserialize($fixed);
-        if ($result !== false) {
-            return $result;
+        $errorMsg = 'unknown error';
+        try {
+            $result = @unserialize($fixed);
+            if ($result !== false) {
+                return $result;
+            }
+            $error = error_get_last();
+            $errorMsg = $error ? $error['message'] : 'unknown error';
+        } catch (\ErrorException $e) {
+            $errorMsg = $e->getMessage();
         }
-
-        // Still failed - get the specific error for debugging
-        $error = error_get_last();
-        $errorMsg = $error ? $error['message'] : 'unknown error';
         
         // Find potential protected properties for debugging
         preg_match_all('/s:(\d+):"\*([^"]+)"/', $data, $protectedProps);
