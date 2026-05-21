@@ -13,6 +13,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/_7s5s/_01083.php` (Legendary Reputation) — **RiskCityAction issuing a Combat challenge** with custom challenge type (Only Leaders can intervene). The exemplar for "Your performer issues a [X] challenge" Risks.
 - `modules/php/cards/_7s5s/_01084.php` (Master of Valroux Style) — **Duelist Maneuver** (+1 Riposte + draw card + adversary penalty). Maneuver isAvailable gated on `hasTrait('Duelist')`. Combat-card discount when adversary engaged.
 - `modules/php/cards/_7s5s/_01115.php` (Taunt) — **Risk with both a City Action and a Maneuver.** Action moves an adjacent opposing character; Maneuver gates on `actor->ModifiedFinesse > adversary->ModifiedFinesse` and queues a transition for the adversary's controller to pick a hand card to discard.
+- `modules/php/cards/faf/_03011.php` (Provoking the Pack) — **Friendly-character variant of the move-an-adjacent-character pattern, plus a "control trait at duel location" Gambling Maneuver.** City Action gated on "performer is opposed", target is one of the player's own Thug/Bodyguard at an adjacent location. The exemplar when the chooser target is your own character (not an enemy) — same `IAbilityThatTargetsCharacters` interface, with `isValidTargetForAbility` flipped to `ControllerId == performer->ControllerId`.
 - `modules/php/cards/_7s5s/_01061.php` (Well-Equipped) — **Risk with a simple Action and a Maneuver** that conditionally draws a card based on equipped Weapon attachments.
 - `modules/php/cards/faf/_03008.php` (Arrogant) — **Risk with a City Action (Influence-gated Combat challenge) and a Gambling Maneuver.** Uses `Game::NORMAL_CHALLENGE_TYPE`; Influence gate enforced via `IAbilityThatTargetsCharacters::isValidTargetForAbility`.
 - `modules/php/cards/faf/_03009.php` (Follow the Thread) — **Sorcerer Strega Action that moves the performer to an adjacent location filtered by destination contents + Strega Maneuver (-1 Thrust, wound adversary).** Exemplar for "Action:" (not "City Action:") with `parent::getPerformersForAction` (home + city performers), `actFromCardWithLocations` location-chooser sub-state, and the `-1 thrust + wound` maneuver shape.
@@ -91,7 +92,7 @@ Field notes:
 - **`WealthCost` is mandatory** — every Risk has a printed Wealth cost.
 - **Combat stats:** set whichever the card shows. Default 0 is fine if the stat is absent. Use `Dashed{Riposte,Parry,Thrust}` for printed-dashed values (the card shows a dashed line meaning "this stat cannot be modified above 0" — handled by the framework when `addParry` etc. is called).
 - **Traits must exist in `TraitNames::$TraitsJson`** (`modules/php/TraitNames.php`). Add missing ones in alphabetical order. (Memory feedback.)
-- **`IRiskThatTargetsCharacters`:** mark on the Risk class itself (not its Actions/Maneuvers) when any of its abilities targets a character. Lets framework hooks know to consult this card for "before-being-targeted" effects. Compare `_01083`, `_01115`, `_03008`.
+- **`IRiskThatTargetsCharacters`:** mark on the Risk class itself (not its Actions/Maneuvers) when any of its abilities targets a character — **including when the target is your own character** (the interface tracks "this Risk hands the player a character chooser", not enemy-only targeting). Compare `_01083`, `_01115`, `_03008`, `_03011`.
 
 ## Pick the Right Ability Shape
 
@@ -211,6 +212,32 @@ References: `Action_01083` (Leader-only intervention, custom challenge type), `A
 When the printed text says "Your performer issues a challenge," the framework picks the performer first via `RequiresPerformerSelected = true`. The chosen performer's id is in `$game->globals->get(Game::CHOSEN_PERFORMER)` by the time `isValidTargetForAbility` runs.
 
 Override `getPerformersForAction` to filter the candidate list (must be in city, must `canChallenge()`, must have at least one valid target). The base `RiskCityAction::getPerformersForAction` already filters to city characters; layer your predicates on top.
+
+### Pattern A.1 — City Action that moves a chosen character (enemy OR friendly)
+
+For City Actions like "Target an adjacent enemy character • Move them …" (`_01115` Taunt) and "Move your adjacent Thug or Bodyguard to this location" (`_03011` Provoking the Pack), the shape is identical except for who you target:
+
+1. **`RiskCityAction implements IAbilityThatTargetsCharacters`**, `RequiresPerformerSelected = true`. Mark the **Risk class itself** with `IRiskThatTargetsCharacters`.
+2. **Performer filter** in `isAvailableToPlayer` + `getPerformersForAction`: the player's city characters with at least one valid target at an adjacent location (use `getAdjacentCityLocations(..., $includeHome = true)`).
+3. **`isValidTargetForAbility`** branches on enemy vs friendly:
+   - **Enemy-target:** `$character->ControllerId == $performer->ControllerId` → reject ("you cannot move your own character"). See `Action_01115`.
+   - **Friendly-target:** `$character->ControllerId != $performer->ControllerId` → reject ("you may only move one of your own characters"). See `Action_03011`. Layer trait predicates (`hasTrait("Thug") || hasTrait("Bodyguard")`) on top.
+   - Always: target's location must be in the performer's adjacent-locations set.
+4. **`handleEvent` on `EventActionTriggered`** queues `createTransitionEvent(..., "NNNNN", $this->Id)` to a card-specific GameState class sub-state. State id `4<NNNNN>`; named transition `"targetChosen" => HIGH_DRAMA_PLAYER_TURN_EVENTS` (and `"zombie"`). Possible action: `actFromCardWithId` (single character id, NOT a location). The JS confirm button is `actChooseCardSelected` + `onChooseInPlayCardConfirmed`.
+5. **`actFromActionWithId`** validates via `isValidTargetForAbility`, queues `createCardMovingEvent(...)` + `createActionResolvedEvent(...)`, then `$game->gamestate->nextState("targetChosen")`.
+
+The card-specific sub-state is needed (you can't use the shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`) because no challenge is being issued — the shared chooser drives the challenge flow.
+
+### Common precondition predicates
+
+A few wordings recur often:
+
+- **"If your performer is opposed":** there is at least one opposing character at the performer's location.
+  ```php
+  count($theah->getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId)) > 0
+  ```
+  `getOpposingCharactersAtLocation` already filters via `isNotControlledByPlayer` which excludes uncontrolled — satisfies the "opposing = different controller AND controlled" memory feedback automatically. See `Action_03011`.
+- **"Your adjacent X":** any of the player's characters with trait/property X at a location in `getAdjacentCityLocations($performer->Location, $includeHome = true)`. The `$includeHome = true` is generally correct when scanning for friendly home-pool characters; for "move TO an adjacent location" use `$includeHome = false` (you don't move someone *to* home from a city slot).
 
 ## Pattern B — Action (`RiskAction`)
 
@@ -354,7 +381,27 @@ $event->explanations[] = sprintf(
 
 The calc event can fire multiple times during a single round (recalc on engage state changes etc.) — so put **one-shot** side effects (draw a card, wound, transition) in `EventResolveManeuver`, which fires once.
 
-References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve).
+References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "you control a trait X at the duel location" predicate + pure `+1 Riposte` in calc, no Resolve handler).
+
+### Pure-calc maneuvers (no `EventResolveManeuver` needed)
+
+When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`).
+
+### "You control a trait X at the duel location" gate
+
+```php
+$actor = $theah->getDuelRoundActor();
+if ($actor === null) return false;
+
+foreach ($theah->getCharactersAtLocation($actor->Location) as $character)
+{
+    if ($character->ControllerId != $playerId) continue;
+    if ($character->hasTrait("Thug") || $character->hasTrait("Bodyguard")) return true;
+}
+return false;
+```
+
+`$actor->Location` is the canonical "this location" in a maneuver — duels always take place at the actor's (and adversary's) location, and there is no separate "duel location" global. The `ControllerId == $playerId` check excludes uncontrolled characters (their `ControllerId == 0`), so no extra `isControlled()` call is needed. Reference: `Maneuver_03011`.
 
 ### "-X [Stat] • Wound the adversary" pattern
 
@@ -581,7 +628,7 @@ A Risk card that both extends `Risk` AND has Actions/Maneuvers/Reactions in sepa
 - **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order.
 - **Typed PHP parameters required.** Every function/method signature must declare a type for every parameter — no bare `$foo`. Use concrete types (`Card $owner`, `Character $performer`, `Game $game`, `Theah $theah`, `Event $event`, `int $cardId`, `string $reactionId`). Add the `use` import.
 - **"Strega" / "Mercenary" / "Diplomat" / "Duelist" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait("Strega")` on the performer / `getDuelRoundActor()`. They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack.
-- **`IRiskThatTargetsCharacters`** — mark on the Risk class itself when any of its abilities targets a character (Actions/Reactions/Maneuvers that fire `EventCharacterTargeted` or use `IAbilityThatTargetsCharacters`). Compare `_01083`, `_01115`, `_03008`.
+- **`IRiskThatTargetsCharacters`** — mark on the Risk class itself when any of its abilities targets a character (Actions/Reactions/Maneuvers that fire `EventCharacterTargeted` or use `IAbilityThatTargetsCharacters`). Applies equally for friendly-target choosers, not just enemy-target. Compare `_01083`, `_01115`, `_03008`, `_03011`.
 
 ## Cross-Cutting Helpers
 
@@ -621,6 +668,7 @@ Event factories you'll likely need:
 | `modules/php/cards/_7s5s/_01061.php` (Well-Equipped) | **Risk with Action and Maneuver.** Maneuver conditionally draws based on equipped Weapon attachments. |
 | `modules/php/cards/faf/_03008.php` (Arrogant) | **Risk with Influence-gated City Action Combat challenge AND a Gambling Maneuver.** `NORMAL_CHALLENGE_TYPE` (no custom intervention rules); Influence comparison in `isValidTargetForAbility`. Gambling Maneuver gated on `DUEL_GAMBLED` plus actor>adversary Influence. |
 | `modules/php/cards/faf/_03009.php` (Follow the Thread) | **Sorcerer Strega Action (not City Action) that moves the performer to an adjacent location filtered by destination contents (enemy character OR available Mercenary) + Strega Maneuver (-1 Thrust, wound adversary).** Uses `parent::getPerformersForAction` so home performers are eligible. Pairs with `State_highDramaPhase03009` (GameState class with `"locationChosen"` named transition). |
+| `modules/php/cards/faf/_03011.php` (Provoking the Pack) | **Friendly-target City Action move + "control trait at duel location" Gambling Maneuver.** City Action gated on "performer is opposed" (`getOpposingCharactersAtLocation > 0`); target is one of the player's own characters with `Thug`/`Bodyguard` at an adjacent location (incl. home). The friendly-target counterpart to Taunt's enemy-target chooser — same `IAbilityThatTargetsCharacters` shape with the controller check flipped. Maneuver is pure `+1 Riposte` in calc with no `EventResolveManeuver` handler. Pairs with `State_highDramaPhase03011` (GameState class with `"targetChosen"` named transition, `actFromCardWithId` possible action). |
 | `modules/php/cards/_7s5s/_01059.php` (Regroup) | **Simple "Move your performer to an adjacent City location" City Action.** The canonical move-to-adjacent template — uses legacy array-format state `highDramaPhase01059` (`""` default transition). |
 | `modules/php/cards/faf/_03010.php` (Manipulative) | **RiskReaction with multi-stage cross-player choice on top of the pay state (Pattern D.1).** Triggers on both `EventApproachCharacterPlayed` AND `EventCharacterMustered` (filtered by `$event->fromLocation == LOCATION_APPROACH`). After pay → `EventRiskReactionTriggered` chains a second `createReactionTransitionEvent` to the opposing player for the return-vs-wound choice. `$stage` field drives `getReactionButtonProperties()`. Reset of in-play state on return-to-Approach is handled centrally by the EventHub `EventCharacterPutIntoApproachDeck` handler. |
 
