@@ -92,4 +92,7 @@ $gameinfos = [
         //  minimum possible value: 320 (the lowest value you specify, the better the display is on mobile)
         'min' => 740,
     ],
+
+    //better detect warnings, that are usually source of undetected bugs
+    'exception_on_warning' => true,
 ];
