@@ -46,7 +46,7 @@ class Reaction_01039 extends CardReaction
         {
             $philip = $this->getOwningCharacter($event->theah);
             $attachment = $event->theah->getAttachmentById($event->attachmentId);
-            if ($event->characterId == $philip->Id && $event->theah->cardInCity($philip) && ! $attachment->FakeAttachment)
+            if ($event->characterId == $philip->Id && ! $attachment->FakeAttachment)
             {
                 $reactionEvent = EventFactory::createReactionTransitionEvent($philip->ControllerId, $philip->Id, $this->Id);
                 $event->theah->queueEvent($reactionEvent);
