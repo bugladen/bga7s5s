@@ -76,8 +76,8 @@
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-buttons">
-                <button class="deck-picker-group-button _7sfs-deck-picker-tab-selected" onclick="gameui.deckPickerGroupShowTab(1)">Core Set</button>
-                <button class="deck-picker-group-button" onclick="gameui.deckPickerGroupShowTab(2)">Tooth & Claw Set</button>
+                <button class="deck-picker-group-button _7sfs-deck-picker-tab-selected" onclick="gameui.deckPickerGroupShowTab(1)">Core</button>
+                <button class="deck-picker-group-button" onclick="gameui.deckPickerGroupShowTab(2)">Tooth & Claw</button>
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-buttons">

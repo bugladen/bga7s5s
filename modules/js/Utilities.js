@@ -157,13 +157,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
             tab.classList.toggle('_7sfs-deck-picker-active', i === tabIndex);
 
             //If tableIndex matches get the deck name from the data-deck-name attribute
-            if (tabIndex === i) 
+            if (tabIndex === i)
             {
                 const deckName = tab.getAttribute('data-deck-name');
                 this.selectedDeck = deckName;
                 var btnDeckSelect = document.getElementById('btnDeckSelect');
                 btnDeckSelect.disabled = false;
                 btnDeckSelect.classList.add('_7sfs-deck-picker-confirm-ready');
+                dojo.removeClass('actConfirmDeck', 'disabled');
             }
         });
 
@@ -173,11 +174,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
         });
 
         // If the tabIndex is 0, disable the deck select button
-        if (tabIndex === 0) 
+        if (tabIndex === 0)
         {
             var btnDeckSelect = document.getElementById('btnDeckSelect');
             btnDeckSelect.disabled = true;
             btnDeckSelect.classList.remove('_7sfs-deck-picker-confirm-ready');
+            dojo.addClass('actConfirmDeck', 'disabled');
         }
 
         this.selectedDeck = tabIndex;
