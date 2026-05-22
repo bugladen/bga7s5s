@@ -474,7 +474,7 @@
 
             'highDramaPhase01085': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-                this.addActionButton(`actDone`, _('Done'), () =>  this.bgaPerformAction('actFromCardWithId', {id: 0}));
+                this.statusBar.addActionButton('No More Movement', () => this.bgaPerformAction('actFromCardWithId', {id: 0}), { id: 'actDone', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
