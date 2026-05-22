@@ -2236,6 +2236,17 @@ $machinestates = [
                         "02043b" => States::DUEL_CHOOSE_TECHNIQUE_02043b,
                         "02054" => States::DUEL_CHOOSE_TECHNIQUE_02054,
                         "02055" => States::DUEL_CHOOSE_TECHNIQUE_02055,
+
+                        // Neutral/Ussura maneuver transitions — enabled so Technique_02043a
+                        // (Miyato and Ota) can copy state-bearing maneuvers from Ussura/Neutral
+                        // combat cards. Mirrors entries in DUEL_RESOLVE_MANEUVER_EVENTS.
+                        "01133" => States::DUEL_RESOLVE_MANEUVER_01133,
+                        "01135" => States::DUEL_RESOLVE_MANEUVER_01135,
+                        "01142" => States::DUEL_RESOLVE_MANEUVER_01142,
+                        "01164" => States::DUEL_RESOLVE_MANEUVER_01164,
+                        "01165" => States::DUEL_RESOLVE_MANEUVER_01165,
+                        "02057" => States::DUEL_RESOLVE_MANEUVER_02057,
+
                         "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                         "endOfGame" => States::END_GAME
                         ]

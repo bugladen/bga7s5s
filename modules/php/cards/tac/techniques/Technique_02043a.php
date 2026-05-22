@@ -144,9 +144,22 @@ class Technique_02043a extends Technique
                 $this->clonedManeuverId = $clonedManeuver->Id;
 
                 $adversaryId = $event->theah->getDuelOpponentId($owner->Id);
+
+                // WHY: Some maneuvers (e.g. Maneuver_01135) trigger their state
+                // transition from EventManeuverActivated, not EventResolveManeuver.
+                // Queue Activated first so the clone's transition handler fires and
+                // the player can interact with the copied maneuver's choice state.
+                $activateEvent = EventFactory::createManeuverActivatedEvent($owner->ControllerId, $owner->Id, $clonedManeuver->Id);
+                $event->theah->eventCheck($activateEvent);
+                $event->theah->queueEvent($activateEvent);
+
                 $resolveEvent = EventFactory::createResolveManeuverEvent($owner->ControllerId, $adversaryId, $clonedManeuver->Id);
                 $event->theah->eventCheck($resolveEvent);
                 $event->theah->queueEvent($resolveEvent);
+
+                $calcEvent = EventFactory::createDuelCalculateManeuverValuesEvent($owner->Id, $adversaryId, $clonedManeuver->Id);
+                $event->theah->eventCheck($calcEvent);
+                $event->theah->queueEvent($calcEvent);
             }
         }
 
