@@ -1199,8 +1199,14 @@
 
             'highDramaPhase01162': () => {
                 if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                }
+            },
+
+            'highDramaPhase01162_2': () => {
+                if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
-                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    card = this.cardProperties[this.clientStateArgs.targetId];
                     const image = $(`${card.divId}_image`);
                     dojo.removeClass(image, '_7sfs-chosen');
                 }
