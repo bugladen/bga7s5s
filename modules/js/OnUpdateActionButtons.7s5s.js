@@ -612,9 +612,8 @@
                 args.args.actions.forEach((action) => {
                     this.addActionButton(`actChooseAction-${action.id}`, action.name, () => this.bgaPerformAction('actFromCardWithActionId', {actionSourceId: action.sourceId, actionId: action.id}));
                 });
-                if (args.args.actions.length === 0) {
-                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
-                }
+                if (args.args.actions.length == 0)
+                    this.addActionButton(`actCancel`, _('No Available Sorceries. Cancel'), () => this.bgaPerformAction('actFromCardPass', {}));
             },
 
             'highDramaPhase01133': () => {
@@ -706,7 +705,7 @@
                     this.addActionButton(`actChooseAction-${action.id}`, action.name, () => this.bgaPerformAction('actFromCardWithActionId', {actionSourceId: action.sourceId, actionId: action.id}));
                 });
                 if (args.args.actions.length == 0)
-                    this.addActionButton(`actCancel`, _('No Available Actions. Cancel'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
+                    this.addActionButton(`actCancel`, _('No Available Risks. Cancel'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
             },
 
             'highDramaPhase01156': () => {
