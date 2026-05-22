@@ -1475,6 +1475,34 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const city = $('city');
         dojo.place( this.format_block( 'jstpl_duel_table', {
         }),  city, 'before');
+        this.setupDuelScrollSync();
+    },
+
+    setupDuelScrollSync: function() {
+        const top = $('duel_scroll_top');
+        const bottom = $('duel');
+        if (!top || !bottom) return;
+
+        // WHY: guard against feedback loop where one scrollbar fires a scroll event
+        // that updates the other, which fires its own scroll event, and so on.
+        let syncing = false;
+        top.addEventListener('scroll', () => {
+            if (syncing) { syncing = false; return; }
+            syncing = true;
+            bottom.scrollLeft = top.scrollLeft;
+        });
+        bottom.addEventListener('scroll', () => {
+            if (syncing) { syncing = false; return; }
+            syncing = true;
+            top.scrollLeft = bottom.scrollLeft;
+        });
+    },
+
+    updateDuelScrollWidth: function() {
+        const table = $('duel_table');
+        const inner = $('duel_scroll_top_inner');
+        if (table && inner)
+            inner.style.width = table.scrollWidth + 'px';
     },
 
     displayDuelRow: function(row)
@@ -1641,7 +1669,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.addClass(`duel_round_${row.round}_ending_defender_threat_row`, '_7sfs-duel-acting-character');
         }
 
-        this.addTippyTooltip(`duel_round_${row.round}_wounds`, `<div class='_7sfs-basic-tooltip'>${_("The amount of wounds the Actor took, or will take, for this round")}</div>` );        
+        this.addTippyTooltip(`duel_round_${row.round}_wounds`, `<div class='_7sfs-basic-tooltip'>${_("The amount of wounds the Actor took, or will take, for this round")}</div>` );
+
+        this.updateDuelScrollWidth();
     },
 
     showApproachDeckAtTop: function() {

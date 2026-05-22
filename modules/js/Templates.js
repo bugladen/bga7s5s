@@ -258,6 +258,8 @@
         `;
         
         window.jstpl_duel_table = `
+        <div id="duel_wrapper">
+        <div id="duel_scroll_top"><div id="duel_scroll_top_inner"></div></div>
         <div id="duel">
         <table id="duel_table" class="duel">
         <tr id="duel_header_row">
@@ -271,6 +273,7 @@
             <th>Wounds</th>
         </tr>
         </table>
+        </div>
         </div>
         `;
         
