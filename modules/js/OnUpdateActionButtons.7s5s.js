@@ -612,6 +612,9 @@
                 args.args.actions.forEach((action) => {
                     this.addActionButton(`actChooseAction-${action.id}`, action.name, () => this.bgaPerformAction('actFromCardWithActionId', {actionSourceId: action.sourceId, actionId: action.id}));
                 });
+                if (args.args.actions.length === 0) {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
 
             'highDramaPhase01133': () => {

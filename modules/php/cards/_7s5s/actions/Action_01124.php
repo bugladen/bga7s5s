@@ -50,8 +50,42 @@ class Action_01124 extends CharacterAction implements ISorcererAbility, IAbility
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $owner = $this->getOwningCharacter($event->theah);
+
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
+            $event->theah->queueEvent($engageEvent);
+
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01124", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+    }
+
+    public function actFromActionPass(Game $game, int $state): void
+    {
+        parent::actFromActionPass($game, $state);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01124)
+        {
+            $owner = $this->getOwningCard($game->theah);
+
+            $game->notify->all("message", clienttranslate('${player_name} has canceled out of ${owner_inject_code}: [${action_name}] due to no available actions.
+            Since ${owner_inject_code} had to engage to set up this action, ${owner_inject_code} has been en garded and the player gains an extra action.'), [
+                "i18n" => ["action_name"],
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                "action_name" => $this->Name,
+                "owner_inject_code" => $owner->getInjectCode(),
+            ]);
+
+            $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
+            $game->theah->queueEvent($engardeEvent);
+
+            $this->setUsed($game->theah, false);
+
+            $game->globals->set(Game::EXTRA_ACTIONS, 1);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
+            $game->gamestate->nextState("pass");
         }
     }
 
@@ -132,9 +166,6 @@ class Action_01124 extends CharacterAction implements ISorcererAbility, IAbility
 
             $game->globals->set(Game::CHOSEN_ACTION, $actionId);
             $game->globals->set(Game::CHOSEN_CARD, $riskCard->Id);
-
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id);
-            $game->theah->queueEvent($engageEvent);
 
             $sorceryEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $owner->Id);
             $game->theah->queueEvent($sorceryEvent);
