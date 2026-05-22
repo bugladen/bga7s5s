@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 
@@ -51,46 +52,59 @@ class _01069 extends Character implements IHasActions
         if (! ($event instanceof EventCharacterWounded))
         {
             parent::handleEvent($event);
+            return;
         }
 
         //Maxime ignores wounds from Sorceries and Sorcerer abilities he performs.
-        if ($event instanceof EventCharacterWounded)
+        if ($event->characterId != $this->Id || $event->sourceId == 0)
         {
-            $ignoreWounds = false;
-            if ($event->characterId != $this->Id || $event->sourceId == 0)
-            {
-                parent::handleEvent($event);
-                return;
-            }
+            parent::handleEvent($event);
+            return;
+        }
 
-            $source = $event->theah->getCardById($event->sourceId);
-            if ($source?->Id == $this->Id || in_array($event->sourceId, $this->Attachments))
+        $source = $event->theah->getCardById($event->sourceId);
+        if ($source == null)
+        {
+            parent::handleEvent($event);
+            return;
+        }
+
+        $ignoreWounds = false;
+
+        // Sorcery cards: a Sorcery's effect that wounds a character wounds its chosen
+        // sorcerer (the performer), so if Maxime is the wound target he's the performer.
+        if ($source->hasTrait("Sorcery"))
+        {
+            $ignoreWounds = true;
+        }
+
+        // Sorcerer abilities (ISorcererAbility) on any card: Maxime performs it when
+        // he is the CHOSEN_PERFORMER. Covers cases where the source is a Sorcery card,
+        // Maxime himself, an attachment on Maxime, or any other host of the ability.
+        if (! $ignoreWounds && $event->abilityId != '')
+        {
+            $ability = $source->getAbilityById($event->abilityId);
+            if ($ability instanceof ISorcererAbility)
             {
-                $sorcererAbility = false;
-                if ($event->abilityId != '')
+                $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
+                if ($performerId == $this->Id)
                 {
-                    $ability = $source->getAbilityById($event->abilityId);
-                    if ($ability && $ability instanceof ISorcererAbility)
-                    {
-                        $sorcererAbility = true;
-                    }
+                    $ignoreWounds = true;
                 }
+            }
+        }
 
-                $ignoreWounds = $sorcererAbility || $source->hasTrait("Sorcery");
-            }
-
-            if ($ignoreWounds)
-            {
-                $event->theah->game->notify->all("message", clienttranslate('${character_inject_code} ignores wounds from Sorceries and Sorcerer abilities he performs. ${wounds} wound(s) ignored from ${source_inject_code}.'), [
-                    "character_inject_code" => $this->getInjectCode(),
-                    "source_inject_code" => $source->getInjectCode(),
-                    "wounds" => $event->wounds,
-                ]);
-            }
-            else
-            {
-                parent::handleEvent($event);
-            }
+        if ($ignoreWounds)
+        {
+            $event->theah->game->notify->all("message", clienttranslate('${character_inject_code} ignores wounds from Sorceries and Sorcerer abilities he performs. ${wounds} wound(s) ignored from ${source_inject_code}.'), [
+                "character_inject_code" => $this->getInjectCode(),
+                "source_inject_code" => $source->getInjectCode(),
+                "wounds" => $event->wounds,
+            ]);
+        }
+        else
+        {
+            parent::handleEvent($event);
         }
     }
 
