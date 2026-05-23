@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
+use Bga\GameFramework\StateType;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
@@ -355,7 +356,7 @@ class Theah
         else 
         {
             $state = $this->game->gamestate->getCurrentMainState();
-            if ($state['type'] == "activeplayer")
+            if ($state->type == StateType::ACTIVE_PLAYER)
             {
                 $currentPlayerId = $this->game->globals->get(Game::CURRENT_PLAYER);
                 if ($currentPlayerId && ! $skipTransitions) 

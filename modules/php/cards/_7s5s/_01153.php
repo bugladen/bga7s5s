@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 
 class _01153 extends FactionAttachment
@@ -47,7 +48,7 @@ class _01153 extends FactionAttachment
     {
         parent::eventCheck($event);
 
-        if ($event instanceof EventCharacterWounded && $event->characterId == $this->AttachedToId)
+        if ($event instanceof EventCharacterBeingWounded && $event->characterId == $this->AttachedToId)
         {
             $inDuel = $event->theah->game->globals->get(Game::IN_DUEL);            
             if ($inDuel)
