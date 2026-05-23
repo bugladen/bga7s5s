@@ -62,6 +62,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['duelActorSwapped', 500],
             ['duelEnd', 500],
             ['duelStarted', 500],
+            ['duelStatChanged', 500],
             ['factionResolveCardDraw', 1000],
             ['factionResolveCardDrawPublic', 500],
             ['firstPlayer', 2000],
@@ -2012,6 +2013,20 @@ return declare('seventhseacityoffivesails.notifications', null, {
             // Re-check floating state after moving placeholder
             if (this.checkFloatingHand) this.checkFloatingHand();
         }
+    },
+
+    notif_duelStatChanged: function( notif )
+    {
+        debug( 'notif_duelStatChanged' );
+        debug( notif );
+
+        const args = notif.args;
+        const target = $('duel_stat_value');
+        if (!target) return;
+
+        dojo.empty(target);
+        const statClass = (args.duelStat || '').toLowerCase();
+        dojo.place(`<div class="_7sfs-card-${statClass}-image"></div>`, target);
     },
 
     notif_newDuelRound: function( notif )

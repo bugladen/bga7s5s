@@ -40,8 +40,9 @@ class Maneuver_02041 extends Maneuver
 
             $event->theah->game->globals->set(Game::CHALLENGE_STAT, Game::STAT_FINESSE);
 
-            $event->theah->game->notify->all("message", clienttranslate('${card_inject_code}: This duel becomes a duel of Finesse.'), [
+            $event->theah->game->notify->all("duelStatChanged", clienttranslate('${card_inject_code}: This duel becomes a duel of Finesse.'), [
                 "card_inject_code" => $owner->getInjectCode(),
+                "duelStat" => $event->theah->game->translate("Finesse"),
             ]);
         }
     }
