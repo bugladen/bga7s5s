@@ -73,8 +73,9 @@ class Reaction_03012 extends RiskReaction implements ISorcererAbility
             $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $intervener->Id);
             $event->theah->queueEvent($sorceryPlayedEvent);
 
-            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction. The challenge becomes an [Influence] challenge.'), [
+            $game->notify->all("duelStatChanged", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction. The challenge becomes an [Influence] challenge.'), [
                 "reaction_inject_code" => $owner->getInjectCode(),
+                "duelStat" => $game->translate("Influence"),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
             ]);
 
