@@ -139,7 +139,7 @@ trait EventHub
             case $event instanceof EventAttachmentEquipping:
                 $handler = function (Theah $theah, EventAttachmentEquipping $event)
                 {
-                    $equippedEvent = self::createEvent(Events::AttachmentEquipped);
+                    $equippedEvent = $theah->createEvent(Events::AttachmentEquipped);
                     if ($equippedEvent instanceof EventAttachmentEquipped)
                     {
                         $equippedEvent->playerId = $event->playerId;
@@ -614,7 +614,7 @@ trait EventHub
             case $event instanceof EventCardMoving:
                 $handler = function (Theah $theah, EventCardMoving $event)
                 {
-                    $movedEvent = self::createEvent(Events::CardMoved);
+                    $movedEvent = $theah->createEvent(Events::CardMoved);
                     if ($movedEvent instanceof EventCardMoved)
                     {
                         $movedEvent->initiatingPlayerId = $event->initiatingPlayerId;
@@ -1965,16 +1965,19 @@ trait EventHub
                 case $event instanceof EventCharacterBeingHealed:
                     $handler = function ($theah, EventCharacterBeingHealed $event)
                     {
-                        $healedEvent = self::createEvent(Events::CharacterHealed);
-                        if ($healedEvent instanceof EventCharacterHealed)
+                        if ($event->wounds > 0)
                         {
-                            $healedEvent->characterId = $event->characterId;
-                            $healedEvent->sourceId = $event->sourceId;
-                            $healedEvent->wounds = $event->wounds;
-                            $healedEvent->reason = $event->reason;
-                            $healedEvent->abilityId = $event->abilityId;
+                            $healedEvent = $theah->createEvent(Events::CharacterHealed);
+                            if ($healedEvent instanceof EventCharacterHealed)
+                            {
+                                $healedEvent->characterId = $event->characterId;
+                                $healedEvent->sourceId = $event->sourceId;
+                                $healedEvent->wounds = $event->wounds;
+                                $healedEvent->reason = $event->reason;
+                                $healedEvent->abilityId = $event->abilityId;
+                            }
+                            $event->theah->queueEvent($healedEvent);
                         }
-                        $event->theah->queueEvent($healedEvent);
                     };
                     $handler($this, $event);
                     break;
@@ -1982,16 +1985,19 @@ trait EventHub
             case $event instanceof EventCharacterBeingWounded:
                 $handler = function ($theah, EventCharacterBeingWounded $event)
                 {
-                    $woundedEvent = self::createEvent(Events::CharacterWounded);
-                    if ($woundedEvent instanceof EventCharacterWounded)
+                    if ($event->wounds > 0)
                     {
-                        $woundedEvent->characterId = $event->characterId;
-                        $woundedEvent->sourceId = $event->sourceId;
-                        $woundedEvent->wounds = $event->wounds;
-                        $woundedEvent->reason = $event->reason;
-                        $woundedEvent->abilityId = $event->abilityId;
+                        $woundedEvent = $theah->createEvent(Events::CharacterWounded);
+                        if ($woundedEvent instanceof EventCharacterWounded)
+                        {
+                            $woundedEvent->characterId = $event->characterId;
+                            $woundedEvent->sourceId = $event->sourceId;
+                            $woundedEvent->wounds = $event->wounds;
+                            $woundedEvent->reason = $event->reason;
+                            $woundedEvent->abilityId = $event->abilityId;
+                        }
+                        $event->theah->queueEvent($woundedEvent);
                     }
-                    $event->theah->queueEvent($woundedEvent);
                 };
                 $handler($this, $event);
                 break;

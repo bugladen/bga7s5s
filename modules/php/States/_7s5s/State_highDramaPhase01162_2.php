@@ -8,20 +8,20 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
-class State_highDramaPhase01162 extends GameState
+class State_highDramaPhase01162_2 extends GameState
 {
     function __construct(
         protected Game $game,
     )
     {
         parent::__construct($game,
-            id: States::HIGH_DRAMA_PLAYER_TURN_01162,
+            id: States::HIGH_DRAMA_PLAYER_TURN_01162_2,
             type: StateType::ACTIVE_PLAYER,
-            name: "highDramaPhase01162",
+            name: "highDramaPhase01162_2",
 
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Come Hither') . clienttranslate(': ${you} must target a character to move:'),
+            descriptionMyTurn: clienttranslate('Come Hither') . clienttranslate(': ${you} must choose a location to move the target character to:'),
             transitions: [
                 "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
@@ -36,9 +36,9 @@ class State_highDramaPhase01162 extends GameState
     }
 
     #[PossibleAction]
-    public function actFromCardWithId(string $id): void
+    public function actFromCardWithLocations(string $locations): void
     {
-        $this->game->actFromCardWithId($id);
+        $this->game->actFromCardWithLocations($locations);
     }
 
     public function zombie(int $playerId): void

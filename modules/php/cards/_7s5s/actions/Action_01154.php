@@ -257,6 +257,8 @@ class Action_01154 extends AttachmentAction implements ISorcererAbility, IAbilit
             $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($engardeEvent);
 
+            $this->setUsed($game->theah, false);
+
             $game->gamestate->nextState();
         }
     }

@@ -972,6 +972,7 @@ trait FrameworkActionsTrait
             "i18n" => ["card_inject_code"],
             "player_name" => $this->getPlayerNameById($playerId),
             "card_inject_code" => $risk->getInjectCode(),
+            "card" => $risk->getPropertyArray($this),
         ]);
 
         if ($discount != 0)
@@ -2026,6 +2027,7 @@ trait FrameworkActionsTrait
             "i18n" => ["card_inject_code"],
             "player_name" => $this->getPlayerNameById($playerId),
             "card_inject_code" => $card->getInjectCode(),
+            "card" => $card->getPropertyArray($this),
         ]);
 
         if ($reaction instanceof ICancelReaction)

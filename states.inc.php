@@ -30,7 +30,7 @@ $machinestates = [
     States::PICK_DECKS => [
         "name" => "pickDecks",
         "description" => clienttranslate('${opponent_message}'),
-        "descriptionmyturn" => clienttranslate('Quick buttons for Core Starter Decks or follow the directions below:'),
+        "descriptionmyturn" => clienttranslate('Follow the directions below to select a deck:'),
         "type" => "multipleactiveplayer",
         "args" => "argAvailableDecks",
         "action" => "stPickDecksInit",
@@ -938,6 +938,7 @@ $machinestates = [
                 "01161" => States::HIGH_DRAMA_PLAYER_TURN_01161,
                 "01161_2" => States::HIGH_DRAMA_PLAYER_TURN_01161_2,
                 "01162" => States::HIGH_DRAMA_PLAYER_TURN_01162,
+                "01162_2" => States::HIGH_DRAMA_PLAYER_TURN_01162_2,
                 "01163" => States::HIGH_DRAMA_PLAYER_TURN_01163,
                 "01164" => States::HIGH_DRAMA_PLAYER_TURN_01164,
                 "01167" => States::HIGH_DRAMA_PLAYER_TURN_01167,
@@ -2251,6 +2252,17 @@ $machinestates = [
                         "02043b" => States::DUEL_CHOOSE_TECHNIQUE_02043b,
                         "02054" => States::DUEL_CHOOSE_TECHNIQUE_02054,
                         "02055" => States::DUEL_CHOOSE_TECHNIQUE_02055,
+
+                        // Neutral/Ussura maneuver transitions — enabled so Technique_02043a
+                        // (Miyato and Ota) can copy state-bearing maneuvers from Ussura/Neutral
+                        // combat cards. Mirrors entries in DUEL_RESOLVE_MANEUVER_EVENTS.
+                        "01133" => States::DUEL_RESOLVE_MANEUVER_01133,
+                        "01135" => States::DUEL_RESOLVE_MANEUVER_01135,
+                        "01142" => States::DUEL_RESOLVE_MANEUVER_01142,
+                        "01164" => States::DUEL_RESOLVE_MANEUVER_01164,
+                        "01165" => States::DUEL_RESOLVE_MANEUVER_01165,
+                        "02057" => States::DUEL_RESOLVE_MANEUVER_02057,
+
                         "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                         "endOfGame" => States::END_GAME
                         ]

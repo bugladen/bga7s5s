@@ -474,7 +474,7 @@
 
             'highDramaPhase01085': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
-                this.addActionButton(`actDone`, _('Done'), () =>  this.bgaPerformAction('actFromCardWithId', {id: 0}));
+                this.statusBar.addActionButton('No More Movement', () => this.bgaPerformAction('actFromCardWithId', {id: 0}), { id: 'actDone', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
@@ -612,6 +612,8 @@
                 args.args.actions.forEach((action) => {
                     this.addActionButton(`actChooseAction-${action.id}`, action.name, () => this.bgaPerformAction('actFromCardWithActionId', {actionSourceId: action.sourceId, actionId: action.id}));
                 });
+                if (args.args.actions.length == 0)
+                    this.addActionButton(`actCancel`, _('No Available Sorceries. Cancel'), () => this.bgaPerformAction('actFromCardPass', {}));
             },
 
             'highDramaPhase01133': () => {
@@ -703,7 +705,7 @@
                     this.addActionButton(`actChooseAction-${action.id}`, action.name, () => this.bgaPerformAction('actFromCardWithActionId', {actionSourceId: action.sourceId, actionId: action.id}));
                 });
                 if (args.args.actions.length == 0)
-                    this.addActionButton(`actCancel`, _('No Available Actions. Cancel'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
+                    this.addActionButton(`actCancel`, _('No Available Risks. Cancel'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
             },
 
             'highDramaPhase01156': () => {
@@ -735,6 +737,11 @@
             },
 
             'highDramaPhase01162': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase01162_2': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },

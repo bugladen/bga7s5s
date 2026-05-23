@@ -2059,7 +2059,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)
         {
             // Move faction hand placeholder to bottom of duel rows
-            dojo.place('factionHand-placeholder', 'duel', 'after');
+            dojo.place('factionHand-placeholder', 'duel_wrapper', 'after');
             // Re-check floating state after moving placeholder
             if (this.checkFloatingHand) this.checkFloatingHand();
         }
@@ -2338,7 +2338,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
 
         this.inDuel = false;
-        dojo.destroy('duel');
+        dojo.destroy('duel_wrapper');
 
         const challenger = this.cardProperties[args.challengerId];
         if (challenger)

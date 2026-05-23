@@ -1618,6 +1618,18 @@ body {
     overflow: visible;
 }
 
+#duel_wrapper {
+    margin-bottom: 10px;
+}
+#duel_scroll_top {
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 16px;
+    margin-bottom: 4px;
+}
+#duel_scroll_top_inner {
+    height: 1px;
+}
 #duel {
     overflow-x: auto;
     margin-bottom: 10px;

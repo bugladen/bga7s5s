@@ -76,8 +76,8 @@
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-buttons">
-                <button class="deck-picker-group-button _7sfs-deck-picker-tab-selected" onclick="gameui.deckPickerGroupShowTab(1)">Core Set</button>
-                <button class="deck-picker-group-button" onclick="gameui.deckPickerGroupShowTab(2)">Tooth & Claw Set</button>
+                <button class="deck-picker-group-button _7sfs-deck-picker-tab-selected" onclick="gameui.deckPickerGroupShowTab(1)">Core</button>
+                <button class="deck-picker-group-button" onclick="gameui.deckPickerGroupShowTab(2)">Tooth & Claw</button>
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-buttons">
@@ -262,6 +262,8 @@
         `;
         
         window.jstpl_duel_table = `
+        <div id="duel_wrapper">
+        <div id="duel_scroll_top"><div id="duel_scroll_top_inner"></div></div>
         <div id="duel">
         <table id="duel_table" class="duel">
         <tr id="duel_header_row">
@@ -275,6 +277,7 @@
             <th>Wounds</th>
         </tr>
         </table>
+        </div>
         </div>
         `;
         

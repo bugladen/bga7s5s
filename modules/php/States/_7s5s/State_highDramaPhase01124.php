@@ -25,19 +25,26 @@ class State_highDramaPhase01124 extends GameState
             transitions: [
                 "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 "actionChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
         );
     }
-    
+
     public function getArgs(): array
     {
         return $this->game->argsForState();
-    } 
+    }
 
     #[PossibleAction]
     public function actFromCardWithActionId(int $actionSourceId, string $actionId): void
     {
         $this->game->actFromCardWithActionId($actionSourceId, $actionId);
+    }
+
+    #[PossibleAction]
+    public function actFromCardPass(): void
+    {
+        $this->game->actFromCardPass();
     }
 
     public function zombie(int $playerId): void
