@@ -1558,6 +1558,7 @@ body {
     display: inline-block;
     left: 80px;
     top: 0px;
+    z-index: 10;
 }
 
 ._7sfs-defender-chip {
@@ -1570,6 +1571,7 @@ body {
     display: inline-block;
     left: 80px;
     top: 0px;
+    z-index: 10;
 }
 
 ._7sfs-wound-chip {
