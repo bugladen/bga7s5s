@@ -399,7 +399,7 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.inDuel = true;
             this.duelRound = gamedatas.duelRound;
 
-            this.displayDuelTable();
+            this.displayDuelTable(gamedatas.challengeStat);
 
             // Move faction hand placeholder to bottom of duel rows
             if (this.player_id == gamedatas.challengingPlayerId || this.player_id == gamedatas.defendingPlayerId) {

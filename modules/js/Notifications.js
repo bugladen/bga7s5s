@@ -2054,7 +2054,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         this.inDuel = true;
         this.duelRound = 0;
-        this.displayDuelTable();
+        this.displayDuelTable(args.challengeStat);
         
         if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)
         {

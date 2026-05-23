@@ -1043,7 +1043,8 @@ trait StatesTrait
             "defenderId" => $defenderId,
             "defendingPlayerId" => $defender->ControllerId,
             "challengerThreat" => $challengerThreat,
-            "defenderThreat" => $defenderThreat
+            "defenderThreat" => $defenderThreat,
+            "challengeStat" => $this->globals->get(Game::CHALLENGE_STAT),
         ]);
 
         $event = $this->theah->createEvent(Events::DuelStarted);

@@ -1481,9 +1481,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
-    displayDuelTable: function() {
+    displayDuelTable: function(challengeStat) {
         const city = $('city');
         dojo.place( this.format_block( 'jstpl_duel_table', {
+            challengeStatClass: (challengeStat || '').toLowerCase(),
         }),  city, 'before');
         this.setupDuelScrollSync();
     },
