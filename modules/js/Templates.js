@@ -262,6 +262,7 @@
         <div id="duel_scroll_top"><div id="duel_scroll_top_inner"></div></div>
         <div id="duel">
         <table id="duel_table" class="duel">
+        <tr><td id="duel_stats" colspan="11">Duel Stat: <span id="duel_stat_value"><div class="_7sfs-card-\${challengeStatClass}-image"></div></span></td></tr>
         <tr id="duel_header_row">
             <th>Duel Round</th>
             <th>Actor</th>

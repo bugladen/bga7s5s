@@ -410,7 +410,9 @@ class Game extends \Bga\GameFramework\Table
             $targetId = $this->globals->get(Game::CHOSEN_TARGET);
             $target = $this->getCardObjectFromDb($targetId);
             $result["defendingPlayerId"] = $target->ControllerId;
-    
+
+            $result["challengeStat"] = $this->globals->get(Game::CHALLENGE_STAT);
+
             $result["duelRounds"] = $this->getDuelRows();
         }
 
