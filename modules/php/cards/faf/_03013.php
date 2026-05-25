@@ -12,7 +12,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 
 class _03013 extends Leader implements IHasActions, IHasReactions, IHasTechniques
 {
@@ -26,6 +25,7 @@ class _03013 extends Leader implements IHasActions, IHasReactions, IHasTechnique
         $this->Name = clienttranslate("Daniella Dietrich");
         $this->Title = clienttranslate("Witch, Hunter");
         $this->Image = "03013.jpg";
+        $this->InPlayXImageOffset = -20;
         $this->ExpansionName = "faf";
         $this->ExpansionNumber = 3;
         $this->CardNumber = 13;
@@ -62,13 +62,5 @@ class _03013 extends Leader implements IHasActions, IHasReactions, IHasTechnique
         $this->Techniques = [
             new Technique_03013(),
         ];
-    }
-
-    public function handleEvent(Event $event)
-    {
-        // The continuous Sorcerer-trait passive is implemented by Action_03013.
-        // This override still exists for Leader-level event handling (Panache
-        // modifiers, leader-destroyed end-of-game) inherited via parent.
-        parent::handleEvent($event);
     }
 }
