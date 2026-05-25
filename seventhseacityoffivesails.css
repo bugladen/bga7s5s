@@ -796,7 +796,7 @@ body {
 
     background-image: var(--card_image);
     background-size: 205px 280px;
-    background-position: -52px -36px;
+    background-position: calc(-52px + var(--in-play-x-image-offset, 0px)) -36px;
     width: 110px;
     height: 110px;
     border-radius: 10px;

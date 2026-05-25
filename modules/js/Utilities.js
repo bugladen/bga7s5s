@@ -878,6 +878,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             finesse: finesse,
             influence: influence,
             cost: wealthCost,
+            inPlayXImageOffset: character.inPlayXImageOffset ?? 0,
         }), targetDiv, placement );
 
         if (character.combat != character.modifiedCombat) 
@@ -1072,6 +1073,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         dojo.place( this.format_block( 'jstpl_card_event', {
             id: divId,
             image: this.getCardImageUrlRoot(event.image) + event.image,
+            inPlayXImageOffset: event.inPlayXImageOffset ?? 0,
         }), targetDiv, "before" );
 
         this.createTooltipForCard(event);
@@ -1162,6 +1164,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             finesse: this.attachmentFormatModifer(attachment.finesseModifier),
             influence: this.attachmentFormatModifer(attachment.influenceModifier),
             cost: attachment.wealthCost,
+            inPlayXImageOffset: attachment.inPlayXImageOffset ?? 0,
         }), targetDiv, placement );
 
         if (attachment.controllerId)

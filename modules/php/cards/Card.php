@@ -32,6 +32,7 @@ abstract class Card
     public bool $IsUpdated;
     public int $Reknown;
     public bool $FaceDown = false;
+    public int $InPlayXImageOffset = 0;
 
     public function __construct()
     {
@@ -457,7 +458,8 @@ abstract class Card
             'cardBackImage' => $this->CardBackImage,
             'text' => $this->Text,
             'expansionName' => $this->ExpansionName,
-            'cardNumber' => $this->CardNumber
+            'cardNumber' => $this->CardNumber,
+            'inPlayXImageOffset' => $this->InPlayXImageOffset,
         ];
 
         $properties['type'] = 'Card';
