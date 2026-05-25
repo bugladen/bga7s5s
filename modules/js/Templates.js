@@ -129,7 +129,7 @@
         
         window.jstpl_character = `
         <div id="\${id}" style="--attachment-count:\${attachmentCount}">
-            <div id="\${id}_image" class="_7sfs-card _7sfs-home-\${faction}" style="--card_image:url('\${image}')">
+            <div id="\${id}_image" class="_7sfs-card _7sfs-home-\${faction}" style="--card_image:url('\${image}'); --in-play-x-image-offset:\${inPlayXImageOffset}px">
                 <div id="\${id}_resolve_value" class="_7sfs-card-resolve">\${resolve}</div>
                 <div id="\${id}_wealth_cost" class="_7sfs-card-wealth-cost _7sfs-city-character-wealth-cost">\${cost}</div>
                 <div class="_7sfs-card-stat-box _7sfs-card-combat-box">
@@ -151,7 +151,7 @@
         
         window.jstpl_card_attachment = `
         <div id="\${id}" style="--attachment-index:\${attachmentIndex}">
-            <div id="\${id}_image" class="_7sfs-card _7sfs-home-\${faction}" style="--card_image:url('\${image}')">
+            <div id="\${id}_image" class="_7sfs-card _7sfs-home-\${faction}" style="--card_image:url('\${image}'); --in-play-x-image-offset:\${inPlayXImageOffset}px">
                 <div id="\${id}_resolve" class="_7sfs-card-resolve">\${resolve}</div>
                 <div id="\${id}_wealth_cost" class="_7sfs-card-wealth-cost _7sfs-city-attachment-wealth-cost">\${cost}</div>
                 <div id="\${id}_combat_box" class="_7sfs-card-stat-box _7sfs-card-combat-box">
@@ -200,7 +200,7 @@
         
         window.jstpl_card_event = `
         <div id="\${id}">
-            <div id="\${id}_image" class="_7sfs-card" style="--card_image:url('\${image}')">
+            <div id="\${id}_image" class="_7sfs-card" style="--card_image:url('\${image}'); --in-play-x-image-offset:\${inPlayXImageOffset}px">
             </div>
         </div>
         `;
