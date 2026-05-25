@@ -15,6 +15,7 @@ Canonical references:
 - `modules/php/cards/faf/_03001.php` (Cesca del Rosso) — `Leader` with an `EventPhaseDawnEnding` draw effect, a button-based City Reaction triggered by `EventSorcererAbilityPlayed`, and a two-step City Action (CharacterAction with state classes).
 - `modules/php/cards/faf/_03002.php` (Aja) — `Character` with a City Action that **issues a Combat challenge with a custom challenge type** (intervention/refusal restricted by Finesse) and a **Gambling Technique** that grants Lethal in-duel.
 - `modules/php/cards/faf/_03004.php` (Elena Agnelli) — `Character` with a **dynamic-recompute Finesse bonus tied to her dueling line** (+1 Finesse per Sorcery in her dueling line) and a **Technique gated on her combat card having the Sorcery trait** that adds +1 Parry and wounds the adversary.
+- `modules/php/cards/faf/_03013.php` (Daniella Dietrich, Witch/Hunter) — `Leader` with a **continuous Action that tags opposing characters with a trait** (Sorcerer) for the duration of the player's turn, a **cost-reduction Reaction** (Faith/Sorcery card at -1 cost, cloned from `Reaction_01116b`), and a **Wound-then-Swap Technique** usable in BOTH challenge and duel contexts (two state classes, swap mechanics inline in `actFromTechniqueWithId`).
 
 When in doubt, mirror one of those rather than invent.
 
@@ -348,6 +349,119 @@ Edge cases (Elena journal `2026-05-16-01-elena-agnelli-03004-implementation.md` 
 - **Card pulled from the dueling line mid-round.** The recount catches it at end-of-round; if anything pulls it earlier (rare), the bonus stays inflated for the rest of the current round. Acceptable — no event lets us hook arbitrary departures from the line.
 - **Owner swapped into / out of an in-progress duel.** Not handled by the basic pattern. The next `EventDuelEndOfRound` recomputes from the player's line, which may already contain cards played by a prior duelist. Flag for QA if the text is sensitive to this; usually unimportant.
 - **Owner destroyed mid-duel.** `EventDuelEnd` still fires and resets the bonus. `ModifiedFinesse` on a discarded card doesn't affect anything else, so no special handling needed.
+
+### "Opposing characters are considered <Trait>" — tag opposing characters, don't override hasTrait
+
+For text like "While using your abilities, characters opposing <Owner> may be considered <Trait>" (Daniella Dietrich `_03013`): the trait must light up on *opposing* characters, not on the owner. The Uwe Zimmerman `_01043` `hasTrait` override pattern is the WRONG fit — that pattern lights up the *receiver* of `hasTrait`, so it only works when the card being considered is the card whose `hasTrait` was overridden. For the opposing-direction case, mirror the Wilhelm Dünst `Action_02013` pattern instead: **mutate the opposing characters' `ModifiedTraits` directly via `addTrait` / `removeTrait`**, keep a tracked set of the ids you tagged, and untag at the scope boundary.
+
+Pattern (typically lives on a continuous Action; see the next subsection):
+
+```php
+private array $TaggedOpposingIds = [];  // ids we added the trait to
+
+private function tagOpposingAs(string $trait, Theah $theah): void
+{
+    $owner = $this->getOwningCharacter($theah);
+    if ($owner === null) return;
+    $game = $theah->game;
+
+    $opposing = array_filter(
+        $theah->getCharactersAtLocation($owner->Location),
+        fn($c) => $c->ControllerId !== $owner->ControllerId
+            && ! in_array($c->Id, $this->TaggedOpposingIds, true)  // dedup — see WHY below
+            && ! $c->hasTrait($trait)
+    );
+    foreach ($opposing as $c)
+    {
+        $c->addTrait($game, $trait);
+        $this->TaggedOpposingIds[] = $c->Id;
+    }
+}
+
+private function untagOpposing(string $trait, Theah $theah): void
+{
+    if (empty($this->TaggedOpposingIds)) return;
+    $game = $theah->game;
+    foreach ($this->TaggedOpposingIds as $cid)
+    {
+        $c = $theah->getCharacterById($cid);
+        if ($c !== null) $c->removeTrait($game, $trait);
+    }
+    $this->TaggedOpposingIds = [];
+}
+```
+
+WHY tracked-set + skip-already-tagged:
+
+- `Card::addTrait` (in `modules/php/cards/Card.php`) appends to `$this->ModifiedTraits` **without** deduping. Two `addTrait("Sorcerer")` calls leave two `"Sorcerer"` entries in the array, and `removeTrait` removes only one (`array_search` returns the first match). Re-tagging on every ability-use event without a guard would pile up duplicates that never fully clear.
+- `! $c->hasTrait($trait)` is the cheap "they already have it printed/granted" check; `! in_array($c->Id, ...)` is the cheap "we already granted it" check. Use both — a character could legitimately have the trait printed before our grant fires.
+
+WHY "opposing" = controller-mismatch + location-match: this matches `Theah::getOpposingCharactersAtLocation` and the codebase-wide definition (see the memory note). Don't roll your own filter; just pull from the location and exclude same-controller.
+
+Scope boundary for untagging: the scope is whatever the card text says. Daniella's "while using your abilities" reads as "for the duration of your turn" once you map ability-use to turn-scope — `EventPlayerTurnEnd` is the natural clear. Add `EventCardMoved` / `EventCharacterDestroyed` cleanups for the owner so an outstanding tag set doesn't get orphaned on a character that no longer opposes her.
+
+### Continuous Action — passive ability that lives on an `Action` class but never appears in the UI
+
+For passive abilities that the framework should treat as an ability but the player never directly activates (e.g., Daniella Dietrich `_03013`'s trait-tagging passive), mount the logic on a `CharacterAction` subclass attached via `IHasActions` / `ActionTrait`. Make `isAvailableToPlayer` return false so it never shows in the action menu — the Action is purely a `handleEvent` listener.
+
+```php
+class Action_NNNNN extends CharacterAction
+{
+    /** @var int[] running state for the passive (e.g. tagged character ids) */
+    private array $TaggedOpposingIds = [];
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->Name = clienttranslate("(Continuous) <plain-English description of what it does>");
+    }
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
+    {
+        // Passive — never offered from the action menu. Returning false hides
+        // it but does not suppress handleEvent.
+        return false;
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+        // ... trait-tagging / passive work ...
+
+        if ($event instanceof EventPlayerTurnEnd)
+        {
+            $this->untagOpposing("Sorcerer", $event->theah);
+
+            // "Continuous" — clear Used at the same boundary so the parent
+            // CardAction::handleEvent's EventDuskEndOfDay reset isn't the only
+            // thing keeping the action alive across turns.
+            $this->setUsed($event->theah, false);
+        }
+    }
+}
+```
+
+Wiring on the card:
+
+```php
+class _NNNNN extends Leader implements IHasActions, IHasReactions, IHasTechniques
+{
+    use ActionTrait;
+    use ReactionTrait;
+    use TechniqueTrait;
+
+    // ... constructor ...
+    $this->Actions = [ new Action_NNNNN() ];
+}
+```
+
+Where to place the passive's `handleEvent` — the Action or the card class? Either works mechanically, but **prefer the Action** when the passive is conceptually an ability that the card text *names* as an "Action / Forced / Maneuver / Passive / Technique / Reaction." That keeps the responsibility scoped to one file and lets the card class's `handleEvent` stay minimal (just `parent::handleEvent($event)` for the Leader-inherited renown/Panache logic). The card class's `handleEvent` is still where you put cross-ability bookkeeping that doesn't belong to any single ability.
+
+WHY pre-commit doesn't complain about the missing `createActionResolvedEvent()`: the hook's regex matches `extends CardAction/RiskAction/RiskCityAction` literally — `CharacterAction` isn't on that list (see the Pre-Commit Hook section). A continuous Action that never goes through normal action resolution legitimately doesn't fire `createActionResolvedEvent`.
+
+WHY `setUsed(false)` on a continuous Action: the parent `CardAction::handleEvent` already resets `Used` on `EventDuskEndOfDay`, which is fine for once-per-day actions. For a "continuous" Action that must survive multiple ability uses within the same turn, explicitly flip `Used` back to `false` at the same scope boundary you untag at (typically `EventPlayerTurnEnd`). The Reaction analogue is "do not call `setUsed(true)` at all" — see `Reaction_01196` "Continuous". Both forms work; the Action variant needs the explicit reset because `parent::handleEvent`'s once-per-day reset isn't frequent enough.
+
+Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags opposing characters with "Sorcerer" on ability-start events and untags at `EventPlayerTurnEnd`. `Action_01090` (Yuri Pyetrovich) — Continuous Action that pre-activates a paired Reaction; opposite shape (user-triggered, but immediately flips `Used` back to false).
 
 ### Phase / lifecycle events worth knowing
 
@@ -833,6 +947,135 @@ return false;
 
 `getCombatCardsForCurrentRound()` returns BOTH players' combat cards. Filter by `$card->ControllerId == $owner->ControllerId` to isolate the actor's own combat card. (Since the technique already gates on `actor->Id == owner->Id`, this is the actor's own combat card.) Cesca Scarpa's `Technique_02003` is similar but cares about *any* Sorcery played in the round, so it skips the ControllerId filter — match the card text literally.
 
+### Wound-as-cost: queue the wound event at `EventResolveTechnique` BEFORE the transition
+
+For techniques whose printed cost is "Wound <Owner> • <effect>" (Daniella Dietrich `_03013`), the wound is part of the cost — paid before the effect resolves. The natural place is the `EventResolveTechnique` handler, where you queue BOTH the wound event and the technique-transition event, in that order:
+
+```php
+if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
+{
+    $owner = $this->getOwningCharacter($event->theah);
+
+    // Pay the cost: wound the owner. Cost-before-effect per the "Wound X •" split.
+    $woundedEvent = EventFactory::createCharacterBeingWoundedEvent(
+        $owner->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id
+    );
+    $event->theah->queueEvent($woundedEvent);
+
+    // Effect: transition into the target-picker state.
+    $transition = EventFactory::createTechniqueTransitionEvent(
+        $owner->ControllerId, $owner->Id, "NNNNN", $this->Id
+    );
+    $event->theah->queueEvent($transition);
+}
+```
+
+WHY at resolve-time and not inside `actFromTechniqueWithId`: by the time the player picks a swap target in `actFromTechniqueWithId`, the cost has already been paid — the wound fired earlier when `EventResolveTechnique` flushed. Putting the wound in the act handler would invert the cost/effect order printed on the card and let a player back out of the cost by declining the picker. Queue at resolve and the wound is committed regardless of whether the player completes the effect.
+
+The wound-event factory signature mirrors `Technique_01063`'s use: `($characterId, $sourceCharacterId, $wounds, $sourceDescription, $techniqueId)`.
+
+### Swap mechanics inline in `actFromTechniqueWithId` — challenge vs duel context
+
+For "swap <Owner> with another character" techniques (Daniella Dietrich `_03013` — Wound + swap with Hunter/Zealot at this location), don't defer the swap to event handlers. Do it inline in `actFromTechniqueWithId` so the player's commit unambiguously commits the swap. Branch on the state to handle the challenge-time and duel-time contexts differently:
+
+```php
+public function actFromTechniqueWithId(Game $game, int $state, string $stateName, int $id): void
+{
+    parent::actFromTechniqueWithId($game, $state, $stateName, $id);
+
+    if ($state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_NNNNN
+        || $state == States::DUEL_CHOOSE_TECHNIQUE_NNNNN)
+    {
+        // ... target validation, notification ...
+
+        $this->swapId = $target->Id;
+
+        if ($state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_NNNNN)
+        {
+            // Challenge context: duel not yet built. Redirect CHOSEN_PERFORMER
+            // and move DUEL_CHALLENGER condition so the new challenger is the
+            // one who actually enters the duel.
+            $game->globals->set(Game::CHOSEN_PERFORMER, $target->Id);
+            $owner->removeCondition(Game::DUEL_CHALLENGER);
+            $target->addCondition(Game::DUEL_CHALLENGER);
+            $owner->IsUpdated = true;
+            $target->IsUpdated = true;
+            $game->updateCardObjectInDb($owner);
+            $game->updateCardObjectInDb($target);
+
+            $challengerSwappedEvent = EventFactory::createChallengerSwappedEvent(
+                $owner->ControllerId, $owner->Id, $target->Id
+            );
+            $game->theah->queueEvent($challengerSwappedEvent);
+        }
+        else  // DUEL_CHOOSE_TECHNIQUE_NNNNN — already inside a duel
+        {
+            // Duel context: rewrite the duel's stored participant list so the
+            // target takes Daniella's seat for the rest of the duel.
+            $duelId = $game->globals->get(Game::DUEL_ID);
+            $round  = $game->globals->get(Game::DUEL_ROUND);
+            $game->theah->swapParticipantsInDuel($duelId, $round, $owner->Id, $target->Id);
+            $game->updateCardObjectInDb($owner);
+            $game->updateCardObjectInDb($target);
+        }
+
+        $game->gamestate->nextState();
+    }
+}
+```
+
+Keep ONE thing in `handleEvent` — the `EventGenerateChallengeThreat` `actorId` redirect. That mutation can only happen at event-fire time:
+
+```php
+if ($event instanceof EventGenerateChallengeThreat
+    && $event->techniqueId == $this->Id
+    && $this->swapId != 0)
+{
+    // WHY: the event is in flight when threat is being calculated. Character
+    // ::handleEvent (which adds the actor's stat to adversaryThreat when
+    // actorId matches) and the EventHub threat notification both key on
+    // $event->actorId. Without the redirect they still reference the original
+    // challenger, even though DUEL_CHALLENGER condition has already moved.
+    $event->actorId = $this->swapId;
+}
+```
+
+WHY split the work this way (vs. mirroring Bastien's all-in-events approach in `Technique_01063Swap`): Bastien defers the condition swap into `EventGenerateChallengeThreat` (with a `CHALLENGE_ACCEPTED` guard) so the swap doesn't fire if the challenge is rejected. That's a stricter, more conservative shape. The in-`actFromTechniqueWithId` shape is cleaner to read and matches the user's preference (see project history), but if your card text says the swap is *conditional on the challenge being accepted*, prefer Bastien's pattern instead so a rejection doesn't leave a stuck DUEL_CHALLENGER condition on a character that never enters a duel.
+
+### Technique usable in BOTH challenge and duel contexts — two states, two routings, two state classes
+
+A technique that fires in either a challenge-resolve flow or a duel round needs entries in BOTH dispatcher routes:
+
+- **Challenge-time:** state ID `455` + 5-digit cardId (e.g. `HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_03013 = 45503013`). Routed from `HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS`. State class: `State_highDramaChallengeActionResolveTechnique_NNNNN`.
+- **Duel-time:** state ID `521` + 5-digit cardId (e.g. `DUEL_CHOOSE_TECHNIQUE_03013 = 52103013`). Routed from `DUEL_CHOOSE_TECHNIQUE_EVENTS`. State class: `State_duelChooseTechnique_NNNNN`.
+
+Both states live under `modules/php/States/<expansion>/` and extend `GameState`. The technique's `createTechniqueTransitionEvent($controllerId, $ownerId, "NNNNN", $this->Id)` uses the SAME transition-name string (`"NNNNN"`) in both contexts — the dispatcher routes correctly because the lookup is per-dispatcher-state. Both routing maps need the entry:
+
+```php
+// states.inc.php — HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS.transitions
+"NNNNN" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_NNNNN,
+
+// states.inc.php — DUEL_CHOOSE_TECHNIQUE_EVENTS.transitions
+"NNNNN" => States::DUEL_CHOOSE_TECHNIQUE_NNNNN,
+```
+
+Both state classes use the default-`""` transition back to their dispatcher EVENTS state (it's the only exit), and both expose `actFromCardWithId` as their `#[PossibleAction]`. Their `getArgsFromTechnique`/`actFromTechniqueWithId` can share a single `if ($state == HIGH_DRAMA... || $state == DUEL_CHOOSE...)` branch since the args shape and act validation are identical — the only divergence is the swap mechanics (see above).
+
+JS handlers live in `modules/js/{OnEnteringState,OnUpdateActionButtons,OnLeavingState}.<expansion>.js`. Both states need their own keyed handler in each file — the args shape and Confirm button are identical to the existing `_01063` Bastien handlers; copy-paste and rename. The `_01063` versions live in the `*.7s5s.js` files; faf cards' versions live in `*.faf.js` files.
+
+WHY `actFromCardWithId` and not `actFromTechniqueWithId` as the `#[PossibleAction]`: the GameState framework's `actFromCardWithId` delegates into `Game::actFromCardWithId`, which the technique framework routes back to the technique's own `actFromTechniqueWithId` via the per-state dispatch in `StatesTrait`. Don't expose `actFromTechniqueWithId` directly as the `#[PossibleAction]` — mirror the existing `_01063` state classes.
+
+### Disambiguating same-name characters in state descriptions
+
+Some characters share a name across expansions (e.g., `_01036` "Daniella Dietrich" and `_03013` "Daniella Dietrich, Witch / Hunter"). The state's `descriptionMyTurn` is the only place this is user-visible; disambiguate by appending the `Title` in parens:
+
+```php
+descriptionMyTurn: clienttranslate('Daniella Dietrich (Witch, Hunter)')
+                   . clienttranslate(': Wound and Swap with a Hunter or Zealot: ${you} must choose a Hunter or Zealot:'),
+```
+
+The state classes' `name` field (used by JS) doesn't need disambiguation because state IDs already differ — `_01036`'s state is `duelChooseTechnique_01036`, `_03013`'s is `duelChooseTechnique_03013`.
+
 ### Duel-flow events worth knowing
 
 | Event | When it fires |
@@ -936,6 +1179,11 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 | `modules/php/cards/faf/reactions/Reaction_03003.php` | Multi-stage Reaction (`'pick'` → `'pay'` → finalize). Source filtering from hand AND discard with the destroyed-Thug exclusion. **In-reaction click-to-pay** with running `$paidWealth`/`$paidHasWealthCard` state, `wouldClickProduceValidPayment` button filter, atomic discards at finalize. Mirrors `UtilitiesTrait::isValidWealthPayment` semantics (exact match OR overpay-by-1-with-Wealth). |
 | `modules/php/cards/faf/_03004.php` (Elena Agnelli) | **Character with a dynamic-recompute dueling-line Finesse bonus + a trait-gated Technique.** Pattern A passive with a `$FinesseBonus` running field recomputed at `EventDuelEndOfRound` from `getCardObjectsAtLocation(LOCATION_DUELING_LINE, controllerId)`, reset via inverse-delta at `EventDuelEnd` (which fires BEFORE the line is cleared). Gates on the owner being a duel participant (the dueling line is per-player, not per-character). |
 | `modules/php/cards/faf/techniques/Technique_03004.php` | Trait-gated Technique: in-duel + actor-is-owner + actor's own combat card has the Sorcery trait (via `getCombatCardsForCurrentRound()` filtered by `ControllerId`). `EventDuelCalculateTechniqueValues` handler mutates `$event->parry` directly (plain int field — no `addParry` method on this event) AND queues a `createCharacterBeingWoundedEvent` for the adversary in the same calc handler. |
+| `modules/php/cards/faf/_03013.php` (Daniella Dietrich, Witch/Hunter) | **Leader with a continuous-Action trait passive + cost-reduction Reaction + dual-context Wound+Swap Technique.** Three patterns on one card: opposing-character `addTrait`/`removeTrait` lifecycle via `Action_03013` (never-`Used` continuous Action), Faith/Sorcery cost-reduction reaction cloned from `Reaction_01116b`, and a Technique usable from both `HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS` and `DUEL_CHOOSE_TECHNIQUE_EVENTS` with the swap mechanics inline in `actFromTechniqueWithId`. |
+| `modules/php/cards/faf/actions/Action_03013.php` | **Canonical Continuous-Action passive.** `isAvailableToPlayer` returns `false` so it never appears in the action menu; `handleEvent` tags opposing characters with "Sorcerer" on `EventActionTriggered`/`EventReactionActivated`/`EventTechniqueActivated`/`EventManeuverActivated` for the owner's controller and untags at `EventPlayerTurnEnd`; tracks tagged-id set to dedup `addTrait` (which appends without dedup); explicitly resets `Used` to false at the turn-end boundary. |
+| `modules/php/cards/faf/reactions/Reaction_03013.php` | Cost-reduction Reaction cloned from `Reaction_01116b`; filter swapped to `IWealthCost && (hasTrait("Faith") || hasTrait("Sorcery"))`. Standard four-discount-method shape. |
+| `modules/php/cards/faf/techniques/Technique_03013.php` | **Dual-context Wound + Swap Technique.** Wound cost queued at `EventResolveTechnique` BEFORE the technique-transition event (cost-before-effect ordering). Swap mechanics inline in `actFromTechniqueWithId`, branched on state: challenge-context moves DUEL_CHALLENGER condition + queues ChallengerSwappedEvent + sets CHOSEN_PERFORMER; duel-context calls `swapParticipantsInDuel`. `EventGenerateChallengeThreat` handler kept slim — only the `actorId` redirect, which must happen at event-fire time. |
+| `modules/php/cards/_7s5s/actions/Action_01090.php` (Yuri Pyetrovich) | **Continuous Action — user-triggered variant.** Player activates from the menu; the Action sets globals and immediately calls `$this->setUsed($event->theah, false)` so it's available again. Companion to `Action_03013`'s never-shown variant. |
 | `modules/php/cards/tac/actions/Action_02013.php` (Wilhelm Dünst) | Pattern F with a discard-as-cost step plus the standard challenge transition. Reference for `doCost` / `doEffect` separation when the cost isn't just engagement. |
 | `modules/php/cards/_7s5s/techniques/Technique_GainLethal.php` | Generic two-pipeline Gain Lethal helper — handles both `EventGenerateChallengeThreat` (city) and `EventDuelCalculateTechniqueValues` (duel). |
 | `modules/php/cards/_7s5s/techniques/Technique_01049.php` | Engagement-as-cost Gain Lethal technique; handles both pipelines, demonstrates `IRangedAbility` integration. |
@@ -965,4 +1213,8 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 15. **For cost-bearing Reactions (e.g., "at -N cost", "pay N Wealth"):** roll the payment tracking inside the Reaction class using running `$paidCardIds`/`$paidWealth`/`$paidHasWealthCard` state. Do NOT route through `PAY_STATE_PLAY_BRUTE` — it's tied to the player-turn state cycle and won't return correctly from reactions fired in dawn/dusk/duel contexts. See Pattern D's "Reactions that need to pay a wealth cost" subsection and `Reaction_03003`. Mirror `UtilitiesTrait::isValidWealthPayment` semantics (exact OR `cost+1`-with-Wealth-card). Queue discards atomically at finalize, not per-click, so `Decline` is a clean rollback.
 16. **For "Put into play from hand or discard" Reactions:** `createCharacterMusteredEvent` does the actual move. `createCardRemovedFromPlayerDiscardPileEvent` is notification-only and exists so JS clients can sync their `player.discard` array — fire it BEFORE the muster event when the card is from discard. Pattern reference: `Action_01024` (Bravos), `Reaction_03003`.
 17. **For dueling-line-derived running bonuses** ("+N[Stat] for each X in my dueling line"): there is no event fired when a card enters the dueling line (`cards->moveCard` is called directly, bypassing `EventCardMoved`). Recompute the running bonus at `EventDuelEndOfRound` from `getCardObjectsAtLocation(LOCATION_DUELING_LINE, controllerId)`. Reset at `EventDuelEnd` via direct inverse-delta (NOT a recount — `stDuelEnd` queues `EventDuelEnd` BEFORE the line-clearing discard events, so the line still contains the round's cards). Gate the recount on the owner being a duel participant (the line is per-player, not per-character). Pattern reference: `_03004` Elena and Pattern A's "Dynamic stat bonuses tied to the dueling line" subsection.
-18. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), and the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute decisions in detail.
+18. **For "opposing characters are considered <Trait>" passives:** mutate the opposing characters' `ModifiedTraits` via `addTrait` / `removeTrait` (Wilhelm `Action_02013` shape), NOT a `hasTrait` override on the owner (Uwe `_01043` shape only works when the receiver of the call is the modified card). Track a `TaggedOpposingIds` set on the listener — `Card::addTrait` appends without dedup, so untracked re-tagging on every ability-use event will pile up duplicate trait entries that `removeTrait` won't fully clear. Untag at the scope boundary named by the text (`EventPlayerTurnEnd` for "while using your abilities" → turn-scope) and add `EventCardMoved` / `EventCharacterDestroyed` cleanups for the owner. Pattern reference: `Action_03013` (Daniella Dietrich).
+19. **For continuous Actions** (passive abilities mounted on a `CharacterAction` that the player never triggers from the menu): `isAvailableToPlayer` returns `false`; `handleEvent` does the work; explicitly call `$this->setUsed($event->theah, false)` at the scope boundary you want the Action to "reset" at (typically `EventPlayerTurnEnd`) — the parent `CardAction::handleEvent`'s `EventDuskEndOfDay` reset alone isn't frequent enough for an effect that needs to persist within a single turn but renew next turn. Mirror `Reaction_01196` "Continuous" for the never-`setUsed(true)` Reaction analogue. Pattern reference: `Action_03013` and Pattern A's "Continuous Action" subsection.
+20. **For techniques with "Wound X • effect" cost-bearing text:** queue `createCharacterBeingWoundedEvent` at the `EventResolveTechnique` handler BEFORE the `createTechniqueTransitionEvent`, so the cost fires before the player picks a target. Queueing the wound from inside `actFromTechniqueWithId` would invert the printed cost/effect ordering and let a player decline the picker to dodge the cost. Pattern reference: `Technique_03013` and Pattern E's "Wound-as-cost" subsection.
+21. **For swap techniques in challenge AND duel contexts:** mint TWO state classes under `modules/php/States/<expansion>/` — `State_highDramaChallengeActionResolveTechnique_NNNNN` (id `455` + cardId, routed from `HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS`) and `State_duelChooseTechnique_NNNNN` (id `521` + cardId, routed from `DUEL_CHOOSE_TECHNIQUE_EVENTS`). Both states use the same transition name (`"NNNNN"`) in `createTechniqueTransitionEvent`; the per-dispatcher lookup routes correctly. The technique's swap mechanics live inline in `actFromTechniqueWithId` branched on `$state` — challenge-context moves `DUEL_CHALLENGER` condition + queues `ChallengerSwappedEvent` + sets `CHOSEN_PERFORMER`; duel-context calls `swapParticipantsInDuel($duelId, $round, $owner->Id, $target->Id)`. Keep ONE thing in `handleEvent` — the `EventGenerateChallengeThreat` `actorId` redirect, which has to happen at event-fire time so `Character::handleEvent`'s threat-add and the EventHub notification reference the new challenger. Both states need JS handlers in `OnEnteringState.<expansion>.js`, `OnUpdateActionButtons.<expansion>.js`, `OnLeavingState.<expansion>.js`. Disambiguate `descriptionMyTurn` with `Name (Title)` when other cards share the character's name. Pattern reference: `Technique_03013` and Pattern E's "Technique usable in BOTH challenge and duel contexts" subsection.
+22. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), and the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute decisions in detail.
