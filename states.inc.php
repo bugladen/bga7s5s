@@ -1200,6 +1200,7 @@ $machinestates = [
                 "transitions" => [
                     "01063" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01063,
                     "01067" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01067,
+                    "03013" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_03013,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_REACTIONS,
                     "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED,
@@ -2252,6 +2253,7 @@ $machinestates = [
                         "02043b" => States::DUEL_CHOOSE_TECHNIQUE_02043b,
                         "02054" => States::DUEL_CHOOSE_TECHNIQUE_02054,
                         "02055" => States::DUEL_CHOOSE_TECHNIQUE_02055,
+                        "03013" => States::DUEL_CHOOSE_TECHNIQUE_03013,
 
                         // Neutral/Ussura maneuver transitions — enabled so Technique_02043a
                         // (Miyato and Ota) can copy state-bearing maneuvers from Ussura/Neutral

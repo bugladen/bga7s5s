@@ -142,6 +142,32 @@
                 }
             },
 
+            'highDramaChallengeActionResolveTechnique_03013': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const performerImage = $(`${card.divId}_image`);
+                    dojo.removeClass(performerImage, '_7sfs-chosen');
+                }
+            },
+
+            'duelChooseTechnique_03013': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    const performerImage = $(`${card.divId}_image`);
+                    dojo.removeClass(performerImage, '_7sfs-chosen');
+                }
+            },
+
             'highDramaPhase03cd03_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.showApproachDeckAtBottom();

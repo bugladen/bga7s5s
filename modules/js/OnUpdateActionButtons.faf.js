@@ -90,6 +90,16 @@
                 this.addActionButton(`actNone`, _('Decline'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
             },
 
+            'highDramaChallengeActionResolveTechnique_03013': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'duelChooseTechnique_03013': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'duelGambleSetup_03cd05': () => {
                 this.addActionButton(`btnTop`, _('Reveal from Top'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
                 this.addActionButton(`btnBottom`, _('Reveal from Bottom'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
