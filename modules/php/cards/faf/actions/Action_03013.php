@@ -23,6 +23,17 @@ class Action_03013 extends CharacterAction
         $this->Name = clienttranslate("(Continuous) Opposing characters at this location are considered Sorcerers");
     }
 
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
+    {
+        if (!parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
+        {
+            return false;
+        }
+
+        $daniella = $this->getOwningCharacter($theah);
+        return $theah->cardInCity($daniella);
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -37,6 +48,9 @@ class Action_03013 extends CharacterAction
         if ($event instanceof EventPlayerTurnEnd)
         {
             $this->untagOpposingSorcerers($event->theah);
+
+            //Can use again next turn
+            $this->setUsed($event->theah, false);
         }
 
         // Daniella leaves play / location → drop any outstanding tags so we don't
@@ -45,17 +59,14 @@ class Action_03013 extends CharacterAction
         if ($event instanceof EventCardMoved && $owner !== null && $event->cardId === $owner->Id)
         {
             $this->untagOpposingSorcerers($event->theah);
+
+            //Can use again in new location
+            $this->setUsed($event->theah, false);
         }
+        
         if ($event instanceof EventCharacterDestroyed && $owner !== null && $event->characterId === $owner->Id)
         {
             $this->untagOpposingSorcerers($event->theah);
-        }
-
-        // WHY: this Action is continuous — it never gets consumed. Force Used
-        // back to false in case any parent or shared logic flipped it.
-        if ($this->Used)
-        {
-            $this->setUsed($event->theah, false);
         }
     }
 
