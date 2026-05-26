@@ -16,6 +16,7 @@ Canonical references:
 - `modules/php/cards/faf/_03002.php` (Aja) — `Character` with a City Action that **issues a Combat challenge with a custom challenge type** (intervention/refusal restricted by Finesse) and a **Gambling Technique** that grants Lethal in-duel.
 - `modules/php/cards/faf/_03004.php` (Elena Agnelli) — `Character` with a **dynamic-recompute Finesse bonus tied to her dueling line** (+1 Finesse per Sorcery in her dueling line) and a **Technique gated on her combat card having the Sorcery trait** that adds +1 Parry and wounds the adversary.
 - `modules/php/cards/faf/_03013.php` (Daniella Dietrich, Witch/Hunter) — `Leader` with a **continuous Action that tags opposing characters with a trait** (Sorcerer) for the duration of the player's turn, a **cost-reduction Reaction** (Faith/Sorcery card at -1 cost, cloned from `Reaction_01116b`), and a **Wound-then-Swap Technique** usable in BOTH challenge and duel contexts (two state classes, swap mechanics inline in `actFromTechniqueWithId`).
+- `modules/php/cards/faf/_03014.php` (Kaspar Dietrich, Iron Reforged) — `Character` with a **wound-prevention passive via `eventCheck` on `EventCharacterBeingWounded`** (opponents' abilities cannot wound or move wounds to Kaspar — threat conversion still applies) and a **Technique gated on an Eisenfaust attachment OR an Eisenfaust card in the dueling line** that wounds the adversary.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -171,6 +172,7 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"At/During <phase>"** broadly | One of the phase events: `EventNewDay`, `EventPhaseDawnBeginning`, `EventPhaseDawnEnding`, `EventDuskEndOfDay`, `EventPressureOccuring`, `EventDuelStarted`, etc. See "Phase / lifecycle events" below. |
 | **"<Stat> increases by N"** / **"<Stat> is reduced by N"** | Queue `createCharacter<Stat>ModifiedEvent` (e.g., `createCharacterInfluenceModifiedEvent`). See `_01007` Aldo for renown-driven Influence modification. |
 | **"<Owner> has +N[Stat] for each X in her dueling line"** (or any duel-line-derived count) | Pattern A passive with a running `$<Stat>Bonus` field on the card. Recompute at `EventDuelEndOfRound` (the only clean boundary — there is no event fired when a card enters the dueling line; `cards->moveCard` is called directly). Reset at `EventDuelEnd` *before* the line is cleared. Gate on the owner being a duel participant (the dueling line is per-player, not per-character). See Pattern A "Dynamic stat bonuses tied to the dueling line" below. Reference: `_03004` Elena. |
+| **"Opponents' abilities cannot wound (or move wounds to) <Owner>"** / "<Owner> ignores wounds from X" | Override `eventCheck` on the card class and zero `$event->wounds` on `EventCharacterBeingWounded`. Distinguish ability-emitted wounds (non-empty `abilityId`) from threat-conversion wounds (empty `abilityId`). See Pattern A "Wound-prevention passive" below. Reference: `_03014` Kaspar (opponent's-ability scope), `_01069` Maxime (own-Sorcerer scope), `_01153` Breastplate (in-duel reduction-by-one). |
 | **`<b>Action:</b>`** / **`<b>City Action:</b>`** | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php` extending `CharacterAction`. State class(es) + JS wiring per Pattern C. **"City Action" only differs by the `cardInCity` gate** in `isAvailableToPlayer`. |
 | **"Issue a [stat] challenge to target …"** (any flavor) | CharacterAction that sets `CHOSEN_PERFORMER`/`CHOSEN_TARGET`/`CHALLENGE_STAT`/`CHALLENGE_TYPE` and queues a transition into the challenge sub-state machine. See Pattern F. |
 | **"Your <Trait> at this location issues a challenge"** (performer ≠ owner) | Two-step Pattern F: step 1 picks the *performer*, step 2 picks the target at the *performer's* location. If text doesn't print "Engage [self]", emit the engage event conditionally in step 2 and keep the new challenge type OUT of the auto-engage list. See Pattern F's "Performer ≠ action owner" subsection. Reference: `Action_03003`. |
@@ -349,6 +351,61 @@ Edge cases (Elena journal `2026-05-16-01-elena-agnelli-03004-implementation.md` 
 - **Card pulled from the dueling line mid-round.** The recount catches it at end-of-round; if anything pulls it earlier (rare), the bonus stays inflated for the rest of the current round. Acceptable — no event lets us hook arbitrary departures from the line.
 - **Owner swapped into / out of an in-progress duel.** Not handled by the basic pattern. The next `EventDuelEndOfRound` recomputes from the player's line, which may already contain cards played by a prior duelist. Flag for QA if the text is sensitive to this; usually unimportant.
 - **Owner destroyed mid-duel.** `EventDuelEnd` still fires and resets the bonus. `ModifiedFinesse` on a discarded card doesn't affect anything else, so no special handling needed.
+
+### Wound-prevention passive — `eventCheck` on `EventCharacterBeingWounded`
+
+For text like "<Owner> ignores wounds from <X>" or "<Y>'s abilities cannot wound <Owner>" (`_03014` Kaspar, `_01069` Maxime, `_01153` Breastplate). Override `eventCheck` on the card class — NOT `handleEvent` — and zero `$event->wounds` on `EventCharacterBeingWounded`.
+
+```php
+public function eventCheck(Event $event)
+{
+    parent::eventCheck($event);   // propagates to your Techniques/Reactions/etc.
+
+    if (! ($event instanceof EventCharacterBeingWounded)) return;
+    if ($event->characterId != $this->Id || $event->wounds <= 0) return;
+
+    // "(Threat is still converted to wounds.)" Threat conversion (StatesTrait
+    // ~line 1500) emits with empty $abilityId; only block ability-emitted wounds.
+    if ($event->abilityId == '') return;
+
+    $source = $event->theah->getCardById($event->sourceId);
+    if ($source == null || $source->ControllerId == 0
+        || $source->ControllerId == $this->ControllerId) return;
+
+    $oldWounds = $event->wounds;
+    $event->wounds = 0;
+
+    $event->theah->game->notify->all("message", clienttranslate(
+        '${character_inject_code}: Opponents\' abilities cannot wound. '
+        . '${oldWounds} wound(s) ignored from ${source_inject_code}.'
+    ), [
+        "character_inject_code" => $this->getInjectCode(),
+        "source_inject_code"    => $source->getInjectCode(),
+        "oldWounds"             => $oldWounds,
+    ]);
+}
+```
+
+WHY `eventCheck` on the *Being*-tense event (not `handleEvent` on `EventCharacterWounded`):
+
+- `EventHub` only emits the past-tense `EventCharacterWounded` when `$event->wounds > 0` (see `EventHub.php` ~1988). Setting `wounds = 0` in `eventCheck` on `EventCharacterBeingWounded` means the past-tense event is *never created* — no other reaction/passive that listens to "when X is wounded" thinks Kaspar took a wound. Cleaner than Maxime's `handleEvent` pattern of skipping `parent::handleEvent` (which still propagates the event to other `Character::handleEvent` listeners).
+- `Card::eventCheck` (Card.php ~371) is the framework's per-card check hook and runs BEFORE `handleEvent`. Override it on the *card class*, not on a Technique/Reaction — the passive is the card itself, not an ability.
+- Always call `parent::eventCheck($event)` first — it dispatches to any Techniques/Reactions/Maneuvers/Actions on the card.
+
+WHY `abilityId == ''` is the threat-conversion signal:
+
+- The round-end threat-to-wounds conversion (`StatesTrait::stDuelEndOfRound` ~line 1500) emits `createCharacterBeingWoundedEvent($actor->Id, $adversary->Id, $wounds, $reason)` — note the missing 5th positional argument, so `abilityId` defaults to `''`.
+- Every ability that emits a wound passes the ability id as the 5th argument (`Action_02010`, `Technique_03004`, all the Sorcerer Actions/Reactions). So `abilityId != ''` is a clean "this wound is from an ability" filter without needing to grep call sites.
+
+WHY `source.ControllerId != $this->ControllerId` is "opponent's ability":
+
+- The source card's `ControllerId` is the controlling player at the moment the wound is queued. For an opponent's Action/Reaction/Technique/Maneuver/Sorcery card causing the wound, that's a different player from Kaspar's controller.
+- `source.ControllerId == 0` means uncontrolled (rare — usually a card in transit between zones). Treat that as "not an opponent" and let it through; nothing in the codebase emits an ability-typed wound from an uncontrolled source as of this writing, but the guard is cheap.
+- For wound *movement* abilities (the heal+wound recipe, `Action_02010`): the wound half is queued from the action's owner with the action's id as `abilityId`. Same filter blocks it. Kaspar's text "or move wounds to Kaspar" comes free with the wound-block — don't add a special "move-wounds" handler.
+
+Scope-matters: Maxime's text is about "abilities he performs" (own scope via `CHOSEN_PERFORMER` or Sorcery-trait source), so Maxime checks the source's identity / trait. Kaspar's text is about "opponents' abilities" (controller scope), so Kaspar checks the source's controller. Read the text literally — don't reuse the wrong helper.
+
+For partial reduction (Breastplate `_01153` reduces by 1, not to 0), the same `eventCheck` pattern applies — just `$event->wounds--` with a floor at 0. Breastplate additionally tracks `$hasBlockedWound` to enforce "first time this duel."
 
 ### "Opposing characters are considered <Trait>" — tag opposing characters, don't override hasTrait
 
@@ -947,6 +1004,40 @@ return false;
 
 `getCombatCardsForCurrentRound()` returns BOTH players' combat cards. Filter by `$card->ControllerId == $owner->ControllerId` to isolate the actor's own combat card. (Since the technique already gates on `actor->Id == owner->Id`, this is the actor's own combat card.) Cesca Scarpa's `Technique_02003` is similar but cares about *any* Sorcery played in the round, so it skips the ControllerId filter — match the card text literally.
 
+### "If <Owner> is equipped with X **or** there is an X card in his dueling line" gate
+
+For techniques gated on a trait being present on either the owner's attachments OR the owner's side of the dueling line (`_03014` Kaspar — "equipped with an Eisenfaust attachment or there is an Eisenfaust card in his dueling line"). Check BOTH sources, OR them, and gate `isAvailableToPlayer` on the OR:
+
+```php
+private function hasEisenfaust(Theah $theah, Character $owner): bool
+{
+    // Attachments: $owner->Attachments is an array of *ids*. Look each up.
+    foreach ($owner->Attachments as $attachmentId)
+    {
+        $attachment = $theah->getCardById($attachmentId);
+        if ($attachment !== null && $attachment->hasTrait("Eisenfaust"))
+        {
+            return true;
+        }
+    }
+
+    // Dueling line: per-player, keyed on the owner's ControllerId.
+    $cards = $theah->getCardObjectsAtLocation(Game::LOCATION_DUELING_LINE, $owner->ControllerId);
+    foreach ($cards as $card)
+    {
+        if ($card->hasTrait("Eisenfaust"))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+```
+
+WHY `getCardObjectsAtLocation(LOCATION_DUELING_LINE, $owner->ControllerId)` is safe inside an `IN_DUEL` gate: the dueling line is per-player and accumulates combat cards over the duel's rounds; outside a duel it's empty (the line is cleared at duel end). With the standard `isAvailableToPlayer` gate on `IN_DUEL` + `actor == owner`, the cards returned are the owner's combat cards from this duel's prior rounds (plus the current round once a combat card has been picked). If the card text said "his dueling line *this round*" you'd switch to `getCombatCardsForCurrentRound()` filtered by controller; "his dueling line" without qualifier means the cumulative line.
+
+WHY iterate `$owner->Attachments` by id rather than calling `hasWeaponEquipped` / similar helper: there's no `hasAttachmentWithTrait($trait)` helper on `Character`. The id-list-then-`getCardById` pattern is the one in use across the codebase (e.g. `Maneuver_01054`'s `if ($attachment && $attachment->hasTrait("Eisenfaust"))`). Don't roll a new helper — match the existing shape.
+
 ### Wound-as-cost: queue the wound event at `EventResolveTechnique` BEFORE the transition
 
 For techniques whose printed cost is "Wound <Owner> • <effect>" (Daniella Dietrich `_03013`), the wound is part of the cost — paid before the effect resolves. The natural place is the `EventResolveTechnique` handler, where you queue BOTH the wound event and the technique-transition event, in that order:
@@ -1183,6 +1274,10 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 | `modules/php/cards/faf/actions/Action_03013.php` | **Canonical Continuous-Action passive.** `isAvailableToPlayer` returns `false` so it never appears in the action menu; `handleEvent` tags opposing characters with "Sorcerer" on `EventActionTriggered`/`EventReactionActivated`/`EventTechniqueActivated`/`EventManeuverActivated` for the owner's controller and untags at `EventPlayerTurnEnd`; tracks tagged-id set to dedup `addTrait` (which appends without dedup); explicitly resets `Used` to false at the turn-end boundary. |
 | `modules/php/cards/faf/reactions/Reaction_03013.php` | Cost-reduction Reaction cloned from `Reaction_01116b`; filter swapped to `IWealthCost && (hasTrait("Faith") || hasTrait("Sorcery"))`. Standard four-discount-method shape. |
 | `modules/php/cards/faf/techniques/Technique_03013.php` | **Dual-context Wound + Swap Technique.** Wound cost queued at `EventResolveTechnique` BEFORE the technique-transition event (cost-before-effect ordering). Swap mechanics inline in `actFromTechniqueWithId`, branched on state: challenge-context moves DUEL_CHALLENGER condition + queues ChallengerSwappedEvent + sets CHOSEN_PERFORMER; duel-context calls `swapParticipantsInDuel`. `EventGenerateChallengeThreat` handler kept slim — only the `actorId` redirect, which must happen at event-fire time. |
+| `modules/php/cards/faf/_03014.php` (Kaspar Dietrich, Iron Reforged) | **Character with a wound-prevention passive + attachment-or-dueling-line-gated Technique.** Passive uses `eventCheck` (not `handleEvent`) on `EventCharacterBeingWounded` to zero `$event->wounds` — cleaner than Maxime's skip-`parent::handleEvent` shape because `EventHub` only emits the past-tense `EventCharacterWounded` when `wounds > 0`, so nothing downstream thinks the wound happened. Filters: `abilityId != ''` (lets threat conversion through, which emits with empty `abilityId`) AND `source.ControllerId != owner.ControllerId` (opponent's ability). Wound-movement (heal+wound recipe, `Action_02010`) is blocked by the same filter — no special handler needed. |
+| `modules/php/cards/faf/techniques/Technique_03014.php` | **Attachment-OR-dueling-line trait-gated Technique that wounds the adversary.** `isAvailableToPlayer` ORs two checks: iterate `$owner->Attachments` (ids → `getCardById` → `hasTrait("Eisenfaust")`) and iterate `getCardObjectsAtLocation(LOCATION_DUELING_LINE, $owner->ControllerId)`. Effect mirrors `Technique_03004` — `EventDuelCalculateTechniqueValues` handler queues a `createCharacterBeingWoundedEvent` against `getDuelRoundOpponent()` and pushes an explanation. |
+| `modules/php/cards/_7s5s/_01069.php` (Maxime de Lafayette) | **Wound-prevention passive — own-Sorcerer scope.** Overrides `handleEvent` on `EventCharacterWounded` and skips `parent::handleEvent` to drop the wound (alternative to Kaspar's `eventCheck`-on-`EventCharacterBeingWounded` shape). Distinguishes Sorcery-trait source (auto-targets performer) from `ISorcererAbility` + `CHOSEN_PERFORMER == Maxime`. Prefer Kaspar's shape for new wound-prevention passives — it doesn't propagate the past-tense event to other listeners. |
+| `modules/php/cards/_7s5s/_01153.php` (Breastplate) | **Reduce-by-one wound prevention in `eventCheck`.** Canonical `eventCheck` on `EventCharacterBeingWounded` pattern. Tracks `$hasBlockedWound` to enforce "first time this duel." Mutates `$event->wounds` rather than zeroing — adapt this shape for partial-reduction passives. |
 | `modules/php/cards/_7s5s/actions/Action_01090.php` (Yuri Pyetrovich) | **Continuous Action — user-triggered variant.** Player activates from the menu; the Action sets globals and immediately calls `$this->setUsed($event->theah, false)` so it's available again. Companion to `Action_03013`'s never-shown variant. |
 | `modules/php/cards/tac/actions/Action_02013.php` (Wilhelm Dünst) | Pattern F with a discard-as-cost step plus the standard challenge transition. Reference for `doCost` / `doEffect` separation when the cost isn't just engagement. |
 | `modules/php/cards/_7s5s/techniques/Technique_GainLethal.php` | Generic two-pipeline Gain Lethal helper — handles both `EventGenerateChallengeThreat` (city) and `EventDuelCalculateTechniqueValues` (duel). |
@@ -1217,4 +1312,6 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 19. **For continuous Actions** (passive abilities mounted on a `CharacterAction` that the player never triggers from the menu): `isAvailableToPlayer` returns `false`; `handleEvent` does the work; explicitly call `$this->setUsed($event->theah, false)` at the scope boundary you want the Action to "reset" at (typically `EventPlayerTurnEnd`) — the parent `CardAction::handleEvent`'s `EventDuskEndOfDay` reset alone isn't frequent enough for an effect that needs to persist within a single turn but renew next turn. Mirror `Reaction_01196` "Continuous" for the never-`setUsed(true)` Reaction analogue. Pattern reference: `Action_03013` and Pattern A's "Continuous Action" subsection.
 20. **For techniques with "Wound X • effect" cost-bearing text:** queue `createCharacterBeingWoundedEvent` at the `EventResolveTechnique` handler BEFORE the `createTechniqueTransitionEvent`, so the cost fires before the player picks a target. Queueing the wound from inside `actFromTechniqueWithId` would invert the printed cost/effect ordering and let a player decline the picker to dodge the cost. Pattern reference: `Technique_03013` and Pattern E's "Wound-as-cost" subsection.
 21. **For swap techniques in challenge AND duel contexts:** mint TWO state classes under `modules/php/States/<expansion>/` — `State_highDramaChallengeActionResolveTechnique_NNNNN` (id `455` + cardId, routed from `HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS`) and `State_duelChooseTechnique_NNNNN` (id `521` + cardId, routed from `DUEL_CHOOSE_TECHNIQUE_EVENTS`). Both states use the same transition name (`"NNNNN"`) in `createTechniqueTransitionEvent`; the per-dispatcher lookup routes correctly. The technique's swap mechanics live inline in `actFromTechniqueWithId` branched on `$state` — challenge-context moves `DUEL_CHALLENGER` condition + queues `ChallengerSwappedEvent` + sets `CHOSEN_PERFORMER`; duel-context calls `swapParticipantsInDuel($duelId, $round, $owner->Id, $target->Id)`. Keep ONE thing in `handleEvent` — the `EventGenerateChallengeThreat` `actorId` redirect, which has to happen at event-fire time so `Character::handleEvent`'s threat-add and the EventHub notification reference the new challenger. Both states need JS handlers in `OnEnteringState.<expansion>.js`, `OnUpdateActionButtons.<expansion>.js`, `OnLeavingState.<expansion>.js`. Disambiguate `descriptionMyTurn` with `Name (Title)` when other cards share the character's name. Pattern reference: `Technique_03013` and Pattern E's "Technique usable in BOTH challenge and duel contexts" subsection.
-22. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), and the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute decisions in detail.
+22. **For wound-prevention passives** ("<X>'s abilities cannot wound <Owner>" / "<Owner> ignores wounds from <Y>"): override `eventCheck` on the card class (NOT `handleEvent`) on `EventCharacterBeingWounded` and zero `$event->wounds` when the gate trips. Reasons: (a) `EventHub` only emits the past-tense `EventCharacterWounded` when `wounds > 0`, so zeroing in the *Being*-tense event also suppresses every downstream listener that keys on the past-tense event — cleaner than Maxime's skip-`parent::handleEvent` shape; (b) `eventCheck` runs before any handler, so the mutation is visible to everyone. Use `$event->abilityId == ''` as the threat-conversion signal (`StatesTrait::stDuelEndOfRound` omits the ability id when emitting threat-to-wounds — every ability emitter passes it). Use `$source->ControllerId != $this->ControllerId` for "opponent's ability" scope; use Sorcery-trait / `ISorcererAbility` + `CHOSEN_PERFORMER` for "abilities he performs" scope (Maxime). Wound-movement (heal+wound recipe) is automatically covered by the wound-block — don't add a special handler. Pattern reference: `_03014` Kaspar (zero), `_01153` Breastplate (reduce-by-one), `_01069` Maxime (alternative `handleEvent` shape — only use for "abilities he performs" scope).
+23. **For techniques gated on "equipped with X or X in dueling line":** OR two checks in `isAvailableToPlayer` — iterate `$owner->Attachments` (ids → `getCardById($id)` → `hasTrait(...)`) AND iterate `getCardObjectsAtLocation(LOCATION_DUELING_LINE, $owner->ControllerId)`. Both are inside the standard `IN_DUEL` + actor-is-owner gate. There is no `hasAttachmentWithTrait` helper — the id-then-lookup pattern is the codebase convention (`Maneuver_01054`). Pattern reference: `Technique_03014` and Pattern E's "equipped with X or X in dueling line" subsection.
+24. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), and the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck decisions in detail.
