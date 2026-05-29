@@ -102,4 +102,38 @@ trait ReactionTrait
         foreach ($this->Reactions as $reaction)
             $reaction->setOwnerId($id);
     }
+
+    public function addReaction(CardReaction $reaction, Game $game, bool $notify = false): void
+    {
+        $this->Reactions[] = $reaction;
+        $this->IsUpdated = true;
+
+        if ($notify)
+        {
+            $game->notify->all('reactionAdded', clienttranslate('${character_inject_code} has gained Reaction: ${reaction_name}.'), [
+                'i18n' => ['reaction_name'],
+                'character_inject_code' => $this->getInjectCode(),
+                'characterId' => $this->Id,
+                'reaction' => $reaction->getPropertyArray($game),
+                'reaction_name' => $reaction->Name,
+            ]);
+        }
+    }
+
+    public function removeReaction(CardReaction $reaction, Game $game, bool $notify = false): void
+    {
+        $this->Reactions = array_values(array_filter($this->Reactions, fn($r) => $r->Id != $reaction->Id));
+        $this->IsUpdated = true;
+
+        if ($notify)
+        {
+            $game->notify->all('reactionRemoved', clienttranslate('${character_inject_code} has lost Reaction: ${reaction_name}.'), [
+                'i18n' => ['reaction_name'],
+                'character_inject_code' => $this->getInjectCode(),
+                'characterId' => $this->Id,
+                'reactionId' => $reaction->Id,
+                'reaction_name' => $reaction->Name,
+            ]);
+        }
+    }
 }
