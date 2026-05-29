@@ -2,12 +2,14 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01111 extends RiskAction
 {
@@ -17,7 +19,27 @@ class Action_01111 extends RiskAction
 
         $this->Name = clienttranslate("Choose Cards to Research");
     }
-    
+
+    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
+    {
+        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
+        {
+            return false;
+        }
+
+        $owner = $this->getOwningCard($theah);
+        $discardName = $theah->game->getPlayerDiscardDeckName($owner->ControllerId);
+        $cards = $theah->getCardObjectsAtLocation($discardName);
+
+        $distinctNames = [];
+        foreach ($cards as $card)
+        {
+            $distinctNames[$card->Name] = true;
+        }
+
+        return count($distinctNames) >= 3;
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -82,7 +104,7 @@ class Action_01111 extends RiskAction
         {
             if (count($ids) != 3)
             {
-                throw new \BgaUserException($game->translate("You must choose three cards to research."));
+                throw new UserException($game->translate("You must choose three cards to research."));
             }
 
             $owner = $this->getOwningCard($game->theah);
@@ -94,12 +116,12 @@ class Action_01111 extends RiskAction
                 $card = $game->getCardObjectFromDb($id);
                 if ($card == null)
                 {
-                    throw new \BgaUserException(sprintf($game->translate("Card %d not found."), $id));
+                    throw new UserException(sprintf($game->translate("Card %d not found."), $id));
                 }
 
                 if ($card->Location != $discardName)
                 {
-                    throw new \BgaUserException(sprintf($game->translate("Card %d is not in your discard pile."), $id));
+                    throw new UserException(sprintf($game->translate("Card %d is not in your discard pile."), $id));
                 }
                 $cards[] = $card;
             }
@@ -110,7 +132,7 @@ class Action_01111 extends RiskAction
             {
                 if (isset($uniqueCards[$card->Name]))
                 {
-                    throw new \BgaUserException(sprintf($game->translate("Chosen cards must have different names."), $card->Name));
+                    throw new UserException(sprintf($game->translate("Chosen cards must have different names."), $card->Name));
                 }
                 $uniqueCards[$card->Name] = $card;
             }
@@ -129,12 +151,12 @@ class Action_01111 extends RiskAction
             $players = $game->loadPlayersBasicInfos();
             if ( ! isset($players[$id]))
             {
-                throw new \BgaUserException($game->translate("Invalid opponent"));
+                throw new UserException($game->translate("Invalid opponent"));
             }
 
             if ($id == $game->getActivePlayerId())
             {
-                throw new \BgaUserException($game->translate("You cannot select yourself."));
+                throw new UserException($game->translate("You cannot select yourself."));
             }
 
             $game->globals->set(Game::CHOSEN_OPPONENT, $id);
@@ -151,19 +173,26 @@ class Action_01111 extends RiskAction
             $owner = $this->getOwningCard($game->theah);
             $discardName = $game->getPlayerDiscardDeckName($owner->ControllerId);
 
+            $chosenIds = $game->globals->get(Game::CHOSEN_CARD);
+            if ( ! is_array($chosenIds) || ! in_array($id, $chosenIds))
+            {
+                throw new UserException($game->translate("You must choose one of the three cards selected to research."));
+            }
+
             $card = $game->getCardObjectFromDb($id);
             if ($card == null)
             {
-                throw new \BgaUserException(sprintf($game->translate("Card %d not found."), $id));
+                throw new UserException(sprintf($game->translate("Card %d not found."), $id));
             }
 
             if ($card->Location != $discardName)
             {
-                throw new \BgaUserException(sprintf($game->translate("Card %d is not in your discard pile."), $id));
+                throw new UserException(sprintf($game->translate("Card %d is not in your discard pile."), $id));
             }
 
-            $game->notify->all("message", clienttranslate('${player_name} chooses ${card_inject_code} to research.'), [
-                "player_name" => $game->getActivePlayerName(),
+            $game->notify->all("message", clienttranslate('${opponent_name} chooses ${card_inject_code} for ${player_name} to research.'), [
+                "opponent_name" => $game->getPlayerNameById($game->getActivePlayerId()),
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "card_inject_code" => $card->getInjectCode(),
             ]);
 
