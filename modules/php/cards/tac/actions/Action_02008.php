@@ -183,7 +183,7 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $game->theah->queueEvent($attachEvent);
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $sorceryEndEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
+            $sorceryEndEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId, $character->Id, $character->Location);
             $game->theah->queueEvent($sorceryEndEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

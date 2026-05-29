@@ -25,6 +25,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02008;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02010;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02051;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions\Reaction_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -37,9 +39,11 @@ class Reaction_01008 extends CardReaction
 {
     public int $sourceId;
     public string $sourceAbilityId;
+    public int $sourceTargetId = 0;
 
     public Array $copiedActions = [];
     public Array $copiedCards = [];
+    public Array $copiedReactions = [];
 
     public function __construct()
     {
@@ -48,11 +52,12 @@ class Reaction_01008 extends CardReaction
         $this->Name = clienttranslate("Copy Sorcerer Ability Just Played");
         $this->sourceId = 0;
         $this->sourceAbilityId = "";
+        $this->sourceTargetId = 0;
     }
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah). $theah->game->translate('${you} may choose a to copy the Sorcerer Ability Just Played: ');
+        return parent::getReactionDescription($theah). $theah->game->translate('${you} may choose to copy the Sorcerer Ability Just Played: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -81,10 +86,12 @@ class Reaction_01008 extends CardReaction
             $abilityTargetedCharacterAtHerLocation = $ability instanceof IAbilityThatTargetsCharacters && $event->targetId != 0 && $event->targetLocation == $cesca->Location;
 
             //If the ability is from the cesca herself, or she is the performer, or the ability targeted a character at her location
-            if ($source?->Id == $cesca->Id || $event->performerId == $cesca->Id || $abilityTargetedCharacterAtHerLocation)
+            //Also gate on isCopyable: don't open the copy window for abilities Cesca can't actually copy (she'd pay the wound cost for nothing)
+            if (($source?->Id == $cesca->Id || $event->performerId == $cesca->Id || $abilityTargetedCharacterAtHerLocation) && $this->isCopyable($ability))
             {
                 $this->sourceId = $event->sourceId;
                 $this->sourceAbilityId = $event->abilityId;
+                $this->sourceTargetId = $event->targetId;
                 $cesca->IsUpdated = true;
                 $reactionEvent = EventFactory::createReactionTransitionEvent($cesca->ControllerId, $cesca->Id, $this->Id);
                 $event->theah->queueEvent($reactionEvent);
@@ -106,10 +113,12 @@ class Reaction_01008 extends CardReaction
                     $targetedCharacterAtHerLocation = $target && $target->Location == $cesca->Location;
 
                     //"performer == cesca" path is not detectable here (EventCharacterTargeted has no performerId); it remains handled by EventSorcererAbilityPlayed above.
-                    if ($source->Id == $cesca->Id || $targetedCharacterAtHerLocation)
+                    //Also gate on isCopyable: don't open the copy window for abilities Cesca can't actually copy (she'd pay the wound cost for nothing)
+                    if (($source->Id == $cesca->Id || $targetedCharacterAtHerLocation) && $this->isCopyable($ability))
                     {
                         $this->sourceId = $event->sourceId;
                         $this->sourceAbilityId = $event->abilityId;
+                        $this->sourceTargetId = $event->targetId;
                         $cesca->IsUpdated = true;
                         $reactionEvent = EventFactory::createReactionTransitionEvent($cesca->ControllerId, $cesca->Id, $this->Id);
                         $event->theah->queueEvent($reactionEvent);
@@ -159,9 +168,40 @@ class Reaction_01008 extends CardReaction
                 
             }
             $this->copiedCards = [];
+
+            foreach ($this->copiedReactions as $reaction)
+            {
+                $cesca->removeReaction($reaction, $event->theah->game);
+            }
+            $this->copiedReactions = [];
+
             $cesca->IsUpdated = true;
         }
 
+    }
+
+    //Allow-list of Sorcerer abilities Cesca actually knows how to copy.
+    //Used to gate the trigger in handleEvent so she isn't offered a copy that would charge her the
+    //1-wound cost (lines 187-189) for no effect. Keep this in sync with the instanceof branches in performReaction.
+    private function isCopyable(?ICardAbility $ability): bool
+    {
+        return $ability instanceof Action_01008
+            || $ability instanceof Action_01012
+            || $ability instanceof Action_01025
+            || $ability instanceof Action_01030
+            || $ability instanceof Action_01068
+            || $ability instanceof Action_01076
+            || $ability instanceof Action_01085
+            || $ability instanceof Action_01132
+            || $ability instanceof Action_01133
+            || $ability instanceof Action_01134
+            || $ability instanceof Action_01161
+            || $ability instanceof Action_01172
+            || $ability instanceof Action_02001
+            || $ability instanceof Action_02008
+            || $ability instanceof Action_02010
+            || $ability instanceof Action_02051
+            || $ability instanceof Reaction_02001;
     }
 
     private function announceReaction(Game $game, ICardAbility $ability): void
@@ -319,7 +359,34 @@ class Reaction_01008 extends CardReaction
                 $card = $this->copyCard($game, "02010", $cesca->ControllerId);
                 $ability = $card->getAbilityById("{$card->Id}_Action_02010");
             }
-            
+
+            if ($ability instanceof Action_02051)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "02051", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_02051");
+            }
+
+            //Adriana — Wound Non-Sorcerer (copy of Sorcerer Reaction)
+            //Host a transient copy of the Reaction on Cesca, pre-set with the same triggering target
+            //(Cesca's trigger guarantees the target is at her location), then queue the reaction-transition
+            //so Cesca's controller resolves it via Reaction_02001's own Wound/Decline buttons.
+            if ($ability instanceof Reaction_02001)
+            {
+                $copy = new Reaction_02001();
+                $copy->setId("Reaction_02001");
+                $copy->setOwnerId($cesca->Id);
+                $copy->CharacterId = $this->sourceTargetId;
+                $cesca->addReaction($copy, $game);
+                $this->copiedReactions[] = $copy;
+
+                $transition = EventFactory::createReactionTransitionEvent($cesca->ControllerId, $cesca->Id, $copy->Id);
+                $game->theah->queueEvent($transition);
+
+                $this->setUsed($game->theah, true);
+                $this->announceReaction($game, $ability);
+            }
+
             //If it was an action, check if it is available to copy
             if ($copyAction)
             {

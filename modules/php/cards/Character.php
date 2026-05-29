@@ -164,9 +164,19 @@ abstract class Character extends Card implements IHasTechniques
     public function addAttachment(Theah $theah, Attachment $attachment)
     {
         $this->ModifiedResolve += $attachment->ResolveModifier;
-        $this->ModifiedCombat += $attachment->CombatModifier;
-        $this->ModifiedFinesse += $attachment->FinesseModifier;
-        $this->ModifiedInfluence += $attachment->InfluenceModifier;
+
+        if (!$this->DashedCombat)
+        {
+            $this->ModifiedCombat += $attachment->CombatModifier;
+        }
+        if (!$this->DashedFinesse)
+        {
+            $this->ModifiedFinesse += $attachment->FinesseModifier;
+        }
+        if (!$this->DashedInfluence)
+        {
+            $this->ModifiedInfluence += $attachment->InfluenceModifier;
+        }
 
         $this->Attachments[] = $attachment->Id;
         $this->setLockedValues($theah);
@@ -181,9 +191,23 @@ abstract class Character extends Card implements IHasTechniques
             unset($this->Attachments[$index]);
 
             $this->ModifiedResolve -= $attachment->ResolveModifier;
-            $this->ModifiedCombat -= $attachment->CombatModifier;
-            $this->ModifiedFinesse -= $attachment->FinesseModifier;
-            $this->ModifiedInfluence -= $attachment->InfluenceModifier;
+
+            if ($this->DashedCombat) $this->ModifiedCombat = 0;
+            if ($this->DashedFinesse) $this->ModifiedFinesse = 0;
+            if ($this->DashedInfluence) $this->ModifiedInfluence = 0;
+
+            if (!$this->DashedCombat)
+            {
+                $this->ModifiedCombat -= $attachment->CombatModifier;
+            }
+            if (!$this->DashedFinesse)
+            {
+                $this->ModifiedFinesse -= $attachment->FinesseModifier;
+            }
+            if (!$this->DashedInfluence)
+            {
+                $this->ModifiedInfluence -= $attachment->InfluenceModifier;
+            }
 
             $this->setLockedValues($theah);
 
