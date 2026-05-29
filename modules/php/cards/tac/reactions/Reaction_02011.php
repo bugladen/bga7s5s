@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\techniques\Technique_02054;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -210,6 +211,15 @@ class Reaction_02011 extends CardReaction
                 $action = new Action_01191();
                 $action->setOwnerId($katain->Id);
                 if ($katain instanceof IHasActions) $katain->addAction($action, $game);
+            }
+
+            //Concealed Flintlock
+            if ($ability instanceof Technique_02054)
+            {
+                $copyManeuver = true;
+                $technique = new Technique_02054();
+                $technique->setOwnerId($katain->Id);
+                if ($katain instanceof IHasTechniques) $katain->addTechnique($technique, $game);
             }
 
             if ($copyAction || $copyManeuver || $copyTechnique)
