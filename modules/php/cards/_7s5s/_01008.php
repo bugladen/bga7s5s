@@ -45,7 +45,7 @@ class _01008 extends Character implements IHasActions, IHasReactions, IHasTechni
             clienttranslate("Vodacce"),
         ];
 
-        $this->Text = clienttranslate("<p><b>Sorcerer CIty Action:</b> Reveal the top card of your deck. If it is a Sorcery, put it into your hand. If not, you may sink it.</p><p><b>Reaction:</b> After Cesca performed  a Sorcerer Ability, or one targeted a character at this location • Wound her. Cesca performs a copy of it, paying all costs. (Can choose new targets.)</p>");
+        $this->Text = clienttranslate("<p><b>Sorcerer CIty Action:</b> Reveal the top card of your deck. If it is a Sorcery, put it into your hand. If not, you may sink it.</p><p><b>Reaction:</b> After Cesca performed a Sorcerer Ability, or one targeted a character at this location • Wound her. Cesca performs a copy of it, paying all costs. (Can choose new targets.)</p>");
 
         $this->resetCard();
 
