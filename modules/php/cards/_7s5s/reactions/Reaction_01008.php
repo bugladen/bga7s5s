@@ -25,6 +25,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02008;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02010;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02051;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions\Reaction_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -199,6 +200,7 @@ class Reaction_01008 extends CardReaction
             || $ability instanceof Action_02001
             || $ability instanceof Action_02008
             || $ability instanceof Action_02010
+            || $ability instanceof Action_02051
             || $ability instanceof Reaction_02001;
     }
 
@@ -356,6 +358,13 @@ class Reaction_01008 extends CardReaction
                 $cardCopied = true;
                 $card = $this->copyCard($game, "02010", $cesca->ControllerId);
                 $ability = $card->getAbilityById("{$card->Id}_Action_02010");
+            }
+
+            if ($ability instanceof Action_02051)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "02051", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_02051");
             }
 
             //Adriana — Wound Non-Sorcerer (copy of Sorcerer Reaction)

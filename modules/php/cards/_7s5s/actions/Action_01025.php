@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -81,7 +82,7 @@ class Action_01025 extends RiskAction implements ISorcererAbility
             $character = $game->theah->getCharacterById($id);
             if ($character == null)
             {
-                throw new \BgaUserException($game->translate("Character not found"));
+                throw new UserException($game->translate("Character not found"));
             }
 
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
@@ -89,7 +90,7 @@ class Action_01025 extends RiskAction implements ISorcererAbility
 
             if ($character->ControllerId == $performer->ControllerId)
             {
-                throw new \BgaUserException($game->translate("You cannot equip Fate's Burden to your own character."));
+                throw new UserException($game->translate("You cannot equip Fate's Burden to your own character."));
             }
 
             if ($character->Location != $performer->Location)
@@ -99,7 +100,7 @@ class Action_01025 extends RiskAction implements ISorcererAbility
 
             $owner = $this->getOwningCard($game->theah);
 
-            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id);
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
             $game->theah->queueEvent($sorceryStartEvent);
 
             $game->createRiskAttachment($game, "01025_Burden", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id, $this->Id);
@@ -107,7 +108,7 @@ class Action_01025 extends RiskAction implements ISorcererAbility
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id);
+            $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
             $game->theah->queueEvent($event);
 
             $game->gamestate->nextState();

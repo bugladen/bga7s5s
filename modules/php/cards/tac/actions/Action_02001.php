@@ -164,7 +164,7 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
             $game->globals->set(Game::CHALLENGE_TYPE, Game::ANDRIANA_DONDOLOS_CHALLENGE_TYPE);
             $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
 
-            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($andriana->ControllerId, $andriana->Id, $this->Id, $andriana->Id);
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($andriana->ControllerId, $andriana->Id, $this->Id, $andriana->Id, $character->Id, $character->Location);
             $game->theah->queueEvent($sorceryStartEvent);
 
             $discardedCardId = $game->globals->get(Game::CHOSEN_CARD);
@@ -177,7 +177,7 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
             $moveEvent = EventFactory::createCardMovingEvent($andriana->ControllerId, $character->Id, $character->Location, $andriana->Location, false, $andriana->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 
-            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($andriana->ControllerId, $andriana->Id, $this->Id, $andriana->Id);
+            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($andriana->ControllerId, $andriana->Id, $this->Id, $andriana->Id, $character->Id, $character->Location);
             $game->theah->queueEvent($sorceryPlayedEvent);
 
             $transitionEvent = EventFactory::createTransitionEvent($andriana->ControllerId, $andriana->Id, "02001_2", $this->Id);

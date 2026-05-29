@@ -153,7 +153,7 @@ class Action_02051 extends RiskCityAction implements ISorcererAbility, IAbilityT
             $lockerEvent = EventFactory::createCardSentToLockerEvent($owner->ControllerId, $owner->Id);
             $game->theah->queueEvent($lockerEvent);
 
-            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
+            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId, $target->Id, $target->Location);
             $game->theah->queueEvent($sorceryPlayedEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
