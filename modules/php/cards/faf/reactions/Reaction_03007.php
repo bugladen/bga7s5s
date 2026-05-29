@@ -134,7 +134,9 @@ class Reaction_03007 extends AttachmentReaction implements ISorcererAbility
     {
         parent::performReaction($game, $state, $internalId, $reactionId);
 
-        $owner = $this->getOwningAttachment($game->theah);
+        //getOwningCard (not getOwningAttachment) so this works both for the normal Matushka's Shears
+        //path (attachment is a Card) AND for a transient copy hosted on a Character (Cesca's copy via Reaction_01008).
+        $owner = $this->getOwningCard($game->theah);
 
         if ($this->stage === 'offer')
         {
@@ -331,5 +333,29 @@ class Reaction_03007 extends AttachmentReaction implements ISorcererAbility
         $this->stage = '';
         $this->opponentId = 0;
         $this->cardsSunk = 0;
+    }
+
+    //Entry point used by Reaction_01008 (Cesca Avara) to copy this Sorcerer Reaction.
+    //Mirrors the post-Engage flow of the 'engage' branch in performReaction: skip the offer/Engage
+    //(Cesca's Copy click is the equivalent commitment), queue the SorcererAbilityStart event,
+    //and dispatch the opponent into advanceToChoose (or finalize if there's nothing to force).
+    //The transient copy must already be host-registered on its owner via addReaction so dispatch
+    //can find it for the multi-stage choose/pick1/pick2 flow.
+    public function beginCopy(Game $game, int $opponentId): void
+    {
+        $owner = $this->getOwningCard($game->theah);
+        $this->opponentId = $opponentId;
+        $this->cardsSunk = 0;
+
+        $performer = $this->getOwningCharacter($game->theah);
+        $performerId = $performer ? $performer->Id : 0;
+
+        $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
+        $game->theah->queueEvent($sorceryStartEvent);
+
+        if (! $this->advanceToChoose($game, $owner))
+        {
+            $this->finalize($game, $owner);
+        }
     }
 }
