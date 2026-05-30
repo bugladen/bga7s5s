@@ -17,6 +17,7 @@ Canonical references:
 - `modules/php/cards/faf/_03004.php` (Elena Agnelli) — `Character` with a **dynamic-recompute Finesse bonus tied to her dueling line** (+1 Finesse per Sorcery in her dueling line) and a **Technique gated on her combat card having the Sorcery trait** that adds +1 Parry and wounds the adversary.
 - `modules/php/cards/faf/_03013.php` (Daniella Dietrich, Witch/Hunter) — `Leader` with a **continuous Action that tags opposing characters with a trait** (Sorcerer) for the duration of the player's turn, a **cost-reduction Reaction** (Faith/Sorcery card at -1 cost, cloned from `Reaction_01116b`), and a **Wound-then-Swap Technique** usable in BOTH challenge and duel contexts (two state classes, swap mechanics inline in `actFromTechniqueWithId`).
 - `modules/php/cards/faf/_03014.php` (Kaspar Dietrich, Iron Reforged) — `Character` with a **wound-prevention passive via `eventCheck` on `EventCharacterBeingWounded`** (opponents' abilities cannot wound or move wounds to Kaspar — threat conversion still applies) and a **Technique gated on an Eisenfaust attachment OR an Eisenfaust card in the dueling line** that wounds the adversary.
+- `modules/php/cards/faf/_03015.php` (Joern Kietelsson, Fury's Edge) — `Character` with three pure-passive abilities living entirely on the card class (no Action/Reaction/Technique files): a **Forced self-wound on muster** (must hook BOTH `EventCharacterMustered` AND `EventApproachCharacterPlayed`), a **phase-conditional Resolve penalty** ("During Dusk, -3 Resolve" — direct `ModifiedResolve` mutation gated by a private flag because there is no `EventCharacterResolveModifiedEvent` factory), and a **challenge-refused self-heal** on `EventChallengeRejected`.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -169,7 +170,12 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"<Name> cannot intervene/challenge/pressure"** | Override the predicate AND `eventCheck`. See "Pattern A — Hard ban" in the `create-city-character` skill — the implementation is identical. |
 | **"When <X> happens, <passive thing>"** (no player choice) | Override `handleEvent`. Gate on event type + identity + location/scope. See Pattern A below. |
 | **"At the end of Dawn"** / **"At the beginning of Dawn"** | `handleEvent` on `EventPhaseDawnEnding` / `EventPhaseDawnBeginning`. See Pattern A below. |
-| **"At/During <phase>"** broadly | One of the phase events: `EventNewDay`, `EventPhaseDawnBeginning`, `EventPhaseDawnEnding`, `EventDuskEndOfDay`, `EventPressureOccuring`, `EventDuelStarted`, etc. See "Phase / lifecycle events" below. |
+| **"At/During <phase>"** broadly | One of the phase events: `EventNewDay`, `EventPhaseDawnBeginning`, `EventPhaseDawnEnding`, `EventDuskPhaseBegin`, `EventDuskPhaseEnd`, `EventDuskEndOfDay`, `EventPressureOccuring`, `EventDuelStarted`, etc. See "Phase / lifecycle events" below. |
+| **"Forced: After <Owner> musters • <effect>"** / **"When <Owner> musters …"** | `handleEvent` on **BOTH** `EventCharacterMustered` AND `EventApproachCharacterPlayed`, OR'd, gated on `characterId == $this->Id`. Mustering via Approach emits a distinct event — hooking only `EventCharacterMustered` silently misses the Approach path. See Pattern A "Forced muster/approach triggers" below. Reference: `_03015` Joern, `_01009` Cirilo. |
+| **"During <Phase>, <Owner> has -N Resolve"** (or any phase-conditional **Resolve** modifier) | There is no `createCharacterResolveModifiedEvent` factory — Resolve is not on the event-driven stat list. Directly mutate `$this->ModifiedResolve` on the phase-begin event, gated by a private bool flag (because attachments also mutate `ModifiedResolve` independently), and restore on the phase-end event. Manually emit `createCharacterDestroyedEvent` if the reduction crosses the wounds-equal-resolve threshold (the engine's destruction check only runs inside an `EventCharacterWounded` handler). See Pattern A "Phase-conditional Resolve modifier" below. Reference: `_03015` Joern. **For Combat/Finesse/Influence/Panache, use the matching `createCharacter<Stat>ModifiedEvent` factory instead** — they're event-driven the way Resolve isn't. |
+| **"When <Owner>'s challenge is refused, <effect>"** / **"When a challenge to <Owner> is refused …"** | `handleEvent` on `EventChallengeRejected`. Fields: `$event->challengerId` (the one who issued), `$event->targetId` (the one who refused). Identity gate matches whichever role the text names. Reference: `_03015` Joern (challenger side, self-heal), `_01119` Nazem (challenger side, engage the refuser). |
+| **"<Owner> has +N [Stat] while wounded"** (or any "while <condition-on-self>" stat bonus) | Pattern A passive with a private bool flag (e.g., `$WoundedCombatBonusApplied`). Hook `EventCharacterWounded` AND `EventCharacterHealed` with `characterId == $this->Id`, call `parent::handleEvent` first (so `$this->Wounds` is up-to-date), then re-derive the boolean and queue `createCharacter<Stat>ModifiedEvent(±1)` only on flag transition. Skip if `IsDying` or in discard/locker. See Pattern A "Stat bonus while a self-condition holds" below. Reference: `_03016` Ise. |
+| **"During <Phase>, you may choose not to <auto-action on Owner>"** (opt-out of an auto-emitted event) | Pattern D Reaction listening on the *pre*-event (e.g., `EventCardMoving` for the Dusk move-home) with `sourceId == 0` (auto-emitter signal) + a phase gate (`TURN_PHASE == Game::DUSK`) + the `cancelDeclinedByCardIds` re-queue dance. Cancel the event, clone it, prompt the player; on "Keep" call `setUsed(true)`; on "Decline" re-queue the clone with `cancelDeclinedByCardIds[] = owner->Id` so the reaction doesn't immediately re-catch it. See Pattern D's "Cancel-and-reissue Reaction" subsection. Reference: `Reaction_03016a` (Ise Dusk opt-out), `Reaction_01140` (in-hand RiskReaction sibling). |
 | **"<Stat> increases by N"** / **"<Stat> is reduced by N"** | Queue `createCharacter<Stat>ModifiedEvent` (e.g., `createCharacterInfluenceModifiedEvent`). See `_01007` Aldo for renown-driven Influence modification. |
 | **"<Owner> has +N[Stat] for each X in her dueling line"** (or any duel-line-derived count) | Pattern A passive with a running `$<Stat>Bonus` field on the card. Recompute at `EventDuelEndOfRound` (the only clean boundary — there is no event fired when a card enters the dueling line; `cards->moveCard` is called directly). Reset at `EventDuelEnd` *before* the line is cleared. Gate on the owner being a duel participant (the dueling line is per-player, not per-character). See Pattern A "Dynamic stat bonuses tied to the dueling line" below. Reference: `_03004` Elena. |
 | **"Opponents' abilities cannot wound (or move wounds to) <Owner>"** / "<Owner> ignores wounds from X" | Override `eventCheck` on the card class and zero `$event->wounds` on `EventCharacterBeingWounded`. Distinguish ability-emitted wounds (non-empty `abilityId`) from threat-conversion wounds (empty `abilityId`). See Pattern A "Wound-prevention passive" below. Reference: `_03014` Kaspar (opponent's-ability scope), `_01069` Maxime (own-Sorcerer scope), `_01153` Breastplate (in-duel reduction-by-one). |
@@ -177,6 +183,8 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"Issue a [stat] challenge to target …"** (any flavor) | CharacterAction that sets `CHOSEN_PERFORMER`/`CHOSEN_TARGET`/`CHALLENGE_STAT`/`CHALLENGE_TYPE` and queues a transition into the challenge sub-state machine. See Pattern F. |
 | **"Your <Trait> at this location issues a challenge"** (performer ≠ owner) | Two-step Pattern F: step 1 picks the *performer*, step 2 picks the target at the *performer's* location. If text doesn't print "Engage [self]", emit the engage event conditionally in step 2 and keep the new challenge type OUT of the auto-engage list. See Pattern F's "Performer ≠ action owner" subsection. Reference: `Action_03003`. |
 | **`<b>Reaction:</b>`** / **`<b>City Reaction:</b>`** | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_NNNNN.php` extending `CardReaction`. Button-based reactions need **no** state class, **no** `states.inc.php` edits, **no** JS wiring. See Pattern D. |
+| **"Reaction: After <enemy/X> character moves to this location • <effect>"** | Pattern D Reaction listening on `EventCardMoved` (past-tense). Gates: `event.cardId != owner.Id` (skip Owner's self-move), `event.toLocation == owner.Location`, `cardInCity(owner)` (enemies can't enter your Home), `$character instanceof Character`, `ControllerId != 0`, and the "enemy" controller check (`!= owner.ControllerId`). Pair with a valid-effect-target precondition. See Pattern D's "After a character moves to this location" subsection. Reference: `Reaction_03016b` (Ise). For the *self-moves* analogue ("after this character moves to a new location"), see `_01067` Jean Urbain and `_02022` Stranahan. |
+| **"Move another character you control to this location"** (effect) | Queue `createCardMovingEvent($character.ControllerId, $character.Id, $character.Location, $owner.Location, $engage, $owner.Id, $this->Id)` for the chosen mover. Eligible movers = `getCharactersInPlayByPlayerId($owner.ControllerId)` minus the owner herself minus characters already at her location. Don't use any pull/teleport helper — there isn't one; the standard move event handles all the bookkeeping. Reference: `Reaction_03016b` (other character to here), `Reaction_01039` (move self to adjacent). |
 | **"Reaction: … at -N cost"** / **"… pay N Wealth"** | Pattern D Reaction with **in-reaction click-to-pay** wealth tracking. Don't use `PAY_STATE_PLAY_BRUTE` — it's tied to the player-turn state cycle. See Pattern D's "Reactions that need to pay a wealth cost" subsection. Reference: `Reaction_03003`. |
 | **"Reaction: Put a different X into play from your hand or discard pile"** | Pattern D Reaction. Filter eligibles separately from `LOCATION_HAND` and `getPlayerDiscardDeckName(...)`, exclude the just-destroyed card by id. `createCharacterMusteredEvent` does the actual move; `createCardRemovedFromPlayerDiscardPileEvent` is notification-only (fire it before the muster so JS clients sync correctly). Reference: `Reaction_03003`, `Action_01024` (Bravos). |
 | **`<b>Sorcerer …</b>`** (Sorcerer Action / Sorcerer Reaction) | The Action/Reaction class additionally `implements ISorcererAbility`. **Must** call `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces). See `Action_01076` and `Reaction_02001`. |
@@ -352,6 +360,100 @@ Edge cases (Elena journal `2026-05-16-01-elena-agnelli-03004-implementation.md` 
 - **Owner swapped into / out of an in-progress duel.** Not handled by the basic pattern. The next `EventDuelEndOfRound` recomputes from the player's line, which may already contain cards played by a prior duelist. Flag for QA if the text is sensitive to this; usually unimportant.
 - **Owner destroyed mid-duel.** `EventDuelEnd` still fires and resets the bonus. `ModifiedFinesse` on a discarded card doesn't affect anything else, so no special handling needed.
 
+### Forced muster/approach triggers — hook BOTH `EventCharacterMustered` AND `EventApproachCharacterPlayed`
+
+For any "after X musters" / "when X musters" / "Forced after X musters" trigger, the conditional MUST hook both events:
+
+```php
+if (($event instanceof EventCharacterMustered
+        || $event instanceof EventApproachCharacterPlayed)
+    && $event->characterId == $this->Id)
+{
+    // ... effect ...
+}
+```
+
+WHY both: the printed text says "musters" colloquially to cover every way a character enters play, but the engine emits a distinct `EventApproachCharacterPlayed` when an Approach card puts a character into play vs. the standard muster path (`createCharacterMusteredEvent` in the recruit / brute / muster-from-action flows). Hooking only `EventCharacterMustered` silently skips the Forced trigger when the character enters via Approach. The user has flagged this as a definitional miss — it's not a polish item.
+
+Reference: `modules/php/cards/_7s5s/_01009.php` (Cirilo) line ~57 — the canonical OR pattern for "I added Brute to my Mercenaries when I muster or come in via Approach." `_03015` Joern uses the same pair for his self-wound Forced trigger.
+
+If the trigger is "after **another** character musters" (not self), still hook both events; only the `characterId` filter changes.
+
+### Phase-conditional Resolve modifier — direct `ModifiedResolve` mutation, no event factory
+
+For text like "During Dusk, <Owner> has -N Resolve" or "At the beginning of Dawn, <Owner> has +N Resolve" — the engine does NOT have an `EventCharacterResolveModifiedEvent` factory. Resolve is not event-driven the way Combat/Finesse/Influence are. The pattern:
+
+```php
+private bool $DuskResolvePenaltyApplied = false;   // running flag — survives via IsUpdated
+
+public function handleEvent(Event $event)
+{
+    parent::handleEvent($event);
+
+    if ($event instanceof EventDuskPhaseBegin
+        && ! $this->DuskResolvePenaltyApplied
+        && $this->isControlled())
+    {
+        $this->ModifiedResolve -= 3;
+        $this->DuskResolvePenaltyApplied = true;
+        $this->IsUpdated = true;
+
+        $event->theah->game->notify->all("message",
+            clienttranslate('${character_inject_code}: During Dusk, -3 Resolve (now ${resolve}).'),
+            [
+                "character_inject_code" => $this->getInjectCode(),
+                "resolve"               => $this->ModifiedResolve,
+            ]
+        );
+
+        // WHY: Character::handleEvent (~line 256) only triggers destruction inside
+        // an EventCharacterWounded handler. If the Resolve drop crosses the
+        // wounds-equal-resolve threshold with no concurrent wound event, the
+        // engine won't notice. Mirror EventHub.php:251 (the unequip path):
+        if ($this->Wounds >= $this->ModifiedResolve && ! $this->IsDying)
+        {
+            $this->IsDying = true;
+            $this->unEquipAllAttachments($event->theah);
+            $destroyEvent = EventFactory::createCharacterDestroyedEvent(
+                $this->ControllerId, $this->Id, $this->getInjectCode()
+            );
+            $event->theah->queueEvent($destroyEvent);
+        }
+    }
+
+    if ($event instanceof EventDuskEndOfDay && $this->DuskResolvePenaltyApplied)
+    {
+        $this->ModifiedResolve += 3;
+        $this->DuskResolvePenaltyApplied = false;
+        $this->IsUpdated = true;
+    }
+}
+```
+
+WHY a private bool flag (and NOT a recompute or a queued event):
+
+- **No `createCharacterResolveModifiedEvent` factory exists.** Combat/Finesse/Influence each have `createCharacter<Stat>ModifiedEvent` factories; Resolve does not. The codebase mutates `ModifiedResolve` directly — see `Character::addAttachment` line 166 (`$this->ModifiedResolve += $attachment->ResolveModifier`).
+- **Attachments mutate `ModifiedResolve` independently.** A naive `-= 3` / `+= 3` is fine if Dusk events are perfectly paired, but skipped/duplicated phase begins are not. A flag makes the apply idempotent: only one `-= 3` per Dusk, regardless of how the events fire.
+- **Pattern A's "Dynamic stat bonuses" recompute approach (Elena) doesn't fit here.** Resolve has no naturally recurring "this card's snapshot of the world changes" event the way a dueling-line count does. The trigger is a phase boundary, not a stream of state changes.
+
+WHY the manual destruction check:
+
+- `Character::handleEvent`'s destruction check (line ~256) runs ONLY inside `EventCharacterWounded`. Lowering `ModifiedResolve` past `Wounds` outside a wound event silently leaves the character alive at `Wounds >= Resolve`.
+- The card text's parenthetical reminder "(Characters are destroyed when their wounds equal their Resolve)" makes the rule explicit — the threshold check applies whenever it's crossed, not only on a wound event.
+- Mirror the EventHub unequip pattern (`EventHub.php` ~251): `if ($character->Wounds >= $character->ModifiedResolve && ! $character->IsDying)` → flip `IsDying`, unequip attachments, queue `createCharacterDestroyedEvent`.
+
+WHY restore unconditional on the flag (not `isControlled()` or `cardInCity`):
+
+- If the character is destroyed mid-Dusk, the flag is still true and the EndOfDay restore still runs. The destroyed-character object is in the Locker; restoring its in-memory `ModifiedResolve` is harmless. Re-instantiation on re-recruit goes through the constructor + `resetCard()` which sets `ModifiedResolve = Resolve` anyway, but the unconditional restore is a defense against any hypothetical "return from Locker" path that bypasses construction.
+
+WHY `EventDuskEndOfDay` for the restore (not `EventDuskPhaseEnd`):
+
+- Dusk lifecycle is: `stDuskPhaseBegin` → `EventDuskPhaseBegin` → (reactions, cleanup, hand-discard, purgatory-discard) → `stDuskPhaseEnd` → `EventDuskPhaseEnd` → `stDuskEndOfDay` → `EventDuskEndOfDay`.
+- "During Dusk" should cover every step in between. `EventDuskEndOfDay` is the last event of the day — restoring there guarantees nothing inside Dusk sees the restored value early.
+- `EventDuskPhaseEnd` would work too (Brute discard at end-of-day doesn't read Resolve), but EndOfDay is the strict latest safe point.
+
+Reference: `_03015` Joern Kietelsson. Note that the same pattern applies in reverse for "+N Resolve" phase-conditional buffs.
+
 ### Wound-prevention passive — `eventCheck` on `EventCharacterBeingWounded`
 
 For text like "<Owner> ignores wounds from <X>" or "<Y>'s abilities cannot wound <Owner>" (`_03014` Kaspar, `_01069` Maxime, `_01153` Breastplate). Override `eventCheck` on the card class — NOT `handleEvent` — and zero `$event->wounds` on `EventCharacterBeingWounded`.
@@ -406,6 +508,80 @@ WHY `source.ControllerId != $this->ControllerId` is "opponent's ability":
 Scope-matters: Maxime's text is about "abilities he performs" (own scope via `CHOSEN_PERFORMER` or Sorcery-trait source), so Maxime checks the source's identity / trait. Kaspar's text is about "opponents' abilities" (controller scope), so Kaspar checks the source's controller. Read the text literally — don't reuse the wrong helper.
 
 For partial reduction (Breastplate `_01153` reduces by 1, not to 0), the same `eventCheck` pattern applies — just `$event->wounds--` with a floor at 0. Breastplate additionally tracks `$hasBlockedWound` to enforce "first time this duel."
+
+### Stat bonus while a self-condition holds — flag-based recompute on wound/heal
+
+For text like "<Owner> has +1 [Combat] while wounded" (`_03016` Ise). The condition is *on the Owner herself* (wounded / engaged / has-attachment / etc.), and the bonus should flip on/off as the condition changes.
+
+Pattern (mirror `_03016` Ise):
+
+```php
+public bool $WoundedCombatBonusApplied = false;   // running flag — survives via IsUpdated
+
+public function handleEvent(Event $event)
+{
+    parent::handleEvent($event);   // parent updates $this->Wounds BEFORE this runs
+
+    if (($event instanceof EventCharacterWounded || $event instanceof EventCharacterHealed)
+        && $event->characterId == $this->Id)
+    {
+        $this->recomputeWoundedCombatBonus($event->theah);
+    }
+}
+
+private function recomputeWoundedCombatBonus(Theah $theah): void
+{
+    if ($this->ControllerId == 0) return;
+    if ($theah->game->characterIsInDiscardOrLocker($this)) return;
+    if ($this->IsDying) return;
+
+    $shouldHaveBonus = $this->Wounds > 0;
+
+    if ($shouldHaveBonus && ! $this->WoundedCombatBonusApplied)
+    {
+        $combatEvent = EventFactory::createCharacterCombatModifiedEvent(
+            $this->ControllerId, $this->Id,
+            $this->ModifiedCombat, $this->ModifiedCombat + 1,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($combatEvent);
+        $this->WoundedCombatBonusApplied = true;
+        $this->IsUpdated = true;
+    }
+    else if (! $shouldHaveBonus && $this->WoundedCombatBonusApplied)
+    {
+        $combatEvent = EventFactory::createCharacterCombatModifiedEvent(
+            $this->ControllerId, $this->Id,
+            $this->ModifiedCombat, $this->ModifiedCombat - 1,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($combatEvent);
+        $this->WoundedCombatBonusApplied = false;
+        $this->IsUpdated = true;
+    }
+}
+```
+
+WHY a flag + delta-event instead of recompute-from-base:
+
+- Attachments and other cards also mutate `ModifiedCombat`. A naive "set `ModifiedCombat = Combat + (wounded ? 1 : 0)`" would clobber a Weapon attachment's +1 Combat that flowed in via its own `CombatModified` event. The delta-on-transition pattern plays nicely with the rest of the stat-modifier ecosystem: each modifier only adjusts what *it* contributed.
+- Mirrors `_01089` Soline el Gato's `lowerFinesse`/`raiseFinesse` shape, which uses the same per-source-bookkeeping discipline.
+
+WHY `parent::handleEvent` BEFORE checking `$this->Wounds`:
+
+- `Character::handleEvent` (Character.php ~242) does `$this->Wounds += $event->wounds` (or `-=` for heal) inside its own `EventCharacterWounded`/`EventCharacterHealed` branches. Our recompute MUST run *after* that update — `parent::handleEvent($event)` first is non-negotiable.
+
+WHY skip on `IsDying` / `characterIsInDiscardOrLocker`:
+
+- If the wound event drove her to Wounds >= ModifiedResolve, `Character::handleEvent` sets `IsDying = true` and queues `EventCharacterDestroyed`. Queueing a combat bonus at that point is wasted work — her `ModifiedCombat` is irrelevant. When she re-instantiates (next game/recruit), `resetCard` re-derives `ModifiedCombat = Combat`, and the bonus flag is default-false on the fresh instance.
+
+Adapting for other stats / conditions:
+- `+N [Finesse]` → `createCharacterFinesseModifedEvent` (note framework typo: `Modifed`).
+- `+N [Influence]` → `createCharacterInfluenceModifiedEvent`.
+- `+N [Resolve]` → no factory exists. Use Joern's `$this->ModifiedResolve` direct-mutation pattern instead (Pattern A's "Phase-conditional Resolve modifier").
+- `+N [Panache]` (Leader only) → `createCharacterPanacheModifiedEvent`.
+
+For non-wound conditions (e.g., "while engaged"), swap the trigger event (`EventCardEngaged` / `EventCardEngarded`) and the `$shouldHaveBonus` predicate. Same flag discipline.
 
 ### "Opposing characters are considered <Trait>" — tag opposing characters, don't override hasTrait
 
@@ -527,7 +703,12 @@ Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags op
 | `EventNewDay` | Start of each Day | Reset per-day flags |
 | `EventPhaseDawnBeginning` | Dawn begins | "At the beginning of Dawn …" |
 | `EventPhaseDawnEnding` | Dawn ends (fired by `StatesTrait::stDawnEnding`) | "At the end of Dawn …" |
-| `EventDuskEndOfDay` | End of Day | Reset per-day Used flags (base classes handle this for Actions/Reactions automatically) |
+| `EventDuskPhaseBegin` | Dusk phase begins (fired by `StatesTrait::stDuskPhaseBegin`, BEFORE characters route home) | "At the beginning of Dusk …" / start of a phase-conditional Resolve penalty (Joern `_03015`). |
+| `EventDuskPhaseEnd` | After cleanup/discard, before `EventDuskEndOfDay` | Less commonly used; `EventDuskEndOfDay` is usually the right "Dusk is over" hook |
+| `EventDuskEndOfDay` | End of Day (Brute discards happen here) | Reset per-day Used flags (base classes handle this for Actions/Reactions automatically); restore phase-conditional Resolve penalties |
+| `EventCharacterMustered` | A character was just mustered (recruit / brute / `Action_01024` / etc.) | "Forced after X musters …" — **always pair with `EventApproachCharacterPlayed`** (see Pattern A's "Forced muster/approach triggers" subsection) |
+| `EventApproachCharacterPlayed` | A character entered play via an Approach card | Same triggers as `EventCharacterMustered`; hook the pair |
+| `EventChallengeRejected` | A challenge was refused (`$event->challengerId` issued, `$event->targetId` refused) | "When <Owner>'s challenge is refused …" / "When a challenge to <Owner> is refused …". Reference: `_03015` Joern (self-heal), `_01119` Nazem (engage the refuser). |
 | `EventPressureOccuring` | A pressure is happening at a location | "When pressuring …", `_01006` Don Constanzo |
 | `EventDuelStarted` / `EventDuelEnd` | Duel boundaries | Passive duel stat modifiers, `_01089`. **`EventDuelEnd` fires BEFORE the dueling line is cleared** in `stDuelEnd` (the discard events are queued AFTER it), so a recount-based dueling-line effect must reset via direct inverse-event, not via re-reading the line. |
 | `EventDuelEndOfRound` | A duel round just ended; both combat cards are in the dueling line; the next round hasn't begun | Recompute "for each X in my dueling line" running bonuses *before* the next round's gambling. `_03004` Elena. |
@@ -538,6 +719,7 @@ Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags op
 | `EventCharacterDestroyed` | A character is destroyed | Leaders have built-in renown-loss logic in `Leader::handleEvent` — don't reinvent |
 | `EventSorcererAbilityPlayed` | A sorcerer ability resolved | "After <X> performs a Sorcerer ability …" reactions, Pattern D below |
 | `EventActionResolved` | An action just resolved | "After an Action resolves …" reactions, `Reaction_01089` |
+| `EventCardMoving` / `EventCardMoved` | Pre / past tense of a card-to-location move | `Moving` is cancelable (`$event->canceled = true`) — use for opt-out Reactions (Pattern D "Cancel-and-reissue"). `Moved` is the past-tense receiver — use for "after X moves to/from this location" triggers. The Dusk auto-move emits `Moving` with `$sourceId == 0`; ability-driven moves pass a non-zero sourceId. Reference: `Reaction_03016a` (cancel), `Reaction_03016b` (react to). |
 
 ## Pattern C — Action / City Action (CharacterAction)
 
@@ -860,6 +1042,129 @@ For Reactions whose effect is "put a card into play" (e.g., Don Constanzo's "Put
   - Don't expect it to move the card; that's the muster event's job.
   - Reference: `Action_01024` (Bravos) follows this exact ordering for Thug-from-discard mustering.
 
+### After a character moves to this location
+
+For "Reaction: After <enemy/X> character moves to this location • <effect>" (`_03016` Ise). Listen on `EventCardMoved` (past-tense — the move has already committed). Required gates:
+
+```php
+if (! ($event instanceof EventCardMoved)) return;
+if (! $this->isAvailable()) return;
+
+$owner = $this->getOwningCharacter($event->theah);
+if ($owner === null) return;
+if (! $event->theah->cardInCity($owner)) return;   // enemies can't enter your Home
+if ($event->cardId == $owner->Id) return;          // skip the Owner's own moves
+if ($event->toLocation != $owner->Location) return;
+
+$character = $event->theah->getCardById($event->cardId);
+if (! ($character instanceof Character)) return;   // attachments and other cards also move
+if ($character->ControllerId == 0) return;          // uncontrolled / mercenary — skip
+if ($character->ControllerId == $owner->ControllerId) return;   // "enemy" gate
+
+// Valid-effect-target precondition: if no eligible action, don't prompt the player.
+if (count($this->getEligibleMovers($event->theah, $owner)) == 0) return;
+```
+
+WHY the `cardInCity($owner)` gate: enemy characters can't enter your Home location (Home is per-controller scope), so the `toLocation == $owner->Location` check would silently never match for an Owner at Home. The explicit gate documents the intent and skips the per-event work entirely.
+
+WHY `Character` instanceof check (not just `getCardById`): `EventCardMoved` fires for *any* card that moved — attachments equipping, schemes being placed, etc. Filter to Character explicitly.
+
+WHY `ControllerId == 0` skip: uncontrolled characters (mercenaries in transit, cards being mustered with no controller yet) shouldn't trigger an "enemy" reaction. Skipping them is the consistent behavior across the codebase.
+
+WHY the valid-target precondition: if no eligible mover exists, the player would get a useless prompt they could only Pass. The general Pattern D rule (skill section "Trigger gates") applies here verbatim.
+
+For the *self-moves* analogue ("after this character moves to a new location, do X for nearby allies"), the receiver isn't a Reaction — it's a `handleEvent` on the card itself. See `_01067` Jean Urbain or `_02022` Stranahan.
+
+### Cancel-and-reissue Reaction — opt out of an auto-emitted event
+
+For text like "During Dusk, you may choose not to move <Owner> Home" (`_03016` Ise). The framework's `stDuskPhaseCleanup` emits a `createCardMovingEvent(..., LOCATION_PLAYER_HOME, $engage=false, $sourceId=0)` for every non-Home controlled character. The Reaction intercepts that event, asks the player, and either keeps it canceled (effect: stay) or re-queues it (effect: go home as normal).
+
+Skeleton (mirror `Reaction_03016a` Ise, in-hand sibling `Reaction_01140`):
+
+```php
+class Reaction_NNNNN extends CardReaction
+{
+    private ?EventCardMoving $cardMovingEvent = null;
+    private string $fromLocation = '';
+
+    public function getReactionButtonProperties(Theah $theah): array
+    {
+        $array = parent::getReactionButtonProperties($theah);
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Keep in city'), 'stay');
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Decline'), 'decline');
+        return $array;
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        if (! ($event instanceof EventCardMoving)) return;
+        if ($event->canceled || $event->unstoppable) return;
+        if (! $this->isAvailable()) return;
+
+        $owner = $this->getOwningCharacter($event->theah);
+        if ($owner === null) return;
+
+        if ($event->cardId != $owner->Id) return;
+        if ($event->toLocation != Game::LOCATION_PLAYER_HOME) return;
+        if ($event->sourceId != 0) return;                              // auto-emitter signal
+        if (in_array($owner->Id, $event->cancelDeclinedByCardIds)) return;  // re-queue guard
+
+        $turnPhase = (int) $event->theah->game->getGameStateValue(Game::TURN_PHASE);
+        if ($turnPhase != Game::DUSK) return;
+
+        $this->cardMovingEvent = clone $event;
+        unset($this->cardMovingEvent->theah);
+        $this->fromLocation = $event->fromLocation;
+        $event->canceled = true;
+        $owner->IsUpdated = true;
+
+        $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+        $event->theah->stackEvent($transition);
+    }
+
+    public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
+    {
+        parent::performReaction($game, $state, $internalId, $reactionId);
+        $owner = $this->getOwningCharacter($game->theah);
+
+        if ($reactionId == 'stay')
+        {
+            // Already canceled in handleEvent; just announce + setUsed.
+            $this->setUsed($game->theah, true);
+            $this->cardMovingEvent = null;
+            $this->fromLocation = '';
+            $owner->IsUpdated = true;
+        }
+
+        if ($reactionId == 'decline')
+        {
+            // Re-queue the move with a self-marker so handleEvent doesn't re-trigger.
+            $this->cardMovingEvent->cancelDeclinedByCardIds[] = $owner->Id;
+            $game->theah->queueEvent($this->cardMovingEvent);
+            $this->cardMovingEvent = null;
+            $this->fromLocation = '';
+            $owner->IsUpdated = true;
+        }
+
+        $game->gamestate->nextState("done");
+    }
+}
+```
+
+WHY `sourceId == 0` is the auto-emitter signal: grepping `createCardMovingEvent(...LOCATION_PLAYER_HOME...)` confirms every ability-driven move-home passes a non-zero sourceId (action id / reaction id / etc.); only `stDuskPhaseCleanup` and `_01126`'s own self-recall emit with the default `$sourceId=0`. For the Dusk opt-out, that's exactly the signal you want — abilities that *also* try to move the Owner home should not be intercepted, because the player already chose to play that ability.
+
+WHY the redundant `TURN_PHASE == DUSK` gate: belt-and-suspenders. Cheap, authoritative, and protects against any future code path that emits a zero-source move-home outside Dusk.
+
+WHY clone + `unset($this->cardMovingEvent->theah)`: storing the event for later re-queue. The `theah` reference holds the Theah/Game graph; unsetting prevents recursive serialization when the reaction-instance state is persisted via `IsUpdated`. This matches `Reaction_01140`'s shape.
+
+WHY `cancelDeclinedByCardIds` instead of "just delete the stored event": when the player picks "Decline", the move MUST still happen — the framework's downstream logic (engardment cleanup at dusk, etc.) depends on every non-Home character routing home. Re-queueing the cloned event with `cancelDeclinedByCardIds[] = $owner->Id` lets the move proceed without `handleEvent` immediately re-catching the re-queued event. Same dance as `Reaction_01140`.
+
+WHY `stackEvent` (not `queueEvent`) for the transition: stacking puts the reaction prompt ahead of other queued cleanup events so the player decision happens BEFORE subsequent dusk cleanup events fire for other characters. Matches `Reaction_01140`'s convention.
+
+Reference: `Reaction_03016a` (Ise Dusk opt-out, on a Character in play), `Reaction_01140` (in-hand RiskReaction sibling — same dance for player-driven moves).
+
 ### Reactions that need to pay a wealth cost — click-to-pay
 
 For Reactions where the effect costs Wealth (e.g., Don Constanzo's "at -1 cost"), the framework's `PAY_STATE_PLAY_BRUTE` / `actPayForBrute` is usually NOT a fit because:
@@ -900,6 +1205,8 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical implementation of 
 | `Reaction_02001` | Andriana — Sorcerer Reaction (so implements `ISorcererAbility`); button-prompts to wound a non-Sorcerer. |
 | `Reaction_03001` | Cesca del Rosso's "after Cesca performs a Sorcerer ability, wound an opposing character" — button-per-opposing-character target picker, with a Pass button. |
 | `Reaction_03003` (Don Constanzo) | Multi-stage Reaction with hand/discard source selection, **incremental click-to-pay wealth handling** rolled inside the reaction (no PAY_STATE_PLAY_BRUTE coupling), and muster-at-Home. Canonical reference for cost-bearing Reactions and "put into play from hand or discard pile." |
+| `Reaction_03016a` (Schwester Ise — Dusk opt-out) | **Canonical cancel-and-reissue Reaction.** Listens on `EventCardMoving` for the Dusk auto-move home (`sourceId == 0`, `toLocation == LOCATION_PLAYER_HOME`, `TURN_PHASE == DUSK`). Cancels and prompts; "Keep in city" calls `setUsed`, "Decline" re-queues the cloned event with `cancelDeclinedByCardIds[] = owner.Id`. Uses `stackEvent` so the prompt jumps ahead of other queued dusk cleanup. In-hand sibling: `Reaction_01140`. |
+| `Reaction_03016b` (Schwester Ise — pull a friendly) | **Canonical "after enemy moves to my location" reaction.** Listens on `EventCardMoved` with `cardId != owner.Id`, `toLocation == owner.Location`, `cardInCity(owner)`, enemy controller check; button per eligible mover (own characters not at owner's location); queues `createCardMovingEvent` for the chosen character to the owner's location. |
 
 ## Pattern E — Techniques and Maneuvers
 
@@ -1275,6 +1582,10 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 | `modules/php/cards/faf/reactions/Reaction_03013.php` | Cost-reduction Reaction cloned from `Reaction_01116b`; filter swapped to `IWealthCost && (hasTrait("Faith") || hasTrait("Sorcery"))`. Standard four-discount-method shape. |
 | `modules/php/cards/faf/techniques/Technique_03013.php` | **Dual-context Wound + Swap Technique.** Wound cost queued at `EventResolveTechnique` BEFORE the technique-transition event (cost-before-effect ordering). Swap mechanics inline in `actFromTechniqueWithId`, branched on state: challenge-context moves DUEL_CHALLENGER condition + queues ChallengerSwappedEvent + sets CHOSEN_PERFORMER; duel-context calls `swapParticipantsInDuel`. `EventGenerateChallengeThreat` handler kept slim — only the `actorId` redirect, which must happen at event-fire time. |
 | `modules/php/cards/faf/_03014.php` (Kaspar Dietrich, Iron Reforged) | **Character with a wound-prevention passive + attachment-or-dueling-line-gated Technique.** Passive uses `eventCheck` (not `handleEvent`) on `EventCharacterBeingWounded` to zero `$event->wounds` — cleaner than Maxime's skip-`parent::handleEvent` shape because `EventHub` only emits the past-tense `EventCharacterWounded` when `wounds > 0`, so nothing downstream thinks the wound happened. Filters: `abilityId != ''` (lets threat conversion through, which emits with empty `abilityId`) AND `source.ControllerId != owner.ControllerId` (opponent's ability). Wound-movement (heal+wound recipe, `Action_02010`) is blocked by the same filter — no special handler needed. |
+| `modules/php/cards/faf/_03016.php` (Schwester Ise, Moonlit Interrogator) | **Character with a self-condition stat bonus + a cancel-and-reissue Reaction + an enemy-moved-to-me Reaction.** (1) +1 Combat while wounded: private `$WoundedCombatBonusApplied` flag, hook `EventCharacterWounded`/`EventCharacterHealed` for `characterId == $this->Id` after `parent::handleEvent` updates `$this->Wounds`, queue `createCharacterCombatModifiedEvent(±1)` only on flag transition, skip on `IsDying`/discard. (2) Dusk "keep in city" via `Reaction_03016a` — listens on `EventCardMoving` (`sourceId == 0`, `toLocation == HOME`, `TURN_PHASE == DUSK`), cancels and prompts, uses `cancelDeclinedByCardIds` to gate the Decline re-queue. (3) "After enemy moves here" via `Reaction_03016b` — `EventCardMoved` with controller/location gates, button-per-eligible-friendly, `createCardMovingEvent` to the owner's location. |
+| `modules/php/cards/faf/reactions/Reaction_03016a.php` | Canonical cancel-and-reissue Reaction. Clone + `unset($cloned->theah)` for storage; `stackEvent` for the transition; `cancelDeclinedByCardIds[] = owner.Id` on Decline so the re-queued event isn't re-caught. Same shape as in-hand `Reaction_01140` but lives on a Character in play. |
+| `modules/php/cards/faf/reactions/Reaction_03016b.php` | "After enemy moves here → pull a friendly" Reaction. Demonstrates the full `EventCardMoved` gate set (`cardId != owner.Id`, `toLocation == owner.Location`, `cardInCity(owner)`, instanceof Character, `ControllerId != 0`, enemy controller), valid-target precondition (`getEligibleMovers` non-empty), and `createCardMovingEvent` for a non-self mover with `engage=false`. |
+| `modules/php/cards/faf/_03015.php` (Joern Kietelsson, Fury's Edge) | **Character with three pure-passive abilities — no Action/Reaction/Technique files.** (1) Forced self-wound on muster: hooks BOTH `EventCharacterMustered` AND `EventApproachCharacterPlayed` OR'd in one conditional, gated on `characterId == $this->Id`. (2) Phase-conditional Resolve penalty ("During Dusk, -3 Resolve"): direct `$this->ModifiedResolve` mutation on `EventDuskPhaseBegin`, restore on `EventDuskEndOfDay`, gated by a private `$DuskResolvePenaltyApplied` bool — there is no `createCharacterResolveModifiedEvent` factory. Includes an explicit destruction check (mirroring `EventHub.php:251`) because `Character::handleEvent`'s threshold check only runs inside an `EventCharacterWounded` handler. (3) Challenge-refused self-heal on `EventChallengeRejected` with `challengerId == $this->Id` — symmetric to `_01119` Nazem's challenger-side engage. |
 | `modules/php/cards/faf/techniques/Technique_03014.php` | **Attachment-OR-dueling-line trait-gated Technique that wounds the adversary.** `isAvailableToPlayer` ORs two checks: iterate `$owner->Attachments` (ids → `getCardById` → `hasTrait("Eisenfaust")`) and iterate `getCardObjectsAtLocation(LOCATION_DUELING_LINE, $owner->ControllerId)`. Effect mirrors `Technique_03004` — `EventDuelCalculateTechniqueValues` handler queues a `createCharacterBeingWoundedEvent` against `getDuelRoundOpponent()` and pushes an explanation. |
 | `modules/php/cards/_7s5s/_01069.php` (Maxime de Lafayette) | **Wound-prevention passive — own-Sorcerer scope.** Overrides `handleEvent` on `EventCharacterWounded` and skips `parent::handleEvent` to drop the wound (alternative to Kaspar's `eventCheck`-on-`EventCharacterBeingWounded` shape). Distinguishes Sorcery-trait source (auto-targets performer) from `ISorcererAbility` + `CHOSEN_PERFORMER == Maxime`. Prefer Kaspar's shape for new wound-prevention passives — it doesn't propagate the past-tense event to other listeners. |
 | `modules/php/cards/_7s5s/_01153.php` (Breastplate) | **Reduce-by-one wound prevention in `eventCheck`.** Canonical `eventCheck` on `EventCharacterBeingWounded` pattern. Tracks `$hasBlockedWound` to enforce "first time this duel." Mutates `$event->wounds` rather than zeroing — adapt this shape for partial-reduction passives. |
@@ -1314,4 +1625,9 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 21. **For swap techniques in challenge AND duel contexts:** mint TWO state classes under `modules/php/States/<expansion>/` — `State_highDramaChallengeActionResolveTechnique_NNNNN` (id `455` + cardId, routed from `HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS`) and `State_duelChooseTechnique_NNNNN` (id `521` + cardId, routed from `DUEL_CHOOSE_TECHNIQUE_EVENTS`). Both states use the same transition name (`"NNNNN"`) in `createTechniqueTransitionEvent`; the per-dispatcher lookup routes correctly. The technique's swap mechanics live inline in `actFromTechniqueWithId` branched on `$state` — challenge-context moves `DUEL_CHALLENGER` condition + queues `ChallengerSwappedEvent` + sets `CHOSEN_PERFORMER`; duel-context calls `swapParticipantsInDuel($duelId, $round, $owner->Id, $target->Id)`. Keep ONE thing in `handleEvent` — the `EventGenerateChallengeThreat` `actorId` redirect, which has to happen at event-fire time so `Character::handleEvent`'s threat-add and the EventHub notification reference the new challenger. Both states need JS handlers in `OnEnteringState.<expansion>.js`, `OnUpdateActionButtons.<expansion>.js`, `OnLeavingState.<expansion>.js`. Disambiguate `descriptionMyTurn` with `Name (Title)` when other cards share the character's name. Pattern reference: `Technique_03013` and Pattern E's "Technique usable in BOTH challenge and duel contexts" subsection.
 22. **For wound-prevention passives** ("<X>'s abilities cannot wound <Owner>" / "<Owner> ignores wounds from <Y>"): override `eventCheck` on the card class (NOT `handleEvent`) on `EventCharacterBeingWounded` and zero `$event->wounds` when the gate trips. Reasons: (a) `EventHub` only emits the past-tense `EventCharacterWounded` when `wounds > 0`, so zeroing in the *Being*-tense event also suppresses every downstream listener that keys on the past-tense event — cleaner than Maxime's skip-`parent::handleEvent` shape; (b) `eventCheck` runs before any handler, so the mutation is visible to everyone. Use `$event->abilityId == ''` as the threat-conversion signal (`StatesTrait::stDuelEndOfRound` omits the ability id when emitting threat-to-wounds — every ability emitter passes it). Use `$source->ControllerId != $this->ControllerId` for "opponent's ability" scope; use Sorcery-trait / `ISorcererAbility` + `CHOSEN_PERFORMER` for "abilities he performs" scope (Maxime). Wound-movement (heal+wound recipe) is automatically covered by the wound-block — don't add a special handler. Pattern reference: `_03014` Kaspar (zero), `_01153` Breastplate (reduce-by-one), `_01069` Maxime (alternative `handleEvent` shape — only use for "abilities he performs" scope).
 23. **For techniques gated on "equipped with X or X in dueling line":** OR two checks in `isAvailableToPlayer` — iterate `$owner->Attachments` (ids → `getCardById($id)` → `hasTrait(...)`) AND iterate `getCardObjectsAtLocation(LOCATION_DUELING_LINE, $owner->ControllerId)`. Both are inside the standard `IN_DUEL` + actor-is-owner gate. There is no `hasAttachmentWithTrait` helper — the id-then-lookup pattern is the codebase convention (`Maneuver_01054`). Pattern reference: `Technique_03014` and Pattern E's "equipped with X or X in dueling line" subsection.
-24. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), and the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck decisions in detail.
+24. **For "after X musters" triggers:** the conditional MUST OR `EventCharacterMustered` AND `EventApproachCharacterPlayed`. The Approach card path emits a distinct event, so a single-event hook silently misses Approach-driven entries. Pattern reference: `_01009` Cirilo (mercenary→Brute) and `_03015` Joern (Forced self-wound). See Pattern A's "Forced muster/approach triggers" subsection.
+25. **For phase-conditional Resolve modifiers** ("During <Phase>, X has ±N Resolve"): mutate `$this->ModifiedResolve` directly — there is no `createCharacterResolveModifiedEvent` factory (unlike Combat/Finesse/Influence/Panache which all have one). Gate the apply with a private bool flag so attachment-driven `ModifiedResolve` churn doesn't desync. Manually emit `createCharacterDestroyedEvent` (mirroring `EventHub.php:251`'s unequip path) if the reduction crosses the wounds-equal-resolve threshold — `Character::handleEvent`'s destruction check only runs inside `EventCharacterWounded`. Restore at `EventDuskEndOfDay` (or whichever phase-end event matches the printed scope), unconditionally on the flag — destroyed objects in the Locker are fine, and the unconditional restore guards against any hypothetical return-from-Locker path that skips the constructor. Pattern reference: `_03015` Joern and Pattern A's "Phase-conditional Resolve modifier" subsection.
+26. **For "+N [Stat] while <self-condition>" passives** (Combat/Finesse/Influence/Panache): use a flag-based recompute pattern, NOT a recompute-from-base. Hook the event(s) that toggle the condition (`EventCharacterWounded`/`EventCharacterHealed` for "while wounded", `EventCardEngaged`/`EventCardEngarded` for "while engaged", etc.) gated on `characterId == $this->Id`. Call `parent::handleEvent($event)` FIRST so the parent updates `$this->Wounds` / `Engaged` / etc.; then re-derive the boolean and queue `createCharacter<Stat>ModifiedEvent(±1)` only on flag transition. Skip if `IsDying` or `characterIsInDiscardOrLocker`. Pattern reference: `_03016` Ise (+1 Combat while wounded) and Pattern A's "Stat bonus while a self-condition holds" subsection. The flag avoids clobbering attachment-driven `ModifiedCombat` etc. **Resolve has no factory — use the `_03015` Joern direct-mutation pattern instead.**
+27. **For "During <Phase>, you may choose not to <auto-action>" Reactions** (Dusk opt-out, Dawn cleanup opt-out, etc.): listen on the *pre*-event (e.g., `EventCardMoving`) and use the `cancelDeclinedByCardIds` re-queue dance. Cancel the event in `handleEvent` (`$event->canceled = true`), clone-and-store it (with `unset($cloned->theah)`), prompt the player; "Keep" path calls `setUsed(true)` and discards the clone; "Decline" path re-queues the clone with `cancelDeclinedByCardIds[] = $owner->Id` so `handleEvent` doesn't immediately re-catch it. Gate the trigger on the auto-emitter signal — for the Dusk move-home, that's `sourceId == 0` AND `TURN_PHASE == Game::DUSK`. Use `stackEvent` (not `queueEvent`) for the transition so the prompt fires before subsequent dusk cleanup events. Pattern reference: `Reaction_03016a` (Ise, on a Character in play) and `Reaction_01140` (in-hand sibling). See Pattern D's "Cancel-and-reissue Reaction" subsection.
+28. **For "Reaction: After <enemy/X> character moves to this location" triggers:** listen on `EventCardMoved` (past-tense, the move has committed). Required gates in order: `isAvailable()`, `cardInCity($owner)` (enemies can't enter your Home), `event.cardId != $owner->Id` (skip the owner's self-moves), `event.toLocation == $owner->Location`, `getCardById` returns a Character, `ControllerId != 0`, and the enemy/friendly controller check that matches the text. ALWAYS include a valid-effect-target precondition (`count($eligibleEffectTargets) > 0`) before queuing the transition, or the player gets a useless prompt. To MOVE another character to the owner's location, queue `createCardMovingEvent($mover.ControllerId, $mover.Id, $mover.Location, $owner.Location, $engage=false, $owner->Id, $this->Id)` — there's no pull/teleport helper, the standard move event handles all bookkeeping. Pattern reference: `Reaction_03016b` (Ise). For the *self-moves* analogue ("after this character moves to a new location"), the receiver is a `handleEvent` on the card itself — see `_01067` Jean Urbain / `_02022` Stranahan.
+29. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`), the Joern journal (`2026-05-29-03-joern-kietelsson-03015-implementation.md`), and the Ise journal (`2026-05-29-04-schwester-ise-03016-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck / muster-includes-Approach / phase-conditional-Resolve / while-wounded-stat-bonus / cancel-and-reissue-Reaction / after-enemy-moves-here decisions in detail.
