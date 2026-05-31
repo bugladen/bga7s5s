@@ -179,6 +179,10 @@ trait FrameworkActionsTrait
     {
         $locations = json_decode($locations, true);
 
+        if (count($locations) > 1 && count($locations) !== count(array_unique($locations))) {
+            throw new UserException($this->translate("You must choose different locations."));
+        }
+
         foreach ($locations as $location) {
             $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
             if ($event instanceof EventReknownAddedToLocation) {
