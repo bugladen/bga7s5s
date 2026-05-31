@@ -325,6 +325,21 @@ body {
     row-gap: 15px;
 }
 
+._7sfs-city-my-cards {
+    display: inline-flex;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+    row-gap: 15px;
+    justify-content: flex-end;
+    align-items: center;
+    vertical-align: middle;
+}
+
+._7sfs-city-my-cards-endcap {
+    width: 0;
+    height: 0;
+}
+
 #city-oles-inn {
     background-color: #71613F;
     margin-top: 10px;

@@ -792,6 +792,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const player = this.gamedatas.players[args.playerId];
         player.discard.push(card);
+
+        this.alignCityImages();
     },
 
     notif_cardDiscardedFromHand: function( notif )
@@ -858,6 +860,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             dojo.destroy(card.divId);
             card.divId = null;
         }
+
+        this.alignCityImages();
     },
 
 
@@ -890,6 +894,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         // Create the new card element at the destination
         this.createCard(cardId, card, targetId);
+
+        this.alignCityImages();
     },
 
     notif_cardEngaged: function( notif )
@@ -922,7 +928,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         // CSS transition on ._7sfs-card handles the smooth rotation animation
     },
 
-    notif_cardMustered: async function (notif) 
+    notif_cardMustered: async function (notif)
     {
         debug( 'notif_cardMustered' );
         debug( notif );
@@ -932,6 +938,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const cardId = this.createCardId(args.card, args.location);
         const target = this.getTargetElementForLocation(args.location, args.player_id);
         this.createCard(cardId, args.card, target);
+
+        this.alignCityImages();
 
         // Animate the card growing from nothing to full size
         const cardElement = $(cardId);
@@ -962,6 +970,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const cardId = this.createCardId(card, card.location);
         const target = this.getTargetElementForLocation(card.location, card.controllerId);
         this.createCard(cardId, card, target);
+
+        this.alignCityImages();
     },
 
     notif_characterWounded: async function( notif )
@@ -1290,6 +1300,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const target = this.getTargetElementForLocation(args.location, card.controllerId);
         const cardId = this.createCardId(card, args.location);
         this.createCard(cardId, card, target);
+
+        this.alignCityImages();
 
         // Animate the card growing from nothing to full size
         const cardElement = $(cardId);
@@ -1861,6 +1873,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const cardId = this.createCardId(card, args.location);
         this.createCard(cardId, card, targetId);
+
+        this.alignCityImages();
     },
 
     notif_locationClaimed: function( notif )
