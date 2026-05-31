@@ -27,6 +27,10 @@
                 this.resetCityLocations();
             },
 
+            'planningPhaseResolveSchemes_03017': () => {
+                this.resetCityLocations();
+            },
+
             'highDramaPhase03cd01': () => {
                 if (this.isCurrentPlayerActive())
                 {
