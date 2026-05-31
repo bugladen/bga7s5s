@@ -1358,20 +1358,47 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     getTargetElementForLocation: function ( location, playerId = null )
     {
+        const isMyCard = playerId != null && this.player_id != null
+            && parseInt(playerId) === parseInt(this.player_id);
         switch (location) {
             case this.LOCATION_CITY_OLES_INN:
-                return 'oles-inn-endcap';
+                return isMyCard ? 'oles-inn-my-cards-endcap' : 'oles-inn-endcap';
             case this.LOCATION_CITY_DOCKS:
-                return 'dock-endcap';
+                return isMyCard ? 'dock-my-cards-endcap' : 'dock-endcap';
             case this.LOCATION_CITY_FORUM:
-                return 'forum-endcap';
+                return isMyCard ? 'forum-my-cards-endcap' : 'forum-endcap';
             case this.LOCATION_CITY_BAZAAR:
-                return 'bazaar-endcap';
+                return isMyCard ? 'bazaar-my-cards-endcap' : 'bazaar-endcap';
             case this.LOCATION_CITY_GOVERNORS_GARDEN:
-                return 'garden-endcap';
+                return isMyCard ? 'garden-my-cards-endcap' : 'garden-endcap';
             case this.LOCATION_PLAYER_HOME:
                 return `${playerId}-home-anchor`
         }
+    },
+
+    alignCityImages: function ()
+    {
+        const containerIds = [
+            'oles-inn-my-cards',
+            'dock-my-cards',
+            'forum-my-cards',
+            'bazaar-my-cards',
+            'garden-my-cards',
+        ];
+        const containers = containerIds
+            .map((id) => document.getElementById(id))
+            .filter((el) => el != null);
+        if (containers.length === 0) return;
+
+        containers.forEach((el) => { el.style.minWidth = '0px'; });
+
+        let maxWidth = 0;
+        containers.forEach((el) => {
+            const w = el.scrollWidth;
+            if (w > maxWidth) maxWidth = w;
+        });
+
+        containers.forEach((el) => { el.style.minWidth = `${maxWidth}px`; });
     },
 
     makeCityLocationSelectable: function(location) {

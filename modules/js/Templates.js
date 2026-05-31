@@ -387,8 +387,12 @@
                     <div id="city-oles-inn" class="_7sfs-city-location">
                         <div id="oles-inn-frontcap" class="_7sfs-city-endcap"></div>
                         <div class="_7sfs-city-location-contents">
-                            <div id="oles-inn-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-                            <div id="oles-inn-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01004.jpg)"></div>
+                            <div id="oles-inn-my-cards" class="_7sfs-city-my-cards">
+                                <div id="oles-inn-my-cards-endcap" class="_7sfs-city-my-cards-endcap"></div>
+                            </div>
+                            <div id="oles-inn-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01004.jpg)">
+                                <div id="oles-inn-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+                            </div>
                             <div id="oles-inn-endcap" class="_7sfs-city-endcap"></div>
                         </div>
                     </div>
@@ -396,8 +400,12 @@
                     <div id="city-docks" class="_7sfs-city-location">
                         <div id="dock-frontcap" class="_7sfs-city-endcap"></div>
                         <div class="_7sfs-city-location-contents">
-                            <div id="dock-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-                            <div id="dock-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01003.jpg)"></div>
+                            <div id="dock-my-cards" class="_7sfs-city-my-cards">
+                                <div id="dock-my-cards-endcap" class="_7sfs-city-my-cards-endcap"></div>
+                            </div>
+                            <div id="dock-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01003.jpg)">
+                                <div id="dock-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+                            </div>
                             <div id="dock-endcap" class="_7sfs-city-endcap"></div>
                         </div>
                     </div>
@@ -405,8 +413,12 @@
                     <div id="city-forum" class="_7sfs-city-location">
                         <div id="forum-frontcap" class="_7sfs-city-endcap"></div>
                         <div class="_7sfs-city-location-contents">
-                            <div id="forum-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-                            <div id="forum-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01001.jpg)"></div>
+                            <div id="forum-my-cards" class="_7sfs-city-my-cards">
+                                <div id="forum-my-cards-endcap" class="_7sfs-city-my-cards-endcap"></div>
+                            </div>
+                            <div id="forum-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01001.jpg)">
+                                <div id="forum-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+                            </div>
                             <div id="forum-endcap" class="_7sfs-city-endcap"></div>
                         </div>
                     </div>
@@ -414,8 +426,12 @@
                     <div id="city-bazaar" class="_7sfs-city-location">
                         <div id="bazaar-frontcap" class="_7sfs-city-endcap"></div>
                         <div class="_7sfs-city-location-contents">
-                            <div id="bazaar-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-                            <div id="bazaar-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01002.jpg)"></div>
+                            <div id="bazaar-my-cards" class="_7sfs-city-my-cards">
+                                <div id="bazaar-my-cards-endcap" class="_7sfs-city-my-cards-endcap"></div>
+                            </div>
+                            <div id="bazaar-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01002.jpg)">
+                                <div id="bazaar-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+                            </div>
                             <div id="bazaar-endcap" class="_7sfs-city-endcap"></div>
                         </div>
                     </div>
@@ -423,8 +439,12 @@
                     <div id="city-governors-garden" class="_7sfs-city-location">
                         <div id="garden-frontcap" class="_7sfs-city-endcap"></div>
                         <div class="_7sfs-city-location-contents">
-                            <div id="garden-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
-                            <div id="garden-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01005.jpg)"></div>
+                            <div id="garden-my-cards" class="_7sfs-city-my-cards">
+                                <div id="garden-my-cards-endcap" class="_7sfs-city-my-cards-endcap"></div>
+                            </div>
+                            <div id="garden-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01005.jpg)">
+                                <div id="garden-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+                            </div>
                             <div id="garden-endcap" class="_7sfs-city-endcap"></div>
                         </div>
                     </div>

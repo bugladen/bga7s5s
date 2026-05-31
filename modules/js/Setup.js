@@ -188,7 +188,8 @@ return declare('seventhseacityoffivesails.setup', null, {
         {
             const card = gamedatas.oleCards[index];
             const cardId = this.createCardId(card, this.LOCATION_CITY_OLES_INN);
-            this.createCard(cardId, card, 'oles-inn-endcap');
+            const target = this.getTargetElementForLocation(this.LOCATION_CITY_OLES_INN, card.controllerId);
+            this.createCard(cardId, card, target);
         }
         if (gamedatas.locationReknown[this.LOCATION_CITY_OLES_INN] != null) {
             $('oles-inn-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_OLES_INN];
@@ -203,7 +204,8 @@ return declare('seventhseacityoffivesails.setup', null, {
         {
             const card = gamedatas.dockCards[index];
             const cardId = this.createCardId(card, this.LOCATION_CITY_DOCKS);
-            this.createCard(cardId, card, 'dock-endcap');
+            const target = this.getTargetElementForLocation(this.LOCATION_CITY_DOCKS, card.controllerId);
+            this.createCard(cardId, card, target);
         }
         $('dock-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_DOCKS];
         $('dock-image').setAttribute('data-location', this.LOCATION_CITY_DOCKS);
@@ -216,7 +218,8 @@ return declare('seventhseacityoffivesails.setup', null, {
         {
             const card = gamedatas.forumCards[index];
             const cardId = this.createCardId(card, this.LOCATION_CITY_FORUM);
-            this.createCard(cardId, card, 'forum-endcap');
+            const target = this.getTargetElementForLocation(this.LOCATION_CITY_FORUM, card.controllerId);
+            this.createCard(cardId, card, target);
         }
         $('forum-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_FORUM];
         $('forum-image').setAttribute('data-location', this.LOCATION_CITY_FORUM);
@@ -233,7 +236,8 @@ return declare('seventhseacityoffivesails.setup', null, {
         {
             const card = gamedatas.bazaarCards[index];
             const cardId = this.createCardId(card, this.LOCATION_CITY_BAZAAR);
-            this.createCard(cardId, card, 'bazaar-endcap');
+            const target = this.getTargetElementForLocation(this.LOCATION_CITY_BAZAAR, card.controllerId);
+            this.createCard(cardId, card, target);
         }
         $('bazaar-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_BAZAAR];
         $('bazaar-image').setAttribute('data-location', this.LOCATION_CITY_BAZAAR);
@@ -246,13 +250,16 @@ return declare('seventhseacityoffivesails.setup', null, {
         {
             const card = gamedatas.gardenCards[index];
             const cardId = `garden-${card.id}`;
-            this.createCard(cardId, card, 'garden-endcap');
+            const target = this.getTargetElementForLocation(this.LOCATION_CITY_GOVERNORS_GARDEN, card.controllerId);
+            this.createCard(cardId, card, target);
         }
         if (gamedatas.locationReknown[this.LOCATION_CITY_GOVERNORS_GARDEN] != null) {
             $('garden-reknown').innerHTML = gamedatas.locationReknown[this.LOCATION_CITY_GOVERNORS_GARDEN];
             $('garden-image').setAttribute('data-location', this.LOCATION_CITY_GOVERNORS_GARDEN);
             this.displayLocationControlChip(this.LOCATION_CITY_GOVERNORS_GARDEN);
         }
+
+        this.alignCityImages();
 
         if (gamedatas.sirensScreamUsedList && gamedatas.sirensScreamUsedList.usedList.length > 0) {
             this.displaySirensScreamUsedList(gamedatas.sirensScreamUsedList.cardId, gamedatas.sirensScreamUsedList.usedList);
