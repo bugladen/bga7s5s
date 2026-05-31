@@ -263,6 +263,8 @@ abstract class Character extends Card implements IHasTechniques
                 $destroyEvent = EventFactory::createCharacterDestroyedEvent($this->ControllerId, $this->Id, $event->reason);
                 $event->theah->queueEvent($destroyEvent);
             }
+
+            $event->characterHandled = true;
         }
 
         if ($event instanceof EventCharacterHealed && $event->characterId == $this->Id)
@@ -281,6 +283,8 @@ abstract class Character extends Card implements IHasTechniques
                 $this->WoundsHealedIncoming = 0;
             }
             $this->IsUpdated = true;
+
+            $event->characterHandled = true;
 
             $event->theah->game->notify->all("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason}'), [
                 'i18n' => ['reason'],
