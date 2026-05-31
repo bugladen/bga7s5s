@@ -81,7 +81,8 @@ Read each clause of the printed Text and classify it before writing code. The cl
 | **"When this scheme is revealed, …"** | Pattern B — When-Revealed effect. Override `hasWhenRevealedEffect()` to `true` AND handle `EventCardWhenRevealedEffect` in `handleEvent`. The When-Revealed fires *before* the resolve (and before other schemes' resolves), per card text. |
 | **"Put a card from your discard into your hand"** / **"Search your discard for X"** | Pattern A resolve with a transition to a discard-pick state. New state class + JS wiring (chooseList). Reference: `_01044`, `_03005`. |
 | **"Add a Renown to a city location"** (player choice) | Pattern A resolve with a transition to a location-pick state. JS uses `makeCityLocationSelectable` / `onCityLocationsSelected`. Reference: `_01071`, `_01072`, `_02046`. |
-| **"Add a Renown to two different locations"** | Single-state two-location pick — use the framework helper `actCityLocationsForReknownSelected` and set `numberOfCityLocationsSelectable = 2` in JS. The helper iterates the JSON array and queues one Renown event per location. JS enforces distinctness. Reference: `_01098` (Cat's Embargo), `_03006` (Premonition). |
+| **"Add a Renown to two different locations"** | Single-state two-location pick — use the framework helper `actCityLocationsForReknownSelected` and set `numberOfCityLocationsSelectable = 2` in JS. The helper iterates the JSON array, validates distinctness server-side (throws `UserException` if duplicates submitted), and queues one Renown event per location. JS also enforces distinctness as the first line of defense. Reference: `_01098` (Cat's Embargo), `_03006` (Premonition), `_03017` (Noble Sacrifice). |
+| **"After your character at a `City` location is destroyed"** | Reaction listening on `EventCharacterDestroyed`. Gate by `$destroyed->ControllerId == $owner->ControllerId` and `$theah->locationInCity($destroyed->Location)`. `EventCharacterDestroyed` has `runEventHubAfterCards = true` so `$destroyed->Location` is still the destroy-time city slot when the reaction sees the event — capture it onto a `private string $location` because by the time the player clicks, the character has been moved to the locker. Reference: `_03017` (Noble Sacrifice), `Reaction_01013` (Red Hand destroyed). |
 | **"Then, each opponent does X"** | Pattern C — multi-player sequential loop. Queue per-opponent reaction transitions during your own resolve. Reference: `_01151`. |
 | **`<b>City Action:</b>`** / **`<b>Action:</b>`** | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php` extending the right action base (`SchemeCityAction` if it's a City Action on a scheme — see action-base table below). The Action lives next to the scheme, not on the scheme class itself. |
 | **`<b>City Reaction:</b>` / `<b>Reaction:</b>`** | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_NNNNN.php` extending `CardReaction`. Pre-commit hook enforces `setUsed`/`isAvailable` literal calls. Reference: `_02004` (City Reaction), `_03005` (Reaction), `_03006` (multi-stage Reaction). |
@@ -540,9 +541,17 @@ public function getReactionDescription(Theah $theah): string
 
 Always defensively null-check (`$target ? ... : translate('your character')`) — the captured id might point at a character that's since been destroyed/recruited away by the time the prompt renders. Reference: `Reaction_03006::$targetCharacterId` in the `'offer'` description.
 
+### Bundled-effect reactions ("Reaction: … • A. B. C.")
+
+When the bullet text has multiple sentences but no internal "may", the decision point is whether to use the reaction at all — once confirmed, all sub-effects fire atomically. Render a single **Resolve** + **Pass** button pair; don't gate sub-effects behind separate clicks. Resolve-branch queries (e.g. `getCharactersAtLocation($this->location)`) happen at *resolve time*, not at trigger time, so the deictic "that location" reflects the current set of characters there rather than a snapshot from when the trigger fired. Conditional clauses (e.g. "If the destroyed character was a Zealot, draw a card") gate on the *captured* trait snapshot, since the character is gone from play by then. Reference: `Reaction_03017`.
+
 ### Pre-commit hook compliance
 
-`CardReaction` subclasses must include the literal strings `$this->setUsed(` and `$this->isAvailable(` somewhere in the file. The `handleEvent` `isAvailable` check + the `setUsed(true)` in `performReaction`'s success branch satisfy both.
+`CardReaction` subclasses must include the literal strings `$this->setUsed(` and `$this->isAvailable(` somewhere in the file. The `handleEvent` `isAvailable` check + the `setUsed(true)` in `performReaction`'s success branch satisfy both. Decline/Pass branches deliberately skip `setUsed` — the reaction stays available for the next trigger that day. Mirror `Reaction_03005` / `Reaction_02004` / `Reaction_03017` for this discipline.
+
+### `EventCharacterDestroyed` — destroy-time location is readable
+
+`EventCharacterDestroyed` is declared with `runEventHubAfterCards = true`. Card `handleEvent` calls run **before** the hub moves the character to the locker, so `$destroyed->Location` still reports the destroy-time city slot inside your reaction's handler. Capture it into a `private string $location` field (with `$owner->IsUpdated = true`) for use in `performReaction`, because by the time the player clicks the button, the character has been moved out and `$destroyed->Location` no longer matches the city. Also capture any trait/name snapshots the resolve branch needs (`$destroyedWasZealot`, `$destroyedName`) — same reason.
 
 ### Schemes that target city locations / can't always claim
 
@@ -742,6 +751,8 @@ Full implementation lives at `modules/php/cards/faf/_03005.php`, `modules/php/ca
 - `$theah->getCityLocation(string $name): ?CityLocation` — current Renown/controller for a city location. Returns `null` for non-city locations (defensive guard).
 - `$theah->getCityLocations(): array` — all city locations in play (3 in 2p, 4 in 3p, 5 in 4p).
 - `$theah->cardInCity($card): bool` — true when the card is at a city location.
+- `$theah->locationInCity(string $location): bool` — the canonical "City location" check (Oles Inn / Docks / Forum / Bazaar / Governor's Garden). Use this when you only have the location string in hand (e.g. a captured `$this->location` on a Reaction) rather than a Card object. The printed keyword **"City"** on a card text maps directly to this set — not Home, not Locker, not Discard.
+- `$theah->getCharactersAtLocation(string $location, bool $includeUncontrolled = false): Character[]` — every Character at the location. Filter by `ControllerId` to split friend/foe.
 - `$game->getCardObjectFromDb(int $id): ?Card` — hydrate a card from any location by id.
 - `$game->getGameDeckObject(int $playerId): Deck` — get a player's deck wrapper. `getCardsInLocation(getPlayerDiscardDeckName($playerId))` is the discard query.
 - `$game->getPlayerDiscardDeckName(int $playerId): string` — the deck-table location string for a player's discard pile.
@@ -750,6 +761,9 @@ Full implementation lives at `modules/php/cards/faf/_03005.php`, `modules/php/ca
 
 Event factories you'll likely need:
 - `createReknownAddedToLocationEvent($playerId, $location, $count, $reason, $isMove = false)`
+- `createCharacterBeingWoundedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
+- `createCharacterBeingHealedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
+- `createCardDrawnEvent($playerId, $reason)` — for "draw a card" clauses.
 - `createReknownRemovedFromLocationEvent($playerId, $location, $count, $reason)`
 - `createCardRemovedFromPlayerDiscardPileEvent($playerId, $cardId)` (notification-only)
 - `createCardAddedToHandEvent($playerId, $cardId)` (does the actual move)
@@ -773,6 +787,8 @@ Event factories you'll likely need:
 | `modules/php/cards/tac/_02052.php` (Gutter Full of Roses) | **New GameState-class pattern** with a move-renown source pick. Plus a Forced ability on `EventCharacterDestroyed`. |
 | `modules/php/cards/faf/_03005.php` (No Mercy) | **Renown adds + trait-filtered discard pick + Reaction.** New GameState-class pattern. Reaction on `EventChallengeRejected` with captured location and `createLocationClaimedEvent`. |
 | `modules/php/cards/faf/_03006.php` (Premonition) | **Two-different-locations resolve via `actCityLocationsForReknownSelected` + multi-stage Strega Reaction.** Single state with `numberOfCityLocationsSelectable = 2`. Reaction is a trait-prefixed gate (Strega), NOT a Sorcerer ability. Multi-stage `$stage` flow: `'offer'` → `'pick1'` → `'pick2'` with cross-player `createReactionTransitionEvent` swapping active player from owner to triggering opponent. Listens to the full `IAbilityThatTargetsCharacters` event set. |
+| `modules/php/cards/faf/_03017.php` (Noble Sacrifice) | **Two-different-locations resolve + after-your-character-destroyed Reaction.** Reaction listens on `EventCharacterDestroyed` gated by `locationInCity($destroyed->Location)` and friendly controller, captures `$location` + `$destroyedWasZealot` + `$destroyedName` because the destroyed character has been moved to the locker by the time the player clicks. Single button bundles all sub-effects (wound opposing chars at location + heal own chars at location + conditional draw) — no internal "may", so resolution is atomic. |
+| `modules/php/cards/faf/reactions/Reaction_03017.php` | Bundled-effect scheme Reaction. Snapshots destroy-time location and trait at trigger time, queries `getCharactersAtLocation` at resolve time (so movement between trigger and click is reflected). Pass does not consume `setUsed`. |
 | `modules/php/cards/faf/reactions/Reaction_03005.php` | Scheme reaction with `$location` capture, button-based Claim/Pass, `setUsed`/`isAvailable` discipline. |
 | `modules/php/cards/faf/reactions/Reaction_03006.php` | Multi-stage button-driven Reaction with `$stage` field, cross-player reaction transitions (opponent becomes active for hand-picking), `IAbilityThatTargetsCharacters` multi-event listening with `sourceId=0` BasicChallengeAction fallback. |
 | `modules/php/cards/tac/reactions/Reaction_02004.php` | Scheme reaction with adjacent-character target picker; captures the pressured location. |
