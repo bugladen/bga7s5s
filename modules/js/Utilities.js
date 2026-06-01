@@ -1497,7 +1497,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.place( this.format_block( 'jstpl_location_control_chip', {
                 id: imageElement.id,
                 player_color: player.color,
-            }),  imageElement, 'before');
+            }),  imageElement, 'last');
         }
     },
 
