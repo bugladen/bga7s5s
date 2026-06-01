@@ -1346,9 +1346,16 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
+    isMobileLayout: function ()
+    {
+        return window.innerWidth <= 768
+            || (window.innerHeight <= 500 && window.innerWidth > window.innerHeight);
+    },
+
     getTargetElementForLocation: function ( location, playerId = null )
     {
-        const isMyCard = playerId != null && this.player_id != null
+        const isMyCard = !this.isMobileLayout()
+            && playerId != null && this.player_id != null
             && parseInt(playerId) === parseInt(this.player_id);
         switch (location) {
             case this.LOCATION_CITY_OLES_INN:
@@ -1368,6 +1375,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     alignCityImages: function ()
     {
+        if (this.isMobileLayout()) return;
+
         const containerIds = [
             'oles-inn-my-cards',
             'dock-my-cards',
