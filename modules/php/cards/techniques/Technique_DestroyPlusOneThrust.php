@@ -25,6 +25,10 @@ class Technique_DestroyPlusOneThrust extends Technique
         }
 
         $owner = $this->getOwningCharacter($theah);
+        if (! $owner)
+        {
+            return false;
+        }
         if ($playerId != $owner->ControllerId)
         {
             return false;
@@ -36,6 +40,8 @@ class Technique_DestroyPlusOneThrust extends Technique
     public function handleEvent(Event $event)
     { 
         parent::handleEvent($event);
+
+        // EventTechniqueCanceled handler not needed    
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {

@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\AttachmentAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -51,34 +52,33 @@ class Action_01158 extends AttachmentAction
 
             if ($card == null)
             {
-                throw new \BgaUserException($game->translate("Card not found"));
+                throw new UserException($game->translate("Card not found"));
             }
 
             $playerId = $game->getActivePlayerId();
 
             if ($card->ControllerId != $playerId)
             {
-                throw new \BgaUserException($game->translate("You do not control this card"));
+                throw new UserException($game->translate("You do not control this card"));
             }
 
             if ($card->Location != Game::LOCATION_HAND)
             {
-                throw new \BgaUserException($game->translate("Card not in your hand"));
+                throw new UserException($game->translate("Card not in your hand"));
             }
 
-            $card = $game->getCardObjectFromDb($id);
             $owner = $this->getOwningCard($game->theah);
+
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->OwnerId, $card->Id, $owner->Id);
             $game->theah->queueEvent($discardEvent);
 
-            $owner = $this->getOwningCard($game->theah);
             $drawEvent = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
             $game->theah->queueEvent($drawEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $game->gamestate->nextState("cardChosen");                
-        }        
+            $game->gamestate->nextState("cardChosen");
+        }
     }
 }

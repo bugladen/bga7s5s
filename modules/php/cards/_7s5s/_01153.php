@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 
 class _01153 extends FactionAttachment
 {
@@ -50,10 +51,14 @@ class _01153 extends FactionAttachment
 
         if ($event instanceof EventCharacterBeingWounded && $event->characterId == $this->AttachedToId)
         {
-            $inDuel = $event->theah->game->globals->get(Game::IN_DUEL);            
+            $inDuel = $event->theah->game->globals->get(Game::IN_DUEL);
             if ($inDuel)
             {
                 $actor = $event->theah->getDuelRoundActor();
+                if ($actor === null)
+                {
+                    return;
+                }
                 $adversaryId = $event->theah->getDuelOpponentId($actor->Id);
                 if (($this->AttachedToId == $adversaryId || $this->AttachedToId == $actor->Id) && ! $this->hasBlockedWound)
                 {
@@ -80,6 +85,16 @@ class _01153 extends FactionAttachment
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        // WHY: "First time the equipped character would suffer any amount of wounds"
+        // is per-duel; without this reset the flag stays true forever after the
+        // first 1-wound block (the only case where the card survives), making
+        // Breastplate permanently inert for every subsequent duel.
+        if ($event instanceof EventDuelEnd && $this->hasBlockedWound)
+        {
+            $this->hasBlockedWound = false;
+            $this->IsUpdated = true;
+        }
 
         if ($event instanceof EventCharacterWounded && $event->characterId == $this->AttachedToId)
         {
