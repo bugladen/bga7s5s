@@ -1939,10 +1939,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const player = this.gamedatas.players[args.playerId];
 
+        const existingChipId = `${imageElement.id}-location-control-chip`;
+        if ($(existingChipId)) {
+            dojo.destroy(existingChipId);
+        }
+
         dojo.place( this.format_block( 'jstpl_location_control_chip', {
             id: imageElement.id,
             player_color: player.color,
-        }),  imageElement, 'before');
+        }),  imageElement, 'last');
     },
 
     notif_locationUncontrolled: function( notif )
