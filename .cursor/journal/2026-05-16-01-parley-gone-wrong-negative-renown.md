@@ -5,7 +5,7 @@ A game ended planning phase with `LOCATION_CITY_GOVERNORS_GARDEN` at **-2 Renown
 
 ## Root cause — event queue ordering
 
-`_01150::handleEvent` queues one `EventTransition` per opponent at `MEDIUM_PRIORITY` (`_01150.php:60-66`). Each transition routes the opponent to state `PLANNING_PHASE_RESOLVE_SCHEMES_01150`, where they pick a location via `actFromCardWithIds`. That handler then queued `EventReknownRemovedFromLocation` + `EventReknownAddedToLocation` *also at MEDIUM_PRIORITY* (the default in `Event.php:27`).
+`_01150::handleEvent` queues one `EventTransition` per opponent at `MEDIUM_PRIORITY` (`_01150.php:60-66`). Each transition routes the opponent to state `PLANNING_PHASE_RESOLVE_SCHEMES_01150`, where they pick a location via `actFromCardWithIds`. That handler then queued `EventRenownRemovedFromLocation` + `EventReknownAddedToLocation` *also at MEDIUM_PRIORITY* (the default in `Event.php:27`).
 
 `DB.php:46` dequeues purely by `event_priority`. Within the same priority it's FIFO by `event_id`. And `Theah.php:262-288` shows that processing an `EventTransition` returns from `runEvents` immediately.
 
@@ -19,10 +19,10 @@ So with opponents B, C, D and Garden starting at 1:
 5. Three `remove(Garden)` events finally fire back-to-back: 1 - 1 - 1 - 1 = **-2**.
 
 ## Why the JS filter didn't help
-`OnEnteringState.7s5s.js:337-351` correctly skips locations where the chip reads 0. But the chip is only updated by the `reknownRemovedFromLocation` notification, which doesn't fire until the corresponding event is dequeued — which happens *after* all the transitions have already run. The JS was checking accurate data; the data just hadn't been updated yet.
+`OnEnteringState.7s5s.js:337-351` correctly skips locations where the chip reads 0. But the chip is only updated by the `renownRemovedFromLocation` notification, which doesn't fire until the corresponding event is dequeued — which happens *after* all the transitions have already run. The JS was checking accurate data; the data just hadn't been updated yet.
 
 ## No server-side guard
-`EventHub.php:1201` (the `EventReknownRemovedFromLocation` handler) unconditionally subtracted. Unlike `EventReknownRemovedFromCard` at `:1099-1105` which clamps at 0. So once the events finally ran, nothing stopped Renown from going negative.
+`EventHub.php:1201` (the `EventRenownRemovedFromLocation` handler) unconditionally subtracted. Unlike `EventReknownRemovedFromCard` at `:1099-1105` which clamps at 0. So once the events finally ran, nothing stopped Renown from going negative.
 
 ## Fix
 
@@ -49,7 +49,7 @@ $this->game->setReknownForLocation($event->location, $reknown);
 $this->cityLocations[$event->location]->Renown = $reknown;
 ```
 
-WHY: Defense in depth. The priority fix solves *this* card. But the underlying footgun — "any card that queues `EventReknownRemovedFromLocation` from a multi-opponent fan-out" — is still latent. Clamping matches the existing card-renown behavior at `:1104-1105` and ensures impossible states (negative location Renown) can't be reached.
+WHY: Defense in depth. The priority fix solves *this* card. But the underlying footgun — "any card that queues `EventRenownRemovedFromLocation` from a multi-opponent fan-out" — is still latent. Clamping matches the existing card-renown behavior at `:1104-1105` and ensures impossible states (negative location Renown) can't be reached.
 
 Note: I changed the cached `cityLocations[...]->Renown` assignment from `-= amount` to `= reknown` so the in-memory value matches the clamped DB value rather than drifting if the DB clamps but the cache doesn't.
 

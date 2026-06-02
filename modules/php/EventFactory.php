@@ -85,7 +85,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed;
@@ -1047,10 +1047,10 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createRenownRemovedFromLocationEvent(int $playerId, string $location, int $amount, string $source): EventReknownRemovedFromLocation
+    public static function createRenownRemovedFromLocationEvent(int $playerId, string $location, int $amount, string $source): EventRenownRemovedFromLocation
     {
-        $event = self::createEvent(Events::ReknownRemovedFromLocation);
-        if ($event instanceof EventReknownRemovedFromLocation)
+        $event = self::createEvent(Events::RenownRemovedFromLocation);
+        if ($event instanceof EventRenownRemovedFromLocation)
         {
             $event->playerId = $playerId;
             $event->location = $location;

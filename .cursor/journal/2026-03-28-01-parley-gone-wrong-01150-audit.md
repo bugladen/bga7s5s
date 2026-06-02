@@ -10,7 +10,7 @@
 ## Files Audited
 - `modules/php/cards/_7s5s/_01150.php` (main class — Scheme)
 - `modules/php/cards/Scheme.php` (parent class)
-- `modules/php/EventFactory.php` (createReknownAddedToLocationEvent, createReknownRemovedFromLocationEvent)
+- `modules/php/EventFactory.php` (createReknownAddedToLocationEvent, createRenownRemovedFromLocationEvent)
 - `modules/php/theah/events/EventReknownAddedToLocation.php` (event class)
 - `modules/php/theah/events/EventCharacterIntervened.php` (event class)
 - `modules/php/theah/EventHub.php` (event processing for both events)

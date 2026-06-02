@@ -20,7 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 
 trait DebugTrait
 {
@@ -173,8 +173,8 @@ trait DebugTrait
     #[Debug(reload: true)] 
     public function debug_RemoveReknownFromLocation(string $location, int $amount)
     {
-        $event = $this->theah->createEvent(Events::ReknownRemovedFromLocation);
-        if ($event instanceof EventReknownRemovedFromLocation)
+        $event = $this->theah->createEvent(Events::RenownRemovedFromLocation);
+        if ($event instanceof EventRenownRemovedFromLocation)
         {
             $event->location = $location;
             $event->amount = $amount;

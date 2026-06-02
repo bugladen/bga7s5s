@@ -70,7 +70,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
@@ -1217,7 +1217,7 @@ trait EventHub
 
                 break;
 
-            case $event instanceof EventReknownRemovedFromLocation:
+            case $event instanceof EventRenownRemovedFromLocation:
 
                 // WHY: Clamp at 0. Matches EventReknownRemovedFromCard. Prevents bugs where
                 // multiple opponents queue removes against the same location (e.g. _01150
@@ -1228,7 +1228,7 @@ trait EventHub
                 $this->cityLocations[$event->location]->Renown = $reknown;
 
                 // Notify players that the player has lost reknown
-                $this->game->notify->all("reknownRemovedFromLocation", clienttranslate('${amount} Renown REMOVED from ${location} ${source}.'), [
+                $this->game->notify->all("renownRemovedFromLocation", clienttranslate('${amount} Renown REMOVED from ${location} ${source}.'), [
                     'i18n' => ['location'],
                     "location" => $event->location,
                     "amount" => $event->amount,

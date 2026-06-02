@@ -12,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -146,7 +146,7 @@ class _01071 extends Scheme implements IHasActions
             }
         }
 
-        if ($event instanceof EventReknownRemovedFromLocation && $this->Location == Game::LOCATION_PLAYER_HOME)
+        if ($event instanceof EventRenownRemovedFromLocation && $this->Location == Game::LOCATION_PLAYER_HOME)
         {
             $characters = $event->theah->getCharactersAtLocation($event->location);
             $musketeers = array_filter($characters, fn($character) => $character->hasTrait("Musketeer") && $character->ControllerId == $this->ControllerId);
