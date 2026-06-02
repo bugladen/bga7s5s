@@ -113,7 +113,7 @@ class Reaction_02050 extends RiskReaction
             $owner = $this->getOwningCard($event->theah);
             $performer = $event->theah->getCharacterById($this->PerformerId);
 
-            $removeEvent = EventFactory::createReknownRemovedFromLocationEvent($owner->ControllerId, $this->TriggeredLocation, 1, $owner->getInjectCode());
+            $removeEvent = EventFactory::createRenownRemovedFromLocationEvent($owner->ControllerId, $this->TriggeredLocation, 1, $owner->getInjectCode());
             $event->theah->queueEvent($removeEvent);
 
             $addEvent = EventFactory::createReknownAddedToLocationEvent($owner->ControllerId, $performer->Location, 1, $owner->getInjectCode(), true);

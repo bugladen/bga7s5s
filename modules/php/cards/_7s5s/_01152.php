@@ -150,7 +150,7 @@ class _01152 extends Scheme implements IHasActions
             $location = $ids[0];
 
             $fromLocation = $game->globals->get(GAME::CHOSEN_LOCATION);
-            $event = EventFactory::createReknownRemovedFromLocationEvent($this->ControllerId, $fromLocation, 1, $this->getInjectCode());
+            $event = EventFactory::createRenownRemovedFromLocationEvent($this->ControllerId, $fromLocation, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);    
 

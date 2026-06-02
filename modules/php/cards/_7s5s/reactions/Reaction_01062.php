@@ -121,7 +121,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
                 $odette = $this->getOwningCharacter($game->theah);
                 $location = $game->theah->getCityLocation($locationName);
 
-                $event = EventFactory::createReknownRemovedFromLocationEvent($odette->ControllerId, $locationName, 1, $odette->getInjectCode());
+                $event = EventFactory::createRenownRemovedFromLocationEvent($odette->ControllerId, $locationName, 1, $odette->getInjectCode());
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 

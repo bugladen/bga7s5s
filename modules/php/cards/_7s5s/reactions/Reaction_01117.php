@@ -60,7 +60,7 @@ class Reaction_01117 extends CardReaction
             ]);
 
             $ekaterina = $this->getOwningCharacter($game->theah);
-            $reknownRemovedEvent = EventFactory::createReknownRemovedFromLocationEvent($ekaterina->ControllerId, $ekaterina->Location, 1, $ekaterina->getInjectCode());
+            $reknownRemovedEvent = EventFactory::createRenownRemovedFromLocationEvent($ekaterina->ControllerId, $ekaterina->Location, 1, $ekaterina->getInjectCode());
             $game->theah->eventCheck($reknownRemovedEvent);
             $game->theah->queueEvent($reknownRemovedEvent);
 

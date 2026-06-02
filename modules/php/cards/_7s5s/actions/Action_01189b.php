@@ -116,7 +116,7 @@ class Action_01189b extends EventCityAction
             $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $poo->Id, $this->Id);
             $game->theah->eventCheck($engageEvent);
     
-            $fromEvent = EventFactory::createReknownRemovedFromLocationEvent($performer->ControllerId, $poo->Location, 1, "{$poo->getInjectCode()}: Moving Renown to adjacent location");
+            $fromEvent = EventFactory::createRenownRemovedFromLocationEvent($performer->ControllerId, $poo->Location, 1, "{$poo->getInjectCode()}: Moving Renown to adjacent location");
             $game->theah->eventCheck($fromEvent);
     
             $toEvent = EventFactory::createReknownAddedToLocationEvent($performer->ControllerId, $location->Name, 1, "{$poo->getInjectCode()}: Moving Renown to adjacent location", $isMove = true);

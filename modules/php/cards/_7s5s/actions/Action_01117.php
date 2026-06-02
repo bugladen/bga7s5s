@@ -126,7 +126,7 @@ class Action_01117 extends CharacterAction
                 throw new UserException(sprintf($game->translate("That location has been chosen already to move Renown to. Choose a different location."), $game->translate($location->Name)));
             }
 
-            $reknownRemovedEvent = EventFactory::createReknownRemovedFromLocationEvent($ekaterina->ControllerId, $ekaterina->Location, 1, $ekaterina->getInjectCode());
+            $reknownRemovedEvent = EventFactory::createRenownRemovedFromLocationEvent($ekaterina->ControllerId, $ekaterina->Location, 1, $ekaterina->getInjectCode());
             $game->theah->queueEvent($reknownRemovedEvent);
 
             $reknownAddedEvent = EventFactory::createReknownAddedToLocationEvent($ekaterina->ControllerId, $reknownMoveLocation, 1, $ekaterina->getInjectCode(), $isMove = true);

@@ -93,7 +93,7 @@ class Action_01007 extends CharacterAction
                 throw new UserException(sprintf($game->translate("%s does not have any Renown to move."), $location->Name));
             }
 
-            $reknownRemovedEvent = EventFactory::createReknownRemovedFromLocationEvent($owner->ControllerId, $location->Name, 1, $owner->getInjectCode());
+            $reknownRemovedEvent = EventFactory::createRenownRemovedFromLocationEvent($owner->ControllerId, $location->Name, 1, $owner->getInjectCode());
             $game->theah->queueEvent($reknownRemovedEvent);
 
             $reknownAddedEvent = EventFactory::createReknownAddedToLocationEvent($owner->ControllerId, $owner->Location, 1, $owner->getInjectCode(), $isMove = true);

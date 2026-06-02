@@ -135,7 +135,7 @@ class _01150 extends Scheme
             // WHY: HIGH_PRIORITY so this opponent's remove/add fires before the next opponent's
             // queued MEDIUM_PRIORITY transition. Otherwise every opponent sees pre-resolution renown
             // and can pick the same already-depleted location, driving it negative.
-            $removeEvent = EventFactory::createReknownRemovedFromLocationEvent($playerId, $location, 1, $playerName);
+            $removeEvent = EventFactory::createRenownRemovedFromLocationEvent($playerId, $location, 1, $playerName);
             $removeEvent->priority = Event::HIGH_PRIORITY;
             $game->theah->eventCheck($removeEvent);
 

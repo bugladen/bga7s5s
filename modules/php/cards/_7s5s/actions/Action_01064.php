@@ -133,7 +133,7 @@ class Action_01064 extends CharacterAction
             $event = EventFactory::createCardDiscardedFromHandEvent($owner->ControllerId, $cardId, $owner->Id);
             $game->theah->queueEvent($event);
 
-            $event = EventFactory::createReknownRemovedFromLocationEvent($owner->ControllerId, $location, 1, $owner->getInjectCode());
+            $event = EventFactory::createRenownRemovedFromLocationEvent($owner->ControllerId, $location, 1, $owner->getInjectCode());
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createReknownAddedToLocationEvent($owner->ControllerId, $owner->Location, 1, $owner->getInjectCode(), $isMove = true);

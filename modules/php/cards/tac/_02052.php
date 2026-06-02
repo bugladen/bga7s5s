@@ -94,7 +94,7 @@ class _02052 extends Scheme
                             "player_name" => $event->theah->game->getPlayerNameById($winningPlayerId),
                         ]);
 
-                        $removeEvent = EventFactory::createReknownRemovedFromLocationEvent($winningPlayerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
+                        $removeEvent = EventFactory::createRenownRemovedFromLocationEvent($winningPlayerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
                         $event->theah->queueEvent($removeEvent);
 
                         $gainEvent = EventFactory::createPlayerGainsReknownEvent($winningPlayerId, 1);
@@ -148,7 +148,7 @@ class _02052 extends Scheme
                 throw new UserException($game->translate("No Renown at that location"));
             }
 
-            $removeEvent = EventFactory::createReknownRemovedFromLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
+            $removeEvent = EventFactory::createRenownRemovedFromLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($removeEvent);
 
             $addEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode(), $isMove = true);

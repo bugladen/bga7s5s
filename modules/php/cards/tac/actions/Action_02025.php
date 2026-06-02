@@ -188,7 +188,7 @@ class Action_02025 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $sourceLocationObj = $game->theah->getCityLocation($sourceLocation);
             if ($sourceLocationObj->Renown > 0)
             {
-                $removeRenown = EventFactory::createReknownRemovedFromLocationEvent($performer->ControllerId, $sourceLocation, 1, $owner->getInjectCode());
+                $removeRenown = EventFactory::createRenownRemovedFromLocationEvent($performer->ControllerId, $sourceLocation, 1, $owner->getInjectCode());
                 $removeRenown->batchId = $batchId;
                 $game->theah->queueEvent($removeRenown);
 

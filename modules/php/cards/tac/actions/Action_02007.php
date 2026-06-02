@@ -82,7 +82,7 @@ class Action_02007 extends RiskCityAction
             $woundEvent = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $event->theah->queueEvent($woundEvent);
 
-            $renownRemovedEvent = EventFactory::createReknownRemovedFromLocationEvent($performer->ControllerId, $performer->Location, 1, $owner->getInjectCode());
+            $renownRemovedEvent = EventFactory::createRenownRemovedFromLocationEvent($performer->ControllerId, $performer->Location, 1, $owner->getInjectCode());
             $event->theah->queueEvent($renownRemovedEvent);
 
             $cards = $game->theah->getCardObjectsAtLocation($performer->Location);

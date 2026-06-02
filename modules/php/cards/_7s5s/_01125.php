@@ -145,7 +145,7 @@ class _01125 extends Scheme
             if ($reknown <= 0) 
                 throw new UserException(sprintf($game->translate("%s does not have any renown to move."), $location));
             
-            $event = EventFactory::createReknownRemovedFromLocationEvent($playerId, $location, 1, "The Boar's Guile: Moving Renown from one Location to an adjacent location");
+            $event = EventFactory::createRenownRemovedFromLocationEvent($playerId, $location, 1, "The Boar's Guile: Moving Renown from one Location to an adjacent location");
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
     
