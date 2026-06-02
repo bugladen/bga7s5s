@@ -14,7 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeMovedToCity;
 
@@ -64,7 +64,7 @@ class _01126 extends Scheme
         }
 
         //We have to allow the reknown to be removed by the scheme itself
-        if ($event instanceof EventReknownRemovedFromLocation && $event->source != $this->Name) 
+        if ($event instanceof EventRenownRemovedFromLocation && $event->source != $this->Name) 
         {
             if ($event->location == $this->ChosenLocation)
                 throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be removed from its location.")));    
@@ -138,8 +138,8 @@ class _01126 extends Scheme
             $location = $event->theah->getCityLocation($this->ChosenLocation);
             if ($location->Renown > 0)
             {
-                $reknown = $event->theah->createEvent(Events::ReknownRemovedFromLocation);
-                if ($reknown instanceof EventReknownRemovedFromLocation)
+                $reknown = $event->theah->createEvent(Events::RenownRemovedFromLocation);
+                if ($reknown instanceof EventRenownRemovedFromLocation)
                 {
                     $reknown->location = $this->ChosenLocation;
                     $reknown->amount = $location->Renown;

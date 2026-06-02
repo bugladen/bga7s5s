@@ -10,4 +10,4 @@ Same pattern as 01089 (Soline) and 01143 (Contempt and Hatred). Épée Sanglante
 
 ## Why centralize on add/remove
 
-Both helpers are called from three sites in `handleEvent` (EventCardMoved, EventReknownAddedToLocation, EventReknownRemovedFromLocation). Putting the condition tracking + notify inside the helper means every call site stays in sync without duplicating logic.
+Both helpers are called from three sites in `handleEvent` (EventCardMoved, EventReknownAddedToLocation, EventRenownRemovedFromLocation). Putting the condition tracking + notify inside the helper means every call site stays in sync without duplicating logic.

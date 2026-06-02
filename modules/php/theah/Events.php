@@ -37,7 +37,7 @@ class Events
     const ReknownAddedToCard = 'EventReknownAddedToCard';
     const ReknownRemovedFromCard = 'EventReknownRemovedFromCard';
     const ReknownAddedToLocation = 'EventReknownAddedToLocation';
-    const ReknownRemovedFromLocation = 'EventReknownRemovedFromLocation';
+    const RenownRemovedFromLocation = 'EventRenownRemovedFromLocation';
 
     //Player Hand events
     const CardAddedToHand = 'EventCardAddedToHand';

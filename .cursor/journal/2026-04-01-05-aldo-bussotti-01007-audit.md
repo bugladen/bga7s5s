@@ -8,15 +8,15 @@ Vodacce character. Resolve=4, Combat=1, Finesse=3, Influence=1. Traits: Diplomat
 
 ## Bug Found and Fixed
 
-### EventReknownRemovedFromLocation handler had inverted sign
+### EventRenownRemovedFromLocation handler had inverted sign
 
-In `_01007.php` line 91, the `EventReknownRemovedFromLocation` handler passed `-$location->Renown` to `updateInfluence`:
+In `_01007.php` line 91, the `EventRenownRemovedFromLocation` handler passed `-$location->Renown` to `updateInfluence`:
 
 ```php
 $this->updateInfluence($event->theah, -$location->Renown);
 ```
 
-WHY this is wrong: `EventReknownRemovedFromLocation` has `runEventHubAfterCards = false` (the default). This means the EventHub processes the event FIRST — decrementing `$location->Renown` — and THEN card handlers fire. So by the time `_01007::handleEvent` runs, `$location->Renown` already reflects the new total after removal.
+WHY this is wrong: `EventRenownRemovedFromLocation` has `runEventHubAfterCards = false` (the default). This means the EventHub processes the event FIRST — decrementing `$location->Renown` — and THEN card handlers fire. So by the time `_01007::handleEvent` runs, `$location->Renown` already reflects the new total after removal.
 
 `updateInfluence` sets NewInfluence = base (1) + count. Passing `-$location->Renown` gives `1 - newTotal`, which is completely wrong. Example: location had 3 renown, 1 removed → Renown is now 2 → code computed 1 + (-2) = -1 → clamped to 0. Should be 1 + 2 = 3.
 
@@ -36,4 +36,4 @@ Fixed by removing the negation: `$this->updateInfluence($event->theah, $location
 
 ## Note on event ordering within the action
 
-When Aldo's action fires: remove event is at a different location (not Aldo's), so the `EventReknownRemovedFromLocation` handler doesn't trigger (location check fails). The add event IS at Aldo's location, so `EventReknownAddedToLocation` handler fires and correctly updates influence. No double-update issue.
+When Aldo's action fires: remove event is at a different location (not Aldo's), so the `EventRenownRemovedFromLocation` handler doesn't trigger (location check fails). The add event IS at Aldo's location, so `EventReknownAddedToLocation` handler fires and correctly updates influence. No double-update issue.

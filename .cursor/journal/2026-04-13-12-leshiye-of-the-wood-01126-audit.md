@@ -17,7 +17,7 @@ Two-phase flow:
 
 ## eventCheck Restrictions - OK
 - Blocks EventReknownAddedToLocation at ChosenLocation
-- Blocks EventReknownRemovedFromLocation at ChosenLocation (except by itself)
+- Blocks EventRenownRemovedFromLocation at ChosenLocation (except by itself)
 - Blocks EventLocationClaimed at ChosenLocation
 - No separate "renown moved" event type exists; add/remove coverage is sufficient
 

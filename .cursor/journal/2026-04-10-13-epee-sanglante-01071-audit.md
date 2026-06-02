@@ -12,7 +12,7 @@ Correct. `EventResolveScheme` transitions to `PLANNING_PHASE_RESOLVE_SCHEMES_010
 Correct. Three handlers cover all scenarios:
 - `EventCardMoved`: Musketeer moves home→city, city→home, city→city. All threshold checks correct.
 - `EventReknownAddedToLocation`: If Renown crosses from <2 to ≥2, all friendly Musketeers there get +1 Influence.
-- `EventReknownRemovedFromLocation`: If Renown drops from ≥2 to <2, removes the buff.
+- `EventRenownRemovedFromLocation`: If Renown drops from ≥2 to <2, removes the buff.
 
 All handlers gate on `$this->Location == Game::LOCATION_PLAYER_HOME` (scheme must be in play).
 

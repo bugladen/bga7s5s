@@ -93,7 +93,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['playLeader', 1500],
             ['reactionUsed', 1],
             ['reknownAddedToLocation', 500],
-            ['reknownRemovedFromLocation', 500],
+            ['renownRemovedFromLocation', 500],
             ['reknownUpdatedOnCard', 500],
             ['cardSentToLocker', 500],
             ['cardSentToCityLocker', 500],
@@ -1415,9 +1415,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         reknownElement.innerHTML = reknown;
     },
 
-    notif_reknownRemovedFromLocation: async function( notif )
+    notif_renownRemovedFromLocation: async function( notif )
     {
-        debug( 'notif_reknownRemovedFromLocation' );
+        debug( 'notif_renownRemovedFromLocation' );
         debug( notif );
 
         const args = notif.args;
