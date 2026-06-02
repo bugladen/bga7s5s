@@ -113,7 +113,7 @@ class _01145 extends Scheme
 
             $playerId = $game->getActivePlayerId();
     
-            $playerRemoved = EventFactory::createReknownRemovedFromLocationEvent($playerId, $fromLocation, 1, $this->getInjectCode());
+            $playerRemoved = EventFactory::createRenownRemovedFromLocationEvent($playerId, $fromLocation, 1, $this->getInjectCode());
             $game->theah->eventCheck($playerRemoved);
             $game->theah->queueEvent($playerRemoved);
     

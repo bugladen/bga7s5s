@@ -1047,7 +1047,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createReknownRemovedFromLocationEvent(int $playerId, string $location, int $amount, string $source): EventReknownRemovedFromLocation
+    public static function createRenownRemovedFromLocationEvent(int $playerId, string $location, int $amount, string $source): EventReknownRemovedFromLocation
     {
         $event = self::createEvent(Events::ReknownRemovedFromLocation);
         if ($event instanceof EventReknownRemovedFromLocation)

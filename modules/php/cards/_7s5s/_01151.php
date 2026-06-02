@@ -89,7 +89,7 @@ class _01151 extends Scheme
 
                 if ($location->Renown > 0)
                 {
-                    $renownEvent = EventFactory::createReknownRemovedFromLocationEvent($this->ControllerId, $location->Name, $location->Renown, $this->getInjectCode());
+                    $renownEvent = EventFactory::createRenownRemovedFromLocationEvent($this->ControllerId, $location->Name, $location->Renown, $this->getInjectCode());
                     $event->theah->eventCheck($renownEvent);
                     $event->theah->queueEvent($renownEvent);
                 }

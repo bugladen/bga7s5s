@@ -81,7 +81,7 @@ class Action_02035 extends SchemeCityAction
                 $game = $event->theah->game;
                 $owner = $this->getOwningCard($event->theah);
                 if ($game->getRenownForLocation($event->location) > 0) {
-                    $remove = EventFactory::createReknownRemovedFromLocationEvent(
+                    $remove = EventFactory::createRenownRemovedFromLocationEvent(
                         $event->playerId,
                         $event->location,
                         1,
